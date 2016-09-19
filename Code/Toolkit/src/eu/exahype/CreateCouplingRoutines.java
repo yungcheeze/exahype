@@ -34,31 +34,47 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
   }
   
   
-  private void writeIncludes(java.io.BufferedWriter headerWriter) throws java.io.IOException {
+  private void writeSolverIncludes(java.io.BufferedWriter writer) throws java.io.IOException {
     for (PSolver from: _project.getSolver()) {
       if (from instanceof eu.exahype.node.AAderdgSolver ) {
         eu.exahype.node.AAderdgSolver fromADERDG = (eu.exahype.node.AAderdgSolver)from;
-        headerWriter.write( "#include \"" + fromADERDG.getName().toString().trim() + ".h\"\n" );
+        writer.write( "#include \"" + fromADERDG.getName().toString().trim() + ".h\"\n" );
       }
       if (from instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)from;
-        headerWriter.write( "#include \"" + fromFiniteVolumes.getName().toString().trim() + ".h\"\n" );
+        writer.write( "#include \"" + fromFiniteVolumes.getName().toString().trim() + ".h\"\n" );
       }
     }
-    headerWriter.write( "\n" );
-    headerWriter.write( "\n" );
-    headerWriter.write( "\n" );
+    writer.write( "\n\n\n" );
+  }
+
+  
+  private void writeSolverForwardDeclarations(java.io.BufferedWriter writer) throws java.io.IOException {
+    writer.write("namespace " + _projectName + "{\n");
+    for (PSolver from: _project.getSolver()) {
+      if (from instanceof eu.exahype.node.AAderdgSolver ) {
+        eu.exahype.node.AAderdgSolver fromADERDG = (eu.exahype.node.AAderdgSolver)from;
+        writer.write( "  class " + fromADERDG.getName().toString().trim() + ";\n" );
+      }
+      if (from instanceof eu.exahype.node.AFiniteVolumesSolver ) {
+        eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)from;
+        writer.write( "  class " + fromFiniteVolumes.getName().toString().trim() + ";\n" );
+      }
+    }
+    writer.write("}\n\n\n");
   }
 
   
   private void writeCellWiseHeader(java.io.BufferedWriter headerWriter, ACoupleSolvers node) throws java.io.IOException {
     eu.exahype.solvers.Helpers.writeHeaderCopyright(headerWriter);
-    writeIncludes(headerWriter);
+    headerWriter.write( "#include \"exahype/solvers/CellWiseCoupling.h\"\n" );
+    headerWriter.write( "\n\n\n" );
+    writeSolverForwardDeclarations(headerWriter);
     headerWriter.write("namespace " + _projectName + "{\n");
     headerWriter.write("  class " + node.getIdentifier().getText().trim() + ";\n");
     headerWriter.write("}\n\n\n");
 
-    headerWriter.write("class " + _projectName + "::" + node.getIdentifier().getText().trim() + ": exahype::solvers::CellWiseCoupling {\n");
+    headerWriter.write("class " + _projectName + "::" + node.getIdentifier().getText().trim() + ": public exahype::solvers::CellWiseCoupling {\n");
     headerWriter.write("public:\n");
     headerWriter.write("  " + node.getIdentifier().getText().trim() + "(double time, double repeat); \n");
     headerWriter.write("\n\n");
@@ -78,7 +94,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //headerWriter.write( "    exahype.records.ADERDGCellDescription&  fromDescription, \n" );
         headerWriter.write( "    double*  fromluh, \n" );
         headerWriter.write( "    double*  fromlQhbnd, \n" );
-        headerWriter.write( "    bool     holdsValidMinMaxCondition, \n" );
+        headerWriter.write( "    bool     fromHoldsValidMinMaxCondition, \n" );
       }
       if (from instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)from;
@@ -92,7 +108,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //headerWriter.write( "    exahype.records.ADERDGCellDescription&  toDescription, \n" );
         headerWriter.write( "    double*  toluh, \n" );
         headerWriter.write( "    double*  tolQhbnd, \n" );
-        headerWriter.write( "    bool     holdsValidMinMaxCondition\n" );
+        headerWriter.write( "    bool     toHoldsValidMinMaxCondition\n" );
       }
       if (to instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)to;
@@ -110,6 +126,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
     implementationWriter.write( "#include \"" + node.getIdentifier().getText().trim() + ".h\"\n" );
     implementationWriter.write( "\n" );
     implementationWriter.write( "\n" );
+    writeSolverIncludes(implementationWriter);
     implementationWriter.write( "\n" );
 
     implementationWriter.write( _projectName + "::" + node.getIdentifier().getText().trim() + "::" + node.getIdentifier().getText().trim() + "(double time, double repeat):\n" );
@@ -135,7 +152,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //implementationWriter.write( "  exahype.records.ADERDGCellDescription&  fromDescription, \n" );
         implementationWriter.write( "  double*  fromluh, \n" );
         implementationWriter.write( "  double*  fromlQhbnd, \n" );
-        implementationWriter.write( "  bool     holdsValidMinMaxCondition, \n" );
+        implementationWriter.write( "  bool     fromHoldsValidMinMaxCondition, \n" );
       }
       if (from instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)from;
@@ -149,7 +166,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //implementationWriter.write( "  exahype.records.ADERDGCellDescription&  toDescription, \n" );
         implementationWriter.write( "  double*  toluh, \n" );
         implementationWriter.write( "  double*  tolQhbnd, \n" );
-        implementationWriter.write( "  bool     holdsValidMinMaxCondition\n" );
+        implementationWriter.write( "  bool     toHoldsValidMinMaxCondition\n" );
       }
       if (to instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)to;

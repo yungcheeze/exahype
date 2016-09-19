@@ -476,7 +476,7 @@ int exahype::Parser::getOrder(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "order", 1);
-  result = atof(token.c_str());
+  result = atoi(token.c_str());
 
   if (result < 0) {
     logError("getOrder()", "'" << getIdentifier(solverNumber)
@@ -487,6 +487,39 @@ int exahype::Parser::getOrder(int solverNumber) const {
   logDebug("getOrder()", "found order " << result);
   return result;
 }
+
+
+double exahype::Parser::getCouplingTime( int couplingNumber ) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("couple-solvers", couplingNumber * 2 + 1, "time", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getCouplingTime()", "coupling time must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getCouplingTime()", "found time " << result);
+  return result;
+}
+
+
+double exahype::Parser::getCouplingRepeat( int couplingNumber ) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("couple-solvers", couplingNumber * 2 + 1, "repeat", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getCouplingRepeat()", "repeat time must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getCouplingRepeat()", "found time " << result);
+  return result;
+}
+
 
 double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
   std::string token;

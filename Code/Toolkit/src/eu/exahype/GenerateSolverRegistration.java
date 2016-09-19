@@ -75,7 +75,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"" + node.getIdentifier().getText().trim() + ".h\"\n");
 
       _methodBodyWriter.write(  "  exahype::solvers::RegisteredSolverCouplings.push_back( new " + _projectName +  
-         "::" + node.getIdentifier().getText().trim() + "(parser.getCouplingTime("+_couplingNumber+"), parser.getCouplingRepeat("+_couplingNumber+") );\n");
+         "::" + node.getIdentifier().getText().trim() + "(parser.getCouplingTime("+_couplingNumber+"), parser.getCouplingRepeat("+_couplingNumber+") ));\n");
       
       _couplingNumber++;
     } catch (Exception exc) {

@@ -295,6 +295,9 @@ class exahype::Parser {
   std::string getProfilingOutputFilename() const;
 
   ParserView getParserView(int solverNumber);
+
+  double getCouplingTime( int couplingNumber ) const;
+  double getCouplingRepeat( int couplingNumber ) const;
 };
 
 #endif
