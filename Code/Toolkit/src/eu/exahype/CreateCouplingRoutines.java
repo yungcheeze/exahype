@@ -74,7 +74,7 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
     headerWriter.write("  class " + node.getIdentifier().getText().trim() + ";\n");
     headerWriter.write("}\n\n\n");
 
-    headerWriter.write("class " + _projectName + "::" + node.getIdentifier().getText().trim() + ": exahype::solvers::CellWiseCoupling {\n");
+    headerWriter.write("class " + _projectName + "::" + node.getIdentifier().getText().trim() + ": public exahype::solvers::CellWiseCoupling {\n");
     headerWriter.write("public:\n");
     headerWriter.write("  " + node.getIdentifier().getText().trim() + "(double time, double repeat); \n");
     headerWriter.write("\n\n");
