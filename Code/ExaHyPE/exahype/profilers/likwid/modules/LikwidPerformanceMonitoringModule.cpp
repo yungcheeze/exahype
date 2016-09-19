@@ -2073,6 +2073,8 @@ static const std::array<
                         UOPS_EXEC_METRIC_FUNS,   UOPS_ISSUE_METRIC_FUNS,
                         UOPS_RETIRE_METRIC_FUNS, CACHES_FUNS};
 
+static const int kNumberOfSamples = 100000;
+
 }  // namespace
 
 namespace exahype {
@@ -2104,6 +2106,8 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
               << group_name_ << " not found." << std::endl;
     std::exit(EXIT_FAILURE);
   }
+
+  // overhead();
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
@@ -2197,6 +2201,41 @@ void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
                              [i](group_handles_.at(tag), counter_values, state_)
           << std::endl;
     }
+  }
+}
+
+void LikwidPerformanceMonitoringModule::overhead() {
+  // MEM
+  {
+    // Concatenate event string
+    std::stringstream eventstring;
+    for (int i = 0; i < kNrOfCounters[9 /* group_index_ */] - 1; i++) {
+      eventstring << eventsets[9 /* group_index_ */][i] << ",";
+    }
+    // Skip comma for last counter
+    eventstring << eventsets[9 /* group_index_ */]
+                            [kNrOfCounters[9 /* group_index_ */] - 1];
+
+    // Register event set for tag
+    int handle = perfmon_addEventSet(
+        const_cast<char*>(eventstring.str().c_str()));  // TODO: remove
+                                                        // const_cast once my PR
+                                                        // has made it to LRZ
+
+    uint64_t total_cycles = 0;
+    for (int i = 0; i < kNumberOfSamples; i++) {
+      perfmon_setupCounters(handle);
+      perfmon_startCounters();
+      perfmon_stopCounters();
+      total_cycles +=
+          static_cast<uint64_t>(perfmon_getResult(handle, 1, state_.cpu_));
+    }
+
+    std::cout << "LikwidPerformanceMonitoringModule: MEM overhead s = "
+              << perfmon_getTimeOfGroup(handle) / kNumberOfSamples << std::endl;
+    std::cout << "LikwidPerformanceMonitoringModule: MEM overhead cycles = "
+              << static_cast<double>(total_cycles) / kNumberOfSamples
+              << std::endl;
   }
 }
 

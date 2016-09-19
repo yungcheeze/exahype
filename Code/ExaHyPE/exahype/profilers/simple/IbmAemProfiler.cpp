@@ -63,18 +63,54 @@ IbmAemProfiler::IbmAemProfiler(const std::string& profiling_output)
   }
 
   // Calibrate
-  uint64_t start, stop;
-  start = readValue(&sysfs_file_);
-  for (int i = 0; i < kNumberOfSamples; i++) {
-    uint64_t value = readValue(&sysfs_file_);
-    utils::escape(&value);
-  }
-  stop = readValue(&sysfs_file_);
-  utils::escape(&stop);
+  {
+    uint64_t start, stop;
 
-  penalty_per_poll_ = (stop - start) / 1e6 / (kNumberOfSamples + 2);
-  std::cout << "HwmonIbmAemProfiler: penalty_per_poll_ [J] = "
-            << penalty_per_poll_ << std::endl;
+    start = readValue(&sysfs_file_);
+    for (int i = 0; i < kNumberOfSamples; i++) {
+      uint64_t value = readValue(&sysfs_file_);
+      utils::escape(&value);
+    }
+    stop = readValue(&sysfs_file_);
+    utils::escape(&stop);
+
+    penalty_per_poll_ = (stop - start) / 1e6 / (kNumberOfSamples + 2);
+    std::cout << "HwmonIbmAemProfiler: penalty_per_poll_ [J] = "
+              << penalty_per_poll_ << std::endl;
+  }
+
+  // Overhead
+  /*
+  {
+    auto start = std::chrono::steady_clock::now();
+    for (int i = 0; i < kNumberOfSamples; i++) {
+      uint64_t value = readValue(&sysfs_file_);
+      utils::escape(&value);
+    }
+    auto stop = std::chrono::steady_clock::now();
+
+    std::cout << "HwmonIbmAemProfiler: Overhead read (ns): "
+              << static_cast<double>((stop - start).count()) / kNumberOfSamples
+              << std::endl;
+
+    uint64_t sum = 0;
+    for (int i = 0; i < kNumberOfSamples / 10; i++) {
+      penality_count_ = 1;
+      energy_at_start_ = readValue(&sysfs_file_);
+      while (true) {
+        penality_count_++;
+        if (readValue(&sysfs_file_) != energy_at_start_) {
+          break;
+        }
+      }
+      sum += penality_count_;
+      std::cout << i << " / " << kNumberOfSamples / 10 << std::endl;
+    }
+
+    std::cout << "HwmonIbmAemProfiler: Average reads = "
+              << static_cast<double>(sum) / kNumberOfSamples * 10 << std::endl;
+  }
+  */
 
   // Test
   /*

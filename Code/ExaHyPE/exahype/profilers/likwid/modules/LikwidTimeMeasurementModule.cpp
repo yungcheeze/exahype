@@ -19,6 +19,10 @@
 #include <cassert>
 #include <utility>
 
+namespace {
+const int kNumberOfSamples = 1000000;
+}
+
 namespace exahype {
 namespace profilers {
 namespace likwid {
@@ -27,6 +31,31 @@ LikwidTimeMeasurementModule::LikwidTimeMeasurementModule(
     const LikwidProfilerState& state)
     : LikwidModule(state) {
   timer_init();
+
+  // Overhead
+  /*
+  {
+    uint64_t total_time_ns, total_cycles;
+
+    TimerData timer_data;
+    for (int i = 0; i < kNumberOfSamples; i++) {
+      timer_start(&timer_data);
+      utils::escape(&timer_data);
+      timer_stop(&timer_data);
+      utils::escape(&timer_data);
+
+      total_time_ns += static_cast<uint64_t>(timer_print(&timer_data) * 1e9);
+      total_cycles += static_cast<uint64_t>(timer_printCycles(&timer_data));
+    }
+
+    std::cout << "LikwidTimeMeasurementModule: overhead seconds = "
+              << static_cast<double>(total_time_ns) / 1e9 / kNumberOfSamples
+              << std::endl;
+    std::cout << "LikwidTimeMeasurementModule: overhead cycles = "
+              << static_cast<double>(total_cycles) / kNumberOfSamples
+              << std::endl;
+  }
+  */
 }
 
 LikwidTimeMeasurementModule::~LikwidTimeMeasurementModule() {
