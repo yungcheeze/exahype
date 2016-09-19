@@ -841,6 +841,18 @@ public:
 
   void startNewTimeStep() override;
 
+  /**
+   * Update predictor time step size
+   *
+   * This operation takes the minimum of the current predictor time step size
+   * and the argument handed in. The routine is used in
+   * TimeStepComputation to determine the subsequent time step size.
+   *
+   * <h1>Thread-safety</h1>
+   *
+   * This operation is not thread safe.
+   *
+   */
   void updateMinNextPredictorTimeStepSize(
       const double& nextPredictorTimeStepSize);
 
@@ -866,19 +878,6 @@ public:
   void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
 
   double getMinPredictorTimeStepSize() const;
-  /**
-   * Update predictor time step size
-   *
-   * This operation takes the minimum of the current predictor time step size
-   * and the argument handed in. The routine is used in
-   * TimeStepComputation to determine the subsequent time step size.
-   *
-   * <h1>Thread-safety</h1>
-   *
-   * This operation is not thread safe.
-   *
-   */
-  void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();

@@ -40,11 +40,6 @@ constexpr const char* tags[]{"solutionUpdate",
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
-  #ifdef Asserts
-  const solvers::Solver* solver = solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
-  assertion1(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,cellDescription.toString());
-  #endif
-
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
     switch (cellDescription.getType()) {
       case exahype::records::ADERDGCellDescription::Erased:
