@@ -3,6 +3,7 @@ package eu.exahype;
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
+import eu.exahype.node.ACoupleSolvers;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -14,6 +15,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
   private int _kernelNumber;
   private int _plotterNumber;
+  private int _couplingNumber;
   
   private String _solverName;
 
@@ -21,8 +23,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
   public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
-    _kernelNumber = 0;
+    _kernelNumber            = 0;
+    _couplingNumber          = 0;
   }
+  
 
   @Override
   public void inAProject(AProject node) {
@@ -51,7 +55,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
       _writer.write("#include \"kernels/GaussLobattoQuadrature.h\"\n");
-    _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
+      _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
 
@@ -65,6 +69,21 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     }
   }
   
+
+  public void inACoupleSolvers(ACoupleSolvers node) {
+    try {
+      _writer.write("#include \"" + node.getIdentifier().getText().trim() + ".h\"\n");
+
+      _methodBodyWriter.write(  "  exahype::solvers::RegisteredSolverCouplings.push_back( new " + _projectName +  
+         "::" + node.getIdentifier().getText().trim() + "(parser.getCouplingTime("+_couplingNumber+"), parser.getCouplingRepeat("+_couplingNumber+") );\n");
+      
+      _couplingNumber++;
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  }
+
   private void writeProfilerCreation() {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
       _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n");
