@@ -103,27 +103,39 @@ void exahype::mappings::Prediction::initTemporaryVariables() {
   assertion1(_lFhi==0,_lFhi);
 
   int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  _lQi  = new double*[numberOfSolvers];
-  _lFi  = new double*[numberOfSolvers];
-  _lQhi = new double*[numberOfSolvers];
-  _lFhi = new double*[numberOfSolvers];
+  _lQi     = new double*[numberOfSolvers];
+  _lQi_old = new double*[numberOfSolvers];
+  _rhs     = new double*[numberOfSolvers];
+  _rhs_0   = new double*[numberOfSolvers];
+  _lFi     = new double*[numberOfSolvers];
+  _lQhi    = new double*[numberOfSolvers];
+  _lFhi    = new double*[numberOfSolvers];
 
   int solverNumber=0;
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      _lQi [solverNumber]  =
-          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
-      _lFi [solverNumber]  =
-          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeFluxUnknownsPerCell()];
-      _lQhi[solverNumber] =
-          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell()];
-      _lFhi[solverNumber] =
-          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell()];
+      _lQi [solverNumber]      =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
+      _lQi_old [solverNumber]  =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
+      _rhs [solverNumber]      =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
+      _rhs_0 [solverNumber]    =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
+      _lFi [solverNumber]      =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeFluxUnknownsPerCell()];
+      _lQhi[solverNumber]      =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell()];
+      _lFhi[solverNumber]      =
+                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell()];
     } else {
-      _lQi[solverNumber]  = 0;
-      _lFi[solverNumber]  = 0;
-      _lQhi[solverNumber] = 0;
-      _lFhi[solverNumber] = 0;
+      _lQi    [solverNumber] = nullptr;
+      _lQi_old[solverNumber] = nullptr;
+      _rhs    [solverNumber] = nullptr;
+      _rhs_0  [solverNumber] = nullptr;
+      _lFi    [solverNumber] = nullptr;
+      _lQhi   [solverNumber] = nullptr;
+      _lFhi   [solverNumber] = nullptr;
     }
     ++solverNumber;
   }
@@ -133,23 +145,32 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
   int solverNumber=0;
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      delete[]_lQi[solverNumber];
-      delete[]_lFi[solverNumber];
-      delete[]_lQhi[solverNumber];
-      delete[]_lFhi[solverNumber];
+      delete[] _lQi    [solverNumber];
+      delete[] _lQi_old[solverNumber];
+      delete[] _rhs    [solverNumber];
+      delete[] _rhs_0  [solverNumber];
+      delete[] _lFi    [solverNumber];
+      delete[] _lQhi   [solverNumber];
+      delete[] _lFhi   [solverNumber];
     }
-    _lQi [solverNumber] = 0;
-    _lFi [solverNumber] = 0;
-    _lQhi[solverNumber] = 0;
-    _lFhi[solverNumber] = 0;
+    _lQi    [solverNumber] = nullptr;
+    _lQi_old[solverNumber] = nullptr;
+    _rhs    [solverNumber] = nullptr;
+    _rhs_0  [solverNumber] = nullptr;
+    _lFi    [solverNumber] = nullptr;
+    _lQhi   [solverNumber] = nullptr;
+    _lFhi   [solverNumber] = nullptr;
 
     ++solverNumber;
   }
 
   delete[] _lQi;
+  delete[] _lQi_old;
+  delete[] _rhs;
+  delete[] _rhs_0;
   delete[] _lFi;
-  delete[]_lQhi;
-  delete[]_lFhi;
+  delete[] _lQhi;
+  delete[] _lFhi;
 }
 
 void exahype::mappings::Prediction::enterCell(

@@ -99,22 +99,44 @@ class exahype::mappings::Prediction {
    * Temporary variable: Degrees of freedom of the space-time predictor
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
-  double** _lQi=0;
+  double** _lQi=nullptr;
+
+  /**
+   * Temporary variable: Old degrees of freedom of the old Picard loop space-time predictor
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   * Theses values are only used within the Picard loop of the space-time predictor computation.
+   */
+  double** _lQi_old=nullptr;
+
+  /**
+   * Temporary variable: Degrees of freedom of the Picard loop right-hand side
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   * Theses values are only used within the Picard loop of the space-time predictor computation.
+   */
+  double** _rhs=nullptr;
+
+  /**
+   * Temporary variable: Degrees of freedom of the initial Picard loop right-hand side
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   * Theses values are only used within the Picard loop of the space-time predictor computation.
+   */
+  double** _rhs_0=nullptr;
+
   /**
    * Temporary variable: Degrees of freedom of the space-time predictor volume flux
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
-  double** _lFi=0;
+  double** _lFi=nullptr;
   /**
    * Temporary variable: Degrees of freedom of time averaged space-time predictor
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
-  double** _lQhi=0;
+  double** _lQhi=nullptr;
   /**
    * Temporary variable: Degrees of freedom of the time averaged space-time predictor volume flux
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
-  double** _lFhi=0;
+  double** _lFhi=nullptr;
 
   /**
    * Initialises the temporary variables.
