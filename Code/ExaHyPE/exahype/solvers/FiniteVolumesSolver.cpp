@@ -19,6 +19,8 @@
 #include "exahype/Vertex.h"
 #include "exahype/VertexOperations.h"
 
+#include "exahype/amr/AdaptiveMeshRefinement.h"
+
 namespace {
 constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
 }  // namespace
@@ -110,6 +112,21 @@ int exahype::solvers::FiniteVolumesSolver::tryGetElement(
     }
   }
   return NotFound;
+}
+
+exahype::solvers::Solver::SubcellPosition exahype::solvers::FiniteVolumesSolver::computeSubcellPositionOfCellOrAncestor(
+        const int cellDescriptionsIndex,
+        const int element) {
+  // TODO(Dominic): Comment code in as soon as we have all the required fields
+  // on the cell description.
+//  CellDescription& cellDescription =
+//      getCellDescription(cellDescriptionsIndex,element);
+//
+//  return
+//      exahype::amr::computeSubcellPositionOfCellOrAncestor
+//      <CellDescription,Heap>(cellDescription);
+  SubcellPosition empty;
+  return empty;
 }
 
 ///////////////////////////////////
@@ -242,6 +259,21 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(finiteVolumeSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+}
+
+void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(
+    const int cellDescriptionsIndex,
+    const int element) {
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::restrictData(
+    const int cellDescriptionsIndex,
+    const int element,
+    const int parentCellDescriptionsIndex,
+    const int parentElement,
+    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
+  assertionMsg(false,"Please implement!");
 }
 
 ///////////////////////////////////

@@ -226,14 +226,18 @@ public:
 
   double getNextMinTimeStepSize() const override;
 
-  bool isValid(
-      const int cellDescriptionsIndex) const {
+  bool isValidCellDescriptionIndex(
+      const int cellDescriptionsIndex) const override {
     return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
   }
 
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
+
+  SubcellPosition computeSubcellPositionOfCellOrAncestor(
+        const int cellDescriptionsIndex,
+        const int element) override;
 
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
@@ -276,6 +280,19 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void prolongateDataAndPrepareDataRestriction(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void restrictData(
+      const int cellDescriptionsIndex,
+      const int element,
+      const int parentCellDescriptionsIndex,
+      const int parentElement,
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
+
+
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
