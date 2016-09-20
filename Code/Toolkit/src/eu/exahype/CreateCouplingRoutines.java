@@ -102,20 +102,24 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //headerWriter.write( "    exahype.records.FiniteVolumesCellDescription&  fromDescription, \n" );
         headerWriter.write( "    double*  fromluh, \n" );
       }
+      headerWriter.write( "    double   fromTimeStamp, \n" );
+      headerWriter.write( "    double   fromTimeStepSize, \n" );
       if (to instanceof eu.exahype.node.AAderdgSolver ) {
         eu.exahype.node.AAderdgSolver fromADERDG = (eu.exahype.node.AAderdgSolver)to;
         headerWriter.write( "    " + fromADERDG.getName().toString().trim() + "&  toSolver, \n" );
         //headerWriter.write( "    exahype.records.ADERDGCellDescription&  toDescription, \n" );
         headerWriter.write( "    double*  toluh, \n" );
         headerWriter.write( "    double*  tolQhbnd, \n" );
-        headerWriter.write( "    bool     toHoldsValidMinMaxCondition\n" );
+        headerWriter.write( "    bool     toHoldsValidMinMaxCondition,\n" );
       }
       if (to instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)to;
         headerWriter.write( "    " + fromFiniteVolumes.getName().toString().trim() + "&  toSolver, \n" );
         //headerWriter.write( "    exahype.records.FiniteVolumesCellDescription&  toDescription, \n" );
-        headerWriter.write( "    double*  toluh\n" );
+        headerWriter.write( "    double*  toluh,\n" );
       }
+      headerWriter.write( "    double   toTimeStamp, \n" );
+      headerWriter.write( "    double   toTimeStepSize \n" );
       headerWriter.write( "  );\n\n\n\n" );
     }
     headerWriter.write("};\n\n\n");
@@ -160,21 +164,25 @@ public class CreateCouplingRoutines extends DepthFirstAdapter {
         //implementationWriter.write( "  exahype.records.FiniteVolumesCellDescription&  fromDescription, \n" );
         implementationWriter.write( "  double*  fromluh, \n" );
       }
+      implementationWriter.write( "  double    fromTimeStamp, \n" );
+      implementationWriter.write( "  double    fromTimeStepSize, \n" );
       if (to instanceof eu.exahype.node.AAderdgSolver ) {
         eu.exahype.node.AAderdgSolver fromADERDG = (eu.exahype.node.AAderdgSolver)to;
         implementationWriter.write( "  " + fromADERDG.getName().toString().trim() + "&  toSolver, \n" );
         //implementationWriter.write( "  exahype.records.ADERDGCellDescription&  toDescription, \n" );
         implementationWriter.write( "  double*  toluh, \n" );
         implementationWriter.write( "  double*  tolQhbnd, \n" );
-        implementationWriter.write( "  bool     toHoldsValidMinMaxCondition\n" );
+        implementationWriter.write( "  bool     toHoldsValidMinMaxCondition,\n" );
       }
       if (to instanceof eu.exahype.node.AFiniteVolumesSolver ) {
         eu.exahype.node.AFiniteVolumesSolver fromFiniteVolumes = (eu.exahype.node.AFiniteVolumesSolver)to;
         implementationWriter.write( "  " + fromFiniteVolumes.getName().toString().trim() + "&  toSolver, \n" );
         //implementationWriter.write( "  exahype.records.FiniteVolumesCellDescription&  toDescription, \n" );
-        implementationWriter.write( "  double*  toluh\n" );
+        implementationWriter.write( "  double*  toluh,\n" );
       }
-      implementationWriter.write( "{\n" );
+      implementationWriter.write( "  double    toTimeStamp,\n" );
+      implementationWriter.write( "  double    toTimeSize\n" );
+      implementationWriter.write( ") {\n" );
       implementationWriter.write( "  // @todo add your code here \n" );
       implementationWriter.write( "}\n\n\n\n" );
     }
