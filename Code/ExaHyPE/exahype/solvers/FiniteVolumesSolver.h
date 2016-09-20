@@ -366,10 +366,13 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeWithNeighbourMetadata(
+        const int neighbourTypeAsInt,
+        const int cellDescriptionsIndex,
+        const int element) override {
+    assertionMsg(false,"Please implement!");
+  }
 
-  /**
-   * Send solver data to neighbour rank.
-   */
   void sendDataToNeighbour(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -381,9 +384,6 @@ public:
     assertionMsg(false,"Please implement!");
   }
 
-  /**
-   * Send empty solver data to neighbour rank.
-   */
   void sendEmptyDataToNeighbour(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -391,13 +391,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Receive solver data from neighbour rank.
-   *
-   * \param[in] elementIndex Index of the ADERDGCellDescription
-   *                         holding the data to send out in
-   *                         the heap vector at \p cellDescriptionsIndex.
-   */
   void mergeWithNeighbourData(
       const int                                     fromRank,
       const int                                     neighbourTypeAsInt,
@@ -410,9 +403,7 @@ public:
     assertionMsg(false,"Please implement!");
   }
 
-  /**
-   * Drop solver data from neighbour rank.
-   */
+
   void dropNeighbourData(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -420,20 +411,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  ///////////////////////////////////
-  // FORK OR JOIN
-  ///////////////////////////////////
-
-  /**
-   * Send solver data to master or worker rank. Read the data from
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the FiniteVolumesCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -441,22 +418,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to master or worker rank
-   * due to fork or join.
-   */
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from master or worker rank
-   * that was sent out due to a fork or join. Wrote the data to
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   */
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const int                                     cellDescriptionsIndex,
@@ -464,10 +430,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from master or worker rank
-   * that was sent out due to a fork or join.
-   */
   void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
