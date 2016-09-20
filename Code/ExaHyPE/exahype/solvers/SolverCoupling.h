@@ -31,7 +31,24 @@ namespace exahype {
 
 
 class exahype::solvers::SolverCoupling {
+  public:
+    enum class Type {
+      CellWise
+    };
+  private:
+    const Type   _type;
+    const double _repeat;
+    double       _nextSnapshot;
+  public:
+    SolverCoupling(Type type, double time, double repeat);
 
+    /**
+     * Identifies whether solver coupling is active and, if this is the case,
+     * updates the internal snapshot field.
+     */
+    bool isActive(double timeStamp);
+
+    Type getType() const;
 };
 
 #endif

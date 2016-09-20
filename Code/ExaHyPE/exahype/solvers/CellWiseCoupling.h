@@ -28,7 +28,8 @@ namespace exahype {
 
 
 class exahype::solvers::CellWiseCoupling: public exahype::solvers::SolverCoupling {
-
+  public:
+    CellWiseCoupling(double time, double repeat);
 };
 
 
