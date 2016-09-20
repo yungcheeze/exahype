@@ -107,13 +107,13 @@ namespace c {
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
 template <void PDEFlux(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+          void PDESource(const double* const Q, double* S),
+          int numberOfVariables, int numberOfParameters, int basisSize>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const double predictorTimeStepSize);
 
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int numberOfParameters,
