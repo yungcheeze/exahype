@@ -558,16 +558,13 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lQhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
   double *lFhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
 
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
-                                                           testSource>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<
+      testFlux, testSource, 5 /* numberOfVariables */,
+      0 /* numberOfParameters */, 4 /* basisSize */>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
       exahype::tests::testdata::generic_euler::testSpaceTimePredictorNonlinear::
           luh,
-      dx, timeStepSize,
-      5,  // numberOfVariables
-      0,  // numberOfParameters
-      4   // basisSize
-      );
+      dx, timeStepSize);
 
   for (int i = 0; i < 1280; i++) {
     validateNumericalEqualsWithEpsWithParams1(
