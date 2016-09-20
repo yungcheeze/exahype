@@ -105,14 +105,12 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
     // Copy rhs0 -> rhs
     std::copy(rhs0, rhs0 + basisSize4 * numberOfVariables, rhs);
 
     // Compute the "derivatives" (contributions of the stiffness matrix)
     // x direction (independent from the y and z derivatives)
-    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           const double updateSize =
@@ -129,10 +127,8 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
     // y direction (independent from the x and z derivatives)
-    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           const double updateSize =
@@ -150,10 +146,8 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
     // z direction (independent from the x and y derivatives)
-    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           const double updateSize =
@@ -171,10 +165,8 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
     // source
-    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < basisSize; l++) {

@@ -98,14 +98,12 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           PDESource(Q, S);
         }
       }
-    }
 
-    // Copy rhs0 -> rhs
-    std::copy(rhs0, rhs0 + basisSize3 * numberOfVariables, rhs);
+      // Copy rhs0 -> rhs
+      std::copy(rhs0, rhs0 + basisSize3 * numberOfVariables, rhs);
 
-    // Compute the "derivatives" (contributions of the stiffness matrix)
-    // x direction (independent from the y derivatives)
-    for (int i = 0; i < basisSize; i++) {  // time DOF
+      // Compute the "derivatives" (contributions of the stiffness matrix)
+      // x direction (independent from the y derivatives)
       for (int k = 0; k < basisSize; k++) {
         const double updateSize =
             kernels::gaussLegendreWeights[order][i] * dt / dx[0];
@@ -120,10 +118,8 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
-    // y direction (independent from the x derivatives)
-    for (int i = 0; i < basisSize; i++) {  // time DOF
+      // y direction (independent from the x derivatives)
       for (int k = 0; k < basisSize; k++) {
         const double updateSize =
             kernels::gaussLegendreWeights[order][i] * dt / dx[1];
@@ -139,10 +135,8 @@ void aderPicardLoopNonlinear(const double* __restrict__ luh, const double dt,
           }
         }
       }
-    }
 
-    // source
-    for (int i = 0; i < basisSize; i++) {  // time DOF
+      // source
       for (int k = 0; k < basisSize; k++) {
         for (int l = 0; l < basisSize; l++) {
           const double updateSize =
