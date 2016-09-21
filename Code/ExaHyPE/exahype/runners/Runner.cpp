@@ -162,8 +162,13 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         "use dummy shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
-            true, false,
-            0)  // @todo Vasco bitte mal auf 1 setzen und nochmal durchjagen
+            true, false,             // useMultithreading, measureRuntimes
+            0,                       // grainSizeOfUserDefinedRegions
+            1,                       // splitTheTree
+            true, true,              // pipelineDescendProcessing, pipelineAscendProcessing
+            tarch::la::aPowI(DIMENSIONS,3*3*3*3/2), 3,  // smallestGrainSizeForAscendDescend
+            1,1                      // smallestGrainSizeForEnterLeaveCell, grainSizeForEnterLeaveCell
+            )
     );
     break;
   case Parser::MulticoreOracleType::Autotuning:
