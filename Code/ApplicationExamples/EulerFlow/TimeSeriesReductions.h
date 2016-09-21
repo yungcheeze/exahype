@@ -12,7 +12,7 @@ using namespace std;
 
 class TimeSeriesReductions {
     enum index { tidx=0, time=1, l1=2, l2=3, max=4, min=5, avg=6, LEN=7 };
-    const char * const colnames[LEN]  = { "plotindex", "time", "l1norm", "l2norm", "max", "min", "avg" };
+    const char * const colnames[LEN]  = { "plotindex ", "time ", "l1norm ", "l2norm ", "max ", "min ", "avg " };
     const char * const colformat[LEN] = { "%.0f\t",        "%e\t",     "%e\t",       "%e\t",       "%e\t",    "%e\t",    "%e\t"  };
     double data[LEN];
     int avgcnt;
@@ -27,7 +27,7 @@ public:
 	}
 	
 	// print the header
-	fprintf(asc, "# ");
+	// fprintf(asc, "# ");
 	for(int i=0; i<LEN; i++) {
 	    fputs(colnames[i], asc);
         }
