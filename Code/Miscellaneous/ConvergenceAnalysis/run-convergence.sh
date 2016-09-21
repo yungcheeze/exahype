@@ -24,7 +24,8 @@ export SIMBASE=${SIMBASE:=simulations/}
 export EXABINARY=${EXABINARY:=../../ApplicationExamples/EulerFlow/ExaHyPE-Euler}
 
 # path of the spec file to use
-export EXASPECFILE=${EXASPECFILE:=../../ApplicationExamples/EulerFlow.exahype}
+#export EXASPECFILE=${EXASPECFILE:=../../ApplicationExamples/EulerFlow.exahype}
+export EXASPECFILE=${EXASPECFILE:=EulerFlowConvergence.exahype}
 
 function errormsg {
 	echo -e "Usage: $0 [-p <num>] [-m <num>]"
@@ -78,7 +79,8 @@ mkdir -p "$SIMDIR"
 #
 # or instead, ONLY put everything to the log starting from here, surpressing stdout.
 
-exec > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > "$SIMDIR/run-$(hostname).log") 2>&1
+# stdbuf -o0 to avoid 4kB buffering
+exec > >(stdbuf -o0 awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > "$SIMDIR/run-$(hostname).log") 2>&1
 
 # convert possibly relative paths to absolute ones
 EXABINARY=$(readlink -f "$EXABINARY")
@@ -106,7 +108,7 @@ export EXAHYPE_INITIALDATA="MovingGauss2D"
 
 echo "This is $0 on $(hostname) at $(date)"
 echo "Running with the following parameters:"
-env | grep -iE 'exa|sim'
+env | grep -iE 'exa|sim' | tee parameters.env
 echo
 
 # run it

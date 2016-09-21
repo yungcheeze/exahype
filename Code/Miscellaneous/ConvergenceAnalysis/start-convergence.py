@@ -27,7 +27,7 @@ procs = [
 	for maxmeshsize in reduced_maxmeshsizes
 	]
 
-# script ends here
-
-
-
+# script ends here.
+# Watch the further output of the simulations on your computer using 'top' or 'htop'.
+# Use 'multitail simulations/*/*.log' to watch what the simulations are doing.
+# When finished (or even before), use 'finish-convergence-table.py' to inspect the results.
