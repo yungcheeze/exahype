@@ -43,12 +43,13 @@ APPEND_DEGREE=true
 
 MIN_DEGREE=3
 MAX_DEGREE=8
+NVAR=9
 
 DEGREE=$MIN_DEGREE
 
 while [ $DEGREE -le $MAX_DEGREE ]; do
   # execute code generator
-  python Driver.py Euler 5 $DEGREE 3 nonlinear hsw ../../libxsmm --precision=DP
+  python Driver.py Euler $NVAR $DEGREE 3 nonlinear hsw ../../libxsmm --precision=DP
   
   # create subdirectory for each degree
   mkdir -p runtime/degree$DEGREE
