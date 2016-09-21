@@ -21,6 +21,8 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+#include "peano/utils/UserInterface.h"
+
 peano::CommunicationSpecification
 exahype::mappings::Merging::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -77,17 +79,98 @@ exahype::mappings::Merging::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
-int exahype::mappings::Merging::_mpiTag =
-    tarch::parallel::Node::reserveFreeTag("exahype::mappings::Merging");
+
+void exahype::mappings::Merging::prepareTemporaryVariables() {
+  if (_tempStateSizedVectors==nullptr) {
+    assertion(_tempStateSizedSquareMatrices==nullptr);
+
+    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+    _tempStateSizedVectors        = new double**[numberOfSolvers];
+    _tempStateSizedSquareMatrices = new double**[numberOfSolvers];
+    _tempFaceUnknownsArray        = new double* [numberOfSolvers];
+
+    // TOOD(Dominic): Check if we need number of parameters too
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      _tempStateSizedVectors[solverNumber] = new double*[5];
+      for (int i=0; i<5; ++i) { // see riemanSolverLinear
+        _tempStateSizedVectors[solverNumber][i] = new double[solver->getNumberOfVariables()];
+      }
+      //
+      _tempStateSizedSquareMatrices[solverNumber] = new double*[3];
+      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+        _tempStateSizedSquareMatrices[solverNumber][i] =
+            new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
+      }
+
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+        _tempFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getUnknownsPerFace()];
+        // see spaceTimePredictorLinear
+      } else {
+        _tempFaceUnknownsArray[solverNumber] = nullptr;
+      }
+
+      ++solverNumber;
+    }
+  }
+}
+
+void exahype::mappings::Merging::deleteTemporaryVariables() {
+  if (_tempStateSizedVectors!=nullptr) {
+    assertion(_tempStateSizedSquareMatrices!=nullptr);
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      for (int i=0; i<5; ++i) { // see riemanSolverLinear
+        delete[] _tempStateSizedVectors[solverNumber][i];
+      }
+      delete[] _tempStateSizedVectors[solverNumber];
+      //
+      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+        delete[] _tempStateSizedSquareMatrices[solverNumber][i];
+      }
+      delete[] _tempStateSizedSquareMatrices[solverNumber];
+
+
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        delete[] _tempFaceUnknownsArray[solverNumber];
+      }
+      _tempFaceUnknownsArray[solverNumber] = nullptr;
+
+      ++solverNumber;
+    }
+
+    delete[] _tempStateSizedVectors;
+    delete[] _tempStateSizedSquareMatrices;
+    delete[] _tempFaceUnknownsArray;
+    _tempStateSizedVectors        = nullptr;
+    _tempStateSizedSquareMatrices = nullptr;
+    _tempFaceUnknownsArray        = nullptr;
+  }
+}
+
+exahype::mappings::Merging::~Merging() {
+  deleteTemporaryVariables();
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::Merging::Merging(const Merging& masterThread) :
+  _localState(masterThread._localState),
+  _tempFaceUnknownsArray(nullptr),
+  _tempStateSizedVectors(nullptr),
+  _tempStateSizedSquareMatrices(nullptr) {
+  prepareTemporaryVariables();
+}
+#endif
 
 void exahype::mappings::Merging::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  #ifdef Debug
-  _interiorFaceSolves = 0;
-  _boundaryFaceSolves = 0;
-  #endif
+  prepareTemporaryVariables();
+
+  _localState = solverState;
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -101,21 +184,25 @@ void exahype::mappings::Merging::beginIteration(
   MetadataHeap::getInstance().startToSendSynchronousData();
   #endif
 
-  _localState = solverState;
+  #ifdef Debug
+  _interiorFaceSolves = 0;
+  _boundaryFaceSolves = 0;
+  #endif
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 void exahype::mappings::Merging::endIteration(
     exahype::State& solverState) {
+  logTraceInWith1Argument("endIteration(State)", solverState);
+
+  deleteTemporaryVariables();
+
   logDebug("endIteration(...)","interiorFaceSolves: " << _interiorFaceSolves);
   logDebug("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceSolves);
-}
 
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::Merging::Merging(const Merging& masterThread) :
-  _localState(masterThread._localState) {}
-#endif
+  logTraceOutWith1Argument("endIteration(State)", solverState);
+}
 
 void exahype::mappings::Merging::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
@@ -148,7 +235,11 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             assertion4(element2>=0,element2,cellDescriptionsIndex2,solverNumber,fineGridX);
             assertion4(element1>=0,element1,cellDescriptionsIndex1,solverNumber,fineGridX);
 
-            solver->mergeNeighbours(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+            solver->mergeNeighbours(
+                cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                _tempFaceUnknownsArray[solverNumber],
+                _tempStateSizedVectors[solverNumber],
+                _tempStateSizedSquareMatrices[solverNumber]);
             #ifdef Debug
             _interiorFaceSolves++;
              #endif
@@ -170,9 +261,15 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
 
             if (element1 >= 0) {
-              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2);
+              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
+                                            _tempFaceUnknownsArray[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
             } else { // element2 >= 0
-              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1);
+              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
+                                            _tempFaceUnknownsArray[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
             }
 
             #ifdef Debug
@@ -277,7 +374,11 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
 
       solver->mergeWithNeighbourData(
           fromRank,receivedMetadata[solverNumber].getU(),
-          destCellDescriptionIndex,element,src,dest,x,level);
+          destCellDescriptionIndex,element,src,dest,
+          _tempFaceUnknownsArray[solverNumber],
+          _tempStateSizedVectors[solverNumber],
+          _tempStateSizedSquareMatrices[solverNumber],
+          x,level);
     } else {
       logDebug(
             "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
@@ -523,10 +624,6 @@ void exahype::mappings::Merging::prepareCopyToRemoteNode(
 #endif
 
 exahype::mappings::Merging::Merging() {
-  // do nothing
-}
-
-exahype::mappings::Merging::~Merging() {
   // do nothing
 }
 

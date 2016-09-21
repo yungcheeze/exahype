@@ -467,13 +467,18 @@ class exahype::solvers::Solver {
    * overwritten. You might want to take a look
    * into method synchroniseTimeStepping().
    *
+   * \note Peano only copies the calling mapping
+   * for each thread. The solvers in the solver registry are
+   * not copied once for each thread.
+   *
    * \see startNewTimeStep(),
    *      synchroniseTimeStepping(int,int),
    *      synchroniseTimeStepping(CellDescription&)
    */
   virtual double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) = 0;
+      const int element,
+      double*   tempEigenvalues) = 0;
 
   /**
    * Impose initial conditions.
@@ -536,6 +541,10 @@ class exahype::solvers::Solver {
    * the cell descriptions vector stored at \p
    * cellDescriptionsIndex.
    *
+   * \note Peano only copies the calling mapping
+   * for each thread. The solvers in the solver registry are
+   *  not copied once for each thread.
+   *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array at address \p cellDescriptionsIndex.
@@ -549,12 +558,19 @@ class exahype::solvers::Solver {
         const int                                 cellDescriptionsIndex2,
         const int                                 element2,
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
-        const tarch::la::Vector<DIMENSIONS, int>& pos2) = 0;
+        const tarch::la::Vector<DIMENSIONS, int>& pos2,
+        double*                                   tempFaceUnknownsArray,
+        double**                                  tempStateSizedVectors,
+        double**                                  tempStateSizedSquareMatrices) = 0;
 
   /**
    * Take the cell descriptions \p element
    * from array at address \p cellDescriptionsIndex
    * and merge it with boundary data.
+   *
+   * \note Peano only copies the calling mapping
+   * for each thread. The solvers in the solver registry are
+   *  not copied once for each thread.
    *
    * \param[in] element Index of the cell description
    *                    at address \p cellDescriptionsIndex.
@@ -566,7 +582,10 @@ class exahype::solvers::Solver {
         const int                                 cellDescriptionsIndex,
         const int                                 element,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
-        const tarch::la::Vector<DIMENSIONS, int>& posBoundary) =0;
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+        double*                                   tempFaceUnknownsArray,
+        double**                                  tempStateSizedVectors,
+        double**                                  tempStateSizedSquareMatrices) =0;
 
   #ifdef Parallel
   /**
@@ -625,6 +644,10 @@ class exahype::solvers::Solver {
    * the cell descriptions array stored at \p
    * cellDescriptionsIndex.
    *
+   * \note Peano only copies the calling mapping
+   * for each thread. The solvers in the solver registry are
+   *  not copied once for each thread.
+   *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
@@ -637,6 +660,9 @@ class exahype::solvers::Solver {
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      double*                                      tempFaceUnknownsArray,
+      double**                                     tempStateSizedVectors,
+      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
 

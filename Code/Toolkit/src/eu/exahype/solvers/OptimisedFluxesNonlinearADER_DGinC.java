@@ -55,13 +55,13 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("#include \"kernels/aderdg/optimised/Kernels.h\"\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
-        + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
+        + "::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"spaceTimePredictor\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::picardLoop<flux>( lQi, lFi, luh, dx, dt );\n");
-    writer.write("   kernels::aderdg::optimised::predictor( lQhi, lFhi, lQi, lFi );\n");
-    writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, lQhi, lFhi );\n");
+    writer.write("   kernels::aderdg::optimised::picardLoop<flux>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );\n");
+    writer.write("   kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );\n");
+    writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );\n");
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"spaceTimePredictor\");\n");
     }
@@ -101,7 +101,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
-        + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
+        + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, double* tempFaceUnknownsArray, double** tempStateSizedVectors, double** tempStateSizedSquareMatrices, const double dt, const int normalNonZeroIndex) {\n");
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"riemannSolver\");\n");
     }
@@ -113,7 +113,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName
-        + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        + "::stableTimeStepSize( const double* const luh, double* tempEigenvalues, const tarch::la::Vector<DIMENSIONS,double>& dx ) {\n");
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"stableTimeStepSize\");\n");
     }

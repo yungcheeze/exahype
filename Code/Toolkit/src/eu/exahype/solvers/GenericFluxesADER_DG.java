@@ -75,13 +75,19 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName
-        + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
+        + "::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double*  tempUnknowns,double*  tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"spaceTimePredictor\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux, source>")
-        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    if (isLinear()) {
+      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+          + "::spaceTimePredictorLinear<ncp>"
+          + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    } else {
+      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+          + "::spaceTimePredictorNonlinear<flux, source>"
+          + "( lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
     }
@@ -130,14 +136,19 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName
-        + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
+        + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, double* tempFaceUnknownsArray, double** tempStateSizedVectors, double** tempStateSizedSquareMatrices, const double dt, const int normalNonZeroIndex) {\n");
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"riemannSolver\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::riemannSolver"
-        + (isLinear() ? "Linear<eigenvalues, matrixb>" : "Nonlinear<eigenvalues>")
-        + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    if (isLinear()) {
+        writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+                + "::riemannSolverLinear<eigenvalues, matrixb>"
+                + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    } else {
+        writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+                + "::riemannSolverNonlinear<eigenvalues>"
+                + "( FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
     }
@@ -160,12 +171,12 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("\n\n\n");
     
     writer.write("double " + projectName + "::" + solverName
-        + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        + "::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"stableTimeStepSize\");\n");
     }
     writer.write("  double d = kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "::stableTimeStepSize<eigenvalues>( luh, tempEigenvalues, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"stableTimeStepSize\");\n");
     }

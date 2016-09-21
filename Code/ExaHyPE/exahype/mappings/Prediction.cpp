@@ -24,7 +24,10 @@
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
+
 #include "exahype/amr/AdaptiveMeshRefinement.h"
+
+#include "peano/utils/UserInterface.h"
 
 #include <algorithm>
 
@@ -78,8 +81,93 @@ exahype::mappings::Prediction::descendSpecification() {
 tarch::logging::Log exahype::mappings::Prediction::_log(
     "exahype::mappings::Prediction");
 
+void exahype::mappings::Prediction::prepareTemporaryVariables() {
+  assertion(_tempSpaceTimeUnknowns    ==nullptr);
+  assertion(_tempSpaceTimeFluxUnknowns==nullptr);
+  assertion(_tempUnknowns             ==nullptr);
+  assertion(_tempFluxUnknowns         ==nullptr);
+
+  int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
+  _tempSpaceTimeUnknowns     = new double**[numberOfSolvers];
+  _tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers];
+  _tempUnknowns              = new double* [numberOfSolvers];
+  _tempFluxUnknowns          = new double* [numberOfSolvers];
+
+  int solverNumber=0;
+  for (auto solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+
+      _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
+      for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+        _tempSpaceTimeUnknowns[solverNumber][i] =
+            new double[aderdgSolver->getSpaceTimeUnknownsPerCell()];
+      }
+      //
+      _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
+      for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
+        _tempSpaceTimeFluxUnknowns[solverNumber][i] =
+            new double[aderdgSolver->getSpaceTimeFluxUnknownsPerCell()];
+      }
+      //
+      _tempUnknowns    [solverNumber] = new double[aderdgSolver->getUnknownsPerCell()];
+      //
+      _tempFluxUnknowns[solverNumber] = new double[aderdgSolver->getFluxUnknownsPerCell()];
+    } else {
+      _tempSpaceTimeUnknowns    [solverNumber] = nullptr;
+      _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
+      _tempUnknowns             [solverNumber] = nullptr;
+      _tempFluxUnknowns         [solverNumber] = nullptr;
+    }
+
+    ++solverNumber;
+  }
+}
+
+void exahype::mappings::Prediction::deleteTemporaryVariables() {
+  if (_tempSpaceTimeUnknowns!=nullptr) {
+    assertion(_tempSpaceTimeFluxUnknowns!=nullptr);
+    assertion(_tempUnknowns             !=nullptr);
+    assertion(_tempFluxUnknowns         !=nullptr);
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        //
+        for (int i=0; i<4; ++i) {
+          delete[] _tempSpaceTimeUnknowns[solverNumber][i];
+        }
+        delete[] _tempSpaceTimeUnknowns[solverNumber];
+        _tempSpaceTimeUnknowns[solverNumber] = nullptr;
+        //
+        for (int i=0; i<2; ++i) {
+          delete[] _tempSpaceTimeFluxUnknowns[solverNumber][i];
+        }
+        delete[] _tempSpaceTimeFluxUnknowns[solverNumber];
+        _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
+        //
+        delete[] _tempUnknowns[solverNumber];
+        _tempUnknowns[solverNumber] = nullptr;
+        //
+        delete[] _tempFluxUnknowns[solverNumber];
+        _tempFluxUnknowns[solverNumber] = nullptr;
+      }
+
+      ++solverNumber;
+    }
+
+    delete[] _tempSpaceTimeUnknowns;
+    delete[] _tempSpaceTimeFluxUnknowns;
+    delete[] _tempUnknowns;
+    delete[] _tempFluxUnknowns;
+    _tempSpaceTimeUnknowns     = nullptr;
+    _tempSpaceTimeFluxUnknowns = nullptr;
+    _tempUnknowns              = nullptr;
+    _tempFluxUnknowns          = nullptr;
+  }
+}
+
 exahype::mappings::Prediction::Prediction() {
-  initTemporaryVariables();
 }
 
 exahype::mappings::Prediction::~Prediction() {
@@ -88,91 +176,28 @@ exahype::mappings::Prediction::~Prediction() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Prediction::Prediction(
-    const Prediction& masterThread) {
-  initTemporaryVariables();
+    const Prediction& masterThread) :
+  _tempSpaceTimeUnknowns(nullptr),
+  _tempSpaceTimeFluxUnknowns(nullptr),
+  _tempUnknowns(nullptr),
+  _tempFluxUnknowns(nullptr) {
+  prepareTemporaryVariables();
 }
+
 void exahype::mappings::Prediction::mergeWithWorkerThread(
     const Prediction& workerThread) {
 }
 #endif
 
-void exahype::mappings::Prediction::initTemporaryVariables() {
-  assertion1(_lQi ==0,_lQi );
-  assertion1(_lFi ==0,_lFi );
-  assertion1(_lQhi==0,_lQhi);
-  assertion1(_lFhi==0,_lFhi);
-
-  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  _lQi     = new double*[numberOfSolvers];
-  _lQi_old = new double*[numberOfSolvers];
-  _rhs     = new double*[numberOfSolvers];
-  _rhs_0   = new double*[numberOfSolvers];
-  _lFi     = new double*[numberOfSolvers];
-  _lQhi    = new double*[numberOfSolvers];
-  _lFhi    = new double*[numberOfSolvers];
-
-  int solverNumber=0;
-  for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      _lQi [solverNumber]      =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
-      _lQi_old [solverNumber]  =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
-      _rhs [solverNumber]      =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
-      _rhs_0 [solverNumber]    =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
-      _lFi [solverNumber]      =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeFluxUnknownsPerCell()];
-      _lQhi[solverNumber]      =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell()];
-      _lFhi[solverNumber]      =
-                new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell()];
-    } else {
-      _lQi    [solverNumber] = nullptr;
-      _lQi_old[solverNumber] = nullptr;
-      _rhs    [solverNumber] = nullptr;
-      _rhs_0  [solverNumber] = nullptr;
-      _lFi    [solverNumber] = nullptr;
-      _lQhi   [solverNumber] = nullptr;
-      _lFhi   [solverNumber] = nullptr;
-    }
-    ++solverNumber;
-  }
+void exahype::mappings::Prediction::beginIteration(
+    exahype::State& solverState) {
+  prepareTemporaryVariables();
 }
 
-void exahype::mappings::Prediction::deleteTemporaryVariables() {
-  int solverNumber=0;
-  for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      delete[] _lQi    [solverNumber];
-      delete[] _lQi_old[solverNumber];
-      delete[] _rhs    [solverNumber];
-      delete[] _rhs_0  [solverNumber];
-      delete[] _lFi    [solverNumber];
-      delete[] _lQhi   [solverNumber];
-      delete[] _lFhi   [solverNumber];
-    }
-    _lQi    [solverNumber] = nullptr;
-    _lQi_old[solverNumber] = nullptr;
-    _rhs    [solverNumber] = nullptr;
-    _rhs_0  [solverNumber] = nullptr;
-    _lFi    [solverNumber] = nullptr;
-    _lQhi   [solverNumber] = nullptr;
-    _lFhi   [solverNumber] = nullptr;
-
-    ++solverNumber;
-  }
-
-  delete[] _lQi;
-  delete[] _lQi_old;
-  delete[] _rhs;
-  delete[] _rhs_0;
-  delete[] _lFi;
-  delete[] _lQhi;
-  delete[] _lFhi;
+void exahype::mappings::Prediction::endIteration(
+    exahype::State& solverState) {
+  deleteTemporaryVariables();
 }
-
 void exahype::mappings::Prediction::enterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -208,12 +233,14 @@ void exahype::mappings::Prediction::enterCell(
       case exahype::records::ADERDGCellDescription::Cell:
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+
         solver->performPredictionAndVolumeIntegral(
             pFine,
-            _lQi [pFine.getSolverNumber()],
-            _lFi [pFine.getSolverNumber()],
-            _lQhi[pFine.getSolverNumber()],
-            _lFhi[pFine.getSolverNumber()]);
+            _tempSpaceTimeUnknowns    [pFine.getSolverNumber()],
+            _tempSpaceTimeFluxUnknowns[pFine.getSolverNumber()],
+            _tempUnknowns             [pFine.getSolverNumber()],
+            _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
+
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
         break;
       default:
@@ -338,16 +365,6 @@ void exahype::mappings::Prediction::mergeWithWorker(
   // do nothing
 }
 #endif
-
-void exahype::mappings::Prediction::beginIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
-
-void exahype::mappings::Prediction::endIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
 
 void exahype::mappings::Prediction::createHangingVertex(
     exahype::Vertex& fineGridVertex,
