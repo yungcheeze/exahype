@@ -68,6 +68,7 @@ public:
             fprintf(asc, colformat[i], data[i]);
         }
         fprintf(asc, "\n");
+	fflush(asc); // write out this line immediately
     }
 };
 
