@@ -18,10 +18,10 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Synchronisation.h"
  #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
  #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
@@ -41,15 +41,15 @@ namespace exahype {
  */
 class exahype::adapters::InitialConditionAndTimeStepSizeComputation {
   private:
-    typedef mappings::Synchronisation Mapping0;
-    typedef mappings::DropIncomingMPIMetadataMessages Mapping1;
-    typedef mappings::InitialCondition Mapping2;
-    typedef mappings::TimeStepSizeComputation Mapping3;
+    typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
+    typedef mappings::InitialCondition Mapping1;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Sending Mapping3;
 
-     Mapping0  _map2Synchronisation;
-     Mapping1  _map2DropIncomingMPIMetadataMessages;
-     Mapping2  _map2InitialCondition;
-     Mapping3  _map2TimeStepSizeComputation;
+     Mapping0  _map2DropIncomingMPIMetadataMessages;
+     Mapping1  _map2InitialCondition;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Sending;
 
 
   public:

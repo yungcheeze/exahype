@@ -18,7 +18,9 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
@@ -38,9 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::Prediction {
   private:
-    typedef mappings::Prediction Mapping0;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::Prediction Mapping1;
+    typedef mappings::Sending Mapping2;
 
-     Mapping0  _map2Prediction;
+     Mapping0  _map2Merging;
+     Mapping1  _map2Prediction;
+     Mapping2  _map2Sending;
 
 
   public:

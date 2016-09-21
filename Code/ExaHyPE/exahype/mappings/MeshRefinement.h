@@ -36,6 +36,8 @@ class MeshRefinement;
 }
 
 /**
+ * TODO(Dominic): Update documentation.
+ *
  * This mapping builds up the regular base mesh used by all simulations.
  * The regular mesh is determined by the minimal mesh size of all involved
  * solvers. Basically, the only routine that does something in this mapping
@@ -152,6 +154,7 @@ public:
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
   /**
    * TODO(Tobias): Add docu.
    */

@@ -148,6 +148,86 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * the grid though perhaps not in the creational routines.
    */
   bool refineInitialGridInTouchVertexLastTime() const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  records::State::MergeMode getMergeMode() const {
+    return _stateData.getMergeMode();
+  }
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  records::State::SendMode getSendMode() const {
+    return _stateData.getSendMode();
+  }
+
+  /**
+   * Merging and Sending contexts.
+   * See both mappings for more details.
+   */
+  void switchToInitialConditionAndTimeStepSizeComputationContext() {
+    switchToSolutionUpdateAndTimeStepSizeComputationContext();
+  }
+
+  void switchToPredictionAndTimeStepSizeComputationContext() {
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
+  }
+
+  void switchToADERDGTimeStepContext() {
+    _stateData.setFuseADERDGPhases(true);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
+  }
+
+  void switchToPredictionRerunContext() {
+    switchToPredictionContext();
+  }
+
+  void switchToNeighbourDataMergingContext() {
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeFaceData);
+    _stateData.setSendMode (records::State::SendNothing);
+  }
+
+  void switchToSolutionUpdateAndTimeStepSizeComputationContext() {
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeNothing);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepData);
+  }
+
+  void switchToPredictionContext() {
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendFaceData);
+  }
+
+  void setStabilityConditionOfOneSolverWasViolated(bool state) {
+    _stateData.setStabilityConditionOfOneSolverWasViolated(state);
+  }
+
+  bool stabilityConditionOfOneSolverWasViolated() {
+    return _stateData.getStabilityConditionOfOneSolverWasViolated();
+  }
+
+  void setFuseADERDGPhases(bool state) {
+    _stateData.setFuseADERDGPhases(state);
+  }
+
+  bool fuseADERDGPhases() {
+    return _stateData.getFuseADERDGPhases();
+  }
+
+  void setTimeStepSizeWeightForPredictionRerun(double value) {
+    _stateData.setTimeStepSizeWeightForPredictionRerun(value);
+  }
+
+  double getTimeStepSizeWeightForPredictionRerun() {
+    return _stateData.getTimeStepSizeWeightForPredictionRerun();
+  }
 };
 
 #endif

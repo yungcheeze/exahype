@@ -28,6 +28,11 @@
 
 namespace exahype {
   class Cell;
+
+  namespace solvers {
+    class ADERDGSolver;
+    class FiniteVolumesSolver;
+  }
 }
 
 /**
@@ -40,14 +45,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   static tarch::logging::Log _log;
 
  public:
- /**
-  * @deprecated
-  */
-  typedef struct {
-    int parentIndex;
-    tarch::la::Vector<DIMENSIONS, int> subcellIndex;
-  } SubcellPosition;
-
   /**
    * Default Constructor
    *
@@ -76,6 +73,110 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
+   * Returns if the face is inside. Inside for
+   * a face means that at least one vertex
+   * of the 2^{d-1} vertices building up
+   * the face must be inside of the domain.
+   *
+   * Otherwise the face might be on the
+   * boundary of the domain or outside of
+   * the domain.
+   */
+  static bool isFaceInside(
+      const int faceIndex,
+      exahype::Vertex* const verticesAroundCell,
+      const peano::grid::VertexEnumerator& verticesEnumerator);
+
+  /**
+   * TODO(Dominic): Revise this docu.
+   * Here we reset helper variables that play a role in
+   * the neighbour merge methods.
+   * These are the cell description attributes
+   * riemannSolvePerformed[], and
+   * faceDataExchangeCounter[].
+   *
+   * <h2>Shared Memory</h2>
+   * The flag riemannSolvePerformed
+   * indicates for every thread that touches a
+   * face of a cell description if a Riemann Solve
+   * was already performed for this face.
+   *
+   * <h2>MPI</h2>
+   * This method resets Face data exchange counters:
+   * To this end, we count the listings of a remote rank on each
+   * of the faces surrounding a cell description.
+   *
+   * We perform the following actions depending on the counter value:
+   * 0 - no connection: no send. Set to unreachable value.
+   * 2^{d-2} - full face connection where cell is inside but half of face vertices are outside:
+   * send at time of 2^{d-2}-th touch of face.
+   * 4^{d-2} - full face connection where cell is inside and face vertices are all inside:
+   * send at time of 2^{d-2}-th touch of face.
+   * We require that #ifdef vertex.isBoundary() is set.
+   */
+  template <class CellDescription>
+  static void resetNeighbourMergeHelperVariables(
+      CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+      cellDescription.setRiemannSolvePerformed(faceIndex,false);
+      #ifdef Parallel
+      int listingsOfRemoteRank =
+          countListingsOfRemoteRankByInsideVerticesAtFace(
+              faceIndex,fineGridVertices,fineGridVerticesEnumerator);
+      if (listingsOfRemoteRank==0) {
+        listingsOfRemoteRank = TWO_POWER_D;
+      }
+      cellDescription.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
+      #endif
+    }
+  }
+
+  template <class CellDescription>
+  static void determineInsideAndOutsideFaces(
+      CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+      // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
+      // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
+      // where no vertices are given. [Solved] - We send out the cellDescriptions from
+      // the ADERDG/FV cell descr. heaps.
+      cellDescription.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
+    }
+  }
+
+  #ifdef Parallel
+  /**
+   * Count the listings of remote ranks sharing an inside vertex
+   * adjacent to the face \p faceIndex of a cell with this rank.
+   * This value is either 0, 2^{d-2}, or 2^{d-1}.
+   *
+   * If we count 2^{d-1} listings, we directly know that this rank
+   * shares a whole face with a remote rank.
+   * If we count 2^{d-2} listings, we know that this
+   * rank shares a face with a remote rank
+   * but half of the vertices are outside.
+   * If we count 0 listings, we might not
+   * have a remote rank adjacent to this face or
+   * all the vertices are outside.
+   *
+   * We know from the result of this funcion how
+   * many vertices will try to exchange neighbour information
+   * for this face.
+   *
+   * @developers:
+   * TODO(Dominic): We currently check for uniqueness of the
+   * remote rank. This might however not be necessary.
+   */
+  static int countListingsOfRemoteRankByInsideVerticesAtFace(
+      const int faceIndex,
+      exahype::Vertex* const verticesAroundCell,
+      const peano::grid::VertexEnumerator& verticesEnumerator);
+  #endif
+
+  /**
    * Returns meta data describing the surrounding cell descriptions. The
    * routine is notably used by the automated adapters to derive adjacency
    * information on the cell level.
@@ -100,26 +201,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   int getNumberOfFiniteVolumeCellDescriptions() const;
 
   /**
-   * Loads a ADERDGCellDescription associated
-   * with this cell.
-   */
-  inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int index) const {
-    return exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
-        getCellDescriptionsIndex())[index];
-  }
-
-  /**
-   * Loads a ADERDGCellDescription associated
-   * with this cell.
-   */
-  inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
-      int index) const {
-    return exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
-        getCellDescriptionsIndex())[index];
-  }
-
-  /**
    * Each cell points to a series of cell descriptions. The array holding the
    * series has to be stored on the heap and, consequently, initialised
    * properly. This is done by create() while destroy() cleans up. Please note
@@ -137,35 +218,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * @see setupMetaData()
    */
   void shutdownMetaData();
-
-  /**
-   * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
-   * If this is not the case, it deallocates the unnecessarily allocated memory.
-   */
-  static void ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
-
-  /**
-   * Checks if all the necessary memory is allocated for the ADERDGCellDescription.
-   * If this is not the case, it allocates the necessary
-   * memory for the cell description.
-   */
-  static void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
-
-  /**
-   * TODO(Dominic): Implement!
-   */
-//  /**
-//   * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
-//   * If this is not the case, it deallocates the unnecessarily allocated memory.
-//   */
-//  static void ensureNoUnnecessaryMemoryIsAllocated(exahype::records::FiniteVolumesCellDescription& cellDescription);
-//
-//  /**
-//   * Checks if all the necessary memory is allocated for the ADERDGCellDescription.
-//   * If this is not the case, it allocates the necessary
-//   * memory for the cell description.
-//   */
-//  static void ensureNecessaryMemoryIsAllocated(exahype::records::FiniteVolumesCellDescription& cellDescription);
 
   /**
    * todo docu
@@ -189,56 +241,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const int level, const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, double>& size,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
-
-  /**
-   * Checks if no unnecessary  memory is allocated for the cell
-   * description the solverNumber is referring to.
-   * If this is the case, it deallocates the unnecessarily allocated memory.
-   */
-  void ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber);
-
-  /**
-   * Checks if all the necessary memory is allocated for the cell
-   * description the solverNumber is referring to.
-   * If this is not the case, it allocates the necessary
-   * memory for the cell description.
-   */
-  void ensureNecessaryMemoryIsAllocated(const int solverNumber);
-
-  /**
-   *
-   * @deprecated @see AdaptiveMeshRefinement.h
-   *
-   *
-   * Determine the position of a Cell or Ancestor with respect
-   * to a parent of type Ancestor.
-   *
-   * This method is required for the face data restriction, the
-   * volume data restriction, and the FV volume data restriction.
-   *
-   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
-   * right file/class to hold this functionality.
-   */
-  SubcellPosition computeSubcellPositionOfCellOrAncestor(
-      const exahype::records::ADERDGCellDescription& pChild);
-
-  /**
-   *
-   * @deprecated @see AdaptiveMeshRefinement.h
-   *
-   *
-   * Determine the position of a Descendant with respect
-   * to a  Cell or Descendant that contains data, i.e.,
-   * has at least one neighbour that is a real cell.
-   *
-   * This method is required for the face data prolongation, the
-   * volume data prolongation, and the FV volume data prolongation.
-   *
-   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
-   * right file/class to hold this functionality.
-   */
-  SubcellPosition computeSubcellPositionOfDescendant(
-      const exahype::records::ADERDGCellDescription& pChild);
 
   /**
    * @return if this cell is initialised.

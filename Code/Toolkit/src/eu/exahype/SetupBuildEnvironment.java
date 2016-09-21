@@ -143,7 +143,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
 
       _writer.write("\n");
-      _writer.write("PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
+      _writer.write("# Some MPI variants face problems with multithreaded MPI. If you run into \n");
+      _writer.write("# such issues, too, comment this line in again. \n");
+      _writer.write("# PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
 
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());

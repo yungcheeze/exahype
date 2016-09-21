@@ -131,17 +131,6 @@ LikwidPowerAndEnergyMonitoringModule::LikwidPowerAndEnergyMonitoringModule(
   power_info_ = get_powerInfo();
 
   // calibration
-
-  // time likwid rapl read with chrono
-  {
-    std::array<std::chrono::steady_clock::duration, kNumberOfSamples>
-        single_read;
-    std::generate(single_read.begin(), single_read.end(),
-                  [this]() { return singleRaplRead(state_.cpu_); });
-    std::cout << "single rapl read duration in sec median = "
-              << meanDuration(single_read) << std::endl;
-  }
-
   // time likwid rapl read with likwid cycle count
   {
     std::array<uint64_t, kNumberOfSamples> single_read_cycles;
@@ -174,6 +163,18 @@ LikwidPowerAndEnergyMonitoringModule::LikwidPowerAndEnergyMonitoringModule(
     }
   }
 
+  // overhead
+  /*
+  // time likwid rapl read with chrono
+  {
+    std::array<std::chrono::steady_clock::duration, kNumberOfSamples>
+        single_read;
+    std::generate(single_read.begin(), single_read.end(),
+                  [this]() { return singleRaplRead(state_.cpu_); });
+    std::cout << "single rapl read duration in sec median = "
+              << meanDuration(single_read) << std::endl;
+  }
+
   // rapl reads until value changed
   {
     std::array<int, kNumberOfSamples2> single_read_cycles;
@@ -187,6 +188,7 @@ LikwidPowerAndEnergyMonitoringModule::LikwidPowerAndEnergyMonitoringModule(
               << median<int, kNumberOfSamples2>(single_read_cycles)
               << std::endl;
   }
+  */
 }
 
 LikwidPowerAndEnergyMonitoringModule::~LikwidPowerAndEnergyMonitoringModule() {
@@ -291,8 +293,8 @@ void LikwidPowerAndEnergyMonitoringModule::writeToOstream(
   // For all tags
   for (const auto& pair_tag_pair_count_array : aggregates_) {
     // print count
-    *os << "PowerAndEnergyMonitoringModule: count "
-        << pair_tag_pair_count_array.second.first << std::endl;
+    *os << "PowerAndEnergyMonitoringModule: " << pair_tag_pair_count_array.first
+        << " count " << pair_tag_pair_count_array.second.first << std::endl;
 
     // for all power types
     for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
@@ -300,6 +302,13 @@ void LikwidPowerAndEnergyMonitoringModule::writeToOstream(
           << pair_tag_pair_count_array.first << " "
           << powerTypeToString(kProfiledPowerTypes[j]) << " "
           << pair_tag_pair_count_array.second.second[j] << std::endl;
+
+      *os << "PowerAndEnergyMonitoringModule: "
+          << pair_tag_pair_count_array.first << " "
+          << powerTypeToString(kProfiledPowerTypes[j]) << " / count "
+          << pair_tag_pair_count_array.second.second[j] /
+                 pair_tag_pair_count_array.second.first
+          << std::endl;
     }
   }
 }

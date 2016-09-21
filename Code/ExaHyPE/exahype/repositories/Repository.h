@@ -66,30 +66,32 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
     virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
     virtual void switchToPredictionAndPlotAndTimeStepSizeComputation() = 0;    
+    virtual void switchToPredictionAndPlotAndTimeStepSizeComputation2d() = 0;    
     virtual void switchToPredictionAndTimeStepSizeComputation() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToADERDGTimeStepAndPlot() = 0;    
     virtual void switchToPredictionRerun() = 0;    
-    virtual void switchToRiemannSolver() = 0;    
+    virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToPrediction() = 0;    
-    virtual void switchToCorrection() = 0;    
-    virtual void switchToCorrectionAndPlot() = 0;    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation() = 0;    
+    virtual void switchToSolutionUpdateAndPlotAndTimeStepSizeComputation() = 0;    
     virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation2d() const = 0;
     virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionRerun() const = 0;
-    virtual bool isActiveAdapterRiemannSolver() const = 0;
+    virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
-    virtual bool isActiveAdapterCorrection() const = 0;
-    virtual bool isActiveAdapterCorrectionAndPlot() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

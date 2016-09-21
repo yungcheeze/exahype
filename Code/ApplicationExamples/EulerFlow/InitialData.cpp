@@ -17,6 +17,8 @@
 
 #include "tarch/logging/Log.h"
 
+#include "MyEulerSolver.h"
+
 using namespace std;
 
 /**
@@ -84,9 +86,18 @@ void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
  * whole grid. I am not sure why this happens, it seems to be an error.
  **/
 void DiffusingGauss(const double* const x, double* Q) {
+#if DIMENSIONS == 2
   Pasta::vec2 xvec(x);
   Pasta::vec2 x0({0.5, 0.5});
-  double width = 0.05;
+#elif DIMENSIONS == 3
+  Pasta::vec3 xvec(x);
+  Pasta::vec3 x0({0.5, 0.5, 0.5});
+#else
+#error DIMENSIONS must be 2 or 3
+#endif
+  
+  
+  double width = 0.25;
 
   Q[0] = 1.;
   Q[1] = 0.;

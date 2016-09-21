@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Correction_H_
-#define EXAHYPE_ADAPTERS_Correction_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation2d_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation2d_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,18 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Prediction.h"
+ #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
- #include "exahype/mappings/LoadBalancing.h"
- #include "exahype/mappings/Reduction.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Correction;
+        class PredictionAndPlotAndTimeStepSizeComputation2d;
       } 
 }
 
@@ -39,17 +41,21 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Correction {
+class exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
-    typedef mappings::LoadBalancing Mapping2;
-    typedef mappings::Reduction Mapping3;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::Prediction Mapping1;
+    typedef mappings::Plot Mapping2;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping3;
+    typedef mappings::TimeStepSizeComputation Mapping4;
+    typedef mappings::Sending Mapping5;
 
-     Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2TimeStepSizeComputation;
-     Mapping2  _map2LoadBalancing;
-     Mapping3  _map2Reduction;
+     Mapping0  _map2Merging;
+     Mapping1  _map2Prediction;
+     Mapping2  _map2Plot;
+     Mapping3  _map2AugmentedAMRTreePlot2d;
+     Mapping4  _map2TimeStepSizeComputation;
+     Mapping5  _map2Sending;
 
 
   public:
@@ -61,16 +67,16 @@ class exahype::adapters::Correction {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Correction();
+    PredictionAndPlotAndTimeStepSizeComputation2d();
 
     #if defined(SharedMemoryParallelisation)
-    Correction(const Correction& masterThread);
+    PredictionAndPlotAndTimeStepSizeComputation2d(const PredictionAndPlotAndTimeStepSizeComputation2d& masterThread);
     #endif
 
-    virtual ~Correction();
+    virtual ~PredictionAndPlotAndTimeStepSizeComputation2d();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Correction& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlotAndTimeStepSizeComputation2d& workerThread);
     #endif
 
     void createInnerVertex(

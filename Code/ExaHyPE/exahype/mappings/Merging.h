@@ -10,9 +10,9 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-#ifndef EXAHYPE_MAPPINGS_RiemannSolver_H_
-#define EXAHYPE_MAPPINGS_RiemannSolver_H_
+
+#ifndef EXAHYPE_MAPPINGS_Merging_H_
+#define EXAHYPE_MAPPINGS_Merging_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -21,7 +21,6 @@
 #include "peano/MappingSpecification.h"
 #include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/BooleanSemaphore.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "exahype/Cell.h"
@@ -29,18 +28,16 @@
 #include "exahype/Vertex.h"
 
 namespace exahype {
-namespace mappings {
-class RiemannSolver;
-}
+  namespace mappings {
+    class Merging;
+  }
 }
 
 /**
  * Run the Riemann solves on the faces
  *
- *
  * @todo Dominic, bitte ordentlich dokumentieren, was hier wann, wo und warum passiert.
  * Bitte auch dokumentieren, falls Du was mal probiert hast und es nicht funktioniert hat.
- *
  *
  * <h2>Synchronisation in multi-rank environment</h2>
  *
@@ -52,16 +49,31 @@ class RiemannSolver;
  * be done in this mapping. It is also realised in SpaceTimePredictor. So
  * please consult the documentation there.
  *
+ * This mapping is used to synchronise the compute cell time step sizes
+ * with the solver ones. It further is used to reset the Riemann
+ * solve flags on compute and helper cells.
+ *
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
-class exahype::mappings::RiemannSolver {
- private:
+class exahype::mappings::Merging {
+private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
-#ifdef Debug
+  /**
+   * Tag that is used to exchange all the solver instances in MPI
+   */
+  static int _mpiTag;
+
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
+
+
+  #ifdef Debug
   /*
    *  Counter for the interior face solves for debugging purposes.
    */
@@ -70,114 +82,9 @@ class exahype::mappings::RiemannSolver {
    *  Counter for the boundary face solves for debugging purposes.
    */
   int _boundaryFaceSolves;
-#endif
+  #endif
 
-  /**
-   * Solve the Riemann problem at the interface between two cells ("left" and
-   * "right"). This method only performs a Riemann solve if at least one of the
-   * cell descriptions (per solver) associated with the two cells is of type
-   * ::Cell and none of the two cells belongs to the boundary.
-   * In case a Riemann problem is solved,
-   * the method further sets the ::riemannSolvePerformed
-   * flags for the particular faces on both cell descriptions (per solver).
-   *
-   * This method further synchronises the ADERDGCellDescription
-   * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in mergeWithNeighbour(...) and
-   * touchVertexFirstTime(...) since both callbacks touch the
-   * ADERDGCellDescriptions before the other callbacks.
-   *
-   * <h2>Rationale</h2>
-   *
-   * We did originally split up the boundary condition handling and the Riemann
-   * updates into two mappings. This offers a functional decomposition. However,
-   * both mappings then need a significiant number of technical administrative
-   * code (cmp all the loops in touchVertexFirstTime and the redundant code to
-   * manage the semaphores). We thus decided to merge both aspects. This also
-   * should make sense from a performance point of view.
-   *
-   * We could potentially remove the face indices here if we had normals that
-   * point outwards. However, we don't evaluate the direction of the normal and
-   * thus need these counters as a Riemann problem on a face either could be
-   * triggered by the left cell or by the right cell.
-   *
-   * \note The current implementation might classify cells with vertices that are part of the
-   * boundary of the domain or outside to be classified as inside of the domain (volume-ratio based).
-   *
-   * \note We cannot solely check for indices of value
-   * multiscalelinked::HangingVertexBookkepper::DomainBoundaryAdjacencyIndex
-   * in vertex.getCellDescriptions() to determine if we are on the boundary of the domain
-   * since these values are overwritten by multiscalelinked::HangingVertexBookkepper::RemoteAdjacencyIndex
-   * if the domain boundary aligns with an MPI boundary
-   * (see multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWithNeighbour(...)).
-   *
-   * \note Not thread-safe.
-   *
-   * @param[in] cellDescriptionIndexOfLeftCell
-   * @param[in] cellDescriptionIndexOfRightCell
-   * @param[in] faceIndexForLeftCell    The index of the interface
-   *                                    from the perspective of the "left" cell.
-   *                                     One out of
-   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
-   * @param[in] faceIndexForRightCell   The index of the interface from the
-   *                                    perspective of the "right" cell.
-   * @param[in] normalNonZero           Non zero component of the
-   *                                    normal vector orthogonal to the
-   *                                    interface.
-   */
-  void solveRiemannProblemAtInterface(const int cellDescriptionIndexOfLeftCell,
-                                      const int cellDescriptionIndexOfRightCell,
-                                      const int faceIndexForLeftCell,
-                                      const int faceIndexForRightCell,
-                                      const int normalNonZero);
-  /**
-   * Apply the boundary conditions at the face with index \p faceIndex.
-   *
-   * This method further synchronises the ADERDGCellDescription
-   * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in mergeWithNeighbour(...) and
-   * touchVertexFirstTime(...) since both callbacks touch the
-   * ADERDGCellDescriptions before the other callbacks.
-   *
-   * \note Not thread-safe.
-   *
-   * @param[in] cellDescription         The cell description
-   * @param[in] faceIndex               The index of the interface
-   *                                    from the perspective of the cell/cell
-   * description. One out of
-   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
-   * @param[in] normalNonZero           Non zero component of the
-   *                                    normal vector orthogonal to the
-   *                                    interface.
-   * \note Not thread-safe.
-   */
-  void applyBoundaryConditions(records::ADERDGCellDescription& cellDescription,
-                               const int faceIndex, const int normalNonZero);
-
-#ifdef Parallel
-  /**
-   * Single-sided version of the other solveRiemannProblemAtInterface(). It
-   * works only on one cell and one solver within this cell and in return
-   * hands in the F and Q values explicitly through  indexOfQValues and
-   * indexOfFValues. The Riemann solver is invoked and the bits are set
-   * accordingly no matter of what they did hold before, i.e. different to
-   * the standard solveRiemannProblemAtInterface() operation, we do not
-   * check whether we shall run a Riemann solver or not.
-   *
-   * This method further synchronises the ADERDGCellDescription
-   * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in mergeWithNeighbour(...) and
-   * touchVertexFirstTime(...) since both callbacks touch the
-   * ADERDGCellDescriptions before the other callbacks.
-   *
-   * \note Not thread-safe.
-   */
-//  static void solveRiemannProblemAtInterface(
-//      records::ADERDGCellDescription& cellDescription,
-//      const int faceIndexForCell,
-//      const int normalNonZero,  // TODO(Tobias): is redundant. We should be able to // derive this from faceIndexForCell
-//      const int indexOfQValues, const int indexOfFValues);
-
+  #ifdef Parallel
   /**
    * Iterates over the received metadata and every time
    * we find a valid entry, we call mergeWithNeighbourData
@@ -198,7 +105,7 @@ class exahype::mappings::RiemannSolver {
 
   /**
    * Iterates over the received metadata and
-   * drop the received neighbour data.
+   * drops the received neighbour data.
    *
    * \note Not thread-safe.
    */
@@ -211,9 +118,10 @@ class exahype::mappings::RiemannSolver {
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int level,
       const exahype::MetadataHeap::HeapEntries& receivedMetadata);
-#endif
+  #endif
 
- public:
+public:
+
   /**
    * Call the touch vertex first time event on every vertex of
    * the grid. Run in parallel but avoid fine grid races.
@@ -242,13 +150,13 @@ class exahype::mappings::RiemannSolver {
    *
    * TODO(Dominic): It might be useful to introduce a multithreading specification
    * "AvoidFineGridRacesOnlyRed" that processes only the red
-   * vertices and not the black ones. De facto, the second sweep only
+   * vertices and not the black ones. In fact, the second sweep over the black vertices only
    * finds the riemannSolvePerfomed flags set and does nothing in
    * our current implementation.
    */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
   /**
-   * @todo Dominic, warum darf das Zeugs so stehen?
+   * Nop.
    */
   static peano::MappingSpecification enterCellSpecification();
 
@@ -271,7 +179,7 @@ class exahype::mappings::RiemannSolver {
    */
   static peano::MappingSpecification descendSpecification();
 
-  /**
+  /**.
    * The mapping does synchronise through synchroniseTimeStepping() invoked
    * on the solvers. Yet, no data is transported through the vertices, the
    * cell or the state object.
@@ -279,6 +187,8 @@ class exahype::mappings::RiemannSolver {
    * Though we need valid solvers for the actual Riemann solves, we do not
    * do any solver exchange in this mapping. The appropriate data exchange
    * is done in NewTimeStep() and SolutionUpdate().
+   *
+   * Further let Peano handle heap data exchange internally.
    */
   static peano::CommunicationSpecification communicationSpecification();
 
@@ -325,17 +235,44 @@ class exahype::mappings::RiemannSolver {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   * Resets counters that are solely used for debugging.
+   *
+   *
+   * In debug mode, further resets counters for Riemann solves at
+   * interior and boundary faces.
    */
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Prints the output of counters that are solely used for debugging.
+   * In debug mode, prints the output of counters.
    */
   void endIteration(exahype::State& solverState);
 
-#ifdef Parallel
+  /**
+   * Nop.
+   */
+  Merging();
 
+#if defined(SharedMemoryParallelisation)
+  /**
+   * Nop.
+   */
+  Merging(const Merging& masterThread);
+#endif
+
+  /**
+   * Nop.
+   */
+  virtual ~Merging();
+
+#if defined(SharedMemoryParallelisation)
+  /**
+   * Nop.
+   */
+  void mergeWithWorkerThread(const Merging& workerThread);
+#endif
+
+
+#ifdef Parallel
   /**
    * Merge vertex with the incoming vertex from a neighbouring computation node.
    *
@@ -379,6 +316,7 @@ class exahype::mappings::RiemannSolver {
                           const tarch::la::Vector<DIMENSIONS, double>& x,
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
+
   /**
    * Receive kick-off message from master
    *
@@ -391,7 +329,7 @@ class exahype::mappings::RiemannSolver {
    * with the actual iteration. However, this data exchange in the mapping
    * SpaceTimePredictor. See the documentation there for rationale.
    *
-   * @see SpaceTimePredictor::receiveDataFromMaster()
+   * @see SpaceTimePredictor::receiveDataFromMaster() TODO(Dominic)
    */
   void receiveDataFromMaster(
       exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
@@ -404,22 +342,20 @@ class exahype::mappings::RiemannSolver {
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
-
-
   //
   // Below all methods are nop.
   //
   //===================================
 
 
-
   /**
    * Nop.
    */
-  void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
-                              const tarch::la::Vector<DIMENSIONS, double>& x,
-                              const tarch::la::Vector<DIMENSIONS, double>& h,
-                              int level);
+  void prepareSendToNeighbour(
+      exahype::Vertex& vertex, int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h, int level);
+
   /**
    * Nop.
    */
@@ -441,6 +377,7 @@ class exahype::mappings::RiemannSolver {
       exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
       const tarch::la::Vector<DIMENSIONS, double>& h, int level);
+
   /**
    * Nop.
    */
@@ -448,17 +385,6 @@ class exahype::mappings::RiemannSolver {
       exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-  /**
-   * Nop.
-   */
-  bool prepareSendToWorker(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker);
   /**
    * Nop.
    */
@@ -484,6 +410,19 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * Nop
+   */
+  bool prepareSendToWorker(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
+
   /**
    * Nop.
    */
@@ -501,37 +440,6 @@ class exahype::mappings::RiemannSolver {
                        const tarch::la::Vector<DIMENSIONS, double>& h,
                        int level);
 #endif
-  /**
-   * Nop.
-   */
-  RiemannSolver();
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  RiemannSolver(const RiemannSolver& masterThread);
-#endif
-  /**
-   * Nop.
-   */
-  virtual ~RiemannSolver();
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  void mergeWithWorkerThread(const RiemannSolver& workerThread);
-#endif
-  /**
-   * Nop
-   */
-  void enterCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
@@ -619,6 +527,18 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+  /**
+   * Nop.
+   */
+  void enterCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
   /**
    * Nop.
    */
@@ -629,6 +549,7 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
   /**
    * Nop.
    */
@@ -649,4 +570,5 @@ class exahype::mappings::RiemannSolver {
               const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
               exahype::Cell& coarseGridCell);
 };
+
 #endif

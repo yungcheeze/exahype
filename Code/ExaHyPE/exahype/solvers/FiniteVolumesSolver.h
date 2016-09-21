@@ -19,6 +19,9 @@
 
 #include "exahype/records/FiniteVolumesCellDescription.h"
 
+#include "exahype/Cell.h"
+#include "exahype/Vertex.h"
+
 namespace exahype {
 namespace solvers {
 class FiniteVolumesSolver;
@@ -42,6 +45,11 @@ public:
   typedef peano::heap::PlainHeap<CellDescription> Heap;
 
 private:
+  /**
+   * Log device.
+   */
+  static tarch::logging::Log _log;
+
   /**
    * Total number of unknowns in a cell.
    */
@@ -94,6 +102,57 @@ private:
 #endif
 
 public:
+  /**
+    * Returns the ADERDGCellDescription.
+    */
+   static Heap::HeapEntries& getCellDescriptions(
+       const int cellDescriptionsIndex) {
+     assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+
+     return Heap::getInstance().getData(cellDescriptionsIndex);
+   }
+
+   /**
+    * Returns the ADERDGCellDescription.
+    */
+   static CellDescription& getCellDescription(
+       const int cellDescriptionsIndex,
+       const int element) {
+     assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
+     assertion2(element>=0,cellDescriptionsIndex,element);
+     assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
+
+     return Heap::getInstance().getData(cellDescriptionsIndex)[element];
+   }
+
+   /**
+    * Checks if no unnecessary memory is allocated for the cell description.
+    * If this is not the case, it deallocates the unnecessarily allocated memory.
+    */
+   static void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {
+     assertionMsg(false,"Please implement!");
+   }
+
+   /**
+    * Checks if all the necessary memory is allocated for the cell description.
+    * If this is not the case, it allocates the necessary
+    * memory for the cell description.
+    */
+   static void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
+     assertionMsg(false,"Please implement!");
+   }
+
+   /**
+    * Returns if a ADERDGCellDescription type holds face data.
+    */
+   static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
+     return cellDescriptionType==CellDescription::Cell
+//            ||
+//            cellDescriptionType==CellDescription::Ancestor   ||
+//            cellDescriptionType==CellDescription::Descendant
+            ;
+   }
+
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
                       int numberOfParameters, int nodesPerCoordinateAxis,
                       double maximumMeshSize,
@@ -167,8 +226,8 @@ public:
 
   double getNextMinTimeStepSize() const override;
 
-  bool isValid(
-      const int cellDescriptionsIndex) const {
+  bool isValidCellDescriptionIndex(
+      const int cellDescriptionsIndex) const override {
     return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
   }
 
@@ -176,26 +235,63 @@ public:
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
+  SubcellPosition computeSubcellPositionOfCellOrAncestor(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
   bool enterCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
-      const int fineGridLevel,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
-      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-      indicesAdjacentToFineGridVertices,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
   bool leaveCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
+
+  ///////////////////////////////////
+  // CELL-LOCAL
+  //////////////////////////////////
+  double startNewTimeStep(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void setInitialConditions(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void updateSolution(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void prolongateDataAndPrepareDataRestriction(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void restrictData(
+      const int cellDescriptionsIndex,
+      const int element,
+      const int parentCellDescriptionsIndex,
+      const int parentElement,
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
+
 
   ///////////////////////////////////
   // NEIGHBOUR
@@ -216,10 +312,6 @@ public:
 
 
 #ifdef Parallel
-  /**
-   * Sends all the cell descriptions at address \p
-   * cellDescriptionsIndex to the rank \p toRank.
-   */
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -227,9 +319,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
-  /**
-   * Sends an empty message to the rank \p toRank.
-   */
   static void sendEmptyCellDescriptions(
       const int                                     toRank,
       const peano::heap::MessageType&               messageType,
@@ -274,23 +363,16 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
-  /**
-   * @deprecated
-   */
-  void sendToRank(int rank, int tag) override;
-
-  /**
-   * @deprecated
-   */
-  void receiveFromMasterRank(int rank, int tag) override;
-
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeWithNeighbourMetadata(
+        const int neighbourTypeAsInt,
+        const int cellDescriptionsIndex,
+        const int element) override {
+    assertionMsg(false,"Please implement!");
+  }
 
-  /**
-   * Send solver data to neighbour rank.
-   */
   void sendDataToNeighbour(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -302,9 +384,6 @@ public:
     assertionMsg(false,"Please implement!");
   }
 
-  /**
-   * Send empty solver data to neighbour rank.
-   */
   void sendEmptyDataToNeighbour(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -312,13 +391,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Receive solver data from neighbour rank.
-   *
-   * \param[in] elementIndex Index of the ADERDGCellDescription
-   *                         holding the data to send out in
-   *                         the heap vector at \p cellDescriptionsIndex.
-   */
   void mergeWithNeighbourData(
       const int                                     fromRank,
       const int                                     neighbourTypeAsInt,
@@ -331,9 +403,7 @@ public:
     assertionMsg(false,"Please implement!");
   }
 
-  /**
-   * Drop solver data from neighbour rank.
-   */
+
   void dropNeighbourData(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -341,20 +411,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  ///////////////////////////////////
-  // FORK OR JOIN
-  ///////////////////////////////////
-
-  /**
-   * Send solver data to master or worker rank. Read the data from
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the FiniteVolumesCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -362,22 +418,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to master or worker rank
-   * due to fork or join.
-   */
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from master or worker rank
-   * that was sent out due to a fork or join. Wrote the data to
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   */
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const int                                     cellDescriptionsIndex,
@@ -385,10 +430,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from master or worker rank
-   * that was sent out due to a fork or join.
-   */
   void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -397,17 +438,16 @@ public:
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
+  void sendDataToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
 
-  /**
-   * Send solver data to master rank. Read the data from
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the ADERDGCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
+  void mergeWithWorkerData(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
+
   void sendDataToMaster(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
@@ -415,24 +455,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to master rank.
-   */
   void sendEmptyDataToMaster(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from worker rank.
-   * Write the data to the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the cell description
-   *                    holding the data to send out in
-   *                    the array with address \p cellDescriptionsIndex.
-   */
   void mergeWithWorkerData(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
@@ -440,9 +467,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from worker rank.
-   */
   void dropWorkerData(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -451,16 +475,16 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void sendDataToWorker(
+      const                                        int workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
 
-  /**
-   * Send solver data to worker rank. Read the data from
-   * the cell description \p element in the cell descriptions
-   * vector stored at \p cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the ADERDGCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
+  void mergeWithMasterData(
+      const                                        int masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
+
   void sendDataToWorker(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
@@ -468,25 +492,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to worker rank.
-   */
   void sendEmptyDataToWorker(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from master rank
-   * that was sent out due to a fork or join. Write the data to
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the cell description
-   *                    holding the data to send out in
-   *                    the array with address \p cellDescriptionsIndex.
-   */
   void mergeWithMasterData(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
@@ -494,24 +504,14 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from master rank.
-   */
   void dropMasterData(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 #endif
 
-/**
- * Returns a string representation of this solver.
- */
   std::string toString() const override;
 
-  /**
-   * Writes a string representation of this solver
-   * to \p out.
-   */
   void toString (std::ostream& out) const override;
 };
 

@@ -351,7 +351,11 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Nop
+   * Finalise the synchronous sending operations started in the
+   * previous iteration.
+   *
+   * I further need to start sending synchronous data since I will send time step data
+   * size in the Sending mapping in the same adapter.
    */
   void beginIteration(exahype::State& solverState);
 

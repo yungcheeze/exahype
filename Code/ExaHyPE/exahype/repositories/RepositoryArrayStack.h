@@ -20,15 +20,16 @@
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/PredictionAndPlotAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/PredictionAndPlotAndTimeStepSizeComputation2d.h" 
  #include "exahype/adapters/PredictionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictionRerun.h" 
- #include "exahype/adapters/RiemannSolver.h" 
+ #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/Correction.h" 
- #include "exahype/adapters/CorrectionAndPlot.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdateAndPlotAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 
@@ -59,15 +60,16 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation> _gridWithPredictionAndPlotAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d> _gridWithPredictionAndPlotAndTimeStepSizeComputation2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndTimeStepSizeComputation> _gridWithPredictionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStepAndPlot> _gridWithADERDGTimeStepAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionRerun> _gridWithPredictionRerun;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::RiemannSolver> _gridWithRiemannSolver;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Correction> _gridWithCorrection;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectionAndPlot> _gridWithCorrectionAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndTimeStepSizeComputation> _gridWithSolutionUpdateAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndPlotAndTimeStepSizeComputation> _gridWithSolutionUpdateAndPlotAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
 
   
@@ -77,30 +79,32 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputation2dCPUTime;
     tarch::timing::Measurement _measurePredictionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionRerunCPUTime;
-    tarch::timing::Measurement _measureRiemannSolverCPUTime;
+    tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
-    tarch::timing::Measurement _measureCorrectionCPUTime;
-    tarch::timing::Measurement _measureCorrectionAndPlotCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndPlotAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputation2dCalendarTime;
     tarch::timing::Measurement _measurePredictionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionRerunCalendarTime;
-    tarch::timing::Measurement _measureRiemannSolverCalendarTime;
+    tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
-    tarch::timing::Measurement _measureCorrectionCalendarTime;
-    tarch::timing::Measurement _measureCorrectionAndPlotCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndPlotAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
 
 
@@ -151,30 +155,32 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToInitialConditionAndTimeStepSizeComputation();    
     virtual void switchToPredictionAndPlotAndTimeStepSizeComputation();    
+    virtual void switchToPredictionAndPlotAndTimeStepSizeComputation2d();    
     virtual void switchToPredictionAndTimeStepSizeComputation();    
     virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
     virtual void switchToADERDGTimeStepAndPlot();    
     virtual void switchToPredictionRerun();    
-    virtual void switchToRiemannSolver();    
+    virtual void switchToNeighbourDataMerging();    
     virtual void switchToPrediction();    
-    virtual void switchToCorrection();    
-    virtual void switchToCorrectionAndPlot();    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation();    
+    virtual void switchToSolutionUpdateAndPlotAndTimeStepSizeComputation();    
     virtual void switchToPlot();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation2d() const;
     virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const;
     virtual bool isActiveAdapterPredictionRerun() const;
-    virtual bool isActiveAdapterRiemannSolver() const;
+    virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterPrediction() const;
-    virtual bool isActiveAdapterCorrection() const;
-    virtual bool isActiveAdapterCorrectionAndPlot() const;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPlot() const;
 
      
