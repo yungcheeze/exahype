@@ -67,10 +67,18 @@ set -e
 # compose and setup simulation parameter directory
 mkdir -p "$SIMBASE"
 SIMDIR="$SIMBASE/p${EXAPORDER}-meshsize${EXAMESHSIZE}/"
+if [ -e "$SIMDIR" ]; then
+	echo "WIPING existing simulation at $SIMDIR !!!"
+	rm -r "$SIMDIR";
+fi
 mkdir -p "$SIMDIR"
 
 # log everything starting from here
-exec > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' |  tee "$SIMDIR/run-$(hostname).log") 2>&1
+# exec > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' |  tee "$SIMDIR/run-$(hostname).log") 2>&1
+#
+# or instead, ONLY put everything to the log starting from here, surpressing stdout.
+
+exec > >(awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > "$SIMDIR/run-$(hostname).log") 2>&1
 
 # convert possibly relative paths to absolute ones
 EXABINARY=$(readlink -f "$EXABINARY")
@@ -91,6 +99,10 @@ mkdir -p output
 # todo: change spec file content
 sed -i "s/^\(.*maximum-mesh-size = \).*$/\1${EXAMESHSIZE}/" $BASE_EXASPECFILE
 # fun fact: changing the polynomial order requires recompiling. haha.
+
+# set initial data to use.
+export EXAHYPE_INITIALDATA="MovingGauss2D"
+#export EXAHYPE_INITIALDATA="ShuVortex"
 
 echo "This is $0 on $(hostname) at $(date)"
 echo "Running with the following parameters:"
