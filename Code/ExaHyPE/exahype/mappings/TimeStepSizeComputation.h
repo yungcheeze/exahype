@@ -66,6 +66,11 @@ class exahype::mappings::TimeStepSizeComputation {
   static tarch::logging::Log _log;
 
   /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
+
+  /**
    * A minimum solver time step size for each thread in a multicore run.
    *
    * We could directly compute the minimal time step sizes and the minimum time
@@ -79,11 +84,25 @@ class exahype::mappings::TimeStepSizeComputation {
    */
   std::vector<double> _minTimeStepSizes;
 
+  double** _tempEigenValues = nullptr;
+
   /**
    * Prepare a appropriately sized vector _minTimeStepSizes
    * with elements initiliased to MAX_DOUBLE.
    */
-  void prepareEmptyLocalTimeStepData();
+  void prepareLocalTimeStepVariables();
+
+  /**
+   * Per solver, allocate a temporary eigenvalues
+   * array.
+   */
+  void prepareTemporaryVariables();
+
+  /**
+   * Free memory reserved for the eigenvalue vectors we have
+   * allocated per solver.
+   */
+  void deleteTemporaryVariables();
  public:
   /**
    * Run through whole tree. Run concurrently on fine grid.
@@ -130,8 +149,25 @@ class exahype::mappings::TimeStepSizeComputation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
+   * Delete temporary variables for all threads.
+   */
+  virtual ~TimeStepSizeComputation();
+  #if defined(SharedMemoryParallelisation)
+  /**
+   * Initialise temporary variables for worker threads.
+   */
+  TimeStepSizeComputation(const TimeStepSizeComputation& masterThread);
+  #endif
+
+  /**
    * Start iteration/grid sweep.
    * Make the state clear its accumulated values.
+   *
+   * Further initialise temporary variables
+   * if they are not initialised yet (or
+   * if a new solver was introuced to the grid.
+   * This is why we put the initialisation
+   * in beginIteration().
    *
    * \note Is called once per rank.
    */
@@ -297,19 +333,10 @@ class exahype::mappings::TimeStepSizeComputation {
                        int level);
 #endif
   /**
-    * Nop.
-    */
-   TimeStepSizeComputation();
- #if defined(SharedMemoryParallelisation)
-   /**
-    * Nop.
-    */
-   TimeStepSizeComputation(const TimeStepSizeComputation& masterThread);
- #endif
-   /**
-    * Nop.
-    */
-   virtual ~TimeStepSizeComputation();
+   * Nop.
+   */
+  TimeStepSizeComputation();
+
  #if defined(SharedMemoryParallelisation)
    /**
     * Nop.

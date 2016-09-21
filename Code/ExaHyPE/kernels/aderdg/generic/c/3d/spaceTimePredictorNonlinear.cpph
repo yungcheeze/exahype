@@ -31,7 +31,8 @@ template <void PDEFlux3d(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S)>
 void aderPicardLoopNonlinear(const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             int numberOfVariables, int basisSize, double* lQi,
+                             int numberOfVariables, int basisSize,
+                             double* lQi, double *lQi_old, double* rhs, double* rhs_0,
                              double* lFi) {
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables);
   idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
@@ -57,7 +58,6 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   }
 
   // 2. Compute the contribution of the initial condition uh to the time update
-  double* rhs0 = new double[basisSize4 * numberOfVariables];
   idx5 idx_rhs(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
@@ -67,7 +67,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
                               kernels::gaussLegendreWeights[order][k];
         for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
-            rhs0[idx_rhs(m, i, j, k, l)] =
+            rhs_0[idx_rhs(m, i, j, k, l)] =
                 weight * kernels::F0[order][m] * luh[idx_luh(i, j, k, l)];
           }
         }
@@ -76,9 +76,6 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   }
 
   // 3. Discrete Picard iterations
-  double* lQi_old = new double[basisSize4 * numberOfVariables];
-  double* rhs = new double[basisSize4 * numberOfVariables];
-
   const int MaxIterations = 2 * (order + 1);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
@@ -116,7 +113,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           // TODO(guera): Move out?!
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
-              rhs[idx_rhs(i, j, k, l, m)] = rhs0[idx_rhs(i, j, k, l, m)];
+              rhs[idx_rhs(i, j, k, l, m)] = rhs_0[idx_rhs(i, j, k, l, m)];
             }
           }
 
@@ -245,11 +242,6 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
                                        "maximum number of iteration steps");
     }
   }  // end iter
-
-  // Delete heap-allocated arrays
-  delete[] rhs0;
-  delete[] lQi_old;
-  delete[] rhs;
 }
 
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
@@ -417,15 +409,32 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 template <void PDEFlux3d(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S)>
 void spaceTimePredictorNonlinear(
-    double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
-    double* lFhbnd, const double* luh,
+    double*  lQhbnd, double* lFhbnd,
+    double** tempSpaceTimeUnknowns,
+    double** tempSpaceTimeFluxUnknowns,
+    double*  tempUnknowns,
+    double*  tempFluxUnknowns,
+    const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
     int numberOfVariables, int numberOfParameters, int basisSize) {
   const int basisSize2 = basisSize * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
 
+  double* lQi     = tempSpaceTimeUnknowns[0];
+  double* lQi_old = tempSpaceTimeUnknowns[1];
+  double* rhs     = tempSpaceTimeUnknowns[2];
+  double* rhs_0   = tempSpaceTimeUnknowns[3];
+
+  double* lFi     = tempSpaceTimeFluxUnknowns[0];
+
+  double *lQhi    = tempUnknowns;
+
+  double *lFhi    = tempFluxUnknowns;
+
   aderPicardLoopNonlinear<PDEFlux3d, PDESource>(luh, dt, dx, numberOfVariables,
-                                                basisSize, lQi, lFi);
+                                                basisSize,
+                                                lQi, lQi_old, rhs, rhs_0,
+                                                lFi);
 
   aderPredictorNonlinear(lQi, lFi, numberOfVariables, basisSize, lQhi,
                          &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x

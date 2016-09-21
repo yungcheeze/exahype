@@ -96,47 +96,29 @@ class exahype::mappings::Prediction {
   static tarch::logging::Log _log;
 
   /**
-   * Temporary variable: Degrees of freedom of the space-time predictor
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   * Per solver, temporary variables for storing degrees of freedom of space-time predictor
+   * sized variables.
    */
-  double** _lQi=nullptr;
+  double*** _tempSpaceTimeUnknowns = nullptr;
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of space-time
+   * volume flux sized variables.
+   */
+  double*** _tempSpaceTimeFluxUnknowns = nullptr;
 
   /**
-   * Temporary variable: Old degrees of freedom of the old Picard loop space-time predictor
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   * Theses values are only used within the Picard loop of the space-time predictor computation.
+   * Per solver, temporary variables for storing degrees of freedom of solution
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
    */
-  double** _lQi_old=nullptr;
+  double** _tempUnknowns = nullptr;
 
   /**
-   * Temporary variable: Degrees of freedom of the Picard loop right-hand side
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   * Theses values are only used within the Picard loop of the space-time predictor computation.
+   * Per solver, temporary variables for storing degrees of freedom of volume flux
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
    */
-  double** _rhs=nullptr;
-
-  /**
-   * Temporary variable: Degrees of freedom of the initial Picard loop right-hand side
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   * Theses values are only used within the Picard loop of the space-time predictor computation.
-   */
-  double** _rhs_0=nullptr;
-
-  /**
-   * Temporary variable: Degrees of freedom of the space-time predictor volume flux
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   */
-  double** _lFi=nullptr;
-  /**
-   * Temporary variable: Degrees of freedom of time averaged space-time predictor
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   */
-  double** _lQhi=nullptr;
-  /**
-   * Temporary variable: Degrees of freedom of the time averaged space-time predictor volume flux
-   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
-   */
-  double** _lFhi=nullptr;
+  double** _tempFluxUnknowns = nullptr;
 
   /**
    * Initialises the temporary variables.
@@ -150,7 +132,7 @@ class exahype::mappings::Prediction {
    * solvers in exahype::solvers::RegisteredSolvers
    * are not copied for every thread.
    */
-  void initTemporaryVariables();
+  void prepareTemporaryVariables();
 
   /**
    * Deletes the temporary variables.
@@ -198,6 +180,15 @@ class exahype::mappings::Prediction {
    */
   void mergeWithWorkerThread(const Prediction& workerThread);
   #endif
+
+  /**
+   * Further initialise temporary variables
+   * if they are not initialised yet (or
+   * if a new solver was introuced to the grid.
+   * This is why we put the initialisation
+   * in beginIteration().
+   */
+  void beginIteration(exahype::State& solverState);
 
   /**
    * This method first synchronises the time step sizes and time stamps, and
@@ -462,11 +453,6 @@ class exahype::mappings::Prediction {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop
-   */
-  void beginIteration(exahype::State& solverState);
 
   /**
    * Nop

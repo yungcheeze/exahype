@@ -27,16 +27,21 @@ namespace c {
 
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
-                            const double* const QR, const double dt,
+void riemannSolverNonlinear(double* FL, double* FR,
+                            const double* const QL,
+                            const double* const QR,
+                            double*  tempFaceUnknownsArray,
+                            double** tempStateSizedVectors,
+                            double** tempStateSizedSquareMatrices,
+                            const double dt,
                             const int normalNonZero,
                             const int numberOfVariables,
                             const int numberOfParameters, const int basisSize) {
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
-  double* QavL = new double[numberOfVariables];
-  double* QavR = new double[numberOfVariables];
+  double* QavL = tempStateSizedVectors[0];
+  double* QavR = tempStateSizedVectors[1];
   {
     idx2 idx_QLR(basisSize, numberOfVariables);
     std::memset(QavL, 0, numberOfVariables * sizeof(double));
@@ -51,9 +56,8 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
     }
   }
 
-  // TODO: New size: numberOfVariables - numberOfParameters
-  double* LL = new double[numberOfVariables];
-  double* LR = new double[numberOfVariables];
+  double* LL = tempStateSizedVectors[2];
+  double* LR = tempStateSizedVectors[3];
   PDEEigenvalues(QavL, normalNonZero, LL);
   PDEEigenvalues(QavR, normalNonZero, LR);
 
@@ -87,11 +91,6 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
       }
     }
   }
-
-  delete[] QavL;
-  delete[] QavR;
-  delete[] LL;
-  delete[] LR;
 }
 
 }  // namespace c

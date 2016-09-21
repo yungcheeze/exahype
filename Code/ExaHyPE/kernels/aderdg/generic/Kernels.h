@@ -109,8 +109,12 @@ namespace c {
 template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S)>
 void spaceTimePredictorNonlinear(
-    double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
-    double* lFhbnd, const double* const luh,
+    double*  lQhbnd, double* lFhbnd,
+    double** tempSpaceTimeUnknowns,
+    double** tempSpaceTimeFluxUnknowns,
+    double*  tempUnknowns,
+    double*  tempFluxUnknowns,
+    const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize, const int numberOfVariables,
     const int numberOfParameters, const int basisSize);
@@ -164,22 +168,28 @@ void solutionAdjustment(double* luh,
 // template argument functions and non-template argument function.
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
-                            const double* const QR, const double dt,
-                            const int normalNonZero,
-                            const int numberOfVariables,
-                            const int numberOfParameters, const int basisSize);
+void riemannSolverNonlinear(
+    double* FL, double* FR, const double* const QL,
+    const double* const QR,
+    double*  tempFaceUnknownsArray,
+    double** tempStateSizedVectors,
+    double** tempStateSizedSquareMatrices,
+    const double dt,
+    const int normalNonZero,
+    const int numberOfVariables,
+    const int numberOfParameters, const int basisSize);
 
 template <void PDEBoundaryConditions(
     const double* const x, const double t, const int faceIndex,
     const int normalNonZero, const double* const fluxIn,
     const double* const stateIn, double* fluxOut, double* stateOut)>
-void boundaryConditions(double* fluxOut, double* stateOut,
-                        const double* const fluxIn, const double* const stateIn,
-                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                        const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-                        const double t, const double dt, const int faceIndex,
-                        const int normalNonZero, const int numberOfVariables,
+void boundaryConditions(
+    double* fluxOut, double* stateOut,
+    const double* const fluxIn, const double* const stateIn, // TODO(Dominic): Inconsistent order of arguments w.r.t to riemannSolver
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+    const double t, const double dt, const int faceIndex,
+    const int normalNonZero, const int numberOfVariables,
                         const int basisSize);
 
 // @todo Dominic Etienne Charrier
@@ -188,6 +198,7 @@ void boundaryConditions(double* fluxOut, double* stateOut,
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
 double stableTimeStepSize(const double* const luh,
+                          double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables, const int basisSize);
 

@@ -56,6 +56,24 @@ namespace exahype {
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
 class exahype::mappings::Merging {
+public:
+  /**
+   * Create an array of \p numberOfElements double pointers.
+   * For the first element [0] initialise an array of
+   * size numberOfElements * blockSize.
+   * Let the other elements point at the locations
+   * i * blockSize, i=1,...,numberOfElements,
+   * in this array.
+   */
+  static double** initialiseContiguousArrays(int numberOfElements,int blockSize);
+
+  /**
+   * Delete a block of contiguous arrays.
+   *
+   * \see initialiseContiguousArray.
+   */
+  static void deleteContiguousArrays(double** array, int numberOfElements);
+
 private:
   /**
    * Logging device for the trace macros.
@@ -63,15 +81,37 @@ private:
   static tarch::logging::Log _log;
 
   /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int _mpiTag;
-
-  /**
    * Local copy of the state.
    */
   exahype::State _localState;
 
+  /**
+   * Temporary variable per solver for storing
+   * face unknowns.
+   */
+  double**  _tempFaceUnknownsArray        = nullptr;
+
+  /**
+   * Temporary variables per solver for storing state sized (=number of variables)
+   * quantities like eigenvalues or averaged states.
+   */
+  double*** _tempStateSizedVectors        = nullptr;
+
+  /**
+   * Temporary variable per solver for storing square matrices
+   * of the size number of variables times number of variables.
+   */
+  double*** _tempStateSizedSquareMatrices = nullptr;
+
+  /**
+   * Initialises temporary variables.
+   */
+  void prepareTemporaryVariables();
+
+  /**
+   * Free memory allocated for temporary variables.
+   */
+  void deleteTemporaryVariables();
 
   #ifdef Debug
   /*
@@ -93,7 +133,7 @@ private:
    * or if we just want to drop it.
    * \note Not thread-safe.
    */
-  static void mergeWithNeighbourData(
+  void mergeWithNeighbourData(
       const int fromRank,
       const int srcCellDescriptionIndex,
       const int destCellDescriptionIndex,
@@ -235,19 +275,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   *
-   *
-   * In debug mode, further resets counters for Riemann solves at
-   * interior and boundary faces.
-   */
-  void beginIteration(exahype::State& solverState);
-
-  /**
-   * In debug mode, prints the output of counters.
-   */
-  void endIteration(exahype::State& solverState);
-
-  /**
    * Nop.
    */
   Merging();
@@ -260,9 +287,26 @@ public:
 #endif
 
   /**
-   * Nop.
+   * Free previously allocated temporary variables.
    */
   virtual ~Merging();
+
+  /**
+   * Further initialise temporary variables
+   * if they are not initialised yet (or
+   * if a new solver was introuced to the grid.
+   * This is why we put the initialisation
+   * in beginIteration().
+   *
+   * In debug mode, further resets counters for Riemann solves at
+   * interior and boundary faces.
+   */
+  void beginIteration(exahype::State& solverState);
+
+  /**
+   * In debug mode, prints the output of counters.
+   */
+  void endIteration(exahype::State& solverState);
 
 #if defined(SharedMemoryParallelisation)
   /**

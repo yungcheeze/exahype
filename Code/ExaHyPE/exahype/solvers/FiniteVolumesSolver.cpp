@@ -141,8 +141,143 @@ bool exahype::solvers::FiniteVolumesSolver::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
-  assertionMsg(false,"Not implemented.");
+  // Fine grid cell based uniform mesh refinement.
+  int fineGridCellElement =
+      tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (fineGridCellElement==exahype::solvers::Solver::NotFound &&
+      tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),getMaximumMeshSize()) &&
+      tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),getMaximumMeshSize())) {
+    addNewCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
+               multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+               solverNumber);
+    // Fine grid cell based adaptive mesh refinement operations.
+  }
+
   return false;
+}
+
+void exahype::solvers::FiniteVolumesSolver::addNewCell(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const int coarseGridCellDescriptionsIndex,
+    const int solverNumber) {
+  fineGridCell.addNewCellDescription(
+              solverNumber,
+              CellDescription::Cell,
+//              CellDescription::None,
+              fineGridVerticesEnumerator.getLevel(),
+              coarseGridCellDescriptionsIndex,
+              fineGridVerticesEnumerator.getCellSize(),
+              fineGridVerticesEnumerator.getVertexPosition());
+  int fineGridCellElement =
+      tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  CellDescription& fineGridCellDescription =
+      getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
+  ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
+  exahype::Cell::determineInsideAndOutsideFaces(
+            fineGridCellDescription,
+            fineGridVertices,
+            fineGridVerticesEnumerator);
+}
+
+void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {
+  if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
+    switch (cellDescription.getType()) {
+      case CellDescription::Erased:
+      case CellDescription::EmptyAncestor:
+      case CellDescription::EmptyDescendant:
+      case CellDescription::Ancestor:
+      case CellDescription::Descendant:
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+
+//        DataHeap::getInstance().deleteData(cellDescription.getUpdate());
+        DataHeap::getInstance().deleteData(cellDescription.getSolution());
+
+        cellDescription.setSolution(-1);
+//        cellDescription.setUpdate(-1);
+        break;
+      default:
+        break;
+    }
+  }
+
+//  if (DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
+//    switch (cellDescription.getType()) {
+//      case CellDescription::Erased:
+//      case CellDescription::EmptyAncestor:
+//      case CellDescription::EmptyDescendant:
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
+//
+//        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
+//        DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+//        DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
+//        DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
+//
+//        cellDescription.setExtrapolatedPredictor(-1);
+//        cellDescription.setFluctuation(-1);
+//        break;
+//      default:
+//        break;
+//    }
+//  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription) {
+  switch (cellDescription.getType()) {
+    case CellDescription::Cell:
+      if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+        // Allocate volume DoF for limiter
+        const int unknownsPerCell = getUnknownsPerCell();
+//        cellDescription.setUpdate(
+//            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setSolution(
+            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+      }
+      break;
+    default:
+      break;
+  }
+
+//  switch (cellDescription.getType()) {
+//    case CellDescription::Cell:
+//    case CellDescription::Ancestor:
+//    case CellDescription::Descendant:
+//      if (!DataHeap::getInstance().isValidIndex(
+//          cellDescription.getExtrapolatedPredictor())) {
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+//
+//        // Allocate face DoF
+//        const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
+//        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(
+//            unknownsPerCellBoundary, unknownsPerCellBoundary));
+//        cellDescription.setFluctuation(DataHeap::getInstance().createData(
+//            unknownsPerCellBoundary, unknownsPerCellBoundary));
+//
+//        // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
+//        // and array of max values of the neighbour at this face).
+//        const int unknownsPerCell = getUnknownsPerCell();
+//        cellDescription.setSolutionMin(DataHeap::getInstance().createData(
+//            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+//        cellDescription.setSolutionMax(DataHeap::getInstance().createData(
+//            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+//
+//        // !!!
+//        // TODO(Dominic): Make sure this everywhere initialised correctly.
+//        // !!!
+//        for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
+//          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
+//          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
+//        }
+//      }
+//      break;
+//    default:
+//      break;
+//  }
 }
 
 bool exahype::solvers::FiniteVolumesSolver::leaveCell(
@@ -154,7 +289,7 @@ bool exahype::solvers::FiniteVolumesSolver::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
-  assertionMsg(false,"Not implemented.");
+//  assertionMsg(false,"Not implemented.");
   return false;
 }
 
@@ -163,7 +298,8 @@ bool exahype::solvers::FiniteVolumesSolver::leaveCell(
 //////////////////////////////////
 double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
     const int cellDescriptionsIndex,
-    const int element) {
+    const int element,
+    double*   tempEigenvalues) {
   // do nothing (for now). See discussion within body of function mappings/SolutionUpdate::enterCell(...).
   return std::numeric_limits<double>::max();
 }
@@ -280,20 +416,26 @@ void exahype::solvers::FiniteVolumesSolver::restrictData(
 // NEIGHBOUR
 ///////////////////////////////////
 void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
-      const int                                 cellDescriptionsIndex1,
-      const int                                 element1,
-      const int                                 cellDescriptionsIndex2,
-      const int                                 element2,
-      const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2,
+    double*                                   tempFaceUnknownsArray,
+    double**                                  tempStateSizedVectors,
+    double**                                  tempStateSizedSquareMatrices) {
   assertionMsg(false,"Not implemented.");
 }
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
-      const int                                 cellDescriptionsIndex,
-      const int                                 element,
-      const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundary) {
+    const int                                 cellDescriptionsIndex,
+    const int                                 element,
+    const tarch::la::Vector<DIMENSIONS, int>& posCell,
+    const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+    double*                                   tempFaceUnknownsArray,
+    double**                                  tempStateSizedVectors,
+    double**                                  tempStateSizedSquareMatrices) {
   assertionMsg(false,"Not implemented.");
 }
 

@@ -353,7 +353,10 @@ private:
       CellDescription& pLeft,
       CellDescription& pRight,
       const int faceIndexLeft,
-      const int faceIndexRight);
+      const int faceIndexRight,
+      double*   tempFaceUnknownsArray,
+      double**  tempStateSizedVectors,
+      double**  tempStateSizedSquareMatrices);
 
   /**
    * Apply the boundary conditions at the face with index \p faceIndex.
@@ -375,7 +378,10 @@ private:
    */
   void applyBoundaryConditions(
       CellDescription& p,
-      const int faceIndex);
+      const int faceIndex,
+      double*   tempFaceUnknownsArray,
+      double**  tempStateSizedVectors,
+      double**  tempStateSizedSquareMatrices);
 
   /**
    * This operation sets the solutions' minimum and maximum value on a cell.
@@ -460,7 +466,10 @@ private:
       records::ADERDGCellDescription& cellDescription,
       const int faceIndex,
       const int indexOfQValues,
-      const int indexOfFValues);
+      const int indexOfFValues,
+      double*   tempFaceUnknownsArray,
+      double**  tempStateSizedVectors,
+      double**  tempStateSizedSquareMatrices);
 
   /**
    * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
@@ -660,14 +669,21 @@ public:
    * @param[inout] FL             Flux DoF belonging to the left cell.
    * @param[inout] FR             Flux DoF belonging the right cell.
    * @param[in]    QL             DoF of the boundary extrapolated predictor
-   *belonging to the left cell.
+   *                              belonging to the left cell.
    * @param[in]    QR             DoF of the boundary extrapolated predictor
-   *belonging to the right cell.
+   *                              belonging to the right cell.
+   * @param[in]    tempFaceUnknownsArray        Temporary array of the size of a face unknowns array.
+   * @param[in]    tempStateSizedVectors        Five (5) state sized (=number of variables) temporary variables.
+   * @param[in]    tempStateSizedSquareMatrices Three (3) temporary variables of the size number of variables squared.
    * @param[in]    normalNonZero  Index of the nonzero normal vector component,
    *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR, const double dt,
+                             const double* const QR,
+                             double*   tempFaceUnknownsArray,
+                             double**  tempStateSizedVectors,
+                             double**  tempStateSizedSquareMatrices,
+                             const double dt,
                              const int normalNonZero) = 0;
 
   /**
@@ -706,19 +722,24 @@ public:
    * the predictor lQhi, the volume flux lFhi, the boundary
    * extrapolated predictor lQhbnd and normal flux lFhbnd.
    *
-   * @param[inout] lQi    Space-time predictor DoF.
-   * @param[inout] lFi    Space-time flux DoF.
-   * @param[inout] lQhi   Predictor DoF
-   * @param[inout] lFhi   Volume flux DoF.
-   * @param[inout] lQhbnd Boundary extrapolated predictor DoF.
-   * @param[inout] lFhbnd Boundary extrapolated normal fluxes (or fluctuations).
-   * @param[out]   luh    Solution DoF.
+   * @param[inout] lQi       Space-time predictor DoF.
+   * @param[in]    lQi_old   Old space-time predictor DoF - only used in Picard loop.
+   * @param[in]    rhs       The right-hand side vector - only used in Picard loop.
+   * @param[in]    rhs_0     Constant term of the right-hand side - only used in Picard loop.
+   * @param[inout] lFi       Space-time flux DoF.
+   * @param[inout] lQhi      Predictor DoF
+   * @param[inout] lFhi      Volume flux DoF.
+   * @param[out]   luh       Solution DoF.
    * @param[in]    cellSize     Extent of the cell in each coordinate direction.
    * @param[in]    dt     Time step size.
    */
   virtual void spaceTimePredictor(
-      double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
-      double* lFhbnd, const double* const luh,
+      double*  lQhbnd, double* lFhbnd,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns,
+      const double* const luh,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, const double dt) = 0;
 
   /**
@@ -729,6 +750,7 @@ public:
    */
   virtual double stableTimeStepSize(
       const double* const luh,
+      double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
@@ -943,13 +965,18 @@ public:
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
    * computes the volume integral.
+   *
+   * \param[in] tempSpaceTimeUnknows      Array of size 4 containing space-time predictor sized temporary arrays (see nonlinear predictor kernel).
+   * \param[in] tempSpaceTimeFluxUnknowns Array of size 2 containing space-time predictor volume flux sized temporary arrays (see linear predictor kernel).
+   * \param[in] tempUnknowns              Solution sized temporary array.
+   * \param[in] tempFluxUnknowns          Volume flux sized temporary array.
    */
   void performPredictionAndVolumeIntegral(
-      exahype::records::ADERDGCellDescription& p,
-      double* spaceTimePredictor,
-      double* spaceTimeVolumeFlux,
-      double* predictor,
-      double* volumeFlux);
+      exahype::records::ADERDGCellDescription& cellDescription,
+      double** tempSpaceTimeUnknowns,
+      double** tempSpaceTimeFluxUnknowns,
+      double*  tempUnknowns,
+      double*  tempFluxUnknowns);// todo remove
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
@@ -958,7 +985,8 @@ public:
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element,
+      double*   tempEigenvalues) override;
 
   void setInitialConditions(
       const int cellDescriptionsIndex,
@@ -997,13 +1025,19 @@ public:
       const int                                 cellDescriptionsIndex2,
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+      const tarch::la::Vector<DIMENSIONS, int>& pos2,
+      double*                                   tempFaceUnknownsArray,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices) override;
 
   void mergeWithBoundaryData(
       const int                                 cellDescriptionsIndex,
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundary) override;
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+      double*                                   tempFaceUnknownsArray,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices) override;
 
 #ifdef Parallel
   /**
@@ -1109,6 +1143,9 @@ public:
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      double*                                      tempFaceUnknownsArray,
+      double**                                     tempStateSizedVectors,
+      double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 

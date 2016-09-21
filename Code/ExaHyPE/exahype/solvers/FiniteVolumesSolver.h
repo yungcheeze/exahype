@@ -129,28 +129,33 @@ public:
     * Checks if no unnecessary memory is allocated for the cell description.
     * If this is not the case, it deallocates the unnecessarily allocated memory.
     */
-   static void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {
-     assertionMsg(false,"Please implement!");
-   }
+   void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
 
    /**
     * Checks if all the necessary memory is allocated for the cell description.
     * If this is not the case, it allocates the necessary
     * memory for the cell description.
     */
-   static void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
-     assertionMsg(false,"Please implement!");
-   }
+   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+   /**
+    * Initialise cell description of type Cell.
+    * Initialise the refinement event with None.
+    */
+   void addNewCell(
+       exahype::Cell& fineGridCell,
+       exahype::Vertex* const fineGridVertices,
+       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+       const int coarseGridCellDescriptionsIndex,
+       const int solverNumber);
 
    /**
     * Returns if a ADERDGCellDescription type holds face data.
     */
    static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
-     return cellDescriptionType==CellDescription::Cell
-//            ||
-//            cellDescriptionType==CellDescription::Ancestor   ||
-//            cellDescriptionType==CellDescription::Descendant
-            ;
+     return cellDescriptionType==CellDescription::Cell ||
+            cellDescriptionType==CellDescription::Ancestor   ||
+            cellDescriptionType==CellDescription::Descendant;
    }
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
@@ -267,7 +272,8 @@ public:
   //////////////////////////////////
   double startNewTimeStep(
       const int cellDescriptionsIndex,
-      const int element) override;
+      const int element,
+      double*   tempEigenvalues) override;
 
   void setInitialConditions(
       const int cellDescriptionsIndex,
@@ -297,18 +303,24 @@ public:
   // NEIGHBOUR
   ///////////////////////////////////
   void mergeNeighbours(
-        const int                                 cellDescriptionsIndex1,
-        const int                                 element1,
-        const int                                 cellDescriptionsIndex2,
-        const int                                 element2,
-        const tarch::la::Vector<DIMENSIONS, int>& pos1,
-        const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2,
+      double*                                   tempFaceUnknownsArray,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices) override;
 
   void mergeWithBoundaryData(
-        const int                                 cellDescriptionsIndex,
-        const int                                 element,
-        const tarch::la::Vector<DIMENSIONS, int>& posCell,
-        const tarch::la::Vector<DIMENSIONS, int>& posBoundary) override;
+      const int                                 cellDescriptionsIndex,
+      const int                                 element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+      double*                                   tempFaceUnknownsArray,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices) override;
 
 
 #ifdef Parallel
@@ -392,14 +404,17 @@ public:
       const int                                     level) override;
 
   void mergeWithNeighbourData(
-      const int                                     fromRank,
-      const int                                     neighbourTypeAsInt,
-      const int                                     cellDescriptionsIndex,
-      const int                                     elementIndex,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
+      const int                                    fromRank,
+      const int                                    neighbourTypeAsInt,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      double*                                      tempFaceUnknownsArray,
+      double**                                     tempStateSizedVectors,
+      double**                                     tempStateSizedSquareMatrices,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override {
     assertionMsg(false,"Please implement!");
   }
 
