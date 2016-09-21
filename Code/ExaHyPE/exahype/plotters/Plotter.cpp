@@ -15,6 +15,7 @@
 
 #include "ADERDG2CartesianVTK.h"
 #include "ADERDG2LegendreVTK.h"
+#include "ADERDG2LegendreCSV.h"
 #include "ADERDG2ProbeAscii.h"
 #include "FiniteVolumes2VTKAscii.h"
 #include "exahype/solvers/Solver.h"
@@ -84,6 +85,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCSV(postProcessing);
       }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
