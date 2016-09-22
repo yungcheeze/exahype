@@ -8,7 +8,7 @@ from numpy import arange
 import subprocess # batteries
 
 polyorder = 2. # ignored at this stage
-depth = arange(2,6)
+depth = arange(2,5)
 dx = (1./3.)**depth
 numcells = 1./dx
 reduced_maxmeshsizes = dx * 0.9

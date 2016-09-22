@@ -1,0 +1,62 @@
+<!Doctype html>
+<html>
+<title>ExaHyPE Convergence report</title>
+<style type="text/css">
+/**
+ * Mini style for improving the layout of the Convergence report
+ * in ExaHyPE. Embedded to ensure portability.
+ * SK, 22. Sept 2016
+ **/
+
+body {
+	font: 90% Arial,Verdana,sans-serif;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th,td {
+	padding: .3em;
+}
+
+th {
+	background-color: #eee;
+}
+
+th,td {
+	border: 1px solid #aaa;
+}
+
+tr:hover {
+	background-color: yellow;
+}
+
+strong {
+	background-color: yellow;
+}
+</style>
+<body>
+
+<h1>ExaHyPE Convergence report</h1>
+
+<p>This is a convergence report generated at <strong>${DATE}</strong> on ${HOST} by ${WHOAMI}.
+
+<h2>Simulations</h2>
+<p>This test was made by taking the following simulations into account:
+
+${PARAMS_TABLE}
+
+<p>To inspect the specification files with all further parameters, go
+straight into the <a href="./">simulations directory</a>.
+
+<h2>Error results</h2>
+<p>The simulations yielded the following errors in the field <strong>${QUANTITY}</strong>.
+Other fields have not taken into account.</p>
+
+${ERROR_TABLE}
+
+<h2>Convergence results</h2>
+<p>The convergence order of these simulations is:
+
+${CONVERGENCE_TABLE}
