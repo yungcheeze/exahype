@@ -1413,8 +1413,14 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
     // todo Time step must be interpolated in local time stepping case
     // both time step sizes are the same, so the min has no effect here.
+    assertion1(faceIndexLeft>=0,faceIndexLeft);
+    assertion1(faceIndexRight>=0,faceIndexRight);
+    assertion1(faceIndexLeft<DIMENSIONS_TIMES_TWO,faceIndexLeft);
+    assertion1(faceIndexRight<DIMENSIONS_TIMES_TWO,faceIndexRight);
     assertion1(faceIndexRight%2==0,faceIndexRight);
-    const int normalDirection = (faceIndexRight - (faceIndexRight %2));
+    const int normalDirection = (faceIndexRight - (faceIndexRight %2))/2;
+    assertion3(normalDirection==(faceIndexLeft - (faceIndexLeft %2))/2,normalDirection,faceIndexLeft,faceIndexRight);
+    assertion3(normalDirection<DIMENSIONS,normalDirection,faceIndexLeft,faceIndexRight);
 
     // Synchronise time stepping.
     synchroniseTimeStepping(pLeft);
