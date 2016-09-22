@@ -134,11 +134,11 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
 
   if ( _parser.getSkipReductionInBatchedTimeSteps() ) {
     logInfo("initDistributedMemoryConfiguration()", "allow ranks to skip reduction" );
-    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = true;
+    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = true;
   }
   else {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
-    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
+    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = false;
   }
   #endif
 }
