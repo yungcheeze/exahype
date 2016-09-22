@@ -54,11 +54,35 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 
 #include "spaceTimePredictorNonlinear.cpph" //generic C
 
-
+//global
 double* weights1;
+
+//local
+double *lQi;
+double *lFi;
+double *lQhi;
+double *lFhi;
 
 using namespace std;
 using namespace std::chrono;
+
+void allocLocal(int nVar, int nVarPadded, int nDOF) {
+  lQi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF];
+  lFi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*3*2];
+  lQhi = new double[nVarPadded*nDOF*nDOF*nDOF];
+  lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*3*2];
+  memset(lQi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*sizeof(double));
+  memset(lFi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*3*sizeof(double)*2);
+  memset(lQhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*sizeof(double));
+  memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*3*sizeof(double)*2);
+}
+
+void freeLocal() {
+  delete[] lQi;
+  delete[] lFi;
+  delete[] lQhi;
+  delete[] lFhi;
+}
 
 int main(int argc, char *argv[]) {
     #ifdef __ICC
@@ -84,41 +108,41 @@ int main(int argc, char *argv[]) {
     resultsFile << "nTests=" << nTests << endl;
 
     constexpr int maxOrder = 8;
-    constexpr int nDOF = maxOrder+1;
+    int nDOF;
     constexpr int nVar = NVAR;
-    constexpr int nVarPadded = NVARPAD;
+    constexpr int nVarPad = NVARPAD;
 
     double dt = 0.01;
     const double dx[3] = {0.1,0.1,0.1};
 
-    double *lQi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF];
-    double *lFi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*nDOF*3];
-    double *lQhi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*nDOF*3];
-    double *lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*nDOF*3];
-    memset(lQi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*sizeof(double));
-    memset(lFi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*nDOF*3*sizeof(double));
-    memset(lQhi, 1.5, nVarPadded*nVar*nDOF*nDOF*nDOF*nDOF*sizeof(double));
-    memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*nDOF*3*sizeof(double));
+    
 
 	// ---------------------------------------------
 
+    nDOF = 4;
     cout << "Optimised Kernel order = 3" << endl;
+    allocLocal(nVar, nVarPad, nDOF); 
     initGaussLegendreNodesAndWeights3();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        predictor3(lQhi, lFhi, lQi, lFi); 
+      predictor3(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 3" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
+    
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 4, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights3();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -127,23 +151,29 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------
 
+    nDOF = 5;
     cout << "Optimised Kernel order = 4" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     initGaussLegendreNodesAndWeights4();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor4(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 4" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 5, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights4();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -152,23 +182,29 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------
 
+    nDOF = 6;
     cout << "Optimised Kernel order = 5" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     initGaussLegendreNodesAndWeights5();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor5(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 5" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 6, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights5();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -177,23 +213,29 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------
 
+    nDOF = 7;
     cout << "Optimised Kernel order = 6" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     initGaussLegendreNodesAndWeights6();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor6(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 6" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 7, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights6();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -202,23 +244,29 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------
 
+    nDOF = 8;
     cout << "Optimised Kernel order = 7" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     initGaussLegendreNodesAndWeights7();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor7(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 7" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 8, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights7();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -227,23 +275,29 @@ int main(int argc, char *argv[]) {
 
 	// ---------------------------------------------
 
+    nDOF = 9;
     cout << "Optimised Kernel order = 8" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     initGaussLegendreNodesAndWeights8();
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor8(lQhi, lFhi, lQi, lFi); 
     }
     timeEnd = high_resolution_clock::now();
+    freeLocal();
     t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
+
     cout << "Generic Kernel order = 8" << endl;
+    allocLocal(nVar, nVarPad, nDOF);
     timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
-        aderPredictorNonlinear(lQi, lFi, nVar, 9, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
+        aderPredictorNonlinear(lQi, lFi, nVar, nDOF, lQhi, &lFhi[0], &lFhi[nVarPad*nDOF*nDOF*nDOF], &lFhi[2*nVarPad*nDOF*nDOF*nDOF]);
     }
     timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights8();
+    freeLocal();
     t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
@@ -253,10 +307,6 @@ int main(int argc, char *argv[]) {
 	// ---------------------------------------------
 
   resultsFile.close();
-  delete[] lQi;
-  delete[] lFi;
-  delete[] lQhi;
-  delete[] lFhi;
 
 	return 0;  
 }
