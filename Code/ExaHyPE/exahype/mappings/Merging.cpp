@@ -173,10 +173,10 @@ exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState),
   _tempFaceUnknownsArray(nullptr),
   _tempStateSizedVectors(nullptr),
-  _tempStateSizedSquareMatrices(nullptr),
+  _tempStateSizedSquareMatrices(nullptr)
   #ifdef Debug
-  _interiorFaceSolves(0),
-  _boundaryFaceSolves(0)
+  ,_interiorFaceSolves(0)
+  ,_boundaryFaceSolves(0)
   #endif
   {
   prepareTemporaryVariables();
