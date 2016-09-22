@@ -203,7 +203,7 @@ void exahype::mappings::Merging::beginIteration(
   MetadataHeap::getInstance().startToSendSynchronousData();
   #endif
 
-  #ifdef Debug
+  #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceSolves = 0;
   _boundaryFaceSolves = 0;
   #endif
@@ -217,8 +217,10 @@ void exahype::mappings::Merging::endIteration(
 
   deleteTemporaryVariables();
 
-  logDebug("endIteration(...)","interiorFaceSolves: " << _interiorFaceSolves);
-  logDebug("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceSolves);
+  #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
+  logInfo("endIteration(...)","interiorFaceSolves: " << _interiorFaceSolves);
+  logInfo("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceSolves);
+  #endif
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
 }
@@ -235,7 +237,6 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                            fineGridX, fineGridH,
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
-
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     dfor2(pos1)
@@ -259,16 +260,17 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                 _tempFaceUnknownsArray[solverNumber],
                 _tempStateSizedVectors[solverNumber],
                 _tempStateSizedSquareMatrices[solverNumber]);
+
+            #ifdef Debug // TODO(Dominic)
+            _interiorFaceSolves++;
+            #endif
           endpfor
           peano::datatraversal::autotuning::Oracle::getInstance()
           .parallelSectionHasTerminated(methodTrace);
 
-          #ifdef Debug
-          _interiorFaceSolves++;
-          #endif
-
           fineGridVertex.setMergePerformed(pos1,pos2,true);
-        } else if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
+        }
+        if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
           const peano::datatraversal::autotuning::MethodTrace methodTrace =
               peano::datatraversal::autotuning::UserDefined4; // TODO(Dominic): Change UserDefined.
           const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
@@ -279,25 +281,31 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+            assertion4((element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+                       || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
+                       cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
 
             if (element1 >= 0) {
               solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
                                             _tempFaceUnknownsArray[solverNumber],
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
+
+              #ifdef Debug // TODO(Dominic)
+              _boundaryFaceSolves++;
+              #endif
             } else { // element2 >= 0
               solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
                                             _tempFaceUnknownsArray[solverNumber],
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
+              #ifdef Debug // TODO(Dominic)
+              _boundaryFaceSolves++;
+              #endif
             }
           endpfor
           peano::datatraversal::autotuning::Oracle::getInstance()
           .parallelSectionHasTerminated(methodTrace);
-
-          #ifdef Debug
-          _boundaryFaceSolves++;
-          #endif
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }

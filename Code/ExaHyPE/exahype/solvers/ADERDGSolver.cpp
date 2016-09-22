@@ -1342,7 +1342,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
-  if (tarch::la::countEqualEntries(pos1,pos2)!=1) {
+  if (tarch::la::countEqualEntries(pos1,pos2)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
   // !!! In Riemann solve we consider "left" face of "right" cell and
@@ -1455,7 +1455,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
-  if (tarch::la::countEqualEntries(posCell,posBoundary)!=1) {
+  if (tarch::la::countEqualEntries(posCell,posBoundary)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
 
@@ -1822,7 +1822,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  if (tarch::la::countEqualEntries(src,dest)!=1) {
+  if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
 
@@ -1911,7 +1911,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  if (tarch::la::countEqualEntries(src,dest)!=1) {
+  if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
 

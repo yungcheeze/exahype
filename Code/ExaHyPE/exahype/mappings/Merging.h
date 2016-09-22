@@ -116,7 +116,7 @@ private:
    */
   void deleteTemporaryVariables();
 
-  #ifdef Debug
+  #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
   /*
    *  Counter for the interior face solves for debugging purposes.
    */
