@@ -149,12 +149,12 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
 }
 
 void exahype::mappings::TimeStepSizeComputation::endIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("endIteration(State)", solverState);
+    exahype::State& state) {
+  logTraceInWith1Argument("endIteration(State)", state);
 
   deleteTemporaryVariables();
 
-  solverState.setStabilityConditionOfOneSolverWasViolated(false);
+  state.setStabilityConditionOfOneSolverWasViolated(false);
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
@@ -164,7 +164,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     if (
         solver->getType()==exahype::solvers::Solver::Type::ADER_DG &&
-        solverState.fuseADERDGPhases()
+        state.fuseADERDGPhases()
         #ifdef Parallel
         && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
         #endif
@@ -172,13 +172,12 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
       const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
       const double usedTimeStepSize   = aderdgSolver->getMinPredictorTimeStepSize();
-      bool solverTimeStepSizeIsInstable =
-          usedTimeStepSize > stableTimeStepSize;
+      bool useTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
 
-      if (solverTimeStepSizeIsInstable) {
-        solverState.setStabilityConditionOfOneSolverWasViolated(true);
+      if (useTimeStepSizeWasInstable) {
+        state.setStabilityConditionOfOneSolverWasViolated(true);
 
-        const double timeStepSizeWeight = solverState.getTimeStepSizeWeightForPredictionRerun();
+        const double timeStepSizeWeight = state.getTimeStepSizeWeightForPredictionRerun();
         aderdgSolver->updateMinNextPredictorTimeStepSize(
             timeStepSizeWeight * stableTimeStepSize);
         aderdgSolver->setMinPredictorTimeStepSize(
@@ -193,7 +192,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     ++solverNumber;
   }
 
-  logTraceOutWith1Argument("endIteration(State)", solverState);
+  logTraceOutWith1Argument("endIteration(State)", state);
 }
 
 static double startNewTimeStepFV(
