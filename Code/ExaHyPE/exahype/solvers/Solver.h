@@ -800,19 +800,20 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    */
   virtual void mergeWithWorkerData(
-      const int                                     workerRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+      const int                                    workerRank,
+      const int                                    workerTypeAsInt,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Drop solver data from worker rank.
    */
   virtual void dropWorkerData(
-      const int                                     workerRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -845,25 +846,30 @@ class exahype::solvers::Solver {
    * the cell description \p element in the cell descriptions
    * vector stored at \p cellDescriptionsIndex.
    *
+   * \return Returns true if it is expected based on the (cell description
+   * type) that the worker will send solver data up to the master.
+   * Note that this function is not in control of determining when to reduce
+   * time step data. This should be done outside of this function.
+   *
    * \param[in] element Index of the ADERDGCellDescription
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    *                    This is not the solver number.
    */
-  virtual void sendDataToWorker(
-      const int                                     workerRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+  virtual bool sendDataToWorker(
+      const int                                    workerRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send empty solver data to worker rank.
    */
   virtual void sendEmptyDataToWorker(
-      const int                                     workerRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Merge with solver data from master rank
@@ -878,19 +884,20 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    */
   virtual void mergeWithMasterData(
-      const int                                     masterRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+      const int                                    masterRank,
+      const int                                    masterTypeAsInt,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Drop solver data from master rank.
    */
   virtual void dropMasterData(
-      const int                                     masterRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) = 0;
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
   #endif
 };
 
