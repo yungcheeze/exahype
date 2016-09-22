@@ -134,7 +134,8 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
         for (auto& p1 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-          if (!p1.getIsInside(faceIndex1)) {
+          if (!p1.getIsInside(faceIndex1)
+              && !p1.getRiemannSolvePerformed(faceIndex1)) {
             return true;
           }
         }
@@ -142,7 +143,8 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       } else if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
         for (auto& p2 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-          if (!p2.getIsInside(faceIndex2)) {
+          if (!p2.getIsInside(faceIndex2)
+              && !p2.getRiemannSolvePerformed(faceIndex2)) {
             return true;
           }
         }
