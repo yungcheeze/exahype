@@ -244,12 +244,13 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                 _tempFaceUnknownsArray[solverNumber],
                 _tempStateSizedVectors[solverNumber],
                 _tempStateSizedSquareMatrices[solverNumber]);
-            #ifdef Debug
-            _interiorFaceSolves++;
-             #endif
           endpfor
           peano::datatraversal::autotuning::Oracle::getInstance()
           .parallelSectionHasTerminated(methodTrace);
+
+          #ifdef Debug
+          _interiorFaceSolves++;
+          #endif
 
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         } else if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
@@ -275,13 +276,14 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
             }
-
-            #ifdef Debug
-            _boundaryFaceSolves++;
-            #endif
           endpfor
           peano::datatraversal::autotuning::Oracle::getInstance()
           .parallelSectionHasTerminated(methodTrace);
+
+          #ifdef Debug
+          _boundaryFaceSolves++;
+          #endif
+
           fineGridVertex.setMergePerformed(pos1,pos2,true);
         }
       enddforx
@@ -653,8 +655,8 @@ void exahype::mappings::Merging::prepareCopyToRemoteNode(
 exahype::mappings::Merging::Merging()
   #ifdef Debug
   :
-  boundaryFaceSolves(0),
-  interiorFaceSolves(0),
+  _boundaryFaceSolves(0),
+  _interiorFaceSolves(0)
   #endif
 {
   // do nothing

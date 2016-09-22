@@ -120,7 +120,7 @@ private:
   /*
    *  Counter for the interior face solves for debugging purposes.
    */
-  int _interiorFaceSolve;
+  int _interiorFaceSolves;
   /*
    *  Counter for the boundary face solves for debugging purposes.
    */
