@@ -154,6 +154,16 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
   }
 }
 
+exahype::mappings::Merging::Merging()
+  #ifdef Debug
+  :
+  _interiorFaceSolves(0),
+  _boundaryFaceSolves(0)
+  #endif
+{
+  // do nothing
+}
+
 exahype::mappings::Merging::~Merging() {
   deleteTemporaryVariables();
 }
@@ -163,7 +173,12 @@ exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState),
   _tempFaceUnknownsArray(nullptr),
   _tempStateSizedVectors(nullptr),
-  _tempStateSizedSquareMatrices(nullptr) {
+  _tempStateSizedSquareMatrices(nullptr),
+  #ifdef Debug
+  _interiorFaceSolves(0),
+  _boundaryFaceSolves(0)
+  #endif
+  {
   prepareTemporaryVariables();
 }
 #endif
@@ -651,16 +666,6 @@ void exahype::mappings::Merging::prepareCopyToRemoteNode(
 }
 
 #endif
-
-exahype::mappings::Merging::Merging()
-  #ifdef Debug
-  :
-  _boundaryFaceSolves(0),
-  _interiorFaceSolves(0)
-  #endif
-{
-  // do nothing
-}
 
 #if defined(SharedMemoryParallelisation)
 void exahype::mappings::Merging::mergeWithWorkerThread(
