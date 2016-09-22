@@ -32,6 +32,7 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 #include <float.h>
 #include <fstream>
 #include <mm_malloc.h> //g++
+#include <chrono>
 
 #if defined _OPENMP
 #include <omp.h>
@@ -42,7 +43,6 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 #include <time.h>
 #endif
 
-#include <ctime>
 
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
@@ -58,6 +58,7 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 double* weights1;
 
 using namespace std;
+using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     #ifdef __ICC
@@ -74,9 +75,13 @@ int main(int argc, char *argv[]) {
     filename += ".dat";
     resultsFile.open(filename);
     
-    clock_t timeStart, timeEnd;
+    high_resolution_clock::time_point timeStart, timeEnd;
     double t1, t2;
+    const double nano2sec = 1000000000.0;
     const int nTests = 1000000;
+    
+    cout << "nTests=" << nTests << endl;
+    resultsFile << "nTests=" << nTests << endl;
 
     constexpr int maxOrder = 8;
     constexpr int nDOF = maxOrder+1;
@@ -99,22 +104,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 3" << endl;
     initGaussLegendreNodesAndWeights3();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor3(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 3" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 4, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights3();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -124,22 +129,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 4" << endl;
     initGaussLegendreNodesAndWeights4();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor4(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 4" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 5, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights4();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -149,22 +154,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 5" << endl;
     initGaussLegendreNodesAndWeights5();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor5(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 5" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 6, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights5();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -174,22 +179,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 6" << endl;
     initGaussLegendreNodesAndWeights6();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor6(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 6" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 7, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights6();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -199,22 +204,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 7" << endl;
     initGaussLegendreNodesAndWeights7();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor7(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 7" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 8, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights7();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -224,22 +229,22 @@ int main(int argc, char *argv[]) {
 
     cout << "Optimised Kernel order = 8" << endl;
     initGaussLegendreNodesAndWeights8();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         predictor8(lQhi, lFhi, lQi, lFi); 
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 8" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPredictorNonlinear(lQi, lFi, nVar, 9, lQhi, &lFhi[0], &lFhi[8*nDOF*nDOF*nDOF*nDOF], &lFhi[2*8*nDOF*nDOF*nDOF*nDOF]);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeGaussLegendreNodesAndWeights8();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
