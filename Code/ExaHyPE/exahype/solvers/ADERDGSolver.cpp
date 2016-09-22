@@ -2250,7 +2250,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
                        cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
 
   if (cellDescription.getType()==CellDescription::Type::Ancestor) {
-    logInfo("mergeWithWorkerData(...)","Received face data for solver " <<
+    logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
              cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
 
@@ -2378,7 +2378,7 @@ bool exahype::solvers::ADERDGSolver::sendDataToWorker(
         fluctuations, getUnknownsPerCellBoundary(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 
-    logInfo("sendDataToWorker(...)","Sent face data of solver " <<
+    logDebug("sendDataToWorker(...)","Sent face data of solver " <<
              cellDescription.getSolverNumber() << " to rank "<< workerRank <<
              ", cell: "<< x << ", level: " << level);
   } else {
@@ -2429,7 +2429,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
                      cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
 
   if (cellDescription.getType()==CellDescription::Descendant) {
-    logInfo("mergeWithMasterData(...)","Received face data for solver " <<
+    logDebug("mergeWithMasterData(...)","Received face data for solver " <<
              cellDescription.getSolverNumber() << " from rank "<<masterRank<<
              ", cell: "<< x << ", level: " << level);
 
