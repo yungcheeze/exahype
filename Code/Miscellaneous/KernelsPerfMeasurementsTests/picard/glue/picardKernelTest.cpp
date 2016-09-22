@@ -34,6 +34,7 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 #include <float.h>
 #include <fstream>
 #include <mm_malloc.h> //g++
+#include <chrono>
 
 #if defined _OPENMP
 #include <omp.h>
@@ -43,8 +44,6 @@ g++  -std=c++11 -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__  -O3 
 #include <sys/time.h>
 #include <time.h>
 #endif
-
-#include <ctime>
 
 #define STR_EXPAND(tok) #tok
 #define STR(tok) STR_EXPAND(tok)
@@ -66,6 +65,7 @@ double *F0;
 double *iK1;
 
 using namespace std;
+using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     #ifdef __ICC
@@ -82,10 +82,14 @@ int main(int argc, char *argv[]) {
     filename += ".dat";
     resultsFile.open(filename);
 
-    clock_t timeStart, timeEnd;
+    high_resolution_clock::time_point timeStart, timeEnd;
     double t1, t2;
+    const double nano2sec = 1000000000.0;
     const int nTests = 1000;
-
+    
+    cout << "nTests=" << nTests << endl;
+    resultsFile << "nTests=" << nTests << endl;
+    
     constexpr int maxOrder = 8;
     constexpr int nDOF = maxOrder+1;
     constexpr int nVar = NVAR;
@@ -107,22 +111,22 @@ int main(int argc, char *argv[]) {
     initDGMatrices3();
     initGaussLegendreNodesAndWeights3();
     KXI = KxiGeneric[3];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop3(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices3();
     freeGaussLegendreNodesAndWeights3();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     cout << "Generic Kernel order = 3" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 4, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
 
     //        order | optimised | generic
     resultsFile << "3 "<<t1<<" "<<t2 << endl;
@@ -133,22 +137,22 @@ int main(int argc, char *argv[]) {
     initDGMatrices4();
     initGaussLegendreNodesAndWeights4();
     KXI = KxiGeneric[4];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop4(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices4();
     freeGaussLegendreNodesAndWeights4();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
 
     cout << "Generic Kernel order = 4" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 5, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
 
     //        order | optimised | generic
@@ -160,22 +164,22 @@ int main(int argc, char *argv[]) {
     initDGMatrices5();
     initGaussLegendreNodesAndWeights5();
     KXI = KxiGeneric[5];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop5(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices5();
     freeGaussLegendreNodesAndWeights5();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
 
     cout << "Generic Kernel order = 5" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 6, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
     //        order | optimised | generic
     resultsFile << "5 "<<t1<<" "<<t2 << endl;	
@@ -186,23 +190,23 @@ int main(int argc, char *argv[]) {
     initDGMatrices6();
     initGaussLegendreNodesAndWeights6();
     KXI = KxiGeneric[6];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop6(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices6();
     freeGaussLegendreNodesAndWeights6();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
 
     cout << "Generic Kernel order = 6" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 7, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     //        order | optimised | generic
     resultsFile << "6 "<<t1<<" "<<t2 << endl;	
@@ -213,22 +217,22 @@ int main(int argc, char *argv[]) {
     initDGMatrices7();
     initGaussLegendreNodesAndWeights7();
     KXI = KxiGeneric[7];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop7(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices7();
     freeGaussLegendreNodesAndWeights7();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     cout << "Generic Kernel order = 7" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 8, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
     //        order | optimised | generic
     resultsFile << "7 "<<t1<<" "<<t2 << endl;	
@@ -239,23 +243,23 @@ int main(int argc, char *argv[]) {
     initDGMatrices8();
     initGaussLegendreNodesAndWeights8();
     KXI = KxiGeneric[8];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         picardLoop8(lQi, lFi, luh, dx, dt);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices8();
     freeGaussLegendreNodesAndWeights8();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
 
     cout << "Generic Kernel order = 8" << endl;
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(int iTest=0;iTest<nTests;iTest++) {
         aderPicardLoopNonlinear(luh, dt, &dx[0], nVar, 9, lQi, lFi);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
 
     //        order | optimised | generic

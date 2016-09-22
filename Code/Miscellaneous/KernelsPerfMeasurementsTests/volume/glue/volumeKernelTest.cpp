@@ -31,6 +31,7 @@ g++  -std=c++11 -Wall -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__
 #include <float.h>
 #include <fstream>
 #include <mm_malloc.h> //g++
+#include <chrono>
 
 #if defined _OPENMP
 #include <omp.h>
@@ -40,8 +41,6 @@ g++  -std=c++11 -Wall -DALIGNMENT=64 -DFILESUFFIX=GCC_O3 -Drestrict=__restrict__
 #include <sys/time.h>
 #include <time.h>
 #endif
-
-#include <ctime>
 
 #include "matrices.h"
 #include "optimizedKernels.h"
@@ -58,6 +57,7 @@ double* s_m;
 double* weights2;
 
 using namespace std;
+using namespace std::chrono;
 
 static volatile int iTest;
 
@@ -76,11 +76,13 @@ int main(int argc, char *argv[]) {
     filename += ".dat";
     resultsFile.open(filename);
 
-    clock_t timeStart, timeEnd;
+    high_resolution_clock::time_point timeStart, timeEnd;
     double t1, t2;
+    const double nano2sec = 1000000000.0;
     const int nTests = 1000000;
-
-    std::cout.precision(4);
+    
+    cout << "nTests=" << nTests << endl;
+    resultsFile << "nTests=" << nTests << endl;
 
 	constexpr int maxOrder = 8;
 	constexpr int nDOF = maxOrder+1;
@@ -94,7 +96,6 @@ int main(int argc, char *argv[]) {
 	
 	
 
-
 	const double dx[3] = {0.1,0.1,0.1};	
 
   initDGMatricesGeneric();
@@ -102,24 +103,24 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 3" << endl;
     initDGMatrices3();
     initGaussLegendreNodesAndWeights3();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegral3(lduh, lFhi, dx);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices3();
     freeGaussLegendreNodesAndWeights3();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     //cout << t1 << endl; // in seconds
 
     cout << "Generic Kernel order = 3" << endl;
     Kxi = KxiGeneric[3];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 4);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
     //cout << t2 << endl;
 
     //        order | optimised | generic
@@ -130,23 +131,23 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 4" << endl;
     initDGMatrices4();
     initGaussLegendreNodesAndWeights4();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
       volumeIntegral4(lduh, lFhi, dx);
     }
-    timeEnd = clock();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    timeEnd = high_resolution_clock::now();
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
 
     cout << "Generic Kernel order = 4" << endl;
     Kxi = KxiGeneric[4];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 5);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices4();
     freeGaussLegendreNodesAndWeights4();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     
     //        order | optimised | generic
@@ -157,23 +158,23 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 5" << endl;
     initDGMatrices5();
     initGaussLegendreNodesAndWeights5();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
       volumeIntegral5(lduh, lFhi, dx);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices5();
     freeGaussLegendreNodesAndWeights5();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC; 
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec; 
 
     cout << "Generic Kernel order = 5" << endl;
     Kxi = KxiGeneric[5];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 6);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
     //        order | optimised | generic
     resultsFile << "5 "<<t1<<" "<<t2 << endl;	
@@ -183,24 +184,24 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 6" << endl;
     initDGMatrices6();
     initGaussLegendreNodesAndWeights6();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
       volumeIntegral6(lduh, lFhi, dx);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices6();
     freeGaussLegendreNodesAndWeights6();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
 
     cout << "Generic Kernel order = 6" << endl;
     Kxi = KxiGeneric[6];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 7);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
     //        order | optimised | generic
     resultsFile << "6 "<<t1<<" "<<t2 << endl;	
@@ -210,23 +211,23 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 7" << endl;
     initDGMatrices7();
     initGaussLegendreNodesAndWeights7();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
       volumeIntegral7(lduh, lFhi, dx);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices7();
     freeGaussLegendreNodesAndWeights7();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     cout << "Generic Kernel order = 7" << endl;
     Kxi = KxiGeneric[7];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 8);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
     
     //        order | optimised | generic
     resultsFile << "7 "<<t1<<" "<<t2 << endl;	
@@ -236,24 +237,24 @@ int main(int argc, char *argv[]) {
     cout << "Optimised Kernel order = 8" << endl;
     initDGMatrices8();
     initGaussLegendreNodesAndWeights8();
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
       volumeIntegral8(lduh, lFhi, dx);
     }
-    timeEnd = clock();
+    timeEnd = high_resolution_clock::now();
     freeDGMatrices8();
     freeGaussLegendreNodesAndWeights8();
-    t1 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    t1 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
 
     cout << "Generic Kernel order = 8" << endl;
     Kxi = KxiGeneric[8];
-    timeStart = clock();
+    timeStart = high_resolution_clock::now();
     for(iTest=0;iTest<nTests;iTest++) {
         volumeIntegralNonlinear(lduh, lFhi, dx, nVar, 9);
     }
-    timeEnd = clock();
-    t2 = double(timeEnd-timeStart) / CLOCKS_PER_SEC;
+    timeEnd = high_resolution_clock::now();
+    t2 = duration_cast<nanoseconds>(timeEnd-timeStart).count() / nano2sec;
 
     
     //        order | optimised | generic
