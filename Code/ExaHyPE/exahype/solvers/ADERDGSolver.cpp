@@ -1057,26 +1057,20 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       tempFluxUnknowns,
       cellDescription.getSize());
 
-    for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-    for (int i=0; i<solver->getSpaceTimeFluxUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-      for (int i=0; i<solver->getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  for (int i=0; i<solver->getSpaceTimeFluxUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  for (int i=0; i<solver->getUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-    for (int i=0; i<solver->getFluxUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
-    // TODO(Dominic): Check only works for Euler
-    for(int i=0; i<getUnknownsPerCellBoundary(); i += getNumberOfVariables()) {
-      assertion3(lQhbnd[i]>0,cellDescription.toString(),i,lQhbnd[i]);
-      assertion3(lQhbnd[i+4]>0,cellDescription.toString(),i,lQhbnd[i+4]);
-    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+  for (int i=0; i<solver->getFluxUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 }
 
 double exahype::solvers::ADERDGSolver::startNewTimeStep(
