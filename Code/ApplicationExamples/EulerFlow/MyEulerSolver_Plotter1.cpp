@@ -98,7 +98,8 @@ void Euler::MyEulerSolver_Plotter1::mapQuantities(
 	double xpos[DIMENSIONS];
 	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 	
-	ShuVortex2D(xpos, Exact, time);
+//	ShuVortex2D(xpos, Exact, time); // TODO(Dominic): Bug: Here, you used the Shu-Vortex as reference solution for every problem. You compared your (Euler) lin. adv. against it.
+	InitialData(xpos, Exact, time);
 
 	double localError[nVars];
 	for(int i=0; i<nVars; i++) {
