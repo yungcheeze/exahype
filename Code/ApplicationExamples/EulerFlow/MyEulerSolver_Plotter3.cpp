@@ -1,5 +1,6 @@
 #include "MyEulerSolver_Plotter3.h"
 #include "InitialData.h"
+#include "Primitives.h"
 
 
 Euler::MyEulerSolver_Plotter3::MyEulerSolver_Plotter3(MyEulerSolver& solver) {
@@ -35,13 +36,13 @@ void Euler::MyEulerSolver_Plotter3::mapQuantities(
    * This is the plotter for the exact solutions, given
    * as primitive Variables
    **/
-  
+
+  // convert tarch::la::Vector to double*  
   double xpos[DIMENSIONS];
   for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 
-  MovingGauss2D(xpos, outputQuantities, this->time);
-  
-  //cons2prim(outputQuantities, Q);
+  InitialData(xpos, outputQuantities, this->time);
+  cons2prim(outputQuantities, Q);
 
   /*
   for (int i=0; i<5; i++){ 
