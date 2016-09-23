@@ -59,10 +59,6 @@ namespace exahype {
  * @author Dominic Charrier, Tobias Weinzierl
  */
 class exahype::mappings::Sending {
- public:
-  #ifdef Parallel
-  static bool SkipReductionInBatchedTimeSteps;
-  #endif
  private:
   /**
    * Logging device for the trace macros.
@@ -101,11 +97,6 @@ class exahype::mappings::Sending {
   void prepareEmptyLocalTimeStepData();
 
 #ifdef Parallel
-  /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int _mpiTag;
-
 /**
  * Loop over all the solvers and check
  * if a cell description (ADERDGCellDescription,
@@ -280,13 +271,54 @@ static void sendEmptySolverDataToNeighbour(
 
 
   ///////////////////////////////////////
-  // WORKER->MASTER->WORKER (Reduction+Broadcast)
+  // WORKER->MASTER Broadcast
   ///////////////////////////////////////
   /**
    * This routine is called on the worker.
    *
-   * Send the local array of minimal time step sizes up to the master. This is
-   * one MPI_Send on the whole array.
+   * Send the local array of minimal time step sizes up to the master.
+   * Further send up face data if a cell description
+   * registered in the fine grid cell of the worker (and master)
+   * is of type Ancestor.
+   *
+   * <h2>Domain Decomposition in Peano</h2>
+   * It is important to notice
+   * that the master rank's cell
+   * and the worker rank's cell
+   * overlap.
+   *
+   * It is further important to notice
+   * that both master and worker rank
+   * are communicating with their
+   * neighbouring cells.
+   *
+   * The master rank's cell communicates
+   * with some neighbour cells
+   * via touchVertexFirstTime while
+   * the the worker rank's cell communicates
+   * with these cells via mergeWithNeighbour,
+   * and vice versa.
+   *
+   * This means that cell descriptions of type
+   * Cell registered at a worker cell
+   * do not need to communicate their
+   * boundary values to their master.
+   *
+   * Descendants are used to store prolongated
+   * face unknowns originating from coarser grid levels.
+   * If the overlapping cell holds cell
+   * descriptions of type Descendant on the master (and worker) side,
+   * we thus need to send data from the master rank to the worker rank.
+   * This operation is performed in the mapping Merging since
+   * it is a top-down broadcast type operation.
+   *
+   * Ancestors are used for storing restricted
+   * face unknowns originating from finer grid levels.
+   * If the overlapping cell holds cell
+   * descriptions of type Ancestor on the worker (and master) side,
+   * we thus need to send data from the worker rank to the master rank.
+   * This operation is performed in the mapping Sending since
+   * it is a bottom-up reduction type operation.
    */
   void prepareSendToMaster(
       exahype::Cell& localCell, exahype::Vertex* vertices,
@@ -297,13 +329,15 @@ static void sendEmptySolverDataToNeighbour(
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * The reduction-broadcast process consists of a send of time step
-   * data from the workers to the master which merges=reduces the time step data and then
-   * sends the reduced time step data back to workers which merge it finally.
-   * Here, we adopt a worker centric point of view, i.e., the reducing of
-   * time step data by the master belongs to the sending process
-   * of its workers.
-   */
+    * This routine is called on the master.
+    *
+    * Receive and merge the array of minimal time step sizes send
+    * by the worker on the master.
+    * Further receive face data if a cell description
+    * registered in the fine grid cell is of type Descendant.
+    *
+    * \see prepareSendToMaster
+    */
   void mergeWithMaster(
       const exahype::Cell& workerGridCell,
       exahype::Vertex* const workerGridVertices,
@@ -318,18 +352,6 @@ static void sendEmptySolverDataToNeighbour(
       exahype::State& masterState);
 
   /**
-   * TODO(Dominic): Revise documentation.
-   *
-   * We use this hook to send solver information to a worker. It is important
-   * that we return false here. Whether or not we need data back from the worker
-   * is solely up to prepareSendToWorker(). This
-   * mapping determines whether we do sync ranks or not.
-   *
-   * Exchange all the global states with the worker
-   *
-   * This ensures that all workers have correct states with correct time step
-   * sizes.
-   *
    * Through the result of this routine, we can skip worker-master data
    * transfer as all other mappings return false. Such a skip is advantageous
    * if the runner has decided to trigger multiple grid traversals in one

@@ -17,6 +17,7 @@ inline double SQ3(const double* const v, int start=1) {
 }
 
 /** The reason for this being in a header is pure lazyness and triviality of the C2P for Euler */
+/*
 inline void cons2prim(double* V, const double* Q) {
 	// Euler c2p
 	double p = (eos_gamma-1)*(Q[4] - 0.5 * SQ3(Q) / Q[0] );
@@ -37,8 +38,8 @@ inline void prim2con(double* Q, const double* V) {
 	Q[4] = V[4] / (eos_gamma-1) + 0.5*V[0] * SQ3(V);
 }
 
+*/
 // skip the cons2prim for debugging
-/*
 inline void cons2prim(double* V, const double* Q) {
 	for(int i=0; i<MY_NUMBER_OF_VARIABLES; i++)
 		V[i] = Q[i];
@@ -48,7 +49,6 @@ inline void cons2prim(double* V, const double* Q) {
 inline void prim2con(double* Q, const double* V) {
 	cons2prim(Q,V);
 }
-*/
 
 
 

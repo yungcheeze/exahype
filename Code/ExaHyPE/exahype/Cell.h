@@ -121,6 +121,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
       cellDescription.setRiemannSolvePerformed(faceIndex,false);
+
       #ifdef Parallel
       int listingsOfRemoteRank =
           countListingsOfRemoteRankByInsideVerticesAtFace(
@@ -129,6 +130,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
         listingsOfRemoteRank = TWO_POWER_D;
       }
       cellDescription.setFaceDataExchangeCounter(faceIndex,listingsOfRemoteRank);
+      assertion(cellDescription.getFaceDataExchangeCounter(faceIndex)>0);
       #endif
     }
   }
@@ -149,20 +151,17 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   #ifdef Parallel
   /**
-   * Count the listings of remote ranks sharing an inside vertex
+   * Count the listings of remote ranks sharing a vertex
    * adjacent to the face \p faceIndex of a cell with this rank.
-   * This value is either 0, 2^{d-2}, or 2^{d-1}.
+   * This value is either 0, or 2^{d-1}.
    *
    * If we count 2^{d-1} listings, we directly know that this rank
    * shares a whole face with a remote rank.
-   * If we count 2^{d-2} listings, we know that this
-   * rank shares a face with a remote rank
-   * but half of the vertices are outside.
-   * If we count 0 listings, we might not
-   * have a remote rank adjacent to this face or
-   * all the vertices are outside.
+   * If we count 0 listings, we do not have
+   * a remote rank adjacent to this face.
    *
-   * We know from the result of this funcion how
+   * <h2>MPI</h2>
+   * We know from the result of this function how
    * many vertices will try to exchange neighbour information
    * for this face.
    *

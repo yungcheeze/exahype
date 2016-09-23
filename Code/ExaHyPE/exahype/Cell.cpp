@@ -76,8 +76,7 @@ int exahype::Cell::countListingsOfRemoteRankByInsideVerticesAtFace(
   dfor2(v) // Loop over vertices.
     if (verticesAroundCell[ verticesEnumerator(v) ].isAdjacentToRemoteRank()) {
       dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-        if (verticesAroundCell[ verticesEnumerator(v) ].isInside() &&
-            tarch::la::equals(v+a,pos) &&
+        if (tarch::la::equals(v+a,pos) &&
             verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
             tarch::parallel::Node::getInstance().getRank()) {
           // Increment

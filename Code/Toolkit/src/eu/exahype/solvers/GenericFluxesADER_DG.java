@@ -137,6 +137,10 @@ public abstract class GenericFluxesADER_DG implements Solver {
 
     writer.write("void " + projectName + "::" + solverName
         + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, double* tempFaceUnknownsArray, double** tempStateSizedVectors, double** tempStateSizedSquareMatrices, const double dt, const int normalNonZeroIndex) {\n");
+    
+    writer.write("  assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);\n");
+    writer.write("  assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);\n");
+    
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"riemannSolver\");\n");
     }

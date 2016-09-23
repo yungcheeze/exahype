@@ -1214,11 +1214,12 @@ public:
       const int                                    level) override;
 
   void mergeWithWorkerData(
-      const int                                    workerRank,
-      const int                                    cellDescriptionsIndex,
-      const int                                    element,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                     workerRank,
+      const int                                     workerTypeAsInt,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) override;
 
   void dropWorkerData(
       const int                                    workerRank,
@@ -1239,7 +1240,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
-  void sendDataToWorker(
+  bool sendDataToWorker(
       const int                                    workerRank,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
@@ -1253,6 +1254,7 @@ public:
 
   void mergeWithMasterData(
       const int                                    masterRank,
+      const int                                    masterTypeAsInt,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,

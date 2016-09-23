@@ -57,6 +57,9 @@ namespace exahype {
  */
 class exahype::mappings::Merging {
 public:
+ #ifdef Parallel
+ static bool SkipReductionInBatchedTimeSteps;
+ #endif
   /**
    * Create an array of \p numberOfElements double pointers.
    * For the first element [0] initialise an array of
@@ -113,7 +116,7 @@ private:
    */
   void deleteTemporaryVariables();
 
-  #ifdef Debug
+  #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
   /*
    *  Counter for the interior face solves for debugging purposes.
    */
@@ -362,18 +365,77 @@ public:
                           int level);
 
   /**
+   * This routine is called on the master.
+   *
+   * Send the local array of reduced minimal time step sizes down to
+   * the worker. Further send down face data if a cell description
+   * registered in the fine grid cell is of type Descendant.
+   *
+   * <h2>Domain Decomposition in Peano</h2>
+   * It is important to notice
+   * that the master rank's cell
+   * and the worker rank's cell
+   * overlap.
+   *
+   * It is further important to notice
+   * that both master and worker rank
+   * are communicating with their
+   * neighbouring cells.
+   *
+   * The master rank's cell communicates
+   * with some neighbour cells
+   * via touchVertexFirstTime while
+   * the the worker rank's cell communicates
+   * with these cells via mergeWithNeighbour,
+   * and vice versa.
+   *
+   * This means that cell descriptions of type
+   * Cell registered at a worker cell
+   * do not need to communicate their
+   * boundary values to their master.
+   *
+   * Descendants are used to store prolongated
+   * face unknowns originating from coarser grid levels.
+   * If the overlapping cell holds cell
+   * descriptions of type Descendant on the master (and worker) side,
+   * we thus need to send data from the master rank to the worker rank.
+   * This operation is performed in the mapping Merging since
+   * it is a top-down broadcast type operation.
+   *
+   * Ancestors are used for storing restricted
+   * face unknowns originating from finer grid levels.
+   * If the overlapping cell holds cell
+   * descriptions of type Ancestor on the worker (and master) side,
+   * we thus need to send data from the worker rank to the master rank.
+   * This operation is performed in the mapping Sending since
+   * it is a bottom-up reduction type operation.
+   */
+  bool prepareSendToWorker(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
+
+  /**
    * Receive kick-off message from master
    *
    * Counterpart of prepareSendToWorker(). This operation is called once when
    * we receive data from the master node.
    *
    * To do a proper Riemann solve, it is important that all the solvers have
-   * the right state. We therefore receive for each individual solver a couple
+   * the right state.We therefore receive for each individual solver a couple
    * of messages and merge them into the global instance before we continue
    * with the actual iteration. However, this data exchange in the mapping
-   * SpaceTimePredictor. See the documentation there for rationale.
+   * Sending. See the documentation there for rationale.
    *
-   * @see SpaceTimePredictor::receiveDataFromMaster() TODO(Dominic)
+   * We further receive face data send from the master in
+   * this hook if a cell description of the worker (and master)
+   * is of type Descendant. See prepareSendToWorker(...) for a rationale
+   *
+   * \see prepareSendToWorker(...)
    */
   void receiveDataFromMaster(
       exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
@@ -454,18 +516,6 @@ public:
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
-  bool prepareSendToWorker(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker);
 
   /**
    * Nop.

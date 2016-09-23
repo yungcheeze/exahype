@@ -134,11 +134,11 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
 
   if ( _parser.getSkipReductionInBatchedTimeSteps() ) {
     logInfo("initDistributedMemoryConfiguration()", "allow ranks to skip reduction" );
-    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = true;
+    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = true;
   }
   else {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
-    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
+    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = false;
   }
   #endif
 }
@@ -164,7 +164,8 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
             true, false,             // useMultithreading, measureRuntimes
             0,                       // grainSizeOfUserDefinedRegions
-            1,                       // splitTheTree
+            peano::datatraversal::autotuning::OracleForOnePhaseDummy::SplitTreeRead::DoNotSplit,                       // splitTheTree
+            //1,                       // splitTheTree
             true, true,              // pipelineDescendProcessing, pipelineAscendProcessing
             tarch::la::aPowI(DIMENSIONS,3*3*3*3/2), 3,  // smallestGrainSizeForAscendDescend
             1,1                      // smallestGrainSizeForEnterLeaveCell, grainSizeForEnterLeaveCell

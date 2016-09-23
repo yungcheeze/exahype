@@ -47,7 +47,7 @@ exahype::Vertex::getCellDescriptionsIndex() {
 bool exahype::Vertex::hasToMergeNeighbours(
       const tarch::la::Vector<DIMENSIONS,int>& pos1,
       const tarch::la::Vector<DIMENSIONS,int>& pos2) const {
-  if (tarch::la::countEqualEntries(pos1,pos2)==1) {
+  if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
     const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
     const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
@@ -67,9 +67,9 @@ bool exahype::Vertex::hasToMergeNeighbours(
       const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
       assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
       const int faceIndex1 = 2 * normalOfExchangedFace +
-          (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+          (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0);
       const int faceIndex2 = 2 * normalOfExchangedFace +
-          (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+          (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0);
 
       // Here, we check all cell descriptions.
       for (auto& p1 : exahype::solvers::
@@ -98,7 +98,7 @@ bool exahype::Vertex::hasToMergeNeighbours(
 bool exahype::Vertex::hasToMergeWithBoundaryData(
       const tarch::la::Vector<DIMENSIONS,int>& pos1,
       const tarch::la::Vector<DIMENSIONS,int>& pos2) const {
-  if (tarch::la::countEqualEntries(pos1,pos2)==1) {
+  if (tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1)) {
     const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
     const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
@@ -134,7 +134,8 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
         for (auto& p1 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-          if (!p1.getIsInside(faceIndex1)) {
+          if (!p1.getIsInside(faceIndex1)
+              && !p1.getRiemannSolvePerformed(faceIndex1)) {
             return true;
           }
         }
@@ -142,7 +143,8 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       } else if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
         for (auto& p2 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-          if (!p2.getIsInside(faceIndex2)) {
+          if (!p2.getIsInside(faceIndex2)
+              && !p2.getRiemannSolvePerformed(faceIndex2)) {
             return true;
           }
         }
@@ -157,7 +159,7 @@ void exahype::Vertex::setMergePerformed(
         const tarch::la::Vector<DIMENSIONS,int>& pos1,
         const tarch::la::Vector<DIMENSIONS,int>& pos2,
         bool state) const {
-  if (tarch::la::countEqualEntries(pos1,pos2)!=1) {
+  if (tarch::la::countEqualEntries(pos1,pos2)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
 
@@ -174,6 +176,9 @@ void exahype::Vertex::setMergePerformed(
       (pos2(normalOfExchangedFace) > pos1(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
   const int faceIndex2 = 2 * normalOfExchangedFace +
       (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+
+//  std::cout << ">>Set: pos1=" << pos1.toString() << ", pos2=" << pos2.toString() <<
+//            ", faceIndex1=" << faceIndex1 << ", faceIndex2=" << faceIndex2 << std::endl;
 
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
     for (auto& p1 : exahype::solvers::
@@ -224,7 +229,7 @@ bool exahype::Vertex::hasToSendMetadata(
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
-  return tarch::la::countEqualEntries(dest, src)  == 1 &&
+  return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
          adjacentRanks(destScalar)   == toRank &&
          (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
          State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
@@ -252,7 +257,7 @@ bool exahype::Vertex::hasToReceiveMetadata(
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
-  return tarch::la::countEqualEntries(dest, src) == 1 &&
+  return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
       adjacentRanks(srcScalar)    == fromRank &&
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        State::isForkingRank(adjacentRanks(destScalar)));
@@ -266,7 +271,7 @@ bool exahype::Vertex::hasToReceiveMetadataIgnoreForksJoins(
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
-  return tarch::la::countEqualEntries(dest, src) == 1 &&
+  return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
       adjacentRanks(srcScalar)   == fromRank &&
       adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank();
 }
@@ -345,11 +350,12 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
       exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty())
     return;
+
   assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().
       isValidIndex(srcCellDescriptionsIndex),
       srcCellDescriptionsIndex);
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
@@ -357,6 +363,7 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
     int newCounterValue = p.getFaceDataExchangeCounter(faceIndex)-1;
+    assertion2(newCounterValue>=0,newCounterValue,p.toString());
     assertion1(newCounterValue<TWO_POWER_D,newCounterValue);
     p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
   }

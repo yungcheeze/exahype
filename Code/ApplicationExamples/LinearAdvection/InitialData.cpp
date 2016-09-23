@@ -1,13 +1,8 @@
 /**
  * Initial Data for the EulerFlow.
  *
- * At the time of writing this code, there were no methods beyond environment
- * variables to put dynamical parameters into an ExaHyPE simulation. Nowadays
- * there is an API in ExaHyPE to access spec file parameters, cf. the MHD
- * application where this is done.
- *
- * For more details about the initial data implemented in ExaHyPE, see
- * https://gitlab.lrz.de/gi26det/ExaHyPE/wikis/list-of-benchmarks
+ * As we don't have parameters for that in the moment, we use environment
+ * variables to distuingish at run time which initial data to load.
  *
  **/
 

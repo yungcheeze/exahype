@@ -35,7 +35,7 @@ double exahype::mappings::AugmentedAMRTreePlot2d::TreeConnectionsValue = -100.0;
 
 peano::CommunicationSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification() {
-  return peano::CommunicationSpecification::getPessimisticSpecification();
+  return peano::CommunicationSpecification::getPessimisticSpecification(true);
 }
 
 peano::MappingSpecification
@@ -110,7 +110,8 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellTypeWriter(masterThread._cellTypeWriter),
       _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
-      _cellDataWriter(masterThread._cellDataWriter) {}
+      _cellDataWriter(masterThread._cellDataWriter),
+      _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
     const AugmentedAMRTreePlot2d& workerThread) {}
