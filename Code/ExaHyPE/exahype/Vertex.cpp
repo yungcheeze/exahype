@@ -131,9 +131,6 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       const int faceIndex2 = 2 * normalOfExchangedFace +
           (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
-//      std::cout << ">>Check: pos1=" << pos1.toString() << ", pos2=" << pos2.toString() <<
-//          ", faceIndex1=" << faceIndex1 << ", faceIndex2=" << faceIndex2 << std::endl;
-
       if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
         for (auto& p1 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
@@ -353,11 +350,12 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
       exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty())
     return;
+
   assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().
       isValidIndex(srcCellDescriptionsIndex),
       srcCellDescriptionsIndex);
 
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
@@ -365,6 +363,7 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
     int newCounterValue = p.getFaceDataExchangeCounter(faceIndex)-1;
+    assertion2(newCounterValue>=0,newCounterValue,p.toString());
     assertion1(newCounterValue<TWO_POWER_D,newCounterValue);
     p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
   }
