@@ -143,9 +143,11 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
 
       _writer.write("\n");
-      _writer.write("# Some MPI variants face problems with multithreaded MPI. If you run into \n");
-      _writer.write("# such issues, too, comment this line in again. \n");
-      _writer.write("# PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
+      _writer.write("# Several MPI variants face problems with multithreaded MPI. As we run into \n");
+      _writer.write("# such issues multiple times, we disable by default multithreaded MPI in ExaHyE. \n");
+      _writer.write("# However, feel free to give it a try in your code on your system by disabling \n");
+      _writer.write("# this flag. \n");
+      _writer.write("PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
 
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
