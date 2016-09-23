@@ -41,7 +41,8 @@ public:
     void initRow(double current_time) {
         data[time] = current_time;
         data[l1] = data[l2] = 0;
-        data[max] = data[min] = 0;
+        data[max] = 0;
+        data[min] = std::numeric_limits<double>::max();
         data[avg] = 0;
         avgcnt = 0;
     }
@@ -49,8 +50,8 @@ public:
     void addValue(double val, double dx) {
         data[l1] += abs(val) * dx;
         data[l2] += val * val * dx;
-        if(val*dx > data[max]) data[max] = val*dx;
-        if(val*dx < data[min]) data[min] = val*dx;
+        data[max] = std::max( data[max], val*dx); // TODO(Dominic): val * dx, Please explain. I am too lazy to go through all the stuff.
+        data[min] = std::min( data[min], val*dx );
         data[avg] += val;
         avgcnt++;
     }
