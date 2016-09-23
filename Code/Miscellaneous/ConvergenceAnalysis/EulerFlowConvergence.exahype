@@ -1,22 +1,16 @@
 /**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
-/**
  * Euler Flow specfile for convergence analysis.
  *
- * This file is used as template for convergence studies. It turns off
- * all fancy ExaHyPE features (as MPI) and uses global timestepping.
-
+ *@comment@ This file is a TEMPLATE, it has variables denoted
+ *@comment@ like "@VARNAME@" and replaced by a script before
+ *@comment@ handing over to ExaHyPE. Furthermore, these lines
+ *@comment@ starting with "@comment@" are removed from the
+ *@comment@ generated spec file. Instead, there will be a
+ *@comment@ description about the generated file in the
+ *@comment@ following:
+ *
+ * Spec file generated at @DATE@ on machine @HOST@.
+ *
  */
 exahype-project  Euler
 
@@ -27,14 +21,14 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 1.0
+    width                    = @WIDTH@, @WIDTH@
     offset                   = 0.0, 0.0
-    end-time                 = 0.5
+    end-time                 = @ENDTIME@
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 8
+    cores                    = @TBBCORES@
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -57,9 +51,8 @@ exahype-project  Euler
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
-    order             = 3
-    /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.15
+    order             = @ORDER@
+    maximum-mesh-size = @MESHSIZE@
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
@@ -97,15 +90,5 @@ exahype-project  Euler
       output    = ./exact-primitive
       select = {}
     end plot
-
-    /* Do not need the time series for a point in the moment
-    plot probe::ascii
-      variables = 5
-      time      = 0.0
-      repeat    = 0.05
-      output    = ./seismogram
-      select    = {x:0.2,y:0.2}
-    end plot
-    */
   end solver
 end exahype-project

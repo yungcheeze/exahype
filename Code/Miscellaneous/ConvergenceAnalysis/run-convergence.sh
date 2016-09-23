@@ -27,6 +27,9 @@ export EXABINARY=${EXABINARY:=../../ApplicationExamples/EulerFlow/ExaHyPE-Euler}
 #export EXASPECFILE=${EXASPECFILE:=../../ApplicationExamples/EulerFlow.exahype}
 export EXASPECFILE=${EXASPECFILE:=EulerFlowConvergence.exahype}
 
+# how much TBB cores to use for shared memory parallelization
+export EXATBBCORES=${EXATBBCORES:=16}
+
 function errormsg {
 	echo -e "Usage: $0 [-p <num>] [-m <num>]"
 	echo -e "   Runs an ExahyPE binary with arguments in the"
@@ -69,7 +72,7 @@ set -e
 mkdir -p "$SIMBASE"
 SIMDIR="$SIMBASE/p${EXAPORDER}-meshsize${EXAMESHSIZE}/"
 if [ -e "$SIMDIR" ]; then
-	echo "WIPING existing simulation at $SIMDIR !!!"
+	echo "WIPING existing simulation at $SIMDIR"
 	rm -r "$SIMDIR";
 fi
 mkdir -p "$SIMDIR"
@@ -80,7 +83,9 @@ mkdir -p "$SIMDIR"
 # or instead, ONLY put everything to the log starting from here, surpressing stdout.
 
 # stdbuf -o0 to avoid 4kB buffering
-exec > >(stdbuf -o0 awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > "$SIMDIR/run-$(hostname).log") 2>&1
+LOGFILE="$SIMDIR/run-$(hostname).log"
+echo "Redirecting further output to $LOGFILE and executing ExaHyPE in background"
+exec > >(stdbuf -o0 awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > $LOGFILE) 2>&1
 
 # convert possibly relative paths to absolute ones
 EXABINARY=$(readlink -f "$EXABINARY")
@@ -98,15 +103,29 @@ cd "$SIMDIR"
 # setup stuff needed for running the executable
 mkdir -p output
 
-# todo: change spec file content
-sed -i "s/^\(.*maximum-mesh-size = \).*$/\1${EXAMESHSIZE}/" $BASE_EXASPECFILE
-# fun fact: changing the polynomial order requires recompiling. haha.
-
 # set initial data to use.
 export EXAHYPE_INITIALDATA="MovingGauss2D"
 #export EXAHYPE_INITIALDATA="ShuVortex"
 
-echo "This is $0 on $(hostname) at $(date)"
+# parameters for setting up the specfile
+export EXASPEC_WIDTH="1.0"
+export EXASPEC_ENDTIME="0.25"
+export HOST="$(hostname)"
+export DATE="$(date)"
+
+# change spec file contents:
+function exaspecrepl { sed -i "$1" $BASE_EXASPECFILE; }
+
+exaspecrepl '/@comment@/d'
+exaspecrepl "s/@WIDTH@/$EXASPEC_WIDTH/g"
+exaspecrepl "s/@ENDTIME@/$EXASPEC_ENDTIME/g"
+exaspecrepl "s/@ORDER@/$EXAPORDER/g"
+exaspecrepl "s/@MESHSIZE@/$EXAMESHSIZE/g"
+exaspecrepl "s/@HOST@/$HOST/g"
+exaspecrepl "s/@DATE@/$DATE/g"
+exaspecrepl "s/@TBBCORES@/$EXATBBCORES/g"
+
+echo "This is $0 on $HOST at $DATE"
 echo "Running with the following parameters:"
 env | grep -iE 'exa|sim' | tee parameters.env
 echo

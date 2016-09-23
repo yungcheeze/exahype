@@ -11,7 +11,7 @@ import pandas as pd
 # batteries:
 from glob import glob
 from os import path, stat
-from re import match
+from re import match, sub
 from os import path
 from string import Template # HTML output
 # just for statistics
@@ -22,7 +22,7 @@ from getpass import getuser
 # which quantity shall we look at, in the moment?
 quantity = 'error-rho.asc'
 quantityfile="output/" + quantity
-simulations = glob('simulations/*/') # mind the trailing slash to glob only directories
+simulations = glob('simulations/p3*/') # mind the trailing slash to glob only directories
 report_templatefile = "report/report-template.html"
 report_outputfile = "simulations/generated-report.html"
 
@@ -169,13 +169,16 @@ for newcol in outcols:
 
 # compute the actual convergence number for each column
 for rowindex, row in ce.iterrows():
-	if not row[idxprev]:
+	print "I am in row %d and row[%s] is %s" % (rowindex, idxprev, str(row[idxprev]))
+
+	if not row[idxprev] or np.isnan(row[idxprev]):
 		# there is no smaller resolution available
 		continue
 
-	targetrow = ce[(ce[idxprev] == row[idxcells]) & (ce[idxplotindex] == row[idxplotindex])]
+	targetrow = ce[(ce[idxcells] == row[idxprev]) & (ce[idxplotindex] == row[idxplotindex])]
 	if targetrow.empty:
 		# could not find a previous step, so silently ignore
+		print "Did not find a target row"
 		continue
 
 	if len(targetrow) != 1:
@@ -185,7 +188,7 @@ for rowindex, row in ce.iterrows():
 
 	for col, outcol in zip(columns, outcols):
 		value = np.log(row[col] / targetrow[col]) / np.log( targetrow[idxcells] / row[idxcells] )
-		#print "Computed row[%s]=%f" % (outcol, value)
+		print "Computed row[%s]=%f" % (outcol, value)
 		ce.set_value(rowindex, outcol, value)
 
 # print out a subset of the table
@@ -202,9 +205,12 @@ tmplvars['WHOAMI'] = getuser()
 
 tmplvars['QUANTITY'] = quantity
 
+# nice compact display of small and large floats, integers
+compactfloat = lambda f: sub(r'\.0+', '',(u'%.3'+('f' if abs(f)<1e2 else 'e'))%f)
+
 tmplvars['PARAMS_TABLE'] = paramtable.to_html()
 tmplvars['ERROR_TABLE'] = errors.to_html()
-tmplvars['CONVERGENCE_TABLE'] = convergence_table.to_html()
+tmplvars['CONVERGENCE_TABLE'] = convergence_table.to_html(float_format=compactfloat)
 
 tmpl=open(report_templatefile, 'r').read().strip()
 html = Template(tmpl).substitute(tmplvars)

@@ -7,7 +7,7 @@
 from numpy import arange
 import subprocess # batteries
 
-polyorder = 2. # ignored at this stage
+polyorder = 3. # make sure binary is compiled with this order
 depth = arange(2,5)
 dx = (1./3.)**depth
 numcells = 1./dx
