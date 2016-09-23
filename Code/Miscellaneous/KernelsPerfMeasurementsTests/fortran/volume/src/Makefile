@@ -65,7 +65,6 @@ F90_OBJ = gauleg.o                  \
           typesDef.o                \
           DGBasis.o                 \
           PDE.o                     \
-          IO.o                      \
           Init.o                    \
           SpaceTimePredictor.o      \
           VolumeIntegral.o          \

@@ -307,7 +307,7 @@ SUBROUTINE ADERDGInit
         ENDDO
     ENDDO    
     !
-    CALL WriteData
+    !CALL WriteData
     !
     CONTINUE 
     !
