@@ -146,10 +146,6 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
 
-  //  InitialData(x,stateOut,t);
-
-  // skip fluxes for the time being as it crashes
-  /*
     // Compute boundary state.
     InitialData(x, stateOut, t);
 
@@ -157,15 +153,10 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
     // extract normal flux in a lazy fashion.
     double f[5];
     double g[5];
-  #if DIMENSIONS == 2
-    double* F[2];
+    double* F[DIMENSIONS];
     F[0] = f;
     F[1] = g;
-  #else
-    double h[5];
-    double* F[3];
-    F[0] = f;
-    F[1] = g;
+  #if DIMENSIONS == 3
     F[2] = h;
   #endif
     F[normalNonZero] = fluxOut;
@@ -174,7 +165,14 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
     for (int i=0; i<5; i++) {
       fluxOut[i] = F[normalNonZero][i];
     }
-  */
+
+  // The problem with these definitions is that in a simulation
+  // with a global nonzero velocity (as in MovingGauss2D), errnous
+  // values move into the simulation domain very quickly. So these
+  // boundary conditions are not good at all. Instead, we should
+  // have per default "vacuum" boundary conditions, so that vacuum
+  // values enter the grid as soon as matter moves away.
+
   //  fluxOut
   //  //@todo Please implement
   fluxOut[0] = fluxIn[0];
