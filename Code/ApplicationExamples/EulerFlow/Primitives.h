@@ -7,7 +7,7 @@
 static const double eos_gamma = 1.4; // cf. fluxes, eigenvalues, initial data
 
 // helper: Square of a.
-inline double SQ(double a) { return a*a; }
+inline double SQ(double a) { return (a)*(a); }
 
 // another pseudo vector helper
 inline double SQ3(const double* const v, int start=1) {
