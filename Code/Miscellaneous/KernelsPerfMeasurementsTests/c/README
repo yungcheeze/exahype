@@ -18,3 +18,7 @@ Test for performance measurement.
 By default should be the empty layout configured for nvar=9 and hsw
 
 See the README to adapt and generate the test
+
+Note:
+compile option -xCORE-AVX2 = Haswell
+compile option -xMIC-AVX512 = KNL

@@ -45,7 +45,7 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
     p = (EQN%gamma-1)*( Q(5) - 0.5*SUM(Q(2:4)**2)/Q(1) )    ! fluid pressure 
     c = SQRT(EQN%gamma*p/Q(1))                              ! sound speed
     !
-    Lambda = (/ u-c, u, u, u, u+c /)                        ! The eigenvalues of the Euler equations 
+    !Lambda = (/ u-c, u, u, u, u+c /)                        ! The eigenvalues of the Euler equations 
     !
 END SUBROUTINE PDEEigenvalues
 
