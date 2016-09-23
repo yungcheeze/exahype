@@ -164,8 +164,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
             true, false,             // useMultithreading, measureRuntimes
             0,                       // grainSizeOfUserDefinedRegions
-            peano::datatraversal::autotuning::OracleForOnePhaseDummy::SplitTreeRead::DoNotSplit,                       // splitTheTree
-            //1,                       // splitTheTree
+            peano::datatraversal::autotuning::OracleForOnePhaseDummy::SplitVertexReadsOnRegularSubtree::Split,
             true, true,              // pipelineDescendProcessing, pipelineAscendProcessing
             tarch::la::aPowI(DIMENSIONS,3*3*3*3/2), 3,  // smallestGrainSizeForAscendDescend
             1,1                      // smallestGrainSizeForEnterLeaveCell, grainSizeForEnterLeaveCell
