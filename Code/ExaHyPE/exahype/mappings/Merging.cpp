@@ -1,5 +1,4 @@
 /**
- * This file is part of the ExaHyPE project.
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
@@ -299,6 +298,7 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                                             _tempFaceUnknownsArray[solverNumber],
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
+
               #ifdef Debug // TODO(Dominic)
               _boundaryFaceSolves++;
               #endif
@@ -331,10 +331,6 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-    #if !defined(PeriodicBC)
-      if (vertex.isBoundary()) return; // TODO(Dominic): Discussion necessary
-    #endif
-
     dfor2(myDest)
       dfor2(mySrc)
         tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;

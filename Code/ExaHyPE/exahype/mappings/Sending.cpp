@@ -193,10 +193,6 @@ void exahype::mappings::Sending::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    #if !defined(PeriodicBC)
-    if (vertex.isBoundary()) return;
-    #endif
-
     dfor2(dest)
       dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {
