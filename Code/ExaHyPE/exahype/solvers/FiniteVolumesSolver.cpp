@@ -635,14 +635,20 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
   // todo send time step size
 }
 
-bool exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
+bool exahype::solvers::FiniteVolumesSolver::hasToSendDataToMaster(
+    const int cellDescriptionsIndex,
+    const int element) {
+  assertionMsg(false,"Please implement!");
+  return false;
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
     const int                                     workerRank,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
   assertionMsg(false,"Please implement!");
-  return false;
 }
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(

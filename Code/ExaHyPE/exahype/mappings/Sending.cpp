@@ -37,10 +37,14 @@
 
 tarch::multicore::BooleanSemaphore exahype::mappings::Sending::_semaphoreForRestriction;
 
+#ifdef Parallel
+bool exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
+#endif
+
 peano::CommunicationSpecification
 exahype::mappings::Sending::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
       true);
 }
@@ -91,6 +95,8 @@ tarch::logging::Log exahype::mappings::Sending::_log(
 void exahype::mappings::Sending::beginIteration(
     exahype::State& solverState) {
   _localState = solverState;
+
+  logDebug("beginIteration(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 }
 
 #if defined(SharedMemoryParallelisation)
@@ -275,6 +281,9 @@ void exahype::mappings::Sending::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+
+  logDebug("prepareSendToMaster(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
+
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
     for (auto& p : exahype::solvers::RegisteredSolvers) {
@@ -284,6 +293,7 @@ void exahype::mappings::Sending::prepareSendToMaster(
           verticesEnumerator.getLevel());
     }
   }
+  return; // todo remove
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
@@ -345,6 +355,7 @@ void exahype::mappings::Sending::mergeWithMaster(
           fineGridVerticesEnumerator.getLevel());
     }
   }
+  return; // todo remove
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
@@ -399,13 +410,6 @@ void exahype::mappings::Sending::mergeWithMaster(
 }
 
 
-//
-// Below all functions are nop.
-//
-// ====================================
-
-
-
 bool exahype::mappings::Sending::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -414,11 +418,42 @@ bool exahype::mappings::Sending::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  // do nothing
-  return false;
+  bool workerHasToSendDataMaster = false;
+
+  if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
+      && fineGridCell.isInside()) {
+    if (fineGridCell.isInitialised()) {
+      int solverNumber=0;
+      for (auto solver : exahype::solvers::RegisteredSolvers) {
+        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+        if (element!=exahype::solvers::Solver::NotFound) {
+          workerHasToSendDataMaster |=
+              solver->hasToSendDataToMaster(fineGridCell.getCellDescriptionsIndex(),element);
+        }
+
+        ++solverNumber;
+      }
+    }
+  }
+
+  if (!peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
+      &&
+      workerHasToSendDataMaster
+      &&
+      SkipReductionInBatchedTimeSteps) {
+    return false;
+  }
+  else return true;
 }
 
 
+
+//
+// Below all functions are nop.
+//
+// ====================================
 
 void exahype::mappings::Sending::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,

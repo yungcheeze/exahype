@@ -173,14 +173,14 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
     _stateData.setFuseADERDGPhases(false);
-    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
 
   void switchToADERDGTimeStepContext() {
     _stateData.setFuseADERDGPhases(true);
-    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData);
-    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
 
   void switchToPredictionRerunContext() {
@@ -189,20 +189,20 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToNeighbourDataMergingContext() {
     _stateData.setFuseADERDGPhases(false);
-    _stateData.setMergeMode(records::State::MergeFaceData);
-    _stateData.setSendMode (records::State::SendNothing);
+    _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
 
   void switchToSolutionUpdateAndTimeStepSizeComputationContext() {
     _stateData.setFuseADERDGPhases(false);
-    _stateData.setMergeMode(records::State::MergeNothing);
-    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepData);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   void switchToPredictionContext() {
     _stateData.setFuseADERDGPhases(false);
-    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendFaceData);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
   void setStabilityConditionOfOneSolverWasViolated(bool state) {

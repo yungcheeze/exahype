@@ -453,6 +453,10 @@ public:
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
+  bool hasToSendDataToMaster(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   void sendDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -501,7 +505,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
-  bool sendDataToWorker(
+  void sendDataToWorker(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,

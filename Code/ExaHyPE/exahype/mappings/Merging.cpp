@@ -79,10 +79,6 @@ exahype::mappings::Merging::descendSpecification() {
 tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
 
-#ifdef Parallel
-bool exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = false;
-#endif
-
 void exahype::mappings::Merging::prepareTemporaryVariables() {
   if (_tempStateSizedVectors==nullptr) {
     assertion(_tempStateSizedSquareMatrices==nullptr);
@@ -189,6 +185,8 @@ void exahype::mappings::Merging::beginIteration(
   prepareTemporaryVariables();
 
   _localState = solverState;
+
+  logDebug("beginIteration(State)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -449,7 +447,7 @@ bool exahype::mappings::Merging::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  bool workerHasToSendFaceData = false;
+  logDebug("prepareSendToWorker(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
@@ -476,7 +474,6 @@ bool exahype::mappings::Merging::prepareSendToWorker(
         int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound) {
-          workerHasToSendFaceData |=
               solver->sendDataToWorker(
                   worker,
                   fineGridCell.getCellDescriptionsIndex(),element,
@@ -501,16 +498,7 @@ bool exahype::mappings::Merging::prepareSendToWorker(
     } // else do nothing
   }
 
-  if (
-      (!peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
-      &&
-      (!workerHasToSendFaceData)
-      &&
-      SkipReductionInBatchedTimeSteps)
-  ) {
-    return false;
-  }
-  else return true;
+  return false;
 }
 
 void exahype::mappings::Merging::receiveDataFromMaster(
@@ -532,6 +520,8 @@ void exahype::mappings::Merging::receiveDataFromMaster(
           receivedVerticesEnumerator.getLevel());
     }
   }
+
+  return; // todo remove
 
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)

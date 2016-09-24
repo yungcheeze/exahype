@@ -736,6 +736,25 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
 
   /**
+   * Determine if the solver has to reduce data for the cell description
+   * \p element at heap address \p cellDescriptionsIndex.
+   * This is the case if we have adaptive mesh refinement
+   * activated and a cell description located at the
+   * master worker boundary is of type Ancestor (not EmptyAncestor).
+   * In this case the worker will restrict face data up to the
+   * master in this iteration.
+   *
+   * Note that this function must be called in
+   * prepareSendToWorker(...) if you plug it into the Peano engine.
+   *
+   * Note that this function is not in control of determining when to reduce
+   * time step data. This should be done outside of this function.
+   */
+  virtual bool hasToSendDataToMaster(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
    * Send data to the master that is not
    * depending on a particular cell description.
    *
@@ -846,17 +865,12 @@ class exahype::solvers::Solver {
    * the cell description \p element in the cell descriptions
    * vector stored at \p cellDescriptionsIndex.
    *
-   * \return Returns true if it is expected based on the (cell description
-   * type) that the worker will send solver data up to the master.
-   * Note that this function is not in control of determining when to reduce
-   * time step data. This should be done outside of this function.
-   *
    * \param[in] element Index of the ADERDGCellDescription
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    *                    This is not the solver number.
    */
-  virtual bool sendDataToWorker(
+  virtual void sendDataToWorker(
       const int                                    workerRank,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
