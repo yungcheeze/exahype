@@ -18,7 +18,6 @@
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
 #include "exahype/mappings/TimeStepSizeComputation.h"
-#include "exahype/mappings/Merging.h"
 #include "exahype/mappings/Sending.h"
 
 #include "tarch/Assertions.h"
@@ -134,11 +133,11 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
 
   if ( _parser.getSkipReductionInBatchedTimeSteps() ) {
     logInfo("initDistributedMemoryConfiguration()", "allow ranks to skip reduction" );
-    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = true;
+    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = true;
   }
   else {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
-    exahype::mappings::Merging::SkipReductionInBatchedTimeSteps = false;
+    exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
   }
   #endif
 }
@@ -339,26 +338,26 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     }
 
     #if defined(TrackGridStatistics) && defined(Asserts)
-    logInfo("runAsMaster()",
+    logInfo("createGrid()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #elif defined(Asserts)
-    logInfo("runAsMaster()",
+    logInfo("createGrid()",
         "grid setup iteration #" << gridSetupIterations <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #elif defined(TrackGridStatistics)
-    logInfo("runAsMaster()",
+    logInfo("createGrid()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #else
-    logInfo("runAsMaster()",
+    logInfo("createGrid()",
         "grid setup iteration #" << gridSetupIterations <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
@@ -415,7 +414,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * time step size on each patch for each solver.
    */
   initSolverTimeStamps();
-
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.

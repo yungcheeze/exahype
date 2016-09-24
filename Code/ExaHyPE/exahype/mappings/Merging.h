@@ -56,27 +56,6 @@ namespace exahype {
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
 class exahype::mappings::Merging {
-public:
- #ifdef Parallel
- static bool SkipReductionInBatchedTimeSteps;
- #endif
-  /**
-   * Create an array of \p numberOfElements double pointers.
-   * For the first element [0] initialise an array of
-   * size numberOfElements * blockSize.
-   * Let the other elements point at the locations
-   * i * blockSize, i=1,...,numberOfElements,
-   * in this array.
-   */
-  static double** initialiseContiguousArrays(int numberOfElements,int blockSize);
-
-  /**
-   * Delete a block of contiguous arrays.
-   *
-   * \see initialiseContiguousArray.
-   */
-  static void deleteContiguousArrays(double** array, int numberOfElements);
-
 private:
   /**
    * Logging device for the trace macros.

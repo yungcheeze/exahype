@@ -59,6 +59,15 @@ namespace exahype {
  * @author Dominic Charrier, Tobias Weinzierl
  */
 class exahype::mappings::Sending {
+public:
+  #ifdef Parallel
+  /**
+   * Allows a rank to skip reduction of time step data if no
+   * other data like face unknowns needs to be reduced.
+   */
+  static bool SkipReductionInBatchedTimeSteps;
+  #endif
+
  private:
   /**
    * Logging device for the trace macros.
