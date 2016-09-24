@@ -19,6 +19,14 @@
 void Euler::MyEulerSolver::init() {
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
+
+// Some day Some day we can have a consistent approach here...
+/*
++  // cf issue #61 and the approach in MHDSolver
++  MY_NUMBER_OF_VARIABLES = getNumberOfVariables();
++  //numberOfParameters = getNumberOfParameters();
++  MY_POLYNOMIAL_DEGREE = getNodesPerCoordinateAxis() - 1; // as this is ADERDG
+*/
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
