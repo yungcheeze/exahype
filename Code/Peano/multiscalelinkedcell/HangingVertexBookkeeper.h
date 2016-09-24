@@ -113,9 +113,13 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
     tarch::la::Vector<TWO_POWER_D,int> createVertexLinkMapForBoundaryVertex() const;
 
     /**
-     * Returns a real reference to an existing hanging vertex. In return, it
-     * also creates a dummy hanging node if none exists yet. This is required
-     * for example on level 1, where the parent hanging vertices never do exist.
+     * Returns a real reference to an existing hanging vertex. It does not create
+     * a dummy hanging node if none exists yet but quits with an assertion, so
+     * please all the creational routines first.
+     *
+     * We have to relax the assertion: there can be hanging nodes on level 1 that 
+     * are not created before (though it is kind of strange and I hvae to check 
+     * this once more).
      *
      * Besides the search for the right hanging node, this operation also places
      * a marker on the result that it has been used. This hanging vertex hence

@@ -65,15 +65,9 @@ F90_OBJ = gauleg.o                  \
           typesDef.o                \
           DGBasis.o                 \
           PDE.o                     \
-          CalcTimeStep.o            \
-          IO.o                      \
           Init.o                    \
           SpaceTimePredictor.o      \
           VolumeIntegral.o          \
-          BoundaryConditions.o      \
-          RiemannSolver.o           \
-          SurfaceIntegral.o         \
-          ElementUpdate.o           \
           ADERDG3D.o                
 
 OBJS       = $(F90_OBJ)
