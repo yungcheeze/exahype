@@ -60,7 +60,7 @@ exahype-project  Euler
     plot vtk::Cartesian::cells::ascii
       variables = 5
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @VTKOUTPUTREPEAT@
       output    = ./conserved
       select = {}
     end plot
@@ -70,7 +70,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
-      repeat = 0.05
+      repeat = @CONVOUTPUTREPEAT@
       output = ./output/these-files-should-not-be-there
       select = {}
     end plot
@@ -78,7 +78,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @VTKOUTPUTREPEAT@
       output    = ./primitive
       select = {}
     end plot
@@ -86,7 +86,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @VTKOUTPUTREPEAT@
       output    = ./exact-primitive
       select = {}
     end plot

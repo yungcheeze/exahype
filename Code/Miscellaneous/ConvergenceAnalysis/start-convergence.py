@@ -8,18 +8,27 @@ from numpy import arange
 import subprocess # batteries
 
 polyorder = 3. # make sure binary is compiled with this order
-depth = arange(2,5)
-dx = (1./3.)**depth
-numcells = 1./dx
-reduced_maxmeshsizes = dx * 0.9
+width = 15. # make sure this is like in bash script.
+
+depth = arange(2,6)
+dx = width / 3.**depth
+numcells = width/dx
+reduced_maxmeshsizes = dx * 1.1
+
+def listprint(l):
+	for t in enumerate(l): print "Run %d: %f"%t
 
 print "ExaHyPE convergence Analysis"
 print "============================"
 
-print "Will do convergence analysis with the following maximum mesh sizes: "
-print dx
+print "Will do convergence analysis on %fx%f sized domain with the following maximum mesh sizes: " % (width,width)
+listprint(dx)
+print "With the reduced mesh sizes"
+listprint(reduced_maxmeshsizes)
 print "This is equivalent to these number of cells (unigrid, no AMR):"
-print numcells
+listprint(numcells)
+
+#import sys; sys.exit(0)
 
 # run stuff in the background
 procs = [

@@ -96,8 +96,13 @@ errors = [pd.read_csv(qf, delim_whitespace=True) for qf in quantityfiles]
 
 # get the meshsizes of the individual simulations
 meshsizes = np.array([ pi['EXAMESHSIZE'] for pi in params])
-# something like [90, 10, 30]
-ncells = 1. / meshsizes
+# simulation domain widths
+widths = np.array([ pi['EXASPEC_WIDTH'] for pi in params])
+# shall be all equal, of course.
+if not np.all(widths == widths[0]):
+	print "WARNING: Not all simulation domains are equal! Sizes are: ", widths
+# number of cells
+ncells = widths / meshsizes
 
 ## we can also convert the parameters to a pandas table
 paramtable = pd.DataFrame(params)
@@ -195,6 +200,7 @@ for rowindex, row in ce.iterrows():
 print "Comptuted this convergence table for the individual reductions"
 print "(as l1norm, infnorm=max, etc.)"
 convergence_table = ce[[idxcells,idxprev,idxplotindex] + outcols]
+convergence_table = convergence_table.sort([idxcells, idxplotindex])
 print convergence_table
 
 # prepare the HTML template
@@ -206,7 +212,8 @@ tmplvars['WHOAMI'] = getuser()
 tmplvars['QUANTITY'] = quantity
 
 # nice compact display of small and large floats, integers
-compactfloat = lambda f: sub(r'\.0+', '',(u'%.3'+('f' if abs(f)<1e2 else 'e'))%f)
+compactfloat = lambda f: sub(r'\.0+$', '',(u'%.3'+('f' if abs(f)<999 else 'e'))%f)
+#compactfloat = lambda f: (u'%.3'+('f' if abs(f)<999 else 'e'))%f
 
 tmplvars['PARAMS_TABLE'] = paramtable.to_html()
 tmplvars['ERROR_TABLE'] = errors.to_html()
@@ -220,3 +227,6 @@ with open(report_outputfile, 'w') as out:
 
 print "Wrote report to %s." % report_outputfile
 
+
+# to matplotlib plots and print as SVG:
+# http://stackoverflow.com/questions/5453375/matplotlib-svg-as-string-and-not-a-file

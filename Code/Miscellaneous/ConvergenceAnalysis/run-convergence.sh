@@ -104,14 +104,19 @@ cd "$SIMDIR"
 mkdir -p output
 
 # set initial data to use.
-export EXAHYPE_INITIALDATA="MovingGauss2D"
-#export EXAHYPE_INITIALDATA="ShuVortex"
+#export EXAHYPE_INITIALDATA="MovingGauss2D"
+export EXAHYPE_INITIALDATA="ShuVortex"
 
 # parameters for setting up the specfile
-export EXASPEC_WIDTH="1.0"
-export EXASPEC_ENDTIME="0.25"
+export EXASPEC_WIDTH="15.0"
+export EXASPEC_ENDTIME="100.0" # was 0.25
 export HOST="$(hostname)"
 export DATE="$(date)"
+
+# parameters deciding how frequently output is made. As a first criterion,
+# 1 output dump with the highest resolution is 250MB.
+export EXACONVOUTPUTREPEAT="0.1" # this is almost no data but very slow
+export EXAVTKOUTPUTREPEAT="1.0" # would be amazing to have adaptive output -.-
 
 # change spec file contents:
 function exaspecrepl { sed -i "$1" $BASE_EXASPECFILE; }
@@ -124,6 +129,8 @@ exaspecrepl "s/@MESHSIZE@/$EXAMESHSIZE/g"
 exaspecrepl "s/@HOST@/$HOST/g"
 exaspecrepl "s/@DATE@/$DATE/g"
 exaspecrepl "s/@TBBCORES@/$EXATBBCORES/g"
+exaspecrepl "s/@CONVOUTPUTREPEAT@/$EXACONVOUTPUTREPEAT/g"
+exaspecrepl "s/@VTKOUTPUTREPEAT@/$EXAVTKOUTPUTREPEAT/g"
 
 echo "This is $0 on $HOST at $DATE"
 echo "Running with the following parameters:"
