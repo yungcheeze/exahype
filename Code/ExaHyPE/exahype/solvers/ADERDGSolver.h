@@ -137,7 +137,30 @@ private:
   double _minNextPredictorTimeStepSize;
 
   /**
-   * TODO(Dominic): Add docu.
+   * TODO(Dominic): Add more docu.
+   *
+   * Mark a cell description of Cell for refinement or erasing based
+   * on a user supplied physics based refinement criterion.
+   *
+   * <h2>Erasing</h2>
+   * Note that we use a not so obvious strategy for performing
+   * erasing operations. We first set an erasing request on
+   * a parent cell description of type Ancestor or EmptyAncestor,
+   * and then let its children of type Cell veto
+   * this request if they want to keep their
+   * solution or refine even further.
+   *
+   * We further veto erasing events if
+   * a child of the parent itself is a parent
+   * of cell descriptions of type Descendant/EmptyDescendant.
+   *
+   * <h2>Augmentation</h2>
+   * Note that a cell description of type Cell is allowed to overwrite an augmentation request
+   * by a refinement request if applicable.
+   * The refinement event of a cell description of type Cell might be set to
+   * an augmentation request in the methods mergeWithNeighbourData(...)
+   * as well as in markForAugmentation(...) which is called from within
+   * enterCell(...)
    */
   bool markForRefinement(
       CellDescription& pFine);
@@ -1191,6 +1214,10 @@ public:
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
+  bool hasToSendDataToMaster(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   void sendDataToMaster(
       const int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -1240,7 +1267,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
-  bool sendDataToWorker(
+  void sendDataToWorker(
       const int                                    workerRank,
       const int                                    cellDescriptionsIndex,
       const int                                    element,

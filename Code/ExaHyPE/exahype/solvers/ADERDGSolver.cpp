@@ -12,6 +12,8 @@
  **/
 #include "exahype/solvers/ADERDGSolver.h"
 
+#include <limits>
+
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
 #include "exahype/VertexOperations.h"
@@ -449,6 +451,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
           refineFineGridCell = true;
           break;
         case CellDescription::None:
+        case CellDescription::AugmentingRequested:
           solution = DataHeap::getInstance().getData(fineGridCellDescription.getSolution()).data();
           refinementControl =
               refinementCriterion(
@@ -798,12 +801,23 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
       CellDescription& fineGridCellDescription =
           getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
       prolongateVolumeData(
-          fineGridCellDescription,
-          coarseGridCellDescription,
-          fineGridPositionOfCell);
+          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell);
+    } else {
+      CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
+      assertion2(fineGridCellDescription.getType()==CellDescription::EmptyDescendant
+                 || fineGridCellDescription.getType()==CellDescription::Descendant,
+                 fineGridCellDescription.toString(),coarseGridCellDescription.toString());
+      assertion2(fineGridCellDescription.getParentIndex()==coarseGridCellDescription.getParentIndex(),
+                 fineGridCellDescription.toString(),coarseGridCellDescription.toString());
+      fineGridCellDescription.setType(CellDescription::Cell);
+      fineGridCellDescription.setRefinementEvent(CellDescription::None);
+      ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
 
-      coarseGridCellDescription.setRefinementEvent(CellDescription::Refining);
+      prolongateVolumeData(
+          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell);
     }
+
+    coarseGridCellDescription.setRefinementEvent(CellDescription::Refining);
   }
 }
 
@@ -980,7 +994,6 @@ void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
   unknownsPerCellBoundary = getUnknownsPerCellBoundary();
   #endif
 
-
   assertion1(getType()==exahype::solvers::Solver::Type::ADER_DG,cellDescription.toString());
 
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
@@ -1020,9 +1033,16 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
 
   assertion2(std::isfinite(cellDescription.getPredictorTimeStepSize()),
              cellDescription.toString(),toString());
+  assertion3(cellDescription.getPredictorTimeStepSize()<
+             std::numeric_limits<double>::max(),
+             cellDescription.toString(),toString(),tarch::parallel::Node::getInstance().getRank());
   assertion2(cellDescription.getPredictorTimeStepSize()>0,
-               cellDescription.toString(),toString());
+             cellDescription.toString(),toString());
+
   assertion2(std::isfinite(cellDescription.getPredictorTimeStamp()),
+             cellDescription.toString(),toString());
+  assertion2(cellDescription.getPredictorTimeStamp()<
+             std::numeric_limits<double>::max(),
              cellDescription.toString(),toString());
   assertion2(cellDescription.getPredictorTimeStamp()>=0,
              cellDescription.toString(),toString());
@@ -1034,6 +1054,10 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // face DoF (basisSize**(DIMENSIONS-1))
   double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
   double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+
+  for (int i=0; i<solver->getUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   solver->spaceTimePredictor(
       lQhbnd,
@@ -1060,14 +1084,12 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
   for (int i=0; i<solver->getSpaceTimeFluxUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   for (int i=0; i<solver->getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
   for (int i=0; i<solver->getFluxUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
@@ -1085,7 +1107,8 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     double admissibleTimeStepSize =
         stableTimeStepSize(luh,tempEigenvalues,cellDescription.getSize());
-
+    assertion1(admissibleTimeStepSize>0,cellDescription.toString());
+    assertion1(admissibleTimeStepSize<std::numeric_limits<double>::max(),cellDescription.toString());
     assertion1(std::isfinite(admissibleTimeStepSize),cellDescription.toString());
 
     // Direct update of the cell description time steps
@@ -2159,6 +2182,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       peano::heap::MessageType::MasterWorkerCommunication);
 
   assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
   // Thus it does not equal MAX_DOUBLE.
@@ -2284,6 +2308,9 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
+  // TODO(Dominic): Bug. Broadcasts but has not yet performed
+  // time step size update.
+
   std::vector<double> timeStepDataToBroadcast(0,4);
   timeStepDataToBroadcast.push_back(_minCorrectorTimeStamp);
   timeStepDataToBroadcast.push_back(_minCorrectorTimeStepSize);
@@ -2306,6 +2333,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
             ",data[1]=" << _minCorrectorTimeStepSize <<
             ",data[2]=" << _minPredictorTimeStamp <<
             ",data[3]=" << _minPredictorTimeStepSize);
+    logDebug("sendDataWorker(...)","_minNextPredictorTimeStepSize="<<_minNextPredictorTimeStepSize);
   }
 
   DataHeap::getInstance().sendData(
@@ -2352,12 +2380,36 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 
-bool exahype::solvers::ADERDGSolver::sendDataToWorker(
+bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
+    const int cellDescriptionsIndex,
+    const int element) {
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (cellDescription.getType()==CellDescription::Ancestor) {
+    return true;
+  } else if (cellDescription.getType()==CellDescription::EmptyAncestor) {
+    #if defined(Debug) || defined(Asserts)
+    exahype::solvers::Solver::SubcellPosition subcellPosition =
+        computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
+    assertion(subcellPosition.parentElement==exahype::solvers::Solver::NotFound);
+    #endif
+  }
+
+  return false;
+}
+
+
+void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                     workerRank,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
+    const int                                     level) {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   assertion1(element>=0,element);
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
@@ -2382,20 +2434,8 @@ bool exahype::solvers::ADERDGSolver::sendDataToWorker(
              cellDescription.getSolverNumber() << " to rank "<< workerRank <<
              ", cell: "<< x << ", level: " << level);
   } else {
-    if (cellDescription.getType()==CellDescription::Ancestor) {
-      return true;
-    } else if (cellDescription.getType()==CellDescription::EmptyAncestor) {
-      #if defined(Debug) || defined(Asserts)
-      exahype::solvers::Solver::SubcellPosition subcellPosition =
-          computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
-      assertion(subcellPosition.parentElement==exahype::solvers::Solver::NotFound);
-      #endif
-    }
-
     sendEmptyDataToWorker(workerRank,x,level);
   }
-
-  return false;
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(
