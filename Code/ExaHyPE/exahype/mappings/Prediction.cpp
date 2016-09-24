@@ -229,8 +229,7 @@ void exahype::mappings::Prediction::enterCell(
         exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
       solver->synchroniseTimeStepping(pFine); // Time step synchr. might be done multiple times per traversal; but this is no issue.
 
-      switch (pFine.getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
+      if (pFine.getType()==exahype::records::ADERDGCellDescription::Cell) {
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
 
@@ -242,9 +241,6 @@ void exahype::mappings::Prediction::enterCell(
             _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
-        break;
-      default:
-        break;
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()
