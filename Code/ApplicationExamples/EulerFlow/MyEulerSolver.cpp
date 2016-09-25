@@ -165,14 +165,11 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
     F[0] = f;
     F[1] = g;
   #if DIMENSIONS == 3
+    double h[5];
     F[2] = h;
   #endif
-    F[normalNonZero] = fluxOut;
+    F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
     flux(stateOut, F);
-
-    for (int i=0; i<5; i++) {
-      fluxOut[i] = F[normalNonZero][i];
-    }
 
   // The problem with these definitions is that in a simulation
   // with a global nonzero velocity (as in MovingGauss2D), errnous
