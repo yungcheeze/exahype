@@ -52,7 +52,7 @@
 
 \begin{document}
 \title{Code Generation in ExaHyPE}%Interim Evaluation}
-\subtitle{Handover Document}
+\subtitle{Technical details and performance measurements}
 %\subtitle{\small{... as part of the `Seminar on Advanced and Mobile Internet Technology'}\\
 %\small{\mbox{https://www.comsys.rwth-aachen.de/teaching/ws-1415/seminars-on-advanced-and-mobile-internet-technology/}}
 %}
@@ -102,7 +102,7 @@
 %
 % 1st. author
 \alignauthor
-AS, 8.9.2016
+Angelika Schwarz, Jean-Matthieu Gallard
 %Angelika Schwarz
       %\affaddr{}
       % \affaddr{1932 Wallamaloo Lane}\\
@@ -353,7 +353,7 @@ This section compares the generic kernels (Fortran and C++) and the optimised ve
 
 All measurements have been executed on an Intel Xeon E5-2690v3 (``Haswell'') operating at 2.6 GHz and Intel Xeon Phi 7250 (``Knights Landing (KNL)'') at 1.40GHz. One Haswell core processes 2 Fused Multiply Add (FMA3) vector instructions per cycle and exhibits 256-bit wide AVX instructions so that 4 double-precision operands can be processed simultaneously. Its peak performance calculates as 2.6 Ghz $\cdot 2 \cdot 2 \cdot 4 = 41.6$ GFlops/s \footnote{\url{https://www.lrz.de/services/compute/supermuc/systemdescription/}}. One KNL core processes 2 FMA3 per cycle with 512-bit wide AVX-512 instructions instead and operates at 1.4GHz, its peak performance calculates as 1.4 $\cdot 2 \cdot 2 \cdot 8 = $ 44.8GFlops/s. The test case covers the 3D Euler equations of fluid dynamics with five, nine, twenty-three and fifty-six variables for the polynomial degrees 3 up to 8.
 
-{\color{red}Overall measurements with more quantities showed better performances for the optimized kernels as showed in appendix \ref{sec:app1}. KNL measurements showed more instabilities as the ones done on Haswell as showed in appendix \ref{sec:app2}.}
+Overall measurements show better performance of the optimized kernels for higher polynomial degrees and with an increasing number of quantities, details are given in appendix \ref{App:Performance measurements}. Investigations on the KNL platform are still work in progress and show a certain extend of volatility for single-core measurements.
 
 % peak performance
 \begin{table*}
@@ -723,7 +723,7 @@ In terms of performance the quadrature weights pose a challenge. The current wor
 
 \subsection{Volume Kernel with 5, 9, 23 and 56 quantities (Haswell)} \label{sec:app1}
 
-Figures \ref{fig:resultsVolumeHSW5}, \ref{fig:resultsVolumeHSW9}, \ref{fig:resultsVolumeHSW23} and \ref{fig:resultsVolumeHSW56}.
+Performance measurements for the volume kernels on Haswell CPUs are given for $5$ quantities in Fig.~\ref{fig:resultsVolumeHSW5}, for $9$ quantities in Fig.~\ref{fig:resultsVolumeHSW9}, for $23$ quantities in Fig.~\ref{fig:resultsVolumeHSW23}, and for $56$ quantities, Fig.~\ref{fig:resultsVolumeHSW56}.
 
 \begin{figure}[!h]
 \begin{filecontents}{resultsVolumeHSW5.dat}
@@ -825,9 +825,9 @@ Figures \ref{fig:resultsVolumeHSW5}, \ref{fig:resultsVolumeHSW9}, \ref{fig:resul
 \caption{Haswell (nVar=56) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW56}
 \end{figure}
 
-\subsection{KNL measurements for 9 quantities} \label{sec:app2}
+\subsection{Kernels with 9 quantities (KNL)} \label{sec:app2}
 
-Figures \ref{fig:resultsPicardKNL9}, \ref{fig:resultsVolumeKNL9} and \ref{fig:resultsPredictorKNL9}
+Performance measurements for KNL processors are given for the Picard iteration in Fig.~\ref{fig:resultsPicardKNL9}, for time averaging in Fig.~\ref{fig:resultsPredictorKNL9} and for the volume kernel in Fig.~\ref{fig:resultsVolumeKNL9}.
 
 \begin{figure}[!h]
 \begin{filecontents}{resultsPicardKNL9.dat}
