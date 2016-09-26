@@ -171,6 +171,14 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
     F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
     flux(stateOut, F);
 
+    // This copy is not neccessary as we do have one component of
+    // F already pointing to fluxOut.
+    /*
+    for (int i=0; i<5; i++) {
+      fluxOut[i] = F[normalNonZero][i];
+    }
+    */
+
   // The problem with these definitions is that in a simulation
   // with a global nonzero velocity (as in MovingGauss2D), errnous
   // values move into the simulation domain very quickly. So these
@@ -178,6 +186,7 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   // have per default "vacuum" boundary conditions, so that vacuum
   // values enter the grid as soon as matter moves away.
 
+  /*
   //  fluxOut
   //  //@todo Please implement
   fluxOut[0] = fluxIn[0];
@@ -192,4 +201,5 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   stateOut[2] = stateIn[2];
   stateOut[3] = stateIn[3];
   stateOut[4] = stateIn[4];
+  */
 }
