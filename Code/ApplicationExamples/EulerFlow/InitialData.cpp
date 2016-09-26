@@ -27,6 +27,23 @@
 using namespace std;
 
 /**
+ * This function gives us vacuum values for Euler equations, ie. the trivial
+ * solution. It fulfills the same signature as initial data functions, so it
+ * can be used as a drop-in for boundary conditions.
+ **/
+void Vacuum(const double* x, double* Q, double t = 0.0) {
+  static const double densvac = 1.0;
+  static const double velvac = 0.0;
+  static const double epsvac = 1.0;
+
+  Q[0] = densvac;
+  Q[1] = velvac;
+  Q[2] = velvac;
+  Q[3] = velvac;
+  Q[4] = epsvac;
+}
+
+/**
  * Source: MD ADERDG F90 CODE
  * ShuVortex produces primitive Variables which have to pass Prim2Con afterwards
  *
