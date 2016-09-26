@@ -9,6 +9,7 @@
 import numpy as np
 import pandas as pd
 # batteries:
+import sys
 from glob import glob
 from os import path, stat
 from re import match, sub
@@ -19,12 +20,18 @@ from datetime import datetime
 from socket import gethostname
 from getpass import getuser
 
+try:
+	p = int(sys.argv[1])
+except:
+	print "Usage: %s <OrderPYouWant>" % sys.argv[0]
+	sys.exit(-1)
+
 # which quantity shall we look at, in the moment?
 quantity = 'error-rho.asc'
 quantityfile="output/" + quantity
-simulations = glob('simulations/p3*/') # mind the trailing slash to glob only directories
+simulations = glob('simulations/p%d*/' % p) # mind the trailing slash to glob only directories
 report_templatefile = "report/report-template.html"
-report_outputfile = "simulations/generated-report.html"
+report_outputfile = "simulations/generated-report-p%d.html" % p
 
 def read_simulation_params(envfile):
 	"""

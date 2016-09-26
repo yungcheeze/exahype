@@ -44,6 +44,11 @@ while [[ $# -gt 1 ]]; do
 	case $key in
 		-p|--polyorder)
 		export EXAPORDER="$2"
+		EXABINARY="$EXABINARY-p$EXAPORDER"
+		if [ ! -e "$EXABINARY" ]; then
+			echo -e "Failure: $EXABINARY does not exist. Please compile for order $EXAPORDER"
+			exit -2
+		fi
 		shift # past argument
 		;;
 		-m|--meshsize)
@@ -109,14 +114,14 @@ export EXAHYPE_INITIALDATA="ShuVortex"
 
 # parameters for setting up the specfile
 export EXASPEC_WIDTH="15.0"
-export EXASPEC_ENDTIME="100.0" # was 0.25
+export EXASPEC_ENDTIME="10.0" # was 100. pointless becaus ShuVortex moves out quickly. was 0.25
 export HOST="$(hostname)"
 export DATE="$(date)"
 
 # parameters deciding how frequently output is made. As a first criterion,
 # 1 output dump with the highest resolution is 250MB.
 export EXACONVOUTPUTREPEAT="0.1" # this is almost no data but very slow
-export EXAVTKOUTPUTREPEAT="1.0" # would be amazing to have adaptive output -.-
+export EXAVTKOUTPUTREPEAT="0.5" # would be amazing to have adaptive output -.-
 
 # change spec file contents:
 function exaspecrepl { sed -i "$1" $BASE_EXASPECFILE; }
