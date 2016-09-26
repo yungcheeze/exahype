@@ -96,13 +96,15 @@ void exahype::mappings::InitialCondition::enterCell(
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
 
-    pfor(i, 0, numberOfSolvers, grainSize)
+    pfor(solverNumber, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[i];
-      int element = exahype::solvers::RegisteredSolvers[i]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),i);
+          exahype::solvers::RegisteredSolvers[solverNumber];
+      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound) {
+        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+
         solver->setInitialConditions(
             fineGridCell.getCellDescriptionsIndex(),element,
             fineGridVertices,fineGridVerticesEnumerator);

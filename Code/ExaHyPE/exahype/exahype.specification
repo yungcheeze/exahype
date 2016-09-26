@@ -76,6 +76,7 @@ adapter:
 adapter:
   name: InitialConditionAndTimeStepSizeComputation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
   merge-with-user-defined-mapping: TimeStepSizeComputation

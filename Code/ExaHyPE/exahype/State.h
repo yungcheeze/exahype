@@ -168,7 +168,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * See both mappings for more details.
    */
   void switchToInitialConditionAndTimeStepSizeComputationContext() {
-    switchToSolutionUpdateAndTimeStepSizeComputationContext();
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
