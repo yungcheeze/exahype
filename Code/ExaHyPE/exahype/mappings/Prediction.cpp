@@ -228,6 +228,8 @@ void exahype::mappings::Prediction::enterCell(
       exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
         exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
       solver->synchroniseTimeStepping(pFine); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+      exahype::Cell::resetNeighbourMergeHelperVariables(
+          pFine,fineGridVertices,fineGridVerticesEnumerator);
 
       if (pFine.getType()==exahype::records::ADERDGCellDescription::Cell) {
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
