@@ -854,9 +854,10 @@ bool exahype::solvers::ADERDGSolver::leaveCell(
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-    assertion2(fineGridCellDescription.getParentIndex()==
+    assertion3(fineGridCellDescription.getParentIndex()==
         coarseGridCell.getCellDescriptionsIndex(),
-               fineGridCellDescription.toString(),coarseGridCell.getCellDescriptionsIndex());
+               fineGridCellDescription.toString(),fineGridCell.toString(),
+               coarseGridCell.toString());
 
     startOrFinishCollectiveRefinementOperations(fineGridCellDescription);
 
@@ -1022,9 +1023,6 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns) {
-  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-              exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
@@ -1054,6 +1052,9 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   // face DoF (basisSize**(DIMENSIONS-1))
   double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
   double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+                exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
   for (int i=0; i<solver->getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
@@ -1107,9 +1108,9 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     double admissibleTimeStepSize =
         stableTimeStepSize(luh,tempEigenvalues,cellDescription.getSize());
-    assertion1(admissibleTimeStepSize>0,cellDescription.toString());
-    assertion1(admissibleTimeStepSize<std::numeric_limits<double>::max(),cellDescription.toString());
-    assertion1(std::isfinite(admissibleTimeStepSize),cellDescription.toString());
+    assertion2(admissibleTimeStepSize>0,admissibleTimeStepSize,cellDescription.toString());
+    assertion2(admissibleTimeStepSize<std::numeric_limits<double>::max(),admissibleTimeStepSize,cellDescription.toString());
+    assertion2(std::isfinite(admissibleTimeStepSize),admissibleTimeStepSize,cellDescription.toString());
 
     // Direct update of the cell description time steps
     // Note that these local quantities might
@@ -1134,8 +1135,6 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
   // initial conditions
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
@@ -1166,10 +1165,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
-  // initial conditions
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
@@ -1633,57 +1629,62 @@ void exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(
 }
 
 void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
-    const int                                     fromRank,
-    const int                                     cellDescriptionsIndex,
-    const peano::heap::MessageType&               messageType,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
-      cellDescriptionsIndex);
-
+    const int                                    fromRank,
+    exahype::Cell&                               localCell,
+    const peano::heap::MessageType&              messageType,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
   int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
-  Heap::getInstance().receiveData(cellDescriptionsIndex,
-      fromRank,x,level,messageType);
-  resetDataHeapIndices(
-      receivedCellDescriptionsIndex,
-      multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
+  Heap::getInstance().receiveData(
+      receivedCellDescriptionsIndex,fromRank,x,level,messageType);
 
-  Heap::getInstance().getData(cellDescriptionsIndex).reserve(
-      std::max(Heap::getInstance().getData(cellDescriptionsIndex).size(),
-               Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
+  if (!Heap::getInstance().getData(receivedCellDescriptionsIndex).empty()) {
+    resetDataHeapIndices(receivedCellDescriptionsIndex,
+                         multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
 
-  for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
-    bool found = false;
-    for (auto& pLocal : Heap::getInstance().getData(cellDescriptionsIndex)) {
-      if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
-        found = true;
+    localCell.setupMetaData();
+    assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
+               localCell.getCellDescriptionsIndex());
+    Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).reserve(
+        std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
+                 Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
 
-        assertion(pReceived.getType()==pLocal.getType());
-        if (pLocal.getType()==CellDescription::Type::Cell ||
-            pLocal.getType()==CellDescription::Type::EmptyAncestor ||
-            pLocal.getType()==CellDescription::Type::Ancestor ||
-            pLocal.getType()==CellDescription::Type::Descendant
-            ) {
-          assertionNumericalEquals2(pLocal.getCorrectorTimeStamp(),pReceived.getCorrectorTimeStamp(),
-              pLocal.toString(),pReceived.toString());
-          assertionNumericalEquals2(pLocal.getCorrectorTimeStepSize(),pReceived.getCorrectorTimeStepSize(),
-              pLocal.toString(),pReceived.toString());
-          assertionNumericalEquals2(pLocal.getPredictorTimeStamp(),pReceived.getPredictorTimeStamp(),
-              pLocal.toString(),pReceived.toString());
-          assertionNumericalEquals2(pLocal.getPredictorTimeStepSize(),pReceived.getPredictorTimeStepSize(),
-              pLocal.toString(),pReceived.toString());
+    logInfo("mergeCellDescriptionsWithRemoteData(...)","Received cell descriptions: "<<
+            Heap::getInstance().getData(receivedCellDescriptionsIndex).size());
+
+    for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
+      bool found = false;
+      for (auto& pLocal : Heap::getInstance().getData(localCell.getCellDescriptionsIndex())) {
+        if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
+          found = true;
+
+          assertion(pReceived.getType()==pLocal.getType());
+          if (pLocal.getType()==CellDescription::Type::Cell ||
+              pLocal.getType()==CellDescription::Type::EmptyAncestor ||
+              pLocal.getType()==CellDescription::Type::Ancestor ||
+              pLocal.getType()==CellDescription::Type::Descendant
+          ) {
+            assertionNumericalEquals2(pLocal.getCorrectorTimeStamp(),pReceived.getCorrectorTimeStamp(),
+                                      pLocal.toString(),pReceived.toString());
+            assertionNumericalEquals2(pLocal.getCorrectorTimeStepSize(),pReceived.getCorrectorTimeStepSize(),
+                                      pLocal.toString(),pReceived.toString());
+            assertionNumericalEquals2(pLocal.getPredictorTimeStamp(),pReceived.getPredictorTimeStamp(),
+                                      pLocal.toString(),pReceived.toString());
+            assertionNumericalEquals2(pLocal.getPredictorTimeStepSize(),pReceived.getPredictorTimeStepSize(),
+                                      pLocal.toString(),pReceived.toString());
+          }
         }
       }
-    }
 
-    if (!found) {
-      ADERDGSolver* solver =
-          static_cast<ADERDGSolver*>(RegisteredSolvers[pReceived.getSolverNumber()]);
+      if (!found) {
+        ADERDGSolver* solver =
+            static_cast<ADERDGSolver*>(RegisteredSolvers[pReceived.getSolverNumber()]);
 
-      solver->ensureNecessaryMemoryIsAllocated(pReceived);
-      Heap::getInstance().getData(cellDescriptionsIndex).
-          push_back(pReceived);
+        solver->ensureNecessaryMemoryIsAllocated(pReceived);
+        Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).
+            push_back(pReceived);
+      }
     }
   }
 }
@@ -1703,6 +1704,8 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
     // Limiter meta data (oscillations identificator)
     p.setSolutionMin(-1);
     p.setSolutionMax(-1);
+
+    logInfo("resetDataHeapIndices(...)","offset="<<p.getOffset());
   }
 }
 

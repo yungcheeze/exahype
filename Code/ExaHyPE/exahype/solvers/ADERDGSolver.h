@@ -999,7 +999,7 @@ public:
       double** tempSpaceTimeUnknowns,
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
-      double*  tempFluxUnknowns);// todo remove
+      double*  tempFluxUnknowns);
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
@@ -1121,7 +1121,7 @@ public:
    */
   static void mergeCellDescriptionsWithRemoteData(
       const int                                    fromRank,
-      const int                                    cellDescriptionsIndex,
+      exahype::Cell&                               localCell,
       const peano::heap::MessageType&              messageType,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);

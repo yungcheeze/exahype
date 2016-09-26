@@ -302,9 +302,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
-
-  // TODO(Dominic): Add to docu why we invert the order:
-  // MPI message order: Stack principle.
+// Keep this for the grid setup
 #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
 #endif
@@ -366,9 +364,7 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
 
-  // TODO(Dominic): remove; We should be able to remove this and vertex.isInside()
-  // We should further use (first touch decrements; decrement only once) the same counters
-  // as for the spaceTimePredictor to reduce the number of long messages!={0.0} by a factor of four.
+  // Keep this for the grid setup
   #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
   #endif
@@ -406,8 +402,6 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return;
-
   if (localCell.isInside() && localCell.isInitialised()) {
     exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
         peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
@@ -448,23 +442,18 @@ void exahype::mappings::MeshRefinement::mergeWithRemoteDataDueToForkOrJoin(
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return; // TODO(Dominic): Remove
-
   if (localCell.isInside()) {
     if (!geometryInfoDoesMatch(localCell.getCellDescriptionsIndex(),cellCentre,cellSize,level)) {
       localCell.setCellDescriptionsIndex(
           multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
     }
-    if ( !localCell.isInitialised() ) {
-      localCell.setupMetaData();
-    }
 
     exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
-        fromRank,localCell.getCellDescriptionsIndex(),
+        fromRank,localCell,
         peano::heap::MessageType::ForkOrJoinCommunication,
         cellCentre,level);
 //    exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
-//        fromRank,localCell.getCellDescriptionsIndex(),
+//        fromRank,localCell,
 //        peano::heap::MessageType::ForkOrJoinCommunication,
 //        cellCentre,level);
 
