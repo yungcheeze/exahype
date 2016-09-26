@@ -408,9 +408,25 @@ Overall measurements show better performance of the optimized kernels for higher
 \caption{Efficiency of the optimised kernels with respect to the theoretical peak performance of one core for 5 quantities on Haswell and KNL. The flop count for the Picard loop neglects the evaluation of the flux function and the computations of \textbf{rhs0}. The runtime of the Picard loop covers \textbf{rhs0}, but not the evaluation of the flux function. The manual version is hand-written assembly code which mimics batched BLAS. Only the $x$-direction with 6 jointly computed matrix-matrix multiplies has been implemented, the results reported here are extrapolated. }\label{tab:flopcount}
 \end{table*}
 
+% order = 5
+\begin{table*}
+  \centering
+\begin{tabular}{l|rrrrrr}
+  \textbf{Number of quantities}                & \multicolumn{1}{c}{5}& \multicolumn{1}{c}{9}&\multicolumn{1}{c}{23}&\multicolumn{1}{c}{56}\\ \hline
+\textbf{Volume Kernel (order=5)}                   & &&&&& \\
+% flop = 6**2 * (48+3* libxsmm_flop*11/12)
+% 360
+ ~~~~- flop count                          & 37368    & 65880 & 165672 & 400896\\
+ ~~~~- runtime [$\mu$s]                    & 6.47     & 7.66  & 16.7   & 26.2 \\  
+ ~~~~- performance [Gflops/s]              & 5.78     & 8.60  & 9.92   & 15.3 \\   
+ ~~~~- efficiency [\%]                     & 13.9     & 20.6  & 23.8   & 36.8 \\
+\end{tabular}
+\caption{Efficiency of the optimised volume kernel with respect to the theoretical peak performance of one core for 5, 9, 23 and 56 quantities on Haswell for order 5.}\label{tab:flopcount2}
+\end{table*}
+
 
 \paragraph{Picard Loop}
-Figures~\ref{fig:resultsPicard} shows the runtime measurements for the 3D case with 5 quantiites on Haswell.
+Figures~\ref{fig:resultsPicard} shows the runtime measurements for the 3D case with 5 quantities on Haswell.
 For higher orders the optimised version yields a speedup of a factor of roughly 1.6 over the Fortran version which grows to 1.8 at 56 quantities. 
 
 \begin{figure}
@@ -477,7 +493,7 @@ For higher orders the optimised version yields a speedup of a factor of roughly 
 % \end{figure}
 
 \paragraph{Volume Kernel}
-Similar to the runtime measurements of the Picard loop, the optimised version is about a factor of 1.7 faster than the Fortran version, see Figure~\ref{fig:resultsVolume}. However the speedup grows to a factor 3.2 with 56 quantities as shown in appendix \ref{sec:app1}.
+Similar to the runtime measurements of the Picard loop, the optimised version is about a factor of 1.7 faster than the Fortran version on Haswell, see Figure~\ref{fig:resultsVolume}. However the speedup grows to a factor 3.2 with 56 quantities as shown in appendix \ref{sec:app1}.
 
 \begin{figure}
 \begin{filecontents}{resultsVolume.dat}
@@ -539,7 +555,7 @@ Similar to the runtime measurements of the Picard loop, the optimised version is
 
 
 \paragraph{Time Averaging}
-Figure~\ref{fig:resultsPredictor} present the runtime measurements. The speedup over the fortran version is about a factor 1.2 to 1.4 for growing quantities.
+Figure~\ref{fig:resultsPredictor} presents the runtime measurements. The speedup over the Fortran version is about a factor 1.2 to 1.4 for growing quantities.
 
 \begin{figure}
 \begin{filecontents}{resultsPredictor.dat}
