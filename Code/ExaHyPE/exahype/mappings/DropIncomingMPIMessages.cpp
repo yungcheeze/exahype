@@ -77,13 +77,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-
-// TODO(Dominic): This is a bug or needs to be documented.
-// see discussion in SpaceTimePredictor
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
-
   dfor2(myDest)
     dfor2(mySrc)
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
