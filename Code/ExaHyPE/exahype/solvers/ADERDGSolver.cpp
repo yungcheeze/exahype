@@ -379,9 +379,13 @@ bool exahype::solvers::ADERDGSolver::enterCell(
   } else if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
-    assertion2(fineGridCellDescription.getParentIndex()==
-        coarseGridCell.getCellDescriptionsIndex(),
-               fineGridCellDescription.toString(),coarseGridCell.getCellDescriptionsIndex());
+
+    assertion3(
+            (fineGridCellDescription.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex &&
+             coarseGridCell.getCellDescriptionsIndex()==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex)
+            || fineGridCellDescription.getParentIndex()== coarseGridCell.getCellDescriptionsIndex(),
+                   fineGridCellDescription.toString(),fineGridCell.toString(),
+                   coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
     // marking for refinement
     refineFineGridCell |= markForRefinement(fineGridCellDescription);
@@ -399,21 +403,6 @@ bool exahype::solvers::ADERDGSolver::enterCell(
               neighbourCellDescriptionIndices,
               fineGridCell.isAssignedToRemoteRank());
     }
-
-    // TODO(Dominic): Might not need this. Need to check how to do the forking.
-    // Here we check update the parent index after a forking
-    // event has taken place. Then, we currently
-    // initialise the fine grid and coarse grid cell descriptions'
-    // parent indices with value RemoteAdjacencyIndex.
-    #ifdef Parallel
-    int coarseGridCellElement =
-        tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (coarseGridCellElement!=exahype::solvers::Solver::NotFound &&
-        fineGridCellDescription.getParentIndex()==
-        multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) {
-      fineGridCellDescription.setParentIndex(coarseGridCell.getCellDescriptionsIndex());
-    }
-    #endif
   }
 
   // Coarse grid cell based adaptive mesh refinement operations.
@@ -854,10 +843,12 @@ bool exahype::solvers::ADERDGSolver::leaveCell(
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-    assertion3(fineGridCellDescription.getParentIndex()==
-        coarseGridCell.getCellDescriptionsIndex(),
+    assertion3(
+        (fineGridCellDescription.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex &&
+         coarseGridCell.getCellDescriptionsIndex()==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex)
+        || fineGridCellDescription.getParentIndex()== coarseGridCell.getCellDescriptionsIndex(),
                fineGridCellDescription.toString(),fineGridCell.toString(),
-               coarseGridCell.toString());
+               coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
     startOrFinishCollectiveRefinementOperations(fineGridCellDescription);
 
@@ -1650,7 +1641,7 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
         std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
                  Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
 
-    logInfo("mergeCellDescriptionsWithRemoteData(...)","Received cell descriptions: "<<
+    logDebug("mergeCellDescriptionsWithRemoteData(...)","Received cell descriptions: "<<
             Heap::getInstance().getData(receivedCellDescriptionsIndex).size());
 
     for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
@@ -1704,8 +1695,6 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
     // Limiter meta data (oscillations identificator)
     p.setSolutionMin(-1);
     p.setSolutionMax(-1);
-
-    logInfo("resetDataHeapIndices(...)","offset="<<p.getOffset());
   }
 }
 
