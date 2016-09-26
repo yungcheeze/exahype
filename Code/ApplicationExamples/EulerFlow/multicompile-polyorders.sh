@@ -54,7 +54,8 @@ for ORDER in $POLYORDERS; do
 	echo "Preparing spec file ${SPECFILE}"
 	# change the order parameter to the desire one
 	# this is a line with a conent like " order = 3"
-	sed -i "s/^\(.*order = \).*$/\1${ORDER}/" ${SPECFILE}
+	sed -i "s/^\([[:space:]]*order[[:space:]]*=[[:space:]]*\).*$/\1${ORDER}/" ${SPECFILE}
+	#echo "checking: "; grep order $SPECFILE;	continue
 
 	# guess name of executable which will be built
 	PROJECTNAME=$(grep '^exahype-project' ${SPECFILE} | awk '{ print $2; }')
