@@ -415,7 +415,9 @@ bool exahype::solvers::ADERDGSolver::enterCell(
     CellDescription& coarseGridCellDescription = getCellDescription(
         coarseGridCell.getCellDescriptionsIndex(),coarseGridCellElement);
 
-    vetoErasingOrDeaugmentingChildrenRequest(coarseGridCellDescription);
+    vetoErasingOrDeaugmentingChildrenRequest(
+        coarseGridCellDescription,
+        fineGridCell.getCellDescriptionsIndex());
 
     addNewDescendantIfAugmentingRequested(
             fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
@@ -663,11 +665,14 @@ void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
 }
 
 void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
-    CellDescription& coarseGridCellDescription) {
+    CellDescription& coarseGridCellDescription,
+    const int fineGridCellDescriptionsIndex) {
   int coarseGridCellParentElement = tryGetElement(coarseGridCellDescription.getParentIndex(),
                                                   coarseGridCellDescription.getSolverNumber());
-
-  if (coarseGridCellParentElement!=exahype::solvers::Solver::NotFound) {
+  int fineGridCellElement         = tryGetElement(fineGridCellDescriptionsIndex,
+                                          coarseGridCellDescription.getSolverNumber());
+  if (fineGridCellElement!=exahype::solvers::Solver::NotFound &&
+      coarseGridCellParentElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& coarseGridCellDescriptionParent =
         getCellDescription(coarseGridCellDescription.getParentIndex(),coarseGridCellParentElement);
 
@@ -675,7 +680,7 @@ void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
           case CellDescription::DeaugmentingChildrenRequested:
             assertion1(coarseGridCellDescription.getType()==CellDescription::EmptyDescendant ||
                        coarseGridCellDescription.getType()==CellDescription::Descendant,coarseGridCellDescription.toString());
-            coarseGridCellDescriptionParent.setRefinementEvent(CellDescription::None);
+            coarseGridCellDescriptionParent.setRefinementEvent(CellDescription::None); // TODO(DOminic): Source of bug.
             break;
           case CellDescription::ErasingChildrenRequested:
             assertion1(coarseGridCellDescription.getType()==CellDescription::Cell,

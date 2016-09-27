@@ -207,7 +207,8 @@ private:
    * TODO(Dominic): Make template function as soon as verified.
    */
   void vetoErasingOrDeaugmentingChildrenRequest(
-      CellDescription& coarseGridCellDescription);
+      CellDescription& coarseGridCellDescription,
+      const int fineGridCellDescriptionsIndex);
 
   /*
    * Resets the refinement event of a fine grid cell of type
