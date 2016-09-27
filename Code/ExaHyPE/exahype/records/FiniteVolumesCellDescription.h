@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   26/09/2016 11:55
+    * @date   27/09/2016 14:17
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -42,7 +42,7 @@ namespace exahype {
          typedef exahype::records::FiniteVolumesCellDescriptionPacked Packed;
          
          enum RefinementEvent {
-            None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequested = 7, DeaugmentingChildren = 8, AugmentingRequested = 9, Augmenting = 10
+            None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequestedTriggered = 7, DeaugmentingChildrenRequested = 8, DeaugmentingChildren = 9, AugmentingRequested = 10, Augmenting = 11
          };
          
          enum Type {
@@ -1308,7 +1308,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   26/09/2016 11:55
+             * @date   27/09/2016 14:17
              */
             class exahype::records::FiniteVolumesCellDescriptionPacked { 
                
@@ -2554,7 +2554,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   26/09/2016 11:55
+                      * @date   27/09/2016 14:17
                       */
                      class exahype::records::FiniteVolumesCellDescription { 
                         
@@ -2563,7 +2563,7 @@ namespace exahype {
                            typedef exahype::records::FiniteVolumesCellDescriptionPacked Packed;
                            
                            enum RefinementEvent {
-                              None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequested = 7, DeaugmentingChildren = 8, AugmentingRequested = 9, Augmenting = 10
+                              None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequestedTriggered = 7, DeaugmentingChildrenRequested = 8, DeaugmentingChildren = 9, AugmentingRequested = 10, Augmenting = 11
                            };
                            
                            enum Type {
@@ -3641,7 +3641,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   26/09/2016 11:55
+                               * @date   27/09/2016 14:17
                                */
                               class exahype::records::FiniteVolumesCellDescriptionPacked { 
                                  

@@ -60,6 +60,7 @@
          case ChangeChildrenToDescendants: return "ChangeChildrenToDescendants";
          case RefiningRequested: return "RefiningRequested";
          case Refining: return "Refining";
+         case DeaugmentingChildrenRequestedTriggered: return "DeaugmentingChildrenRequestedTriggered";
          case DeaugmentingChildrenRequested: return "DeaugmentingChildrenRequested";
          case DeaugmentingChildren: return "DeaugmentingChildren";
          case AugmentingRequested: return "AugmentingRequested";
@@ -69,7 +70,7 @@
    }
    
    std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequested=7,DeaugmentingChildren=8,AugmentingRequested=9,Augmenting=10)";
+      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequestedTriggered=7,DeaugmentingChildrenRequested=8,DeaugmentingChildren=9,AugmentingRequested=10,Augmenting=11)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
       switch (param) {
@@ -1279,6 +1280,7 @@
          case ChangeChildrenToDescendants: return "ChangeChildrenToDescendants";
          case RefiningRequested: return "RefiningRequested";
          case Refining: return "Refining";
+         case DeaugmentingChildrenRequestedTriggered: return "DeaugmentingChildrenRequestedTriggered";
          case DeaugmentingChildrenRequested: return "DeaugmentingChildrenRequested";
          case DeaugmentingChildren: return "DeaugmentingChildren";
          case AugmentingRequested: return "AugmentingRequested";
@@ -1288,7 +1290,7 @@
    }
    
    std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequested=7,DeaugmentingChildren=8,AugmentingRequested=9,Augmenting=10)";
+      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequestedTriggered=7,DeaugmentingChildrenRequested=8,DeaugmentingChildren=9,AugmentingRequested=10,Augmenting=11)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
       switch (param) {

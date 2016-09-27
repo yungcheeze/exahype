@@ -281,12 +281,16 @@ void exahype::mappings::MeshRefinement::leaveCell(
     solverNumber++;
   }
 
+  // We assume that the solvers have all removed
+  // their data from the heap arrays associated with this
+  // cell
   // Refine all adjacent vertices if necessary and possible.
   //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
   if (eraseFineGridCell) {
+    fineGridCell.shutdownMetaData();
     dfor2(v)
       if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-          exahype::Vertex::Records::RefinementControl::Unrefined) {
+          exahype::Vertex::Records::RefinementControl::Refined) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
       }
     enddforx

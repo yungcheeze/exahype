@@ -199,6 +199,26 @@ class exahype::records::FiniteVolumesCellDescription {
     Refining,                    
     
     /**
+     * This refinement event is set on 
+     * a cell description of type 
+     * Descendant or Cell in every 
+     * grid setup iteration
+     * if no other event is set. 
+     * 
+     * If the cell description has children,
+     * the first traversed child sets
+     * this event to DeaugmentingChildrenRequestedTriggered.
+     * 
+     * We have to rely on this mechanism since we
+     * cannot guess based on the cell description type if
+     * a cell description has children as opposed to the
+     * physics based refinement where we have
+     * Ancestor and EmptyAncestor parent cell descriptions and
+     * Cell child cell descriptions.
+     */
+    DeaugmentingChildrenRequestedTriggered,
+    
+    /**
      * If this refinement event is set, 
      * the parent Descendant or Cell asks its
      * children if they want to be deaugmented. If not so,

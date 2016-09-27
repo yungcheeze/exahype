@@ -620,6 +620,41 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   repository.iterate();
 
+  // TODO(Dominic): Experimental dyn. AMR grid setup that only works
+  // with standard global time stepping at the moment.
+  // This probably only works for one level AMR,
+  // I need to increase stride size in createGrid from three to something else.
+  //
+  // For the refinement criterion try for example a density based on like the one below
+  // (Copy this to the MyEulerSolver.cpp function, do not uncomment here.)
+  //
+  /*  if (dx[0] > getMaximumMeshSize()/3.) {
+        for (int i=0; i<getUnknownsPerCell(); i+=getNumberOfVariables()) {
+          if (luh[i]>0.52) { // density
+            return exahype::solvers::Solver::RefinementControl::Refine;
+          }
+        }
+      }
+
+      // It is important that we check all values again.
+      if (dx[0] <= getMaximumMeshSize()/3.) {
+        for (int i=0; i<getUnknownsPerCell(); i+=getNumberOfVariables()) {
+          if (luh[i]>0.52) { // density
+            return exahype::solvers::Solver::RefinementControl::Keep;
+          }
+        }
+        return exahype::solvers::Solver::RefinementControl::Erase;
+      }
+
+      return exahype::solvers::Solver::RefinementControl::Keep;*/
+
+  // Uncomment the following lines for testing dyn. AMR.
+//  createGrid(repository);
+//  repository.iterate();
+//  repository.iterate();
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+
   repository.getState().switchToPredictionContext();
   repository.switchToPrediction();  // Cell onto faces
   repository.iterate();

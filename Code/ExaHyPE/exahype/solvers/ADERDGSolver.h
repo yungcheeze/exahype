@@ -206,7 +206,7 @@ private:
    *
    * TODO(Dominic): Make template function as soon as verified.
    */
-  void vetoErasingOrDeaugmentinChildrenRequest(
+  void vetoErasingOrDeaugmentingChildrenRequest(
       CellDescription& coarseGridCellDescription);
 
   /*
