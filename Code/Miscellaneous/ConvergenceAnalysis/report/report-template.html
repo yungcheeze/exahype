@@ -35,6 +35,11 @@ tr:hover {
 strong {
 	background-color: yellow;
 }
+
+svg {
+	/* responsive */
+	max-width: 100%;
+}
 </style>
 <body>
 
@@ -49,6 +54,11 @@ ${PARAMS_TABLE}
 
 <p>To inspect the specification files with all further parameters, go
 straight into the <a href="./">simulations directory</a>.
+
+<h2>Plot</h2>
+<p>Here is a plot showing everything at a glance:</p>
+
+${CONVERGENCE_SVG_FIGURE}
 
 <h2>Error results</h2>
 <p>The simulations yielded the following errors in the field <strong>${QUANTITY}</strong>.
