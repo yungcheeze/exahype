@@ -71,18 +71,19 @@ class exahype::mappings::TimeStepSizeComputation {
   exahype::State _localState;
 
   /**
-   * A minimum solver time step size for each thread in a multicore run.
-   *
-   * We could directly compute the minimal time step sizes and the minimum time
-   * stamp: Run per cell through all patch descriptions and update the global
-   * solver objects immediately. This is not very clever in a multicore
-   * environment as we then have to protect the global data access with a
-   * semaphore which serialises the computation (that, in the worst case, is
-   * done in each time step). So we do compute the time step size and the stamp
-   * locally in a vector, and we project it back to the global data in
-   * endIteration().
+   * A minimum time step size for each solver.
    */
   std::vector<double> _minTimeStepSizes;
+
+  /**
+   * A minimum cell size for each solver.
+   */
+  std::vector<double> _minCellSizes;
+
+  /**
+   * A maximum cell size for each solver.
+   */
+  std::vector<double> _maxCellSizes;
 
   double** _tempEigenValues = nullptr;
 
@@ -136,9 +137,13 @@ class exahype::mappings::TimeStepSizeComputation {
   /**
    * If the fine grid cell functions as compute cell for a solver,
    * compute a stable time step size.
-   * Further update the time stamp of the compute cell
+   *
+   * Then update the time stamp of the compute cell
    * and update the minimum solver time stamp and
    * time step size.
+   *
+   * Finally, update the minimum and maximum mesh cell size
+   * fields per solver with the size of the fine grid cell.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,

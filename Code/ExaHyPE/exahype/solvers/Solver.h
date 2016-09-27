@@ -197,8 +197,26 @@ class exahype::solvers::Solver {
 
   /**
    * The maximum extent a cell is allowed to have in each coordinate direction.
+   *
+   * \note This is an upper bound specified in the specification file.
+   * This is not the actual maximum extent of a cell.
    */
   const double _maximumMeshSize;
+
+  /**
+   * The minimum extent in each coordinate direction at least one cell in the grid has.
+   *
+   * This value needs to be updated every time the grid has been changed.
+   */
+  double _minCellSize;
+
+  /**
+   * The maximum extent in each coordinate direction at least one cell in the grid has.
+   *
+   * * This value needs to be updated every time the grid has been changed.
+   */
+  double _maxCellSize;
+
 
   /**
    * The time stepping mode of this solver.
@@ -245,6 +263,22 @@ class exahype::solvers::Solver {
    * you indicate that this solver is not active in the domain.
    */
   double getMaximumMeshSize() const;
+
+  void updateMinCellSize(double minCellSize) {
+    _minCellSize = std::min( _minCellSize, minCellSize );
+  }
+
+  void updateMaxCellSize(double maxCellSize) {
+    _maxCellSize = std::max( _maxCellSize, maxCellSize );
+  }
+
+  double getMinCellSize() const {
+    return _minCellSize;
+  }
+
+  double getMaxCellSize() const {
+    return _maxCellSize;
+  }
 
   /**
    * Returns the identifier of this solver.

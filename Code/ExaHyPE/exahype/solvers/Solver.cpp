@@ -35,6 +35,8 @@ exahype::solvers::Solver::Solver(
       _numberOfParameters(numberOfParameters),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
       _maximumMeshSize(maximumMeshSize),
+      _minCellSize(std::numeric_limits<double>::max()),
+      _maxCellSize(0),
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)) {
   assertion(numberOfParameters==0);

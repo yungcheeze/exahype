@@ -85,10 +85,14 @@ tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
 void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables(){
   int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
   _minTimeStepSizes.resize(numberOfSolvers);
+  _minCellSizes.resize(numberOfSolvers);
+  _maxCellSizes.resize(numberOfSolvers);
 
   for (unsigned int solverNumber=0;
       solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
+    _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
+    _maxCellSizes    [solverNumber] = 0;
   }
 }
 
@@ -161,6 +165,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
+    solver->updateMinCellSize(_minCellSizes[solverNumber]);
+    solver->updateMaxCellSize(_maxCellSizes[solverNumber]);
     solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     if (
         solver->getType()==exahype::solvers::Solver::Type::ADER_DG &&
@@ -279,7 +285,12 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
                                  fineGridVerticesEnumerator);
         }
         _minTimeStepSizes[solverNumber] = std::min(
-            admissibleTimeStepSize, _minTimeStepSizes[solverNumber]); // todo MPI
+            admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
+
+        _minCellSizes[solverNumber] = std::min(
+            fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
+        _maxCellSizes[solverNumber] = std::max(
+                    fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
