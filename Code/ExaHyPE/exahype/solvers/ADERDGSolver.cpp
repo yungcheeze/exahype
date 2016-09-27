@@ -383,7 +383,9 @@ bool exahype::solvers::ADERDGSolver::enterCell(
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
+    #ifdef Parallel
     updateParentIndexAfterFork(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
     assertion3(fineGridCellDescription.getParentIndex()== coarseGridCell.getCellDescriptionsIndex(),
                    fineGridCellDescription.toString(),fineGridCell.toString(),
                    coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.

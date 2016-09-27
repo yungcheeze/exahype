@@ -526,7 +526,7 @@ private:
   void updateParentIndexAfterFork(
       CellDescription& cellDescription,
       const int coarseGridCellDescriptionsIndex,
-      const int coarseGridElement);
+      const int solverNumber);
 
 #endif
 
