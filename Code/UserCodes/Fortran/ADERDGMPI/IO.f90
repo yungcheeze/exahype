@@ -2,7 +2,12 @@ SUBROUTINE WriteData
   USE typesDef   
   USE ISO_C_BINDING
   IMPLICIT NONE 
-  include 'tecio.f90' 
+#include 'tecio.f90' 
+#ifdef TECPLOTDOUBLE  
+  INTEGER, PARAMETER ::  td= 8
+#else
+  INTEGER, PARAMETER :: td = 4
+#endif
   CHARACTER(LEN=200) :: Filename,Title,ScratchDir, VarString   
   CHARACTER(LEN=10)  :: VarName(nVar) 
   CHARACTER(LEN=10)  :: ParName(nParam) 
@@ -15,13 +20,18 @@ SUBROUTINE WriteData
   INTEGER            :: nSubNodes, nSubPlotElem, nRealNodes, ZoneType, nVertex, nDOFs   
   REAL(8)            :: loctime 
   INTEGER*4, POINTER :: NData(:,:)  
-  REAL*4, POINTER    :: DataArray(:,:),TempArray(:) 
+  REAL(td), POINTER  :: DataArray(:,:),TempArray(:) 
   INTEGER*4          :: visdouble
-  REAL*4             :: Test 
+  REAL(td)           :: Test 
   POINTER   (NullPtr,Null)
   Integer*4 Null(*)
   !
-  visdouble = 0
+  IF(kind(Test)==8) THEN
+    visdouble = 1
+  ELSE
+    visdouble = 0 
+  ENDIF 
+  ! 
   nVertex = 2**nDim 
   IF(nCPU==1) THEN 
     WRITE(FileName,'(a,a1,i8.8,a)') TRIM(BaseFile),'-', timestep, '.plt'

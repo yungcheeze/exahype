@@ -83,8 +83,20 @@
         INTEGER(4)       ValueLocation(*)
         INTEGER(4)       ShareVarFromZone(*)
         INTEGER(4)       ShareConnectivityFromZone
-      END FUNCTION teczne112
+        END FUNCTION teczne112
 
+#ifdef TECPLOTDOUBLE 
+      INTEGER(4) FUNCTION tecdat112 &
+       (N, &
+        FieldData, &
+        IsDouble)
+        !MS$ATTRIBUTES STDCALL :: tecdat112
+        !MS$ATTRIBUTES REFERENCE :: N,FieldData,IsDouble
+        INTEGER(4)  N
+        REAL(8)     FieldData(*)
+        INTEGER(4)  IsDouble
+      END FUNCTION tecdat112
+#else
       INTEGER(4) FUNCTION tecdat112 &
        (N, &
         FieldData, &
@@ -94,9 +106,10 @@
         INTEGER(4)  N
         REAL(4)     FieldData(*)
         INTEGER(4)  IsDouble
-      END FUNCTION tecdat112
+        END FUNCTION tecdat112
+#endif
 
-      INTEGER(4) FUNCTION tecnod112 &
+        INTEGER(4) FUNCTION tecnod112 &
        (NData)
         !MS$ATTRIBUTES STDCALL :: tecnod112
         !MS$ATTRIBUTES REFERENCE :: NData

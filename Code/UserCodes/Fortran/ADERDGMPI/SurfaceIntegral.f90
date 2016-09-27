@@ -8,7 +8,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd)
     INTEGER           :: i,j,k,l,iVar,sig  
     REAL              :: aux(d) 
     !
-#ifdef ELASTICITY 
+#ifdef LINEAR  
     sig = +1
 #else
     sig = -1 

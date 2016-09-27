@@ -115,7 +115,7 @@ SUBROUTINE PDENCP(BgradQ,Q,gradQ,par)
     IMPLICIT NONE
     ! Argument list 
     REAL, INTENT(IN)  :: Q(nVar), gradQ(nVar,d), par(nParam)  
-    REAL, INTENT(OUT) :: BgradQ(nVar,d) 
+    REAL, INTENT(OUT) :: BgradQ(nVar) 
     ! Local variables 
     REAL :: p, irho, lam, mu 
     REAL :: Qx(nVar), Qy(nVar), Qz(nVar) 
@@ -139,35 +139,15 @@ SUBROUTINE PDENCP(BgradQ,Q,gradQ,par)
     Qy = gradQ(:,2)
     Qz = gradQ(:,3)
     !
-    BgradQ(1,1) = - (lam+2*mu)*Qx(7) 
-    BgradQ(2,1) = - lam*Qx(7) 
-    BgradQ(3,1) = - lam*Qx(7) 
-    BgradQ(4,1) = - mu *Qx(8) 
-    BgradQ(5,1) = 0. 
-    BgradQ(6,1) = - mu *Qx(9) 
-    BgradQ(7,1) = - irho *Qx(1) 
-    BgradQ(8,1) = - irho *Qx(4) 
-    BgradQ(9,1) = - irho *Qx(6) 
-    
-    BgradQ(1,2) = - lam*Qy(8) 
-    BgradQ(2,2) = - (lam+2*mu)*Qy(8) 
-    BgradQ(3,2) = - lam*Qy(8) 
-    BgradQ(4,2) = - mu *Qy(7) 
-    BgradQ(5,2) = - mu *Qy(9) 
-    BgradQ(6,2) = 0. 
-    BgradQ(7,2) = - irho *Qy(4) 
-    BgradQ(8,2) = - irho *Qy(2) 
-    BgradQ(9,2) = - irho *Qy(5) 
-    
-    BgradQ(1,3) = - lam*Qz(9) 
-    BgradQ(2,3) = - lam*Qz(9) 
-    BgradQ(3,3) = - (lam+2*mu)*Qz(9) 
-    BgradQ(4,3) = 0. 
-    BgradQ(5,3) = - mu *Qz(8) 
-    BgradQ(6,3) = - mu *Qz(7) 
-    BgradQ(7,3) = - irho *Qz(6) 
-    BgradQ(8,3) = - irho *Qz(5) 
-    BgradQ(9,3) = - irho *Qz(3) 
+    BgradQ(1) = - (lam+2*mu)*Qx(7) - lam*Qy(8) - lam*Qz(9) 
+    BgradQ(2) = - lam*Qx(7) - (lam+2*mu)*Qy(8) - lam*Qz(9) 
+    BgradQ(3) = - lam*Qx(7) - lam*Qy(8) - (lam+2*mu)*Qz(9) 
+    BgradQ(4) = - mu *Qx(8) - mu *Qy(7)  
+    BgradQ(5) = - mu *Qy(9) - mu *Qz(8) 
+    BgradQ(6) = - mu *Qx(9) - mu *Qz(7) 
+    BgradQ(7) = - irho * (Qx(1) + Qy(4) + Qz(6) ) 
+    BgradQ(8) = - irho * (Qx(4) + Qy(2) + Qz(5) ) 
+    BgradQ(9) = - irho * (Qx(6) + Qy(5) + Qz(3) )     
     ! 
     ! advection equation 
     !BgradQ = 0. 
@@ -185,6 +165,22 @@ SUBROUTINE PDENCP(BgradQ,Q,gradQ,par)
 
     
 #endif 
+
+#ifdef ACOUSTIC 
+    !
+    Qx = gradQ(:,1) 
+    Qy = gradQ(:,2)
+    Qz = gradQ(:,3)
+    !
+    ! acoustic wave equation 
+    BgradQ(1) = -EQN%c0**2*( Qx(2) + Qy(3) + Qz(4) ) 
+    BgradQ(2) = -Qx(1) 
+    BgradQ(3) = -Qy(1) 
+    BgradQ(4) = -Qz(1) 
+
+    
+#endif 
+
     !            
 END SUBROUTINE PDENCP     
 
@@ -259,6 +255,21 @@ SUBROUTINE PDEMatrixB(Bn,Q,nv,par)
 !    B3(4,1) = -1.0  
 
 #endif 
+    !
+#ifdef ACOUSTIC
+
+    B1 = 0. 
+    B2 = 0. 
+    B3 = 0. 
+
+    B1(1,2) = -1.0*EQN%c0**2 
+    B2(1,3) = -1.0*EQN%c0**2 
+    B3(1,4) = -1.0*EQN%c0**2  
+    B1(2,1) = -1.0  
+    B2(3,1) = -1.0  
+    B3(4,1) = -1.0  
+
+#endif 
     !            
     Bn = B1*nv(1) + B2*nv(2) + B3*nv(3) 
     !
@@ -304,6 +315,10 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,par,nv)
 
 #endif 
     !
+#ifdef ACOUSTIC
+    Lambda = EQN%c0 
+#endif 
+    !
 END SUBROUTINE PDEEigenvalues
 
 SUBROUTINE PDECons2Prim(V,Q,iErr)
@@ -329,6 +344,10 @@ SUBROUTINE PDECons2Prim(V,Q,iErr)
     V = Q 
 #endif 
     !
+#ifdef ACOUSTIC 
+    V = Q 
+#endif 
+    !
 END SUBROUTINE PDECons2Prim 
         
 SUBROUTINE PDEPrim2Cons(Q,V)
@@ -348,6 +367,10 @@ SUBROUTINE PDEPrim2Cons(Q,V)
 #endif 
     !
 #ifdef ELASTICITY 
+    Q = V 
+#endif 
+    !
+#ifdef ACOUSTIC 
     Q = V 
 #endif 
     !
@@ -385,6 +408,13 @@ SUBROUTINE PDEVarName(Name)
 !    Name(3) = 'v'
 !    Name(4) = 'w' 
 
+#endif 
+    !
+#ifdef ACOUSTIC 
+    Name(1) = 'p' 
+    Name(2) = 'u' 
+    Name(3) = 'v'
+    Name(4) = 'w' 
 #endif 
     !
 END SUBROUTINE PDEVarName

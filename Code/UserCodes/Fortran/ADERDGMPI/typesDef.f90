@@ -4,7 +4,7 @@ MODULE typesDef
   !
   ! ================================== This part of the typesDef can be modified by the user.  ================================== 
   !
-  INTEGER, PARAMETER :: N = 4                               ! Polynomial degree of our approximation in space and time 
+  INTEGER, PARAMETER :: N = 3                               ! Polynomial degree of our approximation in space and time 
   INTEGER, PARAMETER :: nDim = 2                            ! The number of space dimensions that we actually want to simulate 
   REAL, PARAMETER    :: CFL = 0.9                           ! The Courant-Friedrichs-Lewy number < 1 
 #ifdef EULER
@@ -14,6 +14,10 @@ MODULE typesDef
 #ifdef ELASTICITY
   INTEGER, PARAMETER :: nVar = 9                            ! The number of variables of the PDE system 
   INTEGER, PARAMETER :: nParam = 3                          ! The number of material parameters for the PDE system 
+#endif   
+#ifdef ACOUSTIC 
+  INTEGER, PARAMETER :: nVar = 4                            ! The number of variables of the PDE system 
+  INTEGER, PARAMETER :: nParam = 0                          ! The number of material parameters for the PDE system 
 #endif   
   !
   ! ==================================           Do NOT change the stuff below                 ==================================
@@ -114,7 +118,7 @@ MODULE typesDef
   ! Important info and parameters concerning the governing PDE system 
   !
   TYPE tEquations 
-      REAL           :: gamma, Pi  
+      REAL           :: gamma, Pi, c0   
   END TYPE tEquations 
   
   TYPE(tEquations)   :: EQN 

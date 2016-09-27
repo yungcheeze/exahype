@@ -267,10 +267,6 @@ SUBROUTINE DMP(dmpresult,arguh,argLimiter,argmax)
    REAL    :: lob(nVar,nDOF(1),nDOF(2),nDOF(3)) 
    REAL    :: lmin(nVar), lmax(nVar), ldiff, Qout(nVar) 
    !
-#ifdef ELASTICITY
-   dmpresult = .TRUE. 
-   RETURN
-#endif    
 #ifdef NOLIMITER
    dmpresult = .TRUE.
    RETURN 

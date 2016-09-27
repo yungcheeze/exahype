@@ -10,13 +10,13 @@ SUBROUTINE ADERVolumeIntegral(lduh,lqhi,lFhi,lShi)
     INTEGER           :: i,j,k,l
     REAL              :: aux(d) 
     !
-#ifdef ELASTICITY
+#ifdef LINEAR  
     ! for linear non-conservative PDE, the volume integral is trivial, since it only involves the element mass matrix, which later will cancel 
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2) 
             DO i = 1, nDOF(1) 
                 aux = (/ wGPN(i), wGPN(j), wGPN(k) /) 
-                lduh(:,i,j,k) = -SUM( lFhi(:,1:nDim,i,j,k), dim = 2 ) * PRODUCT(aux(1:nDim)) 
+                lduh(:,i,j,k) = lShi(:,i,j,k) * PRODUCT(aux(1:nDim)) 
             ENDDO
         ENDDO
     ENDDO 

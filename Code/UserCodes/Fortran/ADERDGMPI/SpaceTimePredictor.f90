@@ -17,7 +17,7 @@
     REAL    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF
     REAL    :: lSh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! nonlinear source vector in each space-time DOF
     REAL    :: aux(d), w, ltime                                         ! auxiliary variables
-    REAL    :: gradQ(nVar,d), BgradQ(nVar,d), src(nVar)   
+    REAL    :: gradQ(nVar,d), BgradQ(nVar), src(nVar)   
     REAL    :: lqhold(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))             ! old space-time degrees of freedom
     REAL    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q
     REAL    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q
@@ -25,6 +25,10 @@
     REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q
     REAL    :: res                                                      ! residual
     REAL, PARAMETER :: tol = 1e-7                                      ! tolerance
+    !
+    lqx = 0.0
+    lqy = 0.0
+    lqz = 0.0 
     !
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2)
@@ -97,8 +101,7 @@
                         gradQ(:,2) = lqy(:,i,j,k,l) 
                         gradQ(:,3) = lqz(:,i,j,k,l) 
                         CALL PDENCP(BgradQ,lqh(:,i,j,k,l),gradQ,lpar(:,i,j,k))    
-                        src(:) = SUM(BgradQ(:,1:nDim), DIM=2)   
-                        lSh(:,i,j,k,l) = lSh(:,i,j,k,l) - src 
+                        lSh(:,i,j,k,l) = lSh(:,i,j,k,l) - BgradQ 
                         rhs(:,i,j,k,l) = rhs(:,i,j,k,l) + PRODUCT(aux(1:nDim))*wGPN(l)*dt*lSh(:,i,j,k,l)  
                     ENDDO
                 ENDDO
@@ -183,7 +186,7 @@
     END SUBROUTINE ADERSpaceTimePredictorNonlinear
 
 
-    SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,lpar,iElem)
+    SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lShi,lQbnd,luh,lpar,iElem)
     USE typesDef
     IMPLICIT NONE
     ! Argument list
@@ -191,14 +194,13 @@
     REAL, INTENT(IN)  :: luh(nVar,nDOF(1),nDOF(2),nDOF(3))              ! spatial degrees of freedom
     REAL, INTENT(IN)  :: lpar(nParam,nDOF(1),nDOF(2),nDOF(3))           ! spatial degrees of freedom
     REAL, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom
-    REAL, INTENT(OUT) :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF
+    REAL, INTENT(OUT) :: lShi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged nonlinear flux tensor in each space-time DOF
     REAL, INTENT(OUT) :: lqbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom
-    REAL, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF
     ! Local variables
     INTEGER :: i,j,k,l,ii,jj,kk,iVar,iDim
     REAL    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3))                        ! temporary work array
     REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0)+1)              ! space-time degrees of freedom
-    REAL    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF
+    REAL    :: BgradQ(nVar)                                             ! non-conservative product 
     REAL    :: aux(d), w ,sigma(nVar)                                   ! auxiliary variables
     REAL    :: gradQ(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))            ! spatial gradient of q
     REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q
@@ -250,8 +252,7 @@
         DO k = 1, nDOF(3)
             DO j = 1, nDOF(2)
                 aux = (/ 1., wGPN(j), wGPN(k) /)
-                !rhs(:,:,j,k) = - PRODUCT(aux(1:nDim))/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
-                gradQ(:,1,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                gradQ(:,1,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )     
             ENDDO
         ENDDO
         ! y direction (independent from the x and z derivatives) - should not be used for 1D
@@ -259,8 +260,7 @@
             DO k = 1, nDOF(3)
                 DO i = 1, nDOF(1)
                     aux = (/ 1., wGPN(i), wGPN(k) /)
-                    !rhs(:,i,:,k) = rhs(:,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
-                    gradQ(:,2,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    gradQ(:,2,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )   
                 ENDDO
             ENDDO
         ENDIF
@@ -269,8 +269,7 @@
             DO j = 1, nDOF(2)
                 DO i = 1, nDOF(1)
                     aux = (/ 1., wGPN(i), wGPN(j) /)
-                    !rhs(:,i,j,:) = rhs(:,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
-                    gradQ(:,3,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    gradQ(:,3,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )  
                 ENDDO
             ENDDO
         ENDIF
@@ -278,8 +277,8 @@
         DO k = 1, nDOF(3)
             DO j = 1, nDOF(2)
                 DO i = 1, nDOF(1)
-                    CALL PDENCP(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),gradQ(:,:,i,j,k,l),lpar(:,i,j,k))  ! PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
-                    lqh(:,i,j,k,l+1) = lqh(:,i,j,k,l+1) -SUM( lFh(:,1:nDim,i,j,k,l), dim=2 ) 
+                    CALL PDENCP(BgradQ,lqh(:,i,j,k,l),gradQ(:,:,i,j,k,l),lpar(:,i,j,k)) 
+                    lqh(:,i,j,k,l+1) = lqh(:,i,j,k,l+1) - BgradQ(:) 
                 ENDDO
             ENDDO
         ENDDO
@@ -301,38 +300,25 @@
         !
     ENDDO
     !
-    ! Compute the fluxes also for the last time derivative 
-!    l = nDOF(0) 
-!    DO k = 1, nDOF(3)
-!        DO j = 1, nDOF(2)
-!            DO i = 1, nDOF(1)
-!                CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
-!            ENDDO
-!        ENDDO
-!    ENDDO
-    !
     ! Immediately compute the time-averaged space-time polynomials
     !
     lqhi = lqh(:,:,:,:,1)
-    lFhi = lFh(:,:,:,:,:,1)
+    lShi = lqh(:,:,:,:,2)
     dtavFac = 0.5*dt  
     DO l = 2, nDOF(0)
-        lqhi(:,:,:,:)   = lqhi(:,:,:,:)   + dtavFac*lqh(:,:,:,:,l)
-        lFhi(:,:,:,:,:) = lFhi(:,:,:,:,:) + dtavFac*lFh(:,:,:,:,:,l)
+        lqhi(:,:,:,:) = lqhi(:,:,:,:) + dtavFac*lqh(:,:,:,:,l)
+        lShi(:,:,:,:) = lShi(:,:,:,:) + dtavFac*lqh(:,:,:,:,l+1)
         dtavFac = dtavFac*dt/REAL(l+1)
     ENDDO
     !
     ! Compute the bounday-extrapolated values for Q and F*n
     !
     lQbnd = 0.
-    lFbnd = 0.
     ! x-direction: face 1 (left) and face 2 (right)
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2)
             lQbnd(:,j,k,1) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left
             lQbnd(:,j,k,2) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right
-            lFbnd(:,j,k,1) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left
-            lFbnd(:,j,k,2) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right
         ENDDO
     ENDDO
     ! y-direction: face 3 (left) and face 4 (right)
@@ -341,8 +327,6 @@
             DO i = 1, nDOF(1)
                 lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k),   FLCoeff )   ! left
                 lQbnd(:,i,k,4) = MATMUL( lqhi(:,i,:,k),   FRCoeff )   ! right
-                lFbnd(:,i,k,3) = MATMUL( lFhi(:,2,i,:,k), FLCoeff )   ! left
-                lFbnd(:,i,k,4) = MATMUL( lFhi(:,2,i,:,k), FRCoeff )   ! right
             ENDDO
         ENDDO
     ENDIF
@@ -352,8 +336,6 @@
             DO i = 1, nDOF(1)
                 lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:),   FLCoeff )   ! left
                 lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:),   FRCoeff )   ! right
-                lFbnd(:,i,j,5) = MATMUL( lFhi(:,3,i,j,:), FLCoeff )   ! left
-                lFbnd(:,i,j,6) = MATMUL( lFhi(:,3,i,j,:), FRCoeff )   ! right
             ENDDO
         ENDDO
     ENDIF

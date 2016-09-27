@@ -97,8 +97,8 @@ PROGRAM ADERDG3D
         CALL RunPointSources     
         ! ADER predictor step 
         DO iElem  = 1, nElem
-#ifdef ELASTICITY 
-          CALL ADERSpaceTimePredictorLinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem),iElem)  
+#ifdef LINEAR 
+          CALL ADERSpaceTimePredictorLinear(qhi(:,:,:,:,iElem),Shi(:,:,:,:,iElem),qBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem),iElem)  
 #else
           CALL ADERSpaceTimePredictorNonlinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),Shi(:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem))  
 #endif             
@@ -150,8 +150,10 @@ PROGRAM ADERDG3D
             IF(myrank==0) THEN
                 WRITE(*,'(a,i,a,f,a,i,a,f10.3)') ' n = ', timestep, '   t = ', time, '   nRec = ', nRecompute, '   %troub = ', REAL(nRecompute)/REAL(nElem)*100
             ENDIF 
-            !CALL WriteData
         ENDIF  
+        IF(MOD(timestep,500)==0) THEN
+            CALL WriteData
+        ENDIF                     
         time = time + dt 
     ENDDO    
 #ifdef PARALLEL 

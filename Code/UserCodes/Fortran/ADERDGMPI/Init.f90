@@ -10,6 +10,7 @@ SUBROUTINE ADERDGInit
     REAL             :: lparambnd(nParam,6,nDOF(2),nDOF(3))    
     REAL             :: xi, dxi, xi1, xi2 
     REAL             :: TestMatrix(N+1,N+1), TestMatrix2(nSubLim,nSubLim), test(nSubLim)
+    REAL             :: r1(9) 
     REAL, POINTER    :: LSQM(:,:), iLSQM(:,:), LSQrhs(:,:) 
     LOGICAL          :: dmpresult 
     ! 
@@ -40,35 +41,37 @@ SUBROUTINE ADERDGInit
     !xR = (/ 15.0, 15.0, +1.0 /)                                     ! upper right corner of the domain (for ShuVortex2D)  
     xL = (/  0.0,     0.0,    0.0 /)                                 ! lower-left corner of the domain  (for ShuVortex2D) 
     xR = (/  4000.0,  2000.0, 2000.0 /)                              ! upper right corner of the domain (for ShuVortex2D)  
-    IMAX = 104                                                       ! Number of elements in x,y,z direction 
-    JMAX = 56  
+    !xL = (/ -1.0, -1.0, -1.0 /)                                     ! lower-left corner of the domain 
+    !xR = (/ +1.0, +1.0, +1.0 /)                                     ! upper right corner of the domain 
+    IMAX = 100                                                       ! Number of elements in x,y,z direction 
+    JMAX = 50 
     KMAX = 1     
-    VMAX = (/ IMAX, JMAX, KMAX /)                                   ! Vector of the number of elements in each space dimension 
-    dx = (xR-xL)/VMAX                                               ! Mesh spacing 
-    NMAX = 1000000                                                  ! Max. number of time steps 
-    timestep = 0                                                    ! initial time step number 
-    time = 0.                                                       ! initial time 
+    VMAX = (/ IMAX, JMAX, KMAX /)                                    ! Vector of the number of elements in each space dimension 
+    dx = (xR-xL)/VMAX                                                ! Mesh spacing 
+    NMAX = 1000000                                                   ! Max. number of time steps 
+    timestep = 0                                                     ! initial time step number 
+    time = 0.                                                        ! initial time 
     !tend = 0.4                                                      ! final time 
     !ICType = 'Sod'                                                  ! type of initial condition 'ShuVortex2D'      
     !Basefile = 'Sod'                                                ! Base filename for writing results 
-    !tend = 1.0                                                     ! final time 
-    !ICType = 'ShuVortex2D'                                         ! type of initial condition 'ShuVortex2D'      
-    !Basefile = 'ShuVortex2D'                                       ! Base filename for writing results 
+    !tend = 1.0                                                      ! final time 
+    !ICType = 'ShuVortex2D'                                          ! type of initial condition 'ShuVortex2D'      
+    !Basefile = 'ShuVortex2D'                                        ! Base filename for writing results 
     !tend = 0.50 
     !ICType = 'EP2D' 
     !Basefile = 'EP2D' 
-    !tend = 0.5                                                       ! final time 
-    !ICType = 'LOH1'                                                  ! type of initial condition 'ShuVortex2D'      
-    !Basefile = 'DebugLOH3D'                                          ! Base filename for writing results 
-    tend = 0.5                                                        ! final time 
-    ICType = 'Lamb2D'                                                 ! type of initial condition 'ShuVortex2D'      
-    Basefile = 'Lamb2D'                                               ! Base filename for writing results 
+    !tend = 0.5                                                      ! final time 
+    !ICType = 'LOH1'                                                 ! type of initial condition 'ShuVortex2D'      
+    !Basefile = 'DebugLOH3D'                                         ! Base filename for writing results 
+    tend = 100.0                                                     ! final time 
+    ICType = 'Elastic2D'                                             ! type of initial condition 'ShuVortex2D'      
+    Basefile = 'Elastic2D-Godunov'                                   ! Base filename for writing results 
     Periodic(:) = (/ .FALSE., .FALSE., .FALSE. /)                    ! periodic BC 
     AnalyseType = 0                                                  ! comparison with exact solution
     !
-    nElem = IMAX*JMAX*KMAX                                          ! Number of elements 
-    nNode = (IMAX+1)*(JMAX+1)*(KMAX+1)                              ! number of nodes 
-    ALLOCATE( x(d, nNode) )                                         ! Allocate the nodes 
+    nElem = IMAX*JMAX*KMAX                                           ! Number of elements 
+    nNode = (IMAX+1)*(JMAX+1)*(KMAX+1)                               ! number of nodes 
+    ALLOCATE( x(d, nNode) )                                          ! Allocate the nodes 
     ALLOCATE( idxn(IMAX+dn(1),JMAX+dn(2),KMAX+dn(3))  )                                              
     ! Define the node coordinates and the node numbers                                 
     count = 0 
@@ -933,6 +936,7 @@ SUBROUTINE InitialField(u0,par,xGP,tGP)
     REAL :: V0(nVar),r,VLL(nVar),VRR(nVar)   
     REAL :: du,dv,drho,dTemp,dp,epsilon,xc(d) 
     REAL :: omega, parL(nParam), parR(nParam) 
+    REAL :: r1(9), lambda, mu, rho, cs, cp 
     ! 
 #ifdef EULER
     ! no local material parameters for Euler equations 
@@ -944,6 +948,15 @@ SUBROUTINE InitialField(u0,par,xGP,tGP)
         ampl(:)  = 0.                        ! perturbation amplitude vector 
         ampl(5)   = 1e-3                     ! 
         V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM(xGP(1:nDim)**2/sigma(1:nDim)**2) )
+    CASE('EulerGauss')
+        V0 = 0.0  
+        ! Gaussian perturbation 
+        sigma = (/ 10., 10., 10. /)           ! half-width
+        VBase(:) = (/ 1.4, 0., 0., 0., 1e6 /) ! base-state 
+        ampl(:)  = 0.                         ! perturbation amplitude vector 
+        ampl(5)   = 100.0                     ! 
+        xc = (/ 2000.0, 1950.0, 0.0 /)        ! 1950 
+        V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM((xGP(1:nDim)-xc(1:nDim))**2/sigma(1:nDim)**2) )   
     CASE('Sod')     
         r = SQRT( SUM(xGP(1:nDim)**2) )     
         VLL = (/ 1.0,   0.0, 0.0, 0.0, 1.0 /) 
@@ -997,19 +1010,59 @@ SUBROUTINE InitialField(u0,par,xGP,tGP)
     !omega = 0.5*(1+erf(2*(xGP(3)-0.6)))  
     !par = (1.0-omega)*parL + omega*parR  
     
-    parR = (/ 7.509672500e9, 7.50916375e9, 2200. /) 
-    parL = parR 
-    !parL = (/ 3.509672500e9, 3.50916375e9, 2200. /) 
-    omega = 0.5*(1+erf(0.01*(xGP(2)-1500.0)))  
-    par = (1.0-omega)*parL + omega*parR  
+    !parR = (/ 7.509672500e9, 7.50916375e9, 2200. /) 
+    !parL = parR 
+    !!parL = (/ 3.509672500e9, 3.50916375e9, 2200. /) 
+    !omega = 0.5*(1+erf(0.01*(xGP(2)-1500.0)))  
+    !par = (1.0-omega)*parL + omega*parR  
+    !
+    !V0 = 0.0  
+    !! Gaussian perturbation 
+    !sigma = (/ 100., 100., 100. /)          ! half-width
+    !VBase(:) = 0.0                       ! base-state 
+    !ampl(:)  = 0.                        ! perturbation amplitude vector 
+    !ampl(8)   = 0.0 ! 1e-9                     ! 
+    !xc = (/ 2000.0, 1800.0, 0.0 /) 
+    !V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM((xGP(1:nDim)-xc(1:nDim))**2/sigma(1:nDim)**2) )   
+    
+    !V0(1) = 1.0 + 0.1*xGP(1) + 0.2*xGP(2)  
 
+     par = (/ 1.0, 1.0, 1.0 /)
+ 
+    SELECT CASE(TRIM(ICType)) 
+    CASE('ElasticSineWave')
+        ! Sin wave test 
+        lambda = 1.0 
+        mu     = 1.0 
+        rho    = 1.0 
+        cp = SQRT((lambda+2*mu)/rho) 
+        cs = SQRT(mu/rho) 
+        par = (/ lambda, mu, rho /) 
+        ! 
+        r1 = (/ 0., 0., 0., mu, 0., 0., 0., -cs, 0.0 /)   ! Eigenvector for the shear wave
+        V0 = SIN(2*ACOS(-1.0)*xGP(1))*r1
+        ! 
+    CASE DEFAULT
+        !
+        par = (/ 7.509672500e9, 7.50916375e9, 2200. /) 
+        V0  = 0.0 
+        ! 
+    END SELECT 
+     
+#endif 
+
+#ifdef ACOUSTIC
+    par = 0.0 
+
+    EQN%c0 = 1000.0 
+    
     V0 = 0.0  
     ! Gaussian perturbation 
-    sigma = (/ 0.1, 0.1, 0.1 /)       ! half-width
-    VBase(:) = 0.0                       ! base-state 
+    sigma = (/ 10., 10., 10. /)          ! half-width
+    VBase(:) = (/ 1., 0., 0., 0. /)     ! base-state 
     ampl(:)  = 0.                        ! perturbation amplitude vector 
-    ampl(1)   = 0e-2                     ! 
-    xc = (/ 0.0, 0.0, 0.0 /) 
+    ampl(1)   = 1e-2                     ! 
+    xc = (/ 2000.0, 1950.0, 0.0 /)       ! 1950 
     V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM((xGP(1:nDim)-xc(1:nDim))**2/sigma(1:nDim)**2) )   
     
     !V0(1) = 1.0 + 0.1*xGP(1) + 0.2*xGP(2)  
