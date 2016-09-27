@@ -504,9 +504,8 @@ private:
       double* min, double* max) const;
 
   /**
-   * Sets heap indices of all cell descriptions (ADER-DG, FV, ...) that were
-   * received due to
-   * a fork or join event to
+   * Sets heap indices of all ADER-DG cell descriptions that were
+   * received due to a fork or join event to
    * multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
    * and the parent index of the cell descriptions to the specified \p
    * parentIndex.
@@ -514,6 +513,21 @@ private:
   static void resetDataHeapIndices(
       const int cellDescriptionsIndex,
       const int parentIndex);
+
+  /**
+   * Checks if the parent index of a fine grid cell description
+   * was set to RemoteAdjacencyIndex during a previous forking event.
+   *
+   * If so, check if there exists a coarse grid cell description
+   * which must have been also received during a previous fork event.
+   * If so, update the parent index of the fine grid cell description
+   * with the coarse grid cell descriptions index.
+   */
+  void updateParentIndexAfterFork(
+      CellDescription& cellDescription,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement);
+
 #endif
 
 public:
@@ -884,6 +898,23 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
+  /**
+   * Update and reset corrector and predictor
+   * time stamps and time step sizes according to the chosen
+   * time stepping variant.
+   *
+   * Further reset the minimum and maximum cell sizes
+   * to numeric limit values.
+   *
+   * \note The minimum and maximum cell sizes do
+   * not need to be reset to numeric limit values
+   * in every time step for uniform mesh refinement
+   * static adaptive mesh refinement
+   * but we still do it since we want to
+   * utilise dynamic adaptive mesh refinement
+   * since we want to dynamic adaptive mesh refinement
+   * eventually.
+   */
   void startNewTimeStep() override;
 
   /**
