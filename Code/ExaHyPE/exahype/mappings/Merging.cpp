@@ -189,15 +189,12 @@ void exahype::mappings::Merging::beginIteration(
   logDebug("beginIteration(State)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 
   #ifdef Parallel
-  exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
-  exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
-  DataHeap::getInstance().finishedToSendSynchronousData();
-  MetadataHeap::getInstance().finishedToSendSynchronousData();
-
-  exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
-  exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
-  DataHeap::getInstance().startToSendSynchronousData();
-  MetadataHeap::getInstance().startToSendSynchronousData();
+  if (_localState.getMergeMode()!=exahype::records::State::MergeMode::MergeNothing) {
+    exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
+    exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
+    DataHeap::getInstance().finishedToSendSynchronousData();
+    MetadataHeap::getInstance().finishedToSendSynchronousData();
+  }
   #endif
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory

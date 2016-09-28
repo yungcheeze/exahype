@@ -96,6 +96,13 @@ void exahype::mappings::Sending::beginIteration(
     exahype::State& solverState) {
   _localState = solverState;
 
+  if (_localState.getSendMode()!=exahype::records::State::SendMode::SendNothing) {
+    exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
+    exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
+    DataHeap::getInstance().startToSendSynchronousData();
+    MetadataHeap::getInstance().startToSendSynchronousData();
+  }
+
   logDebug("beginIteration(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 }
 
