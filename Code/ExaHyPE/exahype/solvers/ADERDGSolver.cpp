@@ -2243,9 +2243,9 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("sendDataToMaster(...)","Sending time step data: " <<
-             ", data[0]=" << timeStepDataToReduce[0]
-             ", data[1]=" << timeStepDataToReduce[0]
-             ", data[2]=" << timeStepDataToReduce[0]);
+             ", data[0]=" << timeStepDataToReduce[0] <<
+             ", data[1]=" << timeStepDataToReduce[1] <<
+             ", data[2]=" << timeStepDataToReduce[2]);
   }
 
   DataHeap::getInstance().sendData(
