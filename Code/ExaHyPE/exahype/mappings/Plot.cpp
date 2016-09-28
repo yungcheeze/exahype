@@ -310,7 +310,7 @@ void exahype::mappings::Plot::enterCell(
 
             if (cellDescription.getType()==
                 exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-              double*  u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+              double* u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
               pPlotter->plotPatch(
                   fineGridVerticesEnumerator.getVertexPosition(),
@@ -337,40 +337,6 @@ void exahype::mappings::Plot::enterCell(
         }
         ++solverNumber;
       }
-
-      // TODO(Dominic): Old code for reference. Remove if not needed anymore
-//      // ADER-DG
-//      for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
-//        if (
-//          fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
-//          &&
-//          pPlotter->plotDataFromSolver( fineGridCell.getADERDGCellDescription(i).getSolverNumber() )
-//        ) {
-//          // Only cell descriptions of type Cell have a valid solution index.
-//          double*  u = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
-//
-//          pPlotter->plotPatch(
-//              fineGridVerticesEnumerator.getVertexPosition(),
-//              fineGridVerticesEnumerator.getCellSize(), u,
-//              fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp());
-//        }
-//      }
-//      // FINITE VOLUMES
-//      for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
-//        if (
-//          fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
-//          &&
-//          pPlotter->plotDataFromSolver( fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() )
-//        ) {
-//          // Only cell descriptions of type Cell have a valid solution index.
-//          double*  u = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
-//
-//          pPlotter->plotPatch(
-//              fineGridVerticesEnumerator.getVertexPosition(),
-//              fineGridVerticesEnumerator.getCellSize(), u,
-//              fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp());
-//        }
-//      }
     }
   }
 }

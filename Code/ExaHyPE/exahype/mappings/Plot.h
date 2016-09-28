@@ -72,6 +72,10 @@ class exahype::mappings::Plot {
 
   /**
    * If a fine grid cell is a compute cell, plot solution values.
+   *
+   * Note that we assume here that we always plot the solution values
+   * of the previous iteration.
+   * Never have this mapping after mapping SolutionUpdate.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
