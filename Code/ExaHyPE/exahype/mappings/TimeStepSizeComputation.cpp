@@ -138,6 +138,10 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
   for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
     _minTimeStepSizes[i] =
         std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
+    _minCellSizes[i] =
+        std::min(_minCellSizes[i], workerThread._minCellSizes[i]);
+    _maxCellSizes[i] =
+        std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
 }
 #endif
@@ -192,6 +196,10 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         aderdgSolver->updateMinNextPredictorTimeStepSize(
             0.5 * (stableTimeStepSize + usedTimeStepSize));
       }
+    }
+
+    if (state.reinitTimeStepData()) {
+      solver->reinitTimeStepData();
     }
     solver->startNewTimeStep();
 
@@ -286,7 +294,6 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         }
         _minTimeStepSizes[solverNumber] = std::min(
             admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
-
         _minCellSizes[solverNumber] = std::min(
             fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
         _maxCellSizes[solverNumber] = std::max(
