@@ -293,14 +293,13 @@ void exahype::mappings::Sending::prepareSendToMaster(
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    for (auto& p : exahype::solvers::RegisteredSolvers) {
-      p->sendDataToMaster(
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->sendDataToMaster(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           verticesEnumerator.getCellCenter(),
           verticesEnumerator.getLevel());
     }
   }
-  return; // todo remove
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
@@ -362,7 +361,6 @@ void exahype::mappings::Sending::mergeWithMaster(
           fineGridVerticesEnumerator.getLevel());
     }
   }
-  return; // todo remove
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
@@ -454,8 +452,6 @@ bool exahype::mappings::Sending::prepareSendToWorker(
   }
   else return true;
 }
-
-
 
 //
 // Below all functions are nop.

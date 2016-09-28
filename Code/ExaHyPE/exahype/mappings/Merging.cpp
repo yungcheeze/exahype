@@ -518,8 +518,6 @@ void exahype::mappings::Merging::receiveDataFromMaster(
     }
   }
 
-  return; // todo remove
-
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
       && receivedCell.isInside()) {
