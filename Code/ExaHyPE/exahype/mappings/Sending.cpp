@@ -96,12 +96,14 @@ void exahype::mappings::Sending::beginIteration(
     exahype::State& solverState) {
   _localState = solverState;
 
+  #ifdef Parallel
   if (_localState.getSendMode()!=exahype::records::State::SendMode::SendNothing) {
     exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
     exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
     DataHeap::getInstance().startToSendSynchronousData();
     MetadataHeap::getInstance().startToSendSynchronousData();
   }
+  #endif
 
   logDebug("beginIteration(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 }
@@ -288,9 +290,6 @@ void exahype::mappings::Sending::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-
-  logDebug("prepareSendToMaster(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
-
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
     for (auto solver : exahype::solvers::RegisteredSolvers) {
@@ -330,6 +329,12 @@ void exahype::mappings::Sending::prepareSendToMaster(
         ++solverNumber;
       }
     } else if (localCell.isInside() && !localCell.isInitialised()) {
+      exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          peano::heap::MessageType::MasterWorkerCommunication,
+          verticesEnumerator.getCellCenter(),
+          verticesEnumerator.getLevel());
+
       for (auto solver : exahype::solvers::RegisteredSolvers) {
         solver->sendEmptyDataToMaster(
             tarch::parallel::NodePool::getInstance().getMasterRank(),
@@ -364,7 +369,9 @@ void exahype::mappings::Sending::mergeWithMaster(
 
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
+    // TODO(Dominic): Add to docu, we only know from the worker grid cell if it is inside.
+    // I encountered a problem where workerGridCell.isInside() != fineGridCell.isInside()
+    if (workerGridCell.isInside() && fineGridCell.isInitialised()) {
       int receivedMetadataIndex = exahype::MetadataHeap::getInstance().createData(
           0,exahype::solvers::RegisteredSolvers.size());
       exahype::MetadataHeap::getInstance().receiveData(
@@ -397,7 +404,7 @@ void exahype::mappings::Sending::mergeWithMaster(
         ++solverNumber;
       }
       exahype::MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
-    } else if (fineGridCell.isInside() && !fineGridCell.isInitialised()) {
+    } else if (workerGridCell.isInside() && !fineGridCell.isInitialised()) {
       exahype::Vertex::dropMetadata(
           worker,
           peano::heap::MessageType::MasterWorkerCommunication,
@@ -425,8 +432,8 @@ bool exahype::mappings::Sending::prepareSendToWorker(
     int worker) {
   bool workerHasToSendDataMaster = false;
 
-  if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
+  if ((_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
+      _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData)
       && fineGridCell.isInside()) {
     if (fineGridCell.isInitialised()) {
       int solverNumber=0;

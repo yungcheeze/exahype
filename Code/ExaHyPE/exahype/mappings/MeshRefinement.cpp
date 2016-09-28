@@ -523,7 +523,8 @@ bool exahype::mappings::MeshRefinement::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  // do nothing
+
+  // TODO(Dominic): Do I have to mark here too? I probably have to ensure ancestor holds data here.
   return true;
 }
 

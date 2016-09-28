@@ -168,8 +168,6 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
         maxDepth,
         tarch::la::round(
             std::log(solver->getMaxCellSize()/solver->getMinCellSize())/std::log(3)));
-
-
   }
 
   assertion1(maxDepth>=0,maxDepth);
