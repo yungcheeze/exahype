@@ -75,10 +75,10 @@ def plotLinearSpeedupCurves():
 
   if int(args.singlecore)>1:
     speedupCurveYdata = [yDataMin*int(args.singlecore)/x for x in range(int(args.singlecore),int(xDataMax))]
-    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey',label="linear w.o. multicore") 
+    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dotted',color='black',label="linear w.o. multicore") 
 
     speedupCurveYdata = [yDataMax*int(args.singlecore)/x for x in range(int(args.singlecore),int(xDataMax))]
-    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
+    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dotted',color='black') 
 
 
 
@@ -246,7 +246,10 @@ if args.meshsize is not None:
  experimentSetCounter =  0
  for (table,label,h) in zip(args.table,args.experimentdescription,args.meshsize):
   print "read " + table
-  normalisation = float(h)**(-dim)
+  depth = 1
+  while 3**(-depth*dim)>float(h):
+    depth = depth+1
+  normalisation = 3**(-depth*dim)
 
   addData(table,normalisation,table==args.table[-1],experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
