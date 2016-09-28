@@ -165,7 +165,8 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
-      _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
+      _minNextPredictorTimeStepSize(std::numeric_limits<double>::max())
+{
   assertion(numberOfParameters == 0);
   // register tags with profiler
   for (const char* tag : tags) {
@@ -260,6 +261,11 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
       _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
       break;
   }
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = std::numeric_limits<double>::min();
 }
 
 void exahype::solvers::ADERDGSolver::reinitTimeStepData() {
@@ -2225,9 +2231,9 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
   std::vector<double> timeStepDataToReduce(0,3);
-  timeStepDataToReduce.push_back(getMinPredictorTimeStepSize());
-  timeStepDataToReduce.push_back(getMinCellSize());
-  timeStepDataToReduce.push_back(getMaxCellSize());
+  timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
+  timeStepDataToReduce.push_back(_minCellSize);
+  timeStepDataToReduce.push_back(_maxCellSize);
 
   assertion1(timeStepDataToReduce.size()==3,timeStepDataToReduce.size());
   assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
@@ -2272,8 +2278,8 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   // Thus it does not equal MAX_DOUBLE.
 
   _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[0] );
-  _minCellSize                  = std::min( _minCellSize, receivedTimeStepData[1] );
-  _maxCellSize                  = std::min( _maxCellSize, receivedTimeStepData[2] );
+  _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[1] );
+  _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -2284,8 +2290,8 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
              "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
-             "_minCellSize=" << _minCellSize <<
-             "_maxCellSize=" << _maxCellSize);
+             "_nextMinCellSize=" << _nextMinCellSize <<
+             "_nextMaxCellSize=" << _nextMaxCellSize);
   }
 }
 

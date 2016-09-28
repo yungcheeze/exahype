@@ -92,7 +92,7 @@ void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables()
       solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
     _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
-    _maxCellSizes    [solverNumber] = 0;
+    _maxCellSizes    [solverNumber] = std::numeric_limits<double>::min();
   }
 }
 
@@ -169,8 +169,17 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
-    solver->updateMinCellSize(_minCellSizes[solverNumber]);
-    solver->updateMaxCellSize(_maxCellSizes[solverNumber]);
+    logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
+             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber])
+
+    solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
+    solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+
+    if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+      assertion2(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),solver->getNextMinCellSize(),_minCellSizes[solverNumber]);
+      assertion3(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber]);
+    }
+
     solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     if (
         solver->getType()==exahype::solvers::Solver::Type::ADER_DG &&
@@ -297,7 +306,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         _minCellSizes[solverNumber] = std::min(
             fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
         _maxCellSizes[solverNumber] = std::max(
-                    fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
+            fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);

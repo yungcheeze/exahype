@@ -36,7 +36,9 @@ exahype::solvers::Solver::Solver(
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
       _maximumMeshSize(maximumMeshSize),
       _minCellSize(std::numeric_limits<double>::max()),
-      _maxCellSize(0),
+      _nextMinCellSize(std::numeric_limits<double>::max()),
+      _maxCellSize(std::numeric_limits<double>::min()),
+      _nextMaxCellSize(std::numeric_limits<double>::min()),
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)) {
   assertion(numberOfParameters==0);
@@ -159,12 +161,14 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
   int maxDepth = 0;
 
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    std::cout << solver->getMaxCellSize() << ", " << solver->getMinCellSize() << std::endl;
+    assertion1(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize());
+    assertion1(solver->getNextMinCellSize()>0,solver->getNextMinCellSize());
+    std::cout << solver->getNextMaxCellSize() << ", " << solver->getNextMinCellSize() << std::endl;
 
     maxDepth =  std::max (
         maxDepth,
         tarch::la::round(
-            std::log(solver->getMaxCellSize()/solver->getMinCellSize())/std::log(3)));
+            std::log(solver->getNextMaxCellSize()/solver->getNextMinCellSize())/std::log(3)));
 
   }
 

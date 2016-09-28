@@ -209,6 +209,7 @@ class exahype::solvers::Solver {
    * This value needs to be updated every time the grid has been changed.
    */
   double _minCellSize;
+  double _nextMinCellSize;
 
   /**
    * The maximum extent in each coordinate direction at least one cell in the grid has.
@@ -216,7 +217,7 @@ class exahype::solvers::Solver {
    * * This value needs to be updated every time the grid has been changed.
    */
   double _maxCellSize;
-
+  double _nextMaxCellSize;
 
   /**
    * The time stepping mode of this solver.
@@ -264,20 +265,20 @@ class exahype::solvers::Solver {
    */
   double getMaximumMeshSize() const;
 
-  void updateMinCellSize(double minCellSize) {
-    _minCellSize = std::min( _minCellSize, minCellSize );
+  void updateNextMinCellSize(double minCellSize) {
+    _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
   }
 
-  void updateMaxCellSize(double maxCellSize) {
-    _maxCellSize = std::max( _maxCellSize, maxCellSize );
+  void updateNextMaxCellSize(double maxCellSize) {
+    _nextMaxCellSize = std::max( _nextMaxCellSize, maxCellSize );
   }
 
-  double getMinCellSize() const {
-    return _minCellSize;
+  double getNextMinCellSize() const {
+    return _nextMinCellSize;
   }
 
-  double getMaxCellSize() const {
-    return _maxCellSize;
+  double getNextMaxCellSize() const {
+    return _nextMaxCellSize;
   }
 
   /**
