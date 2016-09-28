@@ -385,6 +385,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface::writeHeader();
 
   initSolverTimeStamps();
+  repository.getState().switchToPreAMRContext();
   createGrid(repository);
   /*
    * Set ADER-DG corrector time stamp and finite volumes time stamp.
@@ -578,7 +579,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
    */
   repository.getState().switchToADERDGTimeStepContext();
   if (numberOfStepsToRun==0) {
-    repository.switchToADERDGTimeStepAndPlot();
+    repository.switchToPlotAndADERDGTimeStep();
     repository.iterate();
   } else {
     repository.switchToADERDGTimeStep();
@@ -612,48 +613,37 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate();
 
-  repository.getState().switchToSolutionUpdateAndTimeStepSizeComputationContext();
+  // no merging and sending
   if (plot) {
-    repository.switchToSolutionUpdateAndPlotAndTimeStepSizeComputation();  // Face to cell + Inside cell
+    repository.switchToPlotAndSolutionUpdate();  // Face to cell + Inside cell
   } else {
-    repository.switchToSolutionUpdateAndTimeStepSizeComputation();  // Face to cell + Inside cell
+    repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   }
   repository.iterate();
 
+  // No messages are flying around here, I can plot
+  #if DIMENSIONS==2
+  if (plot) {
+    repository.switchToPlotAugmentedAMRGrid();
+    repository.iterate();
+  }
+  #endif
+
+  repository.getState().switchToPreAMRContext(); // This must stay here.
+
   // TODO(Dominic): Experimental dyn. AMR grid setup that only works
   // with standard global time stepping at the moment.
-  // This probably only works for one level AMR,
-  // I need to increase stride size in createGrid from three to something else.
   //
-  // For the refinement criterion try for example a density based on like the one below
-  // (Copy this to the MyEulerSolver.cpp function, do not uncomment here.)
+  // For the refinement criterion try for example a density based one.
   //
-  /*  if (dx[0] > getMaximumMeshSize()/3.) {
-        for (int i=0; i<getUnknownsPerCell(); i+=getNumberOfVariables()) {
-          if (luh[i]>0.52) { // density
-            return exahype::solvers::Solver::RefinementControl::Refine;
-          }
-        }
-      }
-
-      // It is important that we check all values again.
-      if (dx[0] <= getMaximumMeshSize()/3.) {
-        for (int i=0; i<getUnknownsPerCell(); i+=getNumberOfVariables()) {
-          if (luh[i]>0.52) { // density
-            return exahype::solvers::Solver::RefinementControl::Keep;
-          }
-        }
-        return exahype::solvers::Solver::RefinementControl::Erase;
-      }
-
-      return exahype::solvers::Solver::RefinementControl::Keep;*/
-
   // Uncomment the following lines for testing dyn. AMR.
-//  createGrid(repository);
-//  repository.iterate();
-//  repository.iterate();
-//  repository.switchToPlotAugmentedAMRGrid();
-//  repository.iterate();
+  createGrid(repository);
+  const int maxAdaptiveGridDepth = exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers();
+  logDebug("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","maxAdaptiveGridDepth="<<maxAdaptiveGridDepth);
+  repository.iterate(maxAdaptiveGridDepth*2); // We need to two iterations for an erasing event.
+  repository.getState().switchToPostAMRContext();
+  repository.switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
+  repository.iterate();
 
   repository.getState().switchToPredictionContext();
   repository.switchToPrediction();  // Cell onto faces
