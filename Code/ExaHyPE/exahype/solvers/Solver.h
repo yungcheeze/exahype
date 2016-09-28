@@ -281,6 +281,14 @@ class exahype::solvers::Solver {
     return _nextMaxCellSize;
   }
 
+  double getMinCellSize() const {
+    return _minCellSize;
+  }
+
+  double getMaxCellSize() const {
+    return _maxCellSize;
+  }
+
   /**
    * Returns the identifier of this solver.
    */

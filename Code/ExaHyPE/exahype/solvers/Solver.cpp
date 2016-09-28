@@ -161,17 +161,18 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
   int maxDepth = 0;
 
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    assertion1(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize());
-    assertion1(solver->getNextMinCellSize()>0,solver->getNextMinCellSize());
-    std::cout << solver->getNextMaxCellSize() << ", " << solver->getNextMinCellSize() << std::endl;
+    assertion1(solver->getMaxCellSize()>0,solver->getMaxCellSize());
+    assertion1(solver->getMinCellSize()>0,solver->getMinCellSize());
 
     maxDepth =  std::max (
         maxDepth,
         tarch::la::round(
-            std::log(solver->getNextMaxCellSize()/solver->getNextMinCellSize())/std::log(3)));
+            std::log(solver->getMaxCellSize()/solver->getMinCellSize())/std::log(3)));
+
 
   }
 
+  assertion1(maxDepth>0,maxDepth);
   return maxDepth;
 }
 
