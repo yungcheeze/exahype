@@ -172,7 +172,7 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
 
   }
 
-  assertion1(maxDepth>0,maxDepth);
+  assertion1(maxDepth>=0,maxDepth);
   return maxDepth;
 }
 
