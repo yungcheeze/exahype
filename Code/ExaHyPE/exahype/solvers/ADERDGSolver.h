@@ -919,6 +919,21 @@ public:
   void startNewTimeStep() override;
 
   /**
+   * After the mesh has been updated,
+   * reset the predictor time stamp to
+   * the value corrector time stamp plus
+   * nextPredictorTimeStepSize which is
+   * the newly computed time step size.
+   * Furthermore, set the predictor time
+   * step size to nextPredictorTimeStepSize.
+   *
+   * This whole procedure is a little confusing but
+   * necessary due to the shift
+   * of the ADER-DG phases in our implementation.
+   */
+  void reinitTimeStepData() override;
+
+  /**
    * Update predictor time step size
    *
    * This operation takes the minimum of the current predictor time step size

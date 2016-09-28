@@ -95,6 +95,17 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   }
 }
 
+void exahype::solvers::FiniteVolumesSolver::reinitTimeStepData() {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      // do nothing
+      break;
+    case TimeStepping::GlobalFixed:
+      // do nothing
+      break;
+  }
+}
+
 double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }

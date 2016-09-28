@@ -372,7 +372,24 @@ class exahype::solvers::Solver {
       const int cellDescriptionsIndex,
       const int element) = 0;
 
+  /**
+   * This routine is called if we perform
+   * a time step update
+   */
   virtual void startNewTimeStep() = 0;
+
+  /**
+   * This routine is called after the
+   * mesh has been updated and we might have
+   * to reinitialise some of the time
+   * stamps or time step sizes before
+   * we call startNewTimeStep().
+   *
+   * At the time of the call of this
+   * function, a new next time step size
+   * has already been computed.
+   */
+  virtual void reinitTimeStepData() = 0;
 
   virtual double getNextMinTimeStepSize() const =0;
 
@@ -399,6 +416,15 @@ class exahype::solvers::Solver {
 
   static double getCoarsestMeshSizeOfAllSolvers();
   static double getFinestMaximumMeshSizeOfAllSolvers();
+
+  /**
+   * Run over all solvers and identify the maximum depth of adaptive
+   * refinement employed.
+   *
+   * This number directly correlates with the number
+   * of grid iterations to run for performing an erasing operation.
+   */
+  static int getMaxAdaptiveRefinementDepthOfAllSolvers();
 
   /**
    * Returns true if the index \p cellDescriptionsIndex

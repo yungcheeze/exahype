@@ -229,6 +229,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void reinitTimeStepData() override;
+
   double getNextMinTimeStepSize() const override;
 
   bool isValidCellDescriptionIndex(

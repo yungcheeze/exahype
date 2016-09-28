@@ -241,7 +241,6 @@ void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
   synchroniseTimeStepping(Heap::getInstance().getData(cellDescriptionsIndex)[element]);
 }
 
-
 void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
@@ -261,9 +260,18 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
       _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
       break;
   }
+}
 
-  _minCellSize = std::numeric_limits<double>::max();
-  _maxCellSize = 0;
+void exahype::solvers::ADERDGSolver::reinitTimeStepData() {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+      _minPredictorTimeStamp    = _minCorrectorTimeStamp+_minNextPredictorTimeStepSize;
+      break;
+    case TimeStepping::GlobalFixed:
+      //do nothing
+      break;
+  }
 }
 
 void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(

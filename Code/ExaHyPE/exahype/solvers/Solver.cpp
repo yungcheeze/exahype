@@ -155,6 +155,22 @@ double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
   return result;
 }
 
+int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
+  int maxDepth = 0;
+
+  for (auto solver : exahype::solvers::RegisteredSolvers) {
+    std::cout << solver->getMaxCellSize() << ", " << solver->getMinCellSize() << std::endl;
+
+    maxDepth =  std::max (
+        maxDepth,
+        tarch::la::round(
+            std::log(solver->getMaxCellSize()/solver->getMinCellSize())/std::log(3)));
+
+  }
+
+  return maxDepth;
+}
+
 std::string exahype::solvers::Solver::toString() const {
   std::ostringstream stringstr;
   toString(stringstr);
