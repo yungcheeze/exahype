@@ -5,23 +5,30 @@ import pylab
 import runtimeParser
 
 
-Colors           = ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff']
-Markerfacecolors = ['None','None','None','k','k','k']
+Colors           = ['#ff0000','#00ff00','#0000ff','#ffbb00','#ff00ff','#00ffff']
+Markerfacecolors = ['None','None','None','None','None','None','k','k','k']
 Markers          = ['o','^','s','o','^','s']
 
 
 xDataMax = 0
 yDataMin = 65636
 yDataMax = 0
+symbolCounter = 0
+plotCounter   = 0
 
 def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   global xDataMax
   global yDataMin
   global yDataMax
+  global symbolCounter
+  global plotCounter
   
-  xdata    = runtimeParser.readColumnFromTable(table,0)
+  symbolCounter = plotCounter / int(args.changecolour)
+  plotCounter   = plotCounter + 1
+  experimentSetCounter = experimentSetCounter - plotCounter / int(args.changecolour)
+  
+  xdata         = runtimeParser.readColumnFromTable(table,0)
 
-  symbolCounter = 0
   for adap in args.adapter:
     totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
     count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
@@ -138,6 +145,7 @@ parser.add_argument('-fontsize',default=10,required=False,help="Font size of the
 parser.add_argument('-experimentdescription',nargs='+',required=True,help="Per table entry, one experiment desription is required")
 parser.add_argument('-singlecore',required=True,help="Which core count is the sequential run time")
 parser.add_argument('-meshsize',required=False,nargs='+',help="Specify per table how big the mesh size is")
+parser.add_argument('-changecolour',required=False,default=65536,help="Tell plotter after how many plots to change colouring scheme (colour furthermore is changed for each adapter)")
 args   = parser.parse_args();
 
 dim = int(args.dimension)
@@ -153,6 +161,7 @@ pylab.xlabel('cores')
 
 yDataMin = 65636
 yDataMax = 0
+plotCounter   = 0
 
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
@@ -186,6 +195,7 @@ pylab.xlabel('cores')
 
 yDataMin = 65636
 yDataMax = 0
+plotCounter   = 0
 
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
@@ -229,6 +239,7 @@ pylab.xlabel('cores')
 
 yDataMin = 65636
 yDataMax = 0
+plotCounter   = 0
 
 if args.meshsize is not None:
 
