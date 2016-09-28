@@ -168,18 +168,24 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * See both mappings for more details.
    */
   void switchToInitialConditionAndTimeStepSizeComputationContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
 
   void switchToADERDGTimeStepContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
@@ -190,36 +196,59 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToNeighbourDataMergingContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
 
-  void switchToSolutionUpdateAndTimeStepSizeComputationContext() {
-    _stateData.setFuseADERDGPhases(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
-
   void switchToPredictionContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
+  void switchToPreAMRContext() {
+    _stateData.setFirstGridSetupIteration(true);
+    _stateData.setReinitTimeStepData(false); // rename
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+  }
+
+  void switchToPostAMRContext() {
+    _stateData.setFirstGridSetupIteration(false);
+    _stateData.setReinitTimeStepData(true);
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+  }
+  //
+
   void setStabilityConditionOfOneSolverWasViolated(bool state) {
     _stateData.setStabilityConditionOfOneSolverWasViolated(state);
   }
 
-  bool stabilityConditionOfOneSolverWasViolated() {
+  bool stabilityConditionOfOneSolverWasViolated() const {
     return _stateData.getStabilityConditionOfOneSolverWasViolated();
+  }
+
+  void setReinitTimeStepData(bool state) {
+    _stateData.setReinitTimeStepData(state);
+  }
+
+  bool reinitTimeStepData() const  {
+    return _stateData.getReinitTimeStepData();
   }
 
   void setFuseADERDGPhases(bool state) {
     _stateData.setFuseADERDGPhases(state);
   }
 
-  bool fuseADERDGPhases() {
+  bool fuseADERDGPhases() const  {
     return _stateData.getFuseADERDGPhases();
   }
 
@@ -227,9 +256,18 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setTimeStepSizeWeightForPredictionRerun(value);
   }
 
-  double getTimeStepSizeWeightForPredictionRerun() {
+  double getTimeStepSizeWeightForPredictionRerun() const {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
+
+  #ifdef Parallel
+  bool firstGridSetupIteration() const {
+    return _stateData.getFirstGridSetupIteration();
+  }
+  void setFirstGridSetupIteration(bool state) {
+    return _stateData.setFirstGridSetupIteration(state);
+  }
+  #endif
 };
 
 #endif

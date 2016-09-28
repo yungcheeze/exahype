@@ -111,7 +111,7 @@ void exahype::mappings::MeshRefinement::beginIteration(
 }
 
 void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState) {
-  // do nothing
+  solverState.setFirstGridSetupIteration(false);
   if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
     solverState.updateRegularInitialGridRefinementStrategy();
   }
@@ -310,6 +310,8 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
 #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
 #endif
+
+  if (_localState.firstGridSetupIteration()) return; // TODO is reset in end iteration.
 
   dfor2(myDest)
     dfor2(mySrc)
