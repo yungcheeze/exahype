@@ -70,12 +70,13 @@ class exahype::repositories::Repository {
     virtual void switchToPredictionAndTimeStepSizeComputation() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
-    virtual void switchToADERDGTimeStepAndPlot() = 0;    
+    virtual void switchToPlotAndADERDGTimeStep() = 0;    
     virtual void switchToPredictionRerun() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToPrediction() = 0;    
-    virtual void switchToSolutionUpdateAndTimeStepSizeComputation() = 0;    
-    virtual void switchToSolutionUpdateAndPlotAndTimeStepSizeComputation() = 0;    
+    virtual void switchToSolutionUpdate() = 0;    
+    virtual void switchToPlotAndSolutionUpdate() = 0;    
+    virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
     virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
@@ -86,12 +87,13 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
-    virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
+    virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterPredictionRerun() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
-    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const = 0;
-    virtual bool isActiveAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterSolutionUpdate() const = 0;
+    virtual bool isActiveAdapterPlotAndSolutionUpdate() const = 0;
+    virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

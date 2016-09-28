@@ -126,11 +126,11 @@ adapter:
   merge-with-user-defined-mapping: Sending
  
 adapter: 
-  name: ADERDGTimeStepAndPlot
+  name: PlotAndADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: TimeStepSizeComputation
@@ -161,16 +161,18 @@ adapter:
   merge-with-user-defined-mapping: Sending
 
 adapter:
-  name: SolutionUpdateAndTimeStepSizeComputation
+  name: SolutionUpdate
   merge-with-user-defined-mapping: SolutionUpdate
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: LoadBalancing
-  merge-with-user-defined-mapping: Sending
 
 adapter:
-  name: SolutionUpdateAndPlotAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: SolutionUpdate
+  name: PlotAndSolutionUpdate
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: SolutionUpdate
+
+// Additional adapter for AMR in 4 phase time stepping
+adapter:
+  name: PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
 

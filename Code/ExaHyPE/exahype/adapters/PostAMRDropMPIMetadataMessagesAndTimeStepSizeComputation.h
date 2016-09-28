@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,15 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
- #include "exahype/mappings/LoadBalancing.h"
  #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class SolutionUpdateAndTimeStepSizeComputation;
+        class PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
       } 
 }
 
@@ -39,17 +38,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::SolutionUpdateAndTimeStepSizeComputation {
+class exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
+    typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
     typedef mappings::TimeStepSizeComputation Mapping1;
-    typedef mappings::LoadBalancing Mapping2;
-    typedef mappings::Sending Mapping3;
+    typedef mappings::Sending Mapping2;
 
-     Mapping0  _map2SolutionUpdate;
+     Mapping0  _map2DropIncomingMPIMetadataMessages;
      Mapping1  _map2TimeStepSizeComputation;
-     Mapping2  _map2LoadBalancing;
-     Mapping3  _map2Sending;
+     Mapping2  _map2Sending;
 
 
   public:
@@ -61,16 +58,16 @@ class exahype::adapters::SolutionUpdateAndTimeStepSizeComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    SolutionUpdateAndTimeStepSizeComputation();
+    PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    SolutionUpdateAndTimeStepSizeComputation(const SolutionUpdateAndTimeStepSizeComputation& masterThread);
+    PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation(const PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~SolutionUpdateAndTimeStepSizeComputation();
+    virtual ~PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const SolutionUpdateAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

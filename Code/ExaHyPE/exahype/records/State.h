@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   27/09/2016 14:17
+    * @date   28/09/2016 00:09
     */
    class exahype::records::State { 
       
@@ -52,8 +52,9 @@ namespace exahype {
          struct PersistentRecords {
             MergeMode _mergeMode;
             SendMode _sendMode;
-            bool _stabilityConditionOfOneSolverWasViolated;
+            bool _reinitTimeStepData;
             bool _fuseADERDGPhases;
+            bool _stabilityConditionOfOneSolverWasViolated;
             double _timeStepSizeWeightForPredictionRerun;
             bool _hasRefined;
             bool _hasTriggeredRefinementForNextIteration;
@@ -70,7 +71,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline MergeMode getMergeMode() const 
@@ -113,22 +114,22 @@ namespace exahype {
             
             
             
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
+            inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _stabilityConditionOfOneSolverWasViolated;
+               return _reinitTimeStepData;
             }
             
             
             
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               _reinitTimeStepData = reinitTimeStepData;
             }
             
             
@@ -149,6 +150,26 @@ namespace exahype {
  #endif 
  {
                _fuseADERDGPhases = fuseADERDGPhases;
+            }
+            
+            
+            
+            inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
             }
             
             
@@ -332,7 +353,7 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
@@ -380,22 +401,22 @@ namespace exahype {
          
          
          
-         inline bool getStabilityConditionOfOneSolverWasViolated() const 
+         inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+            return _persistentRecords._reinitTimeStepData;
          }
          
          
          
-         inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+         inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+            _persistentRecords._reinitTimeStepData = reinitTimeStepData;
          }
          
          
@@ -416,6 +437,26 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+         }
+         
+         
+         
+         inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+         }
+         
+         
+         
+         inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
          }
          
          
@@ -676,7 +717,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   27/09/2016 14:17
+       * @date   28/09/2016 00:09
        */
       class exahype::records::StatePacked { 
          
@@ -689,8 +730,9 @@ namespace exahype {
             struct PersistentRecords {
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _stabilityConditionOfOneSolverWasViolated;
+               bool _reinitTimeStepData;
                bool _fuseADERDGPhases;
+               bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
                bool _isTraversalInverted;
                
@@ -713,7 +755,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline MergeMode getMergeMode() const 
@@ -756,22 +798,22 @@ namespace exahype {
                
                
                
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+               inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _stabilityConditionOfOneSolverWasViolated;
+                  return _reinitTimeStepData;
                }
                
                
                
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                  _reinitTimeStepData = reinitTimeStepData;
                }
                
                
@@ -792,6 +834,26 @@ namespace exahype {
  #endif 
  {
                   _fuseADERDGPhases = fuseADERDGPhases;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                }
                
                
@@ -993,7 +1055,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -1041,22 +1103,22 @@ namespace exahype {
             
             
             
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
+            inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               return _persistentRecords._reinitTimeStepData;
             }
             
             
             
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               _persistentRecords._reinitTimeStepData = reinitTimeStepData;
             }
             
             
@@ -1077,6 +1139,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+            }
+            
+            
+            
+            inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
             }
             
             
@@ -1352,7 +1434,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   27/09/2016 14:17
+          * @date   28/09/2016 00:09
           */
          class exahype::records::State { 
             
@@ -1374,10 +1456,12 @@ namespace exahype {
                
                struct PersistentRecords {
                   GridConstructionState _gridConstructionState;
+                  bool _firstGridSetupIteration;
                   MergeMode _mergeMode;
                   SendMode _sendMode;
-                  bool _stabilityConditionOfOneSolverWasViolated;
+                  bool _reinitTimeStepData;
                   bool _fuseADERDGPhases;
+                  bool _stabilityConditionOfOneSolverWasViolated;
                   double _timeStepSizeWeightForPredictionRerun;
                   #ifdef UseManualAlignment
                   tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
@@ -1418,7 +1502,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -1437,6 +1521,26 @@ namespace exahype {
  #endif 
  {
                      _gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _firstGridSetupIteration;
+                  }
+                  
+                  
+                  
+                  inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _firstGridSetupIteration = firstGridSetupIteration;
                   }
                   
                   
@@ -1481,22 +1585,22 @@ namespace exahype {
                   
                   
                   
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                  inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _stabilityConditionOfOneSolverWasViolated;
+                     return _reinitTimeStepData;
                   }
                   
                   
                   
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                     _reinitTimeStepData = reinitTimeStepData;
                   }
                   
                   
@@ -1517,6 +1621,26 @@ namespace exahype {
  #endif 
  {
                      _fuseADERDGPhases = fuseADERDGPhases;
+                  }
+                  
+                  
+                  
+                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _stabilityConditionOfOneSolverWasViolated;
+                  }
+                  
+                  
+                  
+                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                   }
                   
                   
@@ -2096,7 +2220,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2120,6 +2244,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._gridConstructionState = gridConstructionState;
+               }
+               
+               
+               
+               inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._firstGridSetupIteration;
+               }
+               
+               
+               
+               inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
                }
                
                
@@ -2164,22 +2308,22 @@ namespace exahype {
                
                
                
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+               inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                  return _persistentRecords._reinitTimeStepData;
                }
                
                
                
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                }
                
                
@@ -2200,6 +2344,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                }
                
                
@@ -2918,7 +3082,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   27/09/2016 14:17
+             * @date   28/09/2016 00:09
              */
             class exahype::records::StatePacked { 
                
@@ -2932,10 +3096,12 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      GridConstructionState _gridConstructionState;
+                     bool _firstGridSetupIteration;
                      MergeMode _mergeMode;
                      SendMode _sendMode;
-                     bool _stabilityConditionOfOneSolverWasViolated;
+                     bool _reinitTimeStepData;
                      bool _fuseADERDGPhases;
+                     bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                      tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
@@ -2974,7 +3140,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -2993,6 +3159,26 @@ namespace exahype {
  #endif 
  {
                         _gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _firstGridSetupIteration;
+                     }
+                     
+                     
+                     
+                     inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _firstGridSetupIteration = firstGridSetupIteration;
                      }
                      
                      
@@ -3037,22 +3223,22 @@ namespace exahype {
                      
                      
                      
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                     inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _stabilityConditionOfOneSolverWasViolated;
+                        return _reinitTimeStepData;
                      }
                      
                      
                      
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                        _reinitTimeStepData = reinitTimeStepData;
                      }
                      
                      
@@ -3073,6 +3259,26 @@ namespace exahype {
  #endif 
  {
                         _fuseADERDGPhases = fuseADERDGPhases;
+                     }
+                     
+                     
+                     
+                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _stabilityConditionOfOneSolverWasViolated;
+                     }
+                     
+                     
+                     
+                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                      }
                      
                      
@@ -3679,7 +3885,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -3703,6 +3909,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._firstGridSetupIteration;
+                  }
+                  
+                  
+                  
+                  inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
                   }
                   
                   
@@ -3747,22 +3973,22 @@ namespace exahype {
                   
                   
                   
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                  inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                     return _persistentRecords._reinitTimeStepData;
                   }
                   
                   
                   
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                     _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                   }
                   
                   
@@ -3783,6 +4009,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+                  }
+                  
+                  
+                  
+                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                  }
+                  
+                  
+                  
+                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                   }
                   
                   
@@ -4526,7 +4772,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   27/09/2016 14:17
+             * @date   28/09/2016 00:09
              */
             class exahype::records::State { 
                
@@ -4548,10 +4794,12 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      GridConstructionState _gridConstructionState;
+                     bool _firstGridSetupIteration;
                      MergeMode _mergeMode;
                      SendMode _sendMode;
-                     bool _stabilityConditionOfOneSolverWasViolated;
+                     bool _reinitTimeStepData;
                      bool _fuseADERDGPhases;
+                     bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
                      bool _hasRefined;
                      bool _hasTriggeredRefinementForNextIteration;
@@ -4571,7 +4819,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -4590,6 +4838,26 @@ namespace exahype {
  #endif 
  {
                         _gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _firstGridSetupIteration;
+                     }
+                     
+                     
+                     
+                     inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _firstGridSetupIteration = firstGridSetupIteration;
                      }
                      
                      
@@ -4634,22 +4902,22 @@ namespace exahype {
                      
                      
                      
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                     inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _stabilityConditionOfOneSolverWasViolated;
+                        return _reinitTimeStepData;
                      }
                      
                      
                      
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                        _reinitTimeStepData = reinitTimeStepData;
                      }
                      
                      
@@ -4670,6 +4938,26 @@ namespace exahype {
  #endif 
  {
                         _fuseADERDGPhases = fuseADERDGPhases;
+                     }
+                     
+                     
+                     
+                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _stabilityConditionOfOneSolverWasViolated;
+                     }
+                     
+                     
+                     
+                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                      }
                      
                      
@@ -4913,7 +5201,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -4937,6 +5225,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._firstGridSetupIteration;
+                  }
+                  
+                  
+                  
+                  inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
                   }
                   
                   
@@ -4981,22 +5289,22 @@ namespace exahype {
                   
                   
                   
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                  inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                     return _persistentRecords._reinitTimeStepData;
                   }
                   
                   
                   
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                     _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                   }
                   
                   
@@ -5017,6 +5325,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+                  }
+                  
+                  
+                  
+                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                  }
+                  
+                  
+                  
+                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                   }
                   
                   
@@ -5347,7 +5675,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   27/09/2016 14:17
+                * @date   28/09/2016 00:09
                 */
                class exahype::records::StatePacked { 
                   
@@ -5361,10 +5689,12 @@ namespace exahype {
                      
                      struct PersistentRecords {
                         GridConstructionState _gridConstructionState;
+                        bool _firstGridSetupIteration;
                         MergeMode _mergeMode;
                         SendMode _sendMode;
-                        bool _stabilityConditionOfOneSolverWasViolated;
+                        bool _reinitTimeStepData;
                         bool _fuseADERDGPhases;
+                        bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
                         bool _isTraversalInverted;
                         
@@ -5390,7 +5720,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
                         inline GridConstructionState getGridConstructionState() const 
@@ -5409,6 +5739,26 @@ namespace exahype {
  #endif 
  {
                            _gridConstructionState = gridConstructionState;
+                        }
+                        
+                        
+                        
+                        inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _firstGridSetupIteration;
+                        }
+                        
+                        
+                        
+                        inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _firstGridSetupIteration = firstGridSetupIteration;
                         }
                         
                         
@@ -5453,22 +5803,22 @@ namespace exahype {
                         
                         
                         
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                        inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _stabilityConditionOfOneSolverWasViolated;
+                           return _reinitTimeStepData;
                         }
                         
                         
                         
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                           _reinitTimeStepData = reinitTimeStepData;
                         }
                         
                         
@@ -5489,6 +5839,26 @@ namespace exahype {
  #endif 
  {
                            _fuseADERDGPhases = fuseADERDGPhases;
+                        }
+                        
+                        
+                        
+                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _stabilityConditionOfOneSolverWasViolated;
+                        }
+                        
+                        
+                        
+                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                         }
                         
                         
@@ -5759,7 +6129,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
@@ -5783,6 +6153,26 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline bool getFirstGridSetupIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._firstGridSetupIteration;
+                     }
+                     
+                     
+                     
+                     inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
                      }
                      
                      
@@ -5827,22 +6217,22 @@ namespace exahype {
                      
                      
                      
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                     inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                        return _persistentRecords._reinitTimeStepData;
                      }
                      
                      
                      
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                        _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                      }
                      
                      
@@ -5863,6 +6253,26 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+                     }
+                     
+                     
+                     
+                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                     }
+                     
+                     
+                     
+                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                      }
                      
                      
@@ -6218,7 +6628,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   27/09/2016 14:17
+                * @date   28/09/2016 00:09
                 */
                class exahype::records::State { 
                   
@@ -6237,8 +6647,9 @@ namespace exahype {
                      struct PersistentRecords {
                         MergeMode _mergeMode;
                         SendMode _sendMode;
-                        bool _stabilityConditionOfOneSolverWasViolated;
+                        bool _reinitTimeStepData;
                         bool _fuseADERDGPhases;
+                        bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
                         #ifdef UseManualAlignment
                         tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
@@ -6276,7 +6687,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         
                         inline MergeMode getMergeMode() const 
@@ -6319,22 +6730,22 @@ namespace exahype {
                         
                         
                         
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                        inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _stabilityConditionOfOneSolverWasViolated;
+                           return _reinitTimeStepData;
                         }
                         
                         
                         
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                           _reinitTimeStepData = reinitTimeStepData;
                         }
                         
                         
@@ -6355,6 +6766,26 @@ namespace exahype {
  #endif 
  {
                            _fuseADERDGPhases = fuseADERDGPhases;
+                        }
+                        
+                        
+                        
+                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _stabilityConditionOfOneSolverWasViolated;
+                        }
+                        
+                        
+                        
+                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                         }
                         
                         
@@ -6874,7 +7305,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
@@ -6922,22 +7353,22 @@ namespace exahype {
                      
                      
                      
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                     inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                        return _persistentRecords._reinitTimeStepData;
                      }
                      
                      
                      
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                        _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                      }
                      
                      
@@ -6958,6 +7389,26 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+                     }
+                     
+                     
+                     
+                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                     }
+                     
+                     
+                     
+                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                      }
                      
                      
@@ -7606,7 +8057,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   27/09/2016 14:17
+                   * @date   28/09/2016 00:09
                    */
                   class exahype::records::StatePacked { 
                      
@@ -7619,8 +8070,9 @@ namespace exahype {
                         struct PersistentRecords {
                            MergeMode _mergeMode;
                            SendMode _sendMode;
-                           bool _stabilityConditionOfOneSolverWasViolated;
+                           bool _reinitTimeStepData;
                            bool _fuseADERDGPhases;
+                           bool _stabilityConditionOfOneSolverWasViolated;
                            double _timeStepSizeWeightForPredictionRerun;
                            tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                            tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
@@ -7656,7 +8108,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                           PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                            
                            
                            inline MergeMode getMergeMode() const 
@@ -7699,22 +8151,22 @@ namespace exahype {
                            
                            
                            
-                           inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                           inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _stabilityConditionOfOneSolverWasViolated;
+                              return _reinitTimeStepData;
                            }
                            
                            
                            
-                           inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                           inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                              _reinitTimeStepData = reinitTimeStepData;
                            }
                            
                            
@@ -7735,6 +8187,26 @@ namespace exahype {
  #endif 
  {
                               _fuseADERDGPhases = fuseADERDGPhases;
+                           }
+                           
+                           
+                           
+                           inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _stabilityConditionOfOneSolverWasViolated;
+                           }
+                           
+                           
+                           
+                           inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                            }
                            
                            
@@ -8272,7 +8744,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& stabilityConditionOfOneSolverWasViolated, const bool& fuseADERDGPhases, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         /**
                          * Generated
@@ -8320,22 +8792,22 @@ namespace exahype {
                         
                         
                         
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+                        inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                           return _persistentRecords._reinitTimeStepData;
                         }
                         
                         
                         
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+                           _persistentRecords._reinitTimeStepData = reinitTimeStepData;
                         }
                         
                         
@@ -8356,6 +8828,26 @@ namespace exahype {
  #endif 
  {
                            _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
+                        }
+                        
+                        
+                        
+                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+                        }
+                        
+                        
+                        
+                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
                         }
                         
                         

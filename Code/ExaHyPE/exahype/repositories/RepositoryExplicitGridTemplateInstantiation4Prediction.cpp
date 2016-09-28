@@ -21,12 +21,13 @@
  #include "exahype/adapters/PredictionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
- #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
+ #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/SolutionUpdateAndPlotAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdate.h" 
+ #include "exahype/adapters/PlotAndSolutionUpdate.h" 
+ #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 

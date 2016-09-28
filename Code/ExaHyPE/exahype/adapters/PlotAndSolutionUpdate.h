@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
-#define EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_PlotAndSolutionUpdate_H_
+#define EXAHYPE_ADAPTERS_PlotAndSolutionUpdate_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,18 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Merging.h"
- #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/Prediction.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
- #include "exahype/mappings/Sending.h"
+ #include "exahype/mappings/SolutionUpdate.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class ADERDGTimeStepAndPlot;
+        class PlotAndSolutionUpdate;
       } 
 }
 
@@ -41,21 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::ADERDGTimeStepAndPlot {
+class exahype::adapters::PlotAndSolutionUpdate {
   private:
-    typedef mappings::Merging Mapping0;
+    typedef mappings::Plot Mapping0;
     typedef mappings::SolutionUpdate Mapping1;
-    typedef mappings::Plot Mapping2;
-    typedef mappings::Prediction Mapping3;
-    typedef mappings::TimeStepSizeComputation Mapping4;
-    typedef mappings::Sending Mapping5;
 
-     Mapping0  _map2Merging;
+     Mapping0  _map2Plot;
      Mapping1  _map2SolutionUpdate;
-     Mapping2  _map2Plot;
-     Mapping3  _map2Prediction;
-     Mapping4  _map2TimeStepSizeComputation;
-     Mapping5  _map2Sending;
 
 
   public:
@@ -67,16 +55,16 @@ class exahype::adapters::ADERDGTimeStepAndPlot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    ADERDGTimeStepAndPlot();
+    PlotAndSolutionUpdate();
 
     #if defined(SharedMemoryParallelisation)
-    ADERDGTimeStepAndPlot(const ADERDGTimeStepAndPlot& masterThread);
+    PlotAndSolutionUpdate(const PlotAndSolutionUpdate& masterThread);
     #endif
 
-    virtual ~ADERDGTimeStepAndPlot();
+    virtual ~PlotAndSolutionUpdate();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const ADERDGTimeStepAndPlot& workerThread);
+    void mergeWithWorkerThread(const PlotAndSolutionUpdate& workerThread);
     #endif
 
     void createInnerVertex(
