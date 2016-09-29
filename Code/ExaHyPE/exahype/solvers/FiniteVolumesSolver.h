@@ -80,6 +80,14 @@ private:
    */
   double _nextMinTimeStepSize;
 
+  /**
+   * Synchonises the cell description time stamps
+   * and time step sizes with the solver ones
+   * according to the time stepping mode that
+   * is switched on.
+   */
+  void synchroniseTimeStepping(CellDescription& cellDescription);
+
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.

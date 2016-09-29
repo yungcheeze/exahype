@@ -76,9 +76,24 @@ void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
 }
 
 void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
+    CellDescription& cellDescription) {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      cellDescription.setTimeStamp(_minTimeStamp);
+      cellDescription.setTimeStepSize(_minTimeStepSize);
+      break;
+    case TimeStepping::GlobalFixed:
+      cellDescription.setTimeStamp(_minTimeStamp);
+      cellDescription.setTimeStepSize(_minTimeStepSize);
+      break;
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
     const int cellDescriptionsIndex,
     const int element) {
-  assertionMsg(false,"Please implement!");
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  synchroniseTimeStepping(cellDescription);
 }
 
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
@@ -411,6 +426,11 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(
     const int cellDescriptionsIndex,
     const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Cell)
+    return;
+
   assertionMsg(false,"Please implement!");
 }
 
@@ -436,6 +456,8 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
+  return;
+
   assertionMsg(false,"Not implemented.");
 }
 
@@ -447,6 +469,8 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
+  return;
+
   assertionMsg(false,"Not implemented.");
 }
 
