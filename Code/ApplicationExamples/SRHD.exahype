@@ -18,7 +18,7 @@ exahype-project  SRHD
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/SRHD
+  output-directory           = ./ApplicationExamples/SRHD
   architecture               = noarch
 
   computational-domain
@@ -51,11 +51,11 @@ exahype-project  SRHD
     kernel             = generic::fluxes::nonlinear
     language           = C
 
-    plot vtk::Cartesian::binary
+    plot vtk::Cartesian::vertices::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
-      output   = ./output/solution
+      output   = ./solution
       select   = {}
     end plot
   end solver
