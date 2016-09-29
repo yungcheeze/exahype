@@ -524,7 +524,7 @@ private:
    * If so, update the parent index of the fine grid cell description
    * with the coarse grid cell descriptions index.
    */
-  void updateParentIndexAfterFork(
+  void updateTypeAndParentIndexAfterFork(
       CellDescription& cellDescription,
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
@@ -988,8 +988,8 @@ public:
   }
 
   void initInitialTimeStamp(double value) override {
-    setMinPredictorTimeStamp(0.0);
     setMinCorrectorTimeStamp(0.0);
+    setMinPredictorTimeStamp(0.0);
   }
 
   bool isValidCellDescriptionIndex(
