@@ -41,7 +41,7 @@ exahype::mappings::Merging::touchVertexFirstTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::Merging::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -671,7 +671,20 @@ void exahype::mappings::Merging::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  // Does not need to merge time step data if face data is merged also since we merge then anyway
+  // in touchVertexFirstTime()
+  if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData) {
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+      }
+
+      ++solverNumber;
+    }
+  }
 }
 
 void exahype::mappings::Merging::createHangingVertex(
