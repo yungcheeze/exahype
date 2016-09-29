@@ -48,22 +48,223 @@ class exahype::records::ADERDGCellDescription {
    * functions as a compute cell for the same solver (Type::Cell)
    * that this cell description is associated with and this
    * cell description is further a helper cell description (Type::Ancestor/EmptyAncestor/
-   * Descendant/EmptyDescendany), this helper cell description needs to store face data.
+   * Descendant/EmptyDescendany), this helper cell description needs to store data.
    * This flag is used to indicate these scenarios.
    *
    * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
-   * It should be read and be reseted afterwards in MarkingForAugmentation::enterCell(...).
+   * It should be read and be reset afterwards in MarkingForAugmentation::enterCell(...).
+   * 
+   * In contrast to hasToHoldDataForMasterWorkerCommunication,
+   * it is updated in every grid setup iteration.
+   * Flag hasToHoldDataForMasterWorkerCommunication is only
+   * updated after a fork or join event.
    */
-  parallelise persistent bool oneRemoteBoundaryNeighbourIsOfTypeCell; 
+  parallelise persistent bool hasToHoldDataForNeighbourCommunication;
+  
+  /**
+   * This flag is set just before a cell description is sent to a new
+   * worker. 
+   * 
+   * It indicates that a worker cell description of type Ancestor or Descendant
+   * needs to hold data to enable the allow the exchange of 
+   * data between it and a master cell description.
+   * 
+   * In contrast to hasToHoldDataForMasterWorkerCommunication,
+   * it is updated only after a fork or join event.
+   */
+  parallelise persistent bool hasToHoldDataForMasterWorkerCommunication;
   /**
    * Face data exchange in ExaHyPE is realised in vertices: each vertex checks
    * whether one of its adjacent faces should go to another rank. As a result, 
    * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
-   * this. See prepareSendToNeighbour() in SpaceTimePredictor.
+   * this. See prepareSendToNeighbour() in mapping Sending.
    */
   parallelise persistent int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
   #endif
 
+  /**
+   * The index of the ADERDGCellDescription that is the parent of
+   * this ADERDGCellDescription or "-1" if no parent is specified.
+   */
+  parallelise persistent int parentIndex;
+
+  /**
+   * Type of a cell description.
+   * Cell descriptions of type \p Cell hold cell and face data,
+   * while the ones of type \p Ancestor hold only face data.
+   * Both belong to the original spacetree that
+   * is constructed according to solver-based refinement criteria.
+   * Helper cells of type Descendant also hold face data 
+   * but belong to the virtual part of the augmented spacetree that
+   * is created to store prolongated face data.
+   *
+   * ADERDGCellDescriptions of type \p EmptyAncestor and \p EmptyDescendant
+   * do not hold face data. These types are set if the cell
+   * associated to this cell description is not neighbouring
+   * a cell that holds a cell description of type \p
+   * Cell.
+   *
+   * TODO(Dominic):
+   * MasterWorkerBoundaryDescendant and MasterWorkerBoundaryAncestor are set
+   * as type of an ADERDGCellDescription if the ADERDGCellDescription
+   * needs to communicate data to a neighbour process, or a worker/master
+   * process. The worker is not allowed to change the type of these cells.
+   * The worker does further no
+   */
+
+  enum Type {
+    Erased,
+    Ancestor,
+    EmptyAncestor,
+    Cell,
+    Descendant,
+    EmptyDescendant
+  };
+
+  /**
+   * @defgroup AMRInfo AMR information
+   *
+   * Additional information that is necessary to realise adaptive mesh
+   * refinement (AMR).
+   */
+  ///@{
+  /**
+   * The type of this ADERDGCellDescription. See the documentation of Cell for
+   * more details.
+   */
+  parallelise persistent Type type;
+
+  enum RefinementEvent {
+    /**
+     * In this state, the cell description is ready to
+     * perform operations of the ADER-DG method, e.g.,
+     * the Riemann solve, the solution update etc.
+     */
+    None,
+    /**
+     * If this refinement event is set, 
+     * the parent Ancestor asks its
+     * children if they want to be erased. If not so,
+     * the children change the RefinementEvent 
+     * of the parent to None. If so,
+     * they leave the parent's RefinementEvent
+     * unchanged. 
+     */
+    ErasingChildrenRequested,
+    /**
+     * After all children of a parent left
+     * the parent's refinement event ErasingChildrenRequested
+     * unchanged, the parent changes its state
+     * to this event. In the next iteration
+     * the parent's children need to restrict their
+     * solution up to the parent and
+     * the child cell descriptions need to be
+     * removed from the grid.
+     */
+    ErasingChildren,   
+    /**
+     * Change children to descendants.
+     * An Ancestor cell description can adopt 
+     * this status if its children can be erased 
+     * w.r.t. the physics based refinement criterion
+     * however one of the children is parent itself
+     * to children of type Descendant.
+     * In this case, we do not erase the children
+     * of the Ancestor but change their type to (Empty)Descendant.
+     */
+    ChangeChildrenToDescendantsRequested,
+    /**
+     * Change children to descendants.
+     * An Ancestor cell description can adopt 
+     * this status if its children can be erased 
+     * w.r.t. the physics based refinement criterion
+     * however one of the children is parent itself
+     * to children of type Descendant.
+     * In this case, we do not erase the children
+     * of the Ancestor but change their type to (Empty)Descendant.
+     */
+    ChangeChildrenToDescendants,
+    
+    RefiningRequested,           
+    Refining,                    
+    
+    /**
+     * This refinement event is set on 
+     * a cell description of type 
+     * Descendant or Cell in every 
+     * grid setup iteration
+     * if no other event is set. 
+     * 
+     * If the cell description has children,
+     * the first traversed child sets
+     * this event to DeaugmentingChildrenRequestedTriggered.
+     * 
+     * We have to rely on this mechanism since we
+     * cannot guess based on the cell description type if
+     * a cell description has children as opposed to the
+     * physics based refinement where we have
+     * Ancestor and EmptyAncestor parent cell descriptions and
+     * child cell descriptions of type Cell.
+     */
+    DeaugmentingChildrenRequestedTriggered,
+    
+    /**
+     * If this refinement event is set, 
+     * the parent Descendant or Cell asks its
+     * children if they want to be deaugmented. If not so,
+     * the children change the RefinementEvent 
+     * of the parent to None. If so,
+     * they leave the parent's RefinementEvent
+     * unchanged. 
+     */
+    DeaugmentingChildrenRequested,
+    /**
+     * After all children of a parent left
+     * the parent's refinement event DeaugmentingChildrenRequested
+     * unchanged, the parent changes its state
+     * to this event. In the next iteration
+     * the parent's children need to restrict their
+     * solution up to the parent and
+     * the child cell descriptions need to be
+     * removed from the grid.
+     */
+    DeaugmentingChildren, 
+    AugmentingRequested,         
+    Augmenting                   
+  };
+
+  /**
+   * Returns the refinement event.
+   */
+  parallelise persistent RefinementEvent refinementEvent;
+  ///@}
+  
+  // While the above definitions are mainly flags and states, below we find the actual data.
+  
+  /**
+   * @name CellInfo Cell Info
+   *
+   * Information on the grid cell this ADERDGCellDescription is associated
+   * with.
+   */
+  ///@{
+  /**
+   * Space-tree level of the cell this ADERDGCellDescription is associated
+   * with.
+   */
+  parallelise persistent int level;
+  /**
+   * Offset of the "lower left" node of the lower left ghost cell from the
+   * lower left node of the cell.
+   */
+  parallelise persistent double offset[DIMENSIONS];
+  /**
+   * Dimension of the cell associated with this ADERDGCellDescription in the
+   * respective dimension.
+   */
+  parallelise persistent double size[DIMENSIONS];
+  ///@}
+  
   /**
    * @defgroup TimeInfo Time Stamps and Step Sizes
    *
@@ -137,185 +338,6 @@ class exahype::records::ADERDGCellDescription {
    * cell.
    */
   parallelise persistent int fluctuation;
-  ///@}
-
-  /**
-   * @name CellInfo Cell Info
-   *
-   * Information on the grid cell this ADERDGCellDescription is associated
-   * with.
-   */
-  ///@{
-  /**
-   * Space-tree level of the cell this ADERDGCellDescription is associated
-   * with.
-   */
-  parallelise persistent int level;
-  /**
-   * Offset of the "lower left" node of the lower left ghost cell from the
-   * lower left node of the cell.
-   */
-  parallelise persistent double offset[DIMENSIONS];
-  /**
-   * Dimension of the cell associated with this ADERDGCellDescription in the
-   * respective dimension.
-   */
-  parallelise persistent double size[DIMENSIONS];
-  ///@}
-
-  /**
-   * Type of a cell description.
-   * Cell descriptions of type \p Cell hold cell and face data,
-   * while the ones of type \p Ancestor hold only face data.
-   * Both belong to the original spacetree that
-   * is constructed according to solver-based refinement criteria.
-   * Helper cells of type Descendant also hold face data 
-   * but belong to the virtual part of the augmented spacetree that
-   * is created to store prolongated face data.
-   *
-   * ADERDGCellDescriptions of type \p EmptyAncestor and \p EmptyDescendant
-   * do not hold face data. These types are set if the cell
-   * associated to this cell description is not neighbouring
-   * a cell that holds a cell description of type \p
-   * Cell.
-   *
-   * RemoteBoundaryDescendant and RemoteBoundaryAncestor are set
-   * as type of an ADERDGCellDescription if the ADERDGCellDescription
-   * needs to communicate data to a neighbour process, or a worker/master
-   * process.
-   */
-
-  enum Type {
-    Erased,
-    Ancestor,
-    EmptyAncestor,
-    Cell,
-    Descendant,
-    EmptyDescendant
-  };
-
-  /**
-   * @defgroup AMRInfo AMR information
-   *
-   * Additional information that is necessary to realise adaptive mesh
-   * refinement (AMR).
-   */
-  ///@{
-  /**
-   * The type of this ADERDGCellDescription. See the documentation of Cell for
-   * more details.
-   */
-  parallelise persistent Type type;
-
-  /**
-   * The index of the ADERDGCellDescription that is the parent of
-   * this ADERDGCellDescription or "-1" if no parent is specified.
-   */
-  parallelise persistent int parentIndex;
-
-  enum RefinementEvent {
-    /**
-     * In this state, the cell description is ready to
-     * perform operations of the ADER-DG method, e.g.,
-     * the Riemann solve, the solution update etc.
-     */
-    None,
-    /**
-     * If this refinement event is set, 
-     * the parent Ancestor asks its
-     * children if they want to be erased. If not so,
-     * the children change the RefinementEvent 
-     * of the parent to None. If so,
-     * they leave the parent's RefinementEvent
-     * unchanged. 
-     */
-    ErasingChildrenRequested,
-    /**
-     * After all children of a parent left
-     * the parent's refinement event ErasingChildrenRequested
-     * unchanged, the parent changes its state
-     * to this event. In the next iteration
-     * the parent's children need to restrict their
-     * solution up to the parent and
-     * the child cell descriptions need to be
-     * removed from the grid.
-     */
-    ErasingChildren,   
-    /**
-     * Change children to descendants.
-     * An Ancestor cell description can adopt 
-     * this status if its children can be erased 
-     * w.r.t. the physics based refinement criterion
-     * however one of the children is parent itself
-     * to children of type Descendant.
-     * In this case, we do not erase the children
-     * of the Ancestor but change their type to (Empty)Descendant.
-     */
-    ChangeChildrenToDescendantsRequested,
-    /**
-     * Change children to descendants.
-     * An Ancestor cell description can adopt 
-     * this status if its children can be erased 
-     * w.r.t. the physics based refinement criterion
-     * however one of the children is parent itself
-     * to children of type Descendant.
-     * In this case, we do not erase the children
-     * of the Ancestor but change their type to (Empty)Descendant.
-     */
-    ChangeChildrenToDescendants,
-    
-    RefiningRequested,           
-    Refining,                    
-    
-    /**
-     * This refinement event is set on 
-     * a cell description of type 
-     * Descendant or Cell in every 
-     * grid setup iteration
-     * if no other event is set. 
-     * 
-     * If the cell description has children,
-     * the first traversed child sets
-     * this event to DeaugmentingChildrenRequestedTriggered.
-     * 
-     * We have to rely on this mechanism since we
-     * cannot guess based on the cell description type if
-     * a cell description has children as opposed to the
-     * physics based refinement where we have
-     * Ancestor and EmptyAncestor parent cell descriptions and
-     * Cell child cell descriptions.
-     */
-    DeaugmentingChildrenRequestedTriggered,
-    
-    /**
-     * If this refinement event is set, 
-     * the parent Descendant or Cell asks its
-     * children if they want to be deaugmented. If not so,
-     * the children change the RefinementEvent 
-     * of the parent to None. If so,
-     * they leave the parent's RefinementEvent
-     * unchanged. 
-     */
-    DeaugmentingChildrenRequested,
-    /**
-     * After all children of a parent left
-     * the parent's refinement event DeaugmentingChildrenRequested
-     * unchanged, the parent changes its state
-     * to this event. In the next iteration
-     * the parent's children need to restrict their
-     * solution up to the parent and
-     * the child cell descriptions need to be
-     * removed from the grid.
-     */
-    DeaugmentingChildren, 
-    AugmentingRequested,         
-    Augmenting                   
-  };
-
-  /**
-   * Returns the refinement event.
-   */
-  parallelise persistent RefinementEvent refinementEvent;
   ///@}
   
   /**

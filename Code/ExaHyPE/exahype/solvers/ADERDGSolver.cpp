@@ -627,16 +627,9 @@ void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
     case CellDescription::EmptyAncestor:
       fineGridCellDescription.setType(CellDescription::EmptyAncestor);
       #ifdef Parallel
-      if (fineGridCellDescription.getOneRemoteBoundaryNeighbourIsOfTypeCell()) { // TODO(Dominic): Add to docu.
+      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
+          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
         fineGridCellDescription.setType(CellDescription::Ancestor);
-      }
-      if (assignedToRemoteRank) {
-        SubcellPosition subcellPosition =
-            exahype::amr::computeSubcellPositionOfCellOrAncestor<CellDescription,Heap>(
-                fineGridCellDescription);
-        if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
-          fineGridCellDescription.setType(CellDescription::Ancestor);
-        }
       }
       #endif
 
@@ -652,12 +645,8 @@ void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
       fineGridCellDescription.setType(CellDescription::EmptyDescendant);
 
       #ifdef Parallel
-      if (fineGridCellDescription.getOneRemoteBoundaryNeighbourIsOfTypeCell()) { // TODO(Dominic): Add to docu.
-        fineGridCellDescription.setType(CellDescription::Descendant);
-      }
-      if (assignedToRemoteRank ||
-          fineGridCellDescription.getParentIndex()==
-              multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
+      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
+          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
         fineGridCellDescription.setType(CellDescription::Descendant);
       }
       #endif
@@ -674,7 +663,7 @@ void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
   }
 
   #ifdef Parallel
-  fineGridCellDescription.setOneRemoteBoundaryNeighbourIsOfTypeCell(false);
+  fineGridCellDescription.setHasToHoldDataForNeighbourCommunication(false);
   #endif
 }
 
@@ -1364,9 +1353,13 @@ void exahype::solvers::ADERDGSolver::restrictData(
         subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
       const int faceIndex = 2*d + ((subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
 
-      logDebug("restrictData()","cell=" << cellDescription.getOffset() <<
+      logDebug("restrictData()","cell=" << cellDescription.getOffset()+0.5*cellDescription.getSize() <<
+              ",level=" << cellDescription.getLevel() <<
               ",d=" << d <<
-              ",face=" << faceIndex << ",subcellIndex" << subcellIndex.toString());
+              ",face=" << faceIndex << ",subcellIndex" << subcellIndex.toString() <<
+              " to " <<
+              " cell="<<parentCellDescription.getOffset()+0.5*parentCellDescription.getSize()<<
+              " level="<<parentCellDescription.getLevel());
 
       const int numberOfFaceDof = getUnknownsPerFace();
 
@@ -1651,6 +1644,11 @@ const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication 
 const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 1;
 const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunication = 2;
 
+/**
+ * After the forking the master's cell descriptions
+ * are not accessed by enterCell(...) on the master
+ * anymore. However we still use them as buffer for saving data.
+ */
 void exahype::solvers::ADERDGSolver::sendCellDescriptions(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -1659,6 +1657,33 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
     const int                                     level) {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
       cellDescriptionsIndex);
+
+  for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
+        || cellDescription.getType()==CellDescription::Type::Ancestor) {
+      Solver::SubcellPosition subcellPosition =
+          exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+          <CellDescription,Heap>(cellDescription);
+
+      if (subcellPosition.parentElement!=NotFound) {
+        cellDescription.setType(CellDescription::Type::Ancestor);
+        cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+
+        auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+        aderdgSolver->ensureNecessaryMemoryIsAllocated(cellDescription);
+      }
+    } else if (cellDescription.getType()==CellDescription::Type::EmptyDescendant
+        || cellDescription.getType()==CellDescription::Type::Descendant) {
+      cellDescription.setType(CellDescription::Type::Descendant);
+      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+
+      auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+      aderdgSolver->ensureNecessaryMemoryIsAllocated(cellDescription);
+    }
+  }
+
   Heap::getInstance().sendData(cellDescriptionsIndex,
                                toRank,x,level,messageType);
 }
@@ -1876,36 +1901,36 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
       const int element) {
   CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
 
-  CellDescription::Type type =
+  CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourTypeAsInt);
   switch(p.getType()) {
     case CellDescription::Cell:
       if (p.getRefinementEvent()==CellDescription::None &&
-          (type==CellDescription::Ancestor ||
-              type==CellDescription::EmptyAncestor)) {
+          (neighbourType==CellDescription::Ancestor ||
+              neighbourType==CellDescription::EmptyAncestor)) {
         p.setRefinementEvent(CellDescription::AugmentingRequested);
       }
       break;
     case CellDescription::Descendant:
     case CellDescription::EmptyDescendant:
       // TODO(Dominic): Add to docu what we do here.
-      if (type==CellDescription::Cell) {
-        p.setOneRemoteBoundaryNeighbourIsOfTypeCell(true);
+      if (neighbourType==CellDescription::Cell) {
+        p.setHasToHoldDataForNeighbourCommunication(true);
       }
 
       // 2. Request further augmentation if necessary (this might get reset if the traversal
       // is able to descend and finds existing descendants).
       if (p.getRefinementEvent()==CellDescription::None &&
-          (type==CellDescription::Ancestor ||
-              type==CellDescription::EmptyAncestor)) {
+          (neighbourType==CellDescription::Ancestor ||
+              neighbourType==CellDescription::EmptyAncestor)) {
         p.setRefinementEvent(CellDescription::AugmentingRequested);
       }
       break;
     case CellDescription::Ancestor:
     case CellDescription::EmptyAncestor:
       // TODO(Dominic): Add to docu what we do here.
-      if (type==CellDescription::Cell) {
-        p.setOneRemoteBoundaryNeighbourIsOfTypeCell(true);
+      if (neighbourType==CellDescription::Cell) {
+        p.setHasToHoldDataForNeighbourCommunication(true);
       }
       break;
     default:
@@ -2031,7 +2056,13 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
-  if(holdsFaceData(neighbourType) && holdsFaceData(p.getType())){
+  // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
+  // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems
+  // if one Ancestor is just used for restriction.
+  if(neighbourType==CellDescription::Type::Cell || p.getType()==CellDescription::Type::Cell){
+    assertion1(holdsFaceData(neighbourType),neighbourType);
+    assertion1(holdsFaceData(p.getType()),p.toString());
+
     assertion4(!p.getRiemannSolvePerformed(faceIndex),
         faceIndex,cellDescriptionsIndex,p.getOffset().toString(),p.getLevel());
     assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
@@ -2331,7 +2362,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
     double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
 
-    logDebug("sendDataToMaster(...)","solution of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
+    logDebug("sendDataToMaster(...)","Face data of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
              ", cell: "<< x << ", level: " << level);
 
     // No inverted message order since we do synchronous data exchange.
@@ -2394,7 +2425,18 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     DataHeap::getInstance().receiveData(
         cellDescription.getFluctuation(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
-  } {
+
+    exahype::solvers::Solver::SubcellPosition subcellPosition =
+        computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
+
+    // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
+    if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
+      restrictData(
+          cellDescriptionsIndex,element,
+          subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement,
+          subcellPosition.subcellIndex);
+    }
+  } else  {
     dropWorkerData(workerRank,x,level);
   }
 }

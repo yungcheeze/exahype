@@ -179,9 +179,7 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setOffset(cellCentre);
 
   // Initialise helper variables
-//  // TODO(Dominic):
-//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
-//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+//  newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
 
   // Default field data indices
   newCellDescription.setSolution(-1);
@@ -244,10 +242,10 @@ void exahype::Cell::addNewCellDescription(
 
   // Initialise MPI helper variables
   #ifdef Parallel
-  newCellDescription.setOneRemoteBoundaryNeighbourIsOfTypeCell(false);
+  newCellDescription.setHasToHoldDataForNeighbourCommunication(false);
+  newCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
   for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
     newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
-//    newCellDescription.setIsInside(faceIndex,)
   }
   #endif
 

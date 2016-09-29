@@ -283,9 +283,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
 
   // We assume that the solvers have all removed
   // their data from the heap arrays associated with this
-  // cell
-  // Refine all adjacent vertices if necessary and possible.
-  //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
+  // cell Refine all adjacent vertices if necessary and possible.
   if (eraseFineGridCell) {
     fineGridCell.shutdownMetaData();
     dfor2(v)
@@ -300,6 +298,19 @@ void exahype::mappings::MeshRefinement::leaveCell(
 }
 
 #ifdef Parallel
+bool exahype::mappings::MeshRefinement::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // TODO(Dominic): Send to master.
+  // receive data from worker and check if
+  return true;
+}
+
 void exahype::mappings::MeshRefinement::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -515,23 +526,14 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
   return true;
 }
 
-bool exahype::mappings::MeshRefinement::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
 
-  // TODO(Dominic): Do I have to mark here too? I probably have to ensure ancestor holds data here.
-  return true;
-}
 
 //
 // All methods below are nop,
 //
 // ==================================
+
+
 
 void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
