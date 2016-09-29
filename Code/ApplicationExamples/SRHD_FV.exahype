@@ -54,7 +54,7 @@ exahype-project  SRHD
     plot vtk::Cartesian::cells::ascii
       variables= 5
       time     = 0.0
-      repeat   = 0.05
+      repeat   = 0.000000000005
       output   = ./solution
       select   = {}
     end plot
