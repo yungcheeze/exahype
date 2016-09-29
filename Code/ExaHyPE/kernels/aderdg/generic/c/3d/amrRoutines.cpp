@@ -58,9 +58,10 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
                                                            const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
                                                            const int numberOfVariables, const int basisSize){
   const int levelDelta = fineGridLevel - coarseGridLevel;
+  const int basisSize2 = basisSize*basisSize;
 
-  double * lQhbndFineTemp = new double[basisSize*basisSize*numberOfVariables];
-  double * lFhbndFineTemp = new double[basisSize*basisSize*numberOfVariables];
+  double * lQhbndFineTemp = new double[basisSize2*numberOfVariables];
+  double * lFhbndFineTemp = new double[basisSize2*numberOfVariables];
 
   double * pointerQhbnd1 = 0;
   double * pointerFhbnd1 = 0;
@@ -98,8 +99,8 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
     assertion(subintervalIndex[1] < 3);
 
     // Zero the values of the first pointer.
-    memset(pointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
-    memset(pointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerQhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
+    memset(pointerFhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
 
     // Apply the single level prolongation operator.
     // Use the coarse level unknowns as input in the first iteration.
@@ -204,11 +205,12 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
                                                           const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
                                                           const int numberOfVariables, const int basisSize){
   const int levelDelta     = fineGridLevel - coarseGridLevel;
+  const int basisSize2     = basisSize*basisSize;
 
-  double * lQhbndCoarseTemp1 = new double[basisSize*numberOfVariables];
-  double * lFhbndCoarseTemp1 = new double[basisSize*numberOfVariables];
-  double * lQhbndCoarseTemp2 = new double[basisSize*numberOfVariables];
-  double * lFhbndCoarseTemp2 = new double[basisSize*numberOfVariables];
+  double * lQhbndCoarseTemp1 = new double[basisSize2*numberOfVariables];
+  double * lFhbndCoarseTemp1 = new double[basisSize2*numberOfVariables];
+  double * lQhbndCoarseTemp2 = new double[basisSize2*numberOfVariables];
+  double * lFhbndCoarseTemp2 = new double[basisSize2*numberOfVariables];
 
   double * pointerQhbnd1 = 0;
   double * pointerQhbnd2 = 0;
@@ -236,8 +238,8 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
     assertion(subintervalIndex[1] < 3);
 
     // Zero the values of of the first pair of pointers.
-    memset(pointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
-    memset(pointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerQhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
+    memset(pointerFhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
 
     // Apply the single level restriction operator.
     // Use the fine level unknowns as input in the first iteration.
@@ -285,8 +287,8 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
   }
 
   // Add restricted fine level unknowns to coarse level unknowns.
-  accumulate(lQhbndCoarse, pointerQhbnd2, basisSize*basisSize*numberOfVariables);
-  accumulate(lFhbndCoarse, pointerFhbnd2, basisSize*basisSize*numberOfVariables);
+  accumulate(lQhbndCoarse, pointerQhbnd2, basisSize2*numberOfVariables);
+  accumulate(lFhbndCoarse, pointerFhbnd2, basisSize2*numberOfVariables);
 
   // Clean up.
   delete [] lQhbndCoarseTemp1;
