@@ -456,6 +456,15 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
+  CellDescription& cellDescription1 = getCellDescription(cellDescriptionsIndex1,element1);
+  CellDescription& cellDescription2 = getCellDescription(cellDescriptionsIndex2,element2);
+
+  if (cellDescription1.getType()==CellDescription::Cell ||
+      cellDescription2.getType()==CellDescription::Cell) {
+    synchroniseTimeStepping(cellDescription1);
+    synchroniseTimeStepping(cellDescription2);
+  }
+
   return;
 
   assertionMsg(false,"Not implemented.");
@@ -469,6 +478,12 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     double*                                   tempFaceUnknownsArray,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Cell) {
+    synchroniseTimeStepping(cellDescription);
+  }
+
   return;
 
   assertionMsg(false,"Not implemented.");
