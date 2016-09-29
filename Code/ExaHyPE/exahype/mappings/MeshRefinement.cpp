@@ -111,7 +111,9 @@ void exahype::mappings::MeshRefinement::beginIteration(
 }
 
 void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState) {
+  #ifdef Parallel
   solverState.setFirstGridSetupIteration(false);
+  #endif
   if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
     solverState.updateRegularInitialGridRefinementStrategy();
   }

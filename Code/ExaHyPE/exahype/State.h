@@ -168,7 +168,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * See both mappings for more details.
    */
   void switchToInitialConditionAndTimeStepSizeComputationContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
@@ -176,7 +178,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
@@ -184,7 +188,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToADERDGTimeStepContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
@@ -196,7 +202,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToNeighbourDataMergingContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
@@ -204,7 +212,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToPredictionContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
@@ -212,7 +222,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToPreAMRContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(true);
+    #endif
     _stateData.setReinitTimeStepData(false); // rename
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
@@ -220,7 +232,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToPostAMRContext() {
+    #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
+    #endif
     _stateData.setReinitTimeStepData(true);
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
