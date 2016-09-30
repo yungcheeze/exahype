@@ -37,6 +37,7 @@
  \widowpenalty = 5000
  \displaywidowpenalty = 5000
 
+\usepackage{float}
 \usepackage{balance}
 \usepackage{url}
 \usepackage{listings}
@@ -733,7 +734,7 @@ In terms of performance the quadrature weights pose a challenge. The current wor
 
 %\balancecolumns
 
-\newpage
+\clearpage
 \appendix
 \section{Performance measurements} \label{App:Performance measurements}
 
@@ -741,7 +742,7 @@ In terms of performance the quadrature weights pose a challenge. The current wor
 
 Performance measurements for the volume kernels on Haswell CPUs are given for $5$ quantities in Fig.~\ref{fig:resultsVolumeHSW5}, for $9$ quantities in Fig.~\ref{fig:resultsVolumeHSW9}, for $23$ quantities in Fig.~\ref{fig:resultsVolumeHSW23}, and for $56$ quantities, Fig.~\ref{fig:resultsVolumeHSW56}.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \begin{filecontents}{resultsVolumeHSW5.dat}
 3,3.17,1.24,3.99
 4,6.62,3.54,9.7
@@ -766,7 +767,21 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \caption{Haswell (nVar=5) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW5}
 \end{figure}
 
-\begin{figure}[!h]
+~
+
+~
+
+~
+
+~
+
+~
+
+~
+
+~
+
+\begin{figure}[H]
 \begin{filecontents}{resultsVolumeHSW9.dat}
 3,6.516,1.49589,6.98237
 4,13.804,4.53058,15.9852
@@ -775,7 +790,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 7,68.516,21.2638,97.9753
 8,106.25,38.0867,157.696
 \end{filecontents}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.97, transform shape]
 \begin{axis}[xlabel={order},ylabel={Runtime in $\mu$s},legend style={at={(0,1)},anchor=north west}, legend cell align=left]
 % Graph column 2 versus column 0
 \addplot[color=black,mark=square*] table[x index=0,y index=3,col sep=comma] {resultsVolumeHSW9.dat};
@@ -791,7 +806,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \caption{Haswell (nVar=9) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW9}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \begin{filecontents}{resultsVolumeHSW23.dat}
 3,11.988,2.94588,17.6063
 4,25.477,10.0396,43.1139
@@ -800,7 +815,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 7,128.74,40.5277,266.781
 8,194.34,67.1205,422.983
 \end{filecontents}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.97, transform shape]
 \begin{axis}[xlabel={order},ylabel={Runtime in $\mu$s},legend style={at={(0,1)},anchor=north west}, legend cell align=left]
 % Graph column 2 versus column 0
 \addplot[color=black,mark=square*] table[x index=0,y index=3,col sep=comma] {resultsVolumeHSW23.dat};
@@ -816,7 +831,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \caption{Haswell (nVar=23) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW23}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \begin{filecontents}{resultsVolumeHSW56.dat}
 3,23.609,5.1009,42.9111
 4,49.951,16.1373,101.721
@@ -825,7 +840,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 7,255.21,72.1924,637.574
 8,382.19,116.017,1011.62
 \end{filecontents}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.97, transform shape]
 \begin{axis}[xlabel={order},ylabel={Runtime in $\mu$s},legend style={at={(0,1)},anchor=north west}, legend cell align=left]
 % Graph column 2 versus column 0
 \addplot[color=black,mark=square*] table[x index=0,y index=3,col sep=comma] {resultsVolumeHSW56.dat};
@@ -845,7 +860,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 
 Performance measurements for KNL processors are given for the Picard iteration in Fig.~\ref{fig:resultsPicardKNL9}, for time averaging in Fig.~\ref{fig:resultsPredictorKNL9} and for the volume kernel in Fig.~\ref{fig:resultsVolumeKNL9}.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \begin{filecontents}{resultsPicardKNL9.dat}
 % order fortran  optimised   generic
 3,478.40,113.836,2266.43
@@ -874,7 +889,7 @@ Performance measurements for KNL processors are given for the Picard iteration i
 \end{figure}
 
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \begin{filecontents}{resultsVolumeKNL9.dat}
 3,13.441,8.38603,57.3444
 4,29.613,17.5064,125.507
@@ -899,7 +914,27 @@ Performance measurements for KNL processors are given for the Picard iteration i
 \caption{KNL (nVar=9) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeKNL9}
 \end{figure}
 
-\begin{figure}[!h]
+~
+
+~
+
+~
+
+~
+
+
+\pagebreak
+
+
+~
+
+~
+
+
+~
+
+
+\begin{figure}[H]
 \begin{filecontents}{resultsPredictorKNL9.dat}
 3,26.683,10.1179,41.3169
 4,70.792,22.1205,76.2355
