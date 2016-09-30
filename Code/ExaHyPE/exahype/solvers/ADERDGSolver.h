@@ -524,7 +524,7 @@ private:
    * If so, update the parent index of the fine grid cell description
    * with the coarse grid cell descriptions index.
    */
-  void updateTypeAndParentIndexAfterFork(
+  void ensureConsistencyOfParentIndex(
       CellDescription& cellDescription,
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);

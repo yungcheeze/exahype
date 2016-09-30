@@ -398,9 +398,9 @@ bool exahype::solvers::ADERDGSolver::enterCell(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
     #ifdef Parallel
-    updateTypeAndParentIndexAfterFork(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
     #endif
-    assertion3(fineGridCellDescription.getParentIndex()== coarseGridCell.getCellDescriptionsIndex(),
+    assertion3(fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
                    fineGridCellDescription.toString(),fineGridCell.toString(),
                    coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
@@ -1804,20 +1804,11 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
   }
 }
 
-void exahype::solvers::ADERDGSolver::updateTypeAndParentIndexAfterFork(
+void exahype::solvers::ADERDGSolver::ensureConsistencyOfParentIndex(
     CellDescription& fineGridCellDescription,
     const int coarseGridCellDescriptionsIndex,
     const int solverNumber) {
-//  if (!Heap::getInstance().isValidIndex(fineGridCellDescription.getParentIndex())) {
-//    fineGridCellDescription.setParentIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
-//    int coarseGridElement = tryGetElement(coarseGridCellDescriptionsIndex,solverNumber);
-//    if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
-//      fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
-//      // In this case, we are not at a master worker boundary only our parent is.
-//      fineGridCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
-//    }
-//  }
-
+  fineGridCellDescription.setParentIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
   int coarseGridElement = tryGetElement(coarseGridCellDescriptionsIndex,solverNumber);
   if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
     fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
