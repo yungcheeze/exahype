@@ -1245,6 +1245,9 @@ void exahype::solvers::ADERDGSolver::updateSolution(
 }
 
 void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& cellDescription) {
+  logDebug("prepareFaceDataOfAncestor(...)","cell="<<cellDescription.getOffset()+0.5*cellDescription.getSize() <<
+          ", level=" << cellDescription.getLevel());
+
   assertion1(cellDescription.getType()==CellDescription::Ancestor,cellDescription.toString());
   std::fill_n(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).begin(),
               getUnknownsPerCellBoundary(), 0.0);
@@ -1353,10 +1356,6 @@ void exahype::solvers::ADERDGSolver::restrictData(
         subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
       const int faceIndex = 2*d + ((subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
 
-//      if (tarch::parallel::Node::getInstance().getRank()==16
-//          || tarch::parallel::Node::getInstance().getRank()>=18) { // TODO(Dominic): Make log debug again, remove cond.
-//
-//      }
       logDebug("restrictData(...)","cell=" << cellDescription.getOffset()+0.5*cellDescription.getSize() <<
                ",level=" << cellDescription.getLevel() <<
                ",d=" << d <<
@@ -1884,6 +1883,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
     logDebug("mergeWithRemoteDataDueToForkOrJoin(...)","[solution] receive from rank "<<fromRank<<
              ", cell: "<< x << ", level: " << level);
 
+    DataHeap::getInstance().getData(p.getSolution()).clear();
     DataHeap::getInstance().receiveData(
         p.getSolution(),fromRank,x,level,
         peano::heap::MessageType::ForkOrJoinCommunication);
@@ -2054,7 +2054,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     return; // We only consider faces; no corners.
   }
 
-  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourTypeAsInt);
@@ -2079,7 +2079,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     logDebug(
         "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
-        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
+        ", src type=" << p.getType() <<
         ", src=" << src << ", dest=" << dest <<
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
@@ -2199,18 +2199,18 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
       normalDirection);
 
   for (int ii = 0; ii<numberOfFaceDof; ii++) {
-    assertion8(std::isfinite(QR[ii]), cellDescription.toString(),
+    assertion10(std::isfinite(QR[ii]), cellDescription.toString(),
         faceIndex, normalDirection, indexOfQValues, indexOfFValues,
-        ii, QR[ii], QL[ii]);
-    assertion8(std::isfinite(QL[ii]), cellDescription.toString(),
+        ii, QR[ii], QL[ii], FR[ii], FL[ii]);
+    assertion10(std::isfinite(QL[ii]), cellDescription.toString(),
         faceIndex, normalDirection, indexOfQValues, indexOfFValues,
-        ii, QR[ii], QL[ii]);
-    assertion8(std::isfinite(FR[ii]), cellDescription.toString(),
+        ii, QR[ii], QL[ii], FR[ii], FL[ii]);
+    assertion10(std::isfinite(FR[ii]), cellDescription.toString(),
         faceIndex, normalDirection, indexOfQValues, indexOfFValues,
-        ii, QR[ii], QL[ii]);
-    assertion8(std::isfinite(FL[ii]), cellDescription.toString(),
+        ii, QR[ii], QL[ii], FR[ii], FL[ii]);
+    assertion10(std::isfinite(FL[ii]), cellDescription.toString(),
         faceIndex, normalDirection, indexOfQValues, indexOfFValues,
-        ii, QR[ii], QL[ii]);
+        ii, QR[ii], QL[ii], FR[ii], FL[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 }
 
@@ -2383,7 +2383,6 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     DataHeap::getInstance().sendData(
         fluctuations, getUnknownsPerCellBoundary(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
-
   } else {
     sendEmptyDataToMaster(masterRank,x,level);
   }
@@ -2427,8 +2426,14 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
              cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
 
+
+
     // No inverted message order since we do synchronous data exchange.
     // Order: extrapolatedPredictor,fluctuations.
+    // Make sure you clear the arrays before you append(!) data via receive!
+    DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).clear();
+    DataHeap::getInstance().getData(cellDescription.getFluctuation()).clear();
+
     DataHeap::getInstance().receiveData(
         cellDescription.getExtrapolatedPredictor(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
@@ -2441,9 +2446,14 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
     // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
     if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
+      CellDescription& parentCellDescription =
+          getCellDescription(subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement);
+
       logDebug("mergeWithWorkerData(...)","Restricting face data for solver " <<
                cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
-               ", cell: "<< x << ", level: " << level);
+               " from cell="<< x << ", level=" << level <<
+               " to cell="<<parentCellDescription.getOffset()+0.5*parentCellDescription.getSize() <<
+               " level="<<parentCellDescription.getLevel());
 
       restrictData(
           cellDescriptionsIndex,element,
