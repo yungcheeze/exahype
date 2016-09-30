@@ -161,9 +161,6 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     double* sourceValue = new double[_solverUnknowns];
     double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
-    // @todo 16/05/03:Dominic Etienne Charrier
-    // This is depending on the choice of basis/implementation.
-    // The equidistant grid projection should therefore be moved into the solver.
     dfor(i,_numberOfCellsPerAxis) {
       if (_writtenUnknowns>0) {
         _timeStampDataWriter->plotCell(cellIndex, timeStamp);
