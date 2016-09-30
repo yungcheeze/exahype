@@ -459,7 +459,7 @@ For higher orders the optimised version yields a speedup of a factor of roughly 
 
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell - Performance comparison of various implementations of the Picard loop without the evaluation of the 3D Euler flux function.}\label{fig:resultsPicard}
+\caption{Haswell -- Performance comparison of various implementations of the Picard loop without the evaluation of the 3D Euler flux function.}\label{fig:resultsPicard}
 \end{figure}
 
 % \begin{figure}
@@ -522,7 +522,7 @@ Similar to the runtime measurements of the Picard loop, the optimised version is
 
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolume}
+\caption{Haswell -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolume}
 \end{figure}
 
 % \begin{figure}
@@ -584,7 +584,7 @@ Figure~\ref{fig:resultsPredictor} presents the runtime measurements. The speedup
 
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell - Performance comparison of the generic and optimised version of the time averaging.}\label{fig:resultsPredictor}
+\caption{Haswell -- Performance comparison of the generic and optimised version of the time averaging.}\label{fig:resultsPredictor}
 \end{figure}
 
 
@@ -729,10 +729,21 @@ The first version of the code generator is simplistic and mostly mimics the matr
 
 In terms of performance the quadrature weights pose a challenge. The current workaround of first scaling the system matrix with a quadrature weight and then calling the libxsmm-generated gemm implementation cannot be consolidated with the matricisation idea. The next steps will therefore address the integration of the quadrature weights. 
 
+
+\section{Acknowledgement}
+The project has received funding from the European Union's Horizon 2020 
+research and innovation programme under grant agreement No 671698
+(ExaHyPE).
+
+\pagebreak
+
 \bibliographystyle{abbrv}
 \bibliography{report}
 
 %\balancecolumns
+
+
+
 
 \clearpage
 \appendix
@@ -764,7 +775,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \addlegendentry{Optimised} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell (nVar=5) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW5}
+\caption{Haswell (nVar=5) -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW5}
 \end{figure}
 
 ~
@@ -803,7 +814,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \addlegendentry{Optimised} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell (nVar=9) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW9}
+\caption{Haswell (nVar=9) -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW9}
 \end{figure}
 
 \begin{figure}[H]
@@ -828,7 +839,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \addlegendentry{Optimised} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell (nVar=23) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW23}
+\caption{Haswell (nVar=23) -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW23}
 \end{figure}
 
 \begin{figure}[H]
@@ -853,7 +864,7 @@ Performance measurements for the volume kernels on Haswell CPUs are given for $5
 \addlegendentry{Optimised} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{Haswell (nVar=56) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW56}
+\caption{Haswell (nVar=56) -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeHSW56}
 \end{figure}
 
 \subsection{Kernels with 9 quantities (KNL)} \label{sec:app2}
@@ -885,7 +896,7 @@ Performance measurements for KNL processors are given for the Picard iteration i
 \addlegendentry{Generic C++} % column right
 \end{axis}
 \end{tikzpicture}
-\caption{KNL (nVar=9) - Performance comparison of various implementations of the Picard loop without the evaluation of the 3D Euler flux function.}\label{fig:resultsPicardKNL9}
+\caption{KNL (nVar=9) -- Performance comparison of various implementations of the Picard loop without the evaluation of the 3D Euler flux function.}\label{fig:resultsPicardKNL9}
 \end{figure}
 
 
@@ -911,7 +922,7 @@ Performance measurements for KNL processors are given for the Picard iteration i
 \addlegendentry{Optimised (generated)} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{KNL (nVar=9) - Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeKNL9}
+\caption{KNL (nVar=9) -- Performance comparison of the generic and optimised version of the volume kernel.}\label{fig:resultsVolumeKNL9}
 \end{figure}
 
 ~
@@ -956,7 +967,7 @@ Performance measurements for KNL processors are given for the Picard iteration i
 \addlegendentry{Optimised} % column middle
 \end{axis}
 \end{tikzpicture}
-\caption{KNL (nVar=9) - Performance comparison of the generic and optimised version of the time averaging.}\label{fig:resultsPredictorKNL9}
+\caption{KNL (nVar=9) -- Performance comparison of the generic and optimised version of the time averaging.}\label{fig:resultsPredictorKNL9}
 \end{figure}
 
 \end{document}
