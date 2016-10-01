@@ -142,7 +142,7 @@ def output_ascii(npdata, outputfname, args):
 
 @read_formats.register('vtk', desc='Vizualisation Toolkit file')
 def input_vtk(filenames, args=None):
-	logger.log("Reading VTK file(s) %s" % filenames)
+	logger.info("Reading VTK file(s) %s" % filenames)
 	return vtkreader(filenames)
 
 @read_formats.register('np', desc='Binary numpy file')
@@ -224,6 +224,7 @@ class ExaWriter:
 
 def vtkextractor():
 	programname = sys.argv[0]
+	logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 	parser = argparse.ArgumentParser(description='ExaHyPE simulation data converter, ie. VTK to plain ASCII converter',
 		epilog="\n".join(["Example invocations:",
 			"   %s -o solution-0.txt.gz -c solution-0.vtk" % programname,

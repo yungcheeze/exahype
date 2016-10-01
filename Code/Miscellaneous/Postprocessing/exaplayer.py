@@ -35,6 +35,7 @@ class Player:
 		self.names = names if names else quantities
 
 		self.uni = lambda col: np.unique(sol[col])
+		logger.info("This is the solution I got: %s" % str(sol))
 
 		self.times = self.uni('time')
 		self.x, self.y, self.z = map(self.uni, "xyz")
@@ -258,6 +259,7 @@ class Play2D(Player):
 
 
 if __name__ == "__main__":
+	logging.basicConfig(level=logging.DEBUG)
 	Player.main()
 
 
