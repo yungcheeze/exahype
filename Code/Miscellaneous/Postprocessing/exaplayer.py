@@ -1,32 +1,74 @@
 #!/usr/bin/env python
 #
-# This script is part of ExaHyPE. Probably.
-# This script is Python 2.
+# This script is part of the "Exa" Python Postprocessing tools.
+# They are written in Python 2 with Python 3 compatibility in mind.
+# Dependencies: VTK and numpy/scipy.
 #
-# A minimalistic interactive movie player for 1D or 2D data
+# This file is part of the ExaHyPE project.
+# Copyright (c) 2016  http://exahype.eu
+# All rights reserved.
 #
-# -- Public Domain, Jul, 22. 2016, Sven K.
+# The project has received funding from the European Union's Horizon 
+# 2020 research and innovation programme under grant agreement
+# No 671698. For copyrights and licensing, please consult the webpage.
+#
+# Released under the BSD 3 Open Source License.
+# For the full license text, see LICENSE.txt
+
+"""
+A minimalistic interactive movie player for 1D or 2D data.
+currently only displays x-y layer or x axis.
+
+Example invocation on command line:
+
+   ./exaplayer.py solution-*.vtk -i vtk -d 1 -s -I
+
+This will interactively show up a window with a range slider
+where you can look at a 1D slice over the data over the time.
+
+You can do the same and look into the data in an interactive
+IPython session. This allows you fine control eg. for creating
+a movie, start with 'ipython -i' and do
+
+>>> from exareader import exareader
+>>> from exaplayer import Play1D
+>>> from glob import glob
+>>> import matplotlib.pyplot as plt
+>>> fnames = glob('*.vtk')
+>>> data = exareader(fnames)
+>>> data.shape
+(2733750,)   # this represents 1.5GB of simulation data
+>>> data.dtype.names
+('time', 'x', 'y', 'z', 'Q0', 'Q1', 'Q2', 'Q3', 'Q4')
+>>> player = Play1D(data, "Q0 Q1 Q4".split(), "d sx e".split())
+>>> plt.ion()
+>>> player.createPlot()
+>>> plt.title("My Fancy Simulation")
+>>> # now resize plot, etc.
+>>> plt.createMovie("mymovie.mpg")
+
+After creating the movie, you can create more movies or invoke
+"webmize mymovie.mpg" to quickly generate a mymovie.webm file in
+the same folder to distribute over the web.
+"""
 
 from __future__ import print_function
 import sys, argparse, logging
-from exareader import ExaReader
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-# helper functions:
-find_nearest = lambda a, a0: a.flat[abs(a-a0).argmin()]
-unzip = lambda z: zip(*z) # inverse zip
-middle = lambda a: a[int(len(a)/2)]
-first = lambda l: l[0]
-last = lambda l: l[-1]
+from exahelpers import find_nearest, unzip, middle, first, last
+from exahelpers import ExaFrontend
+from exareader import ExaReader
+
 
 # Quantities: name of conserved variable in ExaHypE -[mappedTo]-> human readable name
 # TODO: Should be get from configfile or parameters.
 default_quantities = ["Q0", "Q1", "Q4"]
 default_quantities_readable = ["d", "sx", "e"]
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("exaplayer")
 
 class Player:
 	def __init__(self, sol, quantities, names=None, zslice=None):
@@ -35,7 +77,6 @@ class Player:
 		self.names = names if names else quantities
 
 		self.uni = lambda col: np.unique(sol[col])
-		logger.info("This is the solution I got: %s" % str(sol))
 
 		self.times = self.uni('time')
 		self.x, self.y, self.z = map(self.uni, "xyz")
@@ -60,27 +101,23 @@ class Player:
 		                   help='Whether to switch on the pylab interactive flag')
 
 	@staticmethod
-	def main():
+	def main(args=None):
 		"""
-		Just call this as Player().main(sys.argv).
+		Just call this as Player().main(sys.argv) or omit the args
 		"""
-		programname = sys.argv[0]
-		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-		parser = argparse.ArgumentParser(description='ExaHyPE simulation data player',
-			epilog="\n".join([
-				"A minimalistic interactive movie player for 1D or 2D data.",
-				"currently only displays x-y layer or x axis."
-			]), formatter_class=argparse.RawDescriptionHelpFormatter)
+		
+		frontend = ExaFrontend(epilog=__doc__,
+			program_description='ExaHyPE simulation data player')
 
 		reader = ExaReader()
-		reader.add_group(parser)
-		Player.add_group(parser)
+		frontend.add_module(reader)
+		frontend.add_module(Player)
 		# TODO: slicer io_group could be used here to specify how to slice.
 
-		args = parser.parse_args()
-		logger.info("Parser arguments: %s" % str(args))
+		args = frontend.parse_args(args)
 
-		sol = reader.read_files(args)
+		logger.info("Welcome to vtkplayer, your friendly data plotter for ExaHyPE")
+		sol = reader.read_files_as_requested(args)
 		registry = { 1: Play1D, 2: Play2D }
 		PlayerClass = registry[args.dimensions]
 
@@ -99,8 +136,10 @@ class Player:
 			player.createMovie(args.movie)
 
 		if args.stay:
+			logger.info("Calling Pyplots show, press CTRL+C to stop the program")
 			plt.show(block=True)
-		# if not stay, users can now start to interact with the code in IPython
+		# if not stay:
+		logger.debug("You could now start to interact with the code in IPython")
 
 	def createMovie(self, output_filename, fps=15):
 		"""
@@ -160,7 +199,7 @@ class Play1D(Player):
 			plt.show()
 
 	def createPlot(self):
-		self.gs = plt.GridSpec(len(quantities),1)
+		self.gs = plt.GridSpec(len(self.quantities),1)
 		self.axes = map(plt.subplot, self.gs)
 		self.lines, titles = unzip([ self.createSubPlot(a,q) for a,q in zip(self.axes, self.quantities)])
 		plt.subplots_adjust(left=0.10, top=0.85)
@@ -259,7 +298,6 @@ class Play2D(Player):
 
 
 if __name__ == "__main__":
-	logging.basicConfig(level=logging.DEBUG)
-	Player.main()
+	Player.main(sys.argv)
 
 
