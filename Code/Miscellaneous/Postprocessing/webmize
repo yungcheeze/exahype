@@ -2,8 +2,8 @@
 # usage: webmize file1.mpg file2.mov file3...
 # Do not use too many files as conversion is done in parallel.
 
-ffmpeg=$(which avconv 2>/dev/null && echo 'avconv' || which ffmpeg 2>/dev/null && echo 'ffmpeg' )
-which $ffmpeg 1>/dev/null 2>/dev/null || { echo -e "Suitable ffmpeg version not found"; exit -1; }
+ffmpeg=$({ which avconv &>/dev/null && echo 'avconv'; } || { which ffmpeg &>/dev/null && echo 'ffmpeg'; })
+which $ffmpeg &>/dev/null || { echo -e "Suitable ffmpeg version not found"; exit -1; }
 
 for movie in "$@"; do
 
