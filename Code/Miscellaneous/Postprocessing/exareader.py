@@ -34,7 +34,7 @@ import numpy as np
 import argparse, sys, logging, gzip
 from collections import namedtuple
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("exareader")
 
 # convenient python2 methods
 def vectorize_concatenate(func):
@@ -125,29 +125,29 @@ read_formats = fileformat('input')
 write_formats = fileformat('output')
 
 @write_formats.register('np', desc='Binary numpy file')
-def output_npy(npdata, outputfname, args=None):
+def output_npy(npdata, outputfname, **args):
 	np.save(outputfname, npdata)
 
 @write_formats.register('csv', desc='Comma-Seperated-Values')
-def output_ascii(npdata, outputfname, args):
+def output_ascii(npdata, outputfname, **args):
 	logger.info("This may take a while. Have a coffee. Or watch your output growing.")
 	# TODO: I inserted a bug here. Doesn't work any more with ASCII here. Dunno why.
 	np.savetxt(
 		fname=outputfname,
 		X=npdata,
-		fmt=args.nformat,
+		fmt=args['nformat'], # args type (dict/Namespace) not really clear here
 		header=','.join(['"%s"' % s for s in npdata.dtype.names]),
 		comments=''
 	)
 
 @read_formats.register('vtk', desc='Vizualisation Toolkit file')
-def input_vtk(filenames, args=None):
-	logger.info("Reading VTK file(s) %s" % filenames)
+def input_vtk(filenames, **args):
+	logger.info("Invoking VTK interface with %d filenames" % len(filenames))
 	return vtkreader(filenames)
 
 @read_formats.register('np', desc='Binary numpy file')
 @vectorize_concatenate
-def input_numpy(filename, args=None):
+def input_numpy(filename, **args):
 	logger.info("Loading numpy file %s" % filename)
 	return np.load(filename)
 
@@ -170,13 +170,19 @@ class ExaReader:
 		group.add_argument('-i', '--inform', dest='inform', choices=read_formats.choices(), type=str, default='vtk',
 				   help='File format of the input files, VTK takes long, numpy is rather quick.')
 
-	def read_files(self, args):
+	def read_files_as_requested(self, args):
+		"""Convenience call to convert argparse.Namespace objects to method call parameters"""
+		return self.read_files(**vars(args))
+
+	def read_files(self, inform="np", inputfiles=[], **readerargs):
 		"""
-		Return the numpy array which is constructed according to the input formats.
+		Return the numpy array which is constructed according to arguments.
+		`args` is a 
 		"""
-		reader = read_formats.get(args.inform)
-		logger.info("Reading input as %s from %s" % (read_formats.desc(args.inform), args.inputfiles))
-		data = reader(args.inputfiles, args)
+		reader = read_formats.get(inform)
+		logger.info("Reading input as %s from the following files:" % read_formats.desc(inform))
+		for i,f in enumerate(inputfiles): logger.info(" %d. %s" % (i+1,f))
+		data = reader(inputfiles, **readerargs)
 		return data
 
 
@@ -185,6 +191,7 @@ class ExaWriter:
 	The writer class doing the same as reader just for writing.
 	"""
 	def add_group(self, argparser):
+		group = argparser.add_argument_group('output')
 		group.add_argument('-c', '--compress', dest='compress', action='store_true', default=False,
 			           help='Compress the output, creates a gzip file. Applies only if output is not stdout.')
 		group.add_argument('-f', '--outfile', dest='outfile', default=False,
@@ -194,19 +201,35 @@ class ExaWriter:
 		group.add_argument('-n', '--numberformat', dest='nformat', default='%.5e',
 				   help='Number format string, cf. numpys savetxt() documentation. Applies only for CSV.')
 
+	def write_output_as_requested(self, data, args):
+		"""
+		Convenience call to convert argparse.Namespace objects to method call parameters.
+		Use this function if you have collected your arguments by argparser.
+		Else use the pythonic method call `write_output` directly.
+		"""
+		return self.write_output(data, **vars(args))
 
-	def write_output(self, data, args):
-		use_stdout = not args.outfile
-		opener = gzip.open if args.compress else open
+	def write_output(self, data, outfile, outform="csv", compress=False, **writerargs):
+		"""
+		Writes out `data` to `outfile` using the global `write_formats` class where
+		writers are registered.
+
+		Parameters are the same as described by the `add_group` method.
+		Furthermore, for the parameters without default arguments:
+		data: Data to write in numpy format
+		outfile: filename where to write to. If 'False' or 'None', will write to stdout.		
+		"""
+		use_stdout = not outfile
+		opener = gzip.open if compress else open
 		# this parameter check is basically too late.
-		if args.compress and use_stdout:
+		if compress and use_stdout:
 			raise AttributeError("Gzip output for stdout currently not supported. Just use pipes: %s ... | gzip" % programname)
-		outputfh = sys.stdout if not args.outfile else opener(args.outfile, 'w')
+		outputfh = sys.stdout if not outfile else opener(outfile, 'w')
 
 		logger.info("Printing output to %s" % str(outputfh))
 		try:
-			writer = write_formats.get(args.outform)
-			writer(data, outputfh, args)
+			writer = write_formats.get(outform)
+			writer(data, outputfh, **writerargs)
 		except IOError:
 			if use_stdout:
 				# eg. when calling python, calling this method and piping on the shell to "./python ... | head",
@@ -236,6 +259,7 @@ def vtkextractor():
 		]),
 		formatter_class=argparse.RawDescriptionHelpFormatter)
 
+	logger.info("Welcome to the ExaReader/ExaWriter CLI (called %s)" % programname)
 	reader = ExaReader()
 	writer = ExaWriter()
 
@@ -243,9 +267,9 @@ def vtkextractor():
 	writer.add_group(parser)
 	args = parser.parse_args()
 
-	data = reader.read_files(args)
+	data = reader.read_files_as_requested(args)
 	logger.info("Have read a %s-shaped numpy array", data.shape)
-	argio.write_output(data, args)
+	writer.write_output_as_requested(data, args)
 	logger.info("Finished")
 
 
