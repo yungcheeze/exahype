@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   28/09/2016 21:56
+    * @date   03/10/2016 15:00
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -88,9 +88,13 @@ namespace exahype {
             double _predictorTimeStamp;
             double _nextPredictorTimeStepSize;
             int _solution;
+            int _solutionAverages;
             int _update;
+            int _updateAverages;
             int _extrapolatedPredictor;
+            int _extrapolatedPredictorAverages;
             int _fluctuation;
+            int _fluctuationAverages;
             int _solutionMin;
             int _solutionMax;
             /**
@@ -101,7 +105,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -654,6 +658,26 @@ namespace exahype {
             
             
             
+            inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solutionAverages;
+            }
+            
+            
+            
+            inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solutionAverages = solutionAverages;
+            }
+            
+            
+            
             inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -670,6 +694,26 @@ namespace exahype {
  #endif 
  {
                _update = update;
+            }
+            
+            
+            
+            inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _updateAverages;
+            }
+            
+            
+            
+            inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _updateAverages = updateAverages;
             }
             
             
@@ -694,6 +738,26 @@ namespace exahype {
             
             
             
+            inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _extrapolatedPredictorAverages;
+            }
+            
+            
+            
+            inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+            }
+            
+            
+            
             inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -710,6 +774,26 @@ namespace exahype {
  #endif 
  {
                _fluctuation = fluctuation;
+            }
+            
+            
+            
+            inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _fluctuationAverages;
+            }
+            
+            
+            
+            inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _fluctuationAverages = fluctuationAverages;
             }
             
             
@@ -773,7 +857,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
          
          /**
           * Generated
@@ -1485,6 +1569,26 @@ namespace exahype {
          
          
          
+         inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._solutionAverages;
+         }
+         
+         
+         
+         inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._solutionAverages = solutionAverages;
+         }
+         
+         
+         
          inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1501,6 +1605,26 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._update = update;
+         }
+         
+         
+         
+         inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._updateAverages;
+         }
+         
+         
+         
+         inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._updateAverages = updateAverages;
          }
          
          
@@ -1525,6 +1649,26 @@ namespace exahype {
          
          
          
+         inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._extrapolatedPredictorAverages;
+         }
+         
+         
+         
+         inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+         }
+         
+         
+         
          inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1541,6 +1685,26 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._fluctuation = fluctuation;
+         }
+         
+         
+         
+         inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._fluctuationAverages;
+         }
+         
+         
+         
+         inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._fluctuationAverages = fluctuationAverages;
          }
          
          
@@ -1677,7 +1841,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   28/09/2016 21:56
+             * @date   03/10/2016 15:00
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1706,9 +1870,13 @@ namespace exahype {
                      double _predictorTimeStamp;
                      double _nextPredictorTimeStepSize;
                      int _solution;
+                     int _solutionAverages;
                      int _update;
+                     int _updateAverages;
                      int _extrapolatedPredictor;
+                     int _extrapolatedPredictorAverages;
                      int _fluctuation;
+                     int _fluctuationAverages;
                      int _solutionMin;
                      int _solutionMax;
                      /**
@@ -1719,7 +1887,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -2272,6 +2440,26 @@ namespace exahype {
                      
                      
                      
+                     inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _solutionAverages;
+                     }
+                     
+                     
+                     
+                     inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _solutionAverages = solutionAverages;
+                     }
+                     
+                     
+                     
                      inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2288,6 +2476,26 @@ namespace exahype {
  #endif 
  {
                         _update = update;
+                     }
+                     
+                     
+                     
+                     inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _updateAverages;
+                     }
+                     
+                     
+                     
+                     inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _updateAverages = updateAverages;
                      }
                      
                      
@@ -2312,6 +2520,26 @@ namespace exahype {
                      
                      
                      
+                     inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _extrapolatedPredictorAverages;
+                     }
+                     
+                     
+                     
+                     inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                     }
+                     
+                     
+                     
                      inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2328,6 +2556,26 @@ namespace exahype {
  #endif 
  {
                         _fluctuation = fluctuation;
+                     }
+                     
+                     
+                     
+                     inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _fluctuationAverages;
+                     }
+                     
+                     
+                     
+                     inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _fluctuationAverages = fluctuationAverages;
                      }
                      
                      
@@ -2391,7 +2639,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                   
                   /**
                    * Generated
@@ -3103,6 +3351,26 @@ namespace exahype {
                   
                   
                   
+                  inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._solutionAverages;
+                  }
+                  
+                  
+                  
+                  inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._solutionAverages = solutionAverages;
+                  }
+                  
+                  
+                  
                   inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3119,6 +3387,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._update = update;
+                  }
+                  
+                  
+                  
+                  inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._updateAverages;
+                  }
+                  
+                  
+                  
+                  inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._updateAverages = updateAverages;
                   }
                   
                   
@@ -3143,6 +3431,26 @@ namespace exahype {
                   
                   
                   
+                  inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._extrapolatedPredictorAverages;
+                  }
+                  
+                  
+                  
+                  inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                  }
+                  
+                  
+                  
                   inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3159,6 +3467,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._fluctuation = fluctuation;
+                  }
+                  
+                  
+                  
+                  inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._fluctuationAverages;
+                  }
+                  
+                  
+                  
+                  inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._fluctuationAverages = fluctuationAverages;
                   }
                   
                   
@@ -3292,7 +3620,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   28/09/2016 21:56
+                      * @date   03/10/2016 15:00
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -3340,9 +3668,13 @@ namespace exahype {
                               double _predictorTimeStamp;
                               double _nextPredictorTimeStepSize;
                               int _solution;
+                              int _solutionAverages;
                               int _update;
+                              int _updateAverages;
                               int _extrapolatedPredictor;
+                              int _extrapolatedPredictorAverages;
                               int _fluctuation;
+                              int _fluctuationAverages;
                               int _solutionMin;
                               int _solutionMax;
                               /**
@@ -3353,7 +3685,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                               
                               
                               inline int getSolverNumber() const 
@@ -3808,6 +4140,26 @@ namespace exahype {
                               
                               
                               
+                              inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _solutionAverages;
+                              }
+                              
+                              
+                              
+                              inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _solutionAverages = solutionAverages;
+                              }
+                              
+                              
+                              
                               inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3824,6 +4176,26 @@ namespace exahype {
  #endif 
  {
                                  _update = update;
+                              }
+                              
+                              
+                              
+                              inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _updateAverages;
+                              }
+                              
+                              
+                              
+                              inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _updateAverages = updateAverages;
                               }
                               
                               
@@ -3848,6 +4220,26 @@ namespace exahype {
                               
                               
                               
+                              inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _extrapolatedPredictorAverages;
+                              }
+                              
+                              
+                              
+                              inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                              }
+                              
+                              
+                              
                               inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3864,6 +4256,26 @@ namespace exahype {
  #endif 
  {
                                  _fluctuation = fluctuation;
+                              }
+                              
+                              
+                              
+                              inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _fluctuationAverages;
+                              }
+                              
+                              
+                              
+                              inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _fluctuationAverages = fluctuationAverages;
                               }
                               
                               
@@ -3927,7 +4339,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                            
                            /**
                             * Generated
@@ -4515,6 +4927,26 @@ namespace exahype {
                            
                            
                            
+                           inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._solutionAverages;
+                           }
+                           
+                           
+                           
+                           inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._solutionAverages = solutionAverages;
+                           }
+                           
+                           
+                           
                            inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4531,6 +4963,26 @@ namespace exahype {
  #endif 
  {
                               _persistentRecords._update = update;
+                           }
+                           
+                           
+                           
+                           inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._updateAverages;
+                           }
+                           
+                           
+                           
+                           inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._updateAverages = updateAverages;
                            }
                            
                            
@@ -4555,6 +5007,26 @@ namespace exahype {
                            
                            
                            
+                           inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._extrapolatedPredictorAverages;
+                           }
+                           
+                           
+                           
+                           inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                           }
+                           
+                           
+                           
                            inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4571,6 +5043,26 @@ namespace exahype {
  #endif 
  {
                               _persistentRecords._fluctuation = fluctuation;
+                           }
+                           
+                           
+                           
+                           inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._fluctuationAverages;
+                           }
+                           
+                           
+                           
+                           inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._fluctuationAverages = fluctuationAverages;
                            }
                            
                            
@@ -4707,7 +5199,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   28/09/2016 21:56
+                               * @date   03/10/2016 15:00
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -4733,9 +5225,13 @@ namespace exahype {
                                        double _predictorTimeStamp;
                                        double _nextPredictorTimeStepSize;
                                        int _solution;
+                                       int _solutionAverages;
                                        int _update;
+                                       int _updateAverages;
                                        int _extrapolatedPredictor;
+                                       int _extrapolatedPredictorAverages;
                                        int _fluctuation;
+                                       int _fluctuationAverages;
                                        int _solutionMin;
                                        int _solutionMax;
                                        /**
@@ -4746,7 +5242,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -5201,6 +5697,26 @@ namespace exahype {
                                        
                                        
                                        
+                                       inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _solutionAverages;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _solutionAverages = solutionAverages;
+                                       }
+                                       
+                                       
+                                       
                                        inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -5217,6 +5733,26 @@ namespace exahype {
  #endif 
  {
                                           _update = update;
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _updateAverages;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _updateAverages = updateAverages;
                                        }
                                        
                                        
@@ -5241,6 +5777,26 @@ namespace exahype {
                                        
                                        
                                        
+                                       inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _extrapolatedPredictorAverages;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                                       }
+                                       
+                                       
+                                       
                                        inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -5257,6 +5813,26 @@ namespace exahype {
  #endif 
  {
                                           _fluctuation = fluctuation;
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _fluctuationAverages;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _fluctuationAverages = fluctuationAverages;
                                        }
                                        
                                        
@@ -5320,7 +5896,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& solutionMin, const int& solutionMax);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
                                     
                                     /**
                                      * Generated
@@ -5908,6 +6484,26 @@ namespace exahype {
                                     
                                     
                                     
+                                    inline int getSolutionAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._solutionAverages;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setSolutionAverages(const int& solutionAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._solutionAverages = solutionAverages;
+                                    }
+                                    
+                                    
+                                    
                                     inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -5924,6 +6520,26 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._update = update;
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getUpdateAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._updateAverages;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setUpdateAverages(const int& updateAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._updateAverages = updateAverages;
                                     }
                                     
                                     
@@ -5948,6 +6564,26 @@ namespace exahype {
                                     
                                     
                                     
+                                    inline int getExtrapolatedPredictorAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._extrapolatedPredictorAverages;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
+                                    }
+                                    
+                                    
+                                    
                                     inline int getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -5964,6 +6600,26 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._fluctuation = fluctuation;
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getFluctuationAverages() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._fluctuationAverages;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setFluctuationAverages(const int& fluctuationAverages) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._fluctuationAverages = fluctuationAverages;
                                     }
                                     
                                     

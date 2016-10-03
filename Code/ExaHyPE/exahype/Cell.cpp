@@ -255,6 +255,11 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setExtrapolatedPredictor(-1);
   newCellDescription.setFluctuation(-1);
 
+  newCellDescription.setSolutionAverages(-1);
+  newCellDescription.setUpdateAverages(-1);
+  newCellDescription.setExtrapolatedPredictorAverages(-1);
+  newCellDescription.setFluctuationAverages(-1);
+
   // Limiter meta data (oscillations identificator)
   newCellDescription.setSolutionMin(-1);
   newCellDescription.setSolutionMax(-1);

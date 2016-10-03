@@ -310,6 +310,7 @@ class exahype::records::ADERDGCellDescription {
    *  Symbol: \f$ u_h \f$.
    */
   parallelise persistent int solution;
+  parallelise persistent int solutionAverages;
 
   /**
    * Index pointing to the update DoF belonging to this cell. All volume updates
@@ -317,6 +318,7 @@ class exahype::records::ADERDGCellDescription {
    * \f$ \Delta u_h \f$.
    */
   parallelise persistent int update;
+  parallelise persistent int updateAverages;
   ///@}
 
   /**
@@ -332,12 +334,14 @@ class exahype::records::ADERDGCellDescription {
    * cell.
    */
   parallelise persistent int extrapolatedPredictor;
+  parallelise persistent int extrapolatedPredictorAverages;
 
   /**
    * Index pointing to the normal fluxes computed at the bounding faces of the
    * cell.
    */
   parallelise persistent int fluctuation;
+  parallelise persistent int fluctuationAverages;
   ///@}
   
   /**

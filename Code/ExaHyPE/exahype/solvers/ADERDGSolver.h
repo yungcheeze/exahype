@@ -1340,9 +1340,12 @@ public:
       const int                                    level) override;
 #endif
 
-std::string toString() const override;
+  std::string toString() const override;
 
-void toString (std::ostream& out) const override;
+  void toString (std::ostream& out) const override;
+
+  void compress();
+  void uncompress();
 };
 
 #endif

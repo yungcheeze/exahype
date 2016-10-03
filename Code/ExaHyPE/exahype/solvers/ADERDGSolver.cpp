@@ -54,9 +54,13 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
 
         DataHeap::getInstance().deleteData(cellDescription.getUpdate());
         DataHeap::getInstance().deleteData(cellDescription.getSolution());
+        DataHeap::getInstance().deleteData(cellDescription.getUpdateAverages());
+        DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
 
         cellDescription.setSolution(-1);
         cellDescription.setUpdate(-1);
+        cellDescription.setSolutionAverages(-1);
+        cellDescription.setUpdateAverages(-1);
         break;
       default:
         break;
@@ -74,6 +78,10 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
 
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+
+        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
+        DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
+
         DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
         DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
 
@@ -97,6 +105,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
             DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
         cellDescription.setSolution(
             DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
+        cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
       }
       break;
     default:
@@ -117,6 +127,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
             unknownsPerCellBoundary, unknownsPerCellBoundary));
         cellDescription.setFluctuation(DataHeap::getInstance().createData(
             unknownsPerCellBoundary, unknownsPerCellBoundary));
+        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
+        cellDescription.setFluctuationAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
 
         // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
         // and array of max values of the neighbour at this face).

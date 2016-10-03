@@ -92,6 +92,7 @@ Tokens
   token_batch_timesteps             = 'timestep-batch-factor';
   token_skip_reduction              = 'skip-reduction-in-batched-time-steps';
   token_disable_amr                 = 'disable-amr-if-grid-has-been-stationary-in-previous-iteration';
+  token_double_compression          = 'double-compression';
 
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
@@ -218,8 +219,9 @@ Productions
         token_batch_timesteps             [token_batch_timesteps_equals]:token_equals             [batch_timesteps]:float_number 
         token_skip_reduction              [token_skip_reduction_equals]:token_equals              [skip_reduction]:token_on_off
         token_disable_amr                 [token_disable_amr_equals]:token_equals                 [disable_amr]:token_on_off
+        token_double_compression          [token_double_compression_equals]:token_equals          [double_compression]:float_number
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction,disable_amr) }
+        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction,disable_amr,double_compression) }
       ;
 
    profiling {->profiling} =
@@ -367,6 +369,7 @@ Abstract Syntax Tree
      [batch_timesteps]:float_number 
      [skip_reduction]:token_on_off
      [disable_amr]:token_on_off
+     [double_compression]:float_number
      ;
 
    profiling =
