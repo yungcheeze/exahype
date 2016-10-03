@@ -116,7 +116,12 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
           new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
       );
     }
-  } // end of static load balancing
+  }
+  else {
+    logError("initDistributedMemoryConfiguration()", "only MPI static load balancing supported so far. ");
+  }
+
+  // end of static load balancing
 
 
   tarch::parallel::NodePool::getInstance().restart();
