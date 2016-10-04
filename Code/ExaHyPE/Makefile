@@ -264,7 +264,6 @@ LL=$(CC)
 
 
 COBJECTS=$(CSOURCES:.cpp=.o)
-FMODOBJECTS=$(FMODSOURCES:.f90=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 
 all: header build
