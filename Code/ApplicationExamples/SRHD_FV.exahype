@@ -1,17 +1,9 @@
 /**
 
  Special Relativistic Hydrodynamics
- with a generic kernels written in C++ and FORTRAN user interface,
- provided in Fortran by Olindo and rewritten in C++ by Sven.
- 
- This exahype specification file is for the (currently still) artificial
- kernel with the name "SRHD" which demonstrates the new connector from the
- C++ toolkit to the FORTRAN kernel.
- 
- In order to run this particular application, *do not* (re)run the toolkit
- but just go on and compile the application.
+ solved with the Finite Volume Solver (MUSCL).
 
- Started 06. May, 2016.
+ This is a copy of the SRHD specification file.
 
  */
 exahype-project  SRHD
@@ -54,11 +46,19 @@ exahype-project  SRHD
     kernel             = generic::MUSCL
     language           = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
-      output   = ./solution
+      output   = ./conserved
+      select   = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables= 5
+      time     = 0.0
+      repeat   = 0.05
+      output   = ./primitive
       select   = {}
     end plot
   end solver
