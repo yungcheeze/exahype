@@ -380,10 +380,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   // todo MPI
   // todo Boundary
   #ifdef SharedTBB
-  assertionMsg(false,"Not implemented yet!");
-  // force exit as executing despite the assertion in release mode while this is not fully implemented produces hard to debug races 
+  // force exit as executing while this is not fully implemented produces hard to debug races 
   // at least for SRHD compiled with icpc (in this case the result may look overall good but with some random values appearing at random in some cells)
-  printf("\nERROR: exahype::solvers::FiniteVolumesSolver::updateSolution doesn't support shared-memory optimization yet!!!\n");
+  logError("exahype::solvers::FiniteVolumesSolver::updateSolution","Shared-memory not yet implemented !!!");
   exit(-1);
   #endif
   assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
