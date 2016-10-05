@@ -57,3 +57,28 @@ Each script can be used for itself, but this is the overall idea:
   in Excel.
 
 
+Example of starting the code
+===========================
+
+
+Output of start*.py script:
+
+```
+ExaHyPE convergence Analysis
+============================
+Can do convergence analysis on 15.000000x15.000000 sized domain with the following grid props:
+   depth  meshsize  numcells  maxmeshsize
+0      1  5.000000         3     5.500000
+1      2  1.666667         9     1.833333
+2      3  0.555556        27     0.611111
+3      4  0.185185        81     0.203704
+4      5  0.061728       243     0.067901
+Will do all these tests for these orders of the polynomial order:
+[2 3 4 5 6 7 8 9]
+Starting p=2, maxmeshsize=5.500000 
+Starting p=2, maxmeshsize=1.833333 
+WIPING existing simulation at simulations//p2-meshsize5.5/
+Starting p=2, maxmeshsize=0.611111 
+WIPING existing simulation at simulations//p2-meshsize1.83333333333/
+...
+```
