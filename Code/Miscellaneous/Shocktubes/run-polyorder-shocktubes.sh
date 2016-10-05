@@ -8,6 +8,11 @@
 #
 # The script expects one parameter which is the $ORDER.
 #
+# In order to be able to make use of this script, you need to compile several versions
+# of the specific application (ie. SRHD) in parallel. Use the script
+# "multicompile-polyorders.sh" to do that.
+#
+# -- Sven, Oct 2016 for ExaHyPE
 
 ORDER="$1"
 
