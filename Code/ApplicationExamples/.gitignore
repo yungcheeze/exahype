@@ -20,3 +20,11 @@ Makefile
 *_Plotter*.cpp
 ExaHyPE-*
 
+# and the same for solvers not ending with "Solver"
+*SolverFV.h
+
+# output or run directories if code is run even inside the
+# ApplicationExamples directory
+output/
+run/
+RUN/
