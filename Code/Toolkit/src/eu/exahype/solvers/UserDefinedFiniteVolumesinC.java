@@ -53,7 +53,7 @@ public class UserDefinedFiniteVolumesinC implements Solver {
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName
-        + "::spaceTimePredictorspaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
+        + "::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("}\n");
     writer.write("\n\n\n");

@@ -23,6 +23,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     Helpers.writeMinimalFiniteVolumesSolverHeader(solverName, writer, projectName, _hasConstants);
 
     writer.write("  private:\n");
+    writer.write("    void init();\n");
     writer.write("    static void adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q);\n");
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
@@ -44,6 +45,20 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
 	writer.write("#include \"kernels/finitevolumes/muscl/c/3d/solutionAdjustment.cpph\"\n");
     writer.write("\n\n\n");
 
+    if (_hasConstants) {
+      writer.write(projectName + "::" + solverName + "::" + solverName
+          + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
+    } else {
+      writer.write(projectName + "::" + solverName + "::" + solverName
+          + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    }
+    writer.write("  exahype::solvers::FiniteVolumesSolver(" + "\"" + solverName + "\", "
+        + _numberOfVariables + ", " + _numberOfParameters
+        + ", cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
+    writer.write("  init();\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize( double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx) {\n");
     if (_enableProfiler) {
@@ -89,32 +104,11 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
 
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-    writer.write("#include \"" + solverName + ".h\"\n");
-    writer.write("\n\n\n");
+    Helpers.writeMinimalFiniteVolumesSolverUserImplementation(solverName, writer, projectName,
+        _numberOfVariables, _numberOfParameters, _patchSize, _hasConstants);
 
-    if (_hasConstants) {
-      writer.write(projectName + "::" + solverName + "::" + solverName
-          + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
-    } else {
-      writer.write(projectName + "::" + solverName + "::" + solverName
-          + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
-    }
-
-    writer.write("  exahype::solvers::FiniteVolumesSolver(" + "\"" + solverName + "\", "
-        + _numberOfVariables + ", " + _numberOfParameters
-        + ", cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
-    writer.write("  // @todo Please implement/augment if required\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-
-    writer.write("void " + projectName + "::" + solverName
-        + "::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {\n");
-    writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
-    writer.write("  // @todo Please implement and set initial conditions\n");
-    writer.write("  }\n");
-    writer.write("  // @todo Feel free to add further conditions\n");
-    writer.write("}\n\n\n");
-
+    int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
+    
     writer.write("bool " + projectName + "::" + solverName
         + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {\n");
     writer.write("  // @todo Please implement\n");
@@ -127,6 +121,19 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("    return false; \n");
     writer.write("  }\n");
     writer.write("}\n\n\n");
+    
+    writer.write("void " + projectName + "::" + solverName
+        + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
+//    writer.write("  // Dimensions             = " + _dimensions + "\n");
+    writer.write(
+        "  // Number of variables    = " + Integer.toString(_numberOfVariables + _numberOfParameters)
+            + " (#unknowns + #parameters)\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfVariables + _numberOfParameters; i++) {
+      writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
 
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
         + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {\n");

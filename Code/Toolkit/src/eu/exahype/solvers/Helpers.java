@@ -125,6 +125,20 @@ public class Helpers {
     writer.write("  // @todo Please implement/augment if required.\n");
     writer.write("}\n\n");
   }
+  
+  public static void writeMinimalFiniteVolumesSolverUserImplementation(String solverName,
+      java.io.BufferedWriter writer, String projectName, int numberOfVariables, int numberOfParameters, int patchSize, boolean hasConstants)
+      throws IOException {
+    writer.write("#include \"" + solverName + ".h\"\n\n");
+    writer.write("#include <memory>\n\n");
+
+    // init
+    writer.write("void " + projectName + "::" + solverName +
+      "::init() {\n");
+    writer.write("  // This function is called inside the constructur.\n");
+    writer.write("  // @todo Please implement/augment if required.\n");
+    writer.write("}\n\n");
+  }
 
   static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,
       boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm)
@@ -133,7 +147,7 @@ public class Helpers {
     java.io.File pathToCodeGenerator =
         new java.io.File(currentDirectory + "/Miscellaneous/CodeGenerator/Driver.py");
     if (pathToCodeGenerator.exists()) {
-      System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
+      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels.");
       return;
     }
 
