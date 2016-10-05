@@ -12,8 +12,7 @@ void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, const double* nv);
 }
 
-SRHD::SRHDSolverFV::SRHDSolverFV(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::FiniteVolumesSolver("SRHDSolverFV", 5, 0, cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+void SRHD::SRHDSolverFV::init() {
   // @todo Please implement/augment if required
 }
 
