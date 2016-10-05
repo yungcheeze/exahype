@@ -17,7 +17,7 @@ exahype-project  SRHD
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 1.0
   end computational-domain
 
 /*  
@@ -46,7 +46,8 @@ exahype-project  SRHD
     kernel             = generic::MUSCL
     language           = C
 
-    plot vtk::Cartesian::vertices::ascii
+    /* Apparently, MUSCL doesnt support vtk::Cartesian::vertices */
+    plot vtk::Cartesian::cells::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
@@ -54,7 +55,7 @@ exahype-project  SRHD
       select   = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::cells::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
