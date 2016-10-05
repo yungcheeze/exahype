@@ -3,6 +3,7 @@
 
 SUBROUTINE PDECons2Prim(V,Q,iErr)
   USE parameters, ONLY : nVar, gamma
+  USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE
   !--------------------------------------------!
   ! Argument list declaration

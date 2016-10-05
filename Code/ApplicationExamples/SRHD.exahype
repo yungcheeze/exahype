@@ -25,7 +25,7 @@ exahype-project  SRHD
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 0.5
   end computational-domain
   
   shared-memory
@@ -56,7 +56,15 @@ exahype-project  SRHD
       variables= 5
       time     = 0.0
       repeat   = 0.05
-      output   = ./solution
+      output   = ./conserved
+      select   = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables= 5
+      time     = 0.0
+      repeat   = 0.05
+      output   = ./primitive
       select   = {}
     end plot
   end solver
