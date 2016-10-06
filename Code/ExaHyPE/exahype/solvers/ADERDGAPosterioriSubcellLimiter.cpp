@@ -12,9 +12,13 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+bool exahype::solvers::ADERDGAPosterioriSubcellLimiter::isActive(double timeStamp) {
+  return true;
+}
+
 exahype::solvers::ADERDGAPosterioriSubcellLimiter::ADERDGAPosterioriSubcellLimiter(int aderdgSolverNumber,int finiteVolumesSolverNumber) :
             CellWiseCoupling(0.0,0.0),
-            _isActive(false),
+            _limiterIsActive(false),
             _aderdgSolverNumber(aderdgSolverNumber),
             _finiteVolumesSolverNumber(finiteVolumesSolverNumber)
 {
@@ -29,7 +33,7 @@ exahype::solvers::ADERDGAPosterioriSubcellLimiter::ADERDGAPosterioriSubcellLimit
 }
 
 void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversBeforeSolutionUpdate(const int cellDescriptionsIndex) {
-  _isActive=false;
+  _limiterIsActive=false;
 
   exahype::solvers::ADERDGSolver* aderdgSolver =
       static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[_aderdgSolverNumber]);
@@ -61,7 +65,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversBeforeSolut
       // If so project the aderdg data onto the fv subgrid.
       // You get all you need from the cell descriptions
 
-      _isActive=true;
+      _limiterIsActive=true;
       aderdgCellDescription.setSkipSolutionUpdate(true);
       finiteVolumesCellDescription.setSkipSolutionUpdate(false);
     }
@@ -69,7 +73,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversBeforeSolut
 }
 
 void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversAfterSolutionUpdate(const int cellDescriptionsIndex) {
-  if (_isActive) {
+  if (_limiterIsActive) {
     exahype::solvers::ADERDGSolver* aderdgSolver =
         static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[_aderdgSolverNumber]);
     exahype::solvers::FiniteVolumesSolver* finiteVolumesSolver =

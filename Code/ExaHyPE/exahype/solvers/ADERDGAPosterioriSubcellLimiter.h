@@ -20,9 +20,22 @@ class ADERDGAPosterioriSubcellLimiter;
 
 class exahype::solvers::ADERDGAPosterioriSubcellLimiter : public exahype::solvers::CellWiseCoupling {
 private:
-  bool _isActive;
+  /**
+   * Flag is updated in coupleSolversBeforeSolutionUpdate(...)
+   * and read in coupleSolversAfterSolutionUpdate(...).
+   */
+  bool _limiterIsActive;
 
+  /**
+   * Element index of the ADER-DG solver whose solution is to limit in
+   * registry exahype::solvers::RegisteredSolvers.
+   */
   const int  _aderdgSolverNumber;
+  /**
+   * Element index of the Finite Volumes solver used
+   * for the subcell limiting in registry
+   * exahype::solvers::RegisteredSolvers.
+   */
   const int  _finiteVolumesSolverNumber;
 
 public:
@@ -32,6 +45,11 @@ public:
   // Disallow copy and assignment
   ADERDGAPosterioriSubcellLimiter(const ADERDGAPosterioriSubcellLimiter& other) = delete;
   ADERDGAPosterioriSubcellLimiter& operator=(const ADERDGAPosterioriSubcellLimiter& other) = delete;
+
+  /**
+   * Always returns true.
+   */
+  bool isActive(double timeStamp) override;
 
   /**
    * Couple solvers before the solution update of the solvers is performed.
