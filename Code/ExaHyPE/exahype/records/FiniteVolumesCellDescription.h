@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   03/10/2016 15:00
+    * @date   06/10/2016 17:52
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -569,6 +569,7 @@ namespace exahype {
          
       private: 
          PersistentRecords _persistentRecords;
+         bool _skipSolutionUpdate;
          
       public:
          /**
@@ -585,6 +586,11 @@ namespace exahype {
           * Generated
           */
          FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+         
+         /**
+          * Generated
+          */
+         FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate);
          
          /**
           * Generated
@@ -1215,6 +1221,26 @@ namespace exahype {
          }
          
          
+         
+         inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _skipSolutionUpdate;
+         }
+         
+         
+         
+         inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _skipSolutionUpdate = skipSolutionUpdate;
+         }
+         
+         
          /**
           * Generated
           */
@@ -1308,7 +1334,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   03/10/2016 15:00
+             * @date   06/10/2016 17:52
              */
             class exahype::records::FiniteVolumesCellDescriptionPacked { 
                
@@ -1818,6 +1844,7 @@ namespace exahype {
                   
                private: 
                   PersistentRecords _persistentRecords;
+                  bool _skipSolutionUpdate;
                   
                public:
                   /**
@@ -1834,6 +1861,11 @@ namespace exahype {
                    * Generated
                    */
                   FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                  
+                  /**
+                   * Generated
+                   */
+                  FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate);
                   
                   /**
                    * Generated
@@ -2464,6 +2496,26 @@ namespace exahype {
                   }
                   
                   
+                  
+                  inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _skipSolutionUpdate;
+                  }
+                  
+                  
+                  
+                  inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _skipSolutionUpdate = skipSolutionUpdate;
+                  }
+                  
+                  
                   /**
                    * Generated
                    */
@@ -2554,7 +2606,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   03/10/2016 15:00
+                      * @date   06/10/2016 17:52
                       */
                      class exahype::records::FiniteVolumesCellDescription { 
                         
@@ -3006,6 +3058,7 @@ namespace exahype {
                            
                         private: 
                            PersistentRecords _persistentRecords;
+                           bool _skipSolutionUpdate;
                            
                         public:
                            /**
@@ -3022,6 +3075,11 @@ namespace exahype {
                             * Generated
                             */
                            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                           
+                           /**
+                            * Generated
+                            */
+                           FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate);
                            
                            /**
                             * Generated
@@ -3548,6 +3606,26 @@ namespace exahype {
                            }
                            
                            
+                           
+                           inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _skipSolutionUpdate;
+                           }
+                           
+                           
+                           
+                           inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _skipSolutionUpdate = skipSolutionUpdate;
+                           }
+                           
+                           
                            /**
                             * Generated
                             */
@@ -3641,7 +3719,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   03/10/2016 15:00
+                               * @date   06/10/2016 17:52
                                */
                               class exahype::records::FiniteVolumesCellDescriptionPacked { 
                                  
@@ -4071,6 +4149,7 @@ namespace exahype {
                                     
                                  private: 
                                     PersistentRecords _persistentRecords;
+                                    bool _skipSolutionUpdate;
                                     
                                  public:
                                     /**
@@ -4087,6 +4166,11 @@ namespace exahype {
                                      * Generated
                                      */
                                     FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                    FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate);
                                     
                                     /**
                                      * Generated
@@ -4610,6 +4694,26 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._refinementEvent = refinementEvent;
+                                    }
+                                    
+                                    
+                                    
+                                    inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _skipSolutionUpdate;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _skipSolutionUpdate = skipSolutionUpdate;
                                     }
                                     
                                     

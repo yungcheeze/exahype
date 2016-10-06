@@ -41,6 +41,11 @@
    }
    
    
+   exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent),_skipSolutionUpdate(skipSolutionUpdate) {
+      
+   }
+   
    exahype::records::FiniteVolumesCellDescription::~FiniteVolumesCellDescription() { }
    
    std::string exahype::records::FiniteVolumesCellDescription::toString(const RefinementEvent& param) {
@@ -136,6 +141,8 @@
       out << "parentIndex:" << getParentIndex();
       out << ",";
       out << "refinementEvent:" << toString(getRefinementEvent());
+      out << ",";
+      out << "skipSolutionUpdate:" << getSkipSolutionUpdate();
       out <<  ")";
    }
    
@@ -159,7 +166,8 @@
          getFaceDataExchangeCounter(),
          getType(),
          getParentIndex(),
-         getRefinementEvent()
+         getRefinementEvent(),
+         getSkipSolutionUpdate()
       );
    }
    
@@ -244,7 +252,7 @@
          {
             FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
             
-            const int Attributes = 15;
+            const int Attributes = 16;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_DOUBLE,		 //timeStepSize
@@ -260,6 +268,7 @@
                MPI_INT,		 //type
                MPI_INT,		 //parentIndex
                MPI_INT,		 //refinementEvent
+               MPI_CHAR,		 //skipSolutionUpdate
                MPI_UB		 // end/displacement flag
             };
             
@@ -278,6 +287,7 @@
                1,		 //type
                1,		 //parentIndex
                1,		 //refinementEvent
+               1,		 //skipSolutionUpdate
                1		 // end/displacement flag
             };
             
@@ -299,7 +309,8 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._skipSolutionUpdate))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[15] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -581,6 +592,11 @@
    }
    
    
+   exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent),_skipSolutionUpdate(skipSolutionUpdate) {
+      
+   }
+   
    exahype::records::FiniteVolumesCellDescriptionPacked::~FiniteVolumesCellDescriptionPacked() { }
    
    std::string exahype::records::FiniteVolumesCellDescriptionPacked::toString(const Type& param) {
@@ -656,6 +672,8 @@
       out << "parentIndex:" << getParentIndex();
       out << ",";
       out << "refinementEvent:" << toString(getRefinementEvent());
+      out << ",";
+      out << "skipSolutionUpdate:" << getSkipSolutionUpdate();
       out <<  ")";
    }
    
@@ -679,7 +697,8 @@
          getFaceDataExchangeCounter(),
          getType(),
          getParentIndex(),
-         getRefinementEvent()
+         getRefinementEvent(),
+         getSkipSolutionUpdate()
       );
    }
    
@@ -764,7 +783,7 @@
          {
             FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
             
-            const int Attributes = 15;
+            const int Attributes = 16;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_DOUBLE,		 //timeStepSize
@@ -780,6 +799,7 @@
                MPI_INT,		 //type
                MPI_INT,		 //parentIndex
                MPI_INT,		 //refinementEvent
+               MPI_CHAR,		 //skipSolutionUpdate
                MPI_UB		 // end/displacement flag
             };
             
@@ -798,6 +818,7 @@
                1,		 //type
                1,		 //parentIndex
                1,		 //refinementEvent
+               1,		 //skipSolutionUpdate
                1		 // end/displacement flag
             };
             
@@ -819,7 +840,8 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._skipSolutionUpdate))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[15] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -1101,6 +1123,11 @@
    }
    
    
+   exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, riemannSolvePerformed, isInside, type, parentIndex, refinementEvent),_skipSolutionUpdate(skipSolutionUpdate) {
+      
+   }
+   
    exahype::records::FiniteVolumesCellDescription::~FiniteVolumesCellDescription() { }
    
    std::string exahype::records::FiniteVolumesCellDescription::toString(const RefinementEvent& param) {
@@ -1188,6 +1215,8 @@
       out << "parentIndex:" << getParentIndex();
       out << ",";
       out << "refinementEvent:" << toString(getRefinementEvent());
+      out << ",";
+      out << "skipSolutionUpdate:" << getSkipSolutionUpdate();
       out <<  ")";
    }
    
@@ -1209,7 +1238,8 @@
          getIsInside(),
          getType(),
          getParentIndex(),
-         getRefinementEvent()
+         getRefinementEvent(),
+         getSkipSolutionUpdate()
       );
    }
    
@@ -1288,7 +1318,7 @@
          {
             FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
             
-            const int Attributes = 13;
+            const int Attributes = 14;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_DOUBLE,		 //timeStepSize
@@ -1302,6 +1332,7 @@
                MPI_INT,		 //type
                MPI_INT,		 //parentIndex
                MPI_INT,		 //refinementEvent
+               MPI_CHAR,		 //skipSolutionUpdate
                MPI_UB		 // end/displacement flag
             };
             
@@ -1318,6 +1349,7 @@
                1,		 //type
                1,		 //parentIndex
                1,		 //refinementEvent
+               1,		 //skipSolutionUpdate
                1		 // end/displacement flag
             };
             
@@ -1337,7 +1369,8 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[9] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[10] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._skipSolutionUpdate))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[13] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -1617,6 +1650,11 @@
    }
    
    
+   exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const bool& skipSolutionUpdate):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, riemannSolvePerformed, isInside, type, parentIndex, refinementEvent),_skipSolutionUpdate(skipSolutionUpdate) {
+      
+   }
+   
    exahype::records::FiniteVolumesCellDescriptionPacked::~FiniteVolumesCellDescriptionPacked() { }
    
    std::string exahype::records::FiniteVolumesCellDescriptionPacked::toString(const Type& param) {
@@ -1684,6 +1722,8 @@
       out << "parentIndex:" << getParentIndex();
       out << ",";
       out << "refinementEvent:" << toString(getRefinementEvent());
+      out << ",";
+      out << "skipSolutionUpdate:" << getSkipSolutionUpdate();
       out <<  ")";
    }
    
@@ -1705,7 +1745,8 @@
          getIsInside(),
          getType(),
          getParentIndex(),
-         getRefinementEvent()
+         getRefinementEvent(),
+         getSkipSolutionUpdate()
       );
    }
    
@@ -1784,7 +1825,7 @@
          {
             FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
             
-            const int Attributes = 13;
+            const int Attributes = 14;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_DOUBLE,		 //timeStepSize
@@ -1798,6 +1839,7 @@
                MPI_INT,		 //type
                MPI_INT,		 //parentIndex
                MPI_INT,		 //refinementEvent
+               MPI_CHAR,		 //skipSolutionUpdate
                MPI_UB		 // end/displacement flag
             };
             
@@ -1814,6 +1856,7 @@
                1,		 //type
                1,		 //parentIndex
                1,		 //refinementEvent
+               1,		 //skipSolutionUpdate
                1		 // end/displacement flag
             };
             
@@ -1833,7 +1876,8 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[9] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[10] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._skipSolutionUpdate))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[13] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );

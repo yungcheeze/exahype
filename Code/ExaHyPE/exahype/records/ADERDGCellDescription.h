@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   03/10/2016 15:00
+    * @date   06/10/2016 17:52
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -842,6 +842,7 @@ namespace exahype {
          
       private: 
          PersistentRecords _persistentRecords;
+         bool _skipSolutionUpdate;
          
       public:
          /**
@@ -858,6 +859,11 @@ namespace exahype {
           * Generated
           */
          ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
+         
+         /**
+          * Generated
+          */
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const bool& skipSolutionUpdate);
          
          /**
           * Generated
@@ -1748,6 +1754,26 @@ namespace exahype {
          }
          
          
+         
+         inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _skipSolutionUpdate;
+         }
+         
+         
+         
+         inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _skipSolutionUpdate = skipSolutionUpdate;
+         }
+         
+         
          /**
           * Generated
           */
@@ -1841,7 +1867,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   03/10/2016 15:00
+             * @date   06/10/2016 17:52
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -2624,6 +2650,7 @@ namespace exahype {
                   
                private: 
                   PersistentRecords _persistentRecords;
+                  bool _skipSolutionUpdate;
                   
                public:
                   /**
@@ -2640,6 +2667,11 @@ namespace exahype {
                    * Generated
                    */
                   ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
+                  
+                  /**
+                   * Generated
+                   */
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const bool& skipSolutionUpdate);
                   
                   /**
                    * Generated
@@ -3530,6 +3562,26 @@ namespace exahype {
                   }
                   
                   
+                  
+                  inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _skipSolutionUpdate;
+                  }
+                  
+                  
+                  
+                  inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _skipSolutionUpdate = skipSolutionUpdate;
+                  }
+                  
+                  
                   /**
                    * Generated
                    */
@@ -3620,7 +3672,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   03/10/2016 15:00
+                      * @date   06/10/2016 17:52
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -4324,6 +4376,7 @@ namespace exahype {
                            
                         private: 
                            PersistentRecords _persistentRecords;
+                           bool _skipSolutionUpdate;
                            
                         public:
                            /**
@@ -4340,6 +4393,11 @@ namespace exahype {
                             * Generated
                             */
                            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
+                           
+                           /**
+                            * Generated
+                            */
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const bool& skipSolutionUpdate);
                            
                            /**
                             * Generated
@@ -5106,6 +5164,26 @@ namespace exahype {
                            }
                            
                            
+                           
+                           inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _skipSolutionUpdate;
+                           }
+                           
+                           
+                           
+                           inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _skipSolutionUpdate = skipSolutionUpdate;
+                           }
+                           
+                           
                            /**
                             * Generated
                             */
@@ -5199,7 +5277,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   03/10/2016 15:00
+                               * @date   06/10/2016 17:52
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -5881,6 +5959,7 @@ namespace exahype {
                                     
                                  private: 
                                     PersistentRecords _persistentRecords;
+                                    bool _skipSolutionUpdate;
                                     
                                  public:
                                     /**
@@ -5897,6 +5976,11 @@ namespace exahype {
                                      * Generated
                                      */
                                     ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax);
+                                    
+                                    /**
+                                     * Generated
+                                     */
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const bool& skipSolutionUpdate);
                                     
                                     /**
                                      * Generated
@@ -6660,6 +6744,26 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._solutionMax = solutionMax;
+                                    }
+                                    
+                                    
+                                    
+                                    inline bool getSkipSolutionUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _skipSolutionUpdate;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setSkipSolutionUpdate(const bool& skipSolutionUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _skipSolutionUpdate = skipSolutionUpdate;
                                     }
                                     
                                     
