@@ -30,6 +30,17 @@ namespace exahype {
 class exahype::solvers::CellWiseCoupling: public exahype::solvers::SolverCoupling {
   public:
     CellWiseCoupling(double time, double repeat);
+    virtual ~CellWiseCoupling() {};
+
+    /**
+     * Couple solvers before the solution update of the solvers is performed.
+     */
+    virtual void coupleSolversBeforeSolutionUpdate(const int cellDescriptionsIndex) {};
+
+    /**
+     * Couple solvers after the solution update of the solvers has been performed.
+     */
+    virtual void coupleSolversAfterSolutionUpdate(const int cellDescriptionsIndex) {};
 };
 
 
