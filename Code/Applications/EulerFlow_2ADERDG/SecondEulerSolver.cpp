@@ -93,15 +93,18 @@ void Euler::SecondEulerSolver::eigenvalues(const double* const Q, const int norm
 
 
 bool Euler::SecondEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
-  // @todo Please implement
+  if (tarch::la::equals(t, 0.0)) {
+    return true;
+  }
   return false;
 }
 
 
 
 void Euler::SecondEulerSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
+  if (tarch::la::equals(t, 0.0)) {
+    // Dimensions             = 2
+    // Number of variables    = 5 (#unknowns + #parameters)
     const double GAMMA = 1.4;
     Q[0] = 1.;
     Q[1] = 0.;
@@ -110,8 +113,9 @@ void Euler::SecondEulerSolver::adjustedSolutionValues(const double* const x,cons
     Q[4] =
         1. / (GAMMA -1) +
         std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) ) /
-        (0.05 *0.05)) *
-        1.0e-1;
+            (0.05 *0.05)) *
+            1.0e-1;
+  }
 }
 
 
