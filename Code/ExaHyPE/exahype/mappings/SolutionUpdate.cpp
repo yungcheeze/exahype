@@ -110,7 +110,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    // ADER-DG
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
@@ -123,11 +122,28 @@ void exahype::mappings::SolutionUpdate::enterCell(
           fineGridCell.getCellDescriptionsIndex(),i);
 
       if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareSolutionUpdate(
+            fineGridCell.getCellDescriptionsIndex(),element);
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+
+    // TODO(Dominic): Run over couplings invoke coupling before routine
+
+    // update loop
+    pfor(i, 0, numberOfSolvers, grainSize)
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[i];
+      int element = exahype::solvers::RegisteredSolvers[i]->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),i);
+
+      if (element!=exahype::solvers::Solver::NotFound) {
         solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),element,
             fineGridVertices,fineGridVerticesEnumerator);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+
+    // TODO(Dominic): Run over couplings invoke coupling after routine
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

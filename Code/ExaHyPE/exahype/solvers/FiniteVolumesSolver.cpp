@@ -362,6 +362,13 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
   }
 }
 
+void exahype::solvers::FiniteVolumesSolver::prepareSolutionUpdate(
+        const int cellDescriptionsIndex,
+        const int element) {
+  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+  cellDescription.setSkipSolutionUpdate(false);
+}
+
 void exahype::solvers::FiniteVolumesSolver::updateSolution(
     const int cellDescriptionsIndex,
     const int element,
@@ -372,58 +379,60 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 //  exahype::Cell::resetNeighbourMergeHelperVariables(
 //      cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add helper variables.
 
-  // TODO(Dominic): update solution (This should be separated in mergeNeighbours and updateSolution
-  const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
-      multiscalelinkedcell::getIndicesAroundCell(
-          exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
+  if (!cellDescription.getSkipSolutionUpdate()) {
+    // TODO(Dominic): update solution (This should be separated in mergeNeighbours and updateSolution
+    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
+        multiscalelinkedcell::getIndicesAroundCell(
+            exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
 
-  // todo MPI
-  // todo Boundary
-  #ifdef SharedTBB
-  // force exit as executing while this is not fully implemented produces hard to debug races 
-  // at least for SRHD compiled with icpc (in this case the result may look overall good but with some random values appearing at random in some cells)
-  logError("exahype::solvers::FiniteVolumesSolver::updateSolution","Shared-memory not yet implemented !!!");
-  exit(-1);
-  #endif
-  assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-      VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
-             fineGridVerticesEnumerator.toString());
+    // todo MPI
+    // todo Boundary
+    #ifdef SharedTBB
+    // force exit as executing while this is not fully implemented produces hard to debug races
+    // at least for SRHD compiled with icpc (in this case the result may look overall good but with some random values appearing at random in some cells)
+    logError("exahype::solvers::FiniteVolumesSolver::updateSolution","Shared-memory not yet implemented !!!");
+    exit(-1);
+    #endif
+    assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
+        VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
+               fineGridVerticesEnumerator.toString());
 
-  double* finiteVolumeSolutions[THREE_POWER_D];
-  for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-    if (Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-      CellDescription& pNeighbour =
-          Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[cellDescription.getSolverNumber()]; // todo assumes same number of patches per cell
-      finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
-    } else {
-      finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* finiteVolumeSolutions[THREE_POWER_D];
+    for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
+      if (Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+        CellDescription& pNeighbour =
+            Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[cellDescription.getSolverNumber()]; // todo assumes same number of patches per cell
+        finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
+      } else {
+        finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+      }
     }
-  }
 
-  double* finiteVolumeSolution  = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  assertion(!std::isnan(finiteVolumeSolution[0]));
+    double* finiteVolumeSolution  = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    assertion(!std::isnan(finiteVolumeSolution[0]));
 
-  double admissibleTimeStepSize=0;
-  solutionUpdate(finiteVolumeSolutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+    double admissibleTimeStepSize=0;
+    solutionUpdate(finiteVolumeSolutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
-  if (admissibleTimeStepSize < cellDescription.getTimeStepSize()) {
-    logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
-  }
+    if (admissibleTimeStepSize < cellDescription.getTimeStepSize()) {
+      logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
+    }
 
-  if (hasToAdjustSolution(
-      cellDescription.getOffset()+0.5*cellDescription.getSize(),
-      cellDescription.getSize(),
-      cellDescription.getTimeStamp())) {
-    solutionAdjustment(
-        finiteVolumeSolution,
+    if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
-  }
+        cellDescription.getTimeStamp())) {
+      solutionAdjustment(
+          finiteVolumeSolution,
+          cellDescription.getOffset()+0.5*cellDescription.getSize(),
+          cellDescription.getSize(),
+          cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
+    }
 
-  for (int i=0; i<getUnknownsPerCell(); i++) {
-    assertion3(std::isfinite(finiteVolumeSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    for (int i=0; i<getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(finiteVolumeSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(

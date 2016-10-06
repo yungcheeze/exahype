@@ -84,9 +84,10 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     assertion(_tempStateSizedSquareMatrices==nullptr);
 
     int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    _tempStateSizedVectors        = new double**[numberOfSolvers];
-    _tempStateSizedSquareMatrices = new double**[numberOfSolvers];
-    _tempFaceUnknownsArray        = new double* [numberOfSolvers];
+    _tempStateSizedVectors          = new double**[numberOfSolvers];
+    _tempStateSizedSquareMatrices   = new double**[numberOfSolvers];
+    _tempFaceUnknownsArray          = new double* [numberOfSolvers];
+//    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
 
     // TOOD(Dominic): Check if we need number of parameters too
     int solverNumber=0;
@@ -105,9 +106,12 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
       if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
         auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
         _tempFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getUnknownsPerFace()];
+
+//        _tempSpaceTimeFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getSpaceTimeUnknownsPerFace()]; todo
         // see spaceTimePredictorLinear
       } else {
-        _tempFaceUnknownsArray[solverNumber] = nullptr;
+        _tempFaceUnknownsArray         [solverNumber] = nullptr;
+//        _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
       }
 
       ++solverNumber;
@@ -133,9 +137,11 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
 
 
       if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-        delete[] _tempFaceUnknownsArray[solverNumber];
+        delete[] _tempFaceUnknownsArray         [solverNumber];
+//        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
       }
-      _tempFaceUnknownsArray[solverNumber] = nullptr;
+      _tempFaceUnknownsArray         [solverNumber] = nullptr;
+//      _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
 
       ++solverNumber;
     }
@@ -143,9 +149,11 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
     delete[] _tempStateSizedVectors;
     delete[] _tempStateSizedSquareMatrices;
     delete[] _tempFaceUnknownsArray;
-    _tempStateSizedVectors        = nullptr;
-    _tempStateSizedSquareMatrices = nullptr;
-    _tempFaceUnknownsArray        = nullptr;
+//    delete[] _tempSpaceTimeFaceUnknownsArray; todo
+    _tempStateSizedVectors           = nullptr;
+    _tempStateSizedSquareMatrices    = nullptr;
+    _tempFaceUnknownsArray           = nullptr;
+//    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
   }
 }
 
@@ -246,14 +254,13 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-            assertion4(element2>=0,element2,cellDescriptionsIndex2,solverNumber,fineGridX);
-            assertion4(element1>=0,element1,cellDescriptionsIndex1,solverNumber,fineGridX);
-
-            solver->mergeNeighbours(
-                cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-                _tempFaceUnknownsArray[solverNumber],
-                _tempStateSizedVectors[solverNumber],
-                _tempStateSizedSquareMatrices[solverNumber]);
+            if (element2>=0 && element1>=0) {
+              solver->mergeNeighbours(
+                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                  _tempFaceUnknownsArray[solverNumber],
+                  _tempStateSizedVectors[solverNumber],
+                  _tempStateSizedSquareMatrices[solverNumber]);
+            }
 
             #ifdef Debug // TODO(Dominic)
             _interiorFaceSolves++;
@@ -275,7 +282,9 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
-            assertion4((element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+            assertion4((element1==exahype::solvers::Solver::NotFound &&
+                        element2==exahype::solvers::Solver::NotFound)
+                       || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
                        || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
                        cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
 
@@ -288,7 +297,8 @@ void exahype::mappings::Merging::touchVertexFirstTime(
               #ifdef Debug // TODO(Dominic)
               _boundaryFaceSolves++;
               #endif
-            } else { // element2 >= 0
+            }
+            if (element2 >= 0){
               solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
                                             _tempFaceUnknownsArray[solverNumber],
                                             _tempStateSizedVectors[solverNumber],
