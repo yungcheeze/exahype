@@ -239,8 +239,9 @@ static double startNewTimeStepFV(
     double* finiteVolumesSolutions[THREE_POWER_D];
     for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
       if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+        int element = solver->tryGetElement(cellDescriptionsIndex,p.getSolverNumber());
         exahype::records::FiniteVolumesCellDescription& pNeighbour =
-            exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
+           solver->getCellDescription(neighbourCellDescriptionsIndices[nScalar],element);
         finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
       } else {
         finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(p.getSolution()).data();

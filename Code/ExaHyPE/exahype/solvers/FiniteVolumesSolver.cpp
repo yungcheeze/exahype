@@ -400,8 +400,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     double* finiteVolumeSolutions[THREE_POWER_D];
     for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
       if (Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-        CellDescription& pNeighbour =
-            Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[cellDescription.getSolverNumber()]; // todo assumes same number of patches per cell
+        exahype::records::FiniteVolumesCellDescription& pNeighbour =
+            getCellDescription(neighbourCellDescriptionsIndices[nScalar],element);
         finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
       } else {
         finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
