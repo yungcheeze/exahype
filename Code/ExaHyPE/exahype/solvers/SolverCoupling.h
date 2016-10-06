@@ -46,7 +46,7 @@ class exahype::solvers::SolverCoupling {
      * Identifies whether solver coupling is active and, if this is the case,
      * updates the internal snapshot field.
      */
-    bool isActive(double timeStamp);
+    virtual bool isActive(double timeStamp);
 
     Type getType() const;
 };
