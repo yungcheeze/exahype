@@ -77,7 +77,7 @@ private:
    * Temporary variable per solver for storing
    * face unknowns.
    */
-  double**  _tempFaceUnknownsArray = nullptr;
+  double***  _tempFaceUnknownsArray = nullptr;
 
   /**
    * Temporary variables per solver for storing state sized (=number of variables)

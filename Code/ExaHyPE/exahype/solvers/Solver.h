@@ -641,7 +641,7 @@ class exahype::solvers::Solver {
         const int                                 element2,
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
         const tarch::la::Vector<DIMENSIONS, int>& pos2,
-        double*                                   tempFaceUnknownsArray,
+        double**                                  tempFaceUnknownsArrays,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) = 0;
 
@@ -665,7 +665,7 @@ class exahype::solvers::Solver {
         const int                                 element,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-        double*                                   tempFaceUnknownsArray,
+        double**                                  tempFaceUnknownsArrays,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) =0;
 
@@ -742,7 +742,7 @@ class exahype::solvers::Solver {
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      double*                                      tempFaceUnknownsArray,
+      double**                                     tempFaceUnknownsArrays,
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,

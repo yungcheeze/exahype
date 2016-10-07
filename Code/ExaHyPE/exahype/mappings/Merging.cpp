@@ -86,7 +86,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     _tempStateSizedVectors          = new double**[numberOfSolvers];
     _tempStateSizedSquareMatrices   = new double**[numberOfSolvers];
-    _tempFaceUnknownsArray          = new double* [numberOfSolvers];
+    _tempFaceUnknownsArray          = new double**[numberOfSolvers];
 //    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
 
     // TOOD(Dominic): Check if we need number of parameters too
@@ -105,12 +105,16 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
 
       if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
         auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-        _tempFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getUnknownsPerFace()];
+
+        _tempFaceUnknownsArray[solverNumber] = new double*[3];
+        for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+          _tempFaceUnknownsArray[solverNumber][i] = new double[aderdgSolver->getUnknownsPerFace()];
+        }
 
 //        _tempSpaceTimeFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getSpaceTimeUnknownsPerFace()]; todo
         // see spaceTimePredictorLinear
       } else {
-        _tempFaceUnknownsArray         [solverNumber] = nullptr;
+        _tempFaceUnknownsArray[solverNumber] = nullptr;
 //        _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
       }
 
@@ -137,10 +141,13 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
 
 
       if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-        delete[] _tempFaceUnknownsArray         [solverNumber];
+        for (int i=0; i<3; ++i) { // see riemanSolverLinear
+          delete[] _tempFaceUnknownsArray[solverNumber][i];
+        }
+        delete[] _tempFaceUnknownsArray[solverNumber];
 //        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
       }
-      _tempFaceUnknownsArray         [solverNumber] = nullptr;
+      _tempFaceUnknownsArray [solverNumber] = nullptr;
 //      _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
 
       ++solverNumber;

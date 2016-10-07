@@ -1423,7 +1423,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
-    double*                                   tempFaceUnknownsArray,
+    double**                                  tempFaceUnknownsArrays,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   if (tarch::la::countEqualEntries(pos1,pos2)!=(DIMENSIONS-1)) {
@@ -1461,7 +1461,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   solveRiemannProblemAtInterface(
       pLeft,pRight,faceIndexLeft,faceIndexRight,
-      tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 }
@@ -1471,7 +1471,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     CellDescription& pRight,
     const int faceIndexLeft,
     const int faceIndexRight,
-    double*   tempFaceUnknownsArray,
+    double**  tempFaceUnknownsArrays,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   if (pLeft.getType()==CellDescription::Cell ||
@@ -1523,7 +1523,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
     riemannSolver(
         FL,FR,QL,QR,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         std::min(pLeft.getCorrectorTimeStepSize(),
             pRight.getCorrectorTimeStepSize()),
             normalDirection);
@@ -1542,7 +1542,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     const int                                 element,
     const tarch::la::Vector<DIMENSIONS, int>& posCell,
     const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-    double*                                   tempFaceUnknownsArray,
+    double**                                  tempFaceUnknownsArrays,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   if (tarch::la::countEqualEntries(posCell,posBoundary)!=(DIMENSIONS-1)) {
@@ -1561,15 +1561,14 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
 
     applyBoundaryConditions(
         cellDescription,faceIndex,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices);
+        tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
   }
 }
 
-// Verified correct calling of this method for 9x9 grid on [0,1]x[0,1].
 void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     CellDescription& p,
     const int faceIndex,
-    double*   tempFaceUnknownsArray,
+    double**  tempFaceUnknownsArrays,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   assertion1(p.getRefinementEvent()==CellDescription::None,p.toString());
@@ -1591,11 +1590,11 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
         faceIndex, normalDirection, ii, fluxIn[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
-  double* stateOut = new double[numberOfFaceDof];
-  double* fluxOut  = new double[numberOfFaceDof];
-
   // Synchronise time stepping.
   synchroniseTimeStepping(p);
+
+  double* stateOut = tempFaceUnknownsArrays[1];
+  double* fluxOut  = tempFaceUnknownsArrays[2];
 
   boundaryConditions(fluxOut,stateOut,
       fluxIn,stateIn,
@@ -1619,12 +1618,12 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   // @todo(Dominic): Add to docu why we need this. Left or right input
   if (faceIndex % 2 == 0) {
     riemannSolver(fluxOut, fluxIn, stateOut, stateIn,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection);
   } else {
     riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
-        tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection);
   }
@@ -1633,9 +1632,6 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     assertion5(std::isfinite(fluxIn[ii]),p.toString(),faceIndex,normalDirection,ii,fluxIn[ii]);
     assertion5(std::isfinite(fluxOut[ii]),p.toString(),faceIndex,normalDirection,ii,fluxOut[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-
-  delete[] stateOut;
-  delete[] fluxOut;
 }
 
 void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
@@ -2070,7 +2066,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const int                                    element,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
     const tarch::la::Vector<DIMENSIONS, int>&    dest,
-    double*                                      tempFaceUnknownsArray,
+    double**                                     tempFaceUnknownsArrays,
     double**                                     tempStateSizedVectors,
     double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -2144,7 +2140,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         faceIndex,
         receivedlQhbndIndex,
         receivedlFhbndIndex,
-        tempFaceUnknownsArray,
+        tempFaceUnknownsArrays,
         tempStateSizedVectors,
         tempStateSizedSquareMatrices);
 
@@ -2177,7 +2173,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     const int faceIndex,
     const int indexOfQValues,
     const int indexOfFValues,
-    double*   tempFaceUnknownsArray,
+    double**  tempFaceUnknownsArrays,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   cellDescription.setRiemannSolvePerformed(faceIndex, true);
@@ -2219,7 +2215,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
   const int normalDirection = (faceIndex - faceIndex%2)/2; // faceIndex=2*normalNonZero+f, f=0,1
   riemannSolver(FL, FR, QL, QR,
-      tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
+      tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
       cellDescription.getCorrectorTimeStepSize(),
       normalDirection);
 
