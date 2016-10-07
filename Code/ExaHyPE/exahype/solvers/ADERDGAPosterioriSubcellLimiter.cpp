@@ -12,15 +12,18 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+#include "kernels/limiter/generic/Limiter.h"
+
 bool exahype::solvers::ADERDGAPosterioriSubcellLimiter::isActive(double timeStamp) {
   return true;
 }
 
-exahype::solvers::ADERDGAPosterioriSubcellLimiter::ADERDGAPosterioriSubcellLimiter(int aderdgSolverNumber,int finiteVolumesSolverNumber) :
-            CellWiseCoupling(0.0,0.0),
-            _limiterIsActive(false),
-            _aderdgSolverNumber(aderdgSolverNumber),
-            _finiteVolumesSolverNumber(finiteVolumesSolverNumber)
+exahype::solvers::ADERDGAPosterioriSubcellLimiter::ADERDGAPosterioriSubcellLimiter(
+    int aderdgSolverNumber,int finiteVolumesSolverNumber)
+      : CellWiseCoupling(0.0,0.0),
+        _limiterIsActive(false),
+        _aderdgSolverNumber(aderdgSolverNumber),
+        _finiteVolumesSolverNumber(finiteVolumesSolverNumber)
 {
   assertion2(_aderdgSolverNumber >= 0 && _aderdgSolverNumber<static_cast<int>(exahype::solvers::RegisteredSolvers.size()),
       _aderdgSolverNumber,exahype::solvers::RegisteredSolvers.size());
@@ -56,14 +59,27 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversBeforeSolut
     aderdgCellDescription.setSkipSolutionUpdate(false);
     finiteVolumesCellDescription.setSkipSolutionUpdate(true);
 
-    //    TODO(JM):
-    //    In the first method, you need to check if the aderdgSolver needs limiting (based on min max values etc.).
-    bool cellIsTroubled = false;
+    double* aderdgSolution  = exahype::solvers::ADERDGSolver::DataHeap::getInstance().
+        getData(aderdgCellDescription.getSolution()).data();
+    double* minOfNeighbours =  exahype::solvers::ADERDGSolver::DataHeap::getInstance().
+        getData(aderdgCellDescription.getSolutionMin()).data();
+    double* maxOfNeighbours =  exahype::solvers::ADERDGSolver::DataHeap::getInstance().
+        getData(aderdgCellDescription.getSolutionMax()).data();
+
+    bool cellIsTroubled =
+        kernels::limiter::generic::c::isTroubledCell(
+        aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
+        minOfNeighbours,maxOfNeighbours);
     if (cellIsTroubled) {
       // TODO(JM):
       // In the first method, you need to check if the aderdgSolver needs limiting (based on min max values etc.).
       // If so project the aderdg data onto the fv subgrid.
       // You get all you need from the cell descriptions
+      double* finiteVolumesSolution = exahype::solvers::FiniteVolumesSolver::DataHeap::getInstance().
+              getData(finiteVolumesCellDescription.getSolution()).data();
+
+//      kernels::limiter::generic::c::getFVMData()
+
 
       _limiterIsActive=true;
       aderdgCellDescription.setSkipSolutionUpdate(true);

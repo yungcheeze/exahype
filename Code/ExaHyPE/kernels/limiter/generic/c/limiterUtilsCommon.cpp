@@ -90,6 +90,20 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
 
 }
 
+double getMin(const double* const minOfNeighbours, int iVar, int numberOfVariables) {
+  double min = std::numeric_limits<double>::max();
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
+    min = std::min( min, minOfNeighbours[i+iVar] );
+  }
+  return min;
+}
+double getMax(const double* const maxOfNeighbours, int iVar, int numberOfVariables) {
+  double max = std::numeric_limits<double>::min();
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
+    max = std::max( max, maxOfNeighbours[i+iVar] );
+  }
+  return max;
+}
 
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax) {
   
@@ -103,8 +117,12 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   double ldiff;
 
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
-    ldiff = std::max((troubledMax[iVar] - troubledMin[iVar]) * diffScaling, minMarginOfError);
-    if((localMin[iVar] < (troubledMin[iVar] - ldiff)) || (localMax[iVar] > (troubledMax[iVar] + ldiff))) {
+    double maxMaxOfNeighbours = getMin(troubledMax,iVar,numberOfVariables);
+    double minMinOfNeighbours = getMax(troubledMin,iVar,numberOfVariables);
+
+    ldiff = std::max((maxMaxOfNeighbours - minMinOfNeighbours) * diffScaling, minMarginOfError);
+    if((localMin[iVar] < (minMinOfNeighbours - ldiff)) ||
+       (localMax[iVar] > (maxMaxOfNeighbours + ldiff))) {
       return true;
     }
   }
