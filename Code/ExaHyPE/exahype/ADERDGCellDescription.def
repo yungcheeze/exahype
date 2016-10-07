@@ -363,4 +363,13 @@ class exahype::records::ADERDGCellDescription {
    * persistently
    */
   discard bool skipSolutionUpdate;
+  
+  enum LimiterStatus {
+    Ok,
+    Troubled,
+    NeighbourIsTroubledCell,
+    NeighbourIsNeighbourOfTroubledCell           
+  };
+  
+  parallelise persistent LimiterStatus limiterStatus;
 };
