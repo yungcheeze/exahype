@@ -110,39 +110,36 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    const int numberOfSolvers   = exahype::solvers::RegisteredSolvers.size();
-    const int numberOfCouplings = exahype::solvers::RegisteredSolverCouplings.size();
-    // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
-
     // prepare
-    pfor(i, 0, numberOfSolvers, grainSize)
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[i];
-      int element = exahype::solvers::RegisteredSolvers[i]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),i);
+    int solverNumber=0;
+    for(auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound) {
         solver->prepareSolutionUpdate(
             fineGridCell.getCellDescriptionsIndex(),element);
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+      ++solverNumber;
+    }
 
     // coupling before solution update
-    pfor(i, 0, numberOfCouplings, grainSize)
-      exahype::solvers::SolverCoupling* coupling =
-        exahype::solvers::RegisteredSolverCouplings[i];
-
+    int couplingNumber=0;
+    for (auto coupling : exahype::solvers::RegisteredSolverCouplings) {
       if (coupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
         exahype::solvers::CellWiseCoupling* cellWiseCoupling =
             static_cast<exahype::solvers::CellWiseCoupling*>(coupling);
 
         cellWiseCoupling->coupleSolversBeforeSolutionUpdate(fineGridCell.getCellDescriptionsIndex());
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+      ++couplingNumber;
+    }
 
-    // update loop
+    // solution update (parallelised)
+    const int numberOfSolvers   = exahype::solvers::RegisteredSolvers.size();
+    // please use a different UserDefined per mapping/event
+    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
     pfor(i, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[i];
@@ -157,17 +154,16 @@ void exahype::mappings::SolutionUpdate::enterCell(
     endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
     // coupling after solution update
-    pfor(i, 0, numberOfCouplings, grainSize)
-      exahype::solvers::SolverCoupling* coupling =
-        exahype::solvers::RegisteredSolverCouplings[i];
-
+    couplingNumber=0;
+    for (auto coupling : exahype::solvers::RegisteredSolverCouplings) {
       if (coupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
         exahype::solvers::CellWiseCoupling* cellWiseCoupling =
             static_cast<exahype::solvers::CellWiseCoupling*>(coupling);
 
         cellWiseCoupling->coupleSolversAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex());
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+      ++couplingNumber;
+    }
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
