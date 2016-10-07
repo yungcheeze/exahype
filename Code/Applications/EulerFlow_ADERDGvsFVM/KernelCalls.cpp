@@ -11,6 +11,8 @@
 #include "exahype/plotters/Plotter.h"
 #include "exahype/profilers/ProfilerFactory.h"
 #include "exahype/solvers/Solver.h"
+#include "exahype/solvers/SolverCoupling.h" // TOOD(Dominic): Add to toolkit gen code.
+
 #include "kernels/KernelCalls.h"
 
 #include "kernels/GaussLegendreQuadrature.h"
@@ -24,7 +26,7 @@
 #include "FVM.h"
 #include "FVM_Plotter0.h"
 
-
+#include "exahype/solvers/ADERDGAPosterioriSubcellLimiter.h" // TOOD(Dominic): Add to toolkit gen code.
 
 void kernels::initSolvers(exahype::Parser& parser) {
   {
@@ -92,6 +94,9 @@ void kernels::initSolvers(exahype::Parser& parser) {
   }
   exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(1,0,parser,new Euler::FVM_Plotter0(  *static_cast<Euler::FVM*>(exahype::solvers::RegisteredSolvers[1])) ));
 
+  // TODO(Dominic): Add this to toolkit
+  // Create and register limiter
+  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::ADERDGAPosterioriSubcellLimiter(0,1) );
 
   std::set<int> orders;
   for (const auto p : exahype::solvers::RegisteredSolvers) {
@@ -125,6 +130,12 @@ void kernels::finalise() {
     delete plotter;
   }
   exahype::plotters::RegisteredPlotters.clear();
+
+  // TODO(Dominic): Add this to toolkit
+  for (auto coupling : exahype::solvers::RegisteredSolverCouplings) {
+    delete coupling;
+  }
+  exahype::solvers::RegisteredSolverCouplings.clear();
 }
 
 
