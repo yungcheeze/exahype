@@ -41,6 +41,7 @@ class exahype::solvers::SolverCoupling {
     double       _nextSnapshot;
   public:
     SolverCoupling(Type type, double time, double repeat);
+    virtual ~SolverCoupling() {};
 
     /**
      * Identifies whether solver coupling is active and, if this is the case,
