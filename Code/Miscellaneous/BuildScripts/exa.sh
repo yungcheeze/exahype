@@ -73,7 +73,14 @@ case $CMD in
 	"compile") # Invokes the toolkit and compilation of an application
 		cdroot; getappname
 		APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"
-		cd $APPPATH
+		cd $APPPATH/$APPNAME
+		$SCRIPTDIR/compile.sh
+		;;
+	"make") # compiel without invoking the toolkit
+		cdroot; getappname
+		APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"
+		cd $APPPATH/$APPNAME
+		export SKIP_TOOLKIT="Yes"
 		$SCRIPTDIR/compile.sh
 		;;
 	"git") # passes commands to git

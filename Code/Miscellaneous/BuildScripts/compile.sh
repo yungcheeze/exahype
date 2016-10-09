@@ -21,6 +21,7 @@ DEFAULT_MODE="Asserts"
 
 # options controlling how this script works
 DEFAULT_CLEAN="None"
+DEFAULT_SKIP_TOOLKIT="No"
 
 # all default variables can be overwritten by specifying them as
 # environment variables
@@ -31,6 +32,7 @@ ABSAPPDIR=${ABSAPPDIR:=$DEFAULT_ABSAPPDIR}
 APPDIRNAME=${APPDIRNAME:=$DEFAULT_APPDIRNAME}
 ABSCODEDIR=${ABSCODEDIR:=$DEFAULT_ABSCODEDIR}
 CLEAN=${CLEAN:=$DEFAULT_CLEAN}
+SKIP_TOOLKIT=${SKIP_TOOLKIT:=$DEFAULT_SKIP_TOOLKIT}
 
 
 echo -e "$0 running with"
@@ -39,6 +41,7 @@ echo -e " SPECFILE = $SPECFILE"
 echo -e " ABSAPPDIR = $ABSAPPDIR"
 echo -e " APPDIRNAME = $APPDIRNAME"
 echo -e " CLEAN = $CLEAN"
+echo -e " SKIP_TOOLKIT = $SKIP_TOOLKIT"
 echo -e "at $(date) on $(hostname) as $(whoami)"
 echo -e
 
@@ -56,7 +59,9 @@ set -e
 cd "$ABSCODEDIR"
 
 # run the toolkit on this application
-if [ ! -e "$APPDIRNAME/$SPECFILE" ]; then
+if [[ $SKIP_TOOLKIT == "Yes" ]]; then
+	echo -e "Skipping toolkit invocation as requested";
+elif [ ! -e "$APPDIRNAME/$SPECFILE" ]; then
 	echo -e "Cannot find specification file at $APPDIRNAME/$SPECFILE in $PWD";
 	exit -1
 else
