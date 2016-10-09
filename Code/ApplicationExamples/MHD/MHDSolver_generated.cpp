@@ -13,8 +13,8 @@ MHDSolver::MHDSolver::MHDSolver(double maximumMeshSize, exahype::solvers::Solver
 
 
 
-void MHDSolver::MHDSolver::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<flux, source>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
+void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double*  tempUnknowns,double*  tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<flux, source>( lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
 }
 
 
@@ -37,8 +37,10 @@ void MHDSolver::MHDSolver::surfaceIntegral(double* lduh, const double* const lFh
 
 
 
-void MHDSolver::MHDSolver::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {
-  kernels::aderdg::generic::c::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
+void MHDSolver::MHDSolver::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, double* tempFaceUnknownsArray, double** tempStateSizedVectors, double** tempStateSizedSquareMatrices, const double dt, const int normalNonZeroIndex) {
+  assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
+  assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
+  kernels::aderdg::generic::c::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
 }
 
 
@@ -49,8 +51,8 @@ void MHDSolver::MHDSolver::boundaryConditions(double* fluxOut,double* stateOut,c
 
 
 
-double MHDSolver::MHDSolver::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double d = kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+double MHDSolver::MHDSolver::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double d = kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, tempEigenvalues, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
   return d;
 }
 
