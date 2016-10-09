@@ -1,7 +1,24 @@
 #ifndef __TIMESERIES_EULER__
 #define __TIMESERIES_EULER__
 
-/* A class for writing ASCII Time Series, lazily in headers. */
+/**
+ * TimeSeriesReductions is a C++ class to be used in UserOnTheFlyPostProcessing classes
+ * to compute reductions of fields and write them out as ASCII files. The reductions are
+ * 
+ *   l1: L^1 norm of field (l1 = sum of all cells)
+ *   l2: L^2 norm of field (l2 = sqrt(sum of cell[i]^2))
+ *   max: Maximum value of field (equal to L^\inf norm)
+ *   min: Minimum value of field
+ *   avg: Average value of field
+ * 
+ * The code is not very enthusiastic, so the following shortcomings are known:
+ * 
+ *   1) Code will not work with several MPI ranks. This needs communication
+ *      to determine a single value over all ranks.
+ *
+ * (c) ExaHyPE 2016
+ *
+ **/
 #include <vector>
 #include <array>
 #include <stdio.h>
@@ -26,7 +43,7 @@ public:
 		exit(-1);
 	}
 	
-	// print the header
+	// print the file header line
 	// fprintf(asc, "# ");
 	for(int i=0; i<LEN; i++) {
 	    fputs(colnames[i], asc);
@@ -48,9 +65,11 @@ public:
     }
 
     void addValue(double val, double dx) {
+        // dx is the scaling (volume form) as computed by peano::la::volume,
+        // compare the calculation in MyEulerSolver_Plotter1.cpp 
         data[l1] += abs(val) * dx;
         data[l2] += val * val * dx;
-        data[max] = std::max( data[max], val*dx); // TODO(Dominic): val * dx, Please explain. I am too lazy to go through all the stuff.
+        data[max] = std::max( data[max], val*dx);
         data[min] = std::min( data[min], val*dx );
         data[avg] += val;
         avgcnt++;
