@@ -56,8 +56,8 @@ void initialrotor_(double* x, double* Q);
 void initialdatabyexahypespecfile(double* x, double* Q) {
 	if(shallUseEnvWorkaround() && HASNOT(atLeastOnceWarnedAboutEnv))
 		logWarning("InitialDatabyExahyPESpecFile()", "Using ENV workaround to determine parameters");
-	if(!constants) {
-		logError("InitialDatabyExahyPESpecFile()", "Parser instance is Null");
+	if(!shallUseEnvWorkaround() && !constants && HASNOT(atLeastOnceWarnedAboutEnv)) {
+		logError("InitialDatabyExahyPESpecFile()", "Parser instance is Null!");
 	} else if(!wrap_isValueValidString(specfile_initialdata_key)) {
 		logError("InitialDatabyExahyPESpecFile()", "Initial Data Value is not valid");
 	} else {
