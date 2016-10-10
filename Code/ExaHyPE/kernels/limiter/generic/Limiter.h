@@ -33,6 +33,7 @@ int getLimBasisSize(const int basisSize);
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize);
 void getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, double* lim);
 
+void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax);
 void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax);
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
