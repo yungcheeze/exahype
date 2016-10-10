@@ -408,6 +408,8 @@ private:
       double**  tempStateSizedSquareMatrices);
 
   /**
+   * TODO(Dominc): Remove after docu is recycled.
+   *
    * This operation sets the solutions' minimum and maximum value on a cell.
    * The routine is to be invoked after the code has determined the new minimum
    * and maximum value within a cell. In turn, it evaluates whether the new
@@ -436,7 +438,7 @@ private:
    * @return True if the new min and max values fit into the restricted min
    *   max solutions. Return false if we seem to run into oscillations.
    */
-  bool setSolutionMinMaxAndAnalyseValidity(double* min, double* max, int solverIndex) const;
+//  void setSolutionMinMax(double* min, double* max) const;
 
   /**
    * Merge the solution min and max values on a face between two cell

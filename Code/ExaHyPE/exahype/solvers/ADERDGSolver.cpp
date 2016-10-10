@@ -1254,6 +1254,9 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           cellDescription.getCorrectorTimeStamp(), cellDescription.getCorrectorTimeStepSize());
     }
 
+
+    // TODO(Dominic): setSolutionMinMaxAndAnalyseValidity()
+
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.

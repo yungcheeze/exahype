@@ -68,6 +68,24 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
         finiteVolumesSolver->getNodesPerCoordinateAxis(),
         aderdgSolver->getNodesPerCoordinateAxis(),
         aderdgSolution);
+
+    // This writes the min max values to face 0;
+    double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
+    double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
+    kernels::limiter::generic::c::findCellLocallocalMinlocalMax(
+        aderdgSolution,
+        finiteVolumesSolution,
+        aderdgSolver->getNumberOfVariables(),
+        aderdgSolver->getNodesPerCoordinateAxis(),
+        solutionMin,
+        solutionMax);
+    // This writes the face 0 min max values to the other faces
+    for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
+      std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
+          solutionMin+i*aderdgSolver->getNumberOfVariables());
+      std::copy(solutionMax, solutionMax+aderdgSolver->getNumberOfVariables(),
+          solutionMax+i*aderdgSolver->getNumberOfVariables());
+    }
   }
 }
 
@@ -148,39 +166,25 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
             aderdgSolver->getNumberOfVariables(),
             aderdgSolver->getNodesPerCoordinateAxis(),
             finiteVolumesSolution);
+
+        // This writes the min max values to face 0;
+        double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
+        double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
+        kernels::limiter::generic::c::findCellLocallocalMinlocalMax(
+            aderdgSolution,
+            finiteVolumesSolution,
+            aderdgSolver->getNumberOfVariables(),
+            aderdgSolver->getNodesPerCoordinateAxis(),
+            solutionMin,
+            solutionMax);
+        // This writes the face 0 min max values to the other faces
+        for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
+          std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
+              solutionMin+i*aderdgSolver->getNumberOfVariables());
+          std::copy(solutionMax, solutionMax+aderdgSolver->getNumberOfVariables(),
+              solutionMax+i*aderdgSolver->getNumberOfVariables());
+        }
       }
     }
   }
 }
-
-//void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleSolversAfterSolutionUpdate(
-//    const int cellDescriptionsIndex,
-//    exahype::Vertex* const fineGridVertices,
-//    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-//  exahype::solvers::ADERDGSolver* aderdgSolver =
-//      static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[_aderdgSolverNumber]);
-//  int aderdgElement = aderdgSolver->tryGetElement(cellDescriptionsIndex,_aderdgSolverNumber);
-//
-//  if (aderdgElement!=exahype::solvers::Solver::NotFound) {
-//    exahype::solvers::FiniteVolumesSolver* finiteVolumesSolver =
-//        static_cast<exahype::solvers::FiniteVolumesSolver*>(exahype::solvers::RegisteredSolvers[_finiteVolumesSolverNumber]);
-//    int finiteVolumesElement = finiteVolumesSolver->tryGetElement(cellDescriptionsIndex,_finiteVolumesSolverNumber);
-//    assertion2(finiteVolumesElement!=exahype::solvers::Solver::NotFound,cellDescriptionsIndex,_finiteVolumesSolverNumber);
-//
-//    auto& aderdgCellDescription        = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
-//        cellDescriptionsIndex)[aderdgElement];
-//    auto& finiteVolumesCellDescription = exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
-//        cellDescriptionsIndex)[finiteVolumesElement];
-//
-//    if (_limiterIsActive) {
-//
-//      // TODO(JM):
-//      // In the second method, you project the fv solution onto the aderdg solution again.
-//      // You get all you need from the cell descriptions
-//
-//      // TODO(Dominic): Project FV solution on DG solution space
-//    } else {
-//      // TODO(Dominic): Project ADER-DG solution on FV solution space
-//    }
-//  }
-//}
