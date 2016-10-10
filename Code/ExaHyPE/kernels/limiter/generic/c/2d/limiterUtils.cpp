@@ -108,7 +108,9 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
   idx3 idxLim(basisSizeLim, basisSizeLim, numberOfVariables);
   idx2 idxConv(basisSizeLim, basisSize);
   
-  double* tmpY = new double[basisSize*basisSize*basisSizeLim*numberOfVariables]; //Fortran ref: luhy(nVar,nSubLimV(1),N+1,N+1)
+  const int basisSize2 = basisSize*basisSize;
+
+  double* tmpY = new double[basisSize2*basisSizeLim*numberOfVariables]; //Fortran ref: luhy(nVar,nSubLimV(1),N+1,N+1)
   idx3 idxY(basisSize, basisSizeLim, numberOfVariables);
   int x,y,v,k;
   
