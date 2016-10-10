@@ -1064,10 +1064,6 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
-  void prepareSolutionUpdate(
-          const int cellDescriptionsIndex,
-          const int element) override;
-
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,

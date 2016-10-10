@@ -1209,13 +1209,6 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
   }
 }
 
-void exahype::solvers::ADERDGSolver::prepareSolutionUpdate(
-        const int cellDescriptionsIndex,
-        const int element) {
-  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  cellDescription.setSkipSolutionUpdate(false);
-}
-
 void exahype::solvers::ADERDGSolver::updateSolution(
     const int cellDescriptionsIndex,
     const int element,
@@ -1224,8 +1217,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
 
-  if (!cellDescription.getSkipSolutionUpdate() &&
-      cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
