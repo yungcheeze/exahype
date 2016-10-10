@@ -14,6 +14,7 @@
 
 #include "kernels/limiter/generic/Limiter.h"
 
+tarch::logging::Log exahype::solvers::ADERDGAPosterioriSubcellLimiter::_log("exahype::solvers::ADERDGAPosterioriSubcellLimiter");
 
 exahype::solvers::ADERDGAPosterioriSubcellLimiter::ADERDGAPosterioriSubcellLimiter(
     int aderdgSolverNumber,int finiteVolumesSolverNumber)
@@ -72,7 +73,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
     // This writes the min max values to face 0;
     double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
     double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
-    kernels::limiter::generic::c::findCellLocallocalMinlocalMax(
+    kernels::limiter::generic::c::findCellLocalMinAndMax(
         aderdgSolution,
         finiteVolumesSolution,
         aderdgSolver->getNumberOfVariables(),
@@ -125,6 +126,8 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
         minOfNeighbours,maxOfNeighbours);
     if (aderdgSolutionNeedsLimiting) {
+      logInfo("couple(...)","ADER-DG solution still needs limiting.");
+
       // assertion ( finite volumes solver solution is correct ). todo
 
       finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
@@ -138,6 +141,8 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
 
       // TODO(Dominic): What about the min max in this case? Keep or recompute?
     } else {
+      logInfo("couple(...)","Updating ADER-DG solution");
+
       // 2. If not so, we first update the solution of the ADER-DG solver, and then
       // check if we need to perform limiting to the new ADER-DG solution.
       // 2.1 If so, we update the FV solution and project the result back
@@ -149,6 +154,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
               minOfNeighbours,maxOfNeighbours);
       if (aderdgSolutionNeedsLimiting) {
+        logInfo("couple(...)","New ADER-DG solution needs limiting");
         finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
         kernels::limiter::generic::c::updateSubcellWithLimiterData(
@@ -158,6 +164,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
             aderdgSolver->getNodesPerCoordinateAxis(),
             aderdgSolution);
       } else {
+        logInfo("couple(...)","New ADER-DG solution does not need limiting");
         // 3. If everything is fine with the ADER-DG solution, we project it back
         // onto the FV solution space to prepare limiting of the ADER-DG
         // solution values in this cell and in the neighbouring cells.
@@ -167,17 +174,17 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
             aderdgSolver->getNodesPerCoordinateAxis(),
             finiteVolumesSolution);
 
-        // This writes the min max values to face 0;
+        // This writes the min max values into an array for face 0;
         double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
         double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
-        kernels::limiter::generic::c::findCellLocallocalMinlocalMax(
+        kernels::limiter::generic::c::findCellLocalMinAndMax(
             aderdgSolution,
             finiteVolumesSolution,
             aderdgSolver->getNumberOfVariables(),
             aderdgSolver->getNodesPerCoordinateAxis(),
             solutionMin,
             solutionMax);
-        // This writes the face 0 min max values to the other faces
+        // This writes the face 0 min max values to arrays for the other faces
         for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
           std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
               solutionMin+i*aderdgSolver->getNumberOfVariables());

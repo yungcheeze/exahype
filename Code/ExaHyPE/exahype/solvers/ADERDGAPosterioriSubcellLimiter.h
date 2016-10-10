@@ -10,6 +10,8 @@
 
 #include "CellWiseCoupling.h"
 
+#include "tarch/logging/Log.h"
+
 namespace exahype {
 namespace solvers {
 
@@ -20,6 +22,8 @@ class ADERDGAPosterioriSubcellLimiter;
 
 class exahype::solvers::ADERDGAPosterioriSubcellLimiter : public exahype::solvers::CellWiseCoupling {
 private:
+  static tarch::logging::Log _log;
+
   /**
    * Element index of the ADER-DG solver whose solution is to limit in
    * registry exahype::solvers::RegisteredSolvers.
