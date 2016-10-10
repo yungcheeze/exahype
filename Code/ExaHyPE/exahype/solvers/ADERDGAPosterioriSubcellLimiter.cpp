@@ -49,11 +49,15 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
     auto& finiteVolumesCellDescription = exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
         cellDescriptionsIndex)[finiteVolumesElement];
 
+    // Set the initial conditions of the finite volumes solver.
     finiteVolumesSolver->synchroniseTimeStepping(cellDescriptionsIndex,finiteVolumesElement);
     finiteVolumesSolver->setInitialConditions(
         cellDescriptionsIndex,finiteVolumesElement,
         fineGridVertices,fineGridVerticesEnumerator);
 
+    // Set the initial conditions of the ADER-DG solver by projecting
+    // the solution values of the FV solver onto the DG solution space.
+    aderdgSolver->synchroniseTimeStepping(cellDescriptionsIndex,aderdgElement);
     double* finiteVolumesSolution = exahype::solvers::FiniteVolumesSolver::DataHeap::getInstance().
             getData(finiteVolumesCellDescription.getSolution()).data();
     double* aderdgSolution  = exahype::solvers::ADERDGSolver::DataHeap::getInstance().
@@ -64,7 +68,6 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
         finiteVolumesSolver->getNodesPerCoordinateAxis(),
         aderdgSolver->getNodesPerCoordinateAxis(),
         aderdgSolution);
-    aderdgSolver->synchroniseTimeStepping(cellDescriptionsIndex,aderdgElement);
   }
 }
 
@@ -104,7 +107,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
         minOfNeighbours,maxOfNeighbours);
     if (aderdgSolutionNeedsLimiting) {
-      // assertion ( finite volumes solver solution is correct ).
+      // assertion ( finite volumes solver solution is correct ). todo
 
       finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
@@ -140,7 +143,11 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         // 3. If everything is fine with the ADER-DG solution, we project it back
         // onto the FV solution space to prepare limiting of the ADER-DG
         // solution values in this cell and in the neighbouring cells.
-//        kernels::limiter::generic::c::getFVMData()
+        kernels::limiter::generic::c::getFVMData(
+            aderdgSolution,
+            aderdgSolver->getNumberOfVariables(),
+            aderdgSolver->getNodesPerCoordinateAxis(),
+            finiteVolumesSolution);
       }
     }
   }
