@@ -26,8 +26,7 @@ int getLimBasisSize(const int basisSize) {
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {      
-
+void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {
   int index, ii, iVar, iiEnd;
   
   // initialize and process luh
@@ -70,8 +69,10 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   delete[] lob;
   
   // process lim
-  int basisSizeLim = 0;
-  double* lim = getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
+  const int basisSizeLim = getLimBasisSize(basisSize);
+  double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
+  getFVMData(luh, numberOfVariables, basisSize, lim);
+
   index = 0;
   iiEnd =  basisSizeLim*basisSizeLim;
   if(DIMENSIONS == 3)
@@ -112,6 +113,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
+
   findCellLocallocalMinlocalMax(luh, numberOfVariables, basisSize, localMin, localMax);
   
   double ldiff;
