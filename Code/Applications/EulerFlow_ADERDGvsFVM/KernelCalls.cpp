@@ -57,7 +57,7 @@ void kernels::initSolvers(exahype::Parser& parser) {
   // Create and register solver
   exahype::solvers::RegisteredSolvers.push_back( new Euler::ADERDG(parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)
   ));
-  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(0) );
+//  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(0) );
   parser.checkSolverConsistency(0);
 
   
@@ -90,12 +90,15 @@ void kernels::initSolvers(exahype::Parser& parser) {
 
   // Create and register solver
   exahype::solvers::RegisteredSolvers.push_back( new Euler::FVM(9, parser.getMaximumMeshSize(1), parser.getTimeStepping(1), std::move(profiler)  ));
-  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(1) );
+//  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(1) );
   parser.checkSolverConsistency(1);
 
   
   }
   exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(1,0,parser,new Euler::FVM_Plotter0(  *static_cast<Euler::FVM*>(exahype::solvers::RegisteredSolvers[1])) ));
+
+  // Create and register couplings
+  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::ADERDGAPosterioriSubcellLimiter(0,1) );
 
 
   std::set<int> orders;
