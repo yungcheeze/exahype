@@ -1,65 +1,55 @@
 /*
- * ADERDGAPosterioriSubcellLimiter.h
+ * SingleSolverCoupling.h
  *
  *  Created on: 6 Oct 2016
  *      Author: dominic
  */
 
-#ifndef ADERDGAPOSTERIORISUBCELLLIMITER_H_
-#define ADERDGAPOSTERIORISUBCELLLIMITER_H_
+#ifndef SingleSolverCoupling_H_
+#define SingleSolverCoupling_H_
 
 #include "CellWiseCoupling.h"
 
 namespace exahype {
 namespace solvers {
 
-class ADERDGAPosterioriSubcellLimiter;
+class SingleSolverCoupling;
 
 } /* namespace solvers */
 } /* namespace exahype */
 
-class exahype::solvers::ADERDGAPosterioriSubcellLimiter : public exahype::solvers::CellWiseCoupling {
+/**
+ * This class simply performs a solution update for the wrapped solver.
+ */
+class exahype::solvers::SingleSolverCoupling : public exahype::solvers::CellWiseCoupling {
 private:
   /**
-   * Flag is updated in coupleSolversBeforeSolutionUpdate(...)
-   * and read in coupleSolversAfterSolutionUpdate(...).
+   * Element index solver exahype::solvers::RegisteredSolvers.
    */
-  bool _limiterIsActive;
-
-  /**
-   * Element index of the ADER-DG solver whose solution is to limit in
-   * registry exahype::solvers::RegisteredSolvers.
-   */
-  const int  _aderdgSolverNumber;
-  /**
-   * Element index of the Finite Volumes solver used
-   * for the subcell limiting in registry
-   * exahype::solvers::RegisteredSolvers.
-   */
-  const int  _finiteVolumesSolverNumber;
-
+  const int _solverNumber;
 public:
-  ADERDGAPosterioriSubcellLimiter(int aderdgSolverNumber,int finiteVolumesSolverNumber);
-  virtual ~ADERDGAPosterioriSubcellLimiter() {};
+  SingleSolverCoupling(int solverNumber);
+  virtual ~SingleSolverCoupling() {};
 
   // Disallow copy and assignment
-  ADERDGAPosterioriSubcellLimiter(const ADERDGAPosterioriSubcellLimiter& other) = delete;
-  ADERDGAPosterioriSubcellLimiter& operator=(const ADERDGAPosterioriSubcellLimiter& other) = delete;
+  SingleSolverCoupling(const SingleSolverCoupling& other) = delete;
+  SingleSolverCoupling& operator=(const SingleSolverCoupling& other) = delete;
 
   /**
-   * Always returns true.
+   * Simply calls the method setInitialConditions() on the wrapped solver.
    */
-  bool isActive(double timeStamp) override;
+  void coupleFirstTime(
+      const int cellDescriptionsIndex,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Couple solvers before the solution update of the solvers is performed.
+   * Simply calls the method updateSolution() on the wrapped solver.
    */
-  void coupleSolversBeforeSolutionUpdate(const int cellDescriptionsIndex) override;
-
-  /**
-   * Couple solvers after the solution update of the solvers has been performed.
-   */
-  void coupleSolversAfterSolutionUpdate(const int cellDescriptionsIndex) override;
+  void couple(
+      const int cellDescriptionsIndex,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 };
 
-#endif /* ADERDGAPOSTERIORISUBCELLLIMITER_H_ */
+#endif /* SingleSolverCoupling_H_ */

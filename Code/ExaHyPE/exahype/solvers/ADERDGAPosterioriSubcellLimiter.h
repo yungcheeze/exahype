@@ -21,12 +21,6 @@ class ADERDGAPosterioriSubcellLimiter;
 class exahype::solvers::ADERDGAPosterioriSubcellLimiter : public exahype::solvers::CellWiseCoupling {
 private:
   /**
-   * Flag is updated in coupleSolversBeforeSolutionUpdate(...)
-   * and read in coupleSolversAfterSolutionUpdate(...).
-   */
-  bool _limiterIsActive;
-
-  /**
    * Element index of the ADER-DG solver whose solution is to limit in
    * registry exahype::solvers::RegisteredSolvers.
    */
@@ -47,19 +41,20 @@ public:
   ADERDGAPosterioriSubcellLimiter& operator=(const ADERDGAPosterioriSubcellLimiter& other) = delete;
 
   /**
-   * Always returns true.
+   * TODO(Dominic): Add docu.
    */
-  bool isActive(double timeStamp) override;
+  void coupleFirstTime(
+      const int cellDescriptionsIndex,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Couple solvers before the solution update of the solvers is performed.
+   * TODO(Dominic): Add docu.
    */
-  void coupleSolversBeforeSolutionUpdate(const int cellDescriptionsIndex) override;
-
-  /**
-   * Couple solvers after the solution update of the solvers has been performed.
-   */
-  void coupleSolversAfterSolutionUpdate(const int cellDescriptionsIndex) override;
+  void couple(
+      const int cellDescriptionsIndex,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 };
 
 #endif /* ADERDGAPOSTERIORISUBCELLLIMITER_H_ */
