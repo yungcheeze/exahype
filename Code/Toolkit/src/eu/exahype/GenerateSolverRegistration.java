@@ -58,6 +58,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
+      _writer.write("#include \"exahype/solvers/SingleSolverCoupling.h\"\n");
+      _writer.write("#include \"exahype/solvers/ADERDGAPosterioriSubcellLimiter.h\"\n\n");
 
       _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser) {\n");
       if (node.getSolver().size() == 0) {
@@ -133,6 +135,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }
       _methodBodyWriter.write( "  ));\n");
+      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
   
@@ -167,6 +170,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
       _methodBodyWriter.write( "  ));\n");
+      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       
@@ -235,7 +239,11 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  for (auto plotter : exahype::plotters::RegisteredPlotters) {\n"+
           "    delete plotter;\n"+
           "  }\n"+
-          "  exahype::plotters::RegisteredPlotters.clear();\n");
+          "  exahype::plotters::RegisteredPlotters.clear();\n"+
+          "  for (auto coupling : exahype::solvers::RegisteredSolverCouplings) {\n"+
+          "    delete coupling;\n"+
+          "  }\n"+
+          "  exahype::solvers::RegisteredSolverCouplings.clear();\n");
       _methodBodyWriter.write("}\n");
       _writer.write("\n");
       _writer.write("\n");
