@@ -32,7 +32,6 @@ void exahype::solvers::SingleSolverCoupling::coupleFirstTime(
   int element = solver->tryGetElement(cellDescriptionsIndex,_solverNumber);
 
   if (element!=exahype::solvers::Solver::NotFound) {
-    std::cout << "Hallo!";
     solver->synchroniseTimeStepping(cellDescriptionsIndex,element);
 
     solver->setInitialConditions(
