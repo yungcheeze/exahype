@@ -37,7 +37,7 @@ double stableTimeStepSize(double** luhCellwise,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           int numberOfVariables, int basisSize) {
   const int basisSize2 = basisSize * basisSize;
-
+  
   double* luh = luhCellwise[4];
   idx3 idx_luh(basisSize, basisSize, numberOfVariables);
 
@@ -54,7 +54,7 @@ double stableTimeStepSize(double** luhCellwise,
                      std::abs<double>);
       double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
       dt_max_stable = std::min(
-          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[0] / s_max_x);
+          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
 
       // y
       PDEEigenvalues(luh + idx_luh(j, k, 0), 1, lambda);
@@ -62,13 +62,13 @@ double stableTimeStepSize(double** luhCellwise,
                      std::abs<double>);
       double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
       dt_max_stable = std::min(
-          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[1] / s_max_y);
+          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
     }
   }
 
   delete[] lambda;
 
-  return dt_max_stable/2; // TODO JMG /2 as a quick fix, find more permanent solution
+  return dt_max_stable;
 }
 
 }  // namespace c

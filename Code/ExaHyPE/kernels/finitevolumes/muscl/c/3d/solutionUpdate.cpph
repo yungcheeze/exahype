@@ -195,6 +195,8 @@ double solutionUpdate(double** luhCellwise,
                     numberOfVariables, __LINE__);
 
   idx4 idx_local(basisSize, basisSize, basisSize, numberOfVariables);
+  
+  const double cellSize[3] = {dx[0]/basisSize, dx[1]/basisSize, dx[2]/basisSize};
 
   // 1. Gather data from neighbouring cells
   double* luh = new double[size_extended];
@@ -270,12 +272,12 @@ double solutionUpdate(double** luhCellwise,
 
         PDEFlux(wLx + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] += F[0][l] / dx[0];
+          Qt[l] += F[0][l] / cellSize[0];
         }
 
         PDEFlux(wRx + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] -= F[0][l] / dx[0];
+          Qt[l] -= F[0][l] / cellSize[0];
         }
 
         // y
@@ -290,12 +292,12 @@ double solutionUpdate(double** luhCellwise,
 
         PDEFlux(wLy + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] += F[1][l] / dx[1];
+          Qt[l] += F[1][l] / cellSize[1];
         }
 
         PDEFlux(wRy + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] -= F[1][l] / dx[1];
+          Qt[l] -= F[1][l] / cellSize[1];
         }
 
         // z
@@ -310,12 +312,12 @@ double solutionUpdate(double** luhCellwise,
 
         PDEFlux(wLz + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] += F[2][l] / dx[2];
+          Qt[l] += F[2][l] / cellSize[2];
         }
 
         PDEFlux(wRz + idx_extended(i, j, k, 0), F);
         for (int l = 0; l < numberOfVariables; l++) {
-          Qt[l] -= F[2][l] / dx[2];
+          Qt[l] -= F[2][l] / cellSize[2];
         }
 
         // Evolve
@@ -353,7 +355,7 @@ double solutionUpdate(double** luhCellwise,
         // TODO(guera): Improve. I'm quite sure this is not the correct/best
         // formula.
         dt_max_allowed = std::min(
-            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[0] / s_max_x);
+            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[0] / s_max_x);
       }
     }
   }
@@ -366,7 +368,7 @@ double solutionUpdate(double** luhCellwise,
             Fy + idx_Fy(i, j, k, 0), wRy + idx_extended(i + 1, j, k + 1, 0),
             wLy + idx_extended(i + 1, j + 1, k + 1, 0), numberOfVariables, 1);
         dt_max_allowed = std::min(
-            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[1] / s_max_y);
+            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
       }
     }
   }
@@ -379,7 +381,7 @@ double solutionUpdate(double** luhCellwise,
             Fz + idx_Fz(i, j, k, 0), wRz + idx_extended(i, j + 1, k + 1, 0),
             wLz + idx_extended(i + 1, j + 1, k + 1, 0), numberOfVariables, 2);
         dt_max_allowed = std::min(
-            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[2] / s_max_z);
+            dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[2] / s_max_z);
       }
     }
   }
@@ -400,11 +402,11 @@ double solutionUpdate(double** luhCellwise,
 
         for (int l = 0; l < numberOfVariables; l++) {
           luhCellwise[13][idx_local(i, j, k, l)] +=
-              dt / dx[0] *
+              dt / cellSize[0] *
                   (Fx[idx_Fx(i, j, k, l)] - Fx[idx_Fx(i, j, k + 1, l)]) +
-              dt / dx[1] *
+              dt / cellSize[1] *
                   (Fy[idx_Fy(i, j, k, l)] - Fy[idx_Fy(i, j + 1, k, l)]) +
-              dt / dx[2] *
+              dt / cellSize[2] *
                   (Fz[idx_Fz(i, j, k, l)] - Fz[idx_Fz(i + 1, j, k, l)]) +
               dt * src[l];
         }
