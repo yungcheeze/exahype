@@ -6,10 +6,9 @@
  * workaround for a better future solution.
  **/
 
+#include "InitialDataAdapter.h"
 #include "MHDSolver.h"
-#include "tarch/logging/Log.h"
-#include <algorithm> // string lower
-#include <stdlib.h> // getenv
+
 
 static const char* specfile_initialdata_key = "initialdata";
 
@@ -45,14 +44,8 @@ int atLeastOnceInformAboutSuccess = 0;
 #define HASNOT(counter) (!counter++)
 
 extern "C" {
-
-// FORTRAN functions called by C
-void initialalfenwave_(double* x, double* Q);
-void initialblast_(double* x, double* Q);
-void initialorsagtang_(double* x, double* Q);
-void initialrotor_(double* x, double* Q);
 	
-// C functions called by FORTRAN
+// C function called by FORTRAN
 void initialdatabyexahypespecfile(double* x, double* Q) {
 	if(shallUseEnvWorkaround() && HASNOT(atLeastOnceWarnedAboutEnv))
 		logWarning("InitialDatabyExahyPESpecFile()", "Using ENV workaround to determine parameters");
