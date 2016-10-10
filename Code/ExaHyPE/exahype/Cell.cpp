@@ -332,39 +332,3 @@ double exahype::Cell::getGlobalWorkload() const {
   return _cellData.getGlobalWorkload();
 }
 #endif
-
-
-bool exahype::Cell::setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex ) {
-  assertion( exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex( getCellDescriptionsIndex() ) ) ;
-  assertion( exahype::solvers::ADERDGSolver::Heap::getInstance().getData( getCellDescriptionsIndex() ).size()>static_cast<unsigned int>(solverIndex) ) ;
-  assertion( max>=min );
-
-  exahype::records::ADERDGCellDescription& cellDescription = exahype::solvers::ADERDGSolver::Heap::getInstance().
-      getData(getCellDescriptionsIndex())[solverIndex];
-
-  assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
-  const int numberOfVariables = exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getNumberOfVariables();
-
-  std::vector<double> cellMinimum( numberOfVariables , std::numeric_limits<double>::max() );
-  std::vector<double> cellMaximum( numberOfVariables , std::numeric_limits<double>::min() );
-
-  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ )
-  for (int i=0; i<numberOfVariables; i++) {
-    cellMinimum[i] = std::min(cellMinimum[i], DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i+faceNumber*numberOfVariables] );
-    cellMaximum[i] = std::max(cellMinimum[i], DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i+faceNumber*numberOfVariables] );
-  }
-
-  bool isValidNewCombination = true;
-  for (int i=0; i<numberOfVariables; i++) {
-    isValidNewCombination &= tarch::la::greater(min[i],cellMinimum[i]);
-    isValidNewCombination &= tarch::la::greater(cellMaximum[i],max[i]);
-  }
-
-  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ )
-  for (int i=0; i<numberOfVariables; i++) {
-    DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i+faceNumber*numberOfVariables] = min[i];
-    DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i+faceNumber*numberOfVariables] = max[i];
-  }
-
-  return isValidNewCombination;
-}
