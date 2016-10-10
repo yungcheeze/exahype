@@ -73,8 +73,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
     // This writes the min max values to face 0;
     double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
     double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
-    kernels::limiter::generic::c::findCellLocalMinAndMax(
-        aderdgSolution,
+    kernels::limiter::generic::c::findCellLocalLimMinAndMax(
         finiteVolumesSolution,
         aderdgSolver->getNumberOfVariables(),
         aderdgSolver->getNodesPerCoordinateAxis(),
@@ -104,6 +103,8 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
   if (aderdgElement!=exahype::solvers::Solver::NotFound) {
     auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         cellDescriptionsIndex)[aderdgElement];
+    aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok);
+
     assertion2(finiteVolumesElement!=exahype::solvers::Solver::NotFound,cellDescriptionsIndex,_aderdgSolverNumber);
     auto& finiteVolumesCellDescription = exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
         cellDescriptionsIndex)[finiteVolumesElement];
@@ -126,7 +127,9 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
         minOfNeighbours,maxOfNeighbours);
     if (aderdgSolutionNeedsLimiting) {
-      logInfo("couple(...)","ADER-DG solution still needs limiting.");
+      aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled);
+      logInfo("couple(...)","ADER-DG solution in cell "<<
+          aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" still needs limiting.");
 
       // assertion ( finite volumes solver solution is correct ). todo
 
@@ -139,9 +142,15 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolver->getNodesPerCoordinateAxis(),
               aderdgSolution);
 
+      // TODO(Dominic): We have to provide ADER-DG boundary data to the neighbours based on the
+      // subcells. We need some boundary extrapolation from the troubled cell here.
+      // I do now understand why Michael has an extra layer of FV cells around the
+      // troubled cells.
+
       // TODO(Dominic): What about the min max in this case? Keep or recompute?
     } else {
-      logInfo("couple(...)","Updating ADER-DG solution");
+      logInfo("couple(...)","Updating ADER-DG solution in cell "<<
+          aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<".");
 
       // 2. If not so, we first update the solution of the ADER-DG solver, and then
       // check if we need to perform limiting to the new ADER-DG solution.
@@ -154,7 +163,9 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
               minOfNeighbours,maxOfNeighbours);
       if (aderdgSolutionNeedsLimiting) {
-        logInfo("couple(...)","New ADER-DG solution needs limiting");
+        aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled);
+        logInfo("couple(...)","New ADER-DG solution in cell " <<
+            aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" needs limiting.");
         finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
         kernels::limiter::generic::c::updateSubcellWithLimiterData(
@@ -163,8 +174,14 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
             finiteVolumesSolver->getNodesPerCoordinateAxis(),
             aderdgSolver->getNodesPerCoordinateAxis(),
             aderdgSolution);
+
+        // TODO(Dominic): We have to provide ADER-DG boundary data to the neighbours based on the
+        // subcells. We need some boundary extrapolation from the troubled cell here.
+        // I do now understand why Michael has an extra layer of FV cells around the
+        // troubled cells.
       } else {
-        logInfo("couple(...)","New ADER-DG solution does not need limiting");
+        logInfo("couple(...)","New ADER-DG solution in cell " <<
+                    aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" does not need limiting.");
         // 3. If everything is fine with the ADER-DG solution, we project it back
         // onto the FV solution space to prepare limiting of the ADER-DG
         // solution values in this cell and in the neighbouring cells.
