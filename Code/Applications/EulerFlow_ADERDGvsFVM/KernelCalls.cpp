@@ -89,7 +89,7 @@ void kernels::initSolvers(exahype::Parser& parser) {
     profiler_identifier, metrics_vector, profiling_output);
 
   // Create and register solver
-  exahype::solvers::RegisteredSolvers.push_back( new Euler::FVM(9, parser.getMaximumMeshSize(1), parser.getTimeStepping(1), std::move(profiler)  ));
+  exahype::solvers::RegisteredSolvers.push_back( new Euler::FVM(7, parser.getMaximumMeshSize(1), parser.getTimeStepping(1), std::move(profiler)  ));
 //  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(1) );
   parser.checkSolverConsistency(1);
 

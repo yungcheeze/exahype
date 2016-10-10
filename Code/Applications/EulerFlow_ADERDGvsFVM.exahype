@@ -42,12 +42,12 @@ exahype-project  Euler
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 0.15
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -60,7 +60,7 @@ exahype-project  Euler
   solver Finite-Volumes FVM
     variables         = 5
     parameters        = 0
-    patch-size        = 9
+    patch-size        = 7
     maximum-mesh-size = 0.15
     time-stepping     = global
     kernel            = generic::MUSCL
