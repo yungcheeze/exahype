@@ -26,6 +26,7 @@
 #include "FVM.h"
 #include "FVM_Plotter0.h"
 
+#include "exahype/solvers/SingleSolverCoupling.h" // TOOD(Dominic): Add to toolkit gen code.
 #include "exahype/solvers/ADERDGAPosterioriSubcellLimiter.h" // TOOD(Dominic): Add to toolkit gen code.
 
 void kernels::initSolvers(exahype::Parser& parser) {
@@ -96,7 +97,9 @@ void kernels::initSolvers(exahype::Parser& parser) {
 
   // TODO(Dominic): Add this to toolkit
   // Create and register limiter
-  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::ADERDGAPosterioriSubcellLimiter(0,1) );
+  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(0) );
+  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling(1) );
+  //  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::ADERDGAPosterioriSubcellLimiter(0,1) );
 
   std::set<int> orders;
   for (const auto p : exahype::solvers::RegisteredSolvers) {
