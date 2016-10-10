@@ -414,7 +414,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     double admissibleTimeStepSize=0;
     solutionUpdate(finiteVolumeSolutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
-    if (admissibleTimeStepSize < cellDescription.getTimeStepSize()) {
+    if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
       logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
     }
 

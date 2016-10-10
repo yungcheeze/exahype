@@ -155,6 +155,8 @@ double solutionUpdate(double** luhCellwise,
   idx3 idx_extended(basisSize + 2, basisSize + 2, numberOfVariables);
 
   idx3 idx_local(basisSize, basisSize, numberOfVariables);
+  
+  const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
 
   // 1. Gather data from neighbouring cells
   double* luh = new double[size_extended];
@@ -213,12 +215,12 @@ double solutionUpdate(double** luhCellwise,
 
       PDEFlux(wLx + idx_extended(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[0][l] / dx[0];
+        Qt[l] += F[0][l] / cellSize[0];
       }
 
       PDEFlux(wRx + idx_extended(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[0][l] / dx[0];
+        Qt[l] -= F[0][l] / cellSize[0];
       }
 
       // y
@@ -231,12 +233,12 @@ double solutionUpdate(double** luhCellwise,
 
       PDEFlux(wLy + idx_extended(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[1][l] / dx[1];
+        Qt[l] += F[1][l] / cellSize[1];
       }
 
       PDEFlux(wRy + idx_extended(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[1][l] / dx[1];
+        Qt[l] -= F[1][l] / cellSize[1];
       }
 
       // Evolve
@@ -268,7 +270,7 @@ double solutionUpdate(double** luhCellwise,
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula.
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[0] / s_max_x);
+          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[0] / s_max_x);
     }
   }
 
@@ -279,7 +281,7 @@ double solutionUpdate(double** luhCellwise,
           Fy + idx_Fy(j, k, 0), wRy + idx_extended(j, k + 1, 0),
           wLy + idx_extended(j + 1, k + 1, 0), numberOfVariables, 1);
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[1] / s_max_y);
+          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
     }
   }
 
@@ -298,8 +300,8 @@ double solutionUpdate(double** luhCellwise,
 
       for (int l = 0; l < numberOfVariables; l++) {
         luhCellwise[4][idx_local(j, k, l)] +=
-            dt / dx[0] * (Fx[idx_Fx(j, k, l)] - Fx[idx_Fx(j, k + 1, l)]) +
-            dt / dx[1] * (Fy[idx_Fy(j, k, l)] - Fy[idx_Fy(j + 1, k, l)]) +
+            dt / cellSize[0] * (Fx[idx_Fx(j, k, l)] - Fx[idx_Fx(j, k + 1, l)]) +
+            dt / cellSize[1] * (Fy[idx_Fy(j, k, l)] - Fy[idx_Fy(j + 1, k, l)]) +
             dt * src[l];
       }
     }
