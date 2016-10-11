@@ -130,12 +130,14 @@ void evolveFiniteVolumesSolution(
     exahype::solvers::ADERDGSolver* aderdgSolver,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
-
   auto& finiteVolumesCellDescription = exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
-          cellDescriptionsIndex)[finiteVolumesElement];
+      cellDescriptionsIndex)[finiteVolumesElement];
   auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
-          cellDescriptionsIndex)[aderdgElement];
+      cellDescriptionsIndex)[aderdgElement];
+
+  finiteVolumesCellDescription.setTimeStamp(aderdgCellDescription.getCorrectorTimeStamp());
+  finiteVolumesCellDescription.setTimeStepSize(aderdgCellDescription.getCorrectorTimeStepSize());
+  finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
   double* finiteVolumesSolution = exahype::solvers::FiniteVolumesSolver::DataHeap::getInstance().
       getData(finiteVolumesCellDescription.getSolution()).data();
@@ -208,7 +210,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         aderdgSolutionMin,aderdgSolutionMax)) {
       aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
 
-      logInfo("couple(...)","Evolving FV solution in cell "<<
+      logDebug("couple(...)","Evolving FV solution in cell "<<
           aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<
               " since old solution is still troubled.");
 
@@ -220,7 +222,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
       aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok); // implicit conversion.
 
       if (oneNeighbourIsTroubledCell) {
-        logInfo("couple(...)","Evolving FV solution in cell "<<
+        logDebug("couple(...)","Evolving FV solution in cell "<<
             aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<
                 " since neighbour is troubled.");
         // assertion ( finite volumes solver solution is correct ). todo
@@ -233,7 +235,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         // check if we need to perform limiting to the new ADER-DG solution.
         // 2.1 If so, we update the FV solution and project the result back
         // onto the ADER-DG solution space.
-        logInfo("couple(...)","Evolving ADER-DG solution in cell "<<
+        logDebug("couple(...)","Evolving ADER-DG solution in cell "<<
             aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<".");
 
         aderdgSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
@@ -242,7 +244,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
             aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
             aderdgSolutionMin,aderdgSolutionMax)) {
           aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
-          logInfo("couple(...)","Evolved ADER-DG solution in cell " <<
+          logDebug("couple(...)","Evolved ADER-DG solution in cell " <<
               aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" needs limiting.");
           evolveFiniteVolumesSolution(
               cellDescriptionsIndex,finiteVolumesElement,aderdgElement,
@@ -251,7 +253,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         } else {
           aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok); // implicit conversion.
 
-          logInfo("couple(...)","Evolved ADER-DG solution in cell " <<
+          logDebug("couple(...)","Evolved ADER-DG solution in cell " <<
               aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" does not need limiting.");
 
           // 3. If everything is fine with the ADER-DG solution, we project it back
