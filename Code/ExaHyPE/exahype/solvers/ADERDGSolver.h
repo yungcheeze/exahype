@@ -450,6 +450,10 @@ private:
       const int faceIndexLeft,
       const int faceIndexRight) const;
 
+  void mergeLimiterStatusOnFace(
+      CellDescription& pLeft,
+      CellDescription& pRight) const;
+
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.

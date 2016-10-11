@@ -1459,6 +1459,8 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
       tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
+
+  mergeLimiterStatusOnFace(pLeft,pRight);
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
@@ -1509,12 +1511,12 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     assertion3(std::isfinite(pRight.getCorrectorTimeStepSize()),pRight.toString(),faceIndexRight,normalDirection);
     assertion3(pLeft.getCorrectorTimeStepSize()>0,pLeft.toString(),faceIndexLeft,normalDirection);
     assertion3(pRight.getCorrectorTimeStepSize()>0,pRight.toString(),faceIndexRight,normalDirection);
-    for(int i=0; i<numberOfFaceDof; ++i) {
-      assertion5(std::isfinite(QL[i]),pLeft.toString(),faceIndexLeft,normalDirection,i,QL[i]);
-      assertion5(std::isfinite(QR[i]),pRight.toString(),faceIndexRight,normalDirection,i,QR[i]);
-      assertion5(std::isfinite(FL[i]),pLeft.toString(),faceIndexLeft,normalDirection,i,FL[i]);
-      assertion5(std::isfinite(FR[i]),pRight.toString(),faceIndexRight,normalDirection,i,FR[i]);
-    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+//    for(int i=0; i<numberOfFaceDof; ++i) {
+//      assertion5(std::isfinite(QL[i]),pLeft.toString(),faceIndexLeft,normalDirection,i,QL[i]);
+//      assertion5(std::isfinite(QR[i]),pRight.toString(),faceIndexRight,normalDirection,i,QR[i]);
+//      assertion5(std::isfinite(FL[i]),pLeft.toString(),faceIndexLeft,normalDirection,i,FL[i]);
+//      assertion5(std::isfinite(FR[i]),pRight.toString(),faceIndexRight,normalDirection,i,FR[i]);
+//    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
     riemannSolver(
         FL,FR,QL,QR,
@@ -1523,12 +1525,12 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
             pRight.getCorrectorTimeStepSize()),
             normalDirection);
 
-    for(int i=0; i<numberOfFaceDof; ++i) {
-      assertion8(std::isfinite(FL[i]) && std::isfinite(FR[i]),
-                 pLeft.toString(),faceIndexLeft,
-                 pRight.toString(),faceIndexRight,
-                 normalDirection,i,FL[i],FR[i]);
-    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+//    for(int i=0; i<numberOfFaceDof; ++i) {
+//      assertion8(std::isfinite(FL[i]) && std::isfinite(FR[i]),
+//                 pLeft.toString(),faceIndexLeft,
+//                 pRight.toString(),faceIndexRight,
+//                 normalDirection,i,FL[i],FR[i]);
+//    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
   }
 }
 
@@ -1661,6 +1663,14 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
       *(maxRight+i) = max;
     }
   } // else do nothing
+}
+
+void exahype::solvers::ADERDGSolver::mergeLimiterStatusOnFace(
+    CellDescription& pLeft,
+    CellDescription& pRight) const {
+  if (pLeft.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
+    //
+  }
 }
 
 #ifdef Parallel
