@@ -40,7 +40,14 @@ constexpr const char* tags[]{"solutionUpdate",
                              "boundaryConditions"};
 }  // namespace
 
+
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
+
+
+double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
+
+bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
+
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
@@ -1455,6 +1462,13 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
   CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
 
+  if (isReadForTheVeryFirstTime(pLeft)) {
+    uncompress(pLeft);
+  }
+  if (isReadForTheVeryFirstTime(pRight)) {
+    uncompress(pRight);
+  }
+
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 
   // We need to copy the limiter status since the routines below modify
@@ -2765,12 +2779,20 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
-void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy) {
-
+void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
+  if (CompressionAccuracy>0.0) {
+    if (SpawnCompressionAsBackgroundThread) {
+        // @todo Hier kann der Spawn rein
+      assertionMsg(false, "not implemented yet" );
+    }
+    else {
+//      solver->compress( pFine, CompressionAccuracy );
+    }
+  }
 }
 
 
-void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy) {
+void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
 
 }
 

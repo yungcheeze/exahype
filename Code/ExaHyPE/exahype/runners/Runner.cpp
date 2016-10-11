@@ -19,7 +19,6 @@
 #include "exahype/repositories/RepositoryFactory.h"
 #include "exahype/mappings/TimeStepSizeComputation.h"
 #include "exahype/mappings/Sending.h"
-#include "exahype/mappings/Prediction.h"
 
 #include "tarch/Assertions.h"
 
@@ -205,19 +204,19 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
 
 void exahype::runners::Runner::initDataCompression() {
-  exahype::mappings::Prediction::CompressionAccuracy = _parser.getDoubleCompressionFactor();
+  exahype::solvers::ADERDGSolver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
 
-  if (exahype::mappings::Prediction::CompressionAccuracy==0.0) {
+  if (exahype::solvers::ADERDGSolver::CompressionAccuracy==0.0) {
     logInfo( "initDataCompression()", "switched off any data compression");
   }
   else {
     if (!_parser.getFuseAlgorithmicSteps()) {
       logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping");
-      exahype::mappings::Prediction::CompressionAccuracy = 0.0;
+      exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
     }
     else {
-      exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
-      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::mappings::Prediction::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread);
+      exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::ADERDGSolver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
     }
   }
 }

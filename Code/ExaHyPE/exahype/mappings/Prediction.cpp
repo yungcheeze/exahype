@@ -81,10 +81,6 @@ exahype::mappings::Prediction::descendSpecification() {
 tarch::logging::Log exahype::mappings::Prediction::_log(
     "exahype::mappings::Prediction");
 
-double exahype::mappings::Prediction::CompressionAccuracy = 0.0;
-
-bool exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = false;
-
 
 void exahype::mappings::Prediction::prepareTemporaryVariables() {
   assertion(_tempSpaceTimeUnknowns    ==nullptr);
@@ -248,16 +244,7 @@ void exahype::mappings::Prediction::enterCell(
             _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
-
-        if (CompressionAccuracy>0.0) {
-          if (SpawnCompressionAsBackgroundThread) {
-              // @todo Hier kann der Spawn rein
-            assertionMsg(false, "not implemented yet" );
-          }
-          else {
-            solver->compress( pFine, CompressionAccuracy );
-          }
-        }
+        solver->compress( pFine );
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

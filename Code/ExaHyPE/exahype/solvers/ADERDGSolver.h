@@ -40,6 +40,13 @@ namespace exahype {
  */
 class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
 public:
+  /**
+   * Set to 0 if no floating point compression is used.
+   */
+  static double CompressionAccuracy;
+
+  static bool SpawnCompressionAsBackgroundThread;
+
   typedef exahype::DataHeap DataHeap;
 
   /**
@@ -140,7 +147,7 @@ private:
    * Different to compress(), this operation is called automatically by
    * mergeNeighbours(). Therefore the routine is private.
    */
-  void uncompress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy);
+  void uncompress(exahype::records::ADERDGCellDescription& cellDescription);
 
   /**
    * This predicate holds if and only if no Riemann solve has been done for
@@ -1392,7 +1399,7 @@ public:
   /**
    * The counterpart
    */
-  void compress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy);
+  void compress(exahype::records::ADERDGCellDescription& cellDescription);
 };
 
 #endif
