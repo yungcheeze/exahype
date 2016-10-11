@@ -81,7 +81,7 @@ case $CLEAN in
 		make clean
 		;;
 	"Lightweight") echo -e "Lightweight clean"
-		rm *.o
+		rm -f *.o
 		;;
 esac
 
