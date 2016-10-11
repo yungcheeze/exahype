@@ -94,7 +94,6 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
         kernels::limiter::generic::c::isTroubledCell(
             aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
             solutionMin,solutionMax);
-    logDebug("coupleFirstTime(...)","initial solution is troubled="<<initialSolutionIsTroubled);
 
     if (initialSolutionIsTroubled) {
       aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
@@ -103,7 +102,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
 }
 
 bool
-neighbourNeedsSubcellValues(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,
+oneNeighbourIsTroubled(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,
     exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus>& limiterStatus) {
   for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
     switch (limiterStatus[i]) {
@@ -158,14 +157,14 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
     if (oldSolutionIsStillTroubled) {
       aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
     }
-
-    if (oldSolutionIsStillTroubled ||
-        neighbourNeedsSubcellValues(aderdgCellDescription.getLimiterStatus())) {
+    bool neighbourNeedsSubcellValues = oneNeighbourIsTroubled(aderdgCellDescription.getLimiterStatus());
+    if (neighbourNeedsSubcellValues) {
+      aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok); // implicit conversion.
+    }
+    if (oldSolutionIsStillTroubled || neighbourNeedsSubcellValues) {
       logDebug("couple(...)","Evolving FV solution in cell"<<
           aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<".");
-
       // assertion ( finite volumes solver solution is correct ). todo
-
       finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
       kernels::limiter::generic::c::updateSubcellWithLimiterData(
