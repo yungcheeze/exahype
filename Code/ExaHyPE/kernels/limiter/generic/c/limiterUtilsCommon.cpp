@@ -135,6 +135,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
   getFVMData(luh, numberOfVariables, basisSize, lim);
   findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
+  delete[] lim;
   
   double ldiff;
 
