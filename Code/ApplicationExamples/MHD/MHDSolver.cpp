@@ -90,6 +90,7 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
       fluxOut[i] = F[normalNonZero * MHDSolver::MHDSolver::numberOfVariables + i];
   }
+  delete[] F;
 
   // These are the no-boundary conditions:
   /*
