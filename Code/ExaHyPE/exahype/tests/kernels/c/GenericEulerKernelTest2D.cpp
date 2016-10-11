@@ -437,7 +437,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     std::memset(FL, 0, 20 * sizeof(double));
     std::memset(FR, 0, 20 * sizeof(double));
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues, testMatrixB>(
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
@@ -480,7 +480,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     tempStateSizedVectors[3]              = tempStateSizedVectors[0]+15;
     double **tempStateSizedSquareMatrices = nullptr;
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues,testMatrixB>(
         FL, FR, ::exahype::tests::testdata::generic_euler::
                     testRiemannSolverNonlinear::QL_1_in,
         ::exahype::tests::testdata::generic_euler::testRiemannSolverNonlinear::
@@ -535,7 +535,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     tempStateSizedVectors[3]              = tempStateSizedVectors[0]+15;
     double **tempStateSizedSquareMatrices = nullptr;
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues,testMatrixB>(
         FL, FR, ::exahype::tests::testdata::generic_euler::
                     testRiemannSolverNonlinear::QL_2_in,
         ::exahype::tests::testdata::generic_euler::testRiemannSolverNonlinear::
@@ -802,7 +802,8 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lFhbnd = new double[80];  // nVar * nDOFy * 4
 
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
-                                                           testSource>(
+                                                           testSource,
+							   testNCP>(
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       lQhi,
