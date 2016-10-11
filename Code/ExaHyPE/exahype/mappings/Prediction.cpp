@@ -48,7 +48,7 @@ exahype::mappings::Prediction::enterCellSpecification() {
 peano::MappingSpecification
 exahype::mappings::Prediction::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
