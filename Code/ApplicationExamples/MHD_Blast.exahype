@@ -46,6 +46,7 @@ exahype-project  MHDSolver
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
   end optimisation
   
   solver ADER-DG MHDSolver
