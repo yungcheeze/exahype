@@ -87,6 +87,12 @@ class exahype::runners::Runner {
   void initSolverTimeStamps();
   void initFiniteVolumesSolverTimeStamps();
 
+  /**
+   * Initialise the data compression (or switch it off if we don't need it).
+   * The routine is called for each and every rank.
+   */
+  void initDataCompression();
+
 
   /**
    * Print minimum of current solver time stamps and time step sizes.
