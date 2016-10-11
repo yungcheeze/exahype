@@ -221,7 +221,7 @@ void exahype::mappings::Prediction::enterCell(
             fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined7;
+        peano::datatraversal::autotuning::UserDefined4;
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
