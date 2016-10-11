@@ -19,6 +19,7 @@
 #include "exahype/repositories/RepositoryFactory.h"
 #include "exahype/mappings/TimeStepSizeComputation.h"
 #include "exahype/mappings/Sending.h"
+#include "exahype/mappings/Prediction.h"
 
 #include "tarch/Assertions.h"
 
@@ -204,7 +205,15 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
 
 void exahype::runners::Runner::initDataCompression() {
-  // @todo xxxx
+  exahype::mappings::Prediction::CompressionAccuracy = _parser.getDoubleCompressionFactor();
+
+  if (exahype::mappings::Prediction::CompressionAccuracy==0.0) {
+    logInfo( "initDataCompression()", "switched off any data compression");
+  }
+  else {
+    exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+    logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::mappings::Prediction::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread);
+  }
 }
 
 

@@ -419,10 +419,10 @@ double exahype::Parser::getDoubleCompressionFactor() const {
   logDebug("getDoubleCompressionFactor()", "found double-compression "
                                                   << token);
 
-  if (result <= 0.0 || pEnd == token.c_str()) {
+  if (result < 0.0 || pEnd == token.c_str()) {
     logError("getDoubleCompressionFactor()",
              "'double-compression': Value is required in optimisation "
-             "section and must be greater than zero: " << result);
+             "section and must be greater than or equal to zero: " << result);
     result = 0.0;
     _interpretationErrorOccured = true;
   }
