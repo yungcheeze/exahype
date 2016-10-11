@@ -3,10 +3,23 @@
 // =============================---==============
 #include "MHDSolver.h"
 #include "kernels/aderdg/generic/Kernels.h"
+#include "GeneratedConstants.h"
+
+/**
+ * This is the MHDSolver_generated.cpp file in the repository.
+ * It is here for the single purpose to save the constants
+ * reference:
+ *
+ *     MHDSolver::MHDSolver::constants = &constants;
+ *
+ * However, thus, we need to grab the nVars from the
+ * GeneratedConstants.h as this file is not regenerated
+ * for another nVar. This is important for convergence studies.
+ **/
 
 
 MHDSolver::MHDSolver::MHDSolver(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):
-  exahype::solvers::ADERDGSolver("MHDSolver", 9 /* numberOfUnknowns */, 0/* numberOfParameters */, 4 /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, std::move(profiler)) {
+  exahype::solvers::ADERDGSolver("MHDSolver", MY_NUMBER_OF_VARIABLES /* numberOfUnknowns */, 0/* numberOfParameters */, MY_POLYNOMIAL_DEGREE+1 /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, std::move(profiler)) {
   init();
   MHDSolver::MHDSolver::constants = &constants;
 }
