@@ -21,11 +21,10 @@
 export SIMBASE=${SIMBASE:=simulations/}
 
 # path to the exahype executable to use
-export EXABINARY=${EXABINARY:=../../ApplicationExamples/EulerFlow/ExaHyPE-Euler}
+export EXABINARY=${EXABINARY:=$(exa root)/$(exa find-binary MHD)}
 
 # path of the spec file to use
-#export EXASPECFILE=${EXASPECFILE:=../../ApplicationExamples/EulerFlow.exahype}
-export EXASPECFILE=${EXASPECFILE:=EulerFlowConvergence.exahype}
+export EXASPECFILE=${EXASPECFILE:=MHD_AlfenWaveConvergence.exahype}
 
 # how much TBB cores to use for shared memory parallelization
 export EXATBBCORES=${EXATBBCORES:=16}
@@ -113,15 +112,16 @@ mkdir -p output
 export EXAHYPE_INITIALDATA="ShuVortex"
 
 # parameters for setting up the specfile
-export EXASPEC_WIDTH="15.0"
-export EXASPEC_ENDTIME="10.0" # was 100. pointless becaus ShuVortex moves out quickly. was 0.25
+export EXASPEC_WIDTH="1.0"
+export EXASPEC_HEIGHT="1.0"
+export EXASPEC_ENDTIME="1.0"
 export HOST="$(hostname)"
 export DATE="$(date)"
 
 # parameters deciding how frequently output is made. As a first criterion,
 # 1 output dump with the highest resolution is 250MB.
-export EXACONVOUTPUTREPEAT="0.1" # this is almost no data but very slow
-export EXAVTKOUTPUTREPEAT="0.5" # would be amazing to have adaptive output -.-
+export EXACONVOUTPUTREPEAT="0.05"
+export EXAVTKOUTPUTREPEAT="0.05"
 
 # change spec file contents:
 function exaspecrepl { sed -i "$1" $BASE_EXASPECFILE; }
@@ -143,8 +143,11 @@ env | grep -iE 'exa|sim' | tee parameters.env
 echo
 
 # run it
-time ./$BASE_EXABINARY $BASE_EXASPECFILE && echo "Finished successfully" || 
+time ./$BASE_EXABINARY $BASE_EXASPECFILE && echo "Finished ExaHyPE successfully" || 
 	{ echo "ExaHyPE binary failed!"; exit -2; }
+
+echo "Packing simulation outcome to results.tar.gzip"
+tar cvfz results.tar.gzip *.vtk
 
 
 
