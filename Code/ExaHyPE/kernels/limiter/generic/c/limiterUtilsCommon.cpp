@@ -13,6 +13,8 @@
 
 #include "../Limiter.h"
 
+#include "tarch/la/ScalarOperations.h"
+
 namespace kernels {
 namespace limiter {
 namespace generic {
@@ -105,13 +107,8 @@ double getMax(const double* const solutionMax, int iVar, int numberOfVariables) 
 }
 
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax) {
-  
   double minMarginOfError = 0.0001;
   double diffScaling      = 0.001;
-  
-  // todo test
-  diffScaling = 0.1;
-  minMarginOfError = 0.001;
 
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
@@ -126,7 +123,10 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
     double previousSolutionMax = getMax(troubledMax,iVar,numberOfVariables);
     double previousSolutionMin = getMin(troubledMin,iVar,numberOfVariables);
 
-    double ldiff = std::max( (previousSolutionMax - previousSolutionMin) * diffScaling, minMarginOfError );
+    double ldiff = (previousSolutionMax - previousSolutionMin) * diffScaling;
+    assertion1(tarch::la::greaterEquals(ldiff,0.0),ldiff);
+    ldiff = std::max( ldiff, minMarginOfError );
+
     if((localMin[iVar] < (previousSolutionMin - ldiff)) ||
        (localMax[iVar] > (previousSolutionMax + ldiff))) {
       return true;
