@@ -1460,7 +1460,8 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 
-  mergeLimiterStatusOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
+  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,pRight.getLimiterStatus(faceIndexRight));
+  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,pLeft.getLimiterStatus(faceIndexLeft));
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
@@ -1663,16 +1664,6 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
       *(maxRight+i) = max;
     }
   } // else do nothing
-}
-
-void exahype::solvers::ADERDGSolver::mergeLimiterStatusOnFace(
-    CellDescription& pLeft,
-    CellDescription& pRight,
-    const int faceIndexLeft,
-    const int faceIndexRight) const {
-  if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Troubled) {
-    //
-  }
 }
 
 #ifdef Parallel
