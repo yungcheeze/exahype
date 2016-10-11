@@ -1454,14 +1454,18 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
   CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
 
-  solveRiemannProblemAtInterface(
-      pLeft,pRight,faceIndexLeft,faceIndexRight,
-      tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
-
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 
   mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,pRight.getLimiterStatus(faceIndexRight));
   mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,pLeft.getLimiterStatus(faceIndexLeft));
+
+  if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
+    assertion4(pRight.getLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
+        pLeft.toString(),pRight.toString(),faceIndexLeft,faceIndexRight);
+    solveRiemannProblemAtInterface(
+        pLeft,pRight,faceIndexLeft,faceIndexRight,
+        tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
+  }
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(

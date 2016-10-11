@@ -451,28 +451,29 @@ private:
       const int faceIndexRight) const;
 
   void mergeWithNeighbourLimiterStatus(
-        CellDescription& cellDescription,
-        const int faceIndex,
-        const CellDescription::LimiterStatus& neighbourLimiterStatus) const {
+      CellDescription& cellDescription,
+      const int faceIndex,
+      const CellDescription::LimiterStatus& neighbourLimiterStatus) const {
     switch (cellDescription.getLimiterStatus(faceIndex)) {
-      case CellDescription::LimiterStatus::Ok:
+    case CellDescription::LimiterStatus::Ok:
 
-        switch (neighbourLimiterStatus) {
-        case CellDescription::LimiterStatus::Troubled:
-          cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsTroubledCell);
-          break;
-        case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
-          cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
-          break;
-        default:
-          // This includes limiter status "Ok".
-          // Note that we initialise the limiter with status "Ok" in every iteration
-          // before we check again.
-          break;
-        }
-
+      switch (neighbourLimiterStatus) {
+      case CellDescription::LimiterStatus::Troubled:
+        cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsTroubledCell);
+        break;
+      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+        cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
         break;
       default:
+        // This includes limiter status "Ok".
+        // Note that we initialise the limiter with status "Ok" in every iteration
+        // before we check again.
+        break;
+      }
+
+      break;
+      default:
+        // Do nothing.
         break;
     }
   }
