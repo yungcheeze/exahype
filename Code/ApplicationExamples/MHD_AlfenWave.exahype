@@ -19,7 +19,6 @@ exahype-project  MHDSolver
   computational-domain
     dimension                = 2
     /* this is the grid for the MHD AlfenWave test */
-    /* simulation domain: [0;1] x [0;0.5]  */
     width                    = 1.0, 0.5
     offset                   = 0.0, 0.0
     end-time                 = 1.0
@@ -53,7 +52,7 @@ exahype-project  MHDSolver
     parameters         = 0
     order              = 3
     /* 27 grid points: 0.2327 -- @TODO not yet covered */
-    maximum-mesh-size  = 0.24
+    maximum-mesh-size  = 0.1
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */

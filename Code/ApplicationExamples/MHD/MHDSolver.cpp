@@ -35,8 +35,6 @@ void MHDSolver::MHDSolver::init() {
 }
 
 void MHDSolver::MHDSolver::flux(const double* const Q, double** F) {
-  // Dimensions             = 3
-  // Number of variables    = 9 (#unknowns + #parameters)
   // Fortran call
   pdeflux_(F[0], Q);
 }
@@ -44,8 +42,6 @@ void MHDSolver::MHDSolver::flux(const double* const Q, double** F) {
 
 
 void MHDSolver::MHDSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
-  // Dimensions             = 3
-  // Number of variables    = 9 (#unknowns + #parameters)
   double nv[3] = {0.};
   nv[normalNonZeroIndex] = 1;
   pdeeigenvalues_(lambda, Q, nv);
