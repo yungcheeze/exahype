@@ -75,10 +75,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   const int MaxIterations = 2 * (order + 1);
   
   // spatial gradient of q
-  double* gradQ = new double[basisSize3 * DIMENSIONS * numberOfVariables];
-  idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS,
-		numberOfVariables);
-
+  double *gradQ = new double[basisSize3 * DIMENSIONS * numberOfVariables];
+  double *BGradQ = new double[numberOfVariables];
+  idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
@@ -162,8 +161,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           const double updateSize = weight * dt;
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
 
-          // Compute the Nonconservative part NCP
-	  double BGradQ[numberOfVariables];
+          // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
 	  PDENCP(&lQi[idx_lQi(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)], BGradQ);
 
           // TODO: numberOfVariables - numberOfParameters would do (would do what?)
@@ -221,6 +219,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   }  // end iter
 
   delete[] gradQ;
+  delete[] BGradQ;
 }
 
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
