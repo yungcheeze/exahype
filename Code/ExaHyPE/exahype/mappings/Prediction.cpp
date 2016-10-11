@@ -48,7 +48,7 @@ exahype::mappings::Prediction::enterCellSpecification() {
 peano::MappingSpecification
 exahype::mappings::Prediction::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -80,6 +80,7 @@ exahype::mappings::Prediction::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::Prediction::_log(
     "exahype::mappings::Prediction");
+
 
 void exahype::mappings::Prediction::prepareTemporaryVariables() {
   assertion(_tempSpaceTimeUnknowns    ==nullptr);
@@ -216,7 +217,7 @@ void exahype::mappings::Prediction::enterCell(
             fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined7;
+        peano::datatraversal::autotuning::UserDefined4;
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
@@ -243,6 +244,7 @@ void exahype::mappings::Prediction::enterCell(
             _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+        solver->compress( pFine );
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

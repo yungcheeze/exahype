@@ -32,10 +32,10 @@ namespace kernels{
             const double qi = ((double)(2*ii+1.0))/((double)(2*basisSize)); //linspace
 
             for (int jj = 0; jj < basisSize; jj++) { // loop over dof
-              const double qj = ((double)(2*jj+1.0))/(((double)(2*basisSize)); //linspace
+              const double qj = ((double)(2*jj+1.0))/((double)(2*basisSize)); //linspace
             
               for (int kk = 0; kk < basisSize; kk++) {  // loop over dof
-                const double qk = ((double)(2*kk+1.0))/(((double)(2*basisSize)); //linspace
+                const double qk = ((double)(2*kk+1.0))/((double)(2*basisSize)); //linspace
                 // location and index of nodal degrees of freedom
                 const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
 

@@ -25,9 +25,11 @@ info () { echo -e $ME: $@; } # print error/info message with name of script
 fail () { info $@; exit -1; } # exit after errormessage with name of script
 abort () { echo -e $@; exit -1; } # fail without name of script
 finish () { echo $@; exit 0; } # finish with message happily
-getappname() { APPNAME="$PAR"; [ -z "$APPNAME" ] && abort "Usage: $0 $CMD <AppName>"; } # set $APPNAME or die
 subreq() { $0 $@; } # subrequest: Query another command for output
 cdroot() { cd "$GITROOT"; } # the crucial change to the repository root directory
+getappname() { APPNAME="$PAR"; [ -z "$APPNAME" ] && abort "Usage: $0 $CMD <AppName>"; } # set $APPNAME or die
+getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"; } # set APPPATH or die
+cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
 
 case $CMD in
 	"update-peano") # Unpacks Peano from tarball
@@ -63,6 +65,12 @@ case $CMD in
 		ls -d Code/ApplicationExamples/$APPNAME &>/dev/null && finish "Code/ApplicationExamples/"
 		fail "Could not find Application '$APPNAME' somewhere"
 		;;
+	"find-binary") # Gives path to the executable, even if not present
+		cdroot; getappname; getapppath
+		SPECFILE="$(subreq find-specfile "$APPNAME")" || abort "Specfile Failure: $SPECFILE"
+		PROJECTNAME=$(grep '^exahype-project' ${SPECFILE} | awk '{ print $2; }')
+		echo $APPPATH/$APPNAME/ExaHyPE-$PROJECTNAME
+		;;
 	"toolkit") # Run the toolkit for an application, without compiling
 		cdroot; getappname
 		SPECFILE="$(subreq find-specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"
@@ -71,15 +79,14 @@ case $CMD in
 		java -jar Toolkit/dist/ExaHyPE.jar --not-interactive ../$SPECFILE
 		;;
 	"compile") # Invokes the toolkit and compilation of an application
-		cdroot; getappname
-		APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"
-		cd $APPPATH/$APPNAME
-		$SCRIPTDIR/compile.sh
+		cdapp; $SCRIPTDIR/compile.sh
+		;;
+	"polycompile") # Compile for different polynomial orders (as basis for convergence studies).
+		set -- "${@:2}" # pop parameter
+		cdapp; $SCRIPTDIR/compile-for-polyorder.sh $@
 		;;
 	"make") # compiel without invoking the toolkit
-		cdroot; getappname
-		APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"
-		cd $APPPATH/$APPNAME
+		cdapp
 		export SKIP_TOOLKIT="Yes"
 		$SCRIPTDIR/compile.sh
 		;;

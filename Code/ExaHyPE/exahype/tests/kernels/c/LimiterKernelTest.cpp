@@ -72,8 +72,10 @@ void LimiterKernelTest::testGetFVMData() {
   logInfo("LimiterKernelTest::testGetFVMData()",
           "Test luh -> lim, ORDER=4, DIM="+dim);
           
-  int calcBasisSizeLim;
-  double* lim = kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, calcBasisSizeLim);
+  const int calcBasisSizeLim = kernels::limiter::generic::c::getLimBasisSize(basisSize);
+  double* lim = new double[calcBasisSizeLim*calcBasisSizeLim*numberOfVariables];
+
+  kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, lim);
   
   validateEquals(calcBasisSizeLim, basisSizeLim)
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLim; i++) {

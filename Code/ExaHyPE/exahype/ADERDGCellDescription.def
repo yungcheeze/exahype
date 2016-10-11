@@ -353,17 +353,6 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solutionMin;
   parallelise persistent int solutionMax;
   
-  /**
-   * This flag is used to realise couplings of
-   * any kind. It is for example necessary
-   * for the limiting.
-   *
-   * Currently, it is only used for
-   * cellwise couplings and does not need to be hold 
-   * persistently
-   */
-  discard bool skipSolutionUpdate;
-  
   enum LimiterStatus {
     Ok,
     Troubled,
@@ -371,5 +360,5 @@ class exahype::records::ADERDGCellDescription {
     NeighbourIsNeighbourOfTroubledCell           
   };
   
-  parallelise persistent LimiterStatus limiterStatus;
+  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 };

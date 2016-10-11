@@ -29,15 +29,15 @@ END SUBROUTINE HasToAdjustSolution
 
 SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
-	USE Parameters, ONLY : nVar
+	USE Parameters, ONLY : nVar, nDim
 	IMPLICIT NONE 
 	! Argument list 
-	REAL, INTENT(IN)               :: x(2)        ! 
+	REAL, INTENT(IN)               :: x(nDim)        ! 
 	REAL, INTENT(IN)               :: w           ! 
 	REAL, INTENT(IN)               :: t           ! 
 	REAL, INTENT(IN)               :: dt          ! 
 
-	REAL, INTENT(OUT)              :: Q(5)        ! 
+	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 	
 	IF ( t < 1e-15 ) THEN
 		CALL InitialData(x, Q)
@@ -46,20 +46,21 @@ END SUBROUTINE AdjustedSolutionValues
 
 SUBROUTINE InitialData(x, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
-	USE Parameters, ONLY : nVar
+	USE Parameters, ONLY : nVar, nDim
 	IMPLICIT NONE 
 	! Argument list 
-	REAL, INTENT(IN)               :: x(2)        ! 
-	REAL, INTENT(OUT)              :: Q(5)        ! 
+	REAL, INTENT(IN)               :: x(nDim)        ! 
+	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
 	! We call a C++ function which helps us to get access to the
 	! exahype specification file constants
 	INTERFACE
 		SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
 			USE, INTRINSIC :: ISO_C_BINDING
+			USE Parameters, ONLY : nVar, nDim
 			IMPLICIT NONE
-			REAL, INTENT(IN)               :: x(2)
-			REAL, INTENT(OUT)              :: Q(5)
+			REAL, INTENT(IN)               :: x(nDim)
+			REAL, INTENT(OUT)              :: Q(nVar)
 		END SUBROUTINE InitialDataByExaHyPESpecFile
 	END INTERFACE
 	
@@ -78,10 +79,11 @@ SUBROUTINE InitialAlfenWave(x, Q)
     ! This subroutine is neccessary for a common argument interface InitialFooBar(x,Q)
     ! for all initial data.
     USE, INTRINSIC :: ISO_C_BINDING
+    Use Parameters, ONLY : nDim, nVar
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)               :: x(2)        ! 
-    REAL, INTENT(OUT)              :: Q(5)        ! 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
     CALL AlfenWave(x, Q, 0.0)
 END SUBROUTINE InitialAlfenWave
@@ -92,15 +94,15 @@ SUBROUTINE AlfenWave(x, Q, t)
     ! Use it for any other time ie. for comparison
 
     USE, INTRINSIC :: ISO_C_BINDING
-    USE Parameters, ONLY : nVar, gamma
+    USE Parameters, ONLY : nVar, nDim, gamma
     IMPLICIT NONE 
     ! Argument list 
     REAL, INTENT(IN)               :: t
-    REAL, INTENT(IN)               :: x(2)        ! 
-    REAL, INTENT(OUT)              :: Q(5)        ! 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
     REAL :: rho0, p0, eta, B0, hh, tempaa, tempab, tempac, va2, vax
-    REAL :: V(nVAR), BV(3), VV(3)
+    REAL :: V(nVar), BV(3), VV(3)
 
     rho0 = 1.
     p0   = 1.
@@ -132,11 +134,11 @@ SUBROUTINE InitialBlast(x, Q)
     ! Simulation domain:  -6 .. +6
 
     USE, INTRINSIC :: ISO_C_BINDING
-    USE Parameters, ONLY : nVar
+    USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)               :: x(2)        ! 
-    REAL, INTENT(OUT)              :: Q(5)        ! 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
     REAL :: rho0, p0, p1, rho1, r, r0, r1, taper
     REAL :: V(nVAR)
@@ -180,11 +182,11 @@ SUBROUTINE InitialOrsagTang(x, Q)
     ! Simulation Domain: 0 .. 2*pi = 6.283185307179586
 
     USE, INTRINSIC :: ISO_C_BINDING
-    USE Parameters, ONLY : nVar
+    USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)               :: x(2)        ! 
-    REAL, INTENT(OUT)              :: Q(5)        ! 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
     REAL :: rho0, p0, vel0, B0
     REAL :: V(nVAR), VV(3), BV(3)
@@ -212,11 +214,11 @@ SUBROUTINE InitialRotor(x,Q)
     ! Domain: -0.5 .. 0.5  (square domain)
 
     USE, INTRINSIC :: ISO_C_BINDING
-    USE Parameters, ONLY : nVar
+    USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)               :: x(2)        ! 
-    REAL, INTENT(OUT)              :: Q(5)        ! 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
     REAL ::  rho, p, r
     REAL :: rho0, p0, rvel0, rho1, p1, B0, v0

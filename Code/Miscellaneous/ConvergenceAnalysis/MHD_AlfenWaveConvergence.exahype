@@ -1,13 +1,17 @@
 /**
-
- Ideal Special Relativistic Magnetohydrodynamics.
- A custom ExaHype Kernel written in Fortran,
- currently only 3D,
- provided by Olindo and modified by Sven.
-
- Started 17. June, 2016.
- Based on srhd3dfortran.exahype
-
+ * MHD AlfenWave specfile for convergence analysis.
+ *
+ *@comment@ This file is a TEMPLATE, it has variables denoted
+ *@comment@ like "@VARNAME@" and replaced by a script before
+ *@comment@ handing over to ExaHyPE. Furthermore, these lines
+ *@comment@ starting with "@comment@" are removed from the
+ *@comment@ generated spec file. Instead, there will be a
+ *@comment@ description about the generated file in the
+ *@comment@ following:
+ *
+ * This convergence test is using ideal Special Relativistic
+ * Magnetohydrodynamics using a Fortran kernel, in 2D.
+ *
  */
 exahype-project  MHDSolver
 
@@ -19,7 +23,7 @@ exahype-project  MHDSolver
   computational-domain
     dimension                = 2
     /* this is the grid for the MHD AlfenWave test */
-    width                    = 1.0, 0.5
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 1.0
   end computational-domain
@@ -47,23 +51,19 @@ exahype-project  MHDSolver
   end optimisation
   
   solver ADER-DG MHDSolver
-    /* for field (=variables) descriptions, see code */
     variables          = 9
     parameters         = 0
-    order              = 3
-    /* 27 grid points: 0.2327 -- @TODO not yet covered */
-    maximum-mesh-size  = 0.1
+    order              = @ORDER@
+    maximum-mesh-size  = @MESHSIZE@
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
-    /* we are using the new Fortran interface */
     language           = C
-    /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:alfenwave}
+    constants          = {initialdata:alfenwave}
 
     plot vtk::Cartesian::vertices::ascii
       variables= 9
       time     = 0.0
-      repeat   = 0.05
+      repeat   = @VTKOUTPUTREPEAT@
       output   = ./conserved
       select   = {}
     end plot
@@ -73,7 +73,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
-      repeat = 0.05
+      repeat = @CONVOUTPUTREPEAT@
       output = ./these-files-should-not-be-there
       select = {}
     end plot
@@ -81,7 +81,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @VTKOUTPUTREPEAT@
       output    = ./primitive
       select = {}
     end plot
@@ -89,7 +89,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @VTKOUTPUTREPEAT@
       output    = ./exact-primitive
       select = {}
     end plot

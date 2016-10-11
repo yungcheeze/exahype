@@ -1,1 +1,0 @@
-../SRHD/compile.sh

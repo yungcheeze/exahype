@@ -12,6 +12,7 @@
  **/
 #include "exahype/solvers/ADERDGSolver.h"
 
+
 #include <limits>
 
 #include "exahype/Cell.h"
@@ -39,7 +40,14 @@ constexpr const char* tags[]{"solutionUpdate",
                              "boundaryConditions"};
 }  // namespace
 
+
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
+
+
+double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
+
+bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
+
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
@@ -1209,13 +1217,6 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
   }
 }
 
-void exahype::solvers::ADERDGSolver::prepareSolutionUpdate(
-        const int cellDescriptionsIndex,
-        const int element) {
-  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  cellDescription.setSkipSolutionUpdate(false);
-}
-
 void exahype::solvers::ADERDGSolver::updateSolution(
     const int cellDescriptionsIndex,
     const int element,
@@ -1224,8 +1225,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
 
-  if (!cellDescription.getSkipSolutionUpdate() &&
-      cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
@@ -1261,6 +1261,9 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           cellDescription.getSize(),
           cellDescription.getCorrectorTimeStamp(), cellDescription.getCorrectorTimeStepSize());
     }
+
+
+    // TODO(Dominic): setSolutionMinMaxAndAnalyseValidity()
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
@@ -1459,11 +1462,29 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
   CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
 
-  solveRiemannProblemAtInterface(
-      pLeft,pRight,faceIndexLeft,faceIndexRight,
-      tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
+  if (isReadForTheVeryFirstTime(pLeft)) {
+    uncompress(pLeft);
+  }
+  if (isReadForTheVeryFirstTime(pRight)) {
+    uncompress(pRight);
+  }
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
+
+  // We need to copy the limiter status since the routines below modify
+  // the limiter status on the cell descriptions.
+  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getLimiterStatus(faceIndexLeft);
+  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getLimiterStatus(faceIndexRight);
+  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+
+  if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
+    assertion4(pRight.getLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
+        pLeft.toString(),pRight.toString(),faceIndexLeft,faceIndexRight);
+    solveRiemannProblemAtInterface(
+        pLeft,pRight,faceIndexLeft,faceIndexRight,
+        tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
+  }
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
@@ -2755,4 +2776,27 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_minNextPredictorTimeStepSize:" << _minNextPredictorTimeStepSize;
   out <<  ")";
+}
+
+
+void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
+  if (CompressionAccuracy>0.0) {
+    if (SpawnCompressionAsBackgroundThread) {
+        // @todo Hier kann der Spawn rein
+      assertionMsg(false, "not implemented yet" );
+    }
+    else {
+//      solver->compress( pFine, CompressionAccuracy );
+    }
+  }
+}
+
+
+void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
+
+}
+
+
+bool exahype::solvers::ADERDGSolver::isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription) {
+
 }

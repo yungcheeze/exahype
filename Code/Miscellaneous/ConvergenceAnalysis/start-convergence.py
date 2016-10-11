@@ -9,7 +9,7 @@ from numpy import arange
 import subprocess, os # batteries
 
 polyorders = arange(2,10)
-width = 15. # make sure this is like in bash script.
+width = 1. # make sure this is like in bash script.
 
 depth = arange(1,6)
 res = pd.DataFrame({'depth': depth})

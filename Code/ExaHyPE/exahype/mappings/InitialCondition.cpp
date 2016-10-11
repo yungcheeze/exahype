@@ -20,8 +20,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/ADERDGSolver.h"
-#include "exahype/solvers/FiniteVolumesSolver.h"
+#include "exahype/solvers/CellWiseCoupling.h"
 
 peano::CommunicationSpecification
 exahype::mappings::InitialCondition::communicationSpecification() {
@@ -90,26 +89,22 @@ void exahype::mappings::InitialCondition::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    // ADER-DG
-    const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+    const int numberOfCouplings = exahype::solvers::RegisteredSolverCouplings.size();
     // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
+    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1;
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfCouplings, methodTrace);
+    pfor(i, 0, numberOfCouplings, grainSize)
+      auto coupling = exahype::solvers::RegisteredSolverCouplings[i];
+      if (coupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
+        exahype::solvers::CellWiseCoupling* cellWiseCoupling =
+            static_cast<exahype::solvers::CellWiseCoupling*>(coupling);
 
-    pfor(solverNumber, 0, numberOfSolvers, grainSize)
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[solverNumber];
-      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
-
-        solver->setInitialConditions(
-            fineGridCell.getCellDescriptionsIndex(),element,
+        cellWiseCoupling->coupleFirstTime(
+            fineGridCell.getCellDescriptionsIndex(),
             fineGridVertices,fineGridVerticesEnumerator);
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    endpfor
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

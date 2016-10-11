@@ -562,19 +562,6 @@ class exahype::solvers::Solver {
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
 
   /**
-   * Prepare the solution update.
-   * This method is called before we perform the
-   * solution update.
-   *
-   * Here, we can reset some variables
-   * before any coupling or direct solution
-   * update is performed.
-   */
-  virtual void prepareSolutionUpdate(
-        const int cellDescriptionsIndex,
-        const int element) = 0;
-
-  /**
    * Update the solution of a cell description.
    *
    * \note Make sure to reset neighbour merge

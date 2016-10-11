@@ -38,16 +38,27 @@ exahype-project  Euler
     properties-file          = sharedmemory.properties
   end shared-memory  
 
+  optimisation
+    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps-factor   = 0.99
+    /* 0.0 und 0.8 sind schon mal zwei Faktoren */
+    timestep-batch-factor           = 0.0
+    skip-reduction-in-batched-time-steps = on
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
+  end optimisation
+
   solver ADER-DG ADERDG
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 0.15
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -60,7 +71,7 @@ exahype-project  Euler
   solver Finite-Volumes FVM
     variables         = 5
     parameters        = 0
-    patch-size        = 9
+    patch-size        = 7
     maximum-mesh-size = 0.15
     time-stepping     = global
     kernel            = generic::MUSCL

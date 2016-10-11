@@ -96,6 +96,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
       _cellDescriptionIndexWriter(0),
       _cellRefinementEventWriter(0),
       _cellDataWriter(0),
+      _limiterStatusWriter(0),
       _cellCounter(0) {}
 
 exahype::mappings::AugmentedAMRTreePlot2d::~AugmentedAMRTreePlot2d() {}
@@ -111,6 +112,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
       _cellDataWriter(masterThread._cellDataWriter),
+      _limiterStatusWriter(masterThread._limiterStatusWriter),
       _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
@@ -374,6 +376,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               cellIndex,
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
+          _limiterStatusWriter->plotCell(
+              cellIndex, static_cast<int>(pFine.getLimiterStatus(0)));
           solverFound = true;
         }
       }
@@ -430,7 +434,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
       "AugReq=9,Aug=10)"
       ,1);
   _cellDataWriter = _vtkWriter->createCellDataWriter(
-      "None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
+      "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
+  _limiterStatusWriter = _vtkWriter->createCellDataWriter(
+      "Limiter-Status(Ok=0,Troubled=1,NeighbourOfTroubled=2,NeighbourOfNeighbourOfTroubled=3)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
@@ -442,6 +448,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _cellDescriptionIndexWriter->close();
   _cellRefinementEventWriter->close();
   _cellDataWriter->close();
+  _limiterStatusWriter->close();
   _cellNumberWriter->close();
 
   delete _vertexWriter;
@@ -452,6 +459,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _cellRefinementEventWriter;
   delete _cellNumberWriter;
   delete _cellDataWriter;
+  delete _limiterStatusWriter;
 
   _vertexWriter = 0;
   _cellWriter = 0;

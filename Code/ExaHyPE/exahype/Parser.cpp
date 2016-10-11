@@ -411,6 +411,55 @@ bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
   return token.compare("on") == 0;
 }
 
+
+double exahype::Parser::getDoubleCompressionFactor() const {
+  std::string token = getTokenAfter("optimisation", "double-compression");
+
+  if (token.compare(_noTokenFound) == 0) {
+    return 0.0;  // default value
+  }
+  else {
+    char* pEnd;
+    double result = std::strtod(token.c_str(), &pEnd);
+    logDebug("getDoubleCompressionFactor()", "found double-compression "
+                                                  << token);
+
+    if (result < 0.0 || pEnd == token.c_str()) {
+      logError("getDoubleCompressionFactor()",
+             "'double-compression': Value is required in optimisation "
+             "section and must be greater than or equal to zero: " << result);
+      result = 0.0;
+      _interpretationErrorOccured = true;
+    }
+
+    return result;
+  }
+}
+
+
+bool   exahype::Parser::getSpawnDoubleCompressionAsBackgroundTask() const {
+  std::string token =
+      getTokenAfter("optimisation", "spawn-double-compression-as-background-thread");
+
+  if (token.compare(_noTokenFound) == 0) {
+    return false;  // default value
+  }
+  else {
+    logDebug("getSpawnDoubleCompressionAsBackgroundTask()",
+           "found spawn-double-compression-as-background-thread " << token);
+    if (token.compare("on") != 0 && token.compare("off") != 0) {
+      logError("getSpawnDoubleCompressionAsBackgroundTask()",
+             "spawn-double-compression-as-background-thread is required in the "
+             "optimisation segment and has to be either on or off: "
+                 << token);
+      _interpretationErrorOccured = true;
+    }
+
+    return token.compare("on") == 0;
+  }
+}
+
+
 exahype::solvers::Solver::Type exahype::Parser::getType(
     int solverNumber) const {
   std::string token;

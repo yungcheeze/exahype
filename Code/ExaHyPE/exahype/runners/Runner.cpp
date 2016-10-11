@@ -202,6 +202,26 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 #endif
 }
 
+
+void exahype::runners::Runner::initDataCompression() {
+  exahype::solvers::ADERDGSolver::CompressionAccuracy = _parser.getDoubleCompressionFactor();
+
+  if (exahype::solvers::ADERDGSolver::CompressionAccuracy==0.0) {
+    logInfo( "initDataCompression()", "switched off any data compression");
+  }
+  else {
+    if (!_parser.getFuseAlgorithmicSteps()) {
+      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping");
+      exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
+    }
+    else {
+      exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::solvers::ADERDGSolver::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread);
+    }
+  }
+}
+
+
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
@@ -284,11 +304,11 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
 
 int exahype::runners::Runner::run() {
-
   exahype::repositories::Repository* repository = createRepository();
 
   initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
+  initDataCompression();
 
   int result = 0;
   if ( _parser.isValid() ) {

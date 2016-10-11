@@ -9,6 +9,11 @@ buildinfo.h
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
 
+# Eclipse projects
+.cproject
+.project
+.settings
+
 # Python compiled files
 *.pyc
 
