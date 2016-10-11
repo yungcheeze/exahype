@@ -221,6 +221,9 @@ class exahype::Parser {
   double getTimestepBatchFactor() const;
   bool getSkipReductionInBatchedTimeSteps() const;
 
+  double getDoubleCompressionFactor() const;
+  bool   getSpawnDoubleCompressionAsBackgroundTask() const;
+
   /**
    * If we batch time steps, we can in principle switch off the boundary data
    * exchange, as ExaHyPE's data flow is realised through heaps. However, if we
