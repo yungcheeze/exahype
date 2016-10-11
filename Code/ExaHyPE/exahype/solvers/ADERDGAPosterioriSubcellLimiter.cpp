@@ -264,6 +264,8 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolver->getNumberOfVariables(),
               aderdgSolver->getNodesPerCoordinateAxis(),
               finiteVolumesSolution);
+          finiteVolumesCellDescription.setTimeStamp(aderdgCellDescription.getCorrectorTimeStamp());
+          finiteVolumesCellDescription.setTimeStepSize(aderdgCellDescription.getCorrectorTimeStepSize());
 
           // This writes the min max values into an array for face 0;
           std::fill(aderdgSolutionMin,aderdgSolutionMin+aderdgSolver->getNumberOfVariables(),std::numeric_limits<double>::max());
