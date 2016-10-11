@@ -54,8 +54,9 @@ void findCellLocalMinAndMax(const double* const luh, const double* const lim, co
   // initialize and process luh
   index = 0;
   iiEnd =  basisSize*basisSize;
-  if(DIMENSIONS == 3)
+#if DIMENSIONS == 3
      iiEnd *= basisSize;
+#endif
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
     localMin[iVar] = luh[index];
     localMax[iVar] = luh[index];   
@@ -63,11 +64,8 @@ void findCellLocalMinAndMax(const double* const luh, const double* const lim, co
   }
   for(ii = 1; ii < iiEnd; ii++) {
     for(iVar = 0; iVar < numberOfVariables; iVar++) {
-      if(luh[index] < localMin[iVar]) {
-        localMin[iVar] = luh[index];
-      } else if(luh[index] > localMax[iVar]) {
-        localMax[iVar] = luh[index];
-      }    
+      localMin[iVar] = std::min ( localMin[iVar], luh[index] );
+      localMax[iVar] = std::max ( localMax[iVar], luh[index] );
       index++;
     }
   }
@@ -80,45 +78,28 @@ void findCellLocalMinAndMax(const double* const luh, const double* const lim, co
      iiEnd *= basisSize;
   for(ii = 0; ii < iiEnd; ii++) {
     for(iVar = 0; iVar < numberOfVariables; iVar++) {
-      if(lob[index] < localMin[iVar]) {
-        localMin[iVar] = lob[index];
-      } else if(lob[index] > localMax[iVar]) {
-        localMax[iVar] = lob[index];
-      }    
+      localMin[iVar] = std::min ( localMin[iVar], lob[index] );
+      localMax[iVar] = std::max ( localMax[iVar], lob[index] );
       index++;
     }
   }
   delete[] lob;
   
   // process lim
-  const int basisSizeLim = getLimBasisSize(basisSize);
-  index = 0;
-  iiEnd =  basisSizeLim*basisSizeLim;
-  if(DIMENSIONS == 3)
-     iiEnd *= basisSizeLim;
-  for(ii = 0; ii < iiEnd; ii++) {
-    for(iVar = 0; iVar < numberOfVariables; iVar++) {
-      if(lim[index] < localMin[iVar]) {
-        localMin[iVar] = lim[index];
-      } else if(lim[index] > localMax[iVar]) {
-        localMax[iVar] = lim[index];
-      }    
-      index++;
-    }
-  }
+  findCellLocalLimMinAndMax(lim,numberOfVariables,basisSize,localMin,localMax);
 }
 
-double getMin(const double* const minOfNeighbours, int iVar, int numberOfVariables) {
+double getMin(const double* const solutionMin, int iVar, int numberOfVariables) {
   double result = std::numeric_limits<double>::max();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
-    result = std::min( result, minOfNeighbours[i+iVar] );
+    result = std::min( result, solutionMin[i+iVar] );
   }
   return result;
 }
-double getMax(const double* const maxOfNeighbours, int iVar, int numberOfVariables) {
+double getMax(const double* const solutionMax, int iVar, int numberOfVariables) {
   double result = -std::numeric_limits<double>::max();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
-    result = std::max( result, maxOfNeighbours[i+iVar] );
+    result = std::max( result, solutionMax[i+iVar] );
   }
   return result;
 }
@@ -128,6 +109,10 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   double minMarginOfError = 0.0001;
   double diffScaling      = 0.001;
   
+  // todo test
+  diffScaling = 0.1;
+  minMarginOfError = 0.001;
+
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
 
@@ -136,16 +121,14 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   getFVMData(luh, numberOfVariables, basisSize, lim);
   findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
   delete[] lim;
-  
-  double ldiff;
 
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
-    double maxMaxOfNeighbours = getMax(troubledMax,iVar,numberOfVariables);
-    double minMinOfNeighbours = getMin(troubledMin,iVar,numberOfVariables);
+    double previousSolutionMax = getMax(troubledMax,iVar,numberOfVariables);
+    double previousSolutionMin = getMin(troubledMin,iVar,numberOfVariables);
 
-    ldiff = std::max((maxMaxOfNeighbours - minMinOfNeighbours) * diffScaling, minMarginOfError);
-    if((localMin[iVar] < (minMinOfNeighbours - ldiff)) ||
-       (localMax[iVar] > (maxMaxOfNeighbours + ldiff))) {
+    double ldiff = std::max( (previousSolutionMax - previousSolutionMin) * diffScaling, minMarginOfError );
+    if((localMin[iVar] < (previousSolutionMin - ldiff)) ||
+       (localMax[iVar] > (previousSolutionMax + ldiff))) {
       return true;
     }
   }
