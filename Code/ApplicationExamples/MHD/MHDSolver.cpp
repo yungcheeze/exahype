@@ -84,18 +84,12 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 
   // Impose exact boundary conditions
   alfenwave_(x, stateOut, &t);
-
-  // Compute flux and
-  // extract normal flux in a lazy fashion.
-  double f[9], g[9], *F[DIMENSIONS];
-  F[0] = f;
-  F[1] = g;
-  #if DIMENSIONS == 3
-  double h[5];
-  F[2] = h;
-  #endif
-  F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
-  flux(stateOut, F);
+ 
+  double *F = new double[MHDSolver::MHDSolver::numberOfVariables * DIMENSIONS];
+  flux(stateOut, &F);
+  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
+      fluxOut[i] = F[normalNonZero * MHDSolver::MHDSolver::numberOfVariables + i];
+  }
 
   // These are the no-boundary conditions:
   /*
