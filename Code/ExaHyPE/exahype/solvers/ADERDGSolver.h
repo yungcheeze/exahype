@@ -408,6 +408,8 @@ private:
       double**  tempStateSizedSquareMatrices);
 
   /**
+   * TODO(Dominc): Remove after docu is recycled.
+   *
    * This operation sets the solutions' minimum and maximum value on a cell.
    * The routine is to be invoked after the code has determined the new minimum
    * and maximum value within a cell. In turn, it evaluates whether the new
@@ -436,7 +438,7 @@ private:
    * @return True if the new min and max values fit into the restricted min
    *   max solutions. Return false if we seem to run into oscillations.
    */
-  bool setSolutionMinMaxAndAnalyseValidity(double* min, double* max, int solverIndex) const;
+//  void setSolutionMinMax(double* min, double* max) const;
 
   /**
    * Merge the solution min and max values on a face between two cell
@@ -447,6 +449,33 @@ private:
       CellDescription& pRight,
       const int faceIndexLeft,
       const int faceIndexRight) const;
+
+  void mergeWithNeighbourLimiterStatus(
+        CellDescription& cellDescription,
+        const int faceIndex,
+        const CellDescription::LimiterStatus& neighbourLimiterStatus) const {
+    switch (cellDescription.getLimiterStatus(faceIndex)) {
+      case CellDescription::LimiterStatus::Ok:
+
+        switch (neighbourLimiterStatus) {
+        case CellDescription::LimiterStatus::Troubled:
+          cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsTroubledCell);
+          break;
+        case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+          cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
+          break;
+        default:
+          // This includes limiter status "Ok".
+          // Note that we initialise the limiter with status "Ok" in every iteration
+          // before we check again.
+          break;
+        }
+
+        break;
+      default:
+        break;
+    }
+  }
 
 #ifdef Parallel
   /**
@@ -1063,10 +1092,6 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
-
-  void prepareSolutionUpdate(
-          const int cellDescriptionsIndex,
-          const int element) override;
 
   void updateSolution(
       const int cellDescriptionsIndex,

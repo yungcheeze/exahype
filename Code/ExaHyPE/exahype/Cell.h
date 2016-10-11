@@ -269,40 +269,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   double getLocalWorkload() const;
   double getGlobalWorkload() const;
   #endif
-
-  /**
-   * TODO(Dominic,Tobias): Move this operation into the ADERDGSolver class.
-   * Is it called after the minMax merge?
-   *
-   * This operation sets the solutions' minimum and maximum value on a cell.
-   * The routine is to be invoked after the code has determined the new minimum
-   * and maximum value within a cell. In turn, it evaluates whether the new
-   * minimum and maximum value have decreased or grown, respectively.
-   *
-   * If the new min/max values indicate that the new solution comprises
-   * oscillations, the routine returns false. This is an indicator that the
-   * solution should be limited.
-   *
-   * If the new min/max values fit, the routine returns true.
-   *
-   * <h2>Implementation</h2>
-   * We hold the min/max information exclusively on the faces. The first thing
-   * the routine does is to project the min/max values into the cell. For this
-   * it evaluates the 2d faces. The projected value then is compared to the
-   * arguments. Once the results of the operation is determined, the routine
-   * writes the new arguments onto the 2d face entries. This, on the one hand,
-   * stores the data for the subsequent time step, but it also propagates the
-   * min/max information into the face-connected neighbours.
-   *
-   * @param  min          New minimum values within the cell. Array of length
-   *                      _numberOfUnknowns.
-   * @param  max          New maximum values within the cell
-   * @param  solverIndex  Number of the solver within the cell. Please ensure
-   *                      that solverIndex refers to an ADER-DG solver.
-   * @return True if the new min and max values fit into the restricted min
-   *   max solutions. Return false if we seem to run into oscillations.
-   */
-  bool setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex );
 };
 
 #endif

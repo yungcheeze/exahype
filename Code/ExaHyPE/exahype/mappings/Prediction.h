@@ -145,6 +145,14 @@ class exahype::mappings::Prediction {
   void deleteTemporaryVariables();
 
  public:
+  /**
+   * Set to 0 if no floating point compression is used.
+   */
+  static double CompressionAccuracy;
+
+  static bool SpawnCompressionAsBackgroundThread;
+
+
   static peano::MappingSpecification touchVertexLastTimeSpecification();
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
   static peano::MappingSpecification enterCellSpecification();

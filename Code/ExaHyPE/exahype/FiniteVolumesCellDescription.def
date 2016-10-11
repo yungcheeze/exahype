@@ -248,15 +248,4 @@ class exahype::records::FiniteVolumesCellDescription {
    */
   parallelise persistent RefinementEvent refinementEvent;
   ///@}
-  
-  /**
-   * This flag is used to realise couplings of
-   * any kind. It is for example necessary
-   * for the limiting.
-   *
-   * Currently, it is only used for
-   * cellwise couplings and does not need to be hold 
-   * persistently
-   */
-  discard bool skipSolutionUpdate;
 };

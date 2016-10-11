@@ -48,7 +48,7 @@ exahype::mappings::Prediction::enterCellSpecification() {
 peano::MappingSpecification
 exahype::mappings::Prediction::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -80,6 +80,11 @@ exahype::mappings::Prediction::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::Prediction::_log(
     "exahype::mappings::Prediction");
+
+double exahype::mappings::Prediction::CompressionAccuracy = 0.0;
+
+bool exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = false;
+
 
 void exahype::mappings::Prediction::prepareTemporaryVariables() {
   assertion(_tempSpaceTimeUnknowns    ==nullptr);
@@ -243,6 +248,9 @@ void exahype::mappings::Prediction::enterCell(
             _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+
+        // if ...
+//	solver->compress( pFine, accuracy, spawnBackgroundThread );
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

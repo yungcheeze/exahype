@@ -81,14 +81,14 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
 }
 
 //Fortran (Limiter.f90): GetSubcellData
-double* getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLim) {
-  
-  basisSizeLim = getLimBasisSize(basisSize);
+// Allocate lim memory via
+// double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
+void getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, double* lim) {
+  const int basisSizeLim = getLimBasisSize(basisSize);
   
   idx4 idxLuh(basisSize, basisSize, basisSize, numberOfVariables);
   idx2 idxConv(basisSize, basisSizeLim);
   
-  double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
   idx4 idxLim(basisSizeLim, basisSizeLim, basisSizeLim, numberOfVariables);
   
   double* tmpZ = new double[basisSizeLim*basisSize*basisSize*numberOfVariables]; //Fortran ref: limz(nVar,nDOF(1),nDOF(2),nSubLimV(3))
@@ -141,8 +141,6 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
   
   delete[] tmpZ;
   delete[] tmpY;
-  
-  return lim;
 }
 
 void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {

@@ -16,9 +16,17 @@
 #ifndef _EXAHYPE_SOLVERS_CELL_WISE_COUPLING_H_
 #define _EXAHYPE_SOLVERS_CELL_WISE_COUPLING_H_
 
+#include "SolverCoupling.h"
 
-#include "exahype/solvers/SolverCoupling.h"
+namespace exahype {
+class Vertex;
+} /* namespace exahype */
 
+namespace peano {
+namespace grid {
+class VertexEnumerator;
+} /* namespace grid */
+} /* namespace peano */
 
 namespace exahype {
   namespace solvers {
@@ -26,21 +34,27 @@ namespace exahype {
   }
 }
 
-
 class exahype::solvers::CellWiseCoupling: public exahype::solvers::SolverCoupling {
   public:
     CellWiseCoupling(double time, double repeat);
     virtual ~CellWiseCoupling() {};
 
     /**
-     * Couple solvers before the solution update of the solvers is performed.
+     * Couple the solvers before performing the
+     * first time step.
      */
-    virtual void coupleSolversBeforeSolutionUpdate(const int cellDescriptionsIndex) {};
+    virtual void coupleFirstTime(
+        const int cellDescriptionsIndex,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {};
 
     /**
-     * Couple solvers after the solution update of the solvers has been performed.
+     * Couple the solvers in the following iterations.
      */
-    virtual void coupleSolversAfterSolutionUpdate(const int cellDescriptionsIndex) {};
+    virtual void couple(
+        const int cellDescriptionsIndex,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {};
 };
 
 

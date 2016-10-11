@@ -26,8 +26,31 @@ int getLimBasisSize(const int basisSize) {
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {      
+void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {
+  int index, ii, iVar, iiEnd;
 
+  // process lim
+  const int basisSizeLim = getLimBasisSize(basisSize);
+  index = 0;
+  iiEnd =  basisSizeLim*basisSizeLim;
+  if(DIMENSIONS == 3)
+     iiEnd *= basisSizeLim;
+  for(ii = 0; ii < iiEnd; ii++) {
+    for(iVar = 0; iVar < numberOfVariables; iVar++) {
+      if(lim[index] < localMin[iVar]) {
+        localMin[iVar] = lim[index];
+      } else if(lim[index] > localMax[iVar]) {
+        localMax[iVar] = lim[index];
+      }
+      index++;
+    }
+  }
+}
+
+/**
+ * localMin, localMax are double[numberOfVariables]
+ */
+void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {
   int index, ii, iVar, iiEnd;
   
   // initialize and process luh
@@ -70,8 +93,7 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   delete[] lob;
   
   // process lim
-  int basisSizeLim = 0;
-  double* lim = getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
+  const int basisSizeLim = getLimBasisSize(basisSize);
   index = 0;
   iiEnd =  basisSizeLim*basisSizeLim;
   if(DIMENSIONS == 3)
@@ -86,39 +108,41 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
       index++;
     }
   }
-  delete[] lim;
-
 }
 
 double getMin(const double* const minOfNeighbours, int iVar, int numberOfVariables) {
-  double min = std::numeric_limits<double>::max();
+  double result = std::numeric_limits<double>::max();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
-    min = std::min( min, minOfNeighbours[i+iVar] );
+    result = std::min( result, minOfNeighbours[i+iVar] );
   }
-  return min;
+  return result;
 }
 double getMax(const double* const maxOfNeighbours, int iVar, int numberOfVariables) {
-  double max = std::numeric_limits<double>::min();
+  double result = std::numeric_limits<double>::min();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
-    max = std::max( max, maxOfNeighbours[i+iVar] );
+    result = std::max( result, maxOfNeighbours[i+iVar] );
   }
-  return max;
+  return result;
 }
 
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax) {
   
   double minMarginOfError = 0.0001;
-  double diffScaling = 0.001;
+  double diffScaling      = 0.001;
   
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
-  findCellLocallocalMinlocalMax(luh, numberOfVariables, basisSize, localMin, localMax);
+
+  const int basisSizeLim = getLimBasisSize(basisSize);
+  double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
+  getFVMData(luh, numberOfVariables, basisSize, lim);
+  findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
   
   double ldiff;
 
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
-    double maxMaxOfNeighbours = getMin(troubledMax,iVar,numberOfVariables);
-    double minMinOfNeighbours = getMax(troubledMin,iVar,numberOfVariables);
+    double maxMaxOfNeighbours = getMax(troubledMax,iVar,numberOfVariables);
+    double minMinOfNeighbours = getMin(troubledMin,iVar,numberOfVariables);
 
     ldiff = std::max((maxMaxOfNeighbours - minMinOfNeighbours) * diffScaling, minMarginOfError);
     if((localMin[iVar] < (minMinOfNeighbours - ldiff)) ||

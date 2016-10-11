@@ -93,6 +93,7 @@ Tokens
   token_skip_reduction              = 'skip-reduction-in-batched-time-steps';
   token_disable_amr                 = 'disable-amr-if-grid-has-been-stationary-in-previous-iteration';
   token_double_compression          = 'double-compression';
+  token_spawn_double_compression    = 'spawn-double-compression-as-background-thread';
 
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
@@ -220,8 +221,9 @@ Productions
         token_skip_reduction              [token_skip_reduction_equals]:token_equals              [skip_reduction]:token_on_off
         token_disable_amr                 [token_disable_amr_equals]:token_equals                 [disable_amr]:token_on_off
         token_double_compression          [token_double_compression_equals]:token_equals          [double_compression]:float_number
+        token_spawn_double_compression    [token_spawn_double_compression_equals]:token_equals    [spawn_double_compression]:token_on_off
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction,disable_amr,double_compression) }
+        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction,disable_amr,double_compression,spawn_double_compression) }
       ;
 
    profiling {->profiling} =
@@ -370,6 +372,7 @@ Abstract Syntax Tree
      [skip_reduction]:token_on_off
      [disable_amr]:token_on_off
      [double_compression]:float_number
+     [spawn_double_compression]:token_on_off
      ;
 
    profiling =

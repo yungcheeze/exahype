@@ -202,6 +202,12 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 #endif
 }
 
+
+void exahype::runners::Runner::initDataCompression() {
+  // @todo xxxx
+}
+
+
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
@@ -284,11 +290,11 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 
 
 int exahype::runners::Runner::run() {
-
   exahype::repositories::Repository* repository = createRepository();
 
   initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
+  initDataCompression();
 
   int result = 0;
   if ( _parser.isValid() ) {

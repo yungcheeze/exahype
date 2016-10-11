@@ -78,12 +78,12 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
   {
     a = 1.23;
     b = 0.0;
+    const int basisSize = 4;  // 4 points per dimension in cell
     const double dt = 0.234;
     const double cfl = 1.0;
-    const double dx_scalar = a * dt / cfl;
+    const double dx_scalar = basisSize * a * dt / cfl;
     const tarch::la::Vector<DIMENSIONS, double> dx(dx_scalar, dx_scalar);
 
-    const int basisSize = 4;  // 4 points per dimension in cell
     const int basisSize2 = basisSize * basisSize;
     const int numberOfVariables = 5;
     double *luh[3 * 3];  // 9 cells
@@ -292,12 +292,12 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
   {
     a = 0.0;
     b = 5.43;
+    const int basisSize = 4;  // 4 points per dimension in cell
     const double dt = 0.345;
     const double cfl = 1.0;
-    const double dx_scalar = b * dt / cfl;
+    const double dx_scalar = basisSize * b * dt / cfl;
     const tarch::la::Vector<DIMENSIONS, double> dx(dx_scalar, dx_scalar);
 
-    const int basisSize = 4;  // 4 points per dimension in cell
     const int basisSize2 = basisSize * basisSize;
     const int numberOfVariables = 5;
     double *luh[3 * 3];  // 9 cells
