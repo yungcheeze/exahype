@@ -211,8 +211,14 @@ void exahype::runners::Runner::initDataCompression() {
     logInfo( "initDataCompression()", "switched off any data compression");
   }
   else {
-    exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
-    logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::mappings::Prediction::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread);
+    if (!_parser.getFuseAlgorithmicSteps()) {
+      logError( "initDataCompression()", "data compression is not supported if you don't use the fused time stepping");
+      exahype::mappings::Prediction::CompressionAccuracy = 0.0;
+    }
+    else {
+      exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread = _parser.getSpawnDoubleCompressionAsBackgroundTask();
+      logInfo( "initDataCompression()", "store all data with accuracy of " << exahype::mappings::Prediction::CompressionAccuracy << ". Use background threads for data conversion=" << exahype::mappings::Prediction::SpawnCompressionAsBackgroundThread);
+    }
   }
 }
 

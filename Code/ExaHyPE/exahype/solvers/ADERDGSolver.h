@@ -137,6 +137,18 @@ private:
   double _minNextPredictorTimeStepSize;
 
   /**
+   * Different to compress(), this operation is called automatically by
+   * mergeNeighbours(). Therefore the routine is private.
+   */
+  void uncompress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy);
+
+  /**
+   * This predicate holds if and only if no Riemann solve has been done for
+   * this cell at all.
+   */
+  bool isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
    * TODO(Dominic): Add more docu.
    *
    * Mark a cell description of Cell for refinement or erasing based
@@ -1027,6 +1039,9 @@ public:
     return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
   }
 
+  /**
+   * @todo Dominic, kannst Du mir reinschreiben, was die Routine tut und warum die so heisst? Der Name suggeriert, dass was schiefgehen kann
+   */
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
@@ -1374,8 +1389,10 @@ public:
 
   void toString (std::ostream& out) const override;
 
-  void compress();
-  void uncompress();
+  /**
+   * The counterpart
+   */
+  void compress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy);
 };
 
 #endif

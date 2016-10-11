@@ -249,8 +249,15 @@ void exahype::mappings::Prediction::enterCell(
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
 
-        // if ...
-//	solver->compress( pFine, accuracy, spawnBackgroundThread );
+        if (CompressionAccuracy>0.0) {
+          if (SpawnCompressionAsBackgroundThread) {
+              // @todo Hier kann der Spawn rein
+            assertionMsg(false, "not implemented yet" );
+          }
+          else {
+            solver->compress( pFine, CompressionAccuracy );
+          }
+        }
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

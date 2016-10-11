@@ -12,6 +12,7 @@
  **/
 #include "exahype/solvers/ADERDGSolver.h"
 
+
 #include <limits>
 
 #include "exahype/Cell.h"
@@ -2757,4 +2758,19 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_minNextPredictorTimeStepSize:" << _minNextPredictorTimeStepSize;
   out <<  ")";
+}
+
+
+void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy) {
+
+}
+
+
+void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription, double accuracy) {
+
+}
+
+
+bool exahype::solvers::ADERDGSolver::isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription) {
+
 }
