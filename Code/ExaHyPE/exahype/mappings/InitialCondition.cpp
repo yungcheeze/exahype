@@ -91,7 +91,7 @@ void exahype::mappings::InitialCondition::enterCell(
   if (fineGridCell.isInitialised()) {
     const int numberOfCouplings = exahype::solvers::RegisteredSolverCouplings.size();
     // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
+    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1;
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfCouplings, methodTrace);
     pfor(i, 0, numberOfCouplings, grainSize)
       auto coupling = exahype::solvers::RegisteredSolverCouplings[i];

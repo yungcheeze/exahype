@@ -1457,8 +1457,12 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 
-  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,pRight.getLimiterStatus(faceIndexRight));
-  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,pLeft.getLimiterStatus(faceIndexLeft));
+  // We need to copy the limiter status since the routines below modify
+  // the limiter status on the cell descriptions.
+  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getLimiterStatus(faceIndexLeft);
+  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getLimiterStatus(faceIndexRight);
+  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
 
   if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
     assertion4(pRight.getLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,

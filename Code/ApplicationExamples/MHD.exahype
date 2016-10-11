@@ -45,6 +45,8 @@ exahype-project  MHDSolver
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    /* spawn-double-compression-as-background-thread = off */
   end optimisation
   
   solver ADER-DG MHDSolver
@@ -64,9 +66,35 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables= 9
       time     = 0.0
-      repeat   = 0.005
-      output   = ./solution
+      repeat   = 0.05
+      output   = ./conserved
       select   = {}
+    end plot
+    
+    /* this is the fake plotter used to compute global integrals */
+    /* it has no output fields. */
+    plot vtk::Cartesian::vertices::ascii
+      variables = 0
+      time = 0.0
+      repeat = 0.05
+      output = ./these-files-should-not-be-there
+      select = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./primitive
+      select = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./exact-primitive
+      select = {}
     end plot
   end solver
 

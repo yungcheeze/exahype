@@ -116,7 +116,7 @@ double getMin(const double* const minOfNeighbours, int iVar, int numberOfVariabl
   return result;
 }
 double getMax(const double* const maxOfNeighbours, int iVar, int numberOfVariables) {
-  double result = std::numeric_limits<double>::min();
+  double result = -std::numeric_limits<double>::max();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
     result = std::max( result, maxOfNeighbours[i+iVar] );
   }
@@ -135,6 +135,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
   getFVMData(luh, numberOfVariables, basisSize, lim);
   findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
+  delete[] lim;
   
   double ldiff;
 
