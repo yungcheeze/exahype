@@ -452,7 +452,9 @@ private:
 
   void mergeLimiterStatusOnFace(
       CellDescription& pLeft,
-      CellDescription& pRight) const;
+      CellDescription& pRight,
+      const int faceIndexLeft,
+      const int faceIndexRight) const;
 
 #ifdef Parallel
   /**

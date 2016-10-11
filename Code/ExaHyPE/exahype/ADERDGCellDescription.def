@@ -360,5 +360,5 @@ class exahype::records::ADERDGCellDescription {
     NeighbourIsNeighbourOfTroubledCell           
   };
   
-  parallelise persistent LimiterStatus limiterStatus;
+  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 };

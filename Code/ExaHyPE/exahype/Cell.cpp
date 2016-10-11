@@ -261,7 +261,7 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setFluctuationAverages(-1);
 
   // Limiter meta data (oscillations identificator)
-  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
+  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
   newCellDescription.setSolutionMin(-1);
   newCellDescription.setSolutionMax(-1);
 

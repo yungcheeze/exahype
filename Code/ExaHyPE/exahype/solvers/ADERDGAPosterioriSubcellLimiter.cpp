@@ -103,7 +103,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
   if (aderdgElement!=exahype::solvers::Solver::NotFound) {
     auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         cellDescriptionsIndex)[aderdgElement];
-    aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok);
+    aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok); // implicit conversion.
 
     assertion2(finiteVolumesElement!=exahype::solvers::Solver::NotFound,cellDescriptionsIndex,_aderdgSolverNumber);
     auto& finiteVolumesCellDescription = exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
@@ -127,7 +127,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
         aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
         minOfNeighbours,maxOfNeighbours);
     if (aderdgSolutionNeedsLimiting) {
-      aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled);
+      aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
       logInfo("couple(...)","ADER-DG solution in cell "<<
           aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" still needs limiting.");
 
@@ -163,7 +163,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
               minOfNeighbours,maxOfNeighbours);
       if (aderdgSolutionNeedsLimiting) {
-        aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled);
+        aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
         logInfo("couple(...)","New ADER-DG solution in cell " <<
             aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" needs limiting.");
         finiteVolumesSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
