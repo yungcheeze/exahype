@@ -45,7 +45,7 @@ exahype-project  Z4Solver
     variables          = 54
     parameters         = 0
     order              = 3
-    maximum-mesh-size  = 0.005
+    maximum-mesh-size  = 0.1
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C

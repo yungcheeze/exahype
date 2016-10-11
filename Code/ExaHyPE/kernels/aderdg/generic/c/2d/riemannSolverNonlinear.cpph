@@ -25,8 +25,8 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda),
+          void PDEMatrixB(const double *const Q, const int normalNonZero, double *Bn)>
 void riemannSolverNonlinear(double* FL, double* FR,
                             const double* const QL,
                             const double* const QR,
@@ -42,6 +42,7 @@ void riemannSolverNonlinear(double* FL, double* FR,
   // Compute the average states (and parameters) from the left and the right
   double* QavL = tempStateSizedVectors[0];
   double* QavR = tempStateSizedVectors[1];
+  double* Qavg = new double[numberOfVariables];
   {
     idx2 idx_QLR(basisSize, numberOfVariables);
     std::memset(QavL, 0, numberOfVariables * sizeof(double));
@@ -60,6 +61,10 @@ void riemannSolverNonlinear(double* FL, double* FR,
   double* LR = tempStateSizedVectors[3];
   PDEEigenvalues(QavL, normalNonZero, LL);
   PDEEigenvalues(QavR, normalNonZero, LR);
+  
+  for(int k=0; k < numberOfVariables; k++) {
+     Qavg[k] = (QavL[k] + QavR[k]) / 2;
+  }
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
@@ -75,6 +80,11 @@ void riemannSolverNonlinear(double* FL, double* FR,
       std::max_element(LR, LR + numberOfVariables - numberOfParameters);
   const double smax = std::max(*smax_L, *smax_R);
 
+  double* Bn = new double[numberOfVariables * numberOfVariables]();
+  double* ncp = new double[numberOfVariables]();
+  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  PDEMatrixB(Qavg, normalNonZero, Bn);
+
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
@@ -82,15 +92,29 @@ void riemannSolverNonlinear(double* FL, double* FR,
   {
     idx2 idx_FQLR(basisSize, numberOfVariables);
     for (int j = 0; j < basisSize; j++) {
+      // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
+      for(int l=0; l < numberOfVariables; l++) {
+	      ncp[l] = 0;
+	      for(int m=0; m < numberOfVariables; m++) {
+		     ncp[l] += Bn[idx_Bn(l, m)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
+	      }
+      }
+
       // Avoid diffusion of parameters
       for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
         FL[idx_FQLR(j, k)] =
             0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
-            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
-        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)];
+            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)])
+	    + 0.5 * ncp[k];
+        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] - 0.5 * ncp[k];
+	
       }
     }
   }
+  
+  delete[] Qavg;
+  delete[] Bn;
+  delete[] ncp;
 }
 
 }  // namespace c
