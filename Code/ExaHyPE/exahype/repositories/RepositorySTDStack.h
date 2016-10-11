@@ -31,6 +31,7 @@
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/PlotAndSolutionUpdate.h" 
  #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 
@@ -72,6 +73,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndSolutionUpdate> _gridWithPlotAndSolutionUpdate;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
 
      
@@ -92,6 +94,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
     tarch::timing::Measurement _measurePlotAndSolutionUpdateCPUTime;
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
@@ -109,6 +112,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
     tarch::timing::Measurement _measurePlotAndSolutionUpdateCalendarTime;
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
 
    
@@ -164,6 +168,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToSolutionUpdate();    
     virtual void switchToPlotAndSolutionUpdate();    
     virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();    
+    virtual void switchToTimeStepSizeComputation();    
     virtual void switchToPlot();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
@@ -181,6 +186,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterSolutionUpdate() const;
     virtual bool isActiveAdapterPlotAndSolutionUpdate() const;
     virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPlot() const;
 
    

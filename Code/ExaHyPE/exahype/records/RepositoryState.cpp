@@ -52,6 +52,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterSolutionUpdate: return "UseAdapterSolutionUpdate";
       case UseAdapterPlotAndSolutionUpdate: return "UseAdapterPlotAndSolutionUpdate";
       case UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation: return "UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation";
+      case UseAdapterTimeStepSizeComputation: return "UseAdapterTimeStepSizeComputation";
       case UseAdapterPlot: return "UseAdapterPlot";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
@@ -59,7 +60,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d=8,UseAdapterPredictionAndTimeStepSizeComputation=9,UseAdapterGridErasing=10,UseAdapterADERDGTimeStep=11,UseAdapterPlotAndADERDGTimeStep=12,UseAdapterPredictionRerun=13,UseAdapterNeighbourDataMerging=14,UseAdapterPrediction=15,UseAdapterSolutionUpdate=16,UseAdapterPlotAndSolutionUpdate=17,UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation=18,UseAdapterPlot=19,NumberOfAdapters=20)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d=8,UseAdapterPredictionAndTimeStepSizeComputation=9,UseAdapterGridErasing=10,UseAdapterADERDGTimeStep=11,UseAdapterPlotAndADERDGTimeStep=12,UseAdapterPredictionRerun=13,UseAdapterNeighbourDataMerging=14,UseAdapterPrediction=15,UseAdapterSolutionUpdate=16,UseAdapterPlotAndSolutionUpdate=17,UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation=18,UseAdapterTimeStepSizeComputation=19,UseAdapterPlot=20,NumberOfAdapters=21)";
 }
 
 

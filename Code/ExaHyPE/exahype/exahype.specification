@@ -169,10 +169,15 @@ adapter:
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: SolutionUpdate
 
-// Additional adapter for AMR in 4 phase time stepping
+// Additional adapters for AMR in 4 phase time stepping
 adapter:
   name: PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
+
+adapter:
+  name: TimeStepSizeComputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
 

@@ -231,6 +231,16 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  void switchToTimeStepSizeComputationContext() {
+      #ifdef Parallel
+      _stateData.setFirstGridSetupIteration(false);
+      #endif
+      _stateData.setReinitTimeStepData(false); // rename
+      _stateData.setFuseADERDGPhases(false);
+      _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+      _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+    }
+
   void switchToPostAMRContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);

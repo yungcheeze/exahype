@@ -77,6 +77,7 @@ class exahype::repositories::Repository {
     virtual void switchToSolutionUpdate() = 0;    
     virtual void switchToPlotAndSolutionUpdate() = 0;    
     virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
+    virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
@@ -94,6 +95,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterSolutionUpdate() const = 0;
     virtual bool isActiveAdapterPlotAndSolutionUpdate() const = 0;
     virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

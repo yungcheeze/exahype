@@ -28,6 +28,7 @@
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/PlotAndSolutionUpdate.h" 
  #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 

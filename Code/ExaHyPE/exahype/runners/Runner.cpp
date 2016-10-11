@@ -654,21 +654,26 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   #endif
 
-  repository.getState().switchToPreAMRContext(); // This must stay here.
+//  repository.getState().switchToPreAMRContext(); // This must stay here.
+//
+//  // TODO(Dominic): Experimental dyn. AMR grid setup that only works
+//  // with standard global time stepping at the moment.
+//  //
+//  // For the refinement criterion try for example a density based one.
+//  //
+//  // Uncomment the following lines for testing dyn. AMR.
+//  createGrid(repository);
+//  const int maxAdaptiveGridDepth = exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers();
+//  logDebug("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","maxAdaptiveGridDepth="<<maxAdaptiveGridDepth);
+//  repository.iterate(maxAdaptiveGridDepth*2); // We need to two iterations for an erasing event.
+//  repository.getState().switchToPostAMRContext();
+//  repository.switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
+//  repository.iterate();
 
-  // TODO(Dominic): Experimental dyn. AMR grid setup that only works
-  // with standard global time stepping at the moment.
-  //
-  // For the refinement criterion try for example a density based one.
-  //
-  // Uncomment the following lines for testing dyn. AMR.
-  createGrid(repository);
-  const int maxAdaptiveGridDepth = exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers();
-  logDebug("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","maxAdaptiveGridDepth="<<maxAdaptiveGridDepth);
-  repository.iterate(maxAdaptiveGridDepth*2); // We need to two iterations for an erasing event.
-  repository.getState().switchToPostAMRContext();
-  repository.switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
+  repository.getState().switchToTimeStepSizeComputationContext();
+  repository.switchToTimeStepSizeComputation();
   repository.iterate();
+
 
   repository.getState().switchToPredictionContext();
   repository.switchToPrediction();  // Cell onto faces
