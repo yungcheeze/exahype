@@ -17,18 +17,18 @@
 
 ORDER="$1"
 
-if [ -z "$ORDER" ]; then
+if [[ ! "$ORDER" ]]; then
 	echo -e "Usage: $0 <polyNomialOrder>"
 	exit -1
 fi
 
 SCRIPTDIR="$(readlink -f $(dirname "$0"))" # absolute path to script directory
-COMPILE="$MYCODE/compile.sh" # absolute path to compile.sh
+COMPILE="$SCRIPTDIR/compile.sh" # absolute path to compile.sh
 
 ##################
 
 APPNAME="${PWD##*/}" # eg. "eulerflow2d"
-SPECFILE="$APPNAME.exahype" # eg. "eulerflow2d.exahype"
+SPECFILE="${SPECFILE:=$APPNAME.exahype}" # eg. "eulerflow2d.exahype"
 ABSAPPDIR="$(dirname "$PWD")" # absolute path to "Applications"
 APPDIRNAME="${ABSAPPDIR##*/}" # eg. "Applications" or "ApplicationExamples"
 ABSCODEDIR="$(dirname "$ABSAPPDIR")" # absolute path to "Code"
@@ -39,7 +39,7 @@ echo " SPECFILE = $SPECFILE"
 echo " SCRIPTDIR = $SCRIPTDIR"
 echo " ABSAPPDIR = $ABSAPPDIR"
 echo " APPDIRNAME = $APPDIRNAME"
-echo " POLYORDERS = $POLYORDERS"
+echo " POLYNOMIAL ORDER = $ORDER"
 echo "at $(date) on $(hostname) as $(whoami)"
 
 set -e 
@@ -58,6 +58,8 @@ BINARYNAME="ExaHyPE-$PROJECTNAME"
 FINALBINARYNAME="$BINARYNAME-p$ORDER"
 echo "Project name is $PROJECTNAME, so will expect the binary at $BINARYNAME and move to $FINALBINARYNAME"
 
+cd "$APPNAME"
+
 # and we also have to generate partially our code ourself as the build system
 # doesn't do the full job.
 echo "Fixing GeneratedConstants.h"
@@ -70,4 +72,4 @@ $COMPILE
 echo -e "Copy Binary to safe place"
 mv "$BINARYNAME" "$FINALBINARYNAME"
 
-echo -e "Finished at $FINALBINARYNAME"
+echo -e "$0 finished with $FINALBINARYNAME"
