@@ -52,51 +52,76 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
 
     // Set the initial conditions of the finite volumes solver.
     finiteVolumesSolver->synchroniseTimeStepping(cellDescriptionsIndex,finiteVolumesElement);
-    finiteVolumesSolver->setInitialConditions(
-        cellDescriptionsIndex,finiteVolumesElement,
-        fineGridVertices,fineGridVerticesEnumerator);
 
-    // Set the initial conditions of the ADER-DG solver by projecting
-    // the solution values of the FV solver onto the DG solution space.
-    aderdgSolver->synchroniseTimeStepping(cellDescriptionsIndex,aderdgElement);
-    double* finiteVolumesSolution = exahype::solvers::FiniteVolumesSolver::DataHeap::getInstance().
-            getData(finiteVolumesCellDescription.getSolution()).data();
-    double* aderdgSolution  = exahype::solvers::ADERDGSolver::DataHeap::getInstance().
-                getData(aderdgCellDescription.getSolution()).data();
-    kernels::limiter::generic::c::updateSubcellWithLimiterData(
-        finiteVolumesSolution,
-        finiteVolumesSolver->getNumberOfVariables(),
-        finiteVolumesSolver->getNodesPerCoordinateAxis(),
-        aderdgSolver->getNodesPerCoordinateAxis(),
-        aderdgSolution);
+    if (finiteVolumesSolver->hasToAdjustSolution(
+        finiteVolumesCellDescription.getOffset()+0.5*finiteVolumesCellDescription.getSize(),
+        finiteVolumesCellDescription.getSize(),finiteVolumesCellDescription.getTimeStamp())) {
+      finiteVolumesSolver->setInitialConditions(
+          cellDescriptionsIndex,finiteVolumesElement,
+          fineGridVertices,fineGridVerticesEnumerator);
 
-    // This writes the min max values to face 0;
-    double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
-    double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
-    std::fill(solutionMin,solutionMin+aderdgSolver->getNumberOfVariables(),std::numeric_limits<double>::max());
-    std::fill(solutionMax,solutionMax+aderdgSolver->getNumberOfVariables(),-std::numeric_limits<double>::max());
-    kernels::limiter::generic::c::findCellLocalLimMinAndMax(
-        finiteVolumesSolution,
-        aderdgSolver->getNumberOfVariables(),
-        aderdgSolver->getNodesPerCoordinateAxis(),
-        solutionMin,
-        solutionMax);
-    // This writes the face 0 min max values to the other faces
-    for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
-      std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
-          solutionMin+i*aderdgSolver->getNumberOfVariables());
-      std::copy(solutionMax, solutionMax+aderdgSolver->getNumberOfVariables(),
-          solutionMax+i*aderdgSolver->getNumberOfVariables());
-    }
+      // Set the initial conditions of the ADER-DG solver by projecting
+      // the solution values of the FV solver onto the DG solution space.
+      aderdgSolver->synchroniseTimeStepping(cellDescriptionsIndex,aderdgElement);
+      double* finiteVolumesSolution = exahype::solvers::FiniteVolumesSolver::DataHeap::getInstance().
+          getData(finiteVolumesCellDescription.getSolution()).data();
+      double* aderdgSolution  = exahype::solvers::ADERDGSolver::DataHeap::getInstance().
+          getData(aderdgCellDescription.getSolution()).data();
+      kernels::limiter::generic::c::updateSubcellWithLimiterData(
+          finiteVolumesSolution,
+          finiteVolumesSolver->getNumberOfVariables(),
+          finiteVolumesSolver->getNodesPerCoordinateAxis(),
+          aderdgSolver->getNodesPerCoordinateAxis(),
+          aderdgSolution);
 
-    // Check if initial solution is troubled
-    bool initialSolutionIsTroubled =
-        kernels::limiter::generic::c::isTroubledCell(
-            aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
-            solutionMin,solutionMax);
+      // This writes the min max values to face 0;
+      double* solutionMin = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMin()).data();
+      double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
+      std::fill(solutionMin,solutionMin+aderdgSolver->getNumberOfVariables(),std::numeric_limits<double>::max());
+      std::fill(solutionMax,solutionMax+aderdgSolver->getNumberOfVariables(),-std::numeric_limits<double>::max());
+      kernels::limiter::generic::c::findCellLocalLimMinAndMax(
+          finiteVolumesSolution,
+          aderdgSolver->getNumberOfVariables(),
+          aderdgSolver->getNodesPerCoordinateAxis(),
+          solutionMin,
+          solutionMax);
+      // This writes the face 0 min max values to the other faces
+      for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
+        std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
+            solutionMin+i*aderdgSolver->getNumberOfVariables());
+        std::copy(solutionMax, solutionMax+aderdgSolver->getNumberOfVariables(),
+            solutionMax+i*aderdgSolver->getNumberOfVariables());
+      }
 
-    if (initialSolutionIsTroubled) {
-      aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
+//      std::cout << "solutionMin=";
+//      int index=0;
+//      for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
+//        for (int j=0; j<aderdgSolver->getNumberOfVariables(); ++j) {
+//          std::cout << solutionMin[index] << ",";
+//          ++index;
+//        }
+//        std::cout << " ";
+//      }
+//
+//      std::cout << "solutionMax=";
+//      index=0;
+//      for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
+//        for (int j=0; j<aderdgSolver->getNumberOfVariables(); ++j) {
+//          std::cout << solutionMax[index] << ",";
+//          ++index;
+//        }
+//        std::cout << " ";
+//      }
+
+      // Check if initial solution is troubled
+      bool initialSolutionIsTroubled =
+          kernels::limiter::generic::c::isTroubledCell(
+              aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
+              solutionMin,solutionMax);
+
+      if (initialSolutionIsTroubled) {
+        aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
+      }
     }
   }
 }

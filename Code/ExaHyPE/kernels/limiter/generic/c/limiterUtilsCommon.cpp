@@ -116,7 +116,7 @@ double getMin(const double* const minOfNeighbours, int iVar, int numberOfVariabl
   return result;
 }
 double getMax(const double* const maxOfNeighbours, int iVar, int numberOfVariables) {
-  double result = std::numeric_limits<double>::min();
+  double result = -std::numeric_limits<double>::max();
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i+=numberOfVariables) {
     result = std::max( result, maxOfNeighbours[i+iVar] );
   }
