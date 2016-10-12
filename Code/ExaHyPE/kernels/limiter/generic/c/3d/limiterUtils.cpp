@@ -13,6 +13,8 @@
 
 #include "../../Limiter.h"
  
+#include "peano/utils/Loop.h"
+
 #if DIMENSIONS == 3
  
 namespace kernels {

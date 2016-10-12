@@ -13,6 +13,8 @@
 
 #include "../../Limiter.h"
  
+#include "peano/utils/Loop.h"
+
 #if DIMENSIONS == 2
  
 namespace kernels {
@@ -31,6 +33,14 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
   double* tmpY = new double[basisSize*basisSize*numberOfVariables]; //Fortran ref: loby(nVar,nDOF(1),nDOF(2),nDOF(3))
   int x,y,v,k;
   
+  // TODO(JM): Compute
+  //
+  //    lob_yxv = \sum_j \sum_i luh_jiv * uh2lob_jy * uh2lob_ix ;
+  //
+  // It's simply a projection with respect to two directions.
+  // Then compare directly with localMin and localMax (add them to the argument list).
+  // No need for storing things.
+
   for(x=0; x<basisSize; x++) {
     //loby(:,iii,:,jjj) = MATMUL( lobz(:,iii,:,jjj), TRANSPOSE(uh2lob) ) 
     for(y=0; y<basisSize; y++) {
@@ -75,6 +85,19 @@ void getFVMData(const double* const luh, const int numberOfVariables, const int 
   idx3 idxY(basisSizeLim, basisSize, numberOfVariables);
   int x,y,v,k;
   
+  // TODO(JM): Compute
+  //
+  //    lim_yxv = \sum_j \sum_i luh_jiv * uh2lim_jy * uh2lim_ix ;
+  //
+  // It's simply a projection with respect to two directions.
+  // Then compare directly with localMin and localMax (add them to the argument list).
+  // No need for storing things.
+  // This looks pretty similar to the other projections,
+  // doesn't it?
+  //
+  // If you use peano's dfor loop, you will get it done
+  // in a dimension independent fashion.
+
   for(x=0; x<basisSize; x++) {
     //limy(:,iii,:,jjj) = MATMUL( limz(:,iii,:,jjj), TRANSPOSE(uh2lim) ) 
     for(y=0; y<basisSizeLim; y++) {
