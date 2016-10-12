@@ -1146,6 +1146,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       tempFluxUnknowns,
       cellDescription.getSize());
 
+  compress(cellDescription);
+
   for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
@@ -1168,7 +1170,6 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
       exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
-    uncompress(cellDescription);
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     double admissibleTimeStepSize =
@@ -1186,7 +1187,6 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStamp() +
                             admissibleTimeStepSize);
     cellDescription.setPredictorTimeStepSize(admissibleTimeStepSize);
-    compress(cellDescription);
 
     return admissibleTimeStepSize;
   }
@@ -2833,7 +2833,7 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(exahype::records::
 
     for (int face=0; face<2*DIMENSIONS; face++) {
       double extrapolatedPredictorAverage = 0.0;
-      double boundaryFluxAverage           = 0.0;
+      double boundaryFluxAverage          = 0.0;
       int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS-1);
       for (int i=0; i<numberOfDoFsPerVariable; i++) {
         extrapolatedPredictorAverage += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[i + variableNumber * numberOfDoFsPerVariable + getNumberOfVariables() * numberOfDoFsPerVariable * face ];
