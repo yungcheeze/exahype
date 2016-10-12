@@ -579,7 +579,14 @@ private:
       const int solverNumber);
 
 #endif
-
+  /**
+   * Run over the persistent fields of the ADER-DG cell and determine the
+   * average per unknown.' The result is stored within
+   *
+   */
+  void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription);
+  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription);
+  void computeInverseHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription);
 public:
   /**
    * Returns the ADERDGCellDescription.

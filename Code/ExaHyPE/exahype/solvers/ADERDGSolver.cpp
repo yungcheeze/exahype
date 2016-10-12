@@ -135,8 +135,11 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
             unknownsPerCellBoundary, unknownsPerCellBoundary));
         cellDescription.setFluctuation(DataHeap::getInstance().createData(
             unknownsPerCellBoundary, unknownsPerCellBoundary));
-        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
-        cellDescription.setFluctuationAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
+
+        // @todo Tobias/Dominic: Hier sollte es einen Getter geben, aber einen, der saubere Terminologie hat; der Name an sich ist nicht toll
+        int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
+        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
+        cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
 
         // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
         // and array of max values of the neighbour at this face).
@@ -2786,6 +2789,7 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       assertionMsg(false, "not implemented yet" );
     }
     else {
+        determineUnknownAverages(cellDescription);
 //      solver->compress( pFine, CompressionAccuracy );
     }
   }
@@ -2798,5 +2802,42 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
 
 
 bool exahype::solvers::ADERDGSolver::isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription) {
+
+}
+
+
+void exahype::solvers::ADERDGSolver::determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription) {
+  for (int unknown=0; unknown<getNumberOfVariables(); unknown++) {
+    double solutionAverage = 0.0;
+    double updateAverage   = 0.0;
+    int    numberOfValues  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
+    for (int i=0; i<numberOfValues; i++) {
+      solutionAverage += DataHeap::getInstance().getData( cellDescription.getSolution() )[i + unknown * numberOfValues];
+      updateAverage   += DataHeap::getInstance().getData( cellDescription.getUpdate()   )[i + unknown * numberOfValues];
+    }
+    DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[unknown] = solutionAverage / numberOfValues;
+    DataHeap::getInstance().getData( cellDescription.getUpdateAverages()   )[unknown] = updateAverage   / numberOfValues;
+
+    for (int face=0; face<2*DIMENSIONS; face++) {
+      double extrapolatedPredictorAverage = 0.0;
+      double boundaryFluxAverage           = 0.0;
+        int    numberOfValues  = power(getNodesPerCoordinateAxis(), DIMENSIONS-1);
+        for (int i=0; i<numberOfValues; i++) {
+          extrapolatedPredictorAverage += DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() )[i + unknown * numberOfValues + getNumberOfVariables() * numberOfValues * face ];
+          boundaryFluxAverage          += DataHeap::getInstance().getData( cellDescription.getFluctuation()           )[i + unknown * numberOfValues + getNumberOfVariables() * numberOfValues * face ];
+        }
+        DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictorAverages() )[unknown+getNumberOfVariables() * face] = extrapolatedPredictorAverage / numberOfValues;
+        DataHeap::getInstance().getData( cellDescription.getFluctuationAverages()           )[unknown+getNumberOfVariables() * face] = boundaryFluxAverage   / numberOfValues;
+    }
+  }
+}
+
+
+void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription) {
+
+}
+
+
+void exahype::solvers::ADERDGSolver::computeInverseHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription) {
 
 }
