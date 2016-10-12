@@ -188,6 +188,8 @@ void exahype::mappings::Sending::leaveCell(
                                subcellPosition.parentElement,
                                subcellPosition.subcellIndex);
         }
+
+        solver->prepareSending(fineGridCell.getCellDescriptionsIndex(),element);
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

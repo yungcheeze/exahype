@@ -244,7 +244,6 @@ void exahype::mappings::Prediction::enterCell(
             _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
 
         solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
-        solver->compress( pFine );
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()

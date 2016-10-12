@@ -1146,8 +1146,6 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       tempFluxUnknowns,
       cellDescription.getSize());
 
-  compress(cellDescription);
-
   for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
     assertion3(std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
@@ -1277,6 +1275,17 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
+}
+
+
+void exahype::solvers::ADERDGSolver::prepareSending(
+    const int cellDescriptionsIndex,
+    const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    compress(cellDescription);
+  }
 }
 
 void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& cellDescription) {
@@ -1586,6 +1595,10 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
     const int faceIndex = 2 * normalOfExchangedFace +
         (posCell(normalOfExchangedFace) < posBoundary(normalOfExchangedFace) ? 1 : 0);
+
+    if (isReadForTheVeryFirstTime(cellDescription)) {
+      uncompress(cellDescription);
+    }
 
     applyBoundaryConditions(
         cellDescription,faceIndex,

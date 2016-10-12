@@ -428,6 +428,12 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
 }
 
+void exahype::solvers::FiniteVolumesSolver::prepareSending(
+        const int cellDescriptionsIndex,
+        const int element) {
+  // do nothing
+}
+
 void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(
     const int cellDescriptionsIndex,
     const int element) {
