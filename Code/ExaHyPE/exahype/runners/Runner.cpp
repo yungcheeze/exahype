@@ -639,6 +639,10 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.iterate();
 
   // no merging and sending
+  // TODO(Dominic):
+  // Perform the solution update;
+  // mark cells as troubled if applicable, send out limiter data and min/max
+  // repository.switchPlotAndSolutionUpdateContext();
   if (plot) {
     repository.switchToPlotAndSolutionUpdate();  // Face to cell + Inside cell
   } else {
@@ -646,13 +650,27 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   repository.iterate();
 
-  // No messages are flying around here, I can plot
-  #if DIMENSIONS==2
-  if (plot) {
-    repository.switchToPlotAugmentedAMRGrid();
-    repository.iterate();
-  }
-  #endif
+//  // TODO(Dominic): Spread limiter status and recompute solution
+//  if (repository.getState().recomputeADERDGSolution()) {
+//    // Spread the limiter status, add FV subcells
+//    repository.getState().switchToSpreadLimiterStatusContext();
+//    repository.switchToSpreadLimiterStatus();
+//    repository.iterate(2);
+//
+//    TODO(Dominic): Send out limiter status again at the end.
+//    // Maybe plot here again the corrected solution
+//    repository.getState().switchToRecomputeSolutionContext();
+//    repository.switchToRecomputeSolution();
+//    repository.iterate(1);
+//  }
+
+//  #if DIMENSIONS==2 && !defined(Parallel)
+//  if (plot) {
+//    repository.switchToPlotAugmentedAMRGrid();
+//    repository.iterate();
+//  }
+//  #endif
+
 
 //  repository.getState().switchToPreAMRContext(); // This must stay here.
 //
@@ -670,6 +688,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 //  repository.switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
 //  repository.iterate();
 
+  // TODO(Dominic): Drop Limiter status
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
   repository.iterate();
