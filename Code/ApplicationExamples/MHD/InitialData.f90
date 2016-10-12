@@ -102,7 +102,7 @@ SUBROUTINE AlfenWave(x, Q, t)
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
     REAL :: rho0, p0, eta, B0, hh, tempaa, tempab, tempac, va2, vax
-    REAL :: V(nVar), BV(3), VV(3)
+    REAL :: V(nVar), BV(3), VV(3), Pi = ACOS(-1.0)
 
     rho0 = 1.
     p0   = 1.
@@ -117,8 +117,8 @@ SUBROUTINE AlfenWave(x, Q, t)
     vax = sqrt ( va2)
     !
     BV(1) = B0
-    BV(2) = eta * B0 * COS( x(1) - vax*t)
-    BV(3) = eta * B0 * SIN( x(1) - vax*t)
+    BV(2) = eta * B0 * COS(2*Pi*( x(1) - vax*t))
+    BV(3) = eta * B0 * SIN(2*Pi*( x(1) - vax*t))
     !
     VV(1)   = 0.0
     VV(2:3) = - vax * BV(2:3) / B0
