@@ -18,7 +18,7 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Points to a solver in the solver registry.
    */
-  parallelise persistent packed int solverNumber;
+  parallelise persistent int solverNumber;
 
   /**
    * These flags indicate on which face a Riemann solve has already been
@@ -79,14 +79,14 @@ class exahype::records::ADERDGCellDescription {
    * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
    * this. See prepareSendToNeighbour() in mapping Sending.
    */
-  parallelise persistent packed int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
+  parallelise persistent int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
   #endif
 
   /**
    * The index of the ADERDGCellDescription that is the parent of
    * this ADERDGCellDescription or "-1" if no parent is specified.
    */
-  parallelise persistent packed int parentIndex;
+  parallelise persistent int parentIndex;
 
   /**
    * Type of a cell description.
@@ -252,7 +252,7 @@ class exahype::records::ADERDGCellDescription {
    * Space-tree level of the cell this ADERDGCellDescription is associated
    * with.
    */
-  parallelise persistent packed int level;
+  parallelise persistent int level;
   /**
    * Offset of the "lower left" node of the lower left ghost cell from the
    * lower left node of the cell.
@@ -360,5 +360,7 @@ class exahype::records::ADERDGCellDescription {
     NeighbourIsNeighbourOfTroubledCell           
   };
   
-  parallelise persistent packed LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
+
+  parallelise persistent packed int bytesPerDoF from 0 to 7;
 };
