@@ -592,6 +592,17 @@ private:
    * you compute the inverse hierarchical transform.
    */
   void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign);
+
+  /**
+   * This routine runs over the unknowns, asks the Heap's compression routines
+   * to identify a reasonable compression level, stores this value and
+   * afterwrads pipes the dofs into the byte stream. If you don't run with
+   * assertions, the code does clear the double heap data afterwards. With
+   * assertions, we leave it there and thus allow pullUnknownsFromByteStream()
+   * to do quite some validation.
+   */
+  void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription);
+  void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription);
 public:
   /**
    * Returns the ADERDGCellDescription.

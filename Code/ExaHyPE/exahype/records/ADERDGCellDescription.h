@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   11/10/2016 21:06
+    * @date   12/10/2016 17:32
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -106,6 +106,7 @@ namespace exahype {
             #else
             tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
             #endif
+            int _bytesPerDoF;
             /**
              * Generated
              */
@@ -114,7 +115,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
             
             
             inline int getSolverNumber() const 
@@ -905,6 +906,26 @@ namespace exahype {
             
             
             
+            inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoF;
+            }
+            
+            
+            
+            inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoF = bytesPerDoF;
+            }
+            
+            
+            
          };
          
       private: 
@@ -924,7 +945,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
          
          /**
           * Generated
@@ -1899,6 +1920,26 @@ namespace exahype {
          }
          
          
+         
+         inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._bytesPerDoF;
+         }
+         
+         
+         
+         inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._bytesPerDoF = bytesPerDoF;
+         }
+         
+         
          /**
           * Generated
           */
@@ -2002,7 +2043,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   11/10/2016 21:06
+             * @date   12/10/2016 17:32
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -2016,14 +2057,9 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      int _solverNumber;
-                     std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-                     std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
-                     bool _hasToHoldDataForNeighbourCommunication;
                      bool _hasToHoldDataForMasterWorkerCommunication;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
                      int _parentIndex;
-                     Type _type;
-                     RefinementEvent _refinementEvent;
                      int _level;
                      tarch::la::Vector<DIMENSIONS,double> _offset;
                      tarch::la::Vector<DIMENSIONS,double> _size;
@@ -2043,6 +2079,18 @@ namespace exahype {
                      int _solutionMin;
                      int _solutionMax;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+                     
+                     /** mapping of records:
+                     || Member 	|| startbit 	|| length
+                      |  riemannSolvePerformed	| startbit 0	| #bits DIMENSIONS_TIMES_TWO
+                      |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
+                      |  hasToHoldDataForNeighbourCommunication	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
+                      |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 3
+                      |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4	| #bits 4
+                      |  bytesPerDoF	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 3
+                      */
+                     int _packedRecords0;
+                     
                      /**
                       * Generated
                       */
@@ -2051,7 +2099,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                      
                      
                      inline int getSolverNumber() const 
@@ -2098,7 +2146,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        return _riemannSolvePerformed;
+                        int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                        mask = static_cast<int>(mask << (0));
+                        int tmp = static_cast<int>(_packedRecords0 & mask);
+                        tmp = static_cast<int>(tmp >> (0));
+                        std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                        return result;
                      }
                      
                      
@@ -2127,7 +2180,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        _riemannSolvePerformed = (riemannSolvePerformed);
+                        int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                        mask = static_cast<int>(mask << (0));
+                        _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+                        _packedRecords0 = static_cast<int>(_packedRecords0 | riemannSolvePerformed.to_ulong() << (0));
                      }
                      
                      
@@ -2156,7 +2212,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        return _isInside;
+                        int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                        mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                        int tmp = static_cast<int>(_packedRecords0 & mask);
+                        tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO));
+                        std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                        return result;
                      }
                      
                      
@@ -2185,7 +2246,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        _isInside = (isInside);
+                        int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                        mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                        _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+                        _packedRecords0 = static_cast<int>(_packedRecords0 | isInside.to_ulong() << (DIMENSIONS_TIMES_TWO));
                      }
                      
                      
@@ -2195,7 +2259,9 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        return _hasToHoldDataForNeighbourCommunication;
+                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   return (tmp != 0);
                      }
                      
                      
@@ -2205,7 +2271,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        _hasToHoldDataForNeighbourCommunication = hasToHoldDataForNeighbourCommunication;
+                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+   _packedRecords0 = static_cast<int>( hasToHoldDataForNeighbourCommunication ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
                      }
                      
                      
@@ -2313,7 +2380,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        return _type;
+                        int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   assertion(( tmp >= 0 &&  tmp <= 5));
+   return (Type) tmp;
                      }
                      
                      
@@ -2323,7 +2395,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        _type = type;
+                        assertion((type >= 0 && type <= 5));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
                      }
                      
                      
@@ -2333,7 +2409,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        return _refinementEvent;
+                        int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   assertion(( tmp >= 0 &&  tmp <= 11));
+   return (RefinementEvent) tmp;
                      }
                      
                      
@@ -2343,7 +2424,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        _refinementEvent = refinementEvent;
+                        assertion((refinementEvent >= 0 && refinementEvent <= 11));
+   int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
                      }
                      
                      
@@ -2842,6 +2927,35 @@ namespace exahype {
                      
                      
                      
+                     inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   assertion(( tmp >= 0 &&  tmp <= 7));
+   return (int) tmp;
+                     }
+                     
+                     
+                     
+                     inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+                     }
+                     
+                     
+                     
                   };
                   
                private: 
@@ -2861,7 +2975,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                   
                   /**
                    * Generated
@@ -2913,7 +3027,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._riemannSolvePerformed;
+                     int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                     mask = static_cast<int>(mask << (0));
+                     int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+                     tmp = static_cast<int>(tmp >> (0));
+                     std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                     return result;
                   }
                   
                   
@@ -2942,7 +3061,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+                     int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                     mask = static_cast<int>(mask << (0));
+                     _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+                     _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | riemannSolvePerformed.to_ulong() << (0));
                   }
                   
                   
@@ -2954,8 +3076,9 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._riemannSolvePerformed[elementIndex];
-                     
+                     int mask = 1 << (0);
+                     mask = mask << elementIndex;
+                     return (_persistentRecords._packedRecords0& mask);
                   }
                   
                   
@@ -2967,8 +3090,12 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-                     
+                     assertion(!riemannSolvePerformed || riemannSolvePerformed==1);
+                     int shift        = 0 + elementIndex; 
+                     int mask         = 1     << (shift);
+                     int shiftedValue = riemannSolvePerformed << (shift);
+                     _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 & ~mask;
+                     _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 |  shiftedValue;
                   }
                   
                   
@@ -2980,7 +3107,9 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                     int mask = 1 << (0);
+                     mask = mask << elementIndex;
+                     _persistentRecords._packedRecords0^= mask;
                   }
                   
                   
@@ -3009,7 +3138,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._isInside;
+                     int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                     mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                     int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+                     tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO));
+                     std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                     return result;
                   }
                   
                   
@@ -3038,7 +3172,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._isInside = (isInside);
+                     int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                     mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                     _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+                     _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | isInside.to_ulong() << (DIMENSIONS_TIMES_TWO));
                   }
                   
                   
@@ -3050,8 +3187,9 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._isInside[elementIndex];
-                     
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO);
+                     mask = mask << elementIndex;
+                     return (_persistentRecords._packedRecords0& mask);
                   }
                   
                   
@@ -3063,8 +3201,12 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._isInside[elementIndex]= isInside;
-                     
+                     assertion(!isInside || isInside==1);
+                     int shift        = DIMENSIONS_TIMES_TWO + elementIndex; 
+                     int mask         = 1     << (shift);
+                     int shiftedValue = isInside << (shift);
+                     _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 & ~mask;
+                     _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 |  shiftedValue;
                   }
                   
                   
@@ -3076,7 +3218,9 @@ namespace exahype {
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._isInside.flip(elementIndex);
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO);
+                     mask = mask << elementIndex;
+                     _persistentRecords._packedRecords0^= mask;
                   }
                   
                   
@@ -3086,7 +3230,9 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._hasToHoldDataForNeighbourCommunication;
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
                   }
                   
                   
@@ -3096,7 +3242,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._hasToHoldDataForNeighbourCommunication = hasToHoldDataForNeighbourCommunication;
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+   _persistentRecords._packedRecords0 = static_cast<int>( hasToHoldDataForNeighbourCommunication ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
                   }
                   
                   
@@ -3230,7 +3377,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._type;
+                     int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   assertion(( tmp >= 0 &&  tmp <= 5));
+   return (Type) tmp;
                   }
                   
                   
@@ -3240,7 +3392,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._type = type;
+                     assertion((type >= 0 && type <= 5));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
                   }
                   
                   
@@ -3250,7 +3406,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._refinementEvent;
+                     int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   assertion(( tmp >= 0 &&  tmp <= 11));
+   return (RefinementEvent) tmp;
                   }
                   
                   
@@ -3260,7 +3421,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._refinementEvent = refinementEvent;
+                     assertion((refinementEvent >= 0 && refinementEvent <= 11));
+   int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
                   }
                   
                   
@@ -3836,6 +4001,35 @@ namespace exahype {
                   }
                   
                   
+                  
+                  inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   assertion(( tmp >= 0 &&  tmp <= 7));
+   return (int) tmp;
+                  }
+                  
+                  
+                  
+                  inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+                  }
+                  
+                  
                   /**
                    * Generated
                    */
@@ -3936,7 +4130,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   11/10/2016 21:06
+                      * @date   12/10/2016 17:32
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -4002,6 +4196,7 @@ namespace exahype {
                               #else
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
                               #endif
+                              int _bytesPerDoF;
                               /**
                                * Generated
                                */
@@ -4010,7 +4205,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                               
                               
                               inline int getSolverNumber() const 
@@ -4703,6 +4898,26 @@ namespace exahype {
                               
                               
                               
+                              inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _bytesPerDoF;
+                              }
+                              
+                              
+                              
+                              inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _bytesPerDoF = bytesPerDoF;
+                              }
+                              
+                              
+                              
                            };
                            
                         private: 
@@ -4722,7 +4937,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                            
                            /**
                             * Generated
@@ -5573,6 +5788,26 @@ namespace exahype {
                            }
                            
                            
+                           
+                           inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._bytesPerDoF;
+                           }
+                           
+                           
+                           
+                           inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._bytesPerDoF = bytesPerDoF;
+                           }
+                           
+                           
                            /**
                             * Generated
                             */
@@ -5676,7 +5911,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   11/10/2016 21:06
+                               * @date   12/10/2016 17:32
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -5690,11 +5925,7 @@ namespace exahype {
                                     
                                     struct PersistentRecords {
                                        int _solverNumber;
-                                       std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-                                       std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                                        int _parentIndex;
-                                       Type _type;
-                                       RefinementEvent _refinementEvent;
                                        int _level;
                                        tarch::la::Vector<DIMENSIONS,double> _offset;
                                        tarch::la::Vector<DIMENSIONS,double> _size;
@@ -5714,6 +5945,17 @@ namespace exahype {
                                        int _solutionMin;
                                        int _solutionMax;
                                        tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+                                       
+                                       /** mapping of records:
+                                       || Member 	|| startbit 	|| length
+                                        |  riemannSolvePerformed	| startbit 0	| #bits DIMENSIONS_TIMES_TWO
+                                        |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
+                                        |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 3
+                                        |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3	| #bits 4
+                                        |  bytesPerDoF	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7	| #bits 3
+                                        */
+                                       int _packedRecords0;
+                                       
                                        /**
                                         * Generated
                                         */
@@ -5722,7 +5964,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -5769,7 +6011,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          return _riemannSolvePerformed;
+                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                          mask = static_cast<int>(mask << (0));
+                                          int tmp = static_cast<int>(_packedRecords0 & mask);
+                                          tmp = static_cast<int>(tmp >> (0));
+                                          std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                                          return result;
                                        }
                                        
                                        
@@ -5798,7 +6045,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          _riemannSolvePerformed = (riemannSolvePerformed);
+                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                          mask = static_cast<int>(mask << (0));
+                                          _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+                                          _packedRecords0 = static_cast<int>(_packedRecords0 | riemannSolvePerformed.to_ulong() << (0));
                                        }
                                        
                                        
@@ -5827,7 +6077,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          return _isInside;
+                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                          mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                                          int tmp = static_cast<int>(_packedRecords0 & mask);
+                                          tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO));
+                                          std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                                          return result;
                                        }
                                        
                                        
@@ -5856,7 +6111,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          _isInside = (isInside);
+                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                          mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                                          _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+                                          _packedRecords0 = static_cast<int>(_packedRecords0 | isInside.to_ulong() << (DIMENSIONS_TIMES_TWO));
                                        }
                                        
                                        
@@ -5886,7 +6144,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          return _type;
+                                          int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   assertion(( tmp >= 0 &&  tmp <= 5));
+   return (Type) tmp;
                                        }
                                        
                                        
@@ -5896,7 +6159,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          _type = type;
+                                          assertion((type >= 0 && type <= 5));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
                                        }
                                        
                                        
@@ -5906,7 +6173,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          return _refinementEvent;
+                                          int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   assertion(( tmp >= 0 &&  tmp <= 11));
+   return (RefinementEvent) tmp;
                                        }
                                        
                                        
@@ -5916,7 +6188,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                          _refinementEvent = refinementEvent;
+                                          assertion((refinementEvent >= 0 && refinementEvent <= 11));
+   int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
                                        }
                                        
                                        
@@ -6415,6 +6691,35 @@ namespace exahype {
                                        
                                        
                                        
+                                       inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   assertion(( tmp >= 0 &&  tmp <= 7));
+   return (int) tmp;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+                                       }
+                                       
+                                       
+                                       
                                     };
                                     
                                  private: 
@@ -6434,7 +6739,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
                                     
                                     /**
                                      * Generated
@@ -6486,7 +6791,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._riemannSolvePerformed;
+                                       int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                       mask = static_cast<int>(mask << (0));
+                                       int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+                                       tmp = static_cast<int>(tmp >> (0));
+                                       std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                                       return result;
                                     }
                                     
                                     
@@ -6515,7 +6825,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+                                       int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                       mask = static_cast<int>(mask << (0));
+                                       _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+                                       _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | riemannSolvePerformed.to_ulong() << (0));
                                     }
                                     
                                     
@@ -6527,8 +6840,9 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       return _persistentRecords._riemannSolvePerformed[elementIndex];
-                                       
+                                       int mask = 1 << (0);
+                                       mask = mask << elementIndex;
+                                       return (_persistentRecords._packedRecords0& mask);
                                     }
                                     
                                     
@@ -6540,8 +6854,12 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-                                       
+                                       assertion(!riemannSolvePerformed || riemannSolvePerformed==1);
+                                       int shift        = 0 + elementIndex; 
+                                       int mask         = 1     << (shift);
+                                       int shiftedValue = riemannSolvePerformed << (shift);
+                                       _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 & ~mask;
+                                       _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 |  shiftedValue;
                                     }
                                     
                                     
@@ -6553,7 +6871,9 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                                       int mask = 1 << (0);
+                                       mask = mask << elementIndex;
+                                       _persistentRecords._packedRecords0^= mask;
                                     }
                                     
                                     
@@ -6582,7 +6902,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._isInside;
+                                       int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                       mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                                       int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+                                       tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO));
+                                       std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
+                                       return result;
                                     }
                                     
                                     
@@ -6611,7 +6936,10 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._isInside = (isInside);
+                                       int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
+                                       mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
+                                       _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+                                       _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | isInside.to_ulong() << (DIMENSIONS_TIMES_TWO));
                                     }
                                     
                                     
@@ -6623,8 +6951,9 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       return _persistentRecords._isInside[elementIndex];
-                                       
+                                       int mask = 1 << (DIMENSIONS_TIMES_TWO);
+                                       mask = mask << elementIndex;
+                                       return (_persistentRecords._packedRecords0& mask);
                                     }
                                     
                                     
@@ -6636,8 +6965,12 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._isInside[elementIndex]= isInside;
-                                       
+                                       assertion(!isInside || isInside==1);
+                                       int shift        = DIMENSIONS_TIMES_TWO + elementIndex; 
+                                       int mask         = 1     << (shift);
+                                       int shiftedValue = isInside << (shift);
+                                       _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 & ~mask;
+                                       _persistentRecords._packedRecords0 = _persistentRecords._packedRecords0 |  shiftedValue;
                                     }
                                     
                                     
@@ -6649,7 +6982,9 @@ namespace exahype {
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._isInside.flip(elementIndex);
+                                       int mask = 1 << (DIMENSIONS_TIMES_TWO);
+                                       mask = mask << elementIndex;
+                                       _persistentRecords._packedRecords0^= mask;
                                     }
                                     
                                     
@@ -6679,7 +7014,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._type;
+                                       int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   assertion(( tmp >= 0 &&  tmp <= 5));
+   return (Type) tmp;
                                     }
                                     
                                     
@@ -6689,7 +7029,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._type = type;
+                                       assertion((type >= 0 && type <= 5));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
                                     }
                                     
                                     
@@ -6699,7 +7043,12 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._refinementEvent;
+                                       int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   assertion(( tmp >= 0 &&  tmp <= 11));
+   return (RefinementEvent) tmp;
                                     }
                                     
                                     
@@ -6709,7 +7058,11 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._refinementEvent = refinementEvent;
+                                       assertion((refinementEvent >= 0 && refinementEvent <= 11));
+   int mask =  (1 << (4)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
                                     }
                                     
                                     
@@ -7282,6 +7635,35 @@ namespace exahype {
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                                        _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
                                        
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getBytesPerDoF() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   assertion(( tmp >= 0 &&  tmp <= 7));
+   return (int) tmp;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setBytesPerDoF(const int& bytesPerDoF) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
                                     }
                                     
                                     

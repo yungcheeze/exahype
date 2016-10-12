@@ -2876,3 +2876,13 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::recor
     }
   }
 }
+
+
+void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+
+}
+
+
+void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+
+}
