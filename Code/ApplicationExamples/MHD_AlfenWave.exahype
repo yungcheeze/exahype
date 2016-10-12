@@ -19,9 +19,9 @@ exahype-project  MHDSolver
   computational-domain
     dimension                = 2
     /* this is the grid for the MHD AlfenWave test */
-    width                    = 1.0, 0.5
+    width                    = 1.0, 0.4
     offset                   = 0.0, 0.0
-    end-time                 = 1.0
+    end-time                 = 2.618
   end computational-domain
 
   shared-memory
@@ -44,26 +44,23 @@ exahype-project  MHDSolver
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
   end optimisation
   
   solver ADER-DG MHDSolver
-    /* for field (=variables) descriptions, see code */
     variables          = 9
     parameters         = 0
     order              = 3
-    /* 27 grid points: 0.2327 -- @TODO not yet covered */
     maximum-mesh-size  = 0.1
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
-    /* we are using the new Fortran interface */
     language           = C
-    /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:alfenwave}
+    constants          = {initialdata:alfenwave}
 
     plot vtk::Cartesian::vertices::ascii
       variables= 9
       time     = 0.0
-      repeat   = 0.05
+      repeat   = 0.025
       output   = ./conserved
       select   = {}
     end plot
@@ -73,7 +70,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
-      repeat = 0.05
+      repeat = 0.025
       output = ./these-files-should-not-be-there
       select = {}
     end plot
@@ -81,7 +78,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.025
       output    = ./primitive
       select = {}
     end plot
@@ -89,7 +86,7 @@ exahype-project  MHDSolver
     plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.025
       output    = ./exact-primitive
       select = {}
     end plot
