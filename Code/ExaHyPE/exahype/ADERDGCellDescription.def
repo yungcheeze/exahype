@@ -18,13 +18,13 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Points to a solver in the solver registry.
    */
-  parallelise persistent int solverNumber;
+  parallelise persistent packed int solverNumber;
 
   /**
    * These flags indicate on which face a Riemann solve has already been
    * performed.
    */
-  parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   
   /**
    * These flags indicate which face of a cell is inside the domain.
@@ -39,7 +39,7 @@ class exahype::records::ADERDGCellDescription {
    * and a remote rank's domain's overlap contains the parts of the boundary
    * or a sub-manifold that is located outside of the domain.   
    */
-  parallelise persistent bool isInside[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed bool isInside[DIMENSIONS_TIMES_TWO];
   ///@}
   
   #ifdef Parallel  
@@ -59,7 +59,7 @@ class exahype::records::ADERDGCellDescription {
    * Flag hasToHoldDataForMasterWorkerCommunication is only
    * updated after a fork or join event.
    */
-  parallelise persistent bool hasToHoldDataForNeighbourCommunication;
+  parallelise persistent packed bool hasToHoldDataForNeighbourCommunication;
   
   /**
    * This flag is set just before a cell description is sent to a new
@@ -79,14 +79,14 @@ class exahype::records::ADERDGCellDescription {
    * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
    * this. See prepareSendToNeighbour() in mapping Sending.
    */
-  parallelise persistent int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
   #endif
 
   /**
    * The index of the ADERDGCellDescription that is the parent of
    * this ADERDGCellDescription or "-1" if no parent is specified.
    */
-  parallelise persistent int parentIndex;
+  parallelise persistent packed int parentIndex;
 
   /**
    * Type of a cell description.
@@ -132,7 +132,7 @@ class exahype::records::ADERDGCellDescription {
    * The type of this ADERDGCellDescription. See the documentation of Cell for
    * more details.
    */
-  parallelise persistent Type type;
+  parallelise persistent packed Type type;
 
   enum RefinementEvent {
     /**
@@ -236,7 +236,7 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Returns the refinement event.
    */
-  parallelise persistent RefinementEvent refinementEvent;
+  parallelise persistent packed RefinementEvent refinementEvent;
   ///@}
   
   // While the above definitions are mainly flags and states, below we find the actual data.
@@ -252,7 +252,7 @@ class exahype::records::ADERDGCellDescription {
    * Space-tree level of the cell this ADERDGCellDescription is associated
    * with.
    */
-  parallelise persistent int level;
+  parallelise persistent packed int level;
   /**
    * Offset of the "lower left" node of the lower left ghost cell from the
    * lower left node of the cell.
@@ -360,5 +360,5 @@ class exahype::records::ADERDGCellDescription {
     NeighbourIsNeighbourOfTroubledCell           
   };
   
-  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 };

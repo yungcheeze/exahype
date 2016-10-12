@@ -585,8 +585,13 @@ private:
    *
    */
   void determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription);
-  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription);
-  void computeInverseHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
+   * Runs over all entries and adds sign times the average value. So if you
+   * hand in a -1, you compute the hierarchical transform. If you hand in a +1,
+   * you compute the inverse hierarchical transform.
+   */
+  void computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign);
 public:
   /**
    * Returns the ADERDGCellDescription.
