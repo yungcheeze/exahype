@@ -575,8 +575,11 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   logInfo("startNewTimeStep(...)",
       "\tdt_min         =" << currentMinTimeStepSize);
 
-  logDebug("startNewTimeStep(...)",
+  #if !defined(Parallel)
+  // memory consumption on rank 0 would not make any sense
+  logInfo("startNewTimeStep(...)",
       "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  #endif
 
   logDebug("startNewTimeStep(...)",
       "\tnext dt_min    =" << nextMinTimeStepSize); // Only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
