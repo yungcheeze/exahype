@@ -24,8 +24,12 @@
 
 #include "peano/heap/Heap.h"
 #include "peano/utils/Globals.h"
+
 #include "tarch/Assertions.h"
 #include "tarch/la/Vector.h"
+#include "tarch/multicore/BooleanSemaphore.h"
+#include "tarch/multicore/Lock.h"
+
 #include "exahype/profilers/simple/NoOpProfiler.h"
 #include "exahype/records/ADERDGCellDescription.h"
 
@@ -60,10 +64,13 @@ public:
   typedef peano::heap::PlainHeap<CellDescription> Heap;
 
 private:
+
   /**
    * Log device.
    */
   static tarch::logging::Log _log;
+
+  static tarch::multicore::BooleanSemaphore _compressionSemaphore;
 
   /**
    * The number of unknowns/basis functions associated with each face of an
@@ -151,12 +158,6 @@ private:
    * mergeNeighbours(). Therefore the routine is private.
    */
   void uncompress(exahype::records::ADERDGCellDescription& cellDescription);
-
-  /**
-   * This predicate holds if and only if no Riemann solve has been done for
-   * this cell at all.
-   */
-  bool uncompressBeforeWorkContinues(const exahype::records::ADERDGCellDescription& cellDescription) const;
 
   /**
    * TODO(Dominic): Add more docu.
@@ -1427,7 +1428,14 @@ public:
   void toString (std::ostream& out) const override;
 
   /**
-   * The counterpart
+   * The counterpart of uncompress.
+   *
+   * <h2> Shared memory parallelisation </h2>
+   *
+   * Different to the compression, we don't have to take care about any races:
+   * the compression is invoked by enterCell or leaveCell respectively, i.e.
+   * exactly once per cell. This can happen in parallel for multiple cells
+   * which is fine.
    */
   void compress(exahype::records::ADERDGCellDescription& cellDescription);
 };
