@@ -607,6 +607,20 @@ private:
    */
   void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription);
   void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription);
+
+  class CompressionTask {
+    private:
+      ADERDGSolver&                             _solver;
+      exahype::records::ADERDGCellDescription&  _cellDescription;
+    public:
+      CompressionTask(
+        ADERDGSolver&                             _solver,
+        exahype::records::ADERDGCellDescription&  _cellDescription
+      );
+
+      void operator()();
+  };
+
 public:
   /**
    * Returns the ADERDGCellDescription.

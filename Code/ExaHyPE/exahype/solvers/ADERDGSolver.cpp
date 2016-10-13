@@ -2841,7 +2841,7 @@ peano::datatraversal::TaskSet::TaskSet( const std::function <void ()>& f ) {
 /*
 class MyTask : public tbb::task {
   public:
-    override tbb::task* execute() {
+    tbb::task* execute() override {
         // Do the job
       std::cerr << "(x)";
       std::cerr.flush();
@@ -2851,35 +2851,39 @@ class MyTask : public tbb::task {
 */
 
 
+exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
+  ADERDGSolver&                             solver,
+  exahype::records::ADERDGCellDescription&  cellDescription
+):
+  _solver(solver),
+  _cellDescription(cellDescription) {
+}
+
+
+void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
+  std::cerr << "(x.1)";
+  std::cerr.flush();
+  _solver.determineUnknownAverages(_cellDescription);
+  _solver.computeHierarchicalTransform(_cellDescription,-1.0);
+  _solver.putUnknownsIntoByteStream(_cellDescription);
+
+  tarch::multicore::Lock lock(_solver._compressionSemaphore);
+  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+  std::cerr << "(x.2)";
+  std::cerr.flush();
+}
+
+
+
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Uncompressed, cellDescription.toString() );
   if (CompressionAccuracy>0.0) {
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
-/*
-     peano::datatraversal::TaskSet spawnedSet(
-       [&] () {
-         determineUnknownAverages(cellDescription);
-         computeHierarchicalTransform(cellDescription,-1.0);
-         putUnknownsIntoByteStream(cellDescription);
-
-         tarch::multicore::Lock lock(_compressionSemaphore);
-         cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-       }
-     );
-*/
-
-//      MyTask* t = new (tbb::task::allocate_root()) MyTask();
-      //tbb::task::spawn_root_and_wait(*t); // tut
-      //tbb::task::spawn(*t); // geht net immer
-//      tbb::task::enqueue(*t); // geht kaputt
-
-      determineUnknownAverages(cellDescription);
-      computeHierarchicalTransform(cellDescription,-1.0);
-      putUnknownsIntoByteStream(cellDescription);
-      tarch::multicore::Lock lock(_compressionSemaphore);
-      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+      CompressionTask myTask( *this, cellDescription );
+      peano::datatraversal::TaskSet spawnedSet( myTask );
+      //myTask();
     }
     else {
       determineUnknownAverages(cellDescription);
@@ -2906,6 +2910,8 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
   #ifdef SharedMemoryParallelisation
   bool madeDecision = CompressionAccuracy==0.0;
   bool uncompress   = false;
+  std::cerr << "(y.1)";
+  std::cerr.flush();
   while (!madeDecision) {
     tarch::multicore::Lock lock(_compressionSemaphore);
     madeDecision = cellDescription.getCompressionState() != exahype::records::ADERDGCellDescription::CurrentlyProcessed;
@@ -2915,8 +2921,10 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
     }
     lock.free();
 
-//    tarch::multicore::BooleanSemaphore::sendTaskToBack();
+    tarch::multicore::BooleanSemaphore::sendTaskToBack();
   }
+  std::cerr << "(y.2)";
+  std::cerr.flush();
   #else
   bool uncompress = CompressionAccuracy>0.0 && cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
   #endif
