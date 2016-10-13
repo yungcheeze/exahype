@@ -20,12 +20,14 @@
 #include "exahype/VertexOperations.h"
 
 #include "tarch/la/VectorVectorOperations.h"
+#include "tarch/multicore/Lock.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "exahype/amr/AdaptiveMeshRefinement.h"
 
 #include "peano/heap/CompressedFloatingPointNumbers.h"
+#include "peano/datatraversal/TaskSet.h"
 
 namespace {
   constexpr const char* tags[]{"solutionUpdate",
@@ -45,6 +47,9 @@ namespace {
 
 
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
+
+
+tarch::multicore::BooleanSemaphore exahype::solvers::ADERDGSolver::_compressionSemaphore;
 
 
 double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
@@ -1500,12 +1505,8 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
   CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
 
-  if (uncompressBeforeWorkContinues(pLeft)) {
-    uncompress(pLeft);
-  }
-  if (uncompressBeforeWorkContinues(pRight)) {
-    uncompress(pRight);
-  }
+  uncompress(pLeft);
+  uncompress(pRight);
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
 
@@ -1618,9 +1619,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     const int faceIndex = 2 * normalOfExchangedFace +
         (posCell(normalOfExchangedFace) < posBoundary(normalOfExchangedFace) ? 1 : 0);
 
-    if (uncompressBeforeWorkContinues(cellDescription)) {
-      uncompress(cellDescription);
-    }
+    uncompress(cellDescription);
 
     applyBoundaryConditions(
         cellDescription,faceIndex,
@@ -2821,16 +2820,66 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
+/*
+peano::datatraversal::TaskSet::TaskSet( const std::function <void ()>& f ) {
+  // falls keine TBBs:
+  #ifdef SharedTBB
+  // have to copy as the lambda expression seems to fade away
+//  typedef peano::datatraversal::TaskSet::GenericTask< const std::function <void ()>& > Task;
+  typedef peano::datatraversal::TaskSet::GenericTaskWithCopy< const std::function <void ()>& > Task;
+  Task* tbbTask = new(tbb::task::allocate_root()) Task(f);
+  tbb::task::enqueue(*tbbTask);
+  //tbbTask->execute();
+  #else
+  f();
+  #endif
+}
+
+*/
+
+
+/*
+class MyTask : public tbb::task {
+  public:
+    override tbb::task* execute() {
+        // Do the job
+      std::cerr << "(x)";
+      std::cerr.flush();
+        return nullptr; // or a pointer to a new task to be executed immediately
+    }
+};
+*/
+
+
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
-#ifdef SharedMemoryParallelisation
-#error Unproblematisch, da ja nicht parallel ausgefuehrt werden kann (zellweise)
-#endif
   assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Uncompressed, cellDescription.toString() );
   if (CompressionAccuracy>0.0) {
     if (SpawnCompressionAsBackgroundThread) {
-      //cellDescription.setIsCurrentlyProcessed(true);
-      // @todo Hier kann der Spawn rein
-      assertionMsg(false, "not implemented yet" );
+      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
+
+/*
+     peano::datatraversal::TaskSet spawnedSet(
+       [&] () {
+         determineUnknownAverages(cellDescription);
+         computeHierarchicalTransform(cellDescription,-1.0);
+         putUnknownsIntoByteStream(cellDescription);
+
+         tarch::multicore::Lock lock(_compressionSemaphore);
+         cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+       }
+     );
+*/
+
+//      MyTask* t = new (tbb::task::allocate_root()) MyTask();
+      //tbb::task::spawn_root_and_wait(*t); // tut
+      //tbb::task::spawn(*t); // geht net immer
+//      tbb::task::enqueue(*t); // geht kaputt
+
+      determineUnknownAverages(cellDescription);
+      computeHierarchicalTransform(cellDescription,-1.0);
+      putUnknownsIntoByteStream(cellDescription);
+      tarch::multicore::Lock lock(_compressionSemaphore);
+      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
     }
     else {
       determineUnknownAverages(cellDescription);
@@ -2839,30 +2888,46 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
     }
   }
+
+
+/*
+  tbb::parallel_invoke(
+
+      []() { std::cout << "Hello!"; },
+
+      []() { std::cout << "Greetings!"; }
+
+  );
+*/
 }
 
 
 void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
-#ifdef SharedMemoryParallelisation
-#error Sofort umsetzen, damit ein anderer es erst gar nicht probiert? Problematisch, weil sonst evtl. jemand mit falschen Daten arbeitet
-#endif
-  assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed, cellDescription.toString() );
-  if (CompressionAccuracy>0.0) {
+  #ifdef SharedMemoryParallelisation
+  bool madeDecision = CompressionAccuracy==0.0;
+  bool uncompress   = false;
+  while (!madeDecision) {
+    tarch::multicore::Lock lock(_compressionSemaphore);
+    madeDecision = cellDescription.getCompressionState() != exahype::records::ADERDGCellDescription::CurrentlyProcessed;
+    uncompress   = cellDescription.getCompressionState() == exahype::records::ADERDGCellDescription::Compressed;
+    if (uncompress) {
+      cellDescription.setCompressionState( exahype::records::ADERDGCellDescription::CurrentlyProcessed );
+    }
+    lock.free();
+
+//    tarch::multicore::BooleanSemaphore::sendTaskToBack();
+  }
+  #else
+  bool uncompress = CompressionAccuracy>0.0 && cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
+  #endif
+
+  if (uncompress) {
     pullUnknownsFromByteStream(cellDescription);
     computeHierarchicalTransform(cellDescription,1.0);
+
+    tarch::multicore::Lock lock(_compressionSemaphore);
     cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
   }
-}
-
-
-bool exahype::solvers::ADERDGSolver::uncompressBeforeWorkContinues(const exahype::records::ADERDGCellDescription& cellDescription) const {
-  //
-  // @todo Hier muss die Semaphore rein
-  //
-#ifdef SharedMemoryParallelisation
-#error
-#endif
-  return cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
 }
 
 
@@ -3059,22 +3124,12 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     tearApart(numberOfEntries, heapIndex,compressionOfFluctuation);
     assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
-
-  //
-  // @todo
-  // =====
-  // Jetzt die Semaphore schalten und das Ding auf die echte Codierung setzen. Danach gleich wieder den Lock freigeben
-  //
 }
 
 
 void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
-  //
-  // @todo
-  // =====
-  // das geht alles viere parallel
   if (cellDescription.getBytesPerDoFInSolution()<7) {
     const int heapIndex       = cellDescription.getSolution();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
