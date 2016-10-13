@@ -28,7 +28,7 @@
 #include "peano/heap/CompressedFloatingPointNumbers.h"
 
 namespace {
-constexpr const char* tags[]{"solutionUpdate",
+  constexpr const char* tags[]{"solutionUpdate",
                              "volumeIntegral",
                              "surfaceIntegral",
                              "riemannSolver",
@@ -40,7 +40,8 @@ constexpr const char* tags[]{"solutionUpdate",
                              "volumeUnknownsProlongation",
                              "volumeUnknownsRestriction",
                              "boundaryConditions"};
-}  // namespace
+  typedef peano::heap::PlainCharHeap CompressedDataHeap;
+}
 
 
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
@@ -67,6 +68,11 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         DataHeap::getInstance().deleteData(cellDescription.getUpdateAverages());
         DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
 
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getUpdate());
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getSolution());
+        }
+
         cellDescription.setSolution(-1);
         cellDescription.setUpdate(-1);
         cellDescription.setSolutionAverages(-1);
@@ -88,6 +94,15 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
 
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
+          CompressedDataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+        }
+
+        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
+        DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+
 
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
@@ -111,10 +126,14 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
         const int unknownsPerCell = getUnknownsPerCell();
-        cellDescription.setUpdate(
-            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
-        cellDescription.setSolution(
-            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setUpdate(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().createDataForIndex(cellDescription.getUpdate());
+          CompressedDataHeap::getInstance().createDataForIndex(cellDescription.getSolution());
+        }
+
         cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
         cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
       }
@@ -133,12 +152,15 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
         // Allocate face DoF
         const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
-        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(
-            unknownsPerCellBoundary, unknownsPerCellBoundary));
-        cellDescription.setFluctuation(DataHeap::getInstance().createData(
-            unknownsPerCellBoundary, unknownsPerCellBoundary));
 
-        // @todo Tobias/Dominic: Hier sollte es einen Getter geben, aber einen, der saubere Terminologie hat; der Name an sich ist nicht toll
+        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary));
+        cellDescription.setFluctuation(DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary));
+
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().createDataForIndex(cellDescription.getExtrapolatedPredictor());
+          CompressedDataHeap::getInstance().createDataForIndex(cellDescription.getFluctuation());
+        }
+
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
         cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
@@ -2808,6 +2830,7 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
     else {
         determineUnknownAverages(cellDescription);
         computeHierarchicalTransform(cellDescription,-1.0);
+        putUnknownsIntoByteStream(cellDescription);
 //      solver->compress( pFine, CompressionAccuracy );
     }
   }
@@ -2816,6 +2839,7 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
 
 void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
   if (CompressionAccuracy>0.0) {
+    pullUnknownsFromByteStream(cellDescription);
     computeHierarchicalTransform(cellDescription,1.0);
   }
 }
@@ -2878,11 +2902,197 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::recor
 }
 
 
-void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+void exahype::solvers::ADERDGSolver::tearApart(int numberOfEntries, int heapIndex, int bytesForMantissa) {
+  char exponent;
+  long int mantissa;
+  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
 
+  assertion( DataHeap::getInstance().isValidIndex(heapIndex) );
+  assertion( CompressedDataHeap::getInstance().isValidIndex(heapIndex) );
+  assertion( static_cast<int>(DataHeap::getInstance().getData(heapIndex).size())==numberOfEntries );
+  assertion( CompressedDataHeap::getInstance().getData(heapIndex).empty() );
+
+  CompressedDataHeap::getInstance().getData( heapIndex ).resize(numberOfEntries * (bytesForMantissa+1));
+
+  int compressedDataHeapIndex = 0;
+  for (int i=0; i<numberOfEntries; i++) {
+    peano::heap::decompose(
+      DataHeap::getInstance().getData( heapIndex )[i],
+      exponent, mantissa, bytesForMantissa
+    );
+    CompressedDataHeap::getInstance().getData( heapIndex )[compressedDataHeapIndex]._persistentRecords._u = exponent;
+    compressedDataHeapIndex++;
+    for (int j=0; j<bytesForMantissa; j++) {
+      CompressedDataHeap::getInstance().getData( heapIndex )[compressedDataHeapIndex]._persistentRecords._u = pMantissa[j];
+      compressedDataHeapIndex++;
+    }
+  }
+
+  #if !defined(Asserts)
+  DataHeap::getInstance().getData(heapIndex).clear();
+  DataHeap::getInstance().getData(heapIndex).shrink_to_fit();
+  #endif
+}
+
+
+void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapIndex, int bytesForMantissa) {
+  char exponent  = 0;
+  long int mantissa = 0;
+  char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
+
+  assertion( DataHeap::getInstance().isValidIndex(heapIndex) );
+  assertion( CompressedDataHeap::getInstance().isValidIndex(heapIndex) );
+  assertion( static_cast<int>(CompressedDataHeap::getInstance().getData(heapIndex).size())==numberOfEntries * (bytesForMantissa+1) );
+
+  #ifdef Asserts
+  assertion( static_cast<int>(DataHeap::getInstance().getData(heapIndex).size())==numberOfEntries );
+  #else
+  DataHeap::getInstance().getData(heapIndex).resize(numberOfEntries);
+  #endif
+
+  int compressedDataHeapIndex = numberOfEntries * (bytesForMantissa+1)-1;
+  for (int i=numberOfEntries-1; i>=0; i--) {
+    for (int j=bytesForMantissa-1; j>=0; j--) {
+      pMantissa[j] = CompressedDataHeap::getInstance().getData( heapIndex )[compressedDataHeapIndex]._persistentRecords._u;
+      compressedDataHeapIndex--;
+    }
+    exponent = CompressedDataHeap::getInstance().getData( heapIndex )[compressedDataHeapIndex]._persistentRecords._u;
+    compressedDataHeapIndex--;
+    double reconstructedValue = peano::heap::compose(
+      exponent, mantissa, bytesForMantissa
+    );
+    #ifdef Asserts
+    assertion5(
+      tarch::la::equals( DataHeap::getInstance().getData(heapIndex)[i], reconstructedValue, CompressionAccuracy ),
+      DataHeap::getInstance().getData(heapIndex)[i], reconstructedValue, DataHeap::getInstance().getData(heapIndex)[i] - reconstructedValue,
+      CompressionAccuracy, bytesForMantissa
+    );
+    #else
+    DataHeap::getInstance().getData(heapIndex)[i] = reconstructedValue;
+    #endif
+
+  }
+
+  CompressedDataHeap::getInstance().getData(heapIndex).clear();
+  CompressedDataHeap::getInstance().getData(heapIndex).shrink_to_fit();
+}
+
+
+
+void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+  assertion(CompressionAccuracy>0.0);
+
+  //
+  // @todo
+  // =====
+  // Jetzt die Semaphore schalten und das Ding auf 0 setzen. Danach gleich wieder den Lock freigeben
+  // -> falsch, muss vor dem Spawn passieren
+  // Flag heisst  parallelise persistent packed bool isCurrentlyProcessed;
+  //
+
+  //
+  // Nochmal dem mit der Genauigkeit hinterhergehen. Vermutlich funktioniert Rekonstruktion net ganz weil wir abschneiden
+  //
+
+  int compressionOfSolution = peano::heap::findMostAgressiveCompression(
+    DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).data(),
+    _dataPerCell,
+    CompressionAccuracy
+  );
+  int compressionOfUpdate = peano::heap::findMostAgressiveCompression(
+    DataHeap::getInstance().getData( cellDescription.getUpdate() ).data(),
+    _dataPerCell,
+    CompressionAccuracy
+  );
+  int compressionOfExtrapolatedPredictor = peano::heap::findMostAgressiveCompression(
+    DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).data(),
+    _unknownsPerFace,
+    CompressionAccuracy
+  );
+  int compressionOfFluctuation = peano::heap::findMostAgressiveCompression(
+    DataHeap::getInstance().getData( cellDescription.getFluctuation() ).data(),
+    _unknownsPerFace,
+    CompressionAccuracy
+  );
+
+  assertion(1<=compressionOfSolution);
+  assertion(1<=compressionOfUpdate);
+  assertion(1<=compressionOfExtrapolatedPredictor);
+  assertion(1<=compressionOfFluctuation);
+
+  assertion(compressionOfSolution<=7);
+  assertion(compressionOfUpdate<=7);
+  assertion(compressionOfExtrapolatedPredictor<=7);
+  assertion(compressionOfFluctuation<=7);
+
+
+  cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
+  if (compressionOfSolution<7) {
+    const int heapIndex       = cellDescription.getSolution();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+    tearApart(numberOfEntries, heapIndex,compressionOfSolution);
+  }
+
+  cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
+  if (compressionOfUpdate<7) {
+    const int heapIndex       = cellDescription.getUpdate();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+    tearApart(numberOfEntries, heapIndex,compressionOfUpdate);
+  }
+
+  cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
+  if (compressionOfExtrapolatedPredictor<7) {
+    const int heapIndex       = cellDescription.getExtrapolatedPredictor();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+    tearApart(numberOfEntries, heapIndex,compressionOfExtrapolatedPredictor);
+  }
+
+  cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
+  if (compressionOfFluctuation<7) {
+    const int heapIndex       = cellDescription.getFluctuation();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+    tearApart(numberOfEntries, heapIndex,compressionOfFluctuation);
+  }
+
+  //
+  // @todo
+  // =====
+  // Jetzt die Semaphore schalten und das Ding auf die echte Codierung setzen. Danach gleich wieder den Lock freigeben
+  //
 }
 
 
 void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
+  assertion(CompressionAccuracy>0.0);
 
+  //
+  // @todo
+  // =====
+  // Semaphore schalten und flag isCurrentlyProcessed abfragen;
+  //
+
+  // das geht alles viere parallel
+  if (cellDescription.getBytesPerDoFInSolution()<7) {
+    const int heapIndex       = cellDescription.getSolution();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+    glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInSolution());
+  }
+
+  if (cellDescription.getBytesPerDoFInUpdate()<7) {
+    const int heapIndex       = cellDescription.getUpdate();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+    glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInUpdate());
+  }
+
+  if (cellDescription.getBytesPerDoFInExtrapolatedPredictor()<7) {
+    const int heapIndex       = cellDescription.getExtrapolatedPredictor();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+    glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInExtrapolatedPredictor());
+  }
+
+  if (cellDescription.getBytesPerDoFInFluctuation()<7) {
+    const int heapIndex       = cellDescription.getFluctuation();
+    const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+    glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInFluctuation());
+  }
 }

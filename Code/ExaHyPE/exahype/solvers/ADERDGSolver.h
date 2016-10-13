@@ -143,6 +143,9 @@ private:
    */
   double _minNextPredictorTimeStepSize;
 
+  void tearApart(int numberOfEntries, int heapIndex, int bytesForMantissa);
+  void glueTogether(int numberOfEntries, int heapIndex, int bytesForMantissa);
+
   /**
    * Different to compress(), this operation is called automatically by
    * mergeNeighbours(). Therefore the routine is private.
