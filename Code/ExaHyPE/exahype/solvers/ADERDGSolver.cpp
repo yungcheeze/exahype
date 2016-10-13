@@ -29,6 +29,10 @@
 #include "peano/heap/CompressedFloatingPointNumbers.h"
 #include "peano/datatraversal/TaskSet.h"
 
+#ifdef SharedTBB
+#include <tbb/parallel_invoke.h>
+#endif
+
 namespace {
   constexpr const char* tags[]{"solutionUpdate",
                              "volumeIntegral",
@@ -2820,37 +2824,6 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
-/*
-peano::datatraversal::TaskSet::TaskSet( const std::function <void ()>& f ) {
-  // falls keine TBBs:
-  #ifdef SharedTBB
-  // have to copy as the lambda expression seems to fade away
-//  typedef peano::datatraversal::TaskSet::GenericTask< const std::function <void ()>& > Task;
-  typedef peano::datatraversal::TaskSet::GenericTaskWithCopy< const std::function <void ()>& > Task;
-  Task* tbbTask = new(tbb::task::allocate_root()) Task(f);
-  tbb::task::enqueue(*tbbTask);
-  //tbbTask->execute();
-  #else
-  f();
-  #endif
-}
-
-*/
-
-
-/*
-class MyTask : public tbb::task {
-  public:
-    tbb::task* execute() override {
-        // Do the job
-      std::cerr << "(x)";
-      std::cerr.flush();
-        return nullptr; // or a pointer to a new task to be executed immediately
-    }
-};
-*/
-
-
 exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
   ADERDGSolver&                             solver,
   exahype::records::ADERDGCellDescription&  cellDescription
@@ -2861,18 +2834,13 @@ exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
 
 
 void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
-  std::cerr << "(x.1)";
-  std::cerr.flush();
   _solver.determineUnknownAverages(_cellDescription);
   _solver.computeHierarchicalTransform(_cellDescription,-1.0);
   _solver.putUnknownsIntoByteStream(_cellDescription);
 
   tarch::multicore::Lock lock(_solver._compressionSemaphore);
   _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-  std::cerr << "(x.2)";
-  std::cerr.flush();
 }
-
 
 
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
@@ -2882,8 +2850,8 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
       CompressionTask myTask( *this, cellDescription );
-      peano::datatraversal::TaskSet spawnedSet( myTask );
-      //myTask();
+      //peano::datatraversal::TaskSet spawnedSet( myTask );
+      myTask();
     }
     else {
       determineUnknownAverages(cellDescription);
@@ -2892,17 +2860,6 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
     }
   }
-
-
-/*
-  tbb::parallel_invoke(
-
-      []() { std::cout << "Hello!"; },
-
-      []() { std::cout << "Greetings!"; }
-
-  );
-*/
 }
 
 
@@ -2910,8 +2867,6 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
   #ifdef SharedMemoryParallelisation
   bool madeDecision = CompressionAccuracy==0.0;
   bool uncompress   = false;
-  std::cerr << "(y.1)";
-  std::cerr.flush();
   while (!madeDecision) {
     tarch::multicore::Lock lock(_compressionSemaphore);
     madeDecision = cellDescription.getCompressionState() != exahype::records::ADERDGCellDescription::CurrentlyProcessed;
@@ -2923,8 +2878,6 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
 
     tarch::multicore::BooleanSemaphore::sendTaskToBack();
   }
-  std::cerr << "(y.2)";
-  std::cerr.flush();
   #else
   bool uncompress = CompressionAccuracy>0.0 && cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
   #endif
@@ -3069,6 +3022,87 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapI
 void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
+  #ifdef SharedTBB
+  // @todo This should also we wrapped by TaskSet in Peano some day. If you bump
+  //       into this mail, write an email to Tobias Weinzierl please to remind me.
+
+  int compressionOfSolution;
+  int compressionOfUpdate;
+  int compressionOfExtrapolatedPredictor;
+  int compressionOfFluctuation;
+
+  tbb::parallel_invoke(
+    [&]() { compressionOfSolution = peano::heap::findMostAgressiveCompression(
+      DataHeap::getInstance().getData( cellDescription.getSolution() ).data(),
+      getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
+      CompressionAccuracy
+      );},
+    [&]() { compressionOfUpdate = peano::heap::findMostAgressiveCompression(
+      DataHeap::getInstance().getData( cellDescription.getUpdate() ).data(),
+      getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
+      CompressionAccuracy
+      );},
+    [&]() { compressionOfExtrapolatedPredictor = peano::heap::findMostAgressiveCompression(
+      DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).data(),
+      getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
+      CompressionAccuracy
+      );},
+    [&]() { compressionOfFluctuation = peano::heap::findMostAgressiveCompression(
+      DataHeap::getInstance().getData( cellDescription.getFluctuation() ).data(),
+      getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
+      CompressionAccuracy
+      );}
+  );
+
+  assertion(1<=compressionOfSolution);
+  assertion(1<=compressionOfUpdate);
+  assertion(1<=compressionOfExtrapolatedPredictor);
+  assertion(1<=compressionOfFluctuation);
+
+  assertion(compressionOfSolution<=7);
+  assertion(compressionOfUpdate<=7);
+  assertion(compressionOfExtrapolatedPredictor<=7);
+  assertion(compressionOfFluctuation<=7);
+
+  tbb::parallel_invoke(
+    [&]() {
+      cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
+      if (compressionOfSolution<7) {
+        const int heapIndex       = cellDescription.getSolution();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        tearApart(numberOfEntries, heapIndex,compressionOfSolution);
+        assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
+      }
+    },
+    [&]() {
+      cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
+      if (compressionOfUpdate<7) {
+        const int heapIndex       = cellDescription.getUpdate();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        tearApart(numberOfEntries, heapIndex,compressionOfUpdate);
+        assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
+      }
+    },
+    [&]() {
+      cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
+      if (compressionOfExtrapolatedPredictor<7) {
+        const int heapIndex       = cellDescription.getExtrapolatedPredictor();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        tearApart(numberOfEntries, heapIndex,compressionOfExtrapolatedPredictor);
+        assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
+      }
+    },
+    [&]() {
+      cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
+      if (compressionOfFluctuation<7) {
+        const int heapIndex       = cellDescription.getFluctuation();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        tearApart(numberOfEntries, heapIndex,compressionOfFluctuation);
+        assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
+      }
+    }
+  );
+  #else
   int compressionOfSolution = peano::heap::findMostAgressiveCompression(
     DataHeap::getInstance().getData( cellDescription.getSolution() ).data(),
     getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
@@ -3132,12 +3166,45 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     tearApart(numberOfEntries, heapIndex,compressionOfFluctuation);
     assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
+  #endif
 }
 
 
 void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
+  #ifdef SharedTBB
+  tbb::parallel_invoke(
+    [&]() {
+      if (cellDescription.getBytesPerDoFInSolution()<7) {
+        const int heapIndex       = cellDescription.getSolution();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInSolution());
+      }
+    },
+    [&]() {
+      if (cellDescription.getBytesPerDoFInUpdate()<7) {
+        const int heapIndex       = cellDescription.getUpdate();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInUpdate());
+      }
+    },
+    [&]() {
+      if (cellDescription.getBytesPerDoFInExtrapolatedPredictor()<7) {
+        const int heapIndex       = cellDescription.getExtrapolatedPredictor();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInExtrapolatedPredictor());
+      }
+    },
+    [&]() {
+      if (cellDescription.getBytesPerDoFInFluctuation()<7) {
+        const int heapIndex       = cellDescription.getFluctuation();
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
+        glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInFluctuation());
+      }
+    }
+  );
+  #else
   if (cellDescription.getBytesPerDoFInSolution()<7) {
     const int heapIndex       = cellDescription.getSolution();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
@@ -3161,4 +3228,5 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
     glueTogether(numberOfEntries, heapIndex,cellDescription.getBytesPerDoFInFluctuation());
   }
+  #endif
 }

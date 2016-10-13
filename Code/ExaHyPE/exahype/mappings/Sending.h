@@ -208,6 +208,13 @@ static void sendEmptySolverDataToNeighbour(
    * coarse grid cell associated with the parent cell description.
    *
    * \note We use a semaphore to make this operation thread-safe.
+   *
+   *
+   * <h2> Multicore parallelisation </h2>
+   *
+   * We face issues here with pfor as the ADER-DG solver can spawn background
+   * threads. See the documentation of peano::datatraversal::TasksSet for a
+   * remark on this.
    */
   void leaveCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,

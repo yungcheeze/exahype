@@ -1450,6 +1450,9 @@ public:
    * the compression is invoked by enterCell or leaveCell respectively, i.e.
    * exactly once per cell. This can happen in parallel for multiple cells
    * which is fine.
+   *
+   * However, we have to take care about the interplay of compression and
+   * uncompression. The
    */
   void compress(exahype::records::ADERDGCellDescription& cellDescription);
 };
