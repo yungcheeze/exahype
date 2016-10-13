@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////
 #include "peano/utils/Globals.h"
 
-Packed-Type: long int;
+Packed-Type: int;
 
 Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
@@ -362,13 +362,19 @@ class exahype::records::ADERDGCellDescription {
   
   parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 
+  enum CompressionState {
+    Uncompressed,
+    CurrentlyProcessed,
+    Compressed
+  };
+  parallelise persistent packed CompressionState compressionState;
+
   /**
    * We use a 7 to indicate that compression does not pay off at all. Please
    * note that the encoding follows peano::heap::findMostAgressiveCompression()
    * which returns not the bytes actually used but the bytes spent on the 
    * mantissa. Less than two byes is not supported by ExaHyPE actually.
    */
-  parallelise persistent packed bool isCurrentlyProcessed;
   parallelise persistent packed int bytesPerDoFInSolution              from 1 to 7;
   parallelise persistent packed int bytesPerDoFInUpdate                from 1 to 7;
   parallelise persistent packed int bytesPerDoFInExtrapolatedPredictor from 1 to 7;

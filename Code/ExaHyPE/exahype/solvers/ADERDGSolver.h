@@ -156,7 +156,7 @@ private:
    * This predicate holds if and only if no Riemann solve has been done for
    * this cell at all.
    */
-  bool isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription);
+  bool uncompressBeforeWorkContinues(const exahype::records::ADERDGCellDescription& cellDescription) const;
 
   /**
    * TODO(Dominic): Add more docu.

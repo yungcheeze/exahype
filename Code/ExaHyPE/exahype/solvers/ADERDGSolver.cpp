@@ -69,6 +69,8 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
 
         if (CompressionAccuracy>0.0) {
+          //cellDescription.setIsCurrentlyProcessed(false);
+
           CompressedDataHeap::getInstance().deleteData(cellDescription.getUpdate());
           CompressedDataHeap::getInstance().deleteData(cellDescription.getSolution());
         }
@@ -99,10 +101,6 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
           CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
           CompressedDataHeap::getInstance().deleteData(cellDescription.getFluctuation());
         }
-
-        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
-        DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
-
 
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
@@ -136,6 +134,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
         cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
         cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
+
+        cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
       }
       break;
     default:
@@ -1500,10 +1500,10 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
   CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
 
-  if (isReadForTheVeryFirstTime(pLeft)) {
+  if (uncompressBeforeWorkContinues(pLeft)) {
     uncompress(pLeft);
   }
-  if (isReadForTheVeryFirstTime(pRight)) {
+  if (uncompressBeforeWorkContinues(pRight)) {
     uncompress(pRight);
   }
 
@@ -1618,7 +1618,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     const int faceIndex = 2 * normalOfExchangedFace +
         (posCell(normalOfExchangedFace) < posBoundary(normalOfExchangedFace) ? 1 : 0);
 
-    if (isReadForTheVeryFirstTime(cellDescription)) {
+    if (uncompressBeforeWorkContinues(cellDescription)) {
       uncompress(cellDescription);
     }
 
@@ -2822,37 +2822,47 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 
 
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
+#ifdef SharedMemoryParallelisation
+#error Unproblematisch, da ja nicht parallel ausgefuehrt werden kann (zellweise)
+#endif
+  assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Uncompressed, cellDescription.toString() );
   if (CompressionAccuracy>0.0) {
     if (SpawnCompressionAsBackgroundThread) {
-        // @todo Hier kann der Spawn rein
+      //cellDescription.setIsCurrentlyProcessed(true);
+      // @todo Hier kann der Spawn rein
       assertionMsg(false, "not implemented yet" );
     }
     else {
-        determineUnknownAverages(cellDescription);
-        computeHierarchicalTransform(cellDescription,-1.0);
-        putUnknownsIntoByteStream(cellDescription);
-//      solver->compress( pFine, CompressionAccuracy );
+      determineUnknownAverages(cellDescription);
+      computeHierarchicalTransform(cellDescription,-1.0);
+      putUnknownsIntoByteStream(cellDescription);
+      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
     }
   }
 }
 
 
 void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDescription& cellDescription) {
+#ifdef SharedMemoryParallelisation
+#error Sofort umsetzen, damit ein anderer es erst gar nicht probiert? Problematisch, weil sonst evtl. jemand mit falschen Daten arbeitet
+#endif
+  assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed, cellDescription.toString() );
   if (CompressionAccuracy>0.0) {
     pullUnknownsFromByteStream(cellDescription);
     computeHierarchicalTransform(cellDescription,1.0);
+    cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
   }
 }
 
 
-bool exahype::solvers::ADERDGSolver::isReadForTheVeryFirstTime(exahype::records::ADERDGCellDescription& cellDescription) {
-  bool result = true;
-
-  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    result &= !cellDescription.getRiemannSolvePerformed(i);
-  }
-
-  return result;
+bool exahype::solvers::ADERDGSolver::uncompressBeforeWorkContinues(const exahype::records::ADERDGCellDescription& cellDescription) const {
+  //
+  // @todo Hier muss die Semaphore rein
+  //
+#ifdef SharedMemoryParallelisation
+#error
+#endif
+  return cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
 }
 
 
@@ -2937,12 +2947,16 @@ void exahype::solvers::ADERDGSolver::tearApart(int numberOfEntries, int heapInde
 
 void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapIndex, int bytesForMantissa) {
   char exponent  = 0;
-  long int mantissa = 0;
+  long int mantissa;
   char* pMantissa = reinterpret_cast<char*>( &(mantissa) );
 
   assertion( DataHeap::getInstance().isValidIndex(heapIndex) );
   assertion( CompressedDataHeap::getInstance().isValidIndex(heapIndex) );
-  assertion( static_cast<int>(CompressedDataHeap::getInstance().getData(heapIndex).size())==numberOfEntries * (bytesForMantissa+1) );
+  assertion5(
+    static_cast<int>(CompressedDataHeap::getInstance().getData(heapIndex).size())==numberOfEntries * (bytesForMantissa+1),
+    CompressedDataHeap::getInstance().getData(heapIndex).size(), numberOfEntries * (bytesForMantissa+1),
+    numberOfEntries, heapIndex, bytesForMantissa
+  );
 
   #ifdef Asserts
   assertion( static_cast<int>(DataHeap::getInstance().getData(heapIndex).size())==numberOfEntries );
@@ -2952,6 +2966,7 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapI
 
   int compressedDataHeapIndex = numberOfEntries * (bytesForMantissa+1)-1;
   for (int i=numberOfEntries-1; i>=0; i--) {
+    mantissa = 0;
     for (int j=bytesForMantissa-1; j>=0; j--) {
       pMantissa[j] = CompressedDataHeap::getInstance().getData( heapIndex )[compressedDataHeapIndex]._persistentRecords._u;
       compressedDataHeapIndex--;
@@ -2962,15 +2977,14 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapI
       exponent, mantissa, bytesForMantissa
     );
     #ifdef Asserts
-    assertion5(
+    assertion7(
       tarch::la::equals( DataHeap::getInstance().getData(heapIndex)[i], reconstructedValue, CompressionAccuracy ),
       DataHeap::getInstance().getData(heapIndex)[i], reconstructedValue, DataHeap::getInstance().getData(heapIndex)[i] - reconstructedValue,
-      CompressionAccuracy, bytesForMantissa
+      CompressionAccuracy, bytesForMantissa, numberOfEntries, heapIndex
     );
     #else
     DataHeap::getInstance().getData(heapIndex)[i] = reconstructedValue;
     #endif
-
   }
 
   CompressedDataHeap::getInstance().getData(heapIndex).clear();
@@ -2982,36 +2996,24 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int heapI
 void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
-  //
-  // @todo
-  // =====
-  // Jetzt die Semaphore schalten und das Ding auf 0 setzen. Danach gleich wieder den Lock freigeben
-  // -> falsch, muss vor dem Spawn passieren
-  // Flag heisst  parallelise persistent packed bool isCurrentlyProcessed;
-  //
-
-  //
-  // Nochmal dem mit der Genauigkeit hinterhergehen. Vermutlich funktioniert Rekonstruktion net ganz weil wir abschneiden
-  //
-
   int compressionOfSolution = peano::heap::findMostAgressiveCompression(
-    DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).data(),
-    _dataPerCell,
+    DataHeap::getInstance().getData( cellDescription.getSolution() ).data(),
+    getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
     CompressionAccuracy
   );
   int compressionOfUpdate = peano::heap::findMostAgressiveCompression(
     DataHeap::getInstance().getData( cellDescription.getUpdate() ).data(),
-    _dataPerCell,
+    getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
     CompressionAccuracy
   );
   int compressionOfExtrapolatedPredictor = peano::heap::findMostAgressiveCompression(
     DataHeap::getInstance().getData( cellDescription.getExtrapolatedPredictor() ).data(),
-    _unknownsPerFace,
+    getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
     CompressionAccuracy
   );
   int compressionOfFluctuation = peano::heap::findMostAgressiveCompression(
     DataHeap::getInstance().getData( cellDescription.getFluctuation() ).data(),
-    _unknownsPerFace,
+    getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
     CompressionAccuracy
   );
 
@@ -3031,6 +3033,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     const int heapIndex       = cellDescription.getSolution();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
     tearApart(numberOfEntries, heapIndex,compressionOfSolution);
+    assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
 
   cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
@@ -3038,6 +3041,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     const int heapIndex       = cellDescription.getUpdate();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
     tearApart(numberOfEntries, heapIndex,compressionOfUpdate);
+    assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
 
   cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
@@ -3045,6 +3049,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     const int heapIndex       = cellDescription.getExtrapolatedPredictor();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
     tearApart(numberOfEntries, heapIndex,compressionOfExtrapolatedPredictor);
+    assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
 
   cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
@@ -3052,6 +3057,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     const int heapIndex       = cellDescription.getFluctuation();
     const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
     tearApart(numberOfEntries, heapIndex,compressionOfFluctuation);
+    assertion( !CompressedDataHeap::getInstance().getData(heapIndex).empty() );
   }
 
   //
@@ -3068,9 +3074,6 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   //
   // @todo
   // =====
-  // Semaphore schalten und flag isCurrentlyProcessed abfragen;
-  //
-
   // das geht alles viere parallel
   if (cellDescription.getBytesPerDoFInSolution()<7) {
     const int heapIndex       = cellDescription.getSolution();
