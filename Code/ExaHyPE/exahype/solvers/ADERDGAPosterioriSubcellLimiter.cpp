@@ -263,6 +263,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
               aderdgSolution,
               aderdgSolver->getNumberOfVariables(),
               aderdgSolver->getNodesPerCoordinateAxis(),
+              finiteVolumesSolver->getNodesPerCoordinateAxis(),
               finiteVolumesSolution);
           finiteVolumesCellDescription.setTimeStamp(aderdgCellDescription.getCorrectorTimeStamp());
           finiteVolumesCellDescription.setTimeStepSize(aderdgCellDescription.getCorrectorTimeStepSize());

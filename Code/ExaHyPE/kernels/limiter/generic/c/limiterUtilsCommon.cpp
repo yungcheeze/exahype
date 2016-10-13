@@ -115,7 +115,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 
   const int basisSizeLim = getLimBasisSize(basisSize);
   double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-  getFVMData(luh, numberOfVariables, basisSize, lim);
+  getFVMData(luh, numberOfVariables, basisSize, basisSizeLim, lim);
   findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
   delete[] lim;
 
@@ -137,6 +137,128 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   
   return false;
 }
+
+double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize) {
+
+#if DIMENSIONS == 3
+  const int basisSize3D = basisSize;
+#else
+  const int basisSize3D = 1;  
+#endif
+
+  idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
+  idx2 idxConv(basisSize, basisSize);
+  
+  double* lob = new double[basisSize3D*basisSize*basisSize*numberOfVariables]; //Fortran ref: lob(nVar,nDOF(1),nDOF(2),nDOF(3))
+  
+  int x,y,z,v,ix,iy,iz;
+  
+  for(z=0; z<basisSize3D; z++) {
+    for(y=0; y<basisSize; y++) {
+      for(x=0; x<basisSize; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          lob[idx(z,y,x,v)] = 0;
+          for(iz=0; iz<basisSize3D; iz++) {
+            for(iy=0; iy<basisSize; iy++) {
+              for(ix=0; ix<basisSize;ix++) {
+                lob[idx(z,y,x,v)] += luh[idx(iz,iy,ix,v)] 
+#if DIMENSIONS == 3
+                                        * uh2lob[basisSize-1][idxConv(iz,z)] 
+#endif
+                                        * uh2lob[basisSize-1][idxConv(iy,y)] * uh2lob[basisSize-1][idxConv(ix,x)];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  return lob;
+}
+
+//Fortran (Limiter.f90): GetSubcellData
+// Allocate lim memory via
+// double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
+void getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* lim) {
+  
+#if DIMENSIONS == 3
+  const int basisSize3D = basisSize;
+  const int basisSizeLim3D = basisSizeLim;
+#else
+  const int basisSize3D = 1;  
+  const int basisSizeLim3D = 1;
+#endif
+
+  idx4 idxLuh(basisSize3D, basisSize, basisSize, numberOfVariables);
+  idx4 idxLim(basisSizeLim3D, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx2 idxConv(basisSize, basisSizeLim); 
+  
+  int x,y,z,v,ix,iy,iz; 
+  
+  for(z=0; z<basisSizeLim3D; z++) {
+    for(y=0; y<basisSizeLim; y++) {
+      //lim(:,:,iii,jjj) = MATMUL( limy(:,:,iii,jjj), TRANSPOSE(uh2lim) )
+      for(x=0; x<basisSizeLim; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          lim[idxLim(z,y,x,v)] = 0;
+          for(iz=0; iz<basisSize3D; iz++) {
+            for(iy=0; iy<basisSize; iy++) {
+              for(ix=0; ix<basisSize; ix++) {
+                lim[idxLim(z,y,x,v)] += luh[idxLuh(iz,iy,ix,v)] 
+#if DIMENSIONS == 3
+                                          * uh2lim[basisSize-1][idxConv(iz,z)]
+#endif
+                                          * uh2lim[basisSize-1][idxConv(iy,y)] * uh2lim[basisSize-1][idxConv(ix,x)];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+}
+
+void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+  
+#if DIMENSIONS == 3
+  const int basisSize3D = basisSize;
+  const int basisSizeLim3D = basisSizeLim;
+#else
+  const int basisSize3D = 1;  
+  const int basisSizeLim3D = 1;
+#endif
+  
+  idx4 idxLuh(basisSize3D, basisSize, basisSize, numberOfVariables);
+  idx4 idxLim(basisSizeLim3D, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx2 idxConv(basisSizeLim, basisSize);
+  
+  int x,y,z,v,ix,iy,iz;
+
+  for(z=0; z<basisSize3D; z++) {
+    for(y=0; y<basisSize; y++) {
+      //luh(:,:,iii,jjj) = MATMUL( luhy(:,:,iii,jjj), TRANSPOSE(lim2uh) )  
+      for(x=0; x<basisSize; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          luh[idxLuh(z,y,x,v)] = 0;
+          for(iz=0; iz<basisSizeLim3D; iz++) {
+            for(iy=0; iy<basisSizeLim; iy++) {
+              for(ix=0; ix<basisSizeLim; ix++) {
+                luh[idxLuh(z,y,x,v)] += lim[idxLim(iz,iy,ix,v)] 
+#if DIMENSIONS == 3
+                                          * lim2uh[basisSize-1][idxConv(iz,z)] 
+#endif
+                                          * lim2uh[basisSize-1][idxConv(iy,y)] * lim2uh[basisSize-1][idxConv(ix,x)];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+} 
 
 } // namespace c
 } // namespace generic

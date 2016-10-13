@@ -22,6 +22,7 @@ namespace limiter {
 namespace generic {
 namespace c {
 
+<<<<<<< HEAD
 //Fortran (Limiter.f90): GetLobattoData
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize) {
   
@@ -70,6 +71,9 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
   return lob;
 }
 
+=======
+/*
+>>>>>>> Limiter Kernel - Refactor the projections to remove tmp arrays and make them dimension agnostic
 //Fortran (Limiter.f90): GetSubcellData
 // Allocate lim via
 // double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
@@ -125,6 +129,7 @@ void getFVMData(const double* const luh, const int numberOfVariables, const int 
   delete[] tmpY;
 }
 
+
 void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
   
   idx3 idxLuh(basisSize, basisSize, numberOfVariables);
@@ -165,7 +170,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
   delete[] tmpY;
   
 } 
-
+*/
 
 } // namespace c
 } // namespace generic

@@ -15,7 +15,7 @@
 
 // TODO(Dominic): JM, please fix the segfaults before you register
 // the test again.
-//registerTest(exahype::tests::c::LimiterKernelTest)
+registerTest(exahype::tests::c::LimiterKernelTest)
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", off)
@@ -48,7 +48,7 @@ LimiterKernelTest::~LimiterKernelTest() {}
 void LimiterKernelTest::run() {
   _log.info("LimiterKernelTest::run()", "LimiterKernelTest is active");
   
-  testMethod(testGetGaussLobattoData);
+  testMethod(testGetGaussLobattoData);  
   testMethod(testGetFVMData);
   testMethod(testUpdateSubcellWithLimiterData);
   //testMethod(testFindCellLocallocalMinlocalMax)
@@ -73,9 +73,15 @@ void LimiterKernelTest::testGetFVMData() {
           "Test luh -> lim, ORDER=4, DIM="+dim);
           
   const int calcBasisSizeLim = kernels::limiter::generic::c::getLimBasisSize(basisSize);
-  double* lim = new double[calcBasisSizeLim*calcBasisSizeLim*numberOfVariables];
+#ifdef Dim2
+  const int size = calcBasisSizeLim*calcBasisSizeLim*numberOfVariables;
+#endif
+#ifdef Dim3
+  const int size = calcBasisSizeLim*calcBasisSizeLim*calcBasisSizeLim*numberOfVariables;
+#endif
+  double* lim = new double[size];
 
-  kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, lim);
+  kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, calcBasisSizeLim, lim);
   
   validateEquals(calcBasisSizeLim, basisSizeLim)
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLim; i++) {
