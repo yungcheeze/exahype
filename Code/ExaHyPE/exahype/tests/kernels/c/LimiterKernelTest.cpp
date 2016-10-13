@@ -81,7 +81,7 @@ void LimiterKernelTest::testGetFVMData() {
 #endif
   double* lim = new double[size];
 
-  kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, calcBasisSizeLim, lim);
+  kernels::limiter::generic::c::projectOnFVLimiterSpace(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, calcBasisSizeLim, lim);
   
   validateEquals(calcBasisSizeLim, basisSizeLim)
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLim; i++) {
@@ -96,7 +96,7 @@ void LimiterKernelTest::testUpdateSubcellWithLimiterData(){
           "Test lim -> luh, ORDER=4, DIM="+dim);
           
   double* luh = new double[exahype::tests::testdata::limiter::sizeLuh]();
-  kernels::limiter::generic::c::updateSubcellWithLimiterData(exahype::tests::testdata::limiter::testToLuhConversion::lim_in, numberOfVariables, basisSizeLim, basisSize, luh);
+  kernels::limiter::generic::c::projectOnADERDGSpace(exahype::tests::testdata::limiter::testToLuhConversion::lim_in, numberOfVariables, basisSizeLim, basisSize, luh);
   
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLuh; i++) {
     validateNumericalEqualsWithEps(luh[i], exahype::tests::testdata::limiter::testToLuhConversion::luh_out[i], eps);

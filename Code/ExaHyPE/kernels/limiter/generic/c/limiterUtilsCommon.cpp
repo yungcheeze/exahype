@@ -28,7 +28,7 @@ int getLimBasisSize(const int basisSize) {
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {
+void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
   int index, ii, iVar, iiEnd;
 
   // process lim
@@ -50,7 +50,7 @@ void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariab
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {
+void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
   int index, ii, iVar, iiEnd;
   
   // initialize and process luh
@@ -72,20 +72,8 @@ void findCellLocalMinAndMax(const double* const luh, const double* const lim, co
     }
   }
  
-  // process lob
-  double* lob = getGaussLobattoData(luh, numberOfVariables, basisSize);
-  index = 0;
-  iiEnd =  basisSize*basisSize;
-  if(DIMENSIONS == 3)
-     iiEnd *= basisSize;
-  for(ii = 0; ii < iiEnd; ii++) {
-    for(iVar = 0; iVar < numberOfVariables; iVar++) {
-      localMin[iVar] = std::min ( localMin[iVar], lob[index] );
-      localMax[iVar] = std::max ( localMax[iVar], lob[index] );
-      index++;
-    }
-  }
-  delete[] lob;
+  //process lob
+  compareWithADERDGSolutionAtGaussLobattoNodes(luh, numberOfVariables, basisSize, localMin, localMax);
   
   // process lim
   findCellLocalLimMinAndMax(lim,numberOfVariables,basisSize,localMin,localMax);
@@ -115,7 +103,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 
   const int basisSizeLim = getLimBasisSize(basisSize);
   double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-  getFVMData(luh, numberOfVariables, basisSize, basisSizeLim, lim);
+  projectOnFVLimiterSpace(luh, numberOfVariables, basisSize, basisSizeLim, lim);
   findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
   delete[] lim;
 
@@ -138,6 +126,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   return false;
 }
 
+//Used only for test purpose to check the projection since expandBoundariesWithGaussLobatto uses the same loop
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize) {
 
 #if DIMENSIONS == 3
@@ -177,10 +166,53 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
   return lob;
 }
 
+
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max) {
+
+#if DIMENSIONS == 3
+  const int basisSize3D = basisSize;
+#else
+  const int basisSize3D = 1;  
+#endif
+
+  idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
+  idx2 idxConv(basisSize, basisSize);
+  
+  double tmp;
+  int x,y,z,v,ix,iy,iz;
+  
+  for(z=0; z<basisSize3D; z++) {
+    for(y=0; y<basisSize; y++) {
+      for(x=0; x<basisSize; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          tmp = 0;
+          for(iz=0; iz<basisSize3D; iz++) {
+            for(iy=0; iy<basisSize; iy++) {
+              for(ix=0; ix<basisSize;ix++) {
+                tmp += luh[idx(iz,iy,ix,v)] 
+#if DIMENSIONS == 3
+                                        * uh2lob[basisSize-1][idxConv(iz,z)] 
+#endif
+                                        * uh2lob[basisSize-1][idxConv(iy,y)] * uh2lob[basisSize-1][idxConv(ix,x)];
+              }
+            }
+          }
+          if(min[v] > tmp) {
+            min[v] = tmp;
+          } else if(max[v] < tmp) {
+            max[v] = tmp;
+          }
+        }
+      }
+    }
+  }
+
+}
+
 //Fortran (Limiter.f90): GetSubcellData
 // Allocate lim memory via
 // double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-void getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* lim) {
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim) {
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
@@ -220,7 +252,7 @@ void getFVMData(const double* const luh, const int numberOfVariables, const int 
   
 }
 
-void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;

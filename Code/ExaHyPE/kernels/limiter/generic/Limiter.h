@@ -30,14 +30,17 @@ namespace c {
 
 int getLimBasisSize(const int basisSize);
 
-double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize);
-void getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* lim);
+double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); //for test only
 
-void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax);
-void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* localMin, double* localMax);
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
+
+void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
+void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
-void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
+void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
   
 
 } // namespace c

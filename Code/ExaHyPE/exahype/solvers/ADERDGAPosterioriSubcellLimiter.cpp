@@ -67,7 +67,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
           getData(finiteVolumesCellDescription.getSolution()).data();
       double* aderdgSolution  = exahype::solvers::ADERDGSolver::DataHeap::getInstance().
           getData(aderdgCellDescription.getSolution()).data();
-      kernels::limiter::generic::c::updateSubcellWithLimiterData(
+      kernels::limiter::generic::c::projectOnADERDGSpace(
           finiteVolumesSolution,
           finiteVolumesSolver->getNumberOfVariables(),
           finiteVolumesSolver->getNodesPerCoordinateAxis(),
@@ -148,7 +148,7 @@ void evolveFiniteVolumesSolution(
   double* aderdgSolutionMax =  exahype::solvers::ADERDGSolver::DataHeap::getInstance().
       getData(aderdgCellDescription.getSolutionMax()).data();
 
-  kernels::limiter::generic::c::updateSubcellWithLimiterData(
+  kernels::limiter::generic::c::projectOnADERDGSpace(
       finiteVolumesSolution,
       finiteVolumesSolver->getNumberOfVariables(),
       finiteVolumesSolver->getNodesPerCoordinateAxis(),
@@ -259,7 +259,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
           // 3. If everything is fine with the ADER-DG solution, we project it back
           // onto the FV solution space to prepare limiting of the ADER-DG
           // solution values in this cell and in the neighbouring cells.
-          kernels::limiter::generic::c::getFVMData(
+          kernels::limiter::generic::c::projectOnFVLimiterSpace(
               aderdgSolution,
               aderdgSolver->getNumberOfVariables(),
               aderdgSolver->getNodesPerCoordinateAxis(),
