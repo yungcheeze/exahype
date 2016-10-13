@@ -6,7 +6,7 @@
    }
    
    
-   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
+   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
@@ -35,7 +35,11 @@
    _solutionMin(solutionMin),
    _solutionMax(solutionMax),
    _limiterStatus(limiterStatus),
-   _bytesPerDoF(bytesPerDoF) {
+   _isCurrentlyProcessed(isCurrentlyProcessed),
+   _bytesPerDoFInSolution(bytesPerDoFInSolution),
+   _bytesPerDoFInUpdate(bytesPerDoFInUpdate),
+   _bytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor),
+   _bytesPerDoFInFluctuation(bytesPerDoFInFluctuation) {
       
    }
    
@@ -45,13 +49,13 @@
    
    
    exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._hasToHoldDataForNeighbourCommunication, persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._bytesPerDoF) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._hasToHoldDataForNeighbourCommunication, persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._isCurrentlyProcessed, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
       
    }
    
    
-   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, bytesPerDoF) {
+   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, isCurrentlyProcessed, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
       
    }
    
@@ -197,7 +201,15 @@
    }
    out << getLimiterStatus(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "bytesPerDoF:" << getBytesPerDoF();
+      out << "isCurrentlyProcessed:" << getIsCurrentlyProcessed();
+      out << ",";
+      out << "bytesPerDoFInSolution:" << getBytesPerDoFInSolution();
+      out << ",";
+      out << "bytesPerDoFInUpdate:" << getBytesPerDoFInUpdate();
+      out << ",";
+      out << "bytesPerDoFInExtrapolatedPredictor:" << getBytesPerDoFInExtrapolatedPredictor();
+      out << ",";
+      out << "bytesPerDoFInFluctuation:" << getBytesPerDoFInFluctuation();
       out <<  ")";
    }
    
@@ -236,7 +248,11 @@
          getSolutionMin(),
          getSolutionMax(),
          getLimiterStatus(),
-         getBytesPerDoF()
+         getIsCurrentlyProcessed(),
+         getBytesPerDoFInSolution(),
+         getBytesPerDoFInUpdate(),
+         getBytesPerDoFInExtrapolatedPredictor(),
+         getBytesPerDoFInFluctuation()
       );
    }
    
@@ -251,7 +267,7 @@
          {
             ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 30;
+            const int Attributes = 34;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
@@ -281,7 +297,11 @@
                MPI_INT,		 //solutionMin
                MPI_INT,		 //solutionMax
                MPI_INT,		 //limiterStatus
-               MPI_INT,		 //bytesPerDoF
+               MPI_CHAR,		 //isCurrentlyProcessed
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
                MPI_UB		 // end/displacement flag
             };
             
@@ -314,7 +334,11 @@
                1,		 //solutionMin
                1,		 //solutionMax
                DIMENSIONS_TIMES_TWO,		 //limiterStatus
-               1,		 //bytesPerDoF
+               1,		 //isCurrentlyProcessed
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
                1		 // end/displacement flag
             };
             
@@ -350,8 +374,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[25] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[26] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus[0]))), 		&disp[27] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoF))), 		&disp[28] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isCurrentlyProcessed))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[33] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -366,7 +394,7 @@
          {
             ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 30;
+            const int Attributes = 34;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
@@ -396,7 +424,11 @@
                MPI_INT,		 //solutionMin
                MPI_INT,		 //solutionMax
                MPI_INT,		 //limiterStatus
-               MPI_INT,		 //bytesPerDoF
+               MPI_CHAR,		 //isCurrentlyProcessed
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
                MPI_UB		 // end/displacement flag
             };
             
@@ -429,7 +461,11 @@
                1,		 //solutionMin
                1,		 //solutionMax
                DIMENSIONS_TIMES_TWO,		 //limiterStatus
-               1,		 //bytesPerDoF
+               1,		 //isCurrentlyProcessed
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
                1		 // end/displacement flag
             };
             
@@ -465,8 +501,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[25] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[26] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus[0]))), 		&disp[27] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoF))), 		&disp[28] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isCurrentlyProcessed))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[33] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -709,17 +749,17 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
+   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _hasToHoldDataForMasterWorkerCommunication(hasToHoldDataForMasterWorkerCommunication),
    _faceDataExchangeCounter(faceDataExchangeCounter),
@@ -748,47 +788,51 @@
       setHasToHoldDataForNeighbourCommunication(hasToHoldDataForNeighbourCommunication);
       setType(type);
       setRefinementEvent(refinementEvent);
-      setBytesPerDoF(bytesPerDoF);
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 >= (8 * sizeof(int)))) {
+      setIsCurrentlyProcessed(isCurrentlyProcessed);
+      setBytesPerDoFInSolution(bytesPerDoFInSolution);
+      setBytesPerDoFInUpdate(bytesPerDoFInUpdate);
+      setBytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor);
+      setBytesPerDoFInFluctuation(bytesPerDoFInFluctuation);
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 < (8 * sizeof(int))));
       
    }
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 < (8 * sizeof(int))));
       
    }
    
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords.getHasToHoldDataForNeighbourCommunication(), persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords.getBytesPerDoF()) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 >= (8 * sizeof(int)))) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords.getHasToHoldDataForNeighbourCommunication(), persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords.getIsCurrentlyProcessed(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, bytesPerDoF) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 >= (8 * sizeof(int)))) {
+   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, isCurrentlyProcessed, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+11 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+21 < (8 * sizeof(int))));
       
    }
    
@@ -909,7 +953,15 @@
    }
    out << getLimiterStatus(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "bytesPerDoF:" << getBytesPerDoF();
+      out << "isCurrentlyProcessed:" << getIsCurrentlyProcessed();
+      out << ",";
+      out << "bytesPerDoFInSolution:" << getBytesPerDoFInSolution();
+      out << ",";
+      out << "bytesPerDoFInUpdate:" << getBytesPerDoFInUpdate();
+      out << ",";
+      out << "bytesPerDoFInExtrapolatedPredictor:" << getBytesPerDoFInExtrapolatedPredictor();
+      out << ",";
+      out << "bytesPerDoFInFluctuation:" << getBytesPerDoFInFluctuation();
       out <<  ")";
    }
    
@@ -948,7 +1000,11 @@
          getSolutionMin(),
          getSolutionMax(),
          getLimiterStatus(),
-         getBytesPerDoF()
+         getIsCurrentlyProcessed(),
+         getBytesPerDoFInSolution(),
+         getBytesPerDoFInUpdate(),
+         getBytesPerDoFInExtrapolatedPredictor(),
+         getBytesPerDoFInFluctuation()
       );
    }
    
@@ -1397,7 +1453,7 @@
    }
    
    
-   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
+   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
@@ -1423,7 +1479,11 @@
    _solutionMin(solutionMin),
    _solutionMax(solutionMax),
    _limiterStatus(limiterStatus),
-   _bytesPerDoF(bytesPerDoF) {
+   _isCurrentlyProcessed(isCurrentlyProcessed),
+   _bytesPerDoFInSolution(bytesPerDoFInSolution),
+   _bytesPerDoFInUpdate(bytesPerDoFInUpdate),
+   _bytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor),
+   _bytesPerDoFInFluctuation(bytesPerDoFInFluctuation) {
       
    }
    
@@ -1433,13 +1493,13 @@
    
    
    exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._bytesPerDoF) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._isCurrentlyProcessed, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
       
    }
    
    
-   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, bytesPerDoF) {
+   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, isCurrentlyProcessed, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
       
    }
    
@@ -1575,7 +1635,15 @@
    }
    out << getLimiterStatus(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "bytesPerDoF:" << getBytesPerDoF();
+      out << "isCurrentlyProcessed:" << getIsCurrentlyProcessed();
+      out << ",";
+      out << "bytesPerDoFInSolution:" << getBytesPerDoFInSolution();
+      out << ",";
+      out << "bytesPerDoFInUpdate:" << getBytesPerDoFInUpdate();
+      out << ",";
+      out << "bytesPerDoFInExtrapolatedPredictor:" << getBytesPerDoFInExtrapolatedPredictor();
+      out << ",";
+      out << "bytesPerDoFInFluctuation:" << getBytesPerDoFInFluctuation();
       out <<  ")";
    }
    
@@ -1611,7 +1679,11 @@
          getSolutionMin(),
          getSolutionMax(),
          getLimiterStatus(),
-         getBytesPerDoF()
+         getIsCurrentlyProcessed(),
+         getBytesPerDoFInSolution(),
+         getBytesPerDoFInUpdate(),
+         getBytesPerDoFInExtrapolatedPredictor(),
+         getBytesPerDoFInFluctuation()
       );
    }
    
@@ -1626,7 +1698,7 @@
          {
             ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 27;
+            const int Attributes = 31;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
@@ -1653,7 +1725,11 @@
                MPI_INT,		 //solutionMin
                MPI_INT,		 //solutionMax
                MPI_INT,		 //limiterStatus
-               MPI_INT,		 //bytesPerDoF
+               MPI_CHAR,		 //isCurrentlyProcessed
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
                MPI_UB		 // end/displacement flag
             };
             
@@ -1683,7 +1759,11 @@
                1,		 //solutionMin
                1,		 //solutionMax
                DIMENSIONS_TIMES_TWO,		 //limiterStatus
-               1,		 //bytesPerDoF
+               1,		 //isCurrentlyProcessed
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
                1		 // end/displacement flag
             };
             
@@ -1716,8 +1796,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[22] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[23] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus[0]))), 		&disp[24] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoF))), 		&disp[25] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isCurrentlyProcessed))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[30] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -1732,7 +1816,7 @@
          {
             ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 27;
+            const int Attributes = 31;
             MPI_Datatype subtypes[Attributes] = {
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
@@ -1759,7 +1843,11 @@
                MPI_INT,		 //solutionMin
                MPI_INT,		 //solutionMax
                MPI_INT,		 //limiterStatus
-               MPI_INT,		 //bytesPerDoF
+               MPI_CHAR,		 //isCurrentlyProcessed
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
                MPI_UB		 // end/displacement flag
             };
             
@@ -1789,7 +1877,11 @@
                1,		 //solutionMin
                1,		 //solutionMax
                DIMENSIONS_TIMES_TWO,		 //limiterStatus
-               1,		 //bytesPerDoF
+               1,		 //isCurrentlyProcessed
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
                1		 // end/displacement flag
             };
             
@@ -1822,8 +1914,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[22] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[23] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus[0]))), 		&disp[24] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoF))), 		&disp[25] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isCurrentlyProcessed))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[30] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -2066,17 +2162,17 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
+   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _parentIndex(parentIndex),
    _level(level),
@@ -2102,47 +2198,51 @@
       setIsInside(isInside);
       setType(type);
       setRefinementEvent(refinementEvent);
-      setBytesPerDoF(bytesPerDoF);
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 >= (8 * sizeof(int)))) {
+      setIsCurrentlyProcessed(isCurrentlyProcessed);
+      setBytesPerDoFInSolution(bytesPerDoFInSolution);
+      setBytesPerDoFInUpdate(bytesPerDoFInUpdate);
+      setBytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor);
+      setBytesPerDoFInFluctuation(bytesPerDoFInFluctuation);
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
       
    }
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
       
    }
    
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords.getBytesPerDoF()) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 >= (8 * sizeof(int)))) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords.getIsCurrentlyProcessed(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, bytesPerDoF) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 >= (8 * sizeof(int)))) {
+   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, solutionAverages, update, updateAverages, extrapolatedPredictor, extrapolatedPredictorAverages, fluctuation, fluctuationAverages, solutionMin, solutionMax, limiterStatus, isCurrentlyProcessed, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+10 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
       
    }
    
@@ -2253,7 +2353,15 @@
    }
    out << getLimiterStatus(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "bytesPerDoF:" << getBytesPerDoF();
+      out << "isCurrentlyProcessed:" << getIsCurrentlyProcessed();
+      out << ",";
+      out << "bytesPerDoFInSolution:" << getBytesPerDoFInSolution();
+      out << ",";
+      out << "bytesPerDoFInUpdate:" << getBytesPerDoFInUpdate();
+      out << ",";
+      out << "bytesPerDoFInExtrapolatedPredictor:" << getBytesPerDoFInExtrapolatedPredictor();
+      out << ",";
+      out << "bytesPerDoFInFluctuation:" << getBytesPerDoFInFluctuation();
       out <<  ")";
    }
    
@@ -2289,7 +2397,11 @@
          getSolutionMin(),
          getSolutionMax(),
          getLimiterStatus(),
-         getBytesPerDoF()
+         getIsCurrentlyProcessed(),
+         getBytesPerDoFInSolution(),
+         getBytesPerDoFInUpdate(),
+         getBytesPerDoFInExtrapolatedPredictor(),
+         getBytesPerDoFInFluctuation()
       );
    }
    

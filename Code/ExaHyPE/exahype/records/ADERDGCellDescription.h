@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   12/10/2016 17:32
+    * @date   12/10/2016 19:53
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -106,7 +106,11 @@ namespace exahype {
             #else
             tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
             #endif
-            int _bytesPerDoF;
+            bool _isCurrentlyProcessed;
+            int _bytesPerDoFInSolution;
+            int _bytesPerDoFInUpdate;
+            int _bytesPerDoFInExtrapolatedPredictor;
+            int _bytesPerDoFInFluctuation;
             /**
              * Generated
              */
@@ -115,7 +119,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -906,22 +910,102 @@ namespace exahype {
             
             
             
-            inline int getBytesPerDoF() const 
+            inline bool getIsCurrentlyProcessed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _bytesPerDoF;
+               return _isCurrentlyProcessed;
             }
             
             
             
-            inline void setBytesPerDoF(const int& bytesPerDoF) 
+            inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _bytesPerDoF = bytesPerDoF;
+               _isCurrentlyProcessed = isCurrentlyProcessed;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInSolution = bytesPerDoFInSolution;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInUpdate;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInUpdate = bytesPerDoFInUpdate;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInExtrapolatedPredictor;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
+            }
+            
+            
+            
+            inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _bytesPerDoFInFluctuation;
+            }
+            
+            
+            
+            inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
             }
             
             
@@ -945,7 +1029,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
          
          /**
           * Generated
@@ -1921,22 +2005,102 @@ namespace exahype {
          
          
          
-         inline int getBytesPerDoF() const 
+         inline bool getIsCurrentlyProcessed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._bytesPerDoF;
+            return _persistentRecords._isCurrentlyProcessed;
          }
          
          
          
-         inline void setBytesPerDoF(const int& bytesPerDoF) 
+         inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._bytesPerDoF = bytesPerDoF;
+            _persistentRecords._isCurrentlyProcessed = isCurrentlyProcessed;
+         }
+         
+         
+         
+         inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._bytesPerDoFInSolution;
+         }
+         
+         
+         
+         inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
+         }
+         
+         
+         
+         inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._bytesPerDoFInUpdate;
+         }
+         
+         
+         
+         inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._bytesPerDoFInUpdate = bytesPerDoFInUpdate;
+         }
+         
+         
+         
+         inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._bytesPerDoFInExtrapolatedPredictor;
+         }
+         
+         
+         
+         inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
+         }
+         
+         
+         
+         inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._bytesPerDoFInFluctuation;
+         }
+         
+         
+         
+         inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
          }
          
          
@@ -2043,7 +2207,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   12/10/2016 17:32
+             * @date   12/10/2016 19:53
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -2087,7 +2251,11 @@ namespace exahype {
                       |  hasToHoldDataForNeighbourCommunication	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
                       |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 3
                       |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4	| #bits 4
-                      |  bytesPerDoF	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 3
+                      |  isCurrentlyProcessed	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 1
+                      |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9	| #bits 3
+                      |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12	| #bits 3
+                      |  bytesPerDoFInExtrapolatedPredictor	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15	| #bits 3
+                      |  bytesPerDoFInFluctuation	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18	| #bits 3
                       */
                      int _packedRecords0;
                      
@@ -2099,7 +2267,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                      
                      
                      inline int getSolverNumber() const 
@@ -2927,31 +3095,145 @@ namespace exahype {
                      
                      
                      
-                     inline int getBytesPerDoF() const 
+                     inline bool getIsCurrentlyProcessed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8);
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   return (tmp != 0);
+                     }
+                     
+                     
+                     
+                     inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8);
+   _packedRecords0 = static_cast<int>( isCurrentlyProcessed ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+                     }
+                     
+                     
+                     
+                     inline int getBytesPerDoFInSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
    int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
                      }
                      
                      
                      
-                     inline void setBytesPerDoF(const int& bytesPerDoF) 
+                     inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+                        assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+                     }
+                     
+                     
+                     
+                     inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                     }
+                     
+                     
+                     
+                     inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+                     }
+                     
+                     
+                     
+                     inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                     }
+                     
+                     
+                     
+                     inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+                     }
+                     
+                     
+                     
+                     inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                     }
+                     
+                     
+                     
+                     inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
                      }
                      
                      
@@ -2975,7 +3257,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                   
                   /**
                    * Generated
@@ -4002,31 +4284,145 @@ namespace exahype {
                   
                   
                   
-                  inline int getBytesPerDoF() const 
+                  inline bool getIsCurrentlyProcessed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8);
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+                  }
+                  
+                  
+                  
+                  inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8);
+   _persistentRecords._packedRecords0 = static_cast<int>( isCurrentlyProcessed ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+                  }
+                  
+                  
+                  
+                  inline int getBytesPerDoFInSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
                   }
                   
                   
                   
-                  inline void setBytesPerDoF(const int& bytesPerDoF) 
+                  inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+                     assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+                  }
+                  
+                  
+                  
+                  inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                  }
+                  
+                  
+                  
+                  inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+                  }
+                  
+                  
+                  
+                  inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                  }
+                  
+                  
+                  
+                  inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+                  }
+                  
+                  
+                  
+                  inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                  }
+                  
+                  
+                  
+                  inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
                   }
                   
                   
@@ -4130,7 +4526,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   12/10/2016 17:32
+                      * @date   12/10/2016 19:53
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -4196,7 +4592,11 @@ namespace exahype {
                               #else
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
                               #endif
-                              int _bytesPerDoF;
+                              bool _isCurrentlyProcessed;
+                              int _bytesPerDoFInSolution;
+                              int _bytesPerDoFInUpdate;
+                              int _bytesPerDoFInExtrapolatedPredictor;
+                              int _bytesPerDoFInFluctuation;
                               /**
                                * Generated
                                */
@@ -4205,7 +4605,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                               
                               
                               inline int getSolverNumber() const 
@@ -4898,22 +5298,102 @@ namespace exahype {
                               
                               
                               
-                              inline int getBytesPerDoF() const 
+                              inline bool getIsCurrentlyProcessed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _bytesPerDoF;
+                                 return _isCurrentlyProcessed;
                               }
                               
                               
                               
-                              inline void setBytesPerDoF(const int& bytesPerDoF) 
+                              inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _bytesPerDoF = bytesPerDoF;
+                                 _isCurrentlyProcessed = isCurrentlyProcessed;
+                              }
+                              
+                              
+                              
+                              inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _bytesPerDoFInSolution;
+                              }
+                              
+                              
+                              
+                              inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _bytesPerDoFInSolution = bytesPerDoFInSolution;
+                              }
+                              
+                              
+                              
+                              inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _bytesPerDoFInUpdate;
+                              }
+                              
+                              
+                              
+                              inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _bytesPerDoFInUpdate = bytesPerDoFInUpdate;
+                              }
+                              
+                              
+                              
+                              inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _bytesPerDoFInExtrapolatedPredictor;
+                              }
+                              
+                              
+                              
+                              inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
+                              }
+                              
+                              
+                              
+                              inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _bytesPerDoFInFluctuation;
+                              }
+                              
+                              
+                              
+                              inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
                               }
                               
                               
@@ -4937,7 +5417,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                            
                            /**
                             * Generated
@@ -5789,22 +6269,102 @@ namespace exahype {
                            
                            
                            
-                           inline int getBytesPerDoF() const 
+                           inline bool getIsCurrentlyProcessed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _persistentRecords._bytesPerDoF;
+                              return _persistentRecords._isCurrentlyProcessed;
                            }
                            
                            
                            
-                           inline void setBytesPerDoF(const int& bytesPerDoF) 
+                           inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._bytesPerDoF = bytesPerDoF;
+                              _persistentRecords._isCurrentlyProcessed = isCurrentlyProcessed;
+                           }
+                           
+                           
+                           
+                           inline int getBytesPerDoFInSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._bytesPerDoFInSolution;
+                           }
+                           
+                           
+                           
+                           inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
+                           }
+                           
+                           
+                           
+                           inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._bytesPerDoFInUpdate;
+                           }
+                           
+                           
+                           
+                           inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._bytesPerDoFInUpdate = bytesPerDoFInUpdate;
+                           }
+                           
+                           
+                           
+                           inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._bytesPerDoFInExtrapolatedPredictor;
+                           }
+                           
+                           
+                           
+                           inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
+                           }
+                           
+                           
+                           
+                           inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._bytesPerDoFInFluctuation;
+                           }
+                           
+                           
+                           
+                           inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
                            }
                            
                            
@@ -5911,7 +6471,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   12/10/2016 17:32
+                               * @date   12/10/2016 19:53
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -5952,7 +6512,11 @@ namespace exahype {
                                         |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
                                         |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 3
                                         |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3	| #bits 4
-                                        |  bytesPerDoF	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7	| #bits 3
+                                        |  isCurrentlyProcessed	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7	| #bits 1
+                                        |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 3
+                                        |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11	| #bits 3
+                                        |  bytesPerDoFInExtrapolatedPredictor	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14	| #bits 3
+                                        |  bytesPerDoFInFluctuation	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17	| #bits 3
                                         */
                                        int _packedRecords0;
                                        
@@ -5964,7 +6528,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -6691,31 +7255,145 @@ namespace exahype {
                                        
                                        
                                        
-                                       inline int getBytesPerDoF() const 
+                                       inline bool getIsCurrentlyProcessed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7);
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   return (tmp != 0);
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7);
+   _packedRecords0 = static_cast<int>( isCurrentlyProcessed ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getBytesPerDoFInSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                           int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
                                        }
                                        
                                        
                                        
-                                       inline void setBytesPerDoF(const int& bytesPerDoF) 
+                                       inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+                                          assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
                                        }
                                        
                                        
@@ -6739,7 +7417,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const int& bytesPerDoF);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& update, const int& updateAverages, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& fluctuation, const int& fluctuationAverages, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const bool& isCurrentlyProcessed, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                                     
                                     /**
                                      * Generated
@@ -7639,31 +8317,145 @@ namespace exahype {
                                     
                                     
                                     
-                                    inline int getBytesPerDoF() const 
+                                    inline bool getIsCurrentlyProcessed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7);
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setIsCurrentlyProcessed(const bool& isCurrentlyProcessed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7);
+   _persistentRecords._packedRecords0 = static_cast<int>( isCurrentlyProcessed ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getBytesPerDoFInSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                        int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
                                     }
                                     
                                     
                                     
-                                    inline void setBytesPerDoF(const int& bytesPerDoF) 
+                                    inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       assertion((bytesPerDoF >= 0 && bytesPerDoF <= 7));
+                                       assertion((bytesPerDoFInSolution >= 1 && bytesPerDoFInSolution <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(bytesPerDoF) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getBytesPerDoFInUpdate() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getBytesPerDoFInExtrapolatedPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getBytesPerDoFInFluctuation() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   tmp = tmp + 1;
+   assertion(( tmp >= 1 &&  tmp <= 7));
+   return (int) tmp;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
+   int mask =  (1 << (3)) - 1;
+   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
                                     }
                                     
                                     
