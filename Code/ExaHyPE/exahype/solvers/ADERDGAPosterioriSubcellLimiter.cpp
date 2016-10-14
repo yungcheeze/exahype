@@ -79,12 +79,12 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
       double* solutionMax = DataHeap::getInstance().getData(aderdgCellDescription.getSolutionMax()).data();
       std::fill(solutionMin,solutionMin+aderdgSolver->getNumberOfVariables(),std::numeric_limits<double>::max());
       std::fill(solutionMax,solutionMax+aderdgSolver->getNumberOfVariables(),-std::numeric_limits<double>::max()); // !!! Mind the "-"
-      kernels::limiter::generic::c::findCellLocalLimMinAndMax(
-          finiteVolumesSolution,
-          aderdgSolver->getNumberOfVariables(),
-          aderdgSolver->getNodesPerCoordinateAxis(),
-          solutionMin,
-          solutionMax);
+      // kernels::limiter::generic::c::findCellLocalLimMinAndMax( //TODO Dominic: deprecated method
+          // finiteVolumesSolution,
+          // aderdgSolver->getNumberOfVariables(),
+          // aderdgSolver->getNodesPerCoordinateAxis(),
+          // solutionMin,
+          // solutionMax);
       // This writes the face 0 min max values to the other faces
       for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
         std::copy(solutionMin, solutionMin+aderdgSolver->getNumberOfVariables(),
@@ -158,12 +158,12 @@ void evolveFiniteVolumesSolution(
 
   std::fill(aderdgSolutionMin,aderdgSolutionMin+aderdgSolver->getNumberOfVariables(),std::numeric_limits<double>::max());
   std::fill(aderdgSolutionMax,aderdgSolutionMax+aderdgSolver->getNumberOfVariables(),-std::numeric_limits<double>::max()); // !!! Mind the "-"
-  kernels::limiter::generic::c::findCellLocalLimMinAndMax(
-      finiteVolumesSolution,
-      aderdgSolver->getNumberOfVariables(),
-      aderdgSolver->getNodesPerCoordinateAxis(),
-      aderdgSolutionMin,
-      aderdgSolutionMax);
+   // kernels::limiter::generic::c::findCellLocalLimMinAndMax( //TODO Dominic: deprecated method 
+      // finiteVolumesSolution,
+      // aderdgSolver->getNumberOfVariables(),
+      // aderdgSolver->getNodesPerCoordinateAxis(),
+      // aderdgSolutionMin,
+      // aderdgSolutionMax);
   // This writes the face 0 min max values to arrays for the other faces
   for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
     std::copy(aderdgSolutionMin, aderdgSolutionMin+aderdgSolver->getNumberOfVariables(),

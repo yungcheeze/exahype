@@ -28,28 +28,6 @@ int getLimBasisSize(const int basisSize) {
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
-  int index, ii, iVar, iiEnd;
-
-  // process lim
-  const int basisSizeLim = getLimBasisSize(basisSize);
-  index = 0;
-  iiEnd =  basisSizeLim*basisSizeLim;
-#if DIMENSIONS == 3
-  iiEnd *= basisSizeLim;
-#endif
-  for(ii = 0; ii < iiEnd; ii++) {
-    for(iVar = 0; iVar < numberOfVariables; iVar++) {
-      localMin[iVar] = std::min ( localMin[iVar], lim[index] );
-      localMax[iVar] = std::max ( localMax[iVar], lim[index] );
-      index++;
-    }
-  }
-}
-
-/**
- * localMin, localMax are double[numberOfVariables]
- */
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
   int index, ii, iVar, iiEnd;
   

@@ -38,7 +38,6 @@ void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const
 
 void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
 
-void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax); //deprecated
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
 bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
