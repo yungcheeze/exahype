@@ -297,7 +297,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 //        // !!!
 //        for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
 //          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
-//          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
+//          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = -std::numeric_limits<double>::max(); // "-", min
 //        }
 //      }
 //      break;

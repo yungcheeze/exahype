@@ -37,8 +37,8 @@ exahype::solvers::Solver::Solver(
       _maximumMeshSize(maximumMeshSize),
       _minCellSize(std::numeric_limits<double>::max()),
       _nextMinCellSize(std::numeric_limits<double>::max()),
-      _maxCellSize(std::numeric_limits<double>::min()),
-      _nextMaxCellSize(std::numeric_limits<double>::min()),
+      _maxCellSize(-std::numeric_limits<double>::max()), // "-", min
+      _nextMaxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)) {
   assertion(numberOfParameters==0);
@@ -114,7 +114,7 @@ double exahype::solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() {
 
 
 double exahype::solvers::Solver::getMaxSolverTimeStampOfAllSolvers() {
-  double currentMaxTimeStamp = std::numeric_limits<double>::min();
+  double currentMaxTimeStamp = -std::numeric_limits<double>::max(); // "-", min
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     currentMaxTimeStamp =
@@ -135,7 +135,7 @@ bool exahype::solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::
   return result;
 }
 
-
+// TODO(Dominic): This does exactly the opposite
 double exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers() {
   double result = std::numeric_limits<double>::max();
 
@@ -146,9 +146,9 @@ double exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers() {
   return result;
 }
 
-
+// TODO(Dominic): This does exactly the opposite
 double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
-  double result = std::numeric_limits<double>::min();
+  double result = -std::numeric_limits<double>::max(); // "-", min
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     result = std::max( result, p->_maximumMeshSize );

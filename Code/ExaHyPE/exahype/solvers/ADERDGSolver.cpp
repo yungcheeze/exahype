@@ -187,7 +187,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         // !!!
         for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
           DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
-          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
+          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = -std::numeric_limits<double>::max(); // "-", min
         }
       }
       break;
@@ -321,7 +321,7 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _minCellSize     = _nextMinCellSize;
   _maxCellSize     = _nextMaxCellSize;
   _nextMinCellSize = std::numeric_limits<double>::max();
-  _nextMaxCellSize = std::numeric_limits<double>::min();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
 void exahype::solvers::ADERDGSolver::reinitTimeStepData() {
