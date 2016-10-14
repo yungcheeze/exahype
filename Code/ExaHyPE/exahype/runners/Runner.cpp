@@ -428,6 +428,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
   repository.switchToInitialConditionAndTimeStepSizeComputation();
   repository.iterate();
+  logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
   /*
    * Set the time stamps of the solvers to the initial value again.
