@@ -87,9 +87,9 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
   double DF;
 
   func_c2p_rmhd1_(&X1,&FL,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+      FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
   double FL_test,DF_test,w_test;
-//  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-    FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
+  FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(FL,FL_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -102,9 +102,9 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
 
   double FH;
   func_c2p_rmhd1_(&X2,&FH,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+    FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
   double FH_test;
-  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,w);
-  FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,&w_test);
+  FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(FH,FH_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -137,9 +137,9 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
 
   double F;
   func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+    FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF,gam,d,e,s2,b2,sb2,w);
   double F_test;
-  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF_test,gam,d,e,s2,b2,sb2,w);
+  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(F,F_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -165,8 +165,8 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
        return RTSAFE_C2P_RMHD1_result;
      }
      func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
+          FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
      FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
-     FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
 //     assertionNumericalEquals(F,F_test);
 //     assertionNumericalEquals(DF,DF_test);
 //     assertionNumericalEquals(*w,w_test);
@@ -482,28 +482,28 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   // TODO: Pass this to Fortran
 
   // Impose exact boundary conditions
-  AlfvenWave(x, stateOut, t);
-
-  double* F[3];
-  double f[MHD_VARIABLES];
-  double g[MHD_VARIABLES];
-  F[0] = f;
-  F[1] = g;
-
-  #if DIMENSIONS==3
-  double h[MHD_VARIABLES];
-  F[2] = h;
-  #endif
-
-  F[normalNonZero] = fluxOut;
-  flux(stateOut, F);
+//  AlfvenWave(x, stateOut, t);
+//
+//  double* F[3];
+//  double f[MHD_VARIABLES];
+//  double g[MHD_VARIABLES];
+//  F[0] = f;
+//  F[1] = g;
+//
+//  #if DIMENSIONS==3
+//  double h[MHD_VARIABLES];
+//  F[2] = h;
+//  #endif
+//
+//  F[normalNonZero] = fluxOut;
+//  flux(stateOut, F);
 
   // These are the no-boundary conditions:
 
-//  for(int i=0; i < MHD_VARIABLES; i++) {
-//      fluxOut[i] = fluxIn[i];
-//      stateOut[i] = stateIn[i];
-//  }
+  for(int i=0; i < MHD_VARIABLES; i++) {
+      fluxOut[i] = fluxIn[i];
+      stateOut[i] = stateIn[i];
+  }
 
 }
 
