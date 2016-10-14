@@ -273,7 +273,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
           std::fill(aderdgSolutionMax,aderdgSolutionMax+aderdgSolver->getNumberOfVariables(),-std::numeric_limits<double>::max()); // !!! Mind the "-"
           kernels::limiter::generic::c::findCellLocalMinAndMax(
               aderdgSolution,
-              finiteVolumesSolution,
+              // finiteVolumesSolution, //TODO Dominic: the function doesn't initialize the finiteVolumesSolution anymore
               aderdgSolver->getNumberOfVariables(),
               aderdgSolver->getNodesPerCoordinateAxis(),
               aderdgSolutionMin,

@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include "../../LimiterProjectionMatrices.h"
+#include "../../GaussLegendreQuadrature.h"
 #include "../../KernelUtils.h"
 
 #include "peano/utils/Globals.h"
@@ -32,16 +33,24 @@ int getLimBasisSize(const int basisSize);
 
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); //for test only
 
-void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+template <bool anticipateNewDGSolution>
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max, const double* const lduh, const double dt);
 
 void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
 
-void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
-void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
+void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax); //deprecated
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
 void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
-  
+
+inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
+  return (luh[idx] + kernels::gaussLegendreWeights[order][x] * kernels::gaussLegendreWeights[order][y]
+#if DIMENSIONS == 3
+                                                  * kernels::gaussLegendreWeights[order][z]
+#endif
+                                                  /dt * lduh[idx]);
+}
 
 } // namespace c
 } // namespace generic

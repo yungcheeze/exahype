@@ -50,7 +50,7 @@ void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariab
 /**
  * localMin, localMax are double[numberOfVariables]
  */
-void findCellLocalMinAndMax(const double* const luh, const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
   int index, ii, iVar, iiEnd;
   
   // initialize and process luh
@@ -73,10 +73,43 @@ void findCellLocalMinAndMax(const double* const luh, const double* const lim, co
   }
  
   //process lob
-  compareWithADERDGSolutionAtGaussLobattoNodes(luh, numberOfVariables, basisSize, localMin, localMax);
+  compareWithADERDGSolutionAtGaussLobattoNodes<false>(luh, numberOfVariables, basisSize, localMin, localMax, nullptr, 0.0);
+}
+
+
+/**
+ * localMin, localMax are double[numberOfVariables]
+ */
+void findCellLocalMinAndMaxWithAnticipatedDG(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax) {
+  int x, y, z, iVar; 
+  const int order = basisSize-1;
   
-  // process lim
-  findCellLocalLimMinAndMax(lim,numberOfVariables,basisSize,localMin,localMax);
+  // initialize and process luh
+#if DIMENSIONS == 3
+  const int basisSize3D = basisSize;
+#else
+  const int basisSize3D = 1;  
+#endif
+
+  idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
+
+  for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+    localMin[iVar] = anticipateLuh(luh, lduh, dt, order, iVar, 0, 0, 0);
+    localMax[iVar] = anticipateLuh(luh, lduh, dt, order, iVar, 0, 0, 0);   
+  }
+  for(z=0; z<basisSize3D; z++) {
+    for(y=0; y<basisSize; y++) {
+      for(x=0; x<basisSize; x++) {
+        for(iVar = 0; iVar < numberOfVariables; iVar++) {
+          localMin[iVar] = std::min ( localMin[iVar], anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
+          localMax[iVar] = std::max ( localMax[iVar], anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
+        }
+      }
+    }
+  }
+ 
+  //process lob
+  compareWithADERDGSolutionAtGaussLobattoNodes<true>(luh, numberOfVariables, basisSize, localMin, localMax, lduh, dt);
 }
 
 double getMin(const double* const solutionMin, int iVar, int numberOfVariables) {
@@ -101,11 +134,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
 
-  const int basisSizeLim = getLimBasisSize(basisSize);
-  double* lim = new double[basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-  projectOnFVLimiterSpace(luh, numberOfVariables, basisSize, basisSizeLim, lim);
-  findCellLocalMinAndMax(luh, lim, numberOfVariables, basisSize, localMin, localMax);
-  delete[] lim;
+  findCellLocalMinAndMax(luh, numberOfVariables, basisSize, localMin, localMax);
 
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
     double previousSolutionMax = getMax(troubledMax,iVar,numberOfVariables);
@@ -117,9 +146,14 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 
     if((localMin[iVar] < (previousSolutionMin - ldiff)) ||
        (localMax[iVar] > (previousSolutionMax + ldiff))) {
+      delete[] localMin;
+      delete[] localMax;
       return true;
     }
   }
+  
+  delete[] localMin;
+  delete[] localMax;
   
   //TODO JMG (todo or not needed???) check PDE positivity and lim data not NAN 
   
@@ -166,19 +200,25 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
   return lob;
 }
 
-
-void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max) {
+/**
+ * Auxilliary function to findMinMax
+ * Project to GaussLobatto and modify the min/max if required
+ *
+ */
+template <bool anticipateNewDGSolution>
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max, const double* const lduh, const double dt) {
 
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
 #else
   const int basisSize3D = 1;  
 #endif
+const int order = basisSize-1;
 
   idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
   idx2 idxConv(basisSize, basisSize);
   
-  double tmp;
+  double tmp, currentLuh;
   int x,y,z,v,ix,iy,iz;
   
   for(z=0; z<basisSize3D; z++) {
@@ -189,11 +229,19 @@ void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const
           for(iz=0; iz<basisSize3D; iz++) {
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
-                tmp += luh[idx(iz,iy,ix,v)] 
+                if(anticipateNewDGSolution) {
+                  tmp += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,v), ix, iy, iz)
 #if DIMENSIONS == 3
-                                        * uh2lob[basisSize-1][idxConv(iz,z)] 
+                                        * uh2lob[order][idxConv(iz,z)] 
 #endif
-                                        * uh2lob[basisSize-1][idxConv(iy,y)] * uh2lob[basisSize-1][idxConv(ix,x)];
+                                        * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
+                } else {
+                  tmp += luh[idx(iz,iy,ix,v)] 
+#if DIMENSIONS == 3
+                                        * uh2lob[order][idxConv(iz,z)] 
+#endif
+                                        * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
+                }
               }
             }
           }
