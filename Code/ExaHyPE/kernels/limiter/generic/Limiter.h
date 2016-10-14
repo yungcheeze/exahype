@@ -29,19 +29,20 @@ namespace limiter {
 namespace generic {
 namespace c {
 
-int getLimBasisSize(const int basisSize);
-
-double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); //for test only
-
-template <bool anticipateNewDGSolution>
-void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max, const double* const lduh, const double dt);
-
+// Projection ADERDG -> FV
 void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
+// Projection FV -> ADERDG
+void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
 
+// Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
+
+//Test if the anticipated DG solution is troubled
 bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
-void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
+//************************
+//*** Helper functions ***
+//************************
 
 inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
   return (luh[idx] + kernels::gaussLegendreWeights[order][x] * kernels::gaussLegendreWeights[order][y]
@@ -50,6 +51,25 @@ inline double anticipateLuh(const double* const luh, const double* const lduh, c
 #endif
                                                   /dt * lduh[idx]);
 }
+
+inline int getLimBasisSize(const int basisSize) {
+  return 2*(basisSize-1) +1;
+}
+
+//*************************
+//*** Private functions ***
+//*************************
+
+//Projection ADERDG -> Gauss-Lobatto, for test only
+double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); 
+
+//deprecated
+template <bool anticipateNewDGSolution>
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max, const double* const lduh, const double dt);
+
+//deprecated
+void findCellLocalMinAndMaxWithAnticipatedDG(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
+
 
 } // namespace c
 } // namespace generic

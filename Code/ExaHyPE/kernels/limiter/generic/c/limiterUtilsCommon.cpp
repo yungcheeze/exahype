@@ -20,11 +20,6 @@ namespace limiter {
 namespace generic {
 namespace c {
 
-// TODO JMG get true basisSize from spec file
-int getLimBasisSize(const int basisSize) {
-  return 2*(basisSize-1) +1;
-}
-
 /**
  * localMin, localMax are double[numberOfVariables]
  */
