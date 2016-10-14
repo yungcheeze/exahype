@@ -35,10 +35,10 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
-void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
 
 //Test if the anticipated DG solution is troubled
-bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
+bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
 
 //************************
 //*** Helper functions ***
@@ -52,7 +52,7 @@ inline double anticipateLuh(const double* const luh, const double* const lduh, c
                                                   /dt * lduh[idx]);
 }
 
-inline int getLimBasisSize(const int basisSize) {
+inline int getBasisSizeLim(const int basisSize) {
   return 2*(basisSize-1) +1;
 }
 
@@ -63,13 +63,7 @@ inline int getLimBasisSize(const int basisSize) {
 //Projection ADERDG -> Gauss-Lobatto, for test only
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); 
 
-//deprecated
-template <bool anticipateNewDGSolution>
-void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max, const double* const lduh, const double dt);
-
-//deprecated
-void findCellLocalMinAndMaxWithAnticipatedDG(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
-
+void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
 
 } // namespace c
 } // namespace generic

@@ -72,7 +72,7 @@ void LimiterKernelTest::testGetFVMData() {
   logInfo("LimiterKernelTest::testGetFVMData()",
           "Test luh -> lim, ORDER=4, DIM="+dim);
           
-  const int calcBasisSizeLim = kernels::limiter::generic::c::getLimBasisSize(basisSize);
+  const int calcBasisSizeLim = kernels::limiter::generic::c::getBasisSizeLim(basisSize);
 #ifdef Dim2
   const int size = calcBasisSizeLim*calcBasisSizeLim*numberOfVariables;
 #endif
