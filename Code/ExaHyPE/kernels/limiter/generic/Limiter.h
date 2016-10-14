@@ -40,7 +40,7 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 
 void findCellLocalLimMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax); //deprecated
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMin, double* const localMax);
-bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
+bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
 void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
 

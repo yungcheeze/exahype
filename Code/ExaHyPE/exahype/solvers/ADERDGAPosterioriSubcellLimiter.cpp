@@ -95,9 +95,10 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
 
       // Check if initial solution is troubled
       bool initialSolutionIsTroubled =
-          kernels::limiter::generic::c::isTroubledCell(
-              aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
-              solutionMin,solutionMax);
+      false; //TODO Dominic: isTroubled now anticipates the new DG solution
+//          kernels::limiter::generic::c::isTroubledCell(
+//              aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
+//              solutionMin,solutionMax);
 
       if (initialSolutionIsTroubled) {
         aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
@@ -205,9 +206,10 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
     // onto the ADER-DG solution space.
     bool oneNeighbourIsTroubledCell = oneNeighbourIsTroubled(aderdgCellDescription.getLimiterStatus());
 
-    if (kernels::limiter::generic::c::isTroubledCell(
-        aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
-        aderdgSolutionMin,aderdgSolutionMax)) {
+    if (false) { //TODO Dominic : isTroubled now anticipates the new DG solution
+    //if (kernels::limiter::generic::c::isTroubledCell(
+    //    aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
+    //    aderdgSolutionMin,aderdgSolutionMax)) {
       aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
 
       logDebug("couple(...)","Evolving FV solution in cell "<<
@@ -240,9 +242,10 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::couple(
 
         aderdgSolver->updateSolution(cellDescriptionsIndex,finiteVolumesElement,fineGridVertices,fineGridVerticesEnumerator);
 
-        if (kernels::limiter::generic::c::isTroubledCell(
-            aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
-            aderdgSolutionMin,aderdgSolutionMax)) {
+        if(false) { //TODO Dominic: isTroubled now anticipates the new DG solution
+        //if (kernels::limiter::generic::c::isTroubledCell(
+        //    aderdgSolution,aderdgSolver->getNumberOfVariables(),aderdgSolver->getNodesPerCoordinateAxis(),
+        //    aderdgSolutionMin,aderdgSolutionMax)) {
           aderdgCellDescription.setLimiterStatus(exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled); // implicit conversion.
           logDebug("couple(...)","Evolved ADER-DG solution in cell " <<
               aderdgCellDescription.getOffset()<<"x"<<aderdgCellDescription.getSize()<<" needs limiting.");

@@ -127,14 +127,14 @@ double getMax(const double* const solutionMax, int iVar, int numberOfVariables) 
   return result;
 }
 
-bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax) {
+bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax) {
   double minMarginOfError = 0.0001;
   double diffScaling      = 0.001;
 
   double* localMin = new double[numberOfVariables];
   double* localMax = new double[numberOfVariables];
 
-  findCellLocalMinAndMax(luh, numberOfVariables, basisSize, localMin, localMax);
+  findCellLocalMinAndMaxWithAnticipatedDG(luh, lduh, dt, numberOfVariables, basisSize, localMin, localMax);
 
   for(int iVar = 0; iVar < numberOfVariables; iVar++) {
     double previousSolutionMax = getMax(troubledMax,iVar,numberOfVariables);
@@ -218,25 +218,25 @@ const int order = basisSize-1;
   idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
   idx2 idxConv(basisSize, basisSize);
   
-  double tmp, currentLuh;
+  double lobValue;
   int x,y,z,v,ix,iy,iz;
   
   for(z=0; z<basisSize3D; z++) {
     for(y=0; y<basisSize; y++) {
       for(x=0; x<basisSize; x++) {
         for(v=0; v<numberOfVariables; v++) {
-          tmp = 0;
+          lobValue = 0;
           for(iz=0; iz<basisSize3D; iz++) {
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
                 if(anticipateNewDGSolution) {
-                  tmp += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,v), ix, iy, iz)
+                  lobValue += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,v), ix, iy, iz)
 #if DIMENSIONS == 3
                                         * uh2lob[order][idxConv(iz,z)] 
 #endif
                                         * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
                 } else {
-                  tmp += luh[idx(iz,iy,ix,v)] 
+                  lobValue += luh[idx(iz,iy,ix,v)] 
 #if DIMENSIONS == 3
                                         * uh2lob[order][idxConv(iz,z)] 
 #endif
@@ -245,10 +245,10 @@ const int order = basisSize-1;
               }
             }
           }
-          if(min[v] > tmp) {
-            min[v] = tmp;
-          } else if(max[v] < tmp) {
-            max[v] = tmp;
+          if(min[v] > lobValue) {
+            min[v] = lobValue;
+          } else if(max[v] < lobValue) {
+            max[v] = lobValue;
           }
         }
       }
