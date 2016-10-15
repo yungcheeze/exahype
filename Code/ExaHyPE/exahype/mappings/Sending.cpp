@@ -160,7 +160,12 @@ void exahype::mappings::Sending::leaveCell(
   if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    for(int solverNumber=0; solverNumber<numberOfSolvers; solverNumber++) {
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined6;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::
+        getInstance().parallelise(numberOfSolvers, methodTrace);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
       int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -186,7 +191,9 @@ void exahype::mappings::Sending::leaveCell(
 
         solver->prepareSending(fineGridCell.getCellDescriptionsIndex(),element);
       }
-    }
+    endpfor
+    peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
   }
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
