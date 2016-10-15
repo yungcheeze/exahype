@@ -56,12 +56,12 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
 
   double x;
   x = Parser::getValueFromPropertyString( select, "left" );
-  _regionOfInterestLeftBottomFront(0) = x!=x ? std::numeric_limits<double>::min() : x;
+  _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
-  _regionOfInterestLeftBottomFront(1) = x!=x ? std::numeric_limits<double>::min() : x;
+  _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #ifdef Din3
   x = Parser::getValueFromPropertyString( select, "front" );
-  _regionOfInterestLeftBottomFront(2) = x!=x ? std::numeric_limits<double>::min() : x;
+  _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
 
 

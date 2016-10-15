@@ -92,7 +92,7 @@ void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables()
       solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
     _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
-    _maxCellSizes    [solverNumber] = std::numeric_limits<double>::min();
+    _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
   }
 }
 
