@@ -70,7 +70,7 @@ private:
    */
   static tarch::logging::Log _log;
 
-  static tarch::multicore::BooleanSemaphore _compressionSemaphore;
+  static tarch::multicore::BooleanSemaphore _heapSemaphore;
 
   /**
    * The number of unknowns/basis functions associated with each face of an
@@ -150,8 +150,8 @@ private:
    */
   double _minNextPredictorTimeStepSize;
 
-  void tearApart(int numberOfEntries, int heapIndex, int bytesForMantissa);
-  void glueTogether(int numberOfEntries, int heapIndex, int bytesForMantissa);
+  void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
+  void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
 
   /**
    * Different to compress(), this operation is called automatically by
@@ -610,12 +610,16 @@ private:
 
   class CompressionTask {
     private:
-      ADERDGSolver&                             _solver;
+/*
+//      ADERDGSolver&                             _solver;
       exahype::records::ADERDGCellDescription&  _cellDescription;
+*/
     public:
       CompressionTask(
+/*
         ADERDGSolver&                             _solver,
         exahype::records::ADERDGCellDescription&  _cellDescription
+*/
       );
 
       void operator()();
@@ -648,6 +652,8 @@ public:
   /**
    * Checks if no unnecessary memory is allocated for the cell description.
    * If this is not the case, it deallocates the unnecessarily allocated memory.
+   *
+   * This operation is thread safe as we serialise it.
    */
   void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
 
