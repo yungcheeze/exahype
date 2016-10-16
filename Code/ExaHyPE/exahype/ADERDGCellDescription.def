@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////
 /// ExaHyPE
 /// ... text ...
@@ -311,6 +312,7 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent int solution;
   parallelise persistent int solutionAverages;
+  parallelise persistent int solutionCompressed;
 
   /**
    * Index pointing to the update DoF belonging to this cell. All volume updates
@@ -319,6 +321,7 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent int update;
   parallelise persistent int updateAverages;
+  parallelise persistent int updateCompressed;
   ///@}
 
   /**
@@ -335,6 +338,7 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent int extrapolatedPredictor;
   parallelise persistent int extrapolatedPredictorAverages;
+  parallelise persistent int extrapolatedPredictorCompressed;
 
   /**
    * Index pointing to the normal fluxes computed at the bounding faces of the
@@ -342,6 +346,7 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent int fluctuation;
   parallelise persistent int fluctuationAverages;
+  parallelise persistent int fluctuationCompressed;
   ///@}
   
   /**
