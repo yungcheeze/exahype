@@ -261,6 +261,8 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
   }
+
+  CompressedDataHeap::getInstance().setName("compressed-data");
 }
 
 int exahype::solvers::ADERDGSolver::getNumberOfVariables() const {
@@ -2928,13 +2930,8 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       computeHierarchicalTransform(cellDescription,-1.0);
       putUnknownsIntoByteStream(cellDescription);
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-//      logWarning( "compress(...)", "compressed " << cellDescription.toString() );
     }
   }
-
-  //
-  // oben pLdeft und pRight parallel behandeln
-  //
 }
 
 
@@ -2949,7 +2946,6 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
     if (uncompress) {
       cellDescription.setCompressionState( exahype::records::ADERDGCellDescription::CurrentlyProcessed );
     }
-//    backgroundCounter--;
     lock.free();
 
     tarch::multicore::BooleanSemaphore::sendTaskToBack();
@@ -2959,18 +2955,18 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
   #endif
 
   if (uncompress) {
-//    logWarning( "compress(...)", "start to uncompress " << cellDescription.toString() );
     pullUnknownsFromByteStream(cellDescription);
     computeHierarchicalTransform(cellDescription,1.0);
 
     tarch::multicore::Lock lock(_heapSemaphore);
     cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
-//    logWarning( "compress(...)", "uncompressed " << cellDescription.toString() );
   }
 }
 
 
-void exahype::solvers::ADERDGSolver::determineUnknownAverages(exahype::records::ADERDGCellDescription& cellDescription) {
+void exahype::solvers::ADERDGSolver::determineUnknownAverages(
+  exahype::records::ADERDGCellDescription& cellDescription
+) {
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {
     double solutionAverage = 0.0;
     double updateAverage   = 0.0;
@@ -3102,10 +3098,10 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
   int compressionOfExtrapolatedPredictor;
   int compressionOfFluctuation;
 
-  DataHeap::getInstance().isValidIndex( cellDescription.getSolution() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() );
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
 
   peano::datatraversal::TaskSet compressionFactorIdentification(
     [&] () -> void  { compressionOfSolution = peano::heap::findMostAgressiveCompression(
@@ -3229,16 +3225,22 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     cellDescription.setFluctuation( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary ) );
   }
   #else
-  DataHeap::getInstance().isValidIndex( cellDescription.getSolution() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() );
-  DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() );
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
   #endif
+
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
 
   peano::datatraversal::TaskSet glueTasks(
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInSolution()<7) {
-        CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() );
+        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
+        assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), cellDescription.getBytesPerDoFInSolution());
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -3248,7 +3250,8 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInUpdate()<7) {
-        CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() );
+        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
+        assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), cellDescription.getBytesPerDoFInUpdate());
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -3258,7 +3261,8 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInExtrapolatedPredictor()<7) {
-        CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() );
+        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
+        assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), cellDescription.getBytesPerDoFInExtrapolatedPredictor());
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -3268,7 +3272,8 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInFluctuation()<7) {
-        CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() );
+        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
+        assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), cellDescription.getBytesPerDoFInFluctuation());
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -3276,6 +3281,20 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         cellDescription.setFluctuationCompressed( -1 );
       }
     },
+    // @todo umbauen
     false
   );
 }
+
+
+
+//
+// Vermutung (falls wahr, bitte im Heap.h dokumentieren):
+//
+// ich darf schon auf mehreren Eintraegen arbeiten, aber der Zugriff muss dann ueber den Vektor erfolgen, nicht ueber den Heap, weil parallel da jemand was rausloeschen koennte
+//
+//
+//
+
+
+//  recycle anstatt delete
