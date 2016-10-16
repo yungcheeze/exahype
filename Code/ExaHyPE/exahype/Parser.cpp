@@ -69,7 +69,7 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
-  const int MAX_CHARS_PER_LINE = 512;
+  const int MAX_CHARS_PER_LINE = 65536;
   const char* const DELIMITER = " =\t";
 
   _tokenStream.clear();
@@ -85,28 +85,30 @@ void exahype::Parser::readFile(const std::string& filename) {
 
   bool currentlyReadsComment = false;
 
-  while (!inputFile.eof()) {
+  while (!inputFile.eof() && inputFile) {
     char lineBuffer[MAX_CHARS_PER_LINE];
     inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
 
-    char* token;
+    if ( std::string(lineBuffer)!="" ) {
+      char* token;
 
-    // parse the line
-    token = strtok(lineBuffer, DELIMITER);
-    int currentTokenInLine = 0;
-    while (token) {
-      std::string newToken = token;
-      if (currentlyReadsComment && newToken.find("*/") != std::string::npos) {
-        currentlyReadsComment = false;
-      } else if (!currentlyReadsComment &&
-                 newToken.find("/*") != std::string::npos) {
-        currentlyReadsComment = true;
-      } else if (!currentlyReadsComment) {
-        logDebug("readFile(String)", "got token " << newToken);
-        _tokenStream.push_back(newToken);
+      // parse the line
+      token = strtok(lineBuffer, DELIMITER);
+      int currentTokenInLine = 0;
+      while (token) {
+        std::string newToken = token;
+        if (currentlyReadsComment && newToken.find("*/") != std::string::npos) {
+          currentlyReadsComment = false;
+        } else if (!currentlyReadsComment &&
+                   newToken.find("/*") != std::string::npos) {
+          currentlyReadsComment = true;
+        } else if (!currentlyReadsComment) {
+          logDebug("readFile(String)", "got token " << newToken);
+          _tokenStream.push_back(newToken);
+        }
+        token = strtok(NULL, DELIMITER);  // subsequent tokens
+        currentTokenInLine++;
       }
-      token = strtok(0, DELIMITER);  // subsequent tokens
-      currentTokenInLine++;
     }
   }
 }
