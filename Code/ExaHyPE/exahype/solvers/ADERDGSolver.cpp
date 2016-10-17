@@ -70,7 +70,12 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         //
         // @todo Hier muss eine Abfrage rein, dass auch ja kein Hintergrundthread aktiv ist.
         //       Gilt fuer alle create und deletes. Wenn einer aktiv ist, muessen wir einfach warten ...
-        //
+        //       Ist aber keiner aktiv, koennen wir ganz beruhigt auch recycle-Eintraege erzeugen
+
+        // @todo MPI muss beim delete dem Loeser sagen, dass man recyclen will - sonst frisst das
+        //       sukzessive die recycle Indices auf
+
+        // @todo den FV-Loeser zumindest bei MPI auch nachziehen (und beim Wait auf Background-Tasks)
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
@@ -180,7 +185,17 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         cellDescription.setUpdateCompressed(-1);
         cellDescription.setSolutionCompressed(-1);
 
-        CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        //
+        // We do reserve on the real heap recycle indices as well as the ones we get might
+        // be taken from another solve
+        //
+        // @todo In header Docu
+        // @todo Klarstellen/Nachschlagen, dass vector wirklich nix allokiert - evtl. mit capacity 0 arbeiten
+        //
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+          DataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        }
 
         cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
         cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
@@ -210,7 +225,10 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         cellDescription.setExtrapolatedPredictorCompressed(-1);
         cellDescription.setFluctuationCompressed(-1);
 
-        CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+          DataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        }
 
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
@@ -1560,7 +1578,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     [&] () -> void {
       uncompress(pRight);
     },
-    false
+    true
   );
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
@@ -2911,6 +2929,12 @@ void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
 //  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
 
 //  backgroundCounter++;
+
+  //
+  // @todo Also so einen Counter brauchen wir schon, weil wir ja wissen muessen, ob noch einer laeuft
+  //       Wir brauchen auch so ne Art Warteschleife, falls der Counter noch nicht geloescht ist im
+  //       Boundary-Treatment aber auch in den creational routines
+  //
 }
 
 
@@ -3133,7 +3157,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
       CompressionAccuracy
       );},
-      false
+      true
   );
 
   assertion(1<=compressionOfSolution);
@@ -3219,7 +3243,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         #endif
       }
     },
-    false
+    true
   );
 }
 
@@ -3295,16 +3319,6 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         cellDescription.setFluctuationCompressed( -1 );
       }
     },
-    // @todo umbauen
-    false
+    true
   );
 }
-
-
-
-//
-// Vermutung (falls wahr, bitte im Heap.h dokumentieren):
-//
-// ich darf schon auf mehreren Eintraegen arbeiten, aber der Zugriff muss dann ueber den Vektor erfolgen, nicht ueber den Heap, weil parallel da jemand was rausloeschen koennte
-//
-//  recycle anstatt delete
