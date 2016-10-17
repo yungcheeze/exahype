@@ -34,7 +34,7 @@ peano::MappingSpecification
 exahype::mappings::Merging::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 // Specifications below are all nop.
