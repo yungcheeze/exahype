@@ -67,6 +67,11 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
         {
+        //
+        // @todo Hier muss eine Abfrage rein, dass auch ja kein Hintergrundthread aktiv ist.
+        //       Gilt fuer alle create und deletes. Wenn einer aktiv ist, muessen wir einfach warten ...
+        //
+
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
@@ -175,6 +180,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         cellDescription.setUpdateCompressed(-1);
         cellDescription.setSolutionCompressed(-1);
 
+        CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+
         cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
         cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
 
@@ -202,6 +209,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
         cellDescription.setExtrapolatedPredictorCompressed(-1);
         cellDescription.setFluctuationCompressed(-1);
+
+        CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
 
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
