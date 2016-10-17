@@ -8,7 +8,7 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 
-Elastic::MyElasticSolver::init() {
+void Elastic::MyElasticSolver::init() {
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 }
