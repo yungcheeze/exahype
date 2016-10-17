@@ -3137,34 +3137,21 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
   assertion(compressionOfExtrapolatedPredictor<=7);
   assertion(compressionOfFluctuation<=7);
 
-  // @todo kann jetzt auch runter, weil ja ne Semaphore drin ist
-  //       pull ist aber schon geschuetzt
-  if (compressionOfSolution<7) {
-    tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setSolutionCompressed( CompressedDataHeap::getInstance().createData() );
-  }
-  if (compressionOfUpdate<7) {
-    tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData() );
-  }
-  if (compressionOfExtrapolatedPredictor<7) {
-    tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setExtrapolatedPredictorCompressed( CompressedDataHeap::getInstance().createData() );
-  }
-  if (compressionOfFluctuation<7) {
-    tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData() );
-  }
-
   peano::datatraversal::TaskSet runParallelTasks(
     [&]() -> void {
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
+        tarch::multicore::Lock lock(_heapSemaphore);
+        cellDescription.setSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,true) );
+        assertion( cellDescription.getSolutionCompressed()>=0 );
+	lock.free();
+
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
+
         #if !defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        DataHeap::getInstance().deleteData( cellDescription.getSolution() );
+        lock.lock();
+        DataHeap::getInstance().deleteData( cellDescription.getSolution(), true );
         cellDescription.setSolution( -1 );
         #endif
       }
@@ -3172,11 +3159,17 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     [&]() -> void {
       cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
       if (compressionOfUpdate<7) {
+        tarch::multicore::Lock lock(_heapSemaphore);
+	cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData(0,0,true) );
+        assertion( cellDescription.getUpdateCompressed()>=0 );
+	lock.free();
+
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         tearApart(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), compressionOfUpdate);
+
         #if !defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        DataHeap::getInstance().deleteData( cellDescription.getUpdate() );
+        lock.lock();
+        DataHeap::getInstance().deleteData( cellDescription.getUpdate(), true );
         cellDescription.setUpdate( -1 );
         #endif
       }
@@ -3184,11 +3177,17 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     [&]() -> void {
       cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
       if (compressionOfExtrapolatedPredictor<7) {
+        tarch::multicore::Lock lock(_heapSemaphore);
+        cellDescription.setExtrapolatedPredictorCompressed( CompressedDataHeap::getInstance().createData(0,0,true) );
+        assertion( cellDescription.getExtrapolatedPredictorCompressed()>=0 );
+        lock.free();
+
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), compressionOfExtrapolatedPredictor);
+
         #if !defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        DataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictor() );
+        lock.lock();
+        DataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictor(), true );
         cellDescription.setExtrapolatedPredictor( -1 );
         #endif
       }
@@ -3196,11 +3195,17 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
     [&]() -> void {
       cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
       if (compressionOfFluctuation<7) {
+        tarch::multicore::Lock lock(_heapSemaphore);
+        cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData(0,0,true) );
+        assertion( cellDescription.getFluctuationCompressed()>=0 );
+        lock.free();
+
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), compressionOfFluctuation);
+
         #if !defined(Asserts)
-        tarch::multicore::Lock lock(_heapSemaphore);
-        DataHeap::getInstance().deleteData( cellDescription.getFluctuation() );
+        lock.lock();
+        DataHeap::getInstance().deleteData( cellDescription.getFluctuation(), true );
         cellDescription.setFluctuation( -1 );
         #endif
       }
@@ -3219,10 +3224,10 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
 
   {
     tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setSolution( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell) );
-    cellDescription.setUpdate( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell) );
-    cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary) );
-    cellDescription.setFluctuation( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary ) );
+    cellDescription.setSolution( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, true) );
+    cellDescription.setUpdate( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, true) );
+    cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, true) );
+    cellDescription.setFluctuation( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, true ) );
   }
   #else
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
@@ -3244,7 +3249,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), cellDescription.getBytesPerDoFInSolution());
         tarch::multicore::Lock lock(_heapSemaphore);
-        CompressedDataHeap::getInstance().deleteData( cellDescription.getSolutionCompressed() );
+        CompressedDataHeap::getInstance().deleteData( cellDescription.getSolutionCompressed(), true );
         cellDescription.setSolutionCompressed( -1 );
       }
     },
@@ -3255,7 +3260,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), cellDescription.getBytesPerDoFInUpdate());
         tarch::multicore::Lock lock(_heapSemaphore);
-        CompressedDataHeap::getInstance().deleteData( cellDescription.getUpdateCompressed() );
+        CompressedDataHeap::getInstance().deleteData( cellDescription.getUpdateCompressed(), true );
         cellDescription.setUpdateCompressed( -1 );
       }
     },
@@ -3266,7 +3271,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), cellDescription.getBytesPerDoFInExtrapolatedPredictor());
         tarch::multicore::Lock lock(_heapSemaphore);
-        CompressedDataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictorCompressed() );
+        CompressedDataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictorCompressed(), true );
         cellDescription.setExtrapolatedPredictorCompressed( -1 );
       }
     },
@@ -3277,7 +3282,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), cellDescription.getBytesPerDoFInFluctuation());
         tarch::multicore::Lock lock(_heapSemaphore);
-        CompressedDataHeap::getInstance().deleteData( cellDescription.getFluctuationCompressed() );
+        CompressedDataHeap::getInstance().deleteData( cellDescription.getFluctuationCompressed(), true );
         cellDescription.setFluctuationCompressed( -1 );
       }
     },
@@ -3293,8 +3298,4 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
 //
 // ich darf schon auf mehreren Eintraegen arbeiten, aber der Zugriff muss dann ueber den Vektor erfolgen, nicht ueber den Heap, weil parallel da jemand was rausloeschen koennte
 //
-//
-//
-
-
 //  recycle anstatt delete
