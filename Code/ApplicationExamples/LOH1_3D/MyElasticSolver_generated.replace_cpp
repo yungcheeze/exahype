@@ -5,9 +5,15 @@
 #include "kernels/aderdg/generic/Kernels.h"
 
 
+Elastic::MyElasticSolver::MyElasticSolver(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::ADERDGSolver("MyElasticSolver", 12 /* numberOfUnknowns */, 0/* numberOfParameters */, 4 /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, std::move(profiler)) {
+  init();
+}
 
-void Elastic::MyElasticSolver::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<flux, source>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
+
+
+void Elastic::MyElasticSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double*  tempUnknowns,double*  tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<flux, source>( lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
 }
 
 
@@ -30,8 +36,10 @@ void Elastic::MyElasticSolver::surfaceIntegral(double* lduh, const double* const
 
 
 
-void Elastic::MyElasticSolver::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {
-  kernels::aderdg::generic::c::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
+void Elastic::MyElasticSolver::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, double* tempFaceUnknownsArray, double** tempStateSizedVectors, double** tempStateSizedSquareMatrices, const double dt, const int normalNonZeroIndex) {
+  assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
+  assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
+  kernels::aderdg::generic::c::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );
 }
 
 
@@ -42,8 +50,8 @@ void Elastic::MyElasticSolver::boundaryConditions(double* fluxOut,double* stateO
 
 
 
-double Elastic::MyElasticSolver::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double d = kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+double Elastic::MyElasticSolver::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double d = kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, tempEigenvalues, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
   return d;
 }
 
