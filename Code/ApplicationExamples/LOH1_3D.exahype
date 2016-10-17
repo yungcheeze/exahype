@@ -50,6 +50,11 @@ exahype-project  Elastic
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
+    timestep-batch-factor           = 0.8
+    skip-reduction-in-batched-time-steps = off
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
   end optimisation
   
   solver ADER-DG MyElasticSolver
