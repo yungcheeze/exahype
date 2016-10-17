@@ -59,6 +59,7 @@ bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
 
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
+
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
     switch (cellDescription.getType()) {
       case exahype::records::ADERDGCellDescription::Erased:
@@ -67,11 +68,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
         {
-        //
-        // @todo Hier muss eine Abfrage rein, dass auch ja kein Hintergrundthread aktiv ist.
-        //       Gilt fuer alle create und deletes. Wenn einer aktiv ist, muessen wir einfach warten ...
-        //       Ist aber keiner aktiv, koennen wir ganz beruhigt auch recycle-Eintraege erzeugen
-
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
         // @todo MPI muss beim delete dem Loeser sagen, dass man recyclen will - sonst frisst das
         //       sukzessive die recycle Indices auf
 
@@ -126,6 +123,8 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
         {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
@@ -175,6 +174,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   switch (cellDescription.getType()) {
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
@@ -211,8 +212,9 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
     case CellDescription::Cell:
     case CellDescription::Ancestor:
     case CellDescription::Descendant:
-      if (!DataHeap::getInstance().isValidIndex(
-          cellDescription.getExtrapolatedPredictor())) {
+      if (!DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
@@ -1870,6 +1872,12 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     const int                                    level) {
   tarch::multicore::Lock lock(_heapSemaphore);
 
+  //
+  // @todo So Zeugs muss hier rein:
+  //
+  //waitUntilAllBackgroundTasksHaveTerminated();
+
+
   int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
   Heap::getInstance().receiveData(
@@ -2897,44 +2905,43 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
+
+int  exahype::solvers::ADERDGSolver::CompressionTask::NumberOfTriggeredTasks(0);
+
+
+void exahype::solvers::ADERDGSolver::CompressionTask::waitUntilAllBackgroundTasksHaveTerminated() {
+  if (CompressionAccuracy>0.0) {
+    bool finishedWait = false;
+
+    while (!finishedWait) {
+      tarch::multicore::Lock lock(_heapSemaphore);
+      finishedWait = CompressionTask::NumberOfTriggeredTasks == 0;
+      lock.free();
+
+      tarch::multicore::BooleanSemaphore::sendTaskToBack();
+    }
+  }
+}
+
+
 exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
-/*
   ADERDGSolver&                             solver,
   exahype::records::ADERDGCellDescription&  cellDescription
-*/
-) {}
-/*
-
-:
+):
   _solver(solver),
   _cellDescription(cellDescription) {
 }
-*/
-
-
-int backgroundCounter = 0;
 
 
 void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
-  // auch wenn das Zeugs ganz leer ist, crashed die Simulation
-
-/*
   _solver.determineUnknownAverages(_cellDescription);
   _solver.computeHierarchicalTransform(_cellDescription,-1.0);
   _solver.putUnknownsIntoByteStream(_cellDescription);
-*/
 
-  // Das macht schon den Seg fault:
-//  tarch::multicore::Lock lock(_compressionSemaphore);
-//  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-
-//  backgroundCounter++;
-
-  //
-  // @todo Also so einen Counter brauchen wir schon, weil wir ja wissen muessen, ob noch einer laeuft
-  //       Wir brauchen auch so ne Art Warteschleife, falls der Counter noch nicht geloescht ist im
-  //       Boundary-Treatment aber auch in den creational routines
-  //
+  tarch::multicore::Lock lock(_heapSemaphore);
+  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+  NumberOfTriggeredTasks--;
+  assertion( NumberOfTriggeredTasks>=0 );
 }
 
 
@@ -2944,19 +2951,12 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
-
-      determineUnknownAverages(cellDescription);
-      computeHierarchicalTransform(cellDescription,-1.0);
-      putUnknownsIntoByteStream(cellDescription);
       tarch::multicore::Lock lock(_heapSemaphore);
-      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+      CompressionTask::NumberOfTriggeredTasks++;
+      lock.free();
 
-      //CompressionTask myTask( *this, cellDescription );
-      CompressionTask myTask;
+      CompressionTask myTask( *this, cellDescription );
       peano::datatraversal::TaskSet spawnedSet( myTask );
-      //myTask();
-
-      assertionMsg(false, "not maintained" );
     }
     else {
       determineUnknownAverages(cellDescription);

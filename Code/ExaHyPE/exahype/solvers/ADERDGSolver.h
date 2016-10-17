@@ -610,16 +610,16 @@ private:
 
   class CompressionTask {
     private:
-/*
-//      ADERDGSolver&                             _solver;
+      ADERDGSolver&                             _solver;
       exahype::records::ADERDGCellDescription&  _cellDescription;
-*/
     public:
+      static int                                 NumberOfTriggeredTasks;
+
+      static void waitUntilAllBackgroundTasksHaveTerminated();
+
       CompressionTask(
-/*
         ADERDGSolver&                             _solver,
         exahype::records::ADERDGCellDescription&  _cellDescription
-*/
       );
 
       void operator()();
