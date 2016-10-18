@@ -56,6 +56,12 @@ namespace exahype {
  *
  * <h2>MPI parallelisation</h2>
  *
+ * <h2>State flags</h2>
+ * TODO Currently, this mapping is using the state flag
+ * SendMode. We should decompose this mapping into the mappings
+ * SendTimeStepData, and SendFaceData
+ * in order to minimise the necessity of synchronisation with the global master.
+ *
  * @author Dominic Charrier, Tobias Weinzierl
  */
 class exahype::mappings::Sending {
