@@ -83,10 +83,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
     // Save old space-time DOF
     std::memcpy(lQi_old, lQi, basisSize3 * numberOfVariables * sizeof(double));
 
-    for (int i = 0; i < basisSize; i++) {  // time DOF
+    for (int i = 0; i < basisSize; i++) {  // time DOF, i=t
                                            // Compute the fluxes
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < basisSize; l++) {
+      for (int k = 0; k < basisSize; k++) { // presumably k=y
+        for (int l = 0; l < basisSize; l++) { // presumably l=x
           // Call PDE fluxes
           const double* Q = &lQi[idx_lQi(k, l, i, 0)];
           double* F[2];
@@ -123,9 +123,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
               rhs[idx_rhs(i, k, l, m)] -= updateSize *
                                           lFi[idx_lFi(i, k, n, 0, m)] *
                                           kernels::Kxi[order][n][l];
-	      gradQ[idx_gradQ(i, k, l, /*x*/0, m)] += 1.0 / dx[0] *
-                                               lQi[idx_lQi(i, k, n, m)] *
-                                               kernels::dudx[order][l][n];
+              gradQ[idx_gradQ(k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
+                                                lQi[idx_lQi(k,n,i,m)] *
+                                                kernels::dudx[order][l][n];  // dudx is already the transpose
+
             }
           }
         }

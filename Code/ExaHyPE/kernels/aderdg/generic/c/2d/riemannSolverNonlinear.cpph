@@ -104,10 +104,10 @@ void riemannSolverNonlinear(double* FL, double* FR,
       for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
         FL[idx_FQLR(j, k)] =
             0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
-            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)])
-	    + 0.5 * ncp[k];
+            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
         FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] - 0.5 * ncp[k];
-	
+        FL[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] + 0.5 * ncp[k];
+        //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_FQLR(j, k)], QR[idx_FQLR(j, k)]);
       }
     }
   }
