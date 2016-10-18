@@ -81,7 +81,8 @@ case $CLEAN in
 		make clean
 		;;
 	"Lightweight") echo -e "Lightweight clean"
-		rm -f *.o
+		# find also object files in subdirectories
+		find . -iname '*.o' -exec rm {} \;
 		;;
 esac
 
