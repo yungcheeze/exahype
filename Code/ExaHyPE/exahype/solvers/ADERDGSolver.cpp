@@ -2122,9 +2122,12 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
+  assertion( tarch::la::countEqualEntries(src,dest)==(DIMENSIONS-1) );
+/*
   if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
+*/
 
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
@@ -2955,8 +2958,22 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       CompressionTask::NumberOfTriggeredTasks++;
       lock.free();
 
+/*
       CompressionTask myTask( *this, cellDescription );
-      peano::datatraversal::TaskSet spawnedSet( myTask );
+      //peano::datatraversal::TaskSet spawnedSet( myTask );
+      //==================================================
+
+      // darf aber halt net im Template stehen, weil sonst wird ja der Kontext wieder pro Template aufgebaut
+      static tbb::task_group_context  mycontext;
+
+      typedef peano::datatraversal::TaskSet::GenericTaskWithCopy<CompressionTask> Task;
+      Task* tbbTask = new(tbb::task::allocate_root(mycontext)) Task(myTask);
+
+      // original thing uses enqueu
+      tbb::task::enqueue(*tbbTask);
+*/
+      assertionMsg( false, "implement" );
+
     }
     else {
       determineUnknownAverages(cellDescription);
