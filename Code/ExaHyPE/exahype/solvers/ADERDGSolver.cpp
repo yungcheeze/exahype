@@ -3199,9 +3199,8 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        int index = CompressedDataHeap::getInstance().createData(0,0,true);
-        cellDescription.setSolutionCompressed(index);
-        assertion2( cellDescription.getSolutionCompressed()>=0, index, cellDescription.getSolutionCompressed() );
+        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,true));
+        assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
 	lock.free();
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
@@ -3294,10 +3293,10 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
   #endif
 
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
 
   peano::datatraversal::TaskSet glueTasks(
     [&]() -> void {
