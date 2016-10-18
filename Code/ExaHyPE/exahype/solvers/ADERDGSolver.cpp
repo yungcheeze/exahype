@@ -532,13 +532,18 @@ bool exahype::solvers::ADERDGSolver::enterCell(
     // marking for refinement
     refineFineGridCell |= markForRefinement(fineGridCellDescription);
 
-    // marking for augmentation
     if (multiscalelinkedcell::adjacencyInformationIsConsistent(
         indicesAdjacentToFineGridVertices)) {
       const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionIndices =
           multiscalelinkedcell::getIndicesAroundCell(
               indicesAdjacentToFineGridVertices);
 
+      #ifdef Parallel
+      fineGridCellDescription.setAdjacentToRemoteRank(
+          exahype::Cell::isAdjacentToRemoteRank(fineGridVertices,fineGridVerticesEnumerator));
+      #endif
+
+      // marking for augmentation
       refineFineGridCell |= // TODO(Dominic): Change to the template version.
           markForAugmentation(
               fineGridCellDescription,
@@ -2302,9 +2307,9 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
 
     // TODO(Dominic): If anarchic time stepping, receive the time step too.
 
-    DataHeap::getInstance().deleteData(receivedlQhbndIndex);
-    DataHeap::getInstance().deleteData(receivedlFhbndIndex);
-    DataHeap::getInstance().deleteData(receivedMinMax);
+    DataHeap::getInstance().deleteData(receivedlQhbndIndex,true);
+    DataHeap::getInstance().deleteData(receivedlFhbndIndex,true);
+    DataHeap::getInstance().deleteData(receivedMinMax,true);
   } else  {
     logDebug(
         "receiveADERDGFaceData(...)", "drop three arrays from rank " <<
@@ -2617,8 +2622,10 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
     // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
     if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
+      #if defined(Debug)
       CellDescription& parentCellDescription =
           getCellDescription(subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement);
+      #endif
 
       logDebug("mergeWithWorkerData(...)","Restricting face data for solver " <<
                cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
