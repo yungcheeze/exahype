@@ -501,6 +501,21 @@ private:
     }
   }
 
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   *
+   * This operation is thread safe as we serialise it.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   */
+  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
+
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.
@@ -648,21 +663,6 @@ public:
 
     return Heap::getInstance().getData(cellDescriptionsIndex)[element];
   }
-
-  /**
-   * Checks if no unnecessary memory is allocated for the cell description.
-   * If this is not the case, it deallocates the unnecessarily allocated memory.
-   *
-   * This operation is thread safe as we serialise it.
-   */
-  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-  /**
-   * Checks if all the necessary memory is allocated for the cell description.
-   * If this is not the case, it allocates the necessary
-   * memory for the cell description.
-   */
-  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
 
   /**
    * Returns if a ADERDGCellDescription type holds face data.

@@ -3142,8 +3142,9 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,true) );
-        assertion( cellDescription.getSolutionCompressed()>=0 );
+        int index = CompressedDataHeap::getInstance().createData(0,0,true);
+        cellDescription.setSolutionCompressed(index);
+        assertion2( cellDescription.getSolutionCompressed()>=0, index, cellDescription.getSolutionCompressed() );
 	lock.free();
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
