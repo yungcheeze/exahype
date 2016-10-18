@@ -59,6 +59,7 @@ bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
 
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
+
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
     switch (cellDescription.getType()) {
       case exahype::records::ADERDGCellDescription::Erased:
@@ -67,6 +68,12 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
         {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        // @todo MPI muss beim delete dem Loeser sagen, dass man recyclen will - sonst frisst das
+        //       sukzessive die recycle Indices auf
+
+        // @todo den FV-Loeser zumindest bei MPI auch nachziehen (und beim Wait auf Background-Tasks)
+
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
@@ -116,6 +123,8 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
         {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
@@ -165,6 +174,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   switch (cellDescription.getType()) {
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
@@ -174,6 +185,18 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
         cellDescription.setUpdateCompressed(-1);
         cellDescription.setSolutionCompressed(-1);
+
+        //
+        // We do reserve on the real heap recycle indices as well as the ones we get might
+        // be taken from another solve
+        //
+        // @todo In header Docu
+        // @todo Klarstellen/Nachschlagen, dass vector wirklich nix allokiert - evtl. mit capacity 0 arbeiten
+        //
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+          DataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        }
 
         cellDescription.setUpdateAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
         cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables() ) );
@@ -189,8 +212,9 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
     case CellDescription::Cell:
     case CellDescription::Ancestor:
     case CellDescription::Descendant:
-      if (!DataHeap::getInstance().isValidIndex(
-          cellDescription.getExtrapolatedPredictor())) {
+      if (!DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
+        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
@@ -202,6 +226,11 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
         cellDescription.setExtrapolatedPredictorCompressed(-1);
         cellDescription.setFluctuationCompressed(-1);
+
+        if (CompressionAccuracy>0.0) {
+          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+          DataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+        }
 
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality ) );
@@ -1551,7 +1580,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     [&] () -> void {
       uncompress(pRight);
     },
-    false
+    true
   );
 
   mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
@@ -1842,6 +1871,12 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   tarch::multicore::Lock lock(_heapSemaphore);
+
+  //
+  // @todo So Zeugs muss hier rein:
+  //
+  //waitUntilAllBackgroundTasksHaveTerminated();
+
 
   int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -2870,38 +2905,43 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
+
+int  exahype::solvers::ADERDGSolver::CompressionTask::NumberOfTriggeredTasks(0);
+
+
+void exahype::solvers::ADERDGSolver::CompressionTask::waitUntilAllBackgroundTasksHaveTerminated() {
+  if (CompressionAccuracy>0.0) {
+    bool finishedWait = false;
+
+    while (!finishedWait) {
+      tarch::multicore::Lock lock(_heapSemaphore);
+      finishedWait = CompressionTask::NumberOfTriggeredTasks == 0;
+      lock.free();
+
+      tarch::multicore::BooleanSemaphore::sendTaskToBack();
+    }
+  }
+}
+
+
 exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
-/*
   ADERDGSolver&                             solver,
   exahype::records::ADERDGCellDescription&  cellDescription
-*/
-) {}
-/*
-
-:
+):
   _solver(solver),
   _cellDescription(cellDescription) {
 }
-*/
-
-
-int backgroundCounter = 0;
 
 
 void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
-  // auch wenn das Zeugs ganz leer ist, crashed die Simulation
-
-/*
   _solver.determineUnknownAverages(_cellDescription);
   _solver.computeHierarchicalTransform(_cellDescription,-1.0);
   _solver.putUnknownsIntoByteStream(_cellDescription);
-*/
 
-  // Das macht schon den Seg fault:
-//  tarch::multicore::Lock lock(_compressionSemaphore);
-//  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-
-//  backgroundCounter++;
+  tarch::multicore::Lock lock(_heapSemaphore);
+  _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+  NumberOfTriggeredTasks--;
+  assertion( NumberOfTriggeredTasks>=0 );
 }
 
 
@@ -2911,19 +2951,12 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
-
-      determineUnknownAverages(cellDescription);
-      computeHierarchicalTransform(cellDescription,-1.0);
-      putUnknownsIntoByteStream(cellDescription);
       tarch::multicore::Lock lock(_heapSemaphore);
-      cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
+      CompressionTask::NumberOfTriggeredTasks++;
+      lock.free();
 
-      //CompressionTask myTask( *this, cellDescription );
-      CompressionTask myTask;
+      CompressionTask myTask( *this, cellDescription );
       peano::datatraversal::TaskSet spawnedSet( myTask );
-      //myTask();
-
-      assertionMsg(false, "not maintained" );
     }
     else {
       determineUnknownAverages(cellDescription);
@@ -3124,7 +3157,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS,
       CompressionAccuracy
       );},
-      false
+      true
   );
 
   assertion(1<=compressionOfSolution);
@@ -3211,7 +3244,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         #endif
       }
     },
-    false
+    true
   );
 }
 
@@ -3287,16 +3320,6 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
         cellDescription.setFluctuationCompressed( -1 );
       }
     },
-    // @todo umbauen
-    false
+    true
   );
 }
-
-
-
-//
-// Vermutung (falls wahr, bitte im Heap.h dokumentieren):
-//
-// ich darf schon auf mehreren Eintraegen arbeiten, aber der Zugriff muss dann ueber den Vektor erfolgen, nicht ueber den Heap, weil parallel da jemand was rausloeschen koennte
-//
-//  recycle anstatt delete
