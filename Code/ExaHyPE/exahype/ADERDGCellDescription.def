@@ -44,6 +44,14 @@ class exahype::records::ADERDGCellDescription {
   ///@}
   
   #ifdef Parallel  
+   /**
+    * Indicates if the cell this
+    * cell description is associated with
+    * is adjacent to a remote rank at
+    * at least one of its faces.
+    */
+   parallelise persistent packed bool adjacentToRemoteRank;
+  
   /**
    * If a neighbouring cell belonging to another rank
    * functions as a compute cell for the same solver (Type::Cell)

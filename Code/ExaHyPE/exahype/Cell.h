@@ -151,6 +151,16 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   #ifdef Parallel
   /**
+   * Returns true if the cell corresponding
+   * to the vertices \p verticesAroundCell
+   * is neighbour to a remote rank
+   * via one of the faces.
+   */
+  static bool isAdjacentToRemoteRank(
+      exahype::Vertex* const verticesAroundCell,
+      const peano::grid::VertexEnumerator& verticesEnumerator);
+
+  /**
    * Count the listings of remote ranks sharing a vertex
    * adjacent to the face \p faceIndex of a cell with this rank.
    * This value is either 0, or 2^{d-1}.
