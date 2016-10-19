@@ -2959,11 +2959,6 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
   bool madeDecision = CompressionAccuracy<=0.0;
   bool uncompress   = false;
 
-  #ifdef Parallel
-  madeDecision = true;
-  uncompress   = !cellDescription.getAdjacentToRemoteRank();
-  #endif
-
   while (!madeDecision) {
     tarch::multicore::Lock lock(_heapSemaphore);
     madeDecision = cellDescription.getCompressionState() != exahype::records::ADERDGCellDescription::CurrentlyProcessed;
@@ -2976,7 +2971,12 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
     tarch::multicore::BooleanSemaphore::sendTaskToBack();
   }
   #else
-  bool uncompress = CompressionAccuracy>0.0 && cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Compressed;
+  bool uncompress = CompressionAccuracy>0.0
+      && cellDescription.getCompressionState() == exahype::records::ADERDGCellDescription::Compressed;
+  #endif
+
+  #ifdef Parallel
+  uncompress &= !cellDescription.getAdjacentToRemoteRank();
   #endif
 
   if (uncompress) {
