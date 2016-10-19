@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "tarch/la/Vector.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 
 #include "peano/utils/Globals.h"
 #include "peano/grid/VertexEnumerator.h"
@@ -85,6 +86,15 @@ namespace exahype {
  */
 class exahype::solvers::Solver {
  public:
+  /**
+   * Some solvers can deploy data conversion into the background. How this is
+   * done is solver-specific. However, we have to wait until all tasks have
+   * terminated if we want to modify the heap, i.e. insert new data or remove
+   * data. Therefore, the wait (as well as the underlying semaphore) belong
+   * into this abstract superclass.
+   */
+  static void waitUntilAllBackgroundTasksHaveTerminated();
+
   /**
    * The type of a solver.
    */
@@ -172,6 +182,16 @@ class exahype::solvers::Solver {
   static const int NotFound;
 
  protected:
+  /**
+   * @see waitUntilAllBackgroundTasksHaveTerminated()
+   */
+  static int                                _NumberOfTriggeredTasks;
+
+  /**
+   * @see waitUntilAllBackgroundTasksHaveTerminated()
+   */
+  static tarch::multicore::BooleanSemaphore _heapSemaphore;
+
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
    */
