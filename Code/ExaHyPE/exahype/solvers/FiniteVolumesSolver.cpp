@@ -21,6 +21,9 @@
 
 #include "exahype/amr/AdaptiveMeshRefinement.h"
 
+#include "tarch/multicore/Lock.h"
+
+
 namespace {
 constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
 }  // namespace
