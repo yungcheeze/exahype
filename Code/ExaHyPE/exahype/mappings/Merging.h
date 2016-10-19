@@ -39,6 +39,12 @@ namespace exahype {
  * @todo Dominic, bitte ordentlich dokumentieren, was hier wann, wo und warum passiert.
  * Bitte auch dokumentieren, falls Du was mal probiert hast und es nicht funktioniert hat.
  *
+ * <h2>State flags</h2>
+ * TODO Currently, this mapping is using the state flag MergeMode
+ * We should decompose this mapping into the mappings MergeTimeStepData,
+ * and MergeTimeStepAndFaceData in order to minimise the necessity of
+ * synchronisation with the global master.
+ *
  * <h2>Synchronisation in multi-rank environment</h2>
  *
  * The individual Riemann solves have to have knowledge about

@@ -27,8 +27,6 @@
 
 #include "tarch/Assertions.h"
 #include "tarch/la/Vector.h"
-#include "tarch/multicore/BooleanSemaphore.h"
-#include "tarch/multicore/Lock.h"
 
 #include "exahype/profilers/simple/NoOpProfiler.h"
 #include "exahype/records/ADERDGCellDescription.h"
@@ -69,8 +67,6 @@ private:
    * Log device.
    */
   static tarch::logging::Log _log;
-
-  static tarch::multicore::BooleanSemaphore _heapSemaphore;
 
   /**
    * The number of unknowns/basis functions associated with each face of an
@@ -628,10 +624,6 @@ private:
       ADERDGSolver&                             _solver;
       exahype::records::ADERDGCellDescription&  _cellDescription;
     public:
-      static int                                 NumberOfTriggeredTasks;
-
-      static void waitUntilAllBackgroundTasksHaveTerminated();
-
       CompressionTask(
         ADERDGSolver&                             _solver,
         exahype::records::ADERDGCellDescription&  _cellDescription

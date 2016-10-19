@@ -50,9 +50,6 @@ namespace {
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
-tarch::multicore::BooleanSemaphore exahype::solvers::ADERDGSolver::_heapSemaphore;
-
-
 double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
 
 bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
@@ -68,11 +65,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
         {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
-        // @todo MPI muss beim delete dem Loeser sagen, dass man recyclen will - sonst frisst das
-        //       sukzessive die recycle Indices auf
-
-        // @todo den FV-Loeser zumindest bei MPI auch nachziehen (und beim Wait auf Background-Tasks)
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
@@ -123,7 +116,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
         {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
@@ -174,7 +167,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   switch (cellDescription.getType()) {
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
@@ -213,7 +206,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
     case CellDescription::Ancestor:
     case CellDescription::Descendant:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
@@ -1875,13 +1868,8 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     const peano::heap::MessageType&              messageType,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
+  waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
-
-  //
-  // @todo So Zeugs muss hier rein:
-  //
-  //waitUntilAllBackgroundTasksHaveTerminated();
-
 
   int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -2227,6 +2215,9 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
+
+  waitUntilAllBackgroundTasksHaveTerminated();
+  tarch::multicore::Lock lock(_heapSemaphore);
 
   CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
@@ -2915,25 +2906,6 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
-
-int  exahype::solvers::ADERDGSolver::CompressionTask::NumberOfTriggeredTasks(0);
-
-
-void exahype::solvers::ADERDGSolver::CompressionTask::waitUntilAllBackgroundTasksHaveTerminated() {
-  if (CompressionAccuracy>0.0) {
-    bool finishedWait = false;
-
-    while (!finishedWait) {
-      tarch::multicore::Lock lock(_heapSemaphore);
-      finishedWait = CompressionTask::NumberOfTriggeredTasks == 0;
-      lock.free();
-
-      tarch::multicore::BooleanSemaphore::sendTaskToBack();
-    }
-  }
-}
-
-
 exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
   ADERDGSolver&                             solver,
   exahype::records::ADERDGCellDescription&  cellDescription
@@ -2950,8 +2922,8 @@ void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
 
   tarch::multicore::Lock lock(_heapSemaphore);
   _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-  NumberOfTriggeredTasks--;
-  assertion( NumberOfTriggeredTasks>=0 );
+  _NumberOfTriggeredTasks--;
+  assertion( _NumberOfTriggeredTasks>=0 );
 }
 
 
@@ -2962,25 +2934,11 @@ void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescri
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
       tarch::multicore::Lock lock(_heapSemaphore);
-      CompressionTask::NumberOfTriggeredTasks++;
+      _NumberOfTriggeredTasks++;
       lock.free();
 
-/*
       CompressionTask myTask( *this, cellDescription );
-      //peano::datatraversal::TaskSet spawnedSet( myTask );
-      //==================================================
-
-      // darf aber halt net im Template stehen, weil sonst wird ja der Kontext wieder pro Template aufgebaut
-      static tbb::task_group_context  mycontext;
-
-      typedef peano::datatraversal::TaskSet::GenericTaskWithCopy<CompressionTask> Task;
-      Task* tbbTask = new(tbb::task::allocate_root(mycontext)) Task(myTask);
-
-      // original thing uses enqueu
-      tbb::task::enqueue(*tbbTask);
-*/
-      assertionMsg( false, "implement" );
-
+      peano::datatraversal::TaskSet spawnedSet( myTask );
     }
     else {
       determineUnknownAverages(cellDescription);
@@ -3199,9 +3157,8 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        int index = CompressedDataHeap::getInstance().createData(0,0,true);
-        cellDescription.setSolutionCompressed(index);
-        assertion2( cellDescription.getSolutionCompressed()>=0, index, cellDescription.getSolutionCompressed() );
+        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,true));
+        assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
 	lock.free();
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
@@ -3294,10 +3251,10 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
   #endif
 
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
-  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
+  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
 
   peano::datatraversal::TaskSet glueTasks(
     [&]() -> void {

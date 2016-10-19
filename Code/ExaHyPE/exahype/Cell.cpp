@@ -63,11 +63,10 @@ bool exahype::Cell::isAdjacentToRemoteRank(
     exahype::Vertex* const verticesAroundCell,
     const peano::grid::VertexEnumerator& verticesEnumerator) {
   tarch::la::Vector<DIMENSIONS,int> center(1);
-
   dfor2(v) // Loop over vertices.
     if (verticesAroundCell[ verticesEnumerator(v) ].isAdjacentToRemoteRank()) {
       dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-        if (tarch::la::countEqualEntries(v+a,center)==DIMENSIONS-1 && // offset of one in one direction from center
+        if (tarch::la::countEqualEntries(v+a,center)==DIMENSIONS-1 && // offset in one direction from center=>face neighbour
             verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
             tarch::parallel::Node::getInstance().getRank()) {
           return true;
