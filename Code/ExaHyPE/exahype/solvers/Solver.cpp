@@ -15,9 +15,29 @@
 
 #include "exahype/Cell.h"
 
+#include "tarch/multicore/Lock.h"
+
+
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
 const int exahype::solvers::Solver::NotFound = -1;
+
+
+tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
+int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
+
+
+void exahype::solvers::Solver::waitUntilAllBackgroundTasksHaveTerminated() {
+  bool finishedWait = false;
+
+  while (!finishedWait) {
+    tarch::multicore::Lock lock(_heapSemaphore);
+    finishedWait = _NumberOfTriggeredTasks == 0;
+    lock.free();
+
+    tarch::multicore::BooleanSemaphore::sendTaskToBack();
+  }
+}
 
 
 exahype::solvers::Solver::Solver(
