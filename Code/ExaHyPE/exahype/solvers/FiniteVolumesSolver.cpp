@@ -218,6 +218,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
       case CellDescription::EmptyDescendant:
       case CellDescription::Ancestor:
       case CellDescription::Descendant:
+        {
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
@@ -229,6 +230,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
 
         cellDescription.setSolution(-1);
 //        cellDescription.setUpdate(-1);
+        }
         break;
       default:
         break;
