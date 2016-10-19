@@ -287,6 +287,7 @@ ffiles.mk:
 	echo -n FSOURCES= > ffiles.mk
 	find -H $(PROJECT_PATH) -name '*.f90' -exec grep -il module {} \+ | tr '\n' ' ' >> ffiles.mk # Module files first
 	find -H $(PROJECT_PATH) -name '*.f90' -exec grep -iL module {} \+ | tr '\n' ' ' >> ffiles.mk
+#	find -H $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 
 
 # Generate a dependency file for Fortran
