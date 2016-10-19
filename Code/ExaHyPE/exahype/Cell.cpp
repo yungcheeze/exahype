@@ -274,15 +274,22 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setExtrapolatedPredictor(-1);
   newCellDescription.setFluctuation(-1);
 
+  // Limiter meta data (oscillations identificator)
+  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
+  newCellDescription.setSolutionMin(-1);
+  newCellDescription.setSolutionMax(-1);
+
+  // Compression
+  newCellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CompressionState::Uncompressed);
   newCellDescription.setSolutionAverages(-1);
   newCellDescription.setUpdateAverages(-1);
   newCellDescription.setExtrapolatedPredictorAverages(-1);
   newCellDescription.setFluctuationAverages(-1);
 
-  // Limiter meta data (oscillations identificator)
-  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
-  newCellDescription.setSolutionMin(-1);
-  newCellDescription.setSolutionMax(-1);
+  newCellDescription.setSolutionCompressed(-1);
+  newCellDescription.setUpdateCompressed(-1);
+  newCellDescription.setExtrapolatedPredictorCompressed(-1);
+  newCellDescription.setFluctuationCompressed(-1);
 
   exahype::solvers::ADERDGSolver::Heap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
