@@ -279,14 +279,16 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	
+#	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+  
 ffiles.mk:
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
 	find -H $(PROJECT_PATH) -name '*.f90' -exec grep -il module {} \+ | tr '\n' ' ' >> ffiles.mk # Module files first
 	find -H $(PROJECT_PATH) -name '*.f90' -exec grep -iL module {} \+ | tr '\n' ' ' >> ffiles.mk
+#	find -H $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 
 
 # Generate a dependency file for Fortran
