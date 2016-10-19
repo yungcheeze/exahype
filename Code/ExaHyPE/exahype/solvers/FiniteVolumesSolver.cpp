@@ -21,6 +21,9 @@
 
 #include "exahype/amr/AdaptiveMeshRefinement.h"
 
+#include "tarch/multicore/Lock.h"
+
+
 namespace {
 constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
 }  // namespace
@@ -215,6 +218,10 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
       case CellDescription::EmptyDescendant:
       case CellDescription::Ancestor:
       case CellDescription::Descendant:
+        {
+        waitUntilAllBackgroundTasksHaveTerminated();
+        tarch::multicore::Lock lock(_heapSemaphore);
+
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
 //        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
@@ -223,6 +230,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
 
         cellDescription.setSolution(-1);
 //        cellDescription.setUpdate(-1);
+        }
         break;
       default:
         break;
@@ -261,8 +269,11 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         const int unknownsPerCell = getUnknownsPerCell();
 //        cellDescription.setUpdate(
 //            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
-        cellDescription.setSolution(
-            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+
+        waitUntilAllBackgroundTasksHaveTerminated();
+        tarch::multicore::Lock lock(_heapSemaphore);
+
+        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
       }
       break;
     default:
@@ -531,6 +542,10 @@ void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
     const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
+  waitUntilAllBackgroundTasksHaveTerminated();
+  tarch::multicore::Lock lock(_heapSemaphore);
+
+
   assertionMsg(false,"Please implement!");
 }
 

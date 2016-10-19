@@ -50,9 +50,6 @@ namespace {
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
-tarch::multicore::BooleanSemaphore exahype::solvers::ADERDGSolver::_heapSemaphore;
-
-
 double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
 
 bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
@@ -68,11 +65,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
         {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
-        // @todo MPI muss beim delete dem Loeser sagen, dass man recyclen will - sonst frisst das
-        //       sukzessive die recycle Indices auf
-
-        // @todo den FV-Loeser zumindest bei MPI auch nachziehen (und beim Wait auf Background-Tasks)
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
@@ -123,7 +116,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
         {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
@@ -174,7 +167,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   switch (cellDescription.getType()) {
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
@@ -213,7 +206,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
     case CellDescription::Ancestor:
     case CellDescription::Descendant:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
-        CompressionTask::waitUntilAllBackgroundTasksHaveTerminated();
+        waitUntilAllBackgroundTasksHaveTerminated();
 
         tarch::multicore::Lock lock(_heapSemaphore);
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
@@ -1875,13 +1868,8 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     const peano::heap::MessageType&              messageType,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
+  waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
-
-  //
-  // @todo So Zeugs muss hier rein:
-  //
-  //waitUntilAllBackgroundTasksHaveTerminated();
-
 
   int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -2227,6 +2215,9 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
     return; // We only consider faces; no corners.
   }
+
+  waitUntilAllBackgroundTasksHaveTerminated();
+  tarch::multicore::Lock lock(_heapSemaphore);
 
   CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
@@ -2915,25 +2906,6 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
 }
 
 
-
-int  exahype::solvers::ADERDGSolver::CompressionTask::NumberOfTriggeredTasks(0);
-
-
-void exahype::solvers::ADERDGSolver::CompressionTask::waitUntilAllBackgroundTasksHaveTerminated() {
-  if (CompressionAccuracy>0.0) {
-    bool finishedWait = false;
-
-    while (!finishedWait) {
-      tarch::multicore::Lock lock(_heapSemaphore);
-      finishedWait = CompressionTask::NumberOfTriggeredTasks == 0;
-      lock.free();
-
-      tarch::multicore::BooleanSemaphore::sendTaskToBack();
-    }
-  }
-}
-
-
 exahype::solvers::ADERDGSolver::CompressionTask::CompressionTask(
   ADERDGSolver&                             solver,
   exahype::records::ADERDGCellDescription&  cellDescription
@@ -2950,19 +2922,23 @@ void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
 
   tarch::multicore::Lock lock(_heapSemaphore);
   _cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Compressed);
-  NumberOfTriggeredTasks--;
-  assertion( NumberOfTriggeredTasks>=0 );
+  _NumberOfTriggeredTasks--;
+  assertion( _NumberOfTriggeredTasks>=0 );
 }
 
 
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Uncompressed, cellDescription.toString() );
-  if (CompressionAccuracy>0.0) {
+  if (CompressionAccuracy>0.0
+      #ifdef Parallel
+      && !cellDescription.getAdjacentToRemoteRank()
+      #endif
+      ) {
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
       tarch::multicore::Lock lock(_heapSemaphore);
-      CompressionTask::NumberOfTriggeredTasks++;
+      _NumberOfTriggeredTasks++;
       lock.free();
 
       CompressionTask myTask( *this, cellDescription );
@@ -2982,6 +2958,12 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
   #ifdef SharedMemoryParallelisation
   bool madeDecision = CompressionAccuracy<=0.0;
   bool uncompress   = false;
+
+  #ifdef Parallel
+  madeDecision = true;
+  uncompress   = !cellDescription.getAdjacentToRemoteRank();
+  #endif
+
   while (!madeDecision) {
     tarch::multicore::Lock lock(_heapSemaphore);
     madeDecision = cellDescription.getCompressionState() != exahype::records::ADERDGCellDescription::CurrentlyProcessed;

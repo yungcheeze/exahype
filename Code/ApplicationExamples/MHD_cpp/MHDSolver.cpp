@@ -20,6 +20,9 @@
 // Variables       ^  ([a-z]+)                ,      double \1
 // Col->Row        \(([0-9]+),\s*([0-9]+)\)   ,      [\2][\1]
 
+// uncomment to enable
+//#define USE_FORTRAN_HELPER_FUNCS
+
 #define MHD_VARIABLES 9
 #define MHD_PARAMETERS 0
 
@@ -86,8 +89,11 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
   double FL;
   double DF;
 
+#ifdef USE_FORTRAN_HELPER_FUNCS
   func_c2p_rmhd1_(&X1,&FL,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-      FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
+#else
+  FUNC_C2P_RMHD1(X1,&FL,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
   double FL_test,DF_test,w_test;
   FUNC_C2P_RMHD1(X1,&FL_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(FL,FL_test);
@@ -101,8 +107,11 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
   }
 
   double FH;
+#ifdef USE_FORTRAN_HELPER_FUNCS
   func_c2p_rmhd1_(&X2,&FH,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-    FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
+#else
+  FUNC_C2P_RMHD1(X2,&FH,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
   double FH_test;
   FUNC_C2P_RMHD1(X2,&FH_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(FH,FH_test);
@@ -136,10 +145,13 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
   double DX=DXOLD;
 
   double F;
+#ifdef USE_FORTRAN_HELPER_FUNCS
   func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-    FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF,gam,d,e,s2,b2,sb2,w);
-  double F_test;
-  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+#else
+  FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&DF,&DF,gam,d,e,s2,b2,sb2,w);
+#endif
+  //double F_test;
+  //FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
 //  assertionNumericalEquals(F,F_test);
 //  assertionNumericalEquals(DF,DF_test);
 //  assertionNumericalEquals(*w,w_test);
@@ -164,9 +176,12 @@ double RTSAFE_C2P_RMHD1(double X1,double X2,double XACC,double gam,double d,
      if (std::abs(DX)<XACC) {
        return RTSAFE_C2P_RMHD1_result;
      }
+#ifdef USE_FORTRAN_HELPER_FUNCS
      func_c2p_rmhd1_(&RTSAFE_C2P_RMHD1_result,&F,&DF,&gam,&d,&e,&s2,&b2,&sb2,w);
-          FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
-     FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+#else
+     FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F,&DF,gam,d,e,s2,b2,sb2,w);
+     //FUNC_C2P_RMHD1(RTSAFE_C2P_RMHD1_result,&F_test,&DF_test,gam,d,e,s2,b2,sb2,&w_test);
+#endif
 //     assertionNumericalEquals(F,F_test);
 //     assertionNumericalEquals(DF,DF_test);
 //     assertionNumericalEquals(*w,w_test);
