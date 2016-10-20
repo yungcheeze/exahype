@@ -596,6 +596,13 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
     DataHeap::getInstance().plotStatistics();
     peano::heap::PlainCharHeap::getInstance().plotStatistics();
+
+    logInfo(
+      "startNewTimeStep(...)",
+      "\tpiped-uncompressed-byes=" << exahype::solvers::ADERDGSolver::PipedUncompressedBytes
+      << "\tpiped-compressed-byes=" << exahype::solvers::ADERDGSolver::PipedCompressedBytes
+      << "\tcompression-rate=" << (exahype::solvers::ADERDGSolver::PipedCompressedBytes/exahype::solvers::ADERDGSolver::PipedUncompressedBytes)
+    );
   }
   #endif
 

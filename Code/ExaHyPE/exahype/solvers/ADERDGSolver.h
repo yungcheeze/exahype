@@ -49,6 +49,11 @@ public:
 
   static bool SpawnCompressionAsBackgroundThread;
 
+  #ifdef Asserts
+  static double PipedUncompressedBytes;
+  static double PipedCompressedBytes;
+  #endif
+
   typedef exahype::DataHeap DataHeap;
 
   /**
