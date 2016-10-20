@@ -63,7 +63,7 @@ namespace {
  * I thus decided to trigger the comparison of compressed vs. uncompressed data
  * through a special flag.
  */
-#define ValidateCompressedVsUncompressedData
+//#define ValidateCompressedVsUncompressedData
 #endif
 
 
@@ -194,8 +194,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
         const int unknownsPerCell = getUnknownsPerCell();
-        cellDescription.setUpdate(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
-        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setUpdate(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).capacity(),static_cast<unsigned int>(unknownsPerCell));
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).size(),static_cast<unsigned int>(unknownsPerCell));
@@ -262,8 +262,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         // Allocate face DoF
         const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
 
-        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
-        cellDescription.setFluctuation(          DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setFluctuation(          DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).capacity(),static_cast<unsigned int>(unknownsPerCellBoundary));
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(unknownsPerCellBoundary));
@@ -279,8 +279,8 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         }
 
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
-        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::DoNotUseAnyRecycledEntry ) );
-        cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::DoNotUseAnyRecycledEntry ) );
+        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
         // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
         // and array of max values of the neighbour at this face).
@@ -3326,6 +3326,32 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     cellDescription.setUpdate( DataHeap::getInstance().createData(                unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
     cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
     cellDescription.setFluctuation( DataHeap::getInstance().createData(           unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
+    lock.free();
+
+    if (cellDescription.getSolution()==-1) {
+      waitUntilAllBackgroundTasksHaveTerminated();
+      lock.lock();
+      cellDescription.setSolution( DataHeap::getInstance().createData( unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      lock.free();
+    }
+    if (cellDescription.getUpdate()==-1) {
+      waitUntilAllBackgroundTasksHaveTerminated();
+      lock.lock();
+      cellDescription.setUpdate( DataHeap::getInstance().createData( unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      lock.free();
+    }
+    if (cellDescription.getExtrapolatedPredictor()==-1) {
+      waitUntilAllBackgroundTasksHaveTerminated();
+      lock.lock();
+      cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      lock.free();
+    }
+    if (cellDescription.getFluctuation()==-1) {
+      waitUntilAllBackgroundTasksHaveTerminated();
+      lock.lock();
+      cellDescription.setFluctuation( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      lock.free();
+    }
   }
   #else
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
@@ -3334,15 +3360,27 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
   #endif
 
-  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
-  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
-  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
-  assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
+  assertion1(
+    CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ),
+    cellDescription.getSolutionCompressed()
+  );
+  assertion1(
+    CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ),
+    cellDescription.getUpdateCompressed()
+  );
+  assertion1(
+    CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ),
+    cellDescription.getExtrapolatedPredictorCompressed()
+  );
+  assertion1(
+    CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ),
+    cellDescription.getFluctuationCompressed()
+  );
 
   peano::datatraversal::TaskSet glueTasks(
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInSolution()<7) {
-        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ), cellDescription.getSolution() );
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), cellDescription.getBytesPerDoFInSolution());
@@ -3353,7 +3391,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInUpdate()<7) {
-        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ), cellDescription.getUpdate());
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getUpdateCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         glueTogether(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), cellDescription.getBytesPerDoFInUpdate());
@@ -3364,7 +3402,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInExtrapolatedPredictor()<7) {
-        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ), cellDescription.getExtrapolatedPredictor());
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictorCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), cellDescription.getBytesPerDoFInExtrapolatedPredictor());
@@ -3375,7 +3413,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInFluctuation()<7) {
-        assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ), cellDescription.getFluctuation());
         assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getFluctuationCompressed() ));
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         glueTogether(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), cellDescription.getBytesPerDoFInFluctuation());
