@@ -273,7 +273,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
-        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
       }
       break;
     default:
