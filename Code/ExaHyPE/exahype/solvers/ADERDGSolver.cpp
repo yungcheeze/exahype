@@ -47,6 +47,27 @@ namespace {
 }
 
 
+#ifdef Asserts
+/**
+ * If you enable assertions, we have the option not to remove any entries from
+ * any heap but to continue to store all unknown on the standard heap when we
+ * compress. This allows us to validate that the data that is compressed in one
+ * iteration and uncompressed in the next one does not differ too significantly
+ * from the original data. There are however two drawbacks to this approach:
+ *
+ * - It is costly.
+ * - It changes the code semantics - we actually work with other and more heap
+ *   entries and thus cannot claim that a code with these assertions equals a
+ *   code without any assertions.
+ *
+ * I thus decided to trigger the comparison of compressed vs. uncompressed data
+ * through a special flag.
+ */
+// #define ValidateCompressedVsUncompressedData
+#endif
+
+
+
 tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
 
 
@@ -1376,7 +1397,13 @@ void exahype::solvers::ADERDGSolver::prepareSending(
     const int element) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-  if (cellDescription.getType()==CellDescription::Type::Cell) {
+  if (
+    cellDescription.getType()==CellDescription::Type::Cell
+    #ifdef Parallel
+    &&
+    !cellDescription.getAdjacentToRemoteRank()
+    #endif
+  ) {
     compress(cellDescription);
   }
 }
@@ -2929,11 +2956,7 @@ void exahype::solvers::ADERDGSolver::CompressionTask::operator()() {
 
 void exahype::solvers::ADERDGSolver::compress(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion1( cellDescription.getCompressionState() ==  exahype::records::ADERDGCellDescription::Uncompressed, cellDescription.toString() );
-  if (CompressionAccuracy>0.0
-      #ifdef Parallel
-      && !cellDescription.getAdjacentToRemoteRank()
-      #endif
-      ) {
+  if (CompressionAccuracy>0.0) {
     if (SpawnCompressionAsBackgroundThread) {
       cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CurrentlyProcessed);
 
@@ -2975,9 +2998,11 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
       && cellDescription.getCompressionState() == exahype::records::ADERDGCellDescription::Compressed;
   #endif
 
+/*
   #ifdef Parallel
   uncompress &= !cellDescription.getAdjacentToRemoteRank();
   #endif
+*/
 
   if (uncompress) {
     pullUnknownsFromByteStream(cellDescription);
@@ -3078,7 +3103,7 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int norma
     numberOfEntries, compressedHeapIndex, bytesForMantissa
   );
 
-  #ifdef Asserts
+  #ifdef ValidateCompressedVsUncompressedData
   assertion( static_cast<int>(DataHeap::getInstance().getData(normalHeapIndex).size())==numberOfEntries );
   #else
   DataHeap::getInstance().getData(normalHeapIndex).resize(numberOfEntries);
@@ -3096,7 +3121,7 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int norma
     double reconstructedValue = peano::heap::compose(
       exponent, mantissa, bytesForMantissa
     );
-    #ifdef Asserts
+    #ifdef ValidateCompressedVsUncompressedData
     assertion7(
       tarch::la::equals( DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, CompressionAccuracy ),
       DataHeap::getInstance().getData(normalHeapIndex)[i], reconstructedValue, DataHeap::getInstance().getData(normalHeapIndex)[i] - reconstructedValue,
@@ -3174,7 +3199,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
 
-        #if !defined(Asserts)
+        #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getSolution(), true );
         cellDescription.setSolution( -1 );
@@ -3192,7 +3217,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         tearApart(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), compressionOfUpdate);
 
-        #if !defined(Asserts)
+        #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getUpdate(), true );
         cellDescription.setUpdate( -1 );
@@ -3210,7 +3235,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), compressionOfExtrapolatedPredictor);
 
-        #if !defined(Asserts)
+        #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getExtrapolatedPredictor(), true );
         cellDescription.setExtrapolatedPredictor( -1 );
@@ -3228,7 +3253,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), compressionOfFluctuation);
 
-        #if !defined(Asserts)
+        #if !defined(ValidateCompressedVsUncompressedData)
         lock.lock();
         DataHeap::getInstance().deleteData( cellDescription.getFluctuation(), true );
         cellDescription.setFluctuation( -1 );
@@ -3243,7 +3268,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
 void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
-  #if !defined(Asserts)
+  #if !defined(ValidateCompressedVsUncompressedData)
   const int unknownsPerCell         = getUnknownsPerCell();
   const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
 
