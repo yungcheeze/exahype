@@ -3322,10 +3322,10 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
 
   {
     tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setSolution( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, true) );
-    cellDescription.setUpdate( DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, true) );
-    cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, true) );
-    cellDescription.setFluctuation( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, true ) );
+    cellDescription.setSolution( DataHeap::getInstance().createData(              unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setUpdate( DataHeap::getInstance().createData(                unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setFluctuation( DataHeap::getInstance().createData(           unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
   }
   #else
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
