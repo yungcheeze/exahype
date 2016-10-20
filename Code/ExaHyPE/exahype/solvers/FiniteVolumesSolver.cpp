@@ -439,10 +439,16 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
 }
 
-void exahype::solvers::FiniteVolumesSolver::prepareSending(
+void exahype::solvers::FiniteVolumesSolver::preProcess(
         const int cellDescriptionsIndex,
         const int element) {
-  // do nothing
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::postProcess(
+        const int cellDescriptionsIndex,
+        const int element) {
+  assertionMsg(false,"Please implement!");
 }
 
 void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(

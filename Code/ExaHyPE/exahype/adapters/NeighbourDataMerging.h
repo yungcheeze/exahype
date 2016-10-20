@@ -19,6 +19,7 @@
 
 
  #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -39,8 +40,10 @@ namespace exahype {
 class exahype::adapters::NeighbourDataMerging {
   private:
     typedef mappings::Merging Mapping0;
+    typedef mappings::PostProcessing Mapping1;
 
      Mapping0  _map2Merging;
+     Mapping1  _map2PostProcessing;
 
 
   public:

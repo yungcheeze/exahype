@@ -189,7 +189,7 @@ void exahype::mappings::Sending::leaveCell(
                                subcellPosition.subcellIndex);
         }
 
-        solver->prepareSending(fineGridCell.getCellDescriptionsIndex(),element);
+        solver->postProcess(fineGridCell.getCellDescriptionsIndex(),element);
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()
@@ -235,7 +235,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
     solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
   }
 
@@ -257,22 +257,13 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 
   int solverNumber=0;
-  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
-    bool solverIsRegistered = false;
-    int element = 0;
-    for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionIndex)) {
-      if (p.getSolverNumber()==solverNumber) {
-        assertionMsg(!solverIsRegistered,"The solverNumber is a unique key. Every solver is allowed to "
-            "be registered only once on each face description.");
-        solverIsRegistered=true;
-        solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
-      }
-      ++element;
-    }
-
-    if (!solverIsRegistered)
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber)
+    if (element!=exahype::solvers::Solver::NotFound) {
+      solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
+    } else {
       solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-
+    }
     ++solverNumber;
   }
 
