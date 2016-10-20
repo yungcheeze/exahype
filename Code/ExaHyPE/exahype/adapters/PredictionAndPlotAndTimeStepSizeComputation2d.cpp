@@ -3,6 +3,7 @@
 
 peano::CommunicationSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::communicationSpecification()
    & exahype::mappings::Merging::communicationSpecification()
    & exahype::mappings::Prediction::communicationSpecification()
    & exahype::mappings::Plot::communicationSpecification()
@@ -16,6 +17,7 @@ peano::CommunicationSpecification   exahype::adapters::PredictionAndPlotAndTimeS
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
    & exahype::mappings::Merging::touchVertexLastTimeSpecification()
    & exahype::mappings::Prediction::touchVertexLastTimeSpecification()
    & exahype::mappings::Plot::touchVertexLastTimeSpecification()
@@ -29,6 +31,7 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSiz
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
    & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
    & exahype::mappings::Prediction::touchVertexFirstTimeSpecification()
    & exahype::mappings::Plot::touchVertexFirstTimeSpecification()
@@ -42,6 +45,7 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSiz
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::enterCellSpecification()
    & exahype::mappings::Merging::enterCellSpecification()
    & exahype::mappings::Prediction::enterCellSpecification()
    & exahype::mappings::Plot::enterCellSpecification()
@@ -55,6 +59,7 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSiz
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::leaveCellSpecification()
    & exahype::mappings::Merging::leaveCellSpecification()
    & exahype::mappings::Prediction::leaveCellSpecification()
    & exahype::mappings::Plot::leaveCellSpecification()
@@ -68,6 +73,7 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSiz
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::ascendSpecification()
    & exahype::mappings::Merging::ascendSpecification()
    & exahype::mappings::Prediction::ascendSpecification()
    & exahype::mappings::Plot::ascendSpecification()
@@ -81,6 +87,7 @@ peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSiz
 
 peano::MappingSpecification   exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::PreProcessing::descendSpecification()
    & exahype::mappings::Merging::descendSpecification()
    & exahype::mappings::Prediction::descendSpecification()
    & exahype::mappings::Plot::descendSpecification()
@@ -102,6 +109,7 @@ exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::~PredictionAnd
 
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::PredictionAndPlotAndTimeStepSizeComputation2d(const PredictionAndPlotAndTimeStepSizeComputation2d&  masterThread):
+  _map2PreProcessing(masterThread._map2PreProcessing) , 
   _map2Merging(masterThread._map2Merging) , 
   _map2Prediction(masterThread._map2Prediction) , 
   _map2Plot(masterThread._map2Plot) , 
@@ -114,6 +122,7 @@ exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::PredictionAndP
 
 
 void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWithWorkerThread(const PredictionAndPlotAndTimeStepSizeComputation2d& workerThread) {
+  _map2PreProcessing.mergeWithWorkerThread(workerThread._map2PreProcessing);
   _map2Merging.mergeWithWorkerThread(workerThread._map2Merging);
   _map2Prediction.mergeWithWorkerThread(workerThread._map2Prediction);
   _map2Plot.mergeWithWorkerThread(workerThread._map2Plot);
@@ -134,6 +143,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::createHan
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -154,6 +164,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::destroyHa
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -173,6 +184,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::createInn
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -192,6 +204,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::createBou
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -211,6 +224,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::destroyVe
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -230,6 +244,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::createCel
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2PreProcessing.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Merging.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Prediction.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -249,6 +264,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::destroyCe
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2PreProcessing.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Merging.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Prediction.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -268,6 +284,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
+   _map2PreProcessing.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Merging.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Prediction.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Plot.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
@@ -285,6 +302,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::prepareSe
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2PreProcessing.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Merging.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Prediction.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Plot.prepareSendToNeighbour( vertex, toRank, x, h, level );
@@ -302,6 +320,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::prepareCo
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2PreProcessing.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Merging.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Prediction.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
@@ -319,6 +338,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::prepareCo
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
+   _map2PreProcessing.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Merging.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Prediction.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
@@ -337,6 +357,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2PreProcessing.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Merging.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Prediction.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
@@ -355,6 +376,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2PreProcessing.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Merging.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Prediction.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
@@ -376,6 +398,7 @@ bool exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::prepareSe
   int                                                                  worker
 ) {
   bool result = false;
+   result |= _map2PreProcessing.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Merging.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Prediction.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Plot.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
@@ -396,6 +419,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::prepareSe
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
+   _map2PreProcessing.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Merging.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Prediction.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Plot.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -421,6 +445,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
     const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
+   _map2PreProcessing.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Merging.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Prediction.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Plot.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
@@ -443,6 +468,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::receiveDa
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
+   _map2PreProcessing.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Merging.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Prediction.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Plot.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
@@ -460,6 +486,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
+   _map2PreProcessing.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Merging.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Prediction.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Plot.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
@@ -477,6 +504,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::mergeWith
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2PreProcessing.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Merging.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Prediction.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Plot.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
@@ -497,6 +525,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::touchVert
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -516,6 +545,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::touchVert
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2PreProcessing.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Merging.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Prediction.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -535,6 +565,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::enterCell
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2PreProcessing.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Merging.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Prediction.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -554,6 +585,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::leaveCell
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
+  _map2PreProcessing.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Merging.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Prediction.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -567,6 +599,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::leaveCell
 void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::beginIteration(
   exahype::State&  solverState
 ) {
+  _map2PreProcessing.beginIteration( solverState );
   _map2Merging.beginIteration( solverState );
   _map2Prediction.beginIteration( solverState );
   _map2Plot.beginIteration( solverState );
@@ -580,6 +613,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::beginIter
 void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::endIteration(
   exahype::State&  solverState
 ) {
+  _map2PreProcessing.endIteration( solverState );
   _map2Merging.endIteration( solverState );
   _map2Prediction.endIteration( solverState );
   _map2Plot.endIteration( solverState );
@@ -600,6 +634,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
+  _map2PreProcessing.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Merging.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Prediction.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
@@ -618,6 +653,7 @@ void exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
+  _map2PreProcessing.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Merging.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Prediction.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );

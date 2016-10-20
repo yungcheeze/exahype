@@ -19,6 +19,7 @@
 
 
  #include "exahype/mappings/DropIncomingMPIMessages.h"
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Sending.h"
@@ -42,14 +43,16 @@ namespace exahype {
 class exahype::adapters::PredictionRerun {
   private:
     typedef mappings::DropIncomingMPIMessages Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::Prediction Mapping2;
-    typedef mappings::Sending Mapping3;
+    typedef mappings::PreProcessing Mapping1;
+    typedef mappings::Merging Mapping2;
+    typedef mappings::Prediction Mapping3;
+    typedef mappings::Sending Mapping4;
 
      Mapping0  _map2DropIncomingMPIMessages;
-     Mapping1  _map2Merging;
-     Mapping2  _map2Prediction;
-     Mapping3  _map2Sending;
+     Mapping1  _map2PreProcessing;
+     Mapping2  _map2Merging;
+     Mapping3  _map2Prediction;
+     Mapping4  _map2Sending;
 
 
   public:

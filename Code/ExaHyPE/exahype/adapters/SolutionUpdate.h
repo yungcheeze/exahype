@@ -18,7 +18,9 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -38,9 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::SolutionUpdate {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2SolutionUpdate;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2PostProcessing;
 
 
   public:

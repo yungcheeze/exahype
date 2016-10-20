@@ -18,7 +18,9 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -38,9 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::Plot {
   private:
-    typedef mappings::Plot Mapping0;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::Plot Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2Plot;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2Plot;
+     Mapping2  _map2PostProcessing;
 
 
   public:

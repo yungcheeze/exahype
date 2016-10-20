@@ -19,8 +19,10 @@
 
 
  #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/Sending.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -41,12 +43,16 @@ namespace exahype {
 class exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation {
   private:
     typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
-    typedef mappings::Sending Mapping2;
+    typedef mappings::PreProcessing Mapping1;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Sending Mapping3;
+    typedef mappings::PostProcessing Mapping4;
 
      Mapping0  _map2DropIncomingMPIMetadataMessages;
-     Mapping1  _map2TimeStepSizeComputation;
-     Mapping2  _map2Sending;
+     Mapping1  _map2PreProcessing;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Sending;
+     Mapping4  _map2PostProcessing;
 
 
   public:

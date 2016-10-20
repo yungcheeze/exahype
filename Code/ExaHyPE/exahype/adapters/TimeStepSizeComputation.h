@@ -18,8 +18,10 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/Sending.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -39,11 +41,15 @@ namespace exahype {
  */
 class exahype::adapters::TimeStepSizeComputation {
   private:
-    typedef mappings::TimeStepSizeComputation Mapping0;
-    typedef mappings::Sending Mapping1;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::Sending Mapping2;
+    typedef mappings::PostProcessing Mapping3;
 
-     Mapping0  _map2TimeStepSizeComputation;
-     Mapping1  _map2Sending;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2TimeStepSizeComputation;
+     Mapping2  _map2Sending;
+     Mapping3  _map2PostProcessing;
 
 
   public:

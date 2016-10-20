@@ -359,8 +359,6 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCell(
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  std::cout << "enterCell(...)" << "0" << std::endl;
-
   dfor2(k)
     if (fineGridVertices[fineGridVerticesEnumerator(k)].isHangingNode()) {
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex( 
@@ -372,8 +370,6 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCell(
       fineGridVertices[fineGridVerticesEnumerator(k)].getCellDescriptionsIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
     }
   enddforx
-
-  std::cout << "enterCell(...)" << "1" << std::endl;
 }
 
 
