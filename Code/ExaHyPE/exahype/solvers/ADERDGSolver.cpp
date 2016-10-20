@@ -3064,8 +3064,6 @@ void exahype::solvers::ADERDGSolver::uncompress(exahype::records::ADERDGCellDesc
 void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   exahype::records::ADERDGCellDescription& cellDescription
 ) {
-  logDebug("determineUnknownAverages(...)","solution,cell="<<DataHeap::getInstance().getData(cellDescription.getSolution()).size());
-
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {
     double solutionAverage = 0.0;
     double updateAverage   = 0.0;
@@ -3093,8 +3091,6 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
 
 
 void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::records::ADERDGCellDescription& cellDescription, double sign) {
-  logDebug("computeHierarchicalTransform(...)","solution,cell="<<DataHeap::getInstance().getData(cellDescription.getSolution()).size());
-
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {
     int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
     for (int i=0; i<numberOfDoFsPerVariable; i++) {
@@ -3249,8 +3245,6 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
 
-        logDebug("putUnknownsIntoByteStream(...)","solution,cell="<<DataHeap::getInstance().getData(cellDescription.getSolution()).size());
-
         tearApart(numberOfEntries, cellDescription.getSolution(), cellDescription.getSolutionCompressed(), compressionOfSolution);
 
         #if !defined(ValidateCompressedVsUncompressedData)
@@ -3267,8 +3261,6 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getUpdateCompressed()>=0 );
         lock.free();
-
-        logDebug("putUnknownsIntoByteStream(...)","update,cell="<<cellDescription.toString());
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
         tearApart(numberOfEntries, cellDescription.getUpdate(), cellDescription.getUpdateCompressed(), compressionOfUpdate);
@@ -3288,8 +3280,6 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         assertion( cellDescription.getExtrapolatedPredictorCompressed()>=0 );
         lock.free();
 
-        logDebug("putUnknownsIntoByteStream(...)","predictor,cell="<<cellDescription.toString());
-
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getExtrapolatedPredictor(), cellDescription.getExtrapolatedPredictorCompressed(), compressionOfExtrapolatedPredictor);
 
@@ -3307,8 +3297,6 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
         cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getFluctuationCompressed()>=0 );
         lock.free();
-
-        logDebug("putUnknownsIntoByteStream(...)","fluctuations,cell="<<cellDescription.toString());
 
         const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS-1) * 2 * DIMENSIONS;
         tearApart(numberOfEntries, cellDescription.getFluctuation(), cellDescription.getFluctuationCompressed(), compressionOfFluctuation);
