@@ -235,15 +235,13 @@ void exahype::mappings::PostProcessing::beginIteration(
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::PostProcessing::PostProcessing(const PostProcessing& masterThread)
-{
+exahype::mappings::PostProcessing::PostProcessing(const PostProcessing& masterThread) {
   // do nothing
 }
 
 void exahype::mappings::PostProcessing::mergeWithWorkerThread(
-    const PostProcessing& workerThread)
-{
-  // do nothingw
+    const PostProcessing& workerThread) {
+  // do nothing
 }
 #endif
 
