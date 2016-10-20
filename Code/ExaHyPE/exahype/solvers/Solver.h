@@ -594,10 +594,25 @@ class exahype::solvers::Solver {
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
 
   /**
-   * In this method, the solver can perform some
-   * internal things, e.g., compression of the
-   * degrees of freedoms, before its data is
-   * communicated to the neighbours.
+     * In this method, the solver can perform post-processing
+     * operations, e.g., compression of the
+     * degrees of freedoms.
+     *
+     * \param[in] element Index of the cell description
+     *                    holding the data to send out in
+     *                    the array at address \p cellDescriptionsIndex.
+     *                    This is not the solver number.
+     *
+     * \see tryGetElement
+     */
+    virtual void preProcess(
+        const int cellDescriptionsIndex,
+        const int element) = 0;
+
+  /**
+   * In this method, the solver can perform post-processing
+   * operations, e.g., compression of the
+   * degrees of freedoms.
    *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
@@ -606,7 +621,7 @@ class exahype::solvers::Solver {
    *
    * \see tryGetElement
    */
-  virtual void prepareSending(
+  virtual void postProcess(
       const int cellDescriptionsIndex,
       const int element) = 0;
 

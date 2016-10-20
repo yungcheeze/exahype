@@ -297,9 +297,13 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
-  void prepareSending(
-        const int cellDescriptionsIndex,
-        const int element) override;
+  void preProcess(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void postProcess(
+      const int cellDescriptionsIndex,
+      const int element) override;
 
   void prolongateDataAndPrepareDataRestriction(
       const int cellDescriptionsIndex,
