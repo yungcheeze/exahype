@@ -235,11 +235,15 @@ void exahype::mappings::PreProcessing::beginIteration(
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::PreProcessing::PreProcessing(const PreProcessing& masterThread)
-{// do nothing}
+{
+  // do nothing
+}
 
 void exahype::mappings::PreProcessing::mergeWithWorkerThread(
     const PreProcessing& workerThread)
-{// do nothing}
+{
+  // do nothing
+}
 #endif
 
 void exahype::mappings::PreProcessing::createHangingVertex(
