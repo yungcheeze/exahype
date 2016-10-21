@@ -23,6 +23,7 @@
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
+ #include "exahype/adapters/LimiterStatusSpreading.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/SolutionUpdate.h" 

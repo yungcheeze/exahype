@@ -47,6 +47,10 @@ event-mapping:
 event-mapping:
   name: Plot
 
+// Limiter
+event-mapping:
+  name: LimiterStatusSpreading
+
 // GridUpdate   
 event-mapping:
   name: GridErasing
@@ -163,6 +167,12 @@ adapter:
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction 
   merge-with-user-defined-mapping: Sending
+
+
+// Additional adapters for limiter status spreading and initialisation
+adapter: 
+  name: LimiterStatusSpreading
+  merge-with-user-defined-mapping: LimiterStatusSpreading
  
 // Additional adapters for 4 phase time stepping
 adapter: 
