@@ -258,7 +258,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
 
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber)
+    int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
       solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
     } else {
