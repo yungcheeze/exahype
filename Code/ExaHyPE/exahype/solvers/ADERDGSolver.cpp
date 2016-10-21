@@ -540,6 +540,10 @@ bool exahype::solvers::ADERDGSolver::enterCell(
   } else if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
+
+    #ifdef Parallel
+    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
     #if defined(Asserts) || defined(Debug)
     int coarseGridCellElement =
         tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -548,10 +552,6 @@ bool exahype::solvers::ADERDGSolver::enterCell(
         fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
         fineGridCellDescription.toString(),fineGridCell.toString(),
         coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
-
-    #ifdef Parallel
-    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-    #endif
 
     // marking for refinement
     refineFineGridCell |= markForRefinement(fineGridCellDescription);
@@ -1581,6 +1581,52 @@ void exahype::solvers::ADERDGSolver::restrictData(
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
+void exahype::solvers::ADERDGSolver::mergeLimiterDataOfNeighbours(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+  assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
+
+  const int normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
+  assertion(normalDirection >= 0 && normalDirection < DIMENSIONS);
+  const int faceIndex1 = 2 * normalDirection +
+      (pos2(normalDirection) > pos1(normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
+  const int faceIndex2 = 2 * normalDirection +
+      (pos1(normalDirection) > pos2(normalDirection) ? 1 : 0);   // !!! Be aware of the ">" !!!
+
+  int cellDescriptionsIndexLeft  = cellDescriptionsIndex1;
+  int elementLeft                = element1;
+  int faceIndexLeft              = faceIndex1;
+
+  int cellDescriptionsIndexRight = cellDescriptionsIndex2;
+  int elementRight               = element2;
+  int faceIndexRight             = faceIndex2;
+
+  if (pos1(normalDirection) > pos2(normalDirection)) {
+    cellDescriptionsIndexLeft  = cellDescriptionsIndex2;
+    elementLeft                = element2;
+    faceIndexLeft              = faceIndex2;
+
+    cellDescriptionsIndexRight = cellDescriptionsIndex1;
+    elementRight               = element1;
+    faceIndexRight             = faceIndex1;
+  }
+
+  CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
+  CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
+
+  mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
+
+  // We need to copy the limiter status since the routines below modify
+  // the limiter status on the cell descriptions.
+  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getLimiterStatus(faceIndexLeft);
+  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getLimiterStatus(faceIndexRight);
+  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+}
 
 void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 cellDescriptionsIndex1,
@@ -1592,9 +1638,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     double**                                  tempFaceUnknownsArrays,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
-  if (tarch::la::countEqualEntries(pos1,pos2)!=(DIMENSIONS-1)) {
-    return; // We only consider faces; no corners.
-  }
+  assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
   // !!! In Riemann solve we consider "left" face of "right" cell and
   // "right" face of "left" cell. !!!
   const int normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
@@ -1644,6 +1688,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
   mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
 
+  // TODO(Dominic): This needs to consider the NeighbourOfNeighbourCells
   if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
     assertion4(pRight.getLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
         pLeft.toString(),pRight.toString(),faceIndexLeft,faceIndexRight);
