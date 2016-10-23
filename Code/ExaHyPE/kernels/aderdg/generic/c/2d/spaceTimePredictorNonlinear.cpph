@@ -177,6 +177,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       }
     }  // end time dof
 
+
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
     std::memset(lQi, 0, basisSize3 * numberOfVariables * sizeof(double));
