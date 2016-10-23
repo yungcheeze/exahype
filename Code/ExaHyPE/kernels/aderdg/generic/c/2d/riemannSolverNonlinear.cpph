@@ -88,6 +88,8 @@ void riemannSolverNonlinear(double* FL, double* FR,
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
+  
+  //printf("dt = %f\n", dt); // extract dt
 
   {
     idx2 idx_FQLR(basisSize, numberOfVariables);
@@ -98,6 +100,9 @@ void riemannSolverNonlinear(double* FL, double* FR,
 	      for(int m=0; m < numberOfVariables; m++) {
 		     ncp[l] += Bn[idx_Bn(l, m)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
 	      }
+	     // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_FQLR(j, l)]);
+	     // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_FQLR(j, l)]);
+	     // printf("ncp[%d]=%.20e\n", l, ncp[l]);
       }
 
       // Avoid diffusion of parameters
