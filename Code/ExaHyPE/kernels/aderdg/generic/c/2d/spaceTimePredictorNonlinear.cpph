@@ -163,7 +163,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
 
           // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-	  PDENCP(&lQi[idx_lQi(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)], BGradQ);
+          PDENCP(&lQi[idx_lQi(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)], BGradQ);
 
           // TODO: numberOfVariables - numberOfParameters would do (would do what?)
 
@@ -173,6 +173,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
         }
       }
     }  // end time dof
+
 
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
@@ -195,6 +196,31 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
         }
       }
     }
+
+    // todo remove temp variable after debugging or uncomment
+    double* Qt = new double[basisSize * numberOfVariables]; // per j,k
+    idx2 idx_Qt(basisSize,numberOfVariables);
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        const double weight = kernels::gaussLegendreWeights[order][j] *
+            kernels::gaussLegendreWeights[order][k];
+        const double iweight = 1.0 / weight;
+
+        // Matrix operation
+        std::memset(Qt,0,basisSize * numberOfVariables*sizeof(double)); // todo remove after debugging or uncomment
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            for (int n = 0; n < basisSize; n++) {
+              Qt[idx_Qt(l,m)] += 1./dt * lQi[idx_rhs(n, j, k, m)] * kernels::dudx[order][l][n];
+              // TODO: Check if we store iK1 or rather its transpose
+            }
+          }
+        }
+        asm("nop"); // todo remove
+      }
+    }
+    delete[] Qt;
+
 
     // 5. Exit condition
     // TODO(guera): Stability of sum? -> Kahan, reduction?
