@@ -28,7 +28,8 @@ namespace c {
 namespace {
 
 template <void PDEFlux3d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+          void PDESource(const double* const Q, double* S),
+          void PDENCP(double* BgradQ, const double* Q, const double* gradQ)>
 void aderPicardLoopNonlinear(const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              int numberOfVariables, int basisSize,
@@ -184,6 +185,12 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
             double* S = &lFi[idx_lFi(i, j, k, l, 3, 0)];
 
             // TODO: Subtract nonconservative part from S
+	    
+	    /***
+	     *** TODO: Use PDENCP(...) here to compute
+	     ***       nonconservative part, cf 2D version.
+	     ***
+	     ***/
 
             // TODO: numberOfVariables - numberOfParameters would do
             for (int m = 0; m < numberOfVariables; m++) {
@@ -407,7 +414,8 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 }  // namespace
 
 template <void PDEFlux3d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+          void PDESource(const double* const Q, double* S),
+          void PDENCP(double* BgradQ, const double* Q, const double* gradQ)>
 void spaceTimePredictorNonlinear(
     double*  lQhbnd, double* lFhbnd,
     double** tempSpaceTimeUnknowns,
@@ -431,7 +439,7 @@ void spaceTimePredictorNonlinear(
 
   double *lFhi    = tempFluxUnknowns;
 
-  aderPicardLoopNonlinear<PDEFlux3d, PDESource>(luh, dt, dx, numberOfVariables,
+  aderPicardLoopNonlinear<PDEFlux3d, PDESource, PDENCP>(luh, dt, dx, numberOfVariables,
                                                 basisSize,
                                                 lQi, lQi_old, rhs, rhs_0,
                                                 lFi);
