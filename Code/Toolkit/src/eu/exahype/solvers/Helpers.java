@@ -31,10 +31,10 @@ public class Helpers {
     writer.write("    // Sorry for being inconsistent here: While AderDGSolver offers the methods getNumberOfVariables() etc.,\n");
     writer.write("    // in static context they cannot be accessed. Thus the toolkit offers you access to the variables here.\n");
     writer.write("    // Thank you, Toolkit!\n");
-    writer.write("    static const int nVar = "+numberOfUnknowns+"\n");
-    writer.write("    static const int nDim = "+dimensions+"\n");
-    writer.write("    static const int nParams = "+numberOfParameters+"\n");
-    writer.write("    static const int order = "+order+"\n");
+    writer.write("    static const int nVar = "+numberOfUnknowns+";\n");
+    writer.write("    static const int nDim = "+dimensions+";\n");
+    writer.write("    static const int nParams = "+numberOfParameters+";\n");
+    writer.write("    static const int order = "+order+";\n");
     writer.write("\n");
     
     
@@ -133,8 +133,9 @@ public class Helpers {
 
     // init
     writer.write("void " + projectName + "::" + solverName +
-      "::init() {\n");
-    writer.write("  // This function is called inside the constructur.\n");
+      "::init(exahype::Parser::ParserView& constants) {\n");
+    writer.write("  // This function is called inside the constructor.\n");
+    writer.write("  // You can access spec file parameters here..\n");
     writer.write("  // @todo Please implement/augment if required.\n");
     writer.write("}\n\n");
   }

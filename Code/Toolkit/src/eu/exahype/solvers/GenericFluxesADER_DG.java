@@ -24,10 +24,12 @@ public abstract class GenericFluxesADER_DG implements Solver {
   @Override
   public final void writeHeader(BufferedWriter writer, String solverName, String projectName)
       throws IOException {
+     IncludeOnceHelper ifndef = new IncludeOnceHelper(writer, solverName+"_CLASS_HEADER");
+     ifndef.open();
      Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
 
     writer.write("  private:\n");
-    writer.write("    void init();\n");
+    writer.write("    void init("+(_hasConstants ? "exahype::Parser::ParserView& constants" : "")+");\n");
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
     writer.write("    static void source(const double* const Q, double* S);\n");
@@ -40,6 +42,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
         "    static void matrixb(const double* const Q, const int normalNonZero, double* Bn);\n");
 
     writer.write("};\n\n\n");
+    ifndef.close();
   }
 
   @Override
@@ -64,10 +67,15 @@ public abstract class GenericFluxesADER_DG implements Solver {
 
     writer.write("  exahype::solvers::ADERDGSolver("
         + "\""+solverName+"\", nVar /* numberOfUnknowns */, "
-        + "nParam /* numberOfParameters */, order + 1 "
+        + "nParams /* numberOfParameters */, order + 1 "
         + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
         "std::move(profiler)) {\n");
-    writer.write("  init();\n");
+    if(_hasConstants) {
+       writer.write("  init(constants);\n");
+    } else {
+       writer.write("  init();\n");
+       writer.write("  // PS: If you miss access to user constants here, enable them in the toolkit\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
 
