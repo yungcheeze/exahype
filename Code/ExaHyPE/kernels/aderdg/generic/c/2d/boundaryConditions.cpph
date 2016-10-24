@@ -20,7 +20,7 @@
 
 #if DIMENSIONS == 2
 
-template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
+template <void PDEBoundaryConditions(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
 void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
                         double* stateOut,
                         const double* const fluxIn,
@@ -53,7 +53,7 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
   x[normalNonZero] = cellCentre[normalNonZero] + (-0.5 + f)*cellSize[normalNonZero];
   for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
     x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::gaussLegendreNodes[basisSize-1][ii] - 0.5);
-      PDEBoundaryConditions(x,t,faceIndex,normalNonZero,
+      PDEBoundaryConditions(x,t,dt,faceIndex,normalNonZero,
                             &fluxIn[nidx1(ii)],&stateIn[nidx1(ii)],
                             &fluxOut[nidx1(ii)],&stateOut[nidx1(ii)]);
   }

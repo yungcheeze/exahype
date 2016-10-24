@@ -180,7 +180,7 @@ void riemannSolverNonlinear(
     const int numberOfParameters, const int basisSize);
 
 template <void PDEBoundaryConditions(
-    const double* const x, const double t, const int faceIndex,
+    const double* const x, const double t, const double dt, const int faceIndex,
     const int normalNonZero, const double* const fluxIn,
     const double* const stateIn, double* fluxOut, double* stateOut)>
 void boundaryConditions(
