@@ -4,6 +4,9 @@
 #include "tarch/logging/Log.h"
 #include <algorithm> // string lower
 #include <stdlib.h> // getenv
+#include "MHDSolver.h"
+
+extern exahype::Parser::ParserView* constants;
 
 extern "C" {
 

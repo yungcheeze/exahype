@@ -18,13 +18,14 @@ namespace MHDSolver{
 
 #include "TimeSeriesReductions.h"
 #include "GeneratedConstants.h"
-#define nVars MY_NUMBER_OF_VARIABLES /* MHD */
+#include "MHDSolver.h"
+static const int nVar = MHDSolver::MHDSolver::nVar; // shortcut
 
 class MHDSolver::MHDSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  TimeSeriesReductions* conserved[nVars];
-  TimeSeriesReductions* primitives[nVars];
-  TimeSeriesReductions* errors[nVars];
+  TimeSeriesReductions* conserved[nVar];
+  TimeSeriesReductions* primitives[nVar];
+  TimeSeriesReductions* errors[nVar];
   TimeSeriesReductions* statistics;
 
   MHDSolver_Plotter1(MHDSolver&  solver);

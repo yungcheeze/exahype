@@ -9,6 +9,8 @@
 #include "InitialDataAdapter.h"
 #include "MHDSolver.h"
 
+// storage for the constants pointer
+exahype::Parser::ParserView* constants;
 
 static const char* specfile_initialdata_key = "initialdata";
 
@@ -23,7 +25,6 @@ static const std::string envPrefix = "exahype_";
 bool envKeyExists(const std::string& key) { return std::getenv(key.c_str()) != nullptr; }
 std::string getEnvValue(const std::string& key) { assert(envKeyExists(key)); return std::getenv(key.c_str()); }
 bool shallUseEnvWorkaround() { return envKeyExists(envPrefix+"parameter_workaround"); }
-#define constants  MHDSolver::MHDSolver::constants
 bool wrap_isValueValidString(const std::string& key) {
 	if(shallUseEnvWorkaround()) return envKeyExists(envPrefix+key);
 	assert(constants != nullptr);

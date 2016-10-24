@@ -23,20 +23,10 @@ void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
 void registerinitialdata_(const char* const id_name, int* id_name_len);
 }/* extern "C" */
 
-// storage for static class members
-int MHDSolver::MHDSolver::numberOfVariables;
-int MHDSolver::MHDSolver::numberOfParameters;
-exahype::Parser::ParserView* MHDSolver::MHDSolver::constants;
 
-void MHDSolver::MHDSolver::init() {
-  // This function is called inside the constructur.
-  // @todo Please implement/augment if required
-
-  // cf issue #61
-  numberOfVariables = getNumberOfVariables();
-  numberOfParameters = getNumberOfParameters();
-
-  printf("MHD static: numberOfVariables: %d, numberOfParameters: %d, DIMENSIONS=%d\n", numberOfVariables, numberOfParameters, DIMENSIONS);
+void MHDSolver::MHDSolver::init(exahype::Parser::ParserView& _constants) {
+  // just pass the pointer to the crazy Fortran glue code. Should be improved.
+  constants = &_constants;
 }
 
 void MHDSolver::MHDSolver::flux(const double* const Q, double** F) {
@@ -68,7 +58,7 @@ void MHDSolver::MHDSolver::adjustedSolutionValues(const double* const x,const do
 
 void MHDSolver::MHDSolver::source(const double* const Q, double* S) {
   // TODO: pass this to Fortran.
-  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
+  for(int i=0; i < nVar; i++) {
     S[i] = 0.0;
   }
 }
@@ -102,10 +92,6 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   }
   */
 
-  // too lazy to access MHDSolver::MHDSolver::numberOfVariables etc.
-  const int nVar = MY_NUMBER_OF_VARIABLES;
-  const int nDim = MY_DIMENSIONS;
-  const int order = MY_POLYNOMIAL_DEGREE;
   const int basisSize = order + 1;
 
   double Qgp[nVar];
@@ -135,4 +121,14 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   //printf("stateOut[%d]=%.5e == stateIn[%d]=%.5e at t=%f, dt=%f x=%.5e, y=%.5e, Equals=%e\n", statem, stateOut[statem], statem, stateIn[statem], t, dt, x[0], x[1], stateOut[statem] - stateIn[statem]);
   //printf("FOut[%d]=%e == Fin[%d]=%e\n", statem, fluxOut[statem], statem, fluxIn[statem]);
 }
+
+
+void MHDSolver::MHDSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+	std::memset(BgradQ, 0, nVar * sizeof(double));
+}
+
+void MHDSolver::MHDSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+	std::memset(Bn, 0, nVar * sizeof(double));
+}
+
 
