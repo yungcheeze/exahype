@@ -11,10 +11,11 @@
 #include "TimeSeriesReductions.h"
 #include "Primitives.h"
 #include "InitialData.h"
+#include "MyEulerSolver.h"
 
 Euler::MyEulerSolver_Plotter1::MyEulerSolver_Plotter1(MyEulerSolver& solver) {
 	// open all the reductions
-	assert( 5 == nVars );
+	assert( 5 == nVar );
 	
 	conserved[0] = new TimeSeriesReductions("output/dens.asc");
 	conserved[1] = new TimeSeriesReductions("output/sconx.asc");
@@ -45,7 +46,7 @@ Euler::MyEulerSolver_Plotter1::~MyEulerSolver_Plotter1() {
 
 void Euler::MyEulerSolver_Plotter1::startPlotting(double time) {
 	this->time = time;
-	for(int i=0; i<nVars; i++) {
+	for(int i=0; i<nVar; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
 		errors[i]->initRow(time);
@@ -55,7 +56,7 @@ void Euler::MyEulerSolver_Plotter1::startPlotting(double time) {
 
 
 void Euler::MyEulerSolver_Plotter1::finishPlotting() {
-	for(int i=0; i<nVars; i++) {
+	for(int i=0; i<nVar; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
 		errors[i]->writeRow();
@@ -75,25 +76,25 @@ void Euler::MyEulerSolver_Plotter1::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	const double NumberOfLagrangePointsPerAxis = MY_POLYNOMIAL_DEGREE + 1;
-	const double NumberOfUnknownsPerGridPoint = MY_NUMBER_OF_VARIABLES;
+	const double NumberOfLagrangePointsPerAxis = Euler::MyEulerSolver::order + 1;
+	//const double NumberOfUnknownsPerGridPoint = nVar;
 
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
 	statistics->addValue(scaling, 1);
 
 	// reduce the conserved quantities
-	for (int i=0; i<nVars; i++)
+	for (int i=0; i<nVar; i++)
 		conserved[i]->addValue( Q[i], scaling );
 
 	// reduce the primitive quantities
-	double V[nVars];
+	double V[nVar];
 	cons2prim(V, Q);
-	for(int i=0; i<nVars; i++)
+	for(int i=0; i<nVar; i++)
 		primitives[i]->addValue( V[i], scaling );
 
 	// now do the convergence test, as we have exact initial data
-	double Exact[nVars];
+	double Exact[nVar];
 	// TODO: Need a way to access _data in tarch::la::Vector.
 	double xpos[DIMENSIONS];
 	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
@@ -101,8 +102,8 @@ void Euler::MyEulerSolver_Plotter1::mapQuantities(
 //	ShuVortex2D(xpos, Exact, time); // TODO(Dominic): Bug: Here, you used the Shu-Vortex as reference solution for every problem. You compared your (Euler) lin. adv. against it.
 	InitialData(xpos, Exact, time);
 
-	double localError[nVars];
-	for(int i=0; i<nVars; i++) {
+	double localError[nVar];
+	for(int i=0; i<nVar; i++) {
 		localError[i] = abs(V[i] - Exact[i]);
 		errors[i]->addValue( localError[i], scaling );
 	}

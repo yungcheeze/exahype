@@ -2,6 +2,7 @@
 #define __EULER_PRIMITIVES__
 
 #include "GeneratedConstants.h"
+#include "MyEulerSolver.h"
 
 // Ideal equation of state's Gamma
 static const double eos_gamma = 1.4; // cf. fluxes, eigenvalues, initial data
@@ -40,7 +41,7 @@ inline void prim2con(double* Q, const double* V) {
 // skip the cons2prim for debugging
 /*
 inline void cons2prim(double* V, const double* Q) {
-	for(int i=0; i<MY_NUMBER_OF_VARIABLES; i++)
+	for(int i=0; i<Euler::MyEulerSolver::nVar; i++)
 		V[i] = Q[i];
 }
 

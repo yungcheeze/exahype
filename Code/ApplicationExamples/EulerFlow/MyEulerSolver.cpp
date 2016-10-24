@@ -15,6 +15,7 @@
 #include "InitialData.h"
 
 #include <memory>
+#include <cstring> // memset
 
 void Euler::MyEulerSolver::init() {
   // This function is called inside the generated constructor.
@@ -138,6 +139,7 @@ Euler::MyEulerSolver::refinementCriterion(
 }
 
 void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
+					  const double dt,
                                           const int faceIndex,
                                           const int normalNonZero,
                                           const double* const fluxIn,

@@ -15,6 +15,7 @@
 #include "GeneratedConstants.h"
 #include "PastaMatrix.h"
 #include "Primitives.h"
+#include "MyEulerSolver.h"
 
 #include <cstring>
 #include <math.h>
@@ -89,7 +90,7 @@ void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
 
   V[0] = 0.5 +
          0.2 * exp(-(xvec - x0 - v0 * t).norm() /
-                   pow(width, MY_DIMENSIONS));  // rho
+                   pow(width, Euler::MyEulerSolver::nDim));  // rho
   V[1] = v0(0);
   V[2] = v0(1);
   V[3] = 0.;
@@ -134,7 +135,7 @@ void DiffusingGauss(const double* const x, double* Q) {
   Q[2] = 0.;
   Q[3] = 0.;
   Q[4] = 1. / (eos_gamma - 1) +
-         exp(-(xvec - x0).norm() / pow(width, MY_DIMENSIONS)) * 2;
+         exp(-(xvec - x0).norm() / pow(width, Euler::MyEulerSolver::nDim)) * 2;
 }
 
 void InitialData(const double* const x, double* Q, double t) {
@@ -160,13 +161,13 @@ void InitialData(const double* const x, double* Q, double t) {
       logInfo("InitialData(double*,double,double)",
               "Loading ShuVortex Initial Data");
     // ShuVortex gives us primitive data
-    double V[MY_NUMBER_OF_VARIABLES];
+    double V[Euler::MyEulerSolver::nVar];
     ShuVortex2D(x, V, t);
     prim2con(Q, V);
   } else if (sid == "MovingGauss2D") {
     if (!wroteAboutInitialData)
       logInfo("InitialData(double*,double,double)", "Loading moving Gauss");
-    double V[MY_NUMBER_OF_VARIABLES];
+    double V[Euler::MyEulerSolver::nVar];
     MovingGauss2D(x, V, t);
     prim2con(Q, V);
   } else if (sid == "DiffusingGauss") {
