@@ -57,8 +57,13 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   static void testNCP(const double* const Q, const double* const gradQ,
                       double* BgradQ);
 
+  static void testNoopNCP(const double* const Q, const double* const gradQ,
+                      double* BgradQ);
+
   static void testMatrixB(const double* const Q, const int normalNonZero,
                           double* Bn);
+
+  static void testNoopMatrixB(const double *const Q, const int normalNonZero, double *Bn);
 
   const double eps = 1.0e-10;  // for quick adaption of the test cases (say,
                                // switch to single precision)

@@ -97,6 +97,12 @@ void GenericEulerKernelTest::testNCP(const double *const Q,
   BgradQ[9] = gradQ[5];
 }  // testNCP
 
+void GenericEulerKernelTest::testNoopNCP(const double *const Q,
+                                     const double *const gradQ,
+                                     double *BgradQ) {
+   // an empty function.
+}
+
 void GenericEulerKernelTest::testMatrixB(const double *const Q,
                                          const int normalNonZero, double *Bn) {
   // 3D compressible Euler equations
@@ -111,6 +117,11 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
 
   delete[] B1;
   delete[] B2;
+}  // testMatrixB
+
+void GenericEulerKernelTest::testNoopMatrixB(const double *const Q,
+                                         const int normalNonZero, double *Bn) {
+  // just doing nothing
 }  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
@@ -437,7 +448,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     std::memset(FL, 0, 20 * sizeof(double));
     std::memset(FR, 0, 20 * sizeof(double));
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues, testMatrixB>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues, testNoopMatrixB>(
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
@@ -480,7 +491,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     tempStateSizedVectors[3]              = tempStateSizedVectors[0]+15;
     double **tempStateSizedSquareMatrices = nullptr;
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues,testMatrixB>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues,testNoopMatrixB>(
         FL, FR, ::exahype::tests::testdata::generic_euler::
                     testRiemannSolverNonlinear::QL_1_in,
         ::exahype::tests::testdata::generic_euler::testRiemannSolverNonlinear::
@@ -803,7 +814,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
                                                            testSource,
-							   testNCP>(
+							   testNoopNCP>(
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       lQhi,
