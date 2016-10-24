@@ -17,7 +17,7 @@ public class UserDefinedFiniteVolumesinC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants);
+     Helpers.writeMinimalFiniteVolumesSolverHeader(solverName, writer, projectName, _hasConstants);
 
     writer.write("};\n\n\n");
   }

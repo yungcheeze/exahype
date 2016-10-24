@@ -4,10 +4,11 @@ import java.io.IOException;
 
 public class Helpers {
   public static void writeMinimalADERDGSolverHeader(
-      String solverName, java.io.BufferedWriter writer, String projectName, boolean hasConstants) throws IOException {
+      String solverName, java.io.BufferedWriter writer, String projectName, boolean hasConstants,
+      int order, int dimensions, int numberOfUnknowns, int numberOfParameters) throws IOException {
     writeHeaderCopyright(writer);
     writeHeaderIncludesAndDefines(writer, solverName, projectName);
-    writeHeaderMinimalADERDGClassSignature(writer, solverName, projectName, hasConstants);
+    writeHeaderMinimalADERDGClassSignature(writer, solverName, projectName, hasConstants, order, dimensions, numberOfUnknowns, numberOfParameters);
   }
 
   public static void writeMinimalFiniteVolumesSolverHeader(
@@ -21,10 +22,22 @@ public class Helpers {
    * Creates all the public operations that are mandatory for any solver.
    */
   private static void writeHeaderMinimalADERDGClassSignature(
-      java.io.BufferedWriter writer, String solverName, String projectName, boolean hasConstants) throws IOException {
+      java.io.BufferedWriter writer, String solverName, String projectName, boolean hasConstants,
+      int order, int dimensions, int numberOfUnknowns, int numberOfParameters) throws IOException {
     writer.write(
         "class " + projectName + "::" + solverName + ": public exahype::solvers::ADERDGSolver {\n");
     writer.write("  public:\n");
+    writer.write("\n");
+    writer.write("    // Sorry for being inconsistent here: While AderDGSolver offers the methods getNumberOfVariables() etc.,\n");
+    writer.write("    // in static context they cannot be accessed. Thus the toolkit offers you access to the variables here.\n");
+    writer.write("    // Thank you, Toolkit!\n");
+    writer.write("    static const int nVar = "+numberOfUnknowns+"\n");
+    writer.write("    static const int nDim = "+dimensions+"\n");
+    writer.write("    static const int nParams = "+numberOfParameters+"\n");
+    writer.write("    static const int order = "+order+"\n");
+    writer.write("\n");
+    
+    
     if (hasConstants) {
       writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants);\n\n");
     }

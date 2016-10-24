@@ -122,7 +122,6 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
     writer.write("}\n");
     writer.write("\n\n\n");
 
-    if (isLinear()) {
       // ncp
       writer.write("void " + projectName + "::" + solverName
           + "::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {\n");
@@ -149,7 +148,6 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
       writer.write("}\n");
       writer.write("\n\n\n");
     }
-  }
 
   @Override
   public final void writeUserPDE(BufferedWriter writer, String solverName, String projectName) throws IOException {
