@@ -20,8 +20,10 @@
 
 #if DIMENSIONS == 2
 
-template <void PDEBoundaryConditions(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
-void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
+template <typename SolverType>
+void kernels::aderdg::generic::c::boundaryConditions(
+                        SolverType& solver,
+                        double* fluxOut,
                         double* stateOut,
                         const double* const fluxIn,
                         const double* const stateIn,
@@ -29,8 +31,9 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
                         const tarch::la::Vector<DIMENSIONS,double>& cellSize,
                         const double t,const double dt,
                         const int faceIndex,
-                        const int normalNonZero,
-                        const int numberOfVariables, const int basisSize) {
+                        const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   // Determine if face is "left" (0,2,4) or "right" face (1,2,3).
   const int f = faceIndex-2*normalNonZero;
 
@@ -49,13 +52,12 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
       break;
   }
 
-  // TODO: Please pass dt to PDEBoundaryConditions!
-  
+ 
   double x[DIMENSIONS];
   x[normalNonZero] = cellCentre[normalNonZero] + (-0.5 + f)*cellSize[normalNonZero];
   for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
     x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::gaussLegendreNodes[basisSize-1][ii] - 0.5);
-      PDEBoundaryConditions(x,t,dt,faceIndex,normalNonZero,
+      solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
                             &fluxIn[nidx1(ii)],&stateIn[nidx1(ii)],
                             &fluxOut[nidx1(ii)],&stateOut[nidx1(ii)]);
   }

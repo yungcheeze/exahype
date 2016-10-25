@@ -28,13 +28,14 @@
 // using std::endl;
 // using std::cout;
 
-template <void PDESolutionAdjustment(const double* const x, const double w,
-                                     const double t, const double dt,
-                                     double* Q)>
+template <typename SolverType>
 void kernels::aderdg::generic::c::solutionAdjustment(
+    SolverType& solver,
     double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
-    const double dt, const int numberOfVariables, const int basisSize) {
+    const double dt) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   double x[2];
 
   for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
@@ -54,7 +55,7 @@ void kernels::aderdg::generic::c::solutionAdjustment(
 
       // read initial condition
       const int dofStartIndex = nodeIndex * numberOfVariables;
-      PDESolutionAdjustment(x, weight, t, dt, &luh[dofStartIndex]);
+      solver.adjustedSolutionValues(x, weight, t, dt, &luh[dofStartIndex]);
     }
   }
 }

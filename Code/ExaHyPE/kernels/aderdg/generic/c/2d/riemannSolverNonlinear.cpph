@@ -25,18 +25,18 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda),
-          void PDEMatrixB(const double *const Q, const int normalNonZero, double *Bn)>
-void riemannSolverNonlinear(double* FL, double* FR,
+template <typename SolverType>
+void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double* const QL,
                             const double* const QR,
                             double*  tempFaceUnknownsArray,
                             double** tempStateSizedVectors,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
-                            const int normalNonZero,
-                            const int numberOfVariables,
-                            const int numberOfParameters, const int basisSize) {
+                            const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
@@ -59,8 +59,8 @@ void riemannSolverNonlinear(double* FL, double* FR,
 
   double* LL = tempStateSizedVectors[2];
   double* LR = tempStateSizedVectors[3];
-  PDEEigenvalues(QavL, normalNonZero, LL);
-  PDEEigenvalues(QavR, normalNonZero, LR);
+  solver.eigenvalues(QavL, normalNonZero, LL);
+  solver.eigenvalues(QavR, normalNonZero, LR);
   
   for(int k=0; k < numberOfVariables; k++) {
      Qavg[k] = (QavL[k] + QavR[k]) / 2;
@@ -83,7 +83,7 @@ void riemannSolverNonlinear(double* FL, double* FR,
   double* Bn = new double[numberOfVariables * numberOfVariables]();
   double* ncp = new double[numberOfVariables]();
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  PDEMatrixB(Qavg, normalNonZero, Bn);
+  solver.matrixb(Qavg, normalNonZero, Bn);
 
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,

@@ -23,15 +23,16 @@ namespace c {
 
 // TODO(guera): lQi and lFi are not used at all. We use lQh and lFh locally
 // instead.
-template <void PDENCP(const double* const Q, const double* const gradQ,
-                      double* BgradQ)>
-void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
+template <typename SolverType>
+void spaceTimePredictorLinear(SolverType& solver,
+                              double* lQi, double* lFi, double* lQhi,
                               double* lFhi, double* lQbnd, double* lFbnd,
                               const double* const luh,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double dt, const int numberOfVariables,
-                              const int numberOfParameters,
-                              const int basisSize) {
+                              const double dt) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int basisSize2 = basisSize * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
   const int order = basisSize - 1;
@@ -106,7 +107,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
     // Compute the fluxes
     for (int k = 0; k < basisSize; k++) {
       for (int l = 0; l < basisSize; l++) {
-        PDENCP(&lQh[idx_lQh(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)],
+        solver.ncp(&lQh[idx_lQh(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)],
                &lFh[idx_lFh(i, k, l, 0, 0)]);
       }
     }

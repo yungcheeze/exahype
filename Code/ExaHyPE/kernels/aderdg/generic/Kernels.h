@@ -106,9 +106,9 @@ namespace c {
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
+    SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
     double** tempSpaceTimeUnknowns,
     double** tempSpaceTimeFluxUnknowns,
@@ -116,8 +116,7 @@ void spaceTimePredictorNonlinear(
     double*  tempFluxUnknowns,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const double predictorTimeStepSize);
 
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int numberOfParameters,
@@ -154,53 +153,43 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDESolutionAdjustment(const double* const x, const double J_w,
-                                     const double t, const double dt,
-                                     double* Q)>
-void solutionAdjustment(double* luh,
+template <typename SolverType>
+void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
-                        const double t, const double dt,
-                        const int numberOfVariables, const int basisSize);
+                        const double t, const double dt);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+template <typename SolverType>
 void riemannSolverNonlinear(
+    SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
     double*  tempFaceUnknownsArray,
     double** tempStateSizedVectors,
     double** tempStateSizedSquareMatrices,
     const double dt,
-    const int normalNonZero,
-    const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const int normalNonZero);
 
-template <void PDEBoundaryConditions(
-    const double* const x, const double t, const double dt, const int faceIndex,
-    const int normalNonZero, const double* const fluxIn,
-    const double* const stateIn, double* fluxOut, double* stateOut)>
+template <typename SolverType>
 void boundaryConditions(
+    SolverType& solver,
     double* fluxOut, double* stateOut,
     const double* const fluxIn, const double* const stateIn, // TODO(Dominic): Inconsistent order of arguments w.r.t to riemannSolver
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize,
     const double t, const double dt, const int faceIndex,
-    const int normalNonZero, const int numberOfVariables,
-                        const int basisSize);
+    const int normalNonZero);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-double stableTimeStepSize(const double* const luh,
+template <typename SolverType>
+double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
+                          const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 void faceUnknownsProlongation(
     double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
@@ -249,6 +238,10 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
 #endif
+
+// Todo: Recasting the code from function templates to class templates
+//       did not yet consider the Fortran kernels and probably never will,
+//       as they are different anyway.
 
 namespace kernels {
 namespace aderdg {

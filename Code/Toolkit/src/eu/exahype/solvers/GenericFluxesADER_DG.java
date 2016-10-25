@@ -28,18 +28,18 @@ public abstract class GenericFluxesADER_DG implements Solver {
      ifndef.open();
      Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
 
-    writer.write("  private:\n");
+    writer.write("\n");
     writer.write("    void init(std::vector<std::string>& cmdlineargs"+(_hasConstants ? ", exahype::Parser::ParserView& constants" : "")+");\n");
-    writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-    writer.write("    static void flux(const double* const Q, double** F);\n");
-    writer.write("    static void source(const double* const Q, double* S);\n");
-    writer.write("    static void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
+    writer.write("    void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
+    writer.write("    void flux(const double* const Q, double** F);\n");
+    writer.write("    void source(const double* const Q, double* S);\n");
+    writer.write("    void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
     writer.write(
-        "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
+        "    void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
     writer.write(
-        "    static void ncp(const double* const Q, const double* const gradQ, double* BgradQ);\n");
+        "    void ncp(const double* const Q, const double* const gradQ, double* BgradQ);\n");
     writer.write(
-        "    static void matrixb(const double* const Q, const int normalNonZero, double* Bn);\n");
+        "    void matrixb(const double* const Q, const int normalNonZero, double* Bn);\n");
 
     writer.write("};\n\n\n");
     ifndef.close();
@@ -79,19 +79,22 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
 
+    String solverType = "<" + solverName + ">";
+    String languageNamespace = isFortran() ? "fortran" : "c";
+
     writer.write("void " + projectName + "::" + solverName
         + "::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double*  tempUnknowns,double*  tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"spaceTimePredictor\");\n");
     }
     if (isLinear()) {
-      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-          + "::spaceTimePredictorLinear<ncp>"
-          + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+      writer.write("  kernels::aderdg::generic::" + languageNamespace
+          + "::spaceTimePredictorLinear" + solverType
+          + "( *this, lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt );\n");
     } else {
-      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-          + "::spaceTimePredictorNonlinear<flux, source, ncp>"
-          + "( lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+      writer.write("  kernels::aderdg::generic::" + languageNamespace
+          + "::spaceTimePredictorNonlinear" + solverType
+          + "( *this, lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt );\n");
     }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
@@ -104,7 +107,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"solutionUpdate\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionUpdate\");\n");
@@ -117,7 +120,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"volumeIntegral\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::volumeIntegral" + (isLinear() ? "Linear" : "Nonlinear")
         + "( lduh, lFhi, dx, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
@@ -131,7 +134,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"surfaceIntegral\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::surfaceIntegral" + (isLinear() ? "Linear" : "Nonlinear")
         + "( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
@@ -150,13 +153,13 @@ public abstract class GenericFluxesADER_DG implements Solver {
       writer.write("  _profiler->start(\"riemannSolver\");\n");
     }
     if (isLinear()) {
-        writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-                + "::riemannSolverLinear<eigenvalues, matrixb>"
-                + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+        writer.write("  kernels::aderdg::generic::" + languageNamespace
+                + "::riemannSolverLinear" + solverType
+                + "( *this, FL, FR, QL, QR, dt, normalNonZeroIndex );\n");
     } else {
-        writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-                + "::riemannSolverNonlinear<eigenvalues, matrixb>"
-                + "( FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+        writer.write("  kernels::aderdg::generic::" + languageNamespace
+                + "::riemannSolverNonlinear" + solverType
+                + "( *this, FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex );\n");
     }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
@@ -170,9 +173,9 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
         writer.write("  _profiler->start(\"boundaryConditions\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-            + "::boundaryConditions<boundaryValues>"
-            + "( fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
+            + "::boundaryConditions" + solverType
+            + "( *this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );\n");
     if (_enableProfiler) {
         writer.write("  _profiler->stop(\"boundaryConditions\");\n");
     }
@@ -184,8 +187,9 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"stableTimeStepSize\");\n");
     }
-    writer.write("  double d = kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::stableTimeStepSize<eigenvalues>( luh, tempEigenvalues, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  double d = kernels::aderdg::generic::" + languageNamespace
+        + "::stableTimeStepSize" + solverType
+        + "( *this, luh, tempEigenvalues, dx );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"stableTimeStepSize\");\n");
     }
@@ -198,8 +202,9 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"solutionAdjustment\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
+        + "::solutionAdjustment" + solverType
+        + "( *this, luh, center, dx, t, dt );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionAdjustment\");\n");
     }
@@ -211,7 +216,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"faceUnknownsProlongation\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"faceUnknownsProlongation\");\n");
@@ -224,7 +229,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"faceUnknownsRestriction\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"faceUnknownsRestriction\");\n");
@@ -237,7 +242,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"volumeUnknownsProlongation\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeUnknownsProlongation\");\n");
@@ -250,7 +255,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"volumeUnknownsRestriction\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeUnknownsRestriction\");\n");

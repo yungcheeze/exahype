@@ -27,14 +27,15 @@ namespace c {
 
 namespace {
 
-template <void PDEFlux3d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S),
-          void PDENCP(const double *const Q, const double *const gradQ, double *BgradQ)>
-void aderPicardLoopNonlinear(const double* luh, const double dt,
+template <typename SolverType>
+void aderPicardLoopNonlinear(SolverType& solver,
+                             const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             int numberOfVariables, int basisSize,
                              double* lQi, double *lQi_old, double* rhs, double* rhs_0,
                              double* lFi) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
+  
   idx3 idx_luh(basisSize, basisSize, numberOfVariables); // idx_luh(y,x,nVar)
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables); // idx_lQi(y,x,t,nVar)
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
@@ -93,8 +94,8 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           F[0] = &lFi[idx_lFi(i, k, l, 0, 0)];
           F[1] = &lFi[idx_lFi(i, k, l, 1, 0)];
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
-          PDEFlux3d(Q, F);
-          PDESource(Q, S);
+          solver.flux(Q, F);
+          solver.source(Q, S);
         }
       }
 
@@ -163,7 +164,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
 
           // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-	  PDENCP(&lQi[idx_lQi(k, l, i, 0)], &gradQ[idx_gradQ(k, l, i, 0, 0)], BGradQ);
+	  solver.ncp(&lQi[idx_lQi(k, l, i, 0)], &gradQ[idx_gradQ(k, l, i, 0, 0)], BGradQ);
 	  
           for (int m = 0; m < numberOfVariables; m++) {
 	    //if(m==0) printf("iter %d: BGradQ[%d,%d][%d] = %f\n", iter, k, l,m, BGradQ[m]);
@@ -513,18 +514,19 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <void PDEFlux2d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S),
-          void PDENCP(const double *const Q, const double *const gradQ, double *BgradQ)>
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
+    SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
     double** tempSpaceTimeUnknowns,
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
     const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
-    int numberOfVariables, int numberOfParameters, int basisSize) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt) {
+
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int basisSize2 = basisSize * basisSize;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
@@ -538,10 +540,8 @@ void spaceTimePredictorNonlinear(
 
   double* lFhi    = tempFluxUnknowns;
 
-  aderPicardLoopNonlinear<PDEFlux2d, PDESource, PDENCP>(luh, dt, dx, numberOfVariables,
-                                                basisSize,
-                                                lQi, lQi_old, rhs, rhs_0,
-                                                lFi);
+  aderPicardLoopNonlinear<SolverType>(solver, luh, dt, dx,
+                                      lQi, lQi_old, rhs, rhs_0, lFi);
 
   aderPredictorNonlinear(lQi, lFi, numberOfVariables, basisSize, lQhi,
                          &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
