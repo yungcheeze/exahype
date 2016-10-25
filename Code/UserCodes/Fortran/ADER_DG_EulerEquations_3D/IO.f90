@@ -3,12 +3,12 @@ SUBROUTINE WriteData
   USE ISO_C_BINDING
   IMPLICIT NONE 
   include 'tecio.f90' 
-  CHARACTER(LEN=200) :: Filename,Title,ScratchDir, VarString   
+  CHARACTER(LEN=200) :: Filename,FilenameCSV,Title,ScratchDir, VarString   
   CHARACTER(LEN=10)  :: Name(nVar) 
   CHARACTER(LEN=10)  :: cmyrank 
-  INTEGER            :: i,j,ii,jj,c,nc,iRet,iDim,iErr 
+  INTEGER            :: v,iElem,k,i,j,ii,jj,c,nc,iRet,iDim,iErr 
   REAL               :: QN(nVar),VN(nVar),Vav(nVar),Vmin(nVar),ldx(d),lx0(d),lxb(d),ux(nVar),uy(nVar)
-  REAL               :: LocNode(nVar,(N+1)**nDim), GradNode(nVar,(N+1)**nDim,d),  xvec(d) 
+  REAL               :: LocNode(nVar,(N+1)**nDim), GradNode(nVar,(N+1)**nDim,d),  xvec(d), x0(d), xGP(d)
   INTEGER            :: nSubNodes, nPlotElem, nSubPlotElem, nRealNodes, ZoneType, nVertex, nDOFs   
   REAL(8)            :: loctime 
   INTEGER*4, POINTER :: NData(:,:)  
@@ -17,6 +17,8 @@ SUBROUTINE WriteData
   REAL*4             :: Test 
   POINTER   (NullPtr,Null)
   Integer*4 Null(*)
+  integer, parameter :: out_unit=20
+  
   !
   visdouble = 0
   nVertex = 2**nDim 
@@ -85,7 +87,46 @@ SUBROUTINE WriteData
   iRet = TecEnd112()
 
   DEALLOCATE(NData,DataArray)  
+  
 
+  if (timestep.ne.0) then
+    WRITE(FilenameCSV,'(a,a1,i0.0,a)') TRIM(BaseFile),'-', timestep, '.csv'
+  else
+    WRITE(FilenameCSV,'(a,a)') TRIM(BaseFile),'-0.csv'
+  endif
+  
+  open (unit=out_unit,file=FilenameCSV)  
+  
+  ! DOF exporter
+  DO iElem = 1, nElem
+    x0 = x(:,tri(1,iElem)) ! get the coordinate of the lower left node 
+    DO k = 1, nDOF(3)
+     DO j = 1, nDOF(2) 
+      DO i = 1, nDOF(1) 
+      
+        xGP = x0 + (/ xiGPN(i), xiGPN(j), xiGPN(k) /)*dx(:) 
+        !DO v = 1, nVAR
+        !  PRINT *, uh(v,i,j,k, iElem)
+        !ENDDO
+        !PRINT *, xGP
+        !PRINT *, time
+        !PRINT *, timestep
+        !PRINT *, x0
+        !PRINT *, xiGPN(i)
+        !PRINT *, xiGPN(j)
+        !PRINT *, xiGPN(k)
+        !PRINT *, FilenameCSV
+        
+        
+        write (out_unit,'(F,A,F,A,F,A,F,A,F,A,F,A,F,A,F)') xGP(1), ',', xGP(2), ',', time, ',', uh(1,i,j,k, iElem), ',', uh(2,i,j,k, iElem), ',', uh(3,i,j,k, iElem), ',', uh(4,i,j,k, iElem), ',', uh(5,i,j,k, iElem)
+        !PRINT *, 
+        !PRINT *, '---------------------------------------------'
+      ENDDO
+     ENDDO 
+    ENDDO
+  ENDDO
+  
+  close (out_unit)
 END SUBROUTINE WriteData 
     
 
