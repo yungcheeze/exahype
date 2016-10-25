@@ -29,7 +29,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
      Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
 
     writer.write("  private:\n");
-    writer.write("    void init("+(_hasConstants ? "exahype::Parser::ParserView& constants" : "")+");\n");
+    writer.write("    void init(std::vector<std::string>& cmdlineargs"+(_hasConstants ? ", exahype::Parser::ParserView& constants" : "")+");\n");
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
     writer.write("    static void source(const double* const Q, double* S);\n");
@@ -58,10 +58,10 @@ public abstract class GenericFluxesADER_DG implements Solver {
 
     // constructor
     if (_hasConstants) {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
     }
     else {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs):\n");
     }
 
 
@@ -71,9 +71,9 @@ public abstract class GenericFluxesADER_DG implements Solver {
         + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
         "std::move(profiler)) {\n");
     if(_hasConstants) {
-       writer.write("  init(constants);\n");
+       writer.write("  init(cmdlineargs, constants);\n");
     } else {
-       writer.write("  init();\n");
+       writer.write("  init(cmdlineargs);\n");
        writer.write("  // PS: If you miss access to user constants here, enable them in the toolkit\n");
     }
     writer.write("}\n");

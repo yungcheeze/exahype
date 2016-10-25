@@ -17,9 +17,14 @@
 #include <memory>
 #include <cstring> // memset
 
-void Euler::MyEulerSolver::init() {
+void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
+
+  // Demonstration how to access parameters:
+  printf("EulerFlow was called with these parameters:\n");
+  for(int i=0; i<cmdlineargs.size(); i++)
+    printf("%i. %s\n", i, cmdlineargs[i].c_str());
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
