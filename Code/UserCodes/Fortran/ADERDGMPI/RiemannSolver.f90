@@ -75,8 +75,9 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lparbndL,lQbndR,lFbndR,lparbndR,nv)
     ! 
     DO k = 1, nDOF(3)
       DO j = 1, nDOF(2)
-            lFbndL(:,j,k) = 0.5*( lFbndR(:,j,k) + lFbndL(:,j,k) ) - 0.5*smax*( lQbndR(:,j,k) - lQbndL(:,j,k) ) + 0.5*MATMUL(Bn, lQbndR(:,j,k) - lQbndL(:,j,k) ) 
-            lFbndR(:,j,k) = lFbndL(:,j,k) - 0.5*MATMUL(Bn, lQbndR(:,j,k) - lQbndL(:,j,k) ) 
+            lFbndL(:,j,k) = 0.5*( lFbndR(:,j,k) + lFbndL(:,j,k) ) - 0.5*smax*( lQbndR(:,j,k) - lQbndL(:,j,k) )      ! purely conservative flux
+            lFbndR(:,j,k) = lFbndL(:,j,k) - 0.5*MATMUL(Bn, lQbndR(:,j,k) - lQbndL(:,j,k) )                          ! subtract the non-conservative product
+            lFbndL(:,j,k) = lFbndL(:,j,k) + 0.5*MATMUL(Bn, lQbndR(:,j,k) - lQbndL(:,j,k) )                          ! add the non-conservative product 
         ENDDO
     ENDDO
     !

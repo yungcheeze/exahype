@@ -16,7 +16,7 @@ exahype-project  Z4Solver
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.8
+    end-time                 = 1.0
   end computational-domain
 
   shared-memory
@@ -46,16 +46,16 @@ exahype-project  Z4Solver
     variables          = 54
     parameters         = 0
     order              = 3
-    maximum-mesh-size  = 0.1
+    maximum-mesh-size  = 0.18
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
     constants = {foo:bar}
 
     plot vtk::Cartesian::vertices::ascii
-      variables= 9
+      variables= 54
       time     = 0.0
-      repeat   = 0.005
+      repeat   = 0.001
       output   = ./solution
       select   = {}
     end plot

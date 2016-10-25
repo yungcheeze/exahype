@@ -81,6 +81,9 @@ void GenericEulerKernelTest::testNCP(const double *const Q,
                                      double *BgradQ) {
   // Arbitrary BS
 
+  // Sven: I have no clue what these data shall do, but
+  // ensure len(BgradQ)==len(Q).
+
   // Q[5]
   // gradQ[2][5]
   // BgradQ[2][5]
@@ -90,11 +93,6 @@ void GenericEulerKernelTest::testNCP(const double *const Q,
   BgradQ[2] = 3.0;
   BgradQ[3] = gradQ[0];
   BgradQ[4] = 0.7;
-  BgradQ[5] = Q[4];
-  BgradQ[6] = -1.0;
-  BgradQ[7] = gradQ[9];
-  BgradQ[8] = 3.8;
-  BgradQ[9] = gradQ[5];
 }  // testNCP
 
 void GenericEulerKernelTest::testMatrixB(const double *const Q,
