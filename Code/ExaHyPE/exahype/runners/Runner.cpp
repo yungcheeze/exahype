@@ -387,6 +387,17 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #endif
+
+    #if !defined(Parallel)
+    logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+    #endif
+
+    #ifdef Asserts
+    if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
+      DataHeap::getInstance().plotStatistics();
+      peano::heap::PlainCharHeap::getInstance().plotStatistics();
+    }
+    #endif
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
@@ -576,10 +587,25 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   logInfo("startNewTimeStep(...)",
       "\tdt_min         =" << currentMinTimeStepSize);
 
+
   #if !defined(Parallel)
   // memory consumption on rank 0 would not make any sense
   logInfo("startNewTimeStep(...)",
       "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+  #ifdef Asserts
+  if (exahype::solvers::ADERDGSolver::CompressionAccuracy>0.0) {
+    DataHeap::getInstance().plotStatistics();
+    peano::heap::PlainCharHeap::getInstance().plotStatistics();
+
+    logInfo(
+      "startNewTimeStep(...)",
+      "\tpiped-uncompressed-byes=" << exahype::solvers::ADERDGSolver::PipedUncompressedBytes
+      << "\tpiped-compressed-byes=" << exahype::solvers::ADERDGSolver::PipedCompressedBytes
+      << "\tcompression-rate=" << (exahype::solvers::ADERDGSolver::PipedCompressedBytes/exahype::solvers::ADERDGSolver::PipedUncompressedBytes)
+    );
+  }
+  #endif
+
   #endif
 
   logDebug("startNewTimeStep(...)",

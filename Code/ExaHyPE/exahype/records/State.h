@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   18/10/2016 14:34
+    * @date   21/10/2016 17:19
     */
    class exahype::records::State { 
       
@@ -56,6 +56,7 @@ namespace exahype {
             bool _fuseADERDGPhases;
             bool _stabilityConditionOfOneSolverWasViolated;
             double _timeStepSizeWeightForPredictionRerun;
+            bool _troubledDomainHasChanged;
             bool _hasRefined;
             bool _hasTriggeredRefinementForNextIteration;
             bool _hasErased;
@@ -71,7 +72,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline MergeMode getMergeMode() const 
@@ -190,6 +191,26 @@ namespace exahype {
  #endif 
  {
                _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _troubledDomainHasChanged;
+            }
+            
+            
+            
+            inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _troubledDomainHasChanged = troubledDomainHasChanged;
             }
             
             
@@ -353,7 +374,7 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
@@ -477,6 +498,26 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+         }
+         
+         
+         
+         inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._troubledDomainHasChanged;
+         }
+         
+         
+         
+         inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
          }
          
          
@@ -717,7 +758,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   18/10/2016 14:34
+       * @date   21/10/2016 17:19
        */
       class exahype::records::StatePacked { 
          
@@ -734,6 +775,7 @@ namespace exahype {
                bool _fuseADERDGPhases;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
+               bool _troubledDomainHasChanged;
                bool _isTraversalInverted;
                
                /** mapping of records:
@@ -755,7 +797,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline MergeMode getMergeMode() const 
@@ -874,6 +916,26 @@ namespace exahype {
  #endif 
  {
                   _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _troubledDomainHasChanged;
+               }
+               
+               
+               
+               inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _troubledDomainHasChanged = troubledDomainHasChanged;
                }
                
                
@@ -1055,7 +1117,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -1179,6 +1241,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._troubledDomainHasChanged;
+            }
+            
+            
+            
+            inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
             }
             
             
@@ -1434,7 +1516,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   18/10/2016 14:34
+          * @date   21/10/2016 17:19
           */
          class exahype::records::State { 
             
@@ -1463,6 +1545,7 @@ namespace exahype {
                   bool _fuseADERDGPhases;
                   bool _stabilityConditionOfOneSolverWasViolated;
                   double _timeStepSizeWeightForPredictionRerun;
+                  bool _troubledDomainHasChanged;
                   #ifdef UseManualAlignment
                   tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                   #else
@@ -1502,7 +1585,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -1661,6 +1744,26 @@ namespace exahype {
  #endif 
  {
                      _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  }
+                  
+                  
+                  
+                  inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _troubledDomainHasChanged;
+                  }
+                  
+                  
+                  
+                  inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _troubledDomainHasChanged = troubledDomainHasChanged;
                   }
                   
                   
@@ -2220,7 +2323,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2384,6 +2487,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._troubledDomainHasChanged;
+               }
+               
+               
+               
+               inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                }
                
                
@@ -3082,7 +3205,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   18/10/2016 14:34
+             * @date   21/10/2016 17:19
              */
             class exahype::records::StatePacked { 
                
@@ -3103,6 +3226,7 @@ namespace exahype {
                      bool _fuseADERDGPhases;
                      bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
+                     bool _troubledDomainHasChanged;
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                      tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                      double _numberOfInnerVertices;
@@ -3140,7 +3264,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -3299,6 +3423,26 @@ namespace exahype {
  #endif 
  {
                         _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                     }
+                     
+                     
+                     
+                     inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _troubledDomainHasChanged;
+                     }
+                     
+                     
+                     
+                     inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _troubledDomainHasChanged = troubledDomainHasChanged;
                      }
                      
                      
@@ -3885,7 +4029,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -4049,6 +4193,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  }
+                  
+                  
+                  
+                  inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._troubledDomainHasChanged;
+                  }
+                  
+                  
+                  
+                  inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                   }
                   
                   
@@ -4772,7 +4936,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   18/10/2016 14:34
+             * @date   21/10/2016 17:19
              */
             class exahype::records::State { 
                
@@ -4795,6 +4959,7 @@ namespace exahype {
                      bool _fuseADERDGPhases;
                      bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
+                     bool _troubledDomainHasChanged;
                      #ifdef UseManualAlignment
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                      #else
@@ -4831,7 +4996,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      
                      inline MergeMode getMergeMode() const 
@@ -4950,6 +5115,26 @@ namespace exahype {
  #endif 
  {
                         _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                     }
+                     
+                     
+                     
+                     inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _troubledDomainHasChanged;
+                     }
+                     
+                     
+                     
+                     inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _troubledDomainHasChanged = troubledDomainHasChanged;
                      }
                      
                      
@@ -5449,7 +5634,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                  State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                   
                   /**
                    * Generated
@@ -5573,6 +5758,26 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  }
+                  
+                  
+                  
+                  inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._troubledDomainHasChanged;
+                  }
+                  
+                  
+                  
+                  inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                   }
                   
                   
@@ -6201,7 +6406,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   18/10/2016 14:34
+                * @date   21/10/2016 17:19
                 */
                class exahype::records::StatePacked { 
                   
@@ -6218,6 +6423,7 @@ namespace exahype {
                         bool _fuseADERDGPhases;
                         bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
+                        bool _troubledDomainHasChanged;
                         tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                         tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                         double _numberOfInnerVertices;
@@ -6252,7 +6458,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         
                         inline MergeMode getMergeMode() const 
@@ -6371,6 +6577,26 @@ namespace exahype {
  #endif 
  {
                            _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                        }
+                        
+                        
+                        
+                        inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _troubledDomainHasChanged;
+                        }
+                        
+                        
+                        
+                        inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _troubledDomainHasChanged = troubledDomainHasChanged;
                         }
                         
                         
@@ -6888,7 +7114,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
@@ -7012,6 +7238,26 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                     }
+                     
+                     
+                     
+                     inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._troubledDomainHasChanged;
+                     }
+                     
+                     
+                     
+                     inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                      }
                      
                      
@@ -7656,7 +7902,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   18/10/2016 14:34
+                * @date   21/10/2016 17:19
                 */
                class exahype::records::State { 
                   
@@ -7685,6 +7931,7 @@ namespace exahype {
                         bool _fuseADERDGPhases;
                         bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
+                        bool _troubledDomainHasChanged;
                         bool _hasRefined;
                         bool _hasTriggeredRefinementForNextIteration;
                         bool _hasErased;
@@ -7703,7 +7950,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
                         inline GridConstructionState getGridConstructionState() const 
@@ -7862,6 +8109,26 @@ namespace exahype {
  #endif 
  {
                            _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                        }
+                        
+                        
+                        
+                        inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _troubledDomainHasChanged;
+                        }
+                        
+                        
+                        
+                        inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _troubledDomainHasChanged = troubledDomainHasChanged;
                         }
                         
                         
@@ -8085,7 +8352,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
@@ -8249,6 +8516,26 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                     }
+                     
+                     
+                     
+                     inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._troubledDomainHasChanged;
+                     }
+                     
+                     
+                     
+                     inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                      }
                      
                      
@@ -8559,7 +8846,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   18/10/2016 14:34
+                   * @date   21/10/2016 17:19
                    */
                   class exahype::records::StatePacked { 
                      
@@ -8580,6 +8867,7 @@ namespace exahype {
                            bool _fuseADERDGPhases;
                            bool _stabilityConditionOfOneSolverWasViolated;
                            double _timeStepSizeWeightForPredictionRerun;
+                           bool _troubledDomainHasChanged;
                            bool _isTraversalInverted;
                            
                            /** mapping of records:
@@ -8604,7 +8892,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                           PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                            
                            
                            inline GridConstructionState getGridConstructionState() const 
@@ -8763,6 +9051,26 @@ namespace exahype {
  #endif 
  {
                               _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                           }
+                           
+                           
+                           
+                           inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _troubledDomainHasChanged;
+                           }
+                           
+                           
+                           
+                           inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _troubledDomainHasChanged = troubledDomainHasChanged;
                            }
                            
                            
@@ -9013,7 +9321,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& troubledDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         /**
                          * Generated
@@ -9177,6 +9485,26 @@ namespace exahype {
  #endif 
  {
                            _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                        }
+                        
+                        
+                        
+                        inline bool getTroubledDomainHasChanged() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._troubledDomainHasChanged;
+                        }
+                        
+                        
+                        
+                        inline void setTroubledDomainHasChanged(const bool& troubledDomainHasChanged) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._troubledDomainHasChanged = troubledDomainHasChanged;
                         }
                         
                         

@@ -350,7 +350,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     vertexIndex[iScalar] = _vertex2IndexMap[currentVertexPosition];
     enddforx
 
-        _cellWriter->plotQuadrangle(vertexIndex);
+    _cellWriter->plotQuadrangle(vertexIndex);
 
     const int cellIndex = _cellWriter->plotQuadrangle(vertexIndex);
 
@@ -386,6 +386,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         _cellTypeWriter->plotCell(cellIndex, -1);
         _cellRefinementEventWriter->plotCell(cellIndex, -1);
         _cellDataWriter->plotCell(cellIndex, 0);
+        _limiterStatusWriter->plotCell(cellIndex, -1);
       }
 
     } else {
@@ -394,6 +395,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
           static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
       _cellDataWriter->plotCell(cellIndex, 0);
+      _limiterStatusWriter->plotCell(cellIndex, -1);
     }
 
     _cellCounter++;

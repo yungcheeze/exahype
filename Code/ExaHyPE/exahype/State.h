@@ -175,6 +175,8 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+    //
+    _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
@@ -195,6 +197,8 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+    //
+    _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToPredictionRerunContext() {
@@ -229,6 +233,10 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+  }
+
+  void switchToSolutionUpdateContext() {
+    _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToTimeStepSizeComputationContext() {

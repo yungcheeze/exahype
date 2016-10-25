@@ -273,7 +273,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
-        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
       }
       break;
     default:
@@ -439,10 +439,16 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
 }
 
-void exahype::solvers::FiniteVolumesSolver::prepareSending(
+void exahype::solvers::FiniteVolumesSolver::preProcess(
         const int cellDescriptionsIndex,
         const int element) {
-  // do nothing
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::postProcess(
+        const int cellDescriptionsIndex,
+        const int element) {
+  assertionMsg(false,"Please implement!");
 }
 
 void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestriction(

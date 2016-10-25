@@ -49,6 +49,11 @@ public:
 
   static bool SpawnCompressionAsBackgroundThread;
 
+  #ifdef Asserts
+  static double PipedUncompressedBytes;
+  static double PipedCompressedBytes;
+  #endif
+
   typedef exahype::DataHeap DataHeap;
 
   /**
@@ -617,6 +622,29 @@ private:
    * to do quite some validation.
    */
   void putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
+   *
+   *
+   * <h2>Multicore</h2>
+   *
+   * Unknowns are pulled from the input stream indirectly through
+   * touchVertexFirstTime(). It always recycles heap data, so can be triggered
+   * while other routines already do something with the cell description. There
+   * usually are enough entries to recycle available.
+   *
+   * However, it may happen that we run out of recycled entries if we run into
+   * a large regular subgrid for the first time. We can identify a run out as
+   * we get a -1 from the heap. In this case, there are a couple of things to
+   * do.
+   *
+   * - Wait for any background task to finish. Other parts of the grid might
+   *   have triggered a compression in the background. So we have to wait for
+   *   those guys to finish, as they rely on an invariant heap.
+   * - Lock very pessimistically. No two operations (only touchVertexFirstTime
+   *   calls should run in parallel, but I'm not 100% sure) should run.
+   * - Create additional data.
+   */
   void pullUnknownsFromByteStream(exahype::records::ADERDGCellDescription& cellDescription);
 
   class CompressionTask {
@@ -1161,7 +1189,11 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
-  void prepareSending(
+  void preProcess(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void postProcess(
       const int cellDescriptionsIndex,
       const int element) override;
 
@@ -1184,6 +1216,14 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeLimiterDataOfNeighbours(
+        const int                                 cellDescriptionsIndex1,
+        const int                                 element1,
+        const int                                 cellDescriptionsIndex2,
+        const int                                 element2,
+        const tarch::la::Vector<DIMENSIONS, int>& pos1,
+        const tarch::la::Vector<DIMENSIONS, int>& pos2);
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,

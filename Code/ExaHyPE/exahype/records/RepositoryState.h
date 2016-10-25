@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   18/10/2016 14:34
+ * @date   21/10/2016 17:19
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndPlotAndTimeStepSizeComputation = 7, UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d = 8, UseAdapterPredictionAndTimeStepSizeComputation = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterPlotAndADERDGTimeStep = 12, UseAdapterPredictionRerun = 13, UseAdapterNeighbourDataMerging = 14, UseAdapterPrediction = 15, UseAdapterSolutionUpdate = 16, UseAdapterPlotAndSolutionUpdate = 17, UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation = 18, UseAdapterTimeStepSizeComputation = 19, UseAdapterPlot = 20, NumberOfAdapters = 21
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndPlotAndTimeStepSizeComputation = 7, UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d = 8, UseAdapterPredictionAndTimeStepSizeComputation = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterPlotAndADERDGTimeStep = 12, UseAdapterPredictionRerun = 13, UseAdapterLimiterStatusSpreading = 14, UseAdapterNeighbourDataMerging = 15, UseAdapterPrediction = 16, UseAdapterSolutionUpdate = 17, UseAdapterPlotAndSolutionUpdate = 18, UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation = 19, UseAdapterTimeStepSizeComputation = 20, UseAdapterPlot = 21, NumberOfAdapters = 22
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   18/10/2016 14:34
+    * @date   21/10/2016 17:19
     */
    class exahype::records::RepositoryStatePacked { 
       

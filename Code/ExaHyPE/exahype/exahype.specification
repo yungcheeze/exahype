@@ -37,9 +37,19 @@ event-mapping:
 
 event-mapping:
   name: Sending
+
+event-mapping:
+  name: PreProcessing
+
+event-mapping:
+  name: PostProcessing
  
 event-mapping:
   name: Plot
+
+// Limiter
+event-mapping:
+  name: LimiterStatusSpreading
 
 // GridUpdate   
 event-mapping:
@@ -60,11 +70,13 @@ event-mapping:
   
 adapter:
   name: MeshRefinement
+  merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
   // Initial Condition comes after MeshRefinement since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
   merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
+  merge-with-user-defined-mapping: PostProcessing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
 adapter:
@@ -75,15 +87,18 @@ adapter:
 // Adapters for initialisation of time stepping
 adapter:
   name: InitialConditionAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data  
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
-  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Merging 
   merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
   merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
   merge-with-user-defined-mapping: Sending
 
 adapter:
   name: PredictionAndPlotAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
@@ -92,6 +107,7 @@ adapter:
 
 adapter:
   name: PredictionAndPlotAndTimeStepSizeComputation2d
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
@@ -102,9 +118,11 @@ adapter:
 
 adapter:
   name: PredictionAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
   merge-with-user-defined-mapping: Sending
 
 // Adapters for clean up (to be extended)
@@ -145,43 +163,62 @@ adapter:
 adapter:
   name: PredictionRerun
   merge-with-user-defined-mapping: DropIncomingMPIMessages // drop face data
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction 
   merge-with-user-defined-mapping: Sending
+
+
+// Additional adapters for limiter status spreading and initialisation
+adapter: 
+  name: LimiterStatusSpreading
+  merge-with-user-defined-mapping: LimiterStatusSpreading
  
 // Additional adapters for 4 phase time stepping
 adapter: 
   name: NeighbourDataMerging
   merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: PostProcessing 
 
 adapter:
   name: Prediction
   merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
   merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Sending
 
 adapter:
   name: SolutionUpdate
+  merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: PostProcessing 
 
 adapter:
   name: PlotAndSolutionUpdate
+  merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: PostProcessing
 
 // Additional adapters for AMR in 4 phase time stepping
 adapter:
   name: PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
 
 adapter:
   name: TimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
 
 adapter:
   name: Plot
+  merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: PostProcessing
   
