@@ -23,7 +23,7 @@ namespace exahype {
 namespace tests {
 namespace c {
 
-void GenericEulerKernelTest::testFlux(const double *const Q, double **F) {
+void GenericEulerKernelTest::flux(const double *const Q, double **F) {
   double *f = F[0];
   double *g = F[1];
   double *h = F[2];
@@ -54,7 +54,7 @@ void GenericEulerKernelTest::testFlux(const double *const Q, double **F) {
   h[4] = irho * Q[3] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::testSource(const double *const Q, double *S) {
+void GenericEulerKernelTest::source(const double *const Q, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -62,7 +62,7 @@ void GenericEulerKernelTest::testSource(const double *const Q, double *S) {
   S[4] = 0.0;
 }
 
-void GenericEulerKernelTest::testEigenvalues(const double *const Q,
+void GenericEulerKernelTest::eigenvalues(const double *const Q,
                                              const int normalNonZeroIndex,
                                              double *lambda) {
   const double GAMMA = 1.4;
@@ -81,7 +81,7 @@ void GenericEulerKernelTest::testEigenvalues(const double *const Q,
   lambda[4] = u_n + c;
 }
 
-void GenericEulerKernelTest::testNCP(const double *const Q,
+void GenericEulerKernelTest::ncp(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
   // Q[5]
@@ -105,9 +105,9 @@ void GenericEulerKernelTest::testNCP(const double *const Q,
   BgradQ[12] = -1.0;
   BgradQ[13] = gradQ[14];
   BgradQ[14] = 5.3;
-}  // testNCP
+}  // ncp
 
-void GenericEulerKernelTest::testMatrixB(const double *const Q,
+void GenericEulerKernelTest::matrixb(const double *const Q,
                                          const int normalNonZero, double *Bn) {
   // 3D compressible Euler equations
   double *B1 = new double[5 * 5];
@@ -127,7 +127,7 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
   delete[] B1;
   delete[] B2;
   delete[] B3;
-}  // testMatrixB
+}  // matrixb
 
 void GenericEulerKernelTest::testPDEFluxes() {
   logInfo("testPDEFluxes()", "Test PDE-related functions, DIM=3");
@@ -136,7 +136,7 @@ void GenericEulerKernelTest::testPDEFluxes() {
   double f[5], g[5], h[5];
   double *F[3] = {f, g, h};
 
-  testFlux(Q, F);
+  flux(Q, F);
 
   for (int i = 0; i < 5; i++) {
     validateNumericalEqualsWithParams1(
@@ -360,12 +360,11 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
   // nVar * nVar * nDOF]
   const double dt = 1.40831757919882352703e-03;
 
-  kernels::aderdg::generic::c::riemannSolverLinear<testEigenvalues,
-                                                   testMatrixB>(
+  kernels::aderdg::generic::c::riemannSolverLinear<GenericEulerKernelTest>(
+      *this,
       FL, FR, exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
       exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
-      1 /*normalNonZero (only changes result of testEigenvalues, testMatrixB) */,
-      5 /* numberOfVariables */, 0 /* numberOfParameters */, 4 /* basisSize */
+      1 /*normalNonZero (only changes result of eigenvalues, matrixb) */
       );
 
   for (int i = 0; i < 80; i++) {
@@ -413,16 +412,14 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // nVar * nVar * nDOF]
   const double dt = 1.40831757919882352703e-03;
 
-  kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+      *this,
       FL, FR,
       ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
       ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
       tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
       dt,
-      1,  // normalNonZero
-      5,  // numberOfVariables
-      0,  // numberOfParameters
-      4   // basisSize
+      1  // normalNonZero
       );
 
   for (int i = 0; i < 80; i++) {
@@ -502,13 +499,11 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double *lQhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
   double *lFhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
 
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<testNCP>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<GenericEulerKernelTest>(
+      *this,
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
       exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
-      timeStepSize,
-      5,  // numberOfVariables
-      0,  // numberOfParameters
-      4   // basisSize
+      timeStepSize
       );
 
   for (int i = 0; i < 320; i++) {
@@ -578,17 +573,14 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lQhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
   double *lFhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
 
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
-                                                           testSource>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+      *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       lQhi, lFhi,
       exahype::tests::testdata::generic_euler::testSpaceTimePredictorNonlinear::
           luh,
-      dx, timeStepSize,
-      5,  // numberOfVariables
-      0,  // numberOfParameters
-      4   // basisSize
+      dx, timeStepSize
       );
 
   for (int i = 0; i < 1280; i++) {
