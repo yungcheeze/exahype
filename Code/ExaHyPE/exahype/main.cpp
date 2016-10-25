@@ -27,6 +27,9 @@
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
 
+#include <vector>
+#include <string>
+
 tarch::logging::Log _log("");
 
 int main(int argc, char** argv) {
@@ -61,8 +64,8 @@ int main(int argc, char** argv) {
   //   Parse config file
   // =====================
   //
-  if (argc != 2) {
-    logError("main()", "Usage: ./ExaHyPE config-file");
+  if (argc < 2) {
+    logError("main()", "Usage: ./ExaHyPE config-file [additional args passed to Solver...]");
     return -1;
   }
 
@@ -73,12 +76,15 @@ int main(int argc, char** argv) {
     logError("main()", "invalid config file. Quit");
     return -2;
   }
+  
+  // Collect all command line arguments for the Solvers
+  std::vector<std::string> cmdlineargs(argv + 1, argv + argc);
 
   //
   //   Init solver registries
   // =====================================
   //
-  kernels::initSolvers(parser);
+  kernels::initSolvers(parser, cmdlineargs);
 
   //
   //   Configure the logging

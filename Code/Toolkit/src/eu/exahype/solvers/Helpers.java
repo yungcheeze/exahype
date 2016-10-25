@@ -39,10 +39,10 @@ public class Helpers {
     
     
     if (hasConstants) {
-      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);\n\n");
     }
     else {
-      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs);\n\n");
     }
 
     writer.write(
@@ -133,9 +133,9 @@ public class Helpers {
 
     // init
     writer.write("void " + projectName + "::" + solverName +
-      "::init(exahype::Parser::ParserView& constants) {\n");
-    writer.write("  // This function is called inside the constructor.\n");
-    writer.write("  // You can access spec file parameters here..\n");
+      "::init(std::vector<std::string>& cmdlineargs"+(hasConstants?", exahype::Parser::ParserView& constants":"")+") {\n");
+    writer.write("  // This function is called by the constructor.\n");
+    writer.write("  // You can access spec file parameters as well as command line arguments (argv as std::vector).\n");
     writer.write("  // @todo Please implement/augment if required.\n");
     writer.write("}\n\n");
   }
