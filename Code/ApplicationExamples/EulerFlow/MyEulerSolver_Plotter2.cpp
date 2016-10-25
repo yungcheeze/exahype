@@ -1,5 +1,4 @@
 #include "MyEulerSolver_Plotter2.h"
-#include "GeneratedConstants.h"
 #include "Primitives.h"
 
 

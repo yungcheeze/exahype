@@ -12,7 +12,6 @@
  **/
 
 #include "InitialData.h"
-#include "GeneratedConstants.h"
 #include "PastaMatrix.h"
 #include "Primitives.h"
 #include "MyEulerSolver.h"

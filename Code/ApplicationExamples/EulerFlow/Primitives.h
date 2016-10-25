@@ -1,7 +1,6 @@
 #ifndef __EULER_PRIMITIVES__
 #define __EULER_PRIMITIVES__
 
-#include "GeneratedConstants.h"
 #include "MyEulerSolver.h"
 
 // Ideal equation of state's Gamma
