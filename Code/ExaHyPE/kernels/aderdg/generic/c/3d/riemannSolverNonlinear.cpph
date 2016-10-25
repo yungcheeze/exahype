@@ -25,17 +25,18 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
+template <typename SolverType>
+void riemannSolverNonlinear(SolverType& solver,
+                            double* FL, double* FR, const double* const QL,
                             const double* const QR,
                             double* tempFaceUnknownsArray,
                             double** tempStateSizedVectors,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
-                            const int normalNonZero,
-                            const int numberOfVariables,
-                            const int numberOfParameters, const int basisSize) {
+                            const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
@@ -61,8 +62,8 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
   // TODO: New size: numberOfVariables - numberOfParameters
   double* LL = tempStateSizedVectors[2];
   double* LR = tempStateSizedVectors[3];
-  PDEEigenvalues(QavL, normalNonZero, LL);
-  PDEEigenvalues(QavR, normalNonZero, LR);
+  solver.eigenvalues(QavL, normalNonZero, LL);
+  solver.eigenvalues(QavR, normalNonZero, LR);
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
