@@ -29,10 +29,24 @@ namespace limiter {
 namespace generic {
 namespace c {
 
-// Projection ADERDG -> FV
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
-// Projection FV -> ADERDG
-void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
+/**
+ * \brief Projection ADERDG -> FV
+ *
+ * Projects the ADERDG solution onto
+ * the finite volumes limiter space.
+ *
+ * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1).
+ */
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim);
+/**
+ * \brief Projection FV -> ADERDG
+ *
+ * Projects the finite volumes limiter solution onto
+ * the DG space.
+ *
+ * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1)
+ */
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
@@ -53,7 +67,7 @@ inline double anticipateLuh(const double* const luh, const double* const lduh, c
 }
 
 inline int getBasisSizeLim(const int basisSize) {
-  return 2*(basisSize-1) +1;
+  return 2*(basisSize-1)+1;
 }
 
 //*************************

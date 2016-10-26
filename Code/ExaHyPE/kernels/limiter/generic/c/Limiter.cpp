@@ -23,7 +23,8 @@ namespace c {
 //Fortran (Limiter.f90): GetSubcellData
 // Allocate lim memory via
 // double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim) {
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
@@ -64,7 +65,8 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 }
 
 //Fortran (Limiter.f90): PutSubcellData
-void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
