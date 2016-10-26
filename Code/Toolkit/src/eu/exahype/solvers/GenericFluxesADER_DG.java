@@ -90,7 +90,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (isLinear()) {
       writer.write("  kernels::aderdg::generic::" + languageNamespace
           + "::spaceTimePredictorLinear" + solverType
-          + "( *this, lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt );\n");
+          + "( *this, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd, luh, dx, dt );\n");
     } else {
       writer.write("  kernels::aderdg::generic::" + languageNamespace
           + "::spaceTimePredictorNonlinear" + solverType
