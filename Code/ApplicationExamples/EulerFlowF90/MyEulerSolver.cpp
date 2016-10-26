@@ -2,7 +2,7 @@
 
 #include <memory>
 
-void Euler::MyEulerSolver::init() {
+void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the constructur.
   // @todo Please implement/augment if required.
 }
@@ -67,7 +67,7 @@ void Euler::MyEulerSolver::source(const double* const Q, double* S) {
 
 
 
-void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // Dimensions             = 3
   // Number of variables    = 5 (#unknowns + #parameters)
 

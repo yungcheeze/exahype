@@ -5,11 +5,10 @@
 #include "kernels/aderdg/generic/Kernels.h"
 
 
-Euler::MyEulerSolver::MyEulerSolver(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::ADERDGSolver("MyEulerSolver", 5 /* numberOfUnknowns */, 0/* numberOfParameters */, 4 /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, std::move(profiler)) {
-  init();
+Euler::MyEulerSolver::MyEulerSolver(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs):
+  exahype::solvers::ADERDGSolver("MyEulerSolver", nVar /* numberOfUnknowns */, nParams /* numberOfParameters */, order + 1  /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, std::move(profiler)) {
+  init(cmdlineargs);
 }
-
 
 
 void Euler::MyEulerSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double*  tempUnknowns,double*  tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
@@ -45,7 +44,7 @@ void Euler::MyEulerSolver::riemannSolver(double* FL, double* FR, const double* c
 
 
 void Euler::MyEulerSolver::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS, double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-  kernels::aderdg::generic::c::boundaryConditions<boundaryValues>( fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+  kernels::aderdg::generic::c::boundaryConditions<MyEulerSolver>(*this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero);
 }
 
 
