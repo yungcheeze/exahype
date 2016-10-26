@@ -264,8 +264,7 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   const double dt = 1.916666666666667E-004;
 
   kernels::aderdg::generic::c::riemannSolverLinear<ElasticityKernelTest>(*this,
-      FL, FR, qL, qR, dt, 1 /* normalNonZero */, kNumberOfVariables,
-      kNumberOfParameters, kBasisSize);
+      FL, FR, qL, qR, dt, 1 /* normalNonZero */);
 
   kernels::idx2 idx_F_out(kBasisSize, kNumberOfVariables - kNumberOfParameters);
 
@@ -342,8 +341,7 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
 
   // Execute kernel
   kernels::aderdg::generic::c::spaceTimePredictorLinear<ElasticityKernelTest>(*this,
-      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd, luh, dx, dt, kNumberOfVariables,
-      kNumberOfParameters, kBasisSize);
+      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd, luh, dx, dt);
 
   // Check result
   kernels::idx3 idx_lQhi_OUT(kBasisSize, kBasisSize,

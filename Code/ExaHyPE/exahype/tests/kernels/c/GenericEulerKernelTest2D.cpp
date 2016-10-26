@@ -384,7 +384,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         *this,
         FL, FR,
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt);
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+        normalNonZero
+    );
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -435,7 +437,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
-        0,    // normalNonZero
+        0    // normalNonZero
         );
 
     // FL == FR, element by element
@@ -479,7 +481,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
             QR_1_in,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
-        0,    // normalNonZero
+        0     // normalNonZero
         );
 
     for (int i = 0; i < 20; i++) {
@@ -532,7 +534,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
             QR_2_in,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
         0.0,  // dt
-        1,    // normalNonZero
+        1    // normalNonZero
         );
 
     for (int i = 0; i < 20; i++) {
