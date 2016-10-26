@@ -10,9 +10,4 @@ public interface Solver {
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException;
   
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException;
-  
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException;
 }
