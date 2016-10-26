@@ -63,7 +63,7 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
     
     // boundary conditions
     writer.write("void " + projectName + "::" + solverName
-            + "::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {\n");
+            + "::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
     writer.write(
             "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
