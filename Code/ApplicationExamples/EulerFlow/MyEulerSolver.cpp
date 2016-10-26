@@ -23,7 +23,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 
   // Demonstration how to access parameters:
   printf("EulerFlow was called with these parameters:\n");
-  for(int i=0; i<cmdlineargs.size(); i++)
+  for(size_t i=0; i<cmdlineargs.size(); i++)
     printf("%i. %s\n", i, cmdlineargs[i].c_str());
 }
 
