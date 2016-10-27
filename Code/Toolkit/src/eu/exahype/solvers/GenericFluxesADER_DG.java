@@ -90,16 +90,10 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"spaceTimePredictor\");\n");
     }
-    if (_isLinear) {
-      writer.write("  kernels::aderdg::generic::" + languageNamespace
-          + "::spaceTimePredictorLinear" + solverType
-          + "( *this, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd, luh, dx, dt );\n");
-    } else {
-      writer.write("  kernels::aderdg::generic::" + languageNamespace
-          + "::spaceTimePredictorNonlinear" + solverType
-          + "( *this, lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt " + (_isFortran ? ", nVar, nParams, order + 1" : "")
-        + ");\n");
-    }
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
+        + "::spaceTimePredictor" + (_isLinear ? "Linear" : "Nonlinear") + solverType
+        + "( *this, lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt " + (_isFortran ? ", nVar, nParams, order + 1" : "")
+      + ");\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
     }
@@ -156,16 +150,10 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"riemannSolver\");\n");
     }
-    if (_isLinear) {
-        writer.write("  kernels::aderdg::generic::" + languageNamespace
-                + "::riemannSolverLinear" + solverType
-                + "( *this, FL, FR, QL, QR, dt, normalNonZeroIndex );\n");
-    } else {
-        writer.write("  kernels::aderdg::generic::" + languageNamespace
-                + "::riemannSolverNonlinear" + solverType
-                + "( *this, FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex" + (_isFortran ? ", nVar, nParams, order + 1" : "")
-        + " );\n");
-    }
+    writer.write("  kernels::aderdg::generic::" + languageNamespace
+            + "::riemannSolver" + (_isLinear ? "Linear" : "Nonlinear") + solverType
+            + "( *this, FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex" + (_isFortran ? ", nVar, nParams, order + 1" : "")
+    + " );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
     }
