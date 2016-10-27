@@ -9,7 +9,7 @@ public class GenericFluxesADER_DG implements Solver {
   protected boolean _isLinear;
   protected boolean _isFortran;
   
-  private static final String fortranReference = "//************************************************* \n//for FORTRAN kernels the fluxes and eigenvalues \n//have to be implemented in the file ./PDE.f90 and ./typesDef \n//************************************************* \n";
+  private static final String fortranReference = "//************************************************* \n//for FORTRAN kernels the fluxes and eigenvalues \n//have to be implemented in the file ./PDE.f90 and ./typesDef.f90 \n//\n//You have to create these files yourself\n//and follow the sample applications in the wiki\n//************************************************* \n";
 
   public GenericFluxesADER_DG(int dimensions, int numberOfUnknowns, int numberOfParameters,
       int order, boolean enableProfiler, boolean hasConstants, boolean isLinear, boolean isFortran) {
