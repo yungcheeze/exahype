@@ -47,9 +47,9 @@ void aderriemannsolvernonlinear_(const double* const lQbndL, double* lFbndL, con
 
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+template <typename SolverType>
 void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
+    SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
     double*  tempFaceUnknownsArray,

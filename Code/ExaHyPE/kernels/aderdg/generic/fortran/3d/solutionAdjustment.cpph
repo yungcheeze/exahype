@@ -28,11 +28,9 @@
 // using std::endl;
 // using std::cout;
 
-template <void PDESolutionAdjustment(const double* const x, const double J_w,
-                                     const double t, const double dt,
-                                     double* Q)>
-void kernels::aderdg::generic::fortran::solutionAdjustment(
-    double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+template <typename SolverType>
+void kernels::aderdg::generic::fortran::solutionAdjustment(SolverType& solver, double* luh,
+    const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
     const double dt, const int numberOfVariables, const int basisSize) {
   double x[3];
@@ -59,7 +57,7 @@ void kernels::aderdg::generic::fortran::solutionAdjustment(
 
         // read initial condition
         const int dofStartIndex = nodeIndex * numberOfVariables;
-        PDESolutionAdjustment(x, weight, t, dt, &luh[dofStartIndex]);
+        solver.adjustedSolutionValues(x, weight, t, dt, &luh[dofStartIndex]);
       }
     }
   }

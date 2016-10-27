@@ -251,9 +251,9 @@ namespace fortran {
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
+    SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
     double** tempSpaceTimeUnknowns,
     double** tempSpaceTimeFluxUnknowns,
@@ -335,10 +335,8 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDESolutionAdjustment(const double* const x, const double w,
-                                     const double t, const double dt,
-                                     double* Q)>
-void solutionAdjustment(double* luh,
+template <typename SolverType>
+void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
                         const double t, const double dt,
@@ -347,9 +345,9 @@ void solutionAdjustment(double* luh,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+template <typename SolverType>
 void riemannSolverNonlinear(
+    SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
     double*  tempFaceUnknownsArray,
@@ -372,9 +370,8 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-double stableTimeStepSize(const double* const luh,
+template <typename SolverType>
+double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables, const int basisSize);
@@ -409,7 +406,6 @@ void volumeUnknownsRestriction(
 }  // namespace generic
 }  // namespace aderdg
 }  // namespace kernels
-
 #if DIMENSIONS == 3
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
