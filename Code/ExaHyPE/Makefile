@@ -290,14 +290,14 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90
 endif
 
-ffiles.mk: 
+ffiles.mk: | doFortran
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-#ifndef (,$(findstring Yes, $(MIXEDLANG) ))
-#	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-#endif
 	# ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
 	find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+ifndef (,$(findstring Yes, $(MIXEDLANG) ))
+	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+endif
 
 # Generate a dependency file for Fortran
 # Add all the found module files as dependency in %.mod of each of the found non module files
