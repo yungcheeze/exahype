@@ -295,7 +295,7 @@ ffiles.mk: | doFortran
 	echo -n FSOURCES= > ffiles.mk
 	# ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
 	find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-ifndef (,$(findstring Yes, $(MIXEDLANG) ))
+ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
 
