@@ -8,6 +8,8 @@ public class GenericFluxesADER_DG implements Solver {
   protected boolean _hasConstants;
   protected boolean _isLinear;
   protected boolean _isFortran;
+  
+  private static final String fortranReference = "//************************************************* \n//for FORTRAN kernels the fluxes and eigenvalues \n//have to be implemented in the file ./PDE.f90 and ./typesDef \n//************************************************* \n";
 
   public GenericFluxesADER_DG(int dimensions, int numberOfUnknowns, int numberOfParameters,
       int order, boolean enableProfiler, boolean hasConstants, boolean isLinear, boolean isFortran) {
@@ -95,7 +97,8 @@ public class GenericFluxesADER_DG implements Solver {
     } else {
       writer.write("  kernels::aderdg::generic::" + languageNamespace
           + "::spaceTimePredictorNonlinear" + solverType
-          + "( *this, lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt );\n");
+          + "( *this, lQhbnd, lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns, luh, dx, dt " + (_isFortran ? ", nVar, nParams, order + 1" : "")
+        + ");\n");
     }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
@@ -160,7 +163,8 @@ public class GenericFluxesADER_DG implements Solver {
     } else {
         writer.write("  kernels::aderdg::generic::" + languageNamespace
                 + "::riemannSolverNonlinear" + solverType
-                + "( *this, FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex );\n");
+                + "( *this, FL, FR, QL, QR, tempFaceUnknownsArray, tempStateSizedVectors, tempStateSizedSquareMatrices, dt, normalNonZeroIndex" + (_isFortran ? ", nVar, nParams, order + 1" : "")
+        + " );\n");
     }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
@@ -174,7 +178,9 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
         writer.write("  _profiler->start(\"boundaryConditions\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + languageNamespace
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write("  kernels::aderdg::generic::c" 
             + "::boundaryConditions" + solverType
             + "( *this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );\n");
     if (_enableProfiler) {
@@ -190,7 +196,8 @@ public class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  double d = kernels::aderdg::generic::" + languageNamespace
         + "::stableTimeStepSize" + solverType
-        + "( *this, luh, tempEigenvalues, dx );\n");
+        + "( *this, luh, tempEigenvalues, dx" + (_isFortran ? ", nVar, order + 1" : "")
+        + " );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"stableTimeStepSize\");\n");
     }
@@ -205,7 +212,8 @@ public class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  kernels::aderdg::generic::" + languageNamespace
         + "::solutionAdjustment" + solverType
-        + "( *this, luh, center, dx, t, dt );\n");
+        + "( *this, luh, center, dx, t, dt " + (_isFortran ? ", nVar, order + 1" : "")
+        + ");\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionAdjustment\");\n");
     }
@@ -217,7 +225,9 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"faceUnknownsProlongation\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + languageNamespace
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write("  kernels::aderdg::generic::c"
         + "::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"faceUnknownsProlongation\");\n");
@@ -230,7 +240,9 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"faceUnknownsRestriction\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + languageNamespace
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write("  kernels::aderdg::generic::c" 
         + "::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"faceUnknownsRestriction\");\n");
@@ -243,7 +255,9 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"volumeUnknownsProlongation\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + languageNamespace
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write("  kernels::aderdg::generic::c"
         + "::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeUnknownsProlongation\");\n");
@@ -256,7 +270,9 @@ public class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"volumeUnknownsRestriction\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + languageNamespace
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write("  kernels::aderdg::generic::c"
         + "::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeUnknownsRestriction\");\n");
@@ -273,79 +289,57 @@ public class GenericFluxesADER_DG implements Solver {
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
-   
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//************************************************* \n");
-    // writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    // writer.write("//have to be implemented in the file ./PDE.f90 \n");
-    // writer.write("//************************************************* \n");
+    
+    if (_isFortran){
+      writer.write(fortranReference);
+    }else{
 
-    // flux
-    writer.write("void " + projectName + "::" + solverName
-          + "::flux(const double* const Q, double** F) {\n");
-    writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write(
-        "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
-            + " (#unknowns + #parameters)\n\n");
-    writer.write("  double* f = F[0];\n");
-    writer.write("  double* g = F[1];\n");
-    if (_dimensions == 3) {
-      writer.write("  double* h = F[2];\n");
-    }
-    writer.write("\n");
-    writer.write("  // @todo Please implement\n");
-    writer.write("  // f\n");
-    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
-      writer.write("  f[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
-    }
-    writer.write("  // g\n");
-    writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
-      writer.write("  g[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
-    }
-    if (_dimensions == 3) {
-      writer.write("  // h\n");
+      // flux
+      writer.write("void " + projectName + "::" + solverName
+            + "::flux(const double* const Q, double** F) {\n");
+      writer.write("  // Dimensions             = " + _dimensions + "\n");
+      writer.write(
+          "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+              + " (#unknowns + #parameters)\n\n");
+      writer.write("  double* f = F[0];\n");
+      writer.write("  double* g = F[1];\n");
+      if (_dimensions == 3) {
+        writer.write("  double* h = F[2];\n");
+      }
+      writer.write("\n");
+      writer.write("  // @todo Please implement\n");
+      writer.write("  // f\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  f[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+      }
+      writer.write("  // g\n");
       writer.write("  // @todo Please implement\n");
       for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
-        writer.write("  h[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+        writer.write("  g[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
       }
+      if (_dimensions == 3) {
+        writer.write("  // h\n");
+        writer.write("  // @todo Please implement\n");
+        for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+          writer.write("  h[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+        }
+      }
+      writer.write("}\n");
     }
-    writer.write("}\n");
     writer.write("\n\n\n");
 
-    // source
-    writer.write("void " + projectName + "::" + solverName + "::source(const double* const Q, double* S) {\n");
-    writer.write("  // Number of variables = " + _numberOfUnknowns + " + " +  _numberOfParameters + "\n");
-    writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
-      writer.write("  S[" + i + "] = 0.0;\n");
+    if (!_isFortran){
+      // source
+      writer.write("void " + projectName + "::" + solverName + "::source(const double* const Q, double* S) {\n");
+      writer.write("  // Number of variables = " + _numberOfUnknowns + " + " +  _numberOfParameters + "\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  S[" + i + "] = 0.0;\n");
+      }
+      writer.write("}\n");
     }
-    writer.write("}\n");
     writer.write("\n\n\n");
-    
+      
     // boundary conditions
     writer.write("void " + projectName + "::" + solverName
             + "::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {\n");
@@ -367,19 +361,23 @@ public class GenericFluxesADER_DG implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     
-    // eigenvalues
-    writer.write("void " + projectName + "::" + solverName
-        + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
-    writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write(
-        "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
-            + " (#unknowns + #parameters)\n");
-    writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
-      writer.write("  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+    if (!_isFortran){
+      // eigenvalues
+      writer.write("void " + projectName + "::" + solverName
+          + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
+      writer.write("  // Dimensions             = " + _dimensions + "\n");
+      writer.write(
+          "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+              + " (#unknowns + #parameters)\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+      }
+      writer.write("}\n");
     }
-    writer.write("}\n");
     writer.write("\n\n\n");
+    
+    //initial conditions
     writer.write("bool " + projectName + "::" + solverName
         + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
     writer.write("  // @todo Please implement\n");
@@ -408,6 +406,7 @@ public class GenericFluxesADER_DG implements Solver {
     writer.write("\n\n\n");
 
       // ncp
+    if (!_isFortran){
       writer.write("void " + projectName + "::" + solverName
           + "::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {\n");
       writer.write("  // Dimensions             = " + _dimensions + "\n");
@@ -419,8 +418,10 @@ public class GenericFluxesADER_DG implements Solver {
           writer.write("  BgradQ[" + i + "] = 0.0;\n");
       }
       writer.write("}\n");
-      writer.write("\n\n\n");
+    }
+    writer.write("\n\n\n");
 
+    if (!_isFortran){
       // matrixb
       writer.write("void " + projectName + "::" + solverName + "::matrixb(const double* const Q, const int normalNonZero, double* Bn) {\n");
       writer.write("  // Number of variables    = "
@@ -431,8 +432,9 @@ public class GenericFluxesADER_DG implements Solver {
         writer.write("Bn[" + i + "] = 0.0;\n");
       }
       writer.write("}\n");
-      writer.write("\n\n\n");
     }
+    writer.write("\n\n\n");
+  }
 
   protected int _dimensions;
   protected int _numberOfUnknowns;
