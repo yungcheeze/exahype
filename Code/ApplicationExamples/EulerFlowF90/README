@@ -1,8 +1,0 @@
-
-
-1. Uncomment lines 284 and 291 in the (ExaHyPE) Makefile
-
-2. After you run the toolkit, then "git checkout MyEulerSolver_generated.cpp"
-
-3. Dont use make -j, parallel compiling doesn't work (yet)
-
