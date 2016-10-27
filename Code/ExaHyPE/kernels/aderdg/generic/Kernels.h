@@ -267,14 +267,18 @@ void spaceTimePredictorNonlinear(
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDENCP(const double* const Q, const double* const gradQ,
-                      double* BgradQ)>
-void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
-                              double* lFhi, double* lQhbnd, double* lFhbnd,
-                              const double* const luh,
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double predictorTimeStepSize,
-                              const int numberOfVariables, const int basisSize);
+template <typename SolverType>
+void spaceTimePredictorLinear(
+    SolverType& solver,
+    double*  lQhbnd, double* lFhbnd,
+    double** tempSpaceTimeUnknowns,
+    double** tempSpaceTimeFluxUnknowns,
+    double*  tempUnknowns,
+    double*  tempFluxUnknowns,
+    const double* const luh,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    const double predictorTimeStepSize, const int numberOfVariables,
+    const int numberOfParameters, const int basisSize);
 
 /**
  * (At the moment, we always evaluate the time averaged space-time
@@ -311,8 +315,9 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const int basisSize);
 
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
+                             const tarch::la::Vector<DIMENSIONS, double>& dx,
+                             const int numberOfVariables, const int numberOfParameters, 
+                             const int basisSize);
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
@@ -358,14 +363,18 @@ void riemannSolverNonlinear(
     const int numberOfVariables,
     const int numberOfParameters, const int basisSize);
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda),
-          void PDEMatrixB(const double* const Q, const int normalNonZero,
-                          double* Bn)>
-void riemannSolverLinear(double* FL, double* FR, const double* const QL,
-                         const double* const QR, const double dt,
-                         const int normalNonZero, const int numberOfVariables,
-                         const int basisSize);
+template <typename SolverType>
+void riemannSolverLinear(
+    SolverType& solver,
+    double* FL, double* FR, const double* const QL,
+    const double* const QR,
+    double*  tempFaceUnknownsArray,
+    double** tempStateSizedVectors,
+    double** tempStateSizedSquareMatrices,
+    const double dt,
+    const int normalNonZero,
+    const int numberOfVariables,
+    const int numberOfParameters, const int basisSize);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for

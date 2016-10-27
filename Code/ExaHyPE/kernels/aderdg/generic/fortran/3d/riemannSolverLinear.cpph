@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
  
-// #include "../Kernels.h"
+// #include "kernels/aderdg/generic/Kernels.h"
 
 // #include "string.h"
 
@@ -29,8 +29,8 @@
 // using std::cout;
 
 extern "C" {
-void aderriemannsolverlinear_(const double* lQbndL, double* lFbndL,
-                              const double* lQbndR, double* lFbndR, double* nv);
+void aderriemannsolverlinear_(const double* const lQbndL, double* lFbndL, const double* const lQbndR,
+                        double* lFbndR, double* nv);
 }
 
 // todo Dominic Etienne Charrier
@@ -47,15 +47,23 @@ void aderriemannsolverlinear_(const double* lQbndL, double* lFbndL,
 
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda),
-          void PDEMatrixB(const double* const Q, const int normalNonZero,
-                          double* Bn)>
+template <typename SolverType>
 void kernels::aderdg::generic::fortran::riemannSolverLinear(
-    double* FL, double* FR, const double* const QL, const double* const QR,
-    const double dt, const int normalNonZero, const int numberOfVariables,
-    const int basisSize) {
-  double nv[3] = {0.0, 0.0, 0.0};
+    SolverType& solver,
+    double* FL, double* FR, const double* const QL,
+    const double* const QR,
+    double*  tempFaceUnknownsArray,
+    double** tempStateSizedVectors,
+    double** tempStateSizedSquareMatrices,
+    const double dt,
+    const int normalNonZero,
+    const int numberOfVariables,
+    const int numberOfParameters, const int basisSize){
+
+  double* nv = new double[3];
+  nv[0] = 0.0;
+  nv[1] = 0.0;
+  nv[2] = 0.0;
   nv[normalNonZero] = 1.0;
 
   aderriemannsolverlinear_(QL, FL, QR, FR, nv);
@@ -88,4 +96,6 @@ void kernels::aderdg::generic::fortran::riemannSolverLinear(
   // ofs << lQbndFortran[ii] << "\n";
   // }
   // ofs.close();
+
+  delete[] nv;
 }
