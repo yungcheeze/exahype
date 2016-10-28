@@ -1402,6 +1402,40 @@ void exahype::solvers::ADERDGSolver::updateSolution(
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
+void exahype::solvers::ADERDGSolver::rollbackSolution(
+    const int cellDescriptionsIndex,
+    const int element,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  // reset helper variables
+  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
+      cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
+    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
+    double* lFhbnd = exahype::DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+
+    for (int i=0; i<getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+
+    solutionUpdate(luh,lduh,cellDescription.-getCorrectorTimeStepSize()); // Be aware of the "-".
+
+    // TODO(Dominic): A rollback is of course not possible if we have adjusted the solution
+    // values. In this case, we should use the adjusted FVM solution as reference.
+    // A similar issue occurs if we impose the initial conditions.
+     assertion(!hasToAdjustSolution(cellDescription.getOffset()+0.5*cellDescription.getSize(),
+                  cellDescription.getSize(),
+                  cellDescription.getCorrectorTimeStamp()));
+
+    for (int i=0; i<getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  }
+  assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
+}
+
 
 void exahype::solvers::ADERDGSolver::preProcess(
     const int cellDescriptionsIndex,

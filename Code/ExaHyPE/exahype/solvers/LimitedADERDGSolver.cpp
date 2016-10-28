@@ -8,5 +8,10 @@
 #include "LimitedADERDGSolver.h"
 
 namespace exahype {
-namespace solvers {} /* namespace solvers */
+namespace solvers {
+
+
+tarch::multicore::BooleanSemaphore exahype::solvers::LimitedADERDGSolver::_semaphoreForLimiterHeapAccess;
+
+} /* namespace solvers */
 } /* namespace exahype */

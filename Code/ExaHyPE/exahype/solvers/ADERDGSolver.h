@@ -1189,6 +1189,25 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
+  /**
+   * Rolls back the solver's solution on the
+   * particular cell description.
+   * This method is used by the ADER-DG a-posteriori
+   * subcell limiter.
+   *
+   * <h2>Open issues</h2>
+   * A rollback is of course not possible if we have adjusted the solution
+   * values. Assuming the rollback is invoked by a LimitedADERDGSolver,
+   * we should use the adjusted FVM solution as reference solution.
+   * A similar issue occurs if we impose initial conditions that
+   * include a discontinuity.
+   */
+  void rollbackSolution(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
   void preProcess(
       const int cellDescriptionsIndex,
       const int element) override;

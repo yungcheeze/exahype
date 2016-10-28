@@ -109,6 +109,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
+  // TODO(Dominic): Change back to solvers. cellIsNewlyTroubledOrNewlyOk
+
+
   if (fineGridCell.isInitialised()) {
     const int numberOfCouplings = exahype::solvers::RegisteredSolverCouplings.size();
     // please use a different UserDefined per mapping/event
