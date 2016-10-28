@@ -20,7 +20,7 @@ exahype-project  MHDSolver
     dimension                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 2.618
+    end-time                 = 0.25
   end computational-domain
 
   solver ADER-DG MHDSolver
