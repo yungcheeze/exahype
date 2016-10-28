@@ -31,7 +31,9 @@ import numpy as np
 import Backend
 import re
 import sys
-sys.path.insert(0, '../Miscellaneous/aderdg')
+import os
+dir = os.path.dirname(__file__)
+sys.path.insert(1, dir+'/../Miscellaneous/aderdg')
 import aderdg
 
 class DGMatrixGenerator:

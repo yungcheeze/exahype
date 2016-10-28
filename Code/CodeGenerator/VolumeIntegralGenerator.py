@@ -26,6 +26,7 @@ import Backend
 from MatmulConfig import MatmulConfig
 import FunctionSignatures
 import Utils
+import os
 from jinja2 import Template
 
 class VolumeIntegralGenerator:
@@ -45,6 +46,7 @@ class VolumeIntegralGenerator:
 
 
     def generateCode(self):
+        dir = os.path.dirname(__file__)+'/'
         context = {}
         context['nDim'] = self.m_config['nDim']
         context['nVar'] = self.m_config['nVar']
@@ -56,7 +58,7 @@ class VolumeIntegralGenerator:
             pass
         else:
             self.__generateNonlinearGemms()
-            with open('templates/volumeIntegralNonLinear.template', 'r') as tmp:
+            with open(dir+'templates/volumeIntegralNonLinear.template', 'r') as tmp:
                 template = Template(tmp.read())
                 context['gemm_x'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_x'
                 context['gemm_y'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_y'
@@ -71,7 +73,7 @@ class VolumeIntegralGenerator:
                 else:
                     context['j_seq'] = [0]
                 
-                with open(self.m_filename, 'w') as out:
+                with open(dir+self.m_filename, 'w') as out:
                     out.write(template.render(context))
 
 
