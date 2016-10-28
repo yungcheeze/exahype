@@ -26,6 +26,13 @@ class LimitedADERDGSolver : public Solver {};
 
 class exahype::solvers::LimitedADERDGSolver : public exahype::solvers::Solver {
 private:
+  typedef exahype::records::ADERDGCellDescription SolverPatch;
+  typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
+
+  typedef exahype::records::FiniteVolumesCellDescription LimiterPatch;
+  typedef peano::heap::PlainHeap<LimiterPatch> LimiterHeap;
+
+
   /**
    * Log device.
    */
@@ -34,12 +41,12 @@ private:
   /**
    * The ADERDG solver.
    */
-  exahype::solvers::ADERDGSolver* _ADERDGSolver;
+  exahype::solvers::ADERDGSolver* _solver;
 
   /**
    * The finite volumes solver used for the a posteriori subcell limiting.
    */
-  exahype::solvers::FiniteVolumesSolver* _finiteVolumesSolver;
+  exahype::solvers::FiniteVolumesSolver* _limiter;
 
 public:
   /*
@@ -69,13 +76,13 @@ public:
 
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override {
-    return _ADERDGSolver->isValidCellDescriptionIndex(cellDescriptionsIndex);
+    return _solver->isValidCellDescriptionIndex(cellDescriptionsIndex);
   }
 
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override {
-    return _ADERDGSolver->tryGetElement(cellDescriptionsIndex,solverNumber);
+    return _solver->tryGetElement(cellDescriptionsIndex,solverNumber);
   }
 
   ///////////////////////////////////
@@ -90,7 +97,7 @@ public:
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override {
-    return _ADERDGSolver->enterCell(
+    return _solver->enterCell(
         fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
         coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
         fineGridPositionOfCell,solverNumber);
@@ -105,7 +112,7 @@ public:
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override {
-    return _ADERDGSolver->leaveCell(
+    return _solver->leaveCell(
             fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
             coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
             fineGridPositionOfCell,solverNumber);
@@ -118,38 +125,38 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override {
-    exahype::solvers::ADERDGSolver::CellDescription& ADERDGCellDescription =
-        _ADERDGSolver->getCellDescription(cellDescriptionsIndex,element);
-    exahype::solvers::FiniteVolumesSolver::CellDescription& finiteVolumesCellDescription;
+    exahype::solvers::ADERDGSolver::CellDescription& solverPatch =
+        _solver->getCellDescription(cellDescriptionsIndex,element);
+    exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch;
     double admissibleTimeStepSize = std::numeric_limits<double>::max();
 
-    switch (ADERDGCellDescription.getLimiterStatus(0)) {
+    switch (solverPatch.getLimiterStatus(0)) {
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok:
         admissibleTimeStepSize =
-            _ADERDGSolver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
+            _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
         break;
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
         admissibleTimeStepSize =
-                    _ADERDGSolver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
+                    _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
         int finiteVolumesElement =
-            _finiteVolumesSolver->tryGetElement(cellDescriptionsIndex,ADERDGCellDescription.getSolverNumber());
+            _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
         assertion(finiteVolumesElement!=exahype::solvers::Solver::NotFound);
-        finiteVolumesCellDescription = _finiteVolumesSolver->getCellDescription(cellDescriptionsIndex,element);
-        finiteVolumesCellDescription.setTimeStamp(ADERDGCellDescription.getCorrectorTimeStamp());
-        finiteVolumesCellDescription.setTimeStepSize(ADERDGCellDescription.getCorrectorTimeStepSize());
+        limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,element);
+        limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+        limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
         break;
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell:
         admissibleTimeStepSize =
-            _finiteVolumesSolver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
+            _limiter->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
         int finiteVolumesElement =
-            _finiteVolumesSolver->tryGetElement(cellDescriptionsIndex,ADERDGCellDescription.getSolverNumber());
+            _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
         assertion(finiteVolumesElement!=exahype::solvers::Solver::NotFound);
-        finiteVolumesCellDescription = _finiteVolumesSolver->getCellDescription(cellDescriptionsIndex,element);
-        ADERDGCellDescription.setCorrectorTimeStamp(finiteVolumesCellDescription.getTimeStamp());
-        ADERDGCellDescription.setCorrectorTimeStepSize(finiteVolumesCellDescription.getTimeStepSize());
-        ADERDGCellDescription.setPredictorTimeStamp(finiteVolumesCellDescription.getTimeStamp());
-        ADERDGCellDescription.setPredictorTimeStepSize(finiteVolumesCellDescription.getTimeStepSize());
+        limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,element);
+        solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
+        solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
+        solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp());
+        solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize());
         break;
     }
 
@@ -161,9 +168,135 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override {
-    _ADERDGSolver->setInitialConditions(
+    _solver->setInitialConditions(
         cellDescriptionsIndex,element,
         fineGridVertices,fineGridVerticesEnumerator);
+  }
+
+  void determineLimiterStatusOfCellDescription(SolverPatch& solverPatch) {
+    // 1. Determine the cell's limiter status.
+    // The limiter status on all faces must be unified.
+    // Troubled cannot be overwritten by any other status.
+    exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus limiterStatus =
+        exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok;
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+      switch (limiterStatus) {
+        case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok:
+          switch (solverPatch.getLimiterStatus(i)) {
+            case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+              limiterStatus = exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled;
+              break;
+            case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+              limiterStatus = exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell;
+              break;
+            case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+              limiterStatus = exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell;
+              break;
+            default:
+              break;
+          }
+          break;
+        case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+          switch (solverPatch.getLimiterStatus(i)) {
+            case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+              limiterStatus = exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell;
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Finally, set the limiter status on all faces to a uniform value.
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+      solverPatch.setLimiterStatus(i,limiterStatus);
+    }
+  }
+
+  /**
+   * Checks if the anticipated solution
+   * of the ADER-DG solver is troubled.
+   *
+   * This check should be performed for non-troubled
+   * cells, i.e., cells for which the limiter status
+   * is either Ok or NeighbourOfNeighbourIsTroubled.
+   */
+  bool anticipatedSolutionIsTroubled(
+      const int cellDescriptionsIndex,
+      const int element) {
+    SolverPatch& solverPatch =
+        _solver->getCellDescription(cellDescriptionsIndex,element);
+    LimiterPatch& limiterPatch;
+    int finiteVolumesElement;
+
+    // 1. Unify limiter status
+    determineLimiterStatusOfCellDescription(solverPatch);
+
+    // 2. Check limiter status of anticipated new solution
+    bool anticipatedSolutionIsTroubled = false;
+    double* solution    = nullptr;
+    double* update      = nullptr;
+    double* solutionMin = nullptr;
+    double* solutionMax = nullptr;
+
+    double* limiterSolution = nullptr;
+
+    solution = DataHeap::getInstance().getData(
+        solverPatch.getSolution()).data();
+    update = DataHeap::getInstance().getData(
+        solverPatch.getUpdate()).data();
+    solutionMin = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMin()).data();
+    solutionMax = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMax()).data();
+
+    anticipatedSolutionIsTroubled = kernels::limiter::generic::c::isTroubledCell(
+        solution,update,solverPatch.getCorrectorTimeStepSize(),_solver->getNumberOfVariables(),
+        _solver->getNodesPerCoordinateAxis(),solutionMin,solutionMax);
+  }
+
+  /**
+   * Checks if updated solution
+   * of the ADER-DG solver is healed.
+   *
+   * This check should be performed
+   * regardless of the limiter status.
+   */
+  bool solutionIsTroubled(
+      const int cellDescriptionsIndex,
+      const int element) {
+    SolverPatch& solverPatch =
+        _solver->getCellDescription(cellDescriptionsIndex,element);
+    LimiterPatch& limiterPatch;
+    int finiteVolumesElement;
+
+    // 1. Unify limiter status
+    determineLimiterStatusOfCellDescription(solverPatch);
+
+    // 2. Check limiter status of anticipated new solution
+    bool solutionIsTroubled = false;
+    double* solution    = nullptr;
+    double* update      = nullptr;
+    double* solutionMin = nullptr;
+    double* solutionMax = nullptr;
+
+    double* limiterSolution = nullptr;
+
+    solution = DataHeap::getInstance().getData(
+        solverPatch.getSolution()).data();
+    update = DataHeap::getInstance().getData(
+        solverPatch.getUpdate()).data();
+    solutionMin = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMin()).data();
+    solutionMax = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMax()).data();
+
+    solutionIsTroubled = kernels::limiter::generic::c::isTroubledCell(
+        solution,update,0,_solver->getNumberOfVariables(),
+        _solver->getNodesPerCoordinateAxis(),solutionMin,solutionMax);
   }
 
   void updateSolution(
@@ -171,54 +304,87 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override {
-    exahype::solvers::ADERDGSolver::CellDescription& ADERDGCellDescription =
-        _ADERDGSolver->getCellDescription(cellDescriptionsIndex,element);
-    exahype::solvers::FiniteVolumesSolver::CellDescription& finiteVolumesCellDescription;
+    exahype::solvers::ADERDGSolver::CellDescription& solverPatch =
+        _solver->getCellDescription(cellDescriptionsIndex,element);
+    exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch;
+    int finiteVolumesElement;
 
-    // 1. Perform solution update of valid (master) solver.
-    switch (ADERDGCellDescription.getLimiterStatus(0)) {
+    // 1. Check limiter status of anticipated new solution
+    bool anticipatedSolutionIsTroubled = false;
+    double* solution    = nullptr;
+    double* update      = nullptr;
+    double* solutionMin = nullptr;
+    double* solutionMax = nullptr;
+
+    double* limiterSolution = nullptr;
+
+    switch (solverPatch.getLimiterStatus(0)) {
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok:
-            _ADERDGSolver->updateSolution(
-                cellDescriptionsIndex,element,
-                fineGridVertices,fineGridVerticesEnumerator);
-        break;
+      case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell:
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-        _ADERDGSolver->updateSolution(
+        solution = DataHeap::getInstance().getData(
+            solverPatch.getSolution()).data();
+        update = DataHeap::getInstance().getData(
+            solverPatch.getUpdate()).data();
+        solutionMin = DataHeap::getInstance().getData(
+            solverPatch.getSolutionMin()).data();
+        solutionMax = DataHeap::getInstance().getData(
+            solverPatch.getSolutionMax()).data();
+
+        anticipatedSolutionIsTroubled = kernels::limiter::generic::c::isTroubledCell(
+            solution,update,solverPatch.getCorrectorTimeStepSize(),_solver->getNumberOfVariables(),
+            _solver->getNodesPerCoordinateAxis(),solutionMin,solutionMax);
+
+
+
+    }
+
+    // 2. Perform solution update of valid (master) solver.
+    switch (solverPatch.getLimiterStatus(0)) {
+      case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok:
+        _solver->updateSolution(
             cellDescriptionsIndex,element,
             fineGridVertices,fineGridVerticesEnumerator);
-        int finiteVolumesElement =
-            _finiteVolumesSolver->tryGetElement(cellDescriptionsIndex,ADERDGCellDescription.getSolverNumber());
+        break;
+      case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+        _solver->updateSolution(
+            cellDescriptionsIndex,element,
+            fineGridVertices,fineGridVerticesEnumerator);
+        finiteVolumesElement =
+            _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
         assertion(finiteVolumesElement!=exahype::solvers::Solver::NotFound);
-        finiteVolumesCellDescription = _finiteVolumesSolver->getCellDescription(cellDescriptionsIndex,element);
+        limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,element);
 
-        double* ADERDGSolution        = DataHeap::getInstance().getData(
-            ADERDGCellDescription.getSolution()).data();
-        double* finiteVolumesSolution = DataHeap::getInstance().getData(
-            finiteVolumesCellDescription.getSolution()).data();
+        solution = DataHeap::getInstance().getData(
+            solverPatch.getSolution()).data();
+        limiterSolution = DataHeap::getInstance().getData(
+            limiterPatch.getSolution()).data();
 
         // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-        kernels::limiter::generic::c::projectOnFVLimiterSpace(ADERDGSolution,_ADERDGSolver->getNumberOfVariables(),
-            _ADERDGSolver->getNodesPerCoordinateAxis(),finiteVolumesSolution);
+        kernels::limiter::generic::c::projectOnFVLimiterSpace(
+            solution,_solver->getNumberOfVariables(),
+            _solver->getNodesPerCoordinateAxis(),limiterSolution);
         break;
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
       case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell:
-        _finiteVolumesSolver->updateSolution(
+        _limiter->updateSolution(
                         cellDescriptionsIndex,element,
                         fineGridVertices,fineGridVerticesEnumerator);
-        int finiteVolumesElement =
-            _finiteVolumesSolver->tryGetElement(cellDescriptionsIndex,ADERDGCellDescription.getSolverNumber());
+        finiteVolumesElement =
+            _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
         assertion(finiteVolumesElement!=exahype::solvers::Solver::NotFound);
-        finiteVolumesCellDescription = _finiteVolumesSolver->getCellDescription(cellDescriptionsIndex,element);
+        limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,element);
 
         // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-        kernels::limiter::generic::c::projectOnDGSpace(finiteVolumesSolution,_ADERDGSolver->getNumberOfVariables(),
-                    _ADERDGSolver->getNodesPerCoordinateAxis(),ADERDGSolution);
+        kernels::limiter::generic::c::projectOnDGSpace(limiterSolution,_solver->getNumberOfVariables(),
+                    _solver->getNodesPerCoordinateAxis(),solution);
         break;
     }
 
-    // 1. Compute limiter status after update.
-    switch (ADERDGCellDescription.getLimiterStatus(0)) {
-
+    // 3. Check if new ADER-DG solution is still troubled
+    switch (solverPatch.getLimiterStatus(0)) {
+      case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+        break;
     }
   }
 
