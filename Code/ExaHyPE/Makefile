@@ -225,7 +225,7 @@ else ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	SYSTEM_LFLAGS   += $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
 else
-	#SYSTEM_LFLAGS   += -lrt
+	SYSTEM_LFLAGS   += -lrt
 	# disabled the -lrt for plain serial compilations. No system
 	# I tested needed it.
 
