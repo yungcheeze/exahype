@@ -51,8 +51,13 @@ void projectOnDGSpace(const double* const lim, const int numberOfVariables, cons
 // Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
 
-//Test if the anticipated DG solution is troubled
-bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+//Test if the DG solution is troubled
+bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+
+// TODO(Dominic): @JM: We have to do a rollback in every neighbour cell of the troubled cells. Furthermore, the
+// troubled cells are not that many compared to the non-troubled ones. Thus, I decided to get
+// rid of the solution anticipation. I am sorry for the confusion.
+//bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
 
 //************************
 //*** Helper functions ***
@@ -65,7 +70,7 @@ inline double anticipateLuh(const double* const luh, const double* const lduh, c
   #endif
   kernels::gaussLegendreWeights[order][y] * kernels::gaussLegendreWeights[order][x];
 
-  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler is not able to optimise for the dt=0 case.
+  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler might not able to optimise for the dt=0 case.
 }
 
 inline int getBasisSizeLim(const int basisSize) {
