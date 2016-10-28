@@ -367,12 +367,43 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solutionMax;
   
   enum LimiterStatus {
+    /**
+     * A cell holds a physically correct ADER-DG solution. 
+     */
     Ok,
+    /**
+     * A cell (still) holds a physically wrong ADER-DG solution. 
+     */
     Troubled,
+    /**
+     * A cell can obtain this status only during the limiter
+     * status spreading stage. It indicates that the cell
+     * is direct neighbour to a troubled cell. 
+     */
     NeighbourIsTroubledCell,
-    NeighbourIsNeighbourOfTroubledCell           
+    /**
+     * A cell can obtain this status only during the limiter
+     * status spreading stage. It indicates that the cell
+     * is direct neighbour to the neighbour of a troubled cell. 
+     */
+    NeighbourIsNeighbourOfTroubledCell,
+    
+    /**
+     * Has the same meaning as NeighbourIsTroubledCell but
+     * further indicates that this is up-to-date information.
+     */
+    NewlyNeighbourIsTroubledCell,
+    
+    /**
+     * Has the same meaning as NewlyNeighbourIsNeighbourOfTroubledCell but
+     * further indicates that this is up-to-date information.
+     */
+    NewlyNeighbourIsNeighbourOfTroubledCell
   };
   
+  /**
+   * Here, we store the results of the limiter status merging.
+   */
   parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 
   enum CompressionState {

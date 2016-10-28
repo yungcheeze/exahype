@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/10/2016 17:19
+    * @date   28/10/2016 16:46
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum LimiterStatus {
-            Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
+            Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3, NewlyNeighbourIsTroubledCell = 4, NewlyNeighbourIsNeighbourOfTroubledCell = 5
          };
          
          enum RefinementEvent {
@@ -2426,7 +2426,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   21/10/2016 17:19
+             * @date   28/10/2016 16:46
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -4980,7 +4980,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   21/10/2016 17:19
+                      * @date   28/10/2016 16:46
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -4993,7 +4993,7 @@ namespace exahype {
                            };
                            
                            enum LimiterStatus {
-                              Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
+                              Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3, NewlyNeighbourIsTroubledCell = 4, NewlyNeighbourIsNeighbourOfTroubledCell = 5
                            };
                            
                            enum RefinementEvent {
@@ -7103,7 +7103,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   21/10/2016 17:19
+                               * @date   28/10/2016 16:46
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  

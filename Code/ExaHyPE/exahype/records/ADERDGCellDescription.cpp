@@ -85,12 +85,14 @@
          case Troubled: return "Troubled";
          case NeighbourIsTroubledCell: return "NeighbourIsTroubledCell";
          case NeighbourIsNeighbourOfTroubledCell: return "NeighbourIsNeighbourOfTroubledCell";
+         case NewlyNeighbourIsTroubledCell: return "NewlyNeighbourIsTroubledCell";
+         case NewlyNeighbourIsNeighbourOfTroubledCell: return "NewlyNeighbourIsNeighbourOfTroubledCell";
       }
       return "undefined";
    }
    
    std::string exahype::records::ADERDGCellDescription::getLimiterStatusMapping() {
-      return "LimiterStatus(Ok=0,Troubled=1,NeighbourIsTroubledCell=2,NeighbourIsNeighbourOfTroubledCell=3)";
+      return "LimiterStatus(Ok=0,Troubled=1,NeighbourIsTroubledCell=2,NeighbourIsNeighbourOfTroubledCell=3,NewlyNeighbourIsTroubledCell=4,NewlyNeighbourIsNeighbourOfTroubledCell=5)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
       switch (param) {
@@ -1642,12 +1644,14 @@
          case Troubled: return "Troubled";
          case NeighbourIsTroubledCell: return "NeighbourIsTroubledCell";
          case NeighbourIsNeighbourOfTroubledCell: return "NeighbourIsNeighbourOfTroubledCell";
+         case NewlyNeighbourIsTroubledCell: return "NewlyNeighbourIsTroubledCell";
+         case NewlyNeighbourIsNeighbourOfTroubledCell: return "NewlyNeighbourIsNeighbourOfTroubledCell";
       }
       return "undefined";
    }
    
    std::string exahype::records::ADERDGCellDescription::getLimiterStatusMapping() {
-      return "LimiterStatus(Ok=0,Troubled=1,NeighbourIsTroubledCell=2,NeighbourIsNeighbourOfTroubledCell=3)";
+      return "LimiterStatus(Ok=0,Troubled=1,NeighbourIsTroubledCell=2,NeighbourIsNeighbourOfTroubledCell=3,NewlyNeighbourIsTroubledCell=4,NewlyNeighbourIsNeighbourOfTroubledCell=5)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
       switch (param) {
