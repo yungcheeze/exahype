@@ -436,7 +436,6 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(finiteVolumeSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
 }
 
 void exahype::solvers::FiniteVolumesSolver::preProcess(
