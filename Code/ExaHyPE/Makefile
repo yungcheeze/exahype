@@ -169,7 +169,7 @@ ifneq ($(call tolower,$(MODE)),debug)
   else ifeq ($(call tolower,$(COMPILER)),gnu)
     # Settings for the GNU compiler
     # --------------------------------------------
-    COMPILER_CFLAGS += -O3 -fno-rtti -fexceptions -march=native
+    COMPILER_CFLAGS += -O3 -fno-rtti -fno-exceptions -march=native
     COMPILER_LFLAGS +=
   endif
 endif
