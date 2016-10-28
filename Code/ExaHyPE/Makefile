@@ -18,6 +18,7 @@
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
 # *********************************************************************************************
 
+SHELL = bash
 tolower = $(shell echo $(1) | tr '[:upper:]' '[:lower:]')
 
 # ************************************************
@@ -168,7 +169,7 @@ ifneq ($(call tolower,$(MODE)),debug)
   else ifeq ($(call tolower,$(COMPILER)),gnu)
     # Settings for the GNU compiler
     # --------------------------------------------
-    COMPILER_CFLAGS += -O3 -fno-rtti -fno-exceptions -march=native
+    COMPILER_CFLAGS += -O3 -fno-rtti -fexceptions -march=native
     COMPILER_LFLAGS +=
   endif
 endif
@@ -224,7 +225,10 @@ else ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	SYSTEM_LFLAGS   += $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
 else
-	SYSTEM_LFLAGS   += -lrt
+	#SYSTEM_LFLAGS   += -lrt
+	# disabled the -lrt for plain serial compilations. No system
+	# I tested needed it.
+
 	#SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
 	#SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 endif
