@@ -15,18 +15,16 @@
 #include "InitialData.h"
 
 #include <memory>
+#include <cstring> // memset
 
-void Euler::MyEulerSolver::init() {
+void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 
-// Some day Some day we can have a consistent approach here...
-/*
-+  // cf issue #61 and the approach in MHDSolver
-+  MY_NUMBER_OF_VARIABLES = getNumberOfVariables();
-+  //numberOfParameters = getNumberOfParameters();
-+  MY_POLYNOMIAL_DEGREE = getNodesPerCoordinateAxis() - 1; // as this is ADERDG
-*/
+  // Demonstration how to access parameters:
+  printf("EulerFlow was called with these parameters:\n");
+  for(size_t i=0; i<cmdlineargs.size(); i++)
+    printf("%i. %s\n", i, cmdlineargs[i].c_str());
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -146,6 +144,7 @@ Euler::MyEulerSolver::refinementCriterion(
 }
 
 void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
+					  const double dt,
                                           const int faceIndex,
                                           const int normalNonZero,
                                           const double* const fluxIn,
@@ -203,3 +202,12 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   stateOut[4] = stateIn[4];
   */
 }
+
+void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+	std::memset(BgradQ, 0, nVar * sizeof(double));
+}
+
+void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+	std::memset(Bn, 0, nVar * sizeof(double));
+}
+

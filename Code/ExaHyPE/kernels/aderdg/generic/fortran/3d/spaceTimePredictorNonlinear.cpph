@@ -47,9 +47,9 @@ void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
     // double *lFbnd, const double *const luh,
     // const tarch::la::Vector<DIMENSIONS, double> &dx, const double dt,
     // const int numberOfVariables, const int numberOfParameters, const int basisSize) {
-template <void PDEFlux3d(const double *const Q, double **F),
-          void PDESource(const double* const Q, double* S)>
+template <typename SolverType>
 void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
+    SolverType& solver,
     double*  lQbnd, double* lFbnd,
     double** lQi,
     double** lFi,

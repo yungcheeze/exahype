@@ -39,6 +39,11 @@ case $CMD in
 		git checkout .gitignore
 		info "Finished updating Peano"
 		;;
+	"create-toolkit") # Compiles the toolkit with ant and javac
+		cdroot; info "Creating Toolkit"
+		cd Code/Toolkit
+		exec ./build.sh
+		;;
 	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
 		cdroot; info "Listing available Applications:"
 		# we merge directories "Applications" and "ApplicationExamples" in the output
@@ -88,6 +93,7 @@ case $CMD in
 	"make") # compiel without invoking the toolkit
 		cdapp
 		export SKIP_TOOLKIT="Yes"
+		export CLEAN="Lightweight"
 		$SCRIPTDIR/compile.sh
 		;;
 	"git") # passes commands to git

@@ -28,12 +28,7 @@ namespace exahype {
 namespace tests {
 namespace c {
 
-static const int kNumberOfParameters = 3;
-static const int kNumberOfVariables = 9 + kNumberOfParameters;
-static const int kN = 4;
-static const int kBasisSize = kN + 1;
-
-void ElasticityKernelTest::testFlux(const double *Q, double **F) {
+void ElasticityKernelTest::flux(const double *Q, double **F) {
   for (int i = 0; i < kNumberOfVariables; i++) {
     assertion2(std::isfinite(Q[i]), Q[i], i);
   }
@@ -87,11 +82,11 @@ void ElasticityKernelTest::testFlux(const double *Q, double **F) {
   }
 }
 
-void ElasticityKernelTest::testSource(const double *Q, double *S) {
+void ElasticityKernelTest::source(const double *Q, double *S) {
   std::fill(S, S + kNumberOfVariables, 0.0);
 }
 
-void ElasticityKernelTest::testEigenvalues(const double *const Q,
+void ElasticityKernelTest::eigenvalues(const double *const Q,
                                            const int normalNonZeroIndex,
                                            double *lambda) {
   std::fill(lambda, lambda + kNumberOfParameters, 0.0);
@@ -118,7 +113,7 @@ void ElasticityKernelTest::testEigenvalues(const double *const Q,
   lambda[9 - 1] = +cp;
 }
 
-void ElasticityKernelTest::testNCP(const double *const Q,
+void ElasticityKernelTest::ncp(const double *const Q,
                                    const double *const gradQ, double *BgradQ) {
   std::fill(BgradQ, BgradQ + kNumberOfVariables * DIMENSIONS, 0.0);
 
@@ -167,9 +162,9 @@ void ElasticityKernelTest::testNCP(const double *const Q,
   //  BgradQy[8 - 1] = -irho * gradQz[5 - 1];
   //  BgradQy[9 - 1] = -irho * gradQz[3 - 1];
 
-}  // testNCP
+}  // ncp
 
-void ElasticityKernelTest::testMatrixB(const double *const Q,
+void ElasticityKernelTest::matrixb(const double *const Q,
                                        const int normalNonZero, double *Bn) {
   std::fill(Bn, Bn + kNumberOfVariables * kNumberOfVariables, 0.0);
 
@@ -216,7 +211,7 @@ void ElasticityKernelTest::testMatrixB(const double *const Q,
       assert(false);
       break;
   }
-}  // testMatrixB
+}  // matrixb
 
 void ElasticityKernelTest::testRiemannSolverLinear() {
   logInfo("ElasticityKernelTest::testRiemannSolverLinear()",
@@ -268,10 +263,8 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
 
   const double dt = 1.916666666666667E-004;
 
-  kernels::aderdg::generic::c::riemannSolverLinear<testEigenvalues,
-                                                   testMatrixB>(
-      FL, FR, qL, qR, dt, 1 /* normalNonZero */, kNumberOfVariables,
-      kNumberOfParameters, kBasisSize);
+  kernels::aderdg::generic::c::riemannSolverLinear<ElasticityKernelTest>(*this,
+      FL, FR, qL, qR, dt, 1 /* normalNonZero */);
 
   kernels::idx2 idx_F_out(kBasisSize, kNumberOfVariables - kNumberOfParameters);
 
@@ -347,9 +340,8 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   const double dt = 0.813172798364530;
 
   // Execute kernel
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<testNCP>(
-      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd, luh, dx, dt, kNumberOfVariables,
-      kNumberOfParameters, kBasisSize);
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<ElasticityKernelTest>(*this,
+      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd, luh, dx, dt);
 
   // Check result
   kernels::idx3 idx_lQhi_OUT(kBasisSize, kBasisSize,

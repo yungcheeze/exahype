@@ -61,7 +61,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"exahype/solvers/SingleSolverCoupling.h\"\n");
       _writer.write("#include \"exahype/solvers/ADERDGAPosterioriSubcellLimiter.h\"\n\n");
 
-      _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser) {\n");
+      _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {\n");
       if (node.getSolver().size() == 0) {
         System.out.println("no solvers specified - create empty kernel calls ... ok");
       }
@@ -130,7 +130,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)\n");
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler), "+
+                          "cmdlineargs");
       if (node.getConstants()!=null) {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }

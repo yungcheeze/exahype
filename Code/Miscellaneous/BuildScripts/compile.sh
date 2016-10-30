@@ -69,6 +69,12 @@ if [[ $SKIP_TOOLKIT == "Yes" ]]; then
 	echo -e "Skipping toolkit invocation as requested";
 else
 	echo -e "Running toolkit"
+
+	# todo: 
+	#echo -e "Working around defect Makefiles etc"
+	#rm $APPDIRNAME/$APPNAME/Makefile
+	#could also delete KernelCalls.cpp, $APPNAME_generated.cpp, etc.
+
 	java -jar Toolkit/dist/ExaHyPE.jar  --not-interactive $APPDIRNAME/$APPNAME.exahype
 fi
 
@@ -81,7 +87,10 @@ case $CLEAN in
 		make clean
 		;;
 	"Lightweight") echo -e "Lightweight clean"
-		rm -f *.o
+		# find also object files in subdirectories
+		find . -iname '*.o' -exec rm {} \;
+		# and also cleanup Fortran modules
+		find . -iname '*.mod' -exec rm {} \;
 		;;
 esac
 
@@ -104,5 +113,7 @@ for patchfile in "${PROJECTNAME}_generated.cpp"; do # add files seperated by whi
 	fi
 done
 
-make -j $(nproc)
+make -j $(nproc) 2>&1 | tee make.log || { echo -e "Make failed, see make.log for full log"; exit -1; }
+
+echo -e "Making $APPNAME finished"
 

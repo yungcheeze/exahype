@@ -29,7 +29,7 @@ exahype-project  Euler
     dimension                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.2
+    end-time                 = 0.02
   end computational-domain
 
  
@@ -47,26 +47,18 @@ exahype-project  Euler
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.5
+    maximum-mesh-size = 0.1
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
-    language          = C
-    
-    plot vtk::Legendre::nodes::ascii
-      variables = 5
-      time      = 0.0
-      repeat    = 0.00000000005
-      output    = ./tmp/nodes
-      select    = {} 
-    end plot
+    language          = Fortran
     
     plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
-      repeat    = 0.00000000005
-      output    = ./nodes
+      repeat    = 0.0001
+      output    = ./result
       select    = {} 
     end plot
-
+    
   end solver
 end exahype-project

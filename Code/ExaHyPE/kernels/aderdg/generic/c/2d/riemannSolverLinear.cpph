@@ -21,14 +21,13 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda),
-          void PDEMatrixB(const double* const Q, const int normalNonZero,
-                          double* Bn)>
-void riemannSolverLinear(double* FL, double* FR, const double* const QL,
+template <typename SolverType>
+void riemannSolverLinear(SolverType& solver, double* FL, double* FR, const double* const QL,
                          const double* const QR, const double dt,
-                         const int normalNonZero, const int numberOfVariables,
-                         const int numberOfParameters, const int basisSize) {
+                         const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
@@ -51,8 +50,8 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   // TODO: Size should be numberOfVariables - numberOfParameters
   double* LL = new double[numberOfVariables];
   double* LR = new double[numberOfVariables];
-  PDEEigenvalues(QavL, normalNonZero, LL);
-  PDEEigenvalues(QavR, normalNonZero, LR);
+  solver.eigenvalues(QavL, normalNonZero, LL);
+  solver.eigenvalues(QavR, normalNonZero, LR);
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
@@ -79,7 +78,7 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
                  [](double a, double b) { return 0.5 * (a + b); });
 
   double* Bn = new double[numberOfVariables * numberOfVariables];
-  PDEMatrixB(Qav, normalNonZero, Bn);
+  solver.matrixb(Qav, normalNonZero, Bn);
 
   double* BnMinusIdSmax = new double[numberOfVariables * numberOfVariables];
   double* BnPlusIdSmax = new double[numberOfVariables * numberOfVariables];

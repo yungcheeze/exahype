@@ -26,6 +26,8 @@ import Backend
 from MatmulConfig import MatmulConfig
 import FunctionSignatures
 import Utils
+import os
+from jinja2 import Template
 
 class VolumeIntegralGenerator:
     m_config = {}
@@ -36,60 +38,46 @@ class VolumeIntegralGenerator:
     # name of generated output file
     m_filename = "volumeIntegral.cpp"
 
-    # total length
-    m_lduhLength = -1
 
 
     def __init__(self, i_config, i_numerics):
         self.m_config = i_config
         self.m_type   = i_numerics
 
-        # without padding
-        self.m_lduhLength = self.m_config['nVar']*(self.m_config['nDof']**self.m_config['nDim'])
-
 
     def generateCode(self):
-        self.__writeHeader()
-
+        dir = os.path.dirname(__file__)+'/'
+        context = {}
+        context['nDim'] = self.m_config['nDim']
+        context['nVar'] = self.m_config['nVar']
+        context['nVarPad'] = Backend.getSizeWithPadding(self.m_config['nVar'])
+        context['nDoF'] = self.m_config['nDof']
+        context['nDoFPad'] = Backend.getSizeWithPadding(self.m_config['nDof'])
+    
         if(self.m_type == 'linear'):
-            self.__generateLinear()
+            pass
         else:
-            self.__generateNonlinear()
-
-        # write missing closing bracket
-        l_sourceFile = open(self.m_filename, 'a')
-        l_sourceFile.write('}')
-        l_sourceFile.close()
-
-
-    def __writeHeader(self):
-        l_description = '// Solve the volume integral \n\n'
-
-        if(self.m_type == 'linear'):
-            l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n\n'
-        else:
-            l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                    \
-                                 '#include "kernels/aderdg/optimised/DGMatrices.h"\n'                 \
-                                 '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n'    \
-                                 '#include <cstring>\n'                                               \
-                                 '#include "asm_volumeIntegral.c"\n\n'
-
-        l_functionSignature = FunctionSignatures.getVolumeIntegralSignature()+" {\n"
-
-        l_sourceFile = open(self.m_filename, 'a')
-        l_sourceFile.write(l_description)
-        l_sourceFile.write(l_includeStatement)
-        l_sourceFile.write(l_functionSignature)
-        l_sourceFile.close()
+            self.__generateNonlinearGemms()
+            with open(dir+'templates/volumeIntegralNonLinear.template', 'r') as tmp:
+                template = Template(tmp.read())
+                context['gemm_x'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_x'
+                context['gemm_y'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_y'
+                context['gemm_z'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_z'
+                context['lFhi_padY'] = Backend.getSizeWithPadding(self.m_config['nVar']) \
+                                 * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
+                context['lFhi_padZ'] = 2* Backend.getSizeWithPadding(self.m_config['nVar']) \
+                                 * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])                 
+                context['i_seq'] = range(0,self.m_config['nDof'])
+                if(self.m_config['nDim'] >= 3):
+                    context['j_seq'] = range(0,self.m_config['nDof'])
+                else:
+                    context['j_seq'] = [0]
+                
+                with open(dir+self.m_filename, 'w') as out:
+                    out.write(template.render(context))
 
 
-    def __generateLinear(self):
-        pass
-
-
-    def __generateNonlinear(self):
-        l_sourceFile = open(self.m_filename, 'a')
-
+    def __generateNonlinearGemms(self):
         # Compute
         # (1) lduh(:,:,j,k) = lduh(:,:,j,k) + MATMUL( lFhi_x(:,:,j,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(1)
         # (2) lduh(:,i,:,k) = lduh(:,i,:,k) + MATMUL( lFhi_y(:,:,i,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(2)
@@ -97,7 +85,6 @@ class VolumeIntegralGenerator:
 
         # define a sequence of matmul configs
         l_matmulList = []
-
 
         #-----------------------------
         # implementation file
@@ -192,86 +179,6 @@ class VolumeIntegralGenerator:
 
         Backend.generateAssemblerCode("asm_"+self.m_filename, l_matmulList)
 
-
-        #-----------------------------
-        # driver file
-        #-----------------------------
-
-        # size of the padded system matrix
-        l_nElems = Backend.getSizeWithPadding(self.m_config['nDof']) * self.m_config['nDof']
-
-        # size of tensor slice used in matmul
-        l_sliceSize = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
-
-        # The function signature specifies lFhi = [lFhi_x | lFhi_y | lFhi_z].
-        l_fluxDofSize = Backend.getSizeWithPadding(self.m_config['nVar']) \
-                         * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
-        l_baseAddr_lFhi_x = 0
-        l_baseAddr_lFhi_y = 1*l_fluxDofSize
-        l_baseAddr_lFhi_z = 2*l_fluxDofSize
-
-        # init lduh
-        # Needed since we process the x-, y- and z-direction simulateously and cannot set a
-        # beta parameter to zero. Tuning potential for nDim == 2
-        l_sourceFile.write("  memset(lduh, 0, sizeof(lduh)*"+str(self.m_lduhLength)+");\n\n")
-
-        l_sourceFile.write("  // Assume equispaced mesh, dx[0] == dx[1] == dx[2]\n")
-
-        if(self.m_config['nDim'] >= 3):
-            kmax = self.m_config['nDof']
-        else:
-            kmax = 1
-
-
-        # i-th combination of weigths
-        i = 0
-
-        # unroll outer loop
-        for k in range(0, kmax):
-            for j in range(0, self.m_config['nDof']):
-                l_dscalCode = Utils.generateDSCAL("weights2["+str(i)+"]/dx[0]",
-                                                "Kxi_T", 
-                                                "s_m", 
-                                                l_nElems)
-                l_sourceFile.write(l_dscalCode+"\n")
-
-                # x-direction
-                l_startAddr_lduh =   k * self.m_config['nVar']*(self.m_config['nDof']**2) \
-                                + j * self.m_config['nVar']*self.m_config['nDof']
-                l_startAddr_lFhi_x =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2) \
-                                    + j * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
-                l_sourceFile.write(
-                    "    "+l_matmul_x.baseroutinename
-                        +"(&lFhi["+str(l_baseAddr_lFhi_x + l_startAddr_lFhi_x)+"],"\
-                        "&s_m[0],"\
-                        "&lduh["+str(l_startAddr_lduh)+"]);\n")
-
-                # y-direction
-                l_startAddr_lduh =   k * self.m_config['nVar']*(self.m_config['nDof']**2) \
-                                + j * self.m_config['nVar']
-                l_startAddr_lFhi_y =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2) \
-                                    + j * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
-                l_sourceFile.write(
-                    "    "+l_matmul_y.baseroutinename
-                        +"(&lFhi["+str(l_baseAddr_lFhi_y + l_startAddr_lFhi_y)+"],"\
-                        "&s_m[0],"\
-                        "&lduh["+str(l_startAddr_lduh)+"]);\n")
-
-                if(self.m_config['nDim'] >= 3):
-                    # z-direction
-                    l_startAddr_lduh =   k * self.m_config['nVar']*self.m_config['nDof'] \
-                                    + j * self.m_config['nVar']
-                    l_startAddr_lFhi_z =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2) \
-                                        + j * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
-                    l_sourceFile.write("    "+l_matmul_z.baseroutinename
-                                            +"(&lFhi["+str(l_baseAddr_lFhi_z + l_startAddr_lFhi_z)+"],"\
-                                            "&s_m[0],"\
-                                            "&lduh["+str(l_startAddr_lduh)+"]);\n")
-
-                l_sourceFile.write("\n")
-
-                # next combination of weights
-                i = i+1
 
 
 

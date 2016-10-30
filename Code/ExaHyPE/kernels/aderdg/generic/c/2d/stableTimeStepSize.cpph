@@ -28,13 +28,14 @@
 // using std::endl;
 // using std::cout;
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+template <typename SolverType>
 double kernels::aderdg::generic::c::stableTimeStepSize(
+    SolverType& solver,
     const double* const luh,
     double* lambda,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const int numberOfVariables, const int basisSize) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const double PNPM[10] = {1.0,   0.33,  0.17, 0.1,  0.069,
                            0.045, 0.038, 0.03, 0.02, 0.015};
 
@@ -46,7 +47,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
 
       double denominator = 0.0;
       for (int d = 0; d < DIMENSIONS; d++) {
-        PDEEigenvalues(&luh[dofStartIndex], d, lambda);
+        solver.eigenvalues(&luh[dofStartIndex], d, lambda);
 
         double maxEigenvalue = 0.0;
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {

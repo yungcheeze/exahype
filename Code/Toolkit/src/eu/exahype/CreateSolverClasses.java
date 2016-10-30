@@ -116,7 +116,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
 
     String  kernel             = node.getKernel().toString().trim();
-    boolean isLinear           = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("linear");
+    boolean isLinear           = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("::linear");
+    String generalKernel       = kernel.substring(0, kernel.lastIndexOf("::"));
     int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
     int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
     int     order              = Integer.parseInt(node.getOrder().toString().trim());
@@ -134,25 +135,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
     }
-    else if (isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
-    }
-    else if (isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
-    }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
         numberOfParameters, order, hasConstants);
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants );
-    }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
+    else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
+      solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
+        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
@@ -201,29 +190,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         System.out.println(
             "create user implementation template of solver " + solverName + " ... please complete");
         userImplementationWriter.close();
-      }
-
-      if (isFortran) {
-        if (userTypesDefFile.exists()) {
-          System.out.println("create typesDef ...  does exist already. Is overwritten");
-        }
-        java.io.BufferedWriter typesDefWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(userTypesDefFile));
-        solver.writeTypesDef(typesDefWriter, solverName, _projectName);
-        System.out.println("create typesDef of solver " + solverName + " ... ok");
-        typesDefWriter.close();
-
-        if (userPDEFile.exists()) {
-          System.out.println("user's PDE file of solver " + solverName
-              + " ... does exist already. Is not overwritten");
-        } else {
-          java.io.BufferedWriter userPDEWriter =
-              new java.io.BufferedWriter(new java.io.FileWriter(userPDEFile));
-          solver.writeUserPDE(userPDEWriter, solverName, _projectName);
-          System.out
-              .println("create user PDE template of solver " + solverName + " ... please complete");
-          userPDEWriter.close();
-        }
       }
 
       if (generatedImplementationFile.exists()) {
@@ -347,28 +313,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         userImplementationWriter.close();
       }
 
-      if (isFortran) {
-        if (userTypesDefFile.exists()) {
-          System.out.println("create typesDef ...  does exist already. Is overwritten");
-        }
-        java.io.BufferedWriter typesDefWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(userTypesDefFile));
-        solver.writeTypesDef(typesDefWriter, solverName, _projectName);
-        System.out.println("create typesDef of solver " + solverName + " ... ok");
-        typesDefWriter.close();
-
-        if (userPDEFile.exists()) {
-          System.out.println("user's PDE file of solver " + solverName
-              + " ... does exist already. Is not overwritten");
-        } else {
-          java.io.BufferedWriter userPDEWriter =
-              new java.io.BufferedWriter(new java.io.FileWriter(userPDEFile));
-          solver.writeUserPDE(userPDEWriter, solverName, _projectName);
-          System.out
-              .println("create user PDE template of solver " + solverName + " ... please complete");
-          userPDEWriter.close();
-        }
-      }
 
       if (generatedImplementationFile.exists()) {
         System.out.println("generated implementation file of solver " + solverName

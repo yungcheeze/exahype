@@ -187,8 +187,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   @Override
   public void outAProject(AProject node) {
-    // @todo Vasco
-    // can we evaluate _requiresFortran here?
 
     try {
       _writer.write("\n\n");

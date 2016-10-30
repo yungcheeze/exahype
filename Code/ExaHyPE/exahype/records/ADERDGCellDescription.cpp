@@ -131,13 +131,13 @@
    
    
    std::string exahype::records::ADERDGCellDescription::toString() const {
-     std::ostringstream stringstr;
+      std::ostringstream stringstr;
       toString(stringstr);
       return stringstr.str();
    }
    
    void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const {
-      out << "(";
+      out << "("; 
       out << "solverNumber:" << getSolverNumber();
       out << ",";
       out << "riemannSolvePerformed:[";

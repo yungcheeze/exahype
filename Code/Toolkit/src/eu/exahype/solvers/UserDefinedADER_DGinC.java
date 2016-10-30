@@ -17,7 +17,9 @@ public class UserDefinedADER_DGinC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants);
+     int dimensions_placeholder = -1; // fixme: We don't have dimensions here.
+     int numberOfUnknowns_placeholder = -1; // fixme with the same reason.
+     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, dimensions_placeholder, numberOfUnknowns_placeholder, _numberOfParameters);
 
     writer.write("};\n\n\n");
   }

@@ -26,7 +26,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants);
+     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
 
     writer.write("  private:\n");
     if (_dimensions == 2) {

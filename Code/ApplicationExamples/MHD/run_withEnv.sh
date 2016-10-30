@@ -17,6 +17,9 @@ echo
 # make sure stuff is there which is needed by the exahype binary
 mkdir -p output
 
+# delete old output
+rm *vtk *log-file
+
 # run the stuff
 time $EXABINARY $EXACONF
 

@@ -23,6 +23,11 @@ namespace exahype {
 namespace tests {
 namespace c {
 
+static const int kNumberOfParameters = 3;
+static const int kNumberOfVariables = 9 + kNumberOfParameters;
+static const int kN = 4;
+static const int kBasisSize = kN + 1;
+
 class ElasticityKernelTest : public tarch::tests::TestCase {
  public:
   ElasticityKernelTest();
@@ -47,17 +52,22 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
   //  void testFaceUnknownsProjection();
   //  void testEquidistantGridProjection();
 
-  static void testFlux(const double* const Q, double** F);
+ public:
+  static int getNumberOfVariables() { return kNumberOfVariables; }
+  static int getNumberOfParameters() { return kNumberOfParameters; }
+  static int getNodesPerCoordinateAxis() { return kN; }
 
-  static void testSource(const double* Q, double* S);
+  static void flux(const double* const Q, double** F);
 
-  static void testEigenvalues(const double* const Q,
+  static void source(const double* Q, double* S);
+
+  static void eigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);
 
-  static void testNCP(const double* const Q, const double* const gradQ,
+  static void ncp(const double* const Q, const double* const gradQ,
                       double* BgradQ);
 
-  static void testMatrixB(const double* const Q, const int normalNonZero,
+  static void matrixb(const double* const Q, const int normalNonZero,
                           double* Bn);
 
   const double eps = 1.0e-9;  // for quick adaption of the test cases (say,

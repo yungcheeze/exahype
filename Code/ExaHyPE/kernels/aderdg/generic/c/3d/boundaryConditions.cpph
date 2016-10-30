@@ -20,8 +20,10 @@
 
 #if DIMENSIONS == 3
 
-template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
-void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
+template <typename SolverType>
+void kernels::aderdg::generic::c::boundaryConditions(
+                        SolverType& solver,
+                        double* fluxOut,
                         double* stateOut,
                         const double* const fluxIn,
                         const double* const stateIn,
@@ -29,8 +31,9 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
                         const tarch::la::Vector<DIMENSIONS,double>& cellSize,
                         const double t,const double dt,
                         const int faceIndex,
-                        const int normalNonZero,
-                        const int numberOfVariables, const int basisSize) {
+                        const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   // Compute if face is "left" (0,2,4) or "right" face (1,2,3).
   const int f = faceIndex-2*normalNonZero;
 
@@ -62,7 +65,7 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
     x[d2] = cellCentre[d2] + cellSize[d2] * (kernels::gaussLegendreNodes[basisSize-1][jj] - 0.5);
     for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
       x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::gaussLegendreNodes[basisSize-1][ii] - 0.5); 
-      PDEBoundaryConditions(x,t,faceIndex,normalNonZero,
+      solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
           &fluxIn[nidx2(ii,jj)], &stateIn[nidx2(ii,jj)],
           &fluxOut[nidx2(ii,jj)],&stateOut[nidx2(ii,jj)]);
 

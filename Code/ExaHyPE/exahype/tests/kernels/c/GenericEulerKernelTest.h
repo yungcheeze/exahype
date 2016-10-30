@@ -24,6 +24,7 @@ namespace tests {
 namespace c {
 
 class GenericEulerKernelTest : public tarch::tests::TestCase {
+	
  public:
   GenericEulerKernelTest();
   virtual ~GenericEulerKernelTest();
@@ -32,6 +33,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 
  private:
   static tarch::logging::Log _log;
+  
 
   void testPDEFluxes();
   void testSpaceTimePredictorLinear();
@@ -47,22 +49,28 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testFaceUnknownsProjection();
   void testEquidistantGridProjection();
 
-  static void testFlux(const double* const Q, double** F);
+ public:
+  static int getNumberOfVariables() { return 5; }
+  static int getNumberOfParameters() { return 0; }
+  static int getNodesPerCoordinateAxis() { return 3+1; }
 
-  static void testSource(const double* Q, double* S);
+  static void flux(const double* const Q, double** F);
 
-  static void testEigenvalues(const double* const Q,
+  static void source(const double* Q, double* S);
+
+  static void eigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);
 
-  static void testNCP(const double* const Q, const double* const gradQ,
+  static void ncp(const double* const Q, const double* const gradQ,
                       double* BgradQ);
 
-  static void testMatrixB(const double* const Q, const int normalNonZero,
+  static void matrixb(const double* const Q, const int normalNonZero,
                           double* Bn);
 
   const double eps = 1.0e-10;  // for quick adaption of the test cases (say,
                                // switch to single precision)
 };
+
 
 }  // namespace c
 }  // namespace tests

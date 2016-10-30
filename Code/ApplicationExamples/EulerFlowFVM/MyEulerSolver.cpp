@@ -2,9 +2,13 @@
 
 
 
-EulerFVM::MyEulerSolver::MyEulerSolver(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::FiniteVolumesSolver("MyEulerSolver", 5, 0, cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+//EulerFVM::MyEulerSolver::MyEulerSolver(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
+//  exahype::solvers::FiniteVolumesSolver("MyEulerSolver", 5, 0, cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
+//}
+
+void EulerFVM::MyEulerSolver::init() {
+  // empty
 }
 
 

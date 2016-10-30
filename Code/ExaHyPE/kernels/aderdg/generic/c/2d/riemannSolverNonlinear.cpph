@@ -25,23 +25,24 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-void riemannSolverNonlinear(double* FL, double* FR,
+template <typename SolverType>
+void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double* const QL,
                             const double* const QR,
                             double*  tempFaceUnknownsArray,
                             double** tempStateSizedVectors,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
-                            const int normalNonZero,
-                            const int numberOfVariables,
-                            const int numberOfParameters, const int basisSize) {
+                            const int normalNonZero) {
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
+  const int basisSize = solver.getNodesPerCoordinateAxis();
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
   double* QavL = tempStateSizedVectors[0];
   double* QavR = tempStateSizedVectors[1];
+  double* Qavg = new double[numberOfVariables];
   {
     idx2 idx_QLR(basisSize, numberOfVariables);
     std::memset(QavL, 0, numberOfVariables * sizeof(double));
@@ -58,8 +59,12 @@ void riemannSolverNonlinear(double* FL, double* FR,
 
   double* LL = tempStateSizedVectors[2];
   double* LR = tempStateSizedVectors[3];
-  PDEEigenvalues(QavL, normalNonZero, LL);
-  PDEEigenvalues(QavR, normalNonZero, LR);
+  solver.eigenvalues(QavL, normalNonZero, LL);
+  solver.eigenvalues(QavR, normalNonZero, LR);
+  
+  for(int k=0; k < numberOfVariables; k++) {
+     Qavg[k] = (QavL[k] + QavR[k]) / 2;
+  }
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
@@ -75,22 +80,46 @@ void riemannSolverNonlinear(double* FL, double* FR,
       std::max_element(LR, LR + numberOfVariables - numberOfParameters);
   const double smax = std::max(*smax_L, *smax_R);
 
+  double* Bn = new double[numberOfVariables * numberOfVariables]();
+  double* ncp = new double[numberOfVariables]();
+  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  solver.matrixb(Qavg, normalNonZero, Bn);
+
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
+  
+  //printf("dt = %f\n", dt); // extract dt
 
   {
     idx2 idx_FQLR(basisSize, numberOfVariables);
     for (int j = 0; j < basisSize; j++) {
+      // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
+      for(int l=0; l < numberOfVariables; l++) {
+	      ncp[l] = 0;
+	      for(int m=0; m < numberOfVariables; m++) {
+		     ncp[l] += Bn[idx_Bn(l, m)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
+	      }
+	     // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_FQLR(j, l)]);
+	     // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_FQLR(j, l)]);
+	     // printf("ncp[%d]=%.20e\n", l, ncp[l]);
+      }
+
       // Avoid diffusion of parameters
       for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
         FL[idx_FQLR(j, k)] =
             0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
             0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
-        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)];
+        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] - 0.5 * ncp[k];
+        FL[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] + 0.5 * ncp[k];
+        //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_FQLR(j, k)], QR[idx_FQLR(j, k)]);
       }
     }
   }
+  
+  delete[] Qavg;
+  delete[] Bn;
+  delete[] ncp;
 }
 
 }  // namespace c
