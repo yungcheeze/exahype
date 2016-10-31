@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   28/10/2016 16:46
+    * @date   31/10/2016 17:10
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -53,6 +53,8 @@ namespace exahype {
             int _solverNumber;
             double _timeStepSize;
             double _timeStamp;
+            int _solution;
+            int _oldSolution;
             int _solution;
             int _level;
             #ifdef UseManualAlignment
@@ -92,7 +94,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -151,6 +153,46 @@ namespace exahype {
  #endif 
  {
                _timeStamp = timeStamp;
+            }
+            
+            
+            
+            inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _solution;
+            }
+            
+            
+            
+            inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _solution = solution;
+            }
+            
+            
+            
+            inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _oldSolution;
+            }
+            
+            
+            
+            inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _oldSolution = oldSolution;
             }
             
             
@@ -584,7 +626,7 @@ namespace exahype {
          /**
           * Generated
           */
-         FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+         FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
          
          /**
           * Generated
@@ -648,6 +690,46 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._timeStamp = timeStamp;
+         }
+         
+         
+         
+         inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._solution;
+         }
+         
+         
+         
+         inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._solution = solution;
+         }
+         
+         
+         
+         inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._oldSolution;
+         }
+         
+         
+         
+         inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._oldSolution = oldSolution;
          }
          
          
@@ -1308,7 +1390,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   28/10/2016 16:46
+             * @date   31/10/2016 17:10
              */
             class exahype::records::FiniteVolumesCellDescriptionPacked { 
                
@@ -1322,6 +1404,8 @@ namespace exahype {
                      int _solverNumber;
                      double _timeStepSize;
                      double _timeStamp;
+                     int _solution;
+                     int _oldSolution;
                      int _solution;
                      int _level;
                      tarch::la::Vector<DIMENSIONS,double> _offset;
@@ -1341,7 +1425,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                     PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                      
                      
                      inline int getSolverNumber() const 
@@ -1400,6 +1484,46 @@ namespace exahype {
  #endif 
  {
                         _timeStamp = timeStamp;
+                     }
+                     
+                     
+                     
+                     inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _solution;
+                     }
+                     
+                     
+                     
+                     inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _solution = solution;
+                     }
+                     
+                     
+                     
+                     inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _oldSolution;
+                     }
+                     
+                     
+                     
+                     inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _oldSolution = oldSolution;
                      }
                      
                      
@@ -1833,7 +1957,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                  FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                   
                   /**
                    * Generated
@@ -1897,6 +2021,46 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._timeStamp = timeStamp;
+                  }
+                  
+                  
+                  
+                  inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._solution;
+                  }
+                  
+                  
+                  
+                  inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._solution = solution;
+                  }
+                  
+                  
+                  
+                  inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._oldSolution;
+                  }
+                  
+                  
+                  
+                  inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._oldSolution = oldSolution;
                   }
                   
                   
@@ -2554,7 +2718,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   28/10/2016 16:46
+                      * @date   31/10/2016 17:10
                       */
                      class exahype::records::FiniteVolumesCellDescription { 
                         
@@ -2574,6 +2738,8 @@ namespace exahype {
                               int _solverNumber;
                               double _timeStepSize;
                               double _timeStamp;
+                              int _solution;
+                              int _oldSolution;
                               int _solution;
                               int _level;
                               #ifdef UseManualAlignment
@@ -2607,7 +2773,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                              PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                               
                               
                               inline int getSolverNumber() const 
@@ -2666,6 +2832,46 @@ namespace exahype {
  #endif 
  {
                                  _timeStamp = timeStamp;
+                              }
+                              
+                              
+                              
+                              inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _solution;
+                              }
+                              
+                              
+                              
+                              inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _solution = solution;
+                              }
+                              
+                              
+                              
+                              inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _oldSolution;
+                              }
+                              
+                              
+                              
+                              inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _oldSolution = oldSolution;
                               }
                               
                               
@@ -3021,7 +3227,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                           FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                            
                            /**
                             * Generated
@@ -3085,6 +3291,46 @@ namespace exahype {
  #endif 
  {
                               _persistentRecords._timeStamp = timeStamp;
+                           }
+                           
+                           
+                           
+                           inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._solution;
+                           }
+                           
+                           
+                           
+                           inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._solution = solution;
+                           }
+                           
+                           
+                           
+                           inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._oldSolution;
+                           }
+                           
+                           
+                           
+                           inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._oldSolution = oldSolution;
                            }
                            
                            
@@ -3641,7 +3887,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   28/10/2016 16:46
+                               * @date   31/10/2016 17:10
                                */
                               class exahype::records::FiniteVolumesCellDescriptionPacked { 
                                  
@@ -3655,6 +3901,8 @@ namespace exahype {
                                        int _solverNumber;
                                        double _timeStepSize;
                                        double _timeStamp;
+                                       int _solution;
+                                       int _oldSolution;
                                        int _solution;
                                        int _level;
                                        tarch::la::Vector<DIMENSIONS,double> _offset;
@@ -3672,7 +3920,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                       PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -3731,6 +3979,46 @@ namespace exahype {
  #endif 
  {
                                           _timeStamp = timeStamp;
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _solution;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _solution = solution;
+                                       }
+                                       
+                                       
+                                       
+                                       inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _oldSolution;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _oldSolution = oldSolution;
                                        }
                                        
                                        
@@ -4086,7 +4374,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                    FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& oldSolution, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                                     
                                     /**
                                      * Generated
@@ -4150,6 +4438,46 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._timeStamp = timeStamp;
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._solution;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setSolution(const int& solution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._solution = solution;
+                                    }
+                                    
+                                    
+                                    
+                                    inline int getOldSolution() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._oldSolution;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setOldSolution(const int& oldSolution) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._oldSolution = oldSolution;
                                     }
                                     
                                     

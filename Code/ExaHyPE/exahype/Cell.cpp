@@ -167,7 +167,7 @@ void exahype::Cell::addNewCellDescription(
 */
     const int level, const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
+    const tarch::la::Vector<DIMENSIONS, double>& offset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -195,13 +195,14 @@ void exahype::Cell::addNewCellDescription(
 
   // Pass geometry information to the cellDescription description
   newCellDescription.setSize(size);
-  newCellDescription.setOffset(cellCentre);
+  newCellDescription.setOffset(offset);
 
   // Initialise helper variables
 //  newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
 
   // Default field data indices
   newCellDescription.setSolution(-1);
+  newCellDescription.setOldSolution(-1);
 
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
@@ -217,7 +218,7 @@ void exahype::Cell::addNewCellDescription(
   const int                                     level,
   const int                                     parentIndex,
   const tarch::la::Vector<DIMENSIONS, double>&  size,
-  const tarch::la::Vector<DIMENSIONS, double>&  cellCentre) {
+  const tarch::la::Vector<DIMENSIONS, double>&  offset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -257,7 +258,7 @@ void exahype::Cell::addNewCellDescription(
 
   // Pass geometry information to the cellDescription description
   newCellDescription.setSize(size);
-  newCellDescription.setOffset(cellCentre);
+  newCellDescription.setOffset(offset);
 
   // Initialise MPI helper variables
   #ifdef Parallel

@@ -223,13 +223,13 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         tarch::multicore::Lock lock(_heapSemaphore);
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
-//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getOldSolution()));
 
-//        DataHeap::getInstance().deleteData(cellDescription.getUpdate());
         DataHeap::getInstance().deleteData(cellDescription.getSolution());
+        DataHeap::getInstance().deleteData(cellDescription.getOldSolution());
 
         cellDescription.setSolution(-1);
-//        cellDescription.setUpdate(-1);
+        cellDescription.setOldSolution(-1)
         }
         break;
       default:
@@ -264,16 +264,15 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
   switch (cellDescription.getType()) {
     case CellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         // Allocate volume DoF for limiter
         const int unknownsPerCell = getUnknownsPerCell();
-//        cellDescription.setUpdate(
-//            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
 
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
 
         cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
+        cellDescription.setOldSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::DoNotUseAnyRecycledEntry));
       }
       break;
     default:
@@ -400,23 +399,26 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
       VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
       fineGridVerticesEnumerator.toString());
 
-  double* finiteVolumeSolutions[THREE_POWER_D];
+  double* solutions[THREE_POWER_D];
   for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
     if (Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
       exahype::records::FiniteVolumesCellDescription& pNeighbour =
           getCellDescription(neighbourCellDescriptionsIndices[nScalar],element);
-      finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
+      solutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
     } else {
-      finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+      solutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     }
   }
 
-  double* finiteVolumeSolution  = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  assertion(!std::isnan(finiteVolumeSolution[0]));
+  double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+  double* oldSolution = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
+  for (int i=0; i<getUnknownsPerCell(); i++) {
+    assertion3(std::isfinite(solution[i]),cellDescription.toString(),"solution[i]",i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   double admissibleTimeStepSize=0;
-  solutionUpdate(finiteVolumeSolutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
-
+  std::memcpy(oldSolution,solution,getUnknownsPerCell()*sizeof(double));
+  solutionUpdate(solutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
@@ -427,15 +429,29 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
       cellDescription.getSize(),
       cellDescription.getTimeStamp())) {
     solutionAdjustment(
-        finiteVolumeSolution,
+        solution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
         cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
   }
 
   for (int i=0; i<getUnknownsPerCell(); i++) {
-    assertion3(std::isfinite(finiteVolumeSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
+    assertion3(std::isfinite(solution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::rollbackSolution(
+    const int cellDescriptionsIndex,
+    const int element,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  // Simply swap the array pointers.
+  const int oldSolution = cellDescription.getOldSolution();
+  cellDescription.setOldSolution(cellDescription.getSolution());
+  cellDescription.setSolution(oldSolution);
 }
 
 void exahype::solvers::FiniteVolumesSolver::preProcess(
