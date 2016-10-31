@@ -200,7 +200,8 @@ void exahype::mappings::Prediction::endIteration(
   deleteTemporaryVariables();
 }
 
-void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(exahype::solvers::ADERDGSolver* solver,
+void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
+                                        exahype::solvers::ADERDGSolver* solver,
                                         exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
                                         exahype::Vertex* const fineGridVertices,
                                         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
@@ -255,18 +256,16 @@ void exahype::mappings::Prediction::enterCell(
             cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
         performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-        }
-        break;
+        } break;
       case exahype::solvers::Solver::Type::LimitedADERDG: {
         exahype::solvers::LimitedADERDGSolver* solver = static_cast<exahype::solvers::LimitedADERDGSolver*>(
             exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
         solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
         exahype::Cell::resetNeighbourMergeHelperVariables(
-            cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): This method will be also necessary for the FVM solver.
 
-        performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-        }
-        break;
+        performPredictionAndVolumeIntegral(solver->_solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+        } break;
       default:
         break;
       }
