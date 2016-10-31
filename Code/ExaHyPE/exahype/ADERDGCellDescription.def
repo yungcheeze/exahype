@@ -386,25 +386,18 @@ class exahype::records::ADERDGCellDescription {
      * status spreading stage. It indicates that the cell
      * is direct neighbour to the neighbour of a troubled cell. 
      */
-    NeighbourIsNeighbourOfTroubledCell,
-    
-    /**
-     * Has the same meaning as NeighbourIsTroubledCell but
-     * further indicates that this is up-to-date information.
-     */
-    NewlyNeighbourIsTroubledCell,
-    
-    /**
-     * Has the same meaning as NewlyNeighbourIsNeighbourOfTroubledCell but
-     * further indicates that this is up-to-date information.
-     */
-    NewlyNeighbourIsNeighbourOfTroubledCell
+    NeighbourIsNeighbourOfTroubledCell
   };
+  
+  /**
+   * The cell descriptions limiter status.
+   */
+  parallelise persistent LimiterStatus limiterStatus;
   
   /**
    * Here, we store the results of the limiter status merging.
    */
-  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent LimiterStatus mergedLimiterStatus[DIMENSIONS_TIMES_TWO];
 
   enum CompressionState {
     Uncompressed,

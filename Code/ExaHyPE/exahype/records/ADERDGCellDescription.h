@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   28/10/2016 16:46
+    * @date   31/10/2016 17:10
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum LimiterStatus {
-            Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3, NewlyNeighbourIsTroubledCell = 4, NewlyNeighbourIsNeighbourOfTroubledCell = 5
+            Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
          };
          
          enum RefinementEvent {
@@ -110,10 +110,11 @@ namespace exahype {
             int _fluctuationCompressed;
             int _solutionMin;
             int _solutionMax;
+            LimiterStatus _limiterStatus;
             #ifdef UseManualAlignment
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
             #endif
             CompressionState _compressionState;
             int _bytesPerDoFInSolution;
@@ -128,7 +129,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -961,31 +962,22 @@ namespace exahype {
             
             
             
-            /**
-             * Generated and optimized
-             * 
-             * If you realise a for loop using exclusively arrays (vectors) and compile 
-             * with -DUseManualAlignment you may add 
-             * \code
-             #pragma vector aligned
-             #pragma simd
-             \endcode to this for loop to enforce your compiler to use SSE/AVX.
-             * 
-             * The alignment is tied to the unpacked records, i.e. for packed class
-             * variants the machine's natural alignment is switched off to recude the  
-             * memory footprint. Do not use any SSE/AVX operations or 
-             * vectorisation on the result for the packed variants, as the data is misaligned. 
-             * If you rely on vectorisation, convert the underlying record 
-             * into the unpacked version first. 
-             * 
-             * @see convert()
-             */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+            inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                return _limiterStatus;
+            }
+            
+            
+            
+            inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _limiterStatus = limiterStatus;
             }
             
             
@@ -1009,12 +1001,41 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _limiterStatus = (limiterStatus);
+               return _mergedLimiterStatus;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _mergedLimiterStatus = (mergedLimiterStatus);
             }
             
             
@@ -1138,7 +1159,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
          
          /**
           * Generated
@@ -2130,26 +2151,7 @@ namespace exahype {
          
          
          
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+         inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2159,6 +2161,16 @@ namespace exahype {
          
          
          
+         inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._limiterStatus = limiterStatus;
+         }
+         
+         
+         
          /**
           * Generated and optimized
           * 
@@ -2178,37 +2190,66 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._limiterStatus = (limiterStatus);
+            return _persistentRecords._mergedLimiterStatus;
          }
          
          
          
-         inline exahype::records::ADERDGCellDescription::LimiterStatus getLimiterStatus(int elementIndex) const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
+         }
+         
+         
+         
+         inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._limiterStatus[elementIndex];
+            return _persistentRecords._mergedLimiterStatus[elementIndex];
             
          }
          
          
          
-         inline void setLimiterStatus(int elementIndex, const LimiterStatus& limiterStatus) 
+         inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
+            _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
             
          }
          
@@ -2426,7 +2467,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   28/10/2016 16:46
+             * @date   31/10/2016 17:10
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -2467,7 +2508,8 @@ namespace exahype {
                      int _fluctuationCompressed;
                      int _solutionMin;
                      int _solutionMax;
-                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+                     LimiterStatus _limiterStatus;
+                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
                      
                      /** mapping of records:
                      || Member 	|| startbit 	|| length
@@ -2493,7 +2535,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                      
                      
                      inline int getSolverNumber() const 
@@ -3366,31 +3408,22 @@ namespace exahype {
                      
                      
                      
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                     inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         return _limiterStatus;
+                     }
+                     
+                     
+                     
+                     inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _limiterStatus = limiterStatus;
                      }
                      
                      
@@ -3414,12 +3447,41 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _limiterStatus = (limiterStatus);
+                        return _mergedLimiterStatus;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _mergedLimiterStatus = (mergedLimiterStatus);
                      }
                      
                      
@@ -3592,7 +3654,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                   
                   /**
                    * Generated
@@ -4638,26 +4700,7 @@ namespace exahype {
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                  inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4667,6 +4710,16 @@ namespace exahype {
                   
                   
                   
+                  inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._limiterStatus = limiterStatus;
+                  }
+                  
+                  
+                  
                   /**
                    * Generated and optimized
                    * 
@@ -4686,37 +4739,66 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._limiterStatus = (limiterStatus);
+                     return _persistentRecords._mergedLimiterStatus;
                   }
                   
                   
                   
-                  inline exahype::records::ADERDGCellDescription::LimiterStatus getLimiterStatus(int elementIndex) const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
+                  }
+                  
+                  
+                  
+                  inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._limiterStatus[elementIndex];
+                     return _persistentRecords._mergedLimiterStatus[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setLimiterStatus(int elementIndex, const LimiterStatus& limiterStatus) 
+                  inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
+                     _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
                      
                   }
                   
@@ -4980,7 +5062,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   28/10/2016 16:46
+                      * @date   31/10/2016 17:10
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -4993,7 +5075,7 @@ namespace exahype {
                            };
                            
                            enum LimiterStatus {
-                              Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3, NewlyNeighbourIsTroubledCell = 4, NewlyNeighbourIsNeighbourOfTroubledCell = 5
+                              Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
                            };
                            
                            enum RefinementEvent {
@@ -5049,10 +5131,11 @@ namespace exahype {
                               int _fluctuationCompressed;
                               int _solutionMin;
                               int _solutionMax;
+                              LimiterStatus _limiterStatus;
                               #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus __attribute__((aligned(VectorisationAlignment)));
                               #else
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
                               #endif
                               CompressionState _compressionState;
                               int _bytesPerDoFInSolution;
@@ -5067,7 +5150,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                               
                               
                               inline int getSolverNumber() const 
@@ -5782,31 +5865,22 @@ namespace exahype {
                               
                               
                               
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                              inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                  return _limiterStatus;
+                              }
+                              
+                              
+                              
+                              inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _limiterStatus = limiterStatus;
                               }
                               
                               
@@ -5830,12 +5904,41 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _limiterStatus = (limiterStatus);
+                                 return _mergedLimiterStatus;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _mergedLimiterStatus = (mergedLimiterStatus);
                               }
                               
                               
@@ -5959,7 +6062,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                            
                            /**
                             * Generated
@@ -6807,26 +6910,7 @@ namespace exahype {
                            
                            
                            
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                           inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6836,6 +6920,16 @@ namespace exahype {
                            
                            
                            
+                           inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._limiterStatus = limiterStatus;
+                           }
+                           
+                           
+                           
                            /**
                             * Generated and optimized
                             * 
@@ -6855,37 +6949,66 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._limiterStatus = (limiterStatus);
+                              return _persistentRecords._mergedLimiterStatus;
                            }
                            
                            
                            
-                           inline exahype::records::ADERDGCellDescription::LimiterStatus getLimiterStatus(int elementIndex) const 
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
+                           }
+                           
+                           
+                           
+                           inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._limiterStatus[elementIndex];
+                              return _persistentRecords._mergedLimiterStatus[elementIndex];
                               
                            }
                            
                            
                            
-                           inline void setLimiterStatus(int elementIndex, const LimiterStatus& limiterStatus) 
+                           inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
+                              _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
                               
                            }
                            
@@ -7103,7 +7226,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   28/10/2016 16:46
+                               * @date   31/10/2016 17:10
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -7142,7 +7265,8 @@ namespace exahype {
                                        int _fluctuationCompressed;
                                        int _solutionMin;
                                        int _solutionMax;
-                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
+                                       LimiterStatus _limiterStatus;
+                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
                                        
                                        /** mapping of records:
                                        || Member 	|| startbit 	|| length
@@ -7166,7 +7290,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -7915,31 +8039,22 @@ namespace exahype {
                                        
                                        
                                        
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                                       inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                           return _limiterStatus;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _limiterStatus = limiterStatus;
                                        }
                                        
                                        
@@ -7963,12 +8078,41 @@ namespace exahype {
                                         * 
                                         * @see convert()
                                         */
-                                       inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          _limiterStatus = (limiterStatus);
+                                          return _mergedLimiterStatus;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _mergedLimiterStatus = (mergedLimiterStatus);
                                        }
                                        
                                        
@@ -8141,7 +8285,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                                     
                                     /**
                                      * Generated
@@ -9037,26 +9181,7 @@ namespace exahype {
                                     
                                     
                                     
-                                    /**
-                                     * Generated and optimized
-                                     * 
-                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                     * with -DUseManualAlignment you may add 
-                                     * \code
-                                     #pragma vector aligned
-                                     #pragma simd
-                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                     * 
-                                     * The alignment is tied to the unpacked records, i.e. for packed class
-                                     * variants the machine's natural alignment is switched off to recude the  
-                                     * memory footprint. Do not use any SSE/AVX operations or 
-                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                     * If you rely on vectorisation, convert the underlying record 
-                                     * into the unpacked version first. 
-                                     * 
-                                     * @see convert()
-                                     */
-                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
+                                    inline LimiterStatus getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9066,6 +9191,16 @@ namespace exahype {
                                     
                                     
                                     
+                                    inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._limiterStatus = limiterStatus;
+                                    }
+                                    
+                                    
+                                    
                                     /**
                                      * Generated and optimized
                                      * 
@@ -9085,37 +9220,66 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
+                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._limiterStatus = (limiterStatus);
+                                       return _persistentRecords._mergedLimiterStatus;
                                     }
                                     
                                     
                                     
-                                    inline exahype::records::ADERDGCellDescription::LimiterStatus getLimiterStatus(int elementIndex) const 
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
+                                    }
+                                    
+                                    
+                                    
+                                    inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       return _persistentRecords._limiterStatus[elementIndex];
+                                       return _persistentRecords._mergedLimiterStatus[elementIndex];
                                        
                                     }
                                     
                                     
                                     
-                                    inline void setLimiterStatus(int elementIndex, const LimiterStatus& limiterStatus) 
+                                    inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
+                                       _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
                                        
                                     }
                                     
