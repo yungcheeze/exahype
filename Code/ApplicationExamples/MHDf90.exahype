@@ -18,9 +18,9 @@ exahype-project  MHDSolver
 
   computational-domain
     dimension                = 3
-    width                    = 1.0, 1.0, 1.0
+    width                    = 1.0, 1.0, 0.2
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.25
+    end-time                 = 3.0
   end computational-domain
 
   solver ADER-DG MHDSolver
@@ -33,11 +33,35 @@ exahype-project  MHDSolver
     language           = Fortran
 
     plot vtk::Cartesian::vertices::ascii
-      variables= 9
-      time     = 0.0
-      repeat   = 0.025
-      output   = ./conserved
-      select   = {}
+      variables = 9
+      time      = 0.0
+      repeat    = 0.025
+      output    = ./conserved
+      select    = {}
+    end plot
+    
+    plot vtk::Cartesian::vertices::ascii
+      variables = 0
+      time      = 0.0
+      repeat    = 0.025
+      output    = ./output/global-integrals-fake-plotter
+      select    = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.025
+      output    = ./exact
+      select    = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.025
+      output    = ./error
+      select    = {}
     end plot
   end solver
 

@@ -7,7 +7,7 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 namespace MHDSolver{
-  class MHDSolver_Plotter1;
+  class MHDSolver_Plotter3;
 
   /**
    * Forward declaration
@@ -16,19 +16,12 @@ namespace MHDSolver{
 }
 
 
-#include "TimeSeriesReductions.h"
-#include "MHDSolver.h"
-static const int nVar = MHDSolver::MHDSolver::nVar; // shortcut
 
-class MHDSolver::MHDSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+
+class MHDSolver::MHDSolver_Plotter3: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  TimeSeriesReductions* conserved[nVar];
-  TimeSeriesReductions* primitives[nVar];
-  TimeSeriesReductions* errors[nVar];
-  TimeSeriesReductions* statistics;
-
-  MHDSolver_Plotter1(MHDSolver&  solver);
-  virtual ~MHDSolver_Plotter1();
+  MHDSolver_Plotter3(MHDSolver&  solver);
+  virtual ~MHDSolver_Plotter3();
   void startPlotting(double time) override;
   void finishPlotting() override;
   void mapQuantities(

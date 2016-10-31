@@ -2,6 +2,13 @@
 
 #include <memory>
 
+#include "InitialDataAdapter.h"
+#include "PDE.h"
+#include "kernels/GaussLegendreQuadrature.h"
+#include "kernels/KernelUtils.h" // matrix indexing
+#include <cstring> // memset
+
+
 // Fortran functions:
 extern "C" {
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
@@ -32,28 +39,30 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   // Number of variables    = 9 (#unknowns + #parameters)
 
 
-  // @todo Please implement
-  // fluxOut
-  fluxOut[0] = fluxIn[0];
-  fluxOut[1] = fluxIn[1];
-  fluxOut[2] = fluxIn[2];
-  fluxOut[3] = fluxIn[3];
-  fluxOut[4] = fluxIn[4];
-  fluxOut[5] = fluxIn[5];
-  fluxOut[6] = fluxIn[6];
-  fluxOut[7] = fluxIn[7];
-  fluxOut[8] = fluxIn[8];
-  // stateOut
-  // @todo Please implement
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
-  stateOut[4] = stateIn[4];
-  stateOut[5] = stateIn[5];
-  stateOut[6] = stateIn[6];
-  stateOut[7] = stateIn[7];
-  stateOut[8] = stateIn[8];
+  const int basisSize = order + 1;
+
+  double Qgp[nVar];
+  std::memset(stateOut, 0.0, nVar * sizeof(double));
+  std::memset(fluxOut, 0.0, nVar * sizeof(double));
+
+  double F[nDim * nVar]; // Fortran needs continous storage!
+  kernels::idx2 F_idx(nDim, nVar);
+
+  // Integrate solution in gauss points (Qgp) in time
+  for(int i=0; i < basisSize; i++)  { // i == time
+     const double weight = kernels::gaussLegendreWeights[order][i];
+     const double xi = kernels::gaussLegendreNodes[order][i];
+     double ti = t + xi * dt;
+
+     alfenwave_(x, Qgp, &ti);
+     pdeflux_(F, Qgp);
+     for(int m=0; m < nVar; m++) {
+	//if(m==checkm) printf("fluxOut[%d] += %.20e\n", m, weight * F[normalNonZero][m]);
+	stateOut[m] += weight * Qgp[m];
+        fluxOut[m] += weight * F[F_idx(normalNonZero, m)];
+     }
+  }
+  const int statem=6; // the interesting component
 }
 
 
