@@ -63,15 +63,15 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 //*** Helper functions ***
 //************************
 
-inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
-  double weight =
-  #if DIMENSIONS == 3
-  kernels::gaussLegendreWeights[order][z] *
-  #endif
-  kernels::gaussLegendreWeights[order][y] * kernels::gaussLegendreWeights[order][x];
-
-  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler might not able to optimise for the dt=0 case.
-}
+//inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
+//  double weight =
+//  #if DIMENSIONS == 3
+//  kernels::gaussLegendreWeights[order][z] *
+//  #endif
+//  kernels::gaussLegendreWeights[order][y] * kernels::gaussLegendreWeights[order][x];
+//
+//  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler might not able to optimise for the dt=0 case.
+//}
 
 inline int getBasisSizeLim(const int basisSize) {
   return 2*(basisSize-1)+1;

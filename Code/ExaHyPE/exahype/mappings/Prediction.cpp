@@ -199,6 +199,26 @@ void exahype::mappings::Prediction::endIteration(
     exahype::State& solverState) {
   deleteTemporaryVariables();
 }
+
+void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(exahype::solvers::ADERDGSolver* solver,
+                                        exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
+                                        exahype::Vertex* const fineGridVertices,
+                                        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
+    assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
+    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+
+    solver->performPredictionAndVolumeIntegral(
+        cellDescription,
+        _tempSpaceTimeUnknowns    [cellDescription.getSolverNumber()],
+        _tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
+        _tempUnknowns             [cellDescription.getSolverNumber()],
+        _tempFluxUnknowns         [cellDescription.getSolverNumber()]); // todo remove this argument
+
+    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+  }
+}
+
 void exahype::mappings::Prediction::enterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -222,28 +242,33 @@ void exahype::mappings::Prediction::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& pFine =
-          exahype::solvers::ADERDGSolver::getCellDescription(
+      auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
               fineGridCell.getCellDescriptionsIndex(),i);
 
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
-      solver->synchroniseTimeStepping(pFine); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-      exahype::Cell::resetNeighbourMergeHelperVariables(
-          pFine,fineGridVertices,fineGridVerticesEnumerator);
+      // TODO(Dominic):
+      switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
+      case exahype::solvers::Solver::Type::ADER_DG: {
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+        exahype::Cell::resetNeighbourMergeHelperVariables(
+            cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
-      if (pFine.getType()==exahype::records::ADERDGCellDescription::Cell) {
-        assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
-        solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+        performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+        }
+        break;
+      case exahype::solvers::Solver::Type::LimitedADERDG: {
+        exahype::solvers::LimitedADERDGSolver* solver = static_cast<exahype::solvers::LimitedADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+        exahype::Cell::resetNeighbourMergeHelperVariables(
+            cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
-        solver->performPredictionAndVolumeIntegral(
-            pFine,
-            _tempSpaceTimeUnknowns    [pFine.getSolverNumber()],
-            _tempSpaceTimeFluxUnknowns[pFine.getSolverNumber()],
-            _tempUnknowns             [pFine.getSolverNumber()],
-            _tempFluxUnknowns         [pFine.getSolverNumber()]); // todo remove this argument
-
-        solver->validateNoNansInADERDGSolver(pFine,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+        performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+        }
+        break;
+      default:
+        break;
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance()
@@ -251,6 +276,8 @@ void exahype::mappings::Prediction::enterCell(
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
+  // TODO(Dominic): Add getters
+
 
 //
 // Below all methods are nop.
