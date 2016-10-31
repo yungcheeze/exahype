@@ -1197,7 +1197,7 @@ public:
    *
    * <h2>Open issues</h2>
    * A rollback is of course not possible if we have adjusted the solution
-   * values. Assuming the rollback is invoked by a LimitedADERDGSolver,
+   * values. Assuming the rollback is invoked by a LimitingADERDGSolver,
    * we should use the adjusted FVM solution as reference solution.
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.

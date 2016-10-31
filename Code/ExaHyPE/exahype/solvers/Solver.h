@@ -98,7 +98,7 @@ class exahype::solvers::Solver {
   /**
    * The type of a solver.
    */
-  enum class Type { ADER_DG, FiniteVolumes, LimitedADERDG }; // TODO(Dominic): Get rid of the underscore
+  enum class Type { ADER_DG, FiniteVolumes, LimitingADERDG }; // TODO(Dominic): Get rid of the underscore
 
   /**
    * The time stepping mode.

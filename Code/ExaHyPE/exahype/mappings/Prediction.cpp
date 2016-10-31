@@ -257,8 +257,8 @@ void exahype::mappings::Prediction::enterCell(
 
         performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
         } break;
-      case exahype::solvers::Solver::Type::LimitedADERDG: {
-        exahype::solvers::LimitedADERDGSolver* solver = static_cast<exahype::solvers::LimitedADERDGSolver*>(
+      case exahype::solvers::Solver::Type::LimitingADERDG: {
+        exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
             exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
         solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
         exahype::Cell::resetNeighbourMergeHelperVariables(
