@@ -25,7 +25,7 @@ LD = g++
 # the binary for Linux 64.26 included, it's 1/2MB of stuff.
 LTEC   = ./libtecio.a
 
-LFLAGS = $(LTEC) -lgfortran
+LFLAGS = $(LTEC) -lgfortran -pthread
 # when linking with gfortran: -lstdc++
 # with intel:  -cxxlib
 
@@ -35,6 +35,9 @@ F90FLAGS = -c -cpp  -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none 
 
 # PREPROCESSOR DEFINITIONS 
 FCFLAGS = -DEULER
+# add -DLIMITER to activate limiter stuff. we don't compile it in here
+# to be able to compute without limiter
+# same with point sources
 
 #
 .SUFFIXES: .f90 .o .f77 .F90
@@ -76,7 +79,8 @@ F90_OBJ = gauleg.o                  \
           RiemannSolver.o           \
           SurfaceIntegral.o         \
           ElementUpdate.o           \
-          AnalyseDG.o \
+          PointSources.o            \
+          AnalyseDG.o               \
           ADERDG3D.o                
 
 OBJS       = $(F90_OBJ)
