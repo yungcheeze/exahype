@@ -93,7 +93,7 @@ case $CMD in
 	"make") # compiel without invoking the toolkit
 		cdapp
 		export SKIP_TOOLKIT="Yes"
-		export CLEAN="Lightweight"
+		export CLEAN="${CLEAN:=Lightweight}" # do no heavy cleaning
 		$SCRIPTDIR/compile.sh
 		;;
 	"git") # passes commands to git
