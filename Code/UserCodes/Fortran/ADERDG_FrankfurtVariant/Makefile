@@ -10,7 +10,8 @@
 EXE  = ADERDG  
 # *********************************************************************
 
-F90 = ifort
+F90 = gfortran
+LD = g++
 
 #------------------------------------------------------------------------------
 # LIBRARIES
@@ -19,17 +20,21 @@ F90 = ifort
 #-LIBDIR      = ./lib
 #-LTEC   = -ltecio
 
-# Settings for SuperMUC
-# Run "module load tecplot" before compiling!
-LTEC   = $(TECPLOT_BASE)/tecplot360/lib/libtecio.a
+# download the tecio at http://www.tecplot.com/my/tecio-library/
+# it is not open source but freeware. In the ExaHyPE repo we have
+# the binary for Linux 64.26 included, it's 1/2MB of stuff.
+LTEC   = ./libtecio.a
 
-LFLAGS = $(LTEC) -cxxlib
+LFLAGS = $(LTEC) -lgfortran
+# when linking with gfortran: -lstdc++
+# with intel:  -cxxlib
 
 # COMPILATION OPTIMIZATION FLAGS for ifort
-F90FLAGS = -c -O2 -r8 -align -fpp  
+F90FLAGS = -c -cpp  -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -fcray-pointer
+# with intel: -O2 -r8 -align -fpp  
 
 # PREPROCESSOR DEFINITIONS 
-FCFLAGS =           
+FCFLAGS = -DEULER
 
 #
 .SUFFIXES: .f90 .o .f77 .F90
@@ -71,6 +76,7 @@ F90_OBJ = gauleg.o                  \
           RiemannSolver.o           \
           SurfaceIntegral.o         \
           ElementUpdate.o           \
+          AnalyseDG.o \
           ADERDG3D.o                
 
 OBJS       = $(F90_OBJ)
@@ -82,7 +88,7 @@ $(EXE): Makefile $(OBJS)
 	@echo "   "
 	@echo " Now Linking..."
 	@echo " --------------"
-	$(F90) $(OBJS) $(LFLAGS)  -o $(EXE)
+	$(LD) $(OBJS) $(LFLAGS)  -o $(EXE)
 	@echo "   "
 	@echo " Compiled ! "
 	@echo " ---------- "
