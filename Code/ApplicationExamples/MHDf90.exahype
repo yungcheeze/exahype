@@ -32,7 +32,7 @@ exahype-project  MHDSolver
     kernel             = generic::fluxes::nonlinear
     language           = Fortran
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.025
@@ -40,7 +40,7 @@ exahype-project  MHDSolver
       select    = {}
     end plot
     
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 0
       time      = 0.0
       repeat    = 0.025
@@ -48,7 +48,7 @@ exahype-project  MHDSolver
       select    = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.025
@@ -56,7 +56,7 @@ exahype-project  MHDSolver
       select    = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.025
