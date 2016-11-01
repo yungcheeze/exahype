@@ -54,6 +54,7 @@ sed -i "s/^\([[:space:]]*order[[:space:]]*=[[:space:]]*\).*$/\1${ORDER}/" ${SPEC
 
 # guess name of executable which will be built
 PROJECTNAME=$(grep '^exahype-project' ${SPECFILE} | awk '{ print $2; }')
+SOLVERNAME=$(grep 'solver ADER-DG' ${SPECFILE} | awk '{ print $3; }')
 BINARYNAME="ExaHyPE-$PROJECTNAME"
 FINALBINARYNAME="$BINARYNAME-p$ORDER"
 echo "Project name is $PROJECTNAME, so will expect the binary at $BINARYNAME and move to $FINALBINARYNAME"
@@ -62,8 +63,9 @@ cd "$APPNAME"
 
 # and we also have to generate partially our code ourself as the build system
 # doesn't do the full job.
-echo "Fixing GeneratedConstants.h"
-sed -i "s/MY_POLYNOMIAL_DEGREE.*$/MY_POLYNOMIAL_DEGREE = ${ORDER};/" GeneratedConstants.h
+# MyBlaSolver.h contains the polynomial order
+echo "Expect the project solver $SOLVERNAME to be at $SOLVERNAME.h, I delete it for recreation"
+rm "${SOLVERNAME}.h"
 
 export CLEAN="Lightweight"
 $COMPILE

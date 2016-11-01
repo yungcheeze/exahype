@@ -113,6 +113,15 @@ for patchfile in "${PROJECTNAME}_generated.cpp"; do # add files seperated by whi
 	fi
 done
 
+# Workaround for broken dependency build system:
+# Generate well known fortran modules if present
+for fmodule in Parameters.f90 typesDef.f90; do
+	if [ -e $fmodule ]; then
+		echo -e "Precompiling $fmodule as otherwise build fails"
+		gfortran -c $fmodule
+	fi
+done
+
 make -j $(nproc) 2>&1 | tee make.log || { echo -e "Make failed, see make.log for full log"; exit -1; }
 
 echo -e "Making $APPNAME finished"
