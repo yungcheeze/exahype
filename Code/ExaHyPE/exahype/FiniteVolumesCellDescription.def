@@ -27,7 +27,7 @@ class exahype::records::FiniteVolumesCellDescription {
   parallelise persistent double timeStamp;
 
   /**
-   *  Index referring to the solution DoF associated with this cell
+   *  Index referring to the (old) solution DoF associated with this cell
    *  description.
    */
   parallelise persistent int solution;
