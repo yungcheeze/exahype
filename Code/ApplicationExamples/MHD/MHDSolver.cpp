@@ -1,9 +1,9 @@
 #include "MHDSolver.h"
 //#include "fortran.h" _ltob
 
-// exact BC
 #include "InitialDataAdapter.h"
 #include "GeneratedConstants.h"
+#include "PDE.h"
 
 #include <memory>
 #include <cstring>
@@ -12,16 +12,6 @@
 #include "kernels/KernelUtils.h" // matrix indexing
 
 /* This is the MHDSolver.cpp binding to Fortran functions, as done in SRHD. */
-
-// Fortran functions:
-extern "C" {
-void minimumtreedepth_(int* depth);
-void hastoadjustsolution_(double* t, bool* refine);
-void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
-void pdeflux_(double* F, const double* const Q);
-void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
-void registerinitialdata_(const char* const id_name, int* id_name_len);
-}/* extern "C" */
 
 
 void MHDSolver::MHDSolver::init(exahype::Parser::ParserView& _constants) {
