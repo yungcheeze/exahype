@@ -328,7 +328,10 @@ SUBROUTINE ADERDGInit
     CALL gauleg(0.,1.,xiGPN,wGPN,N+1)
     xin = xiGPN  ! WE make the following choice: the basis functions run through the Gauss-Legendre nodes (=> really orthogonal basis) 
     !
+#ifdef LIMITER
+    ! Okay this is not really related to limiter but nevertheless we don't support here (@SK)
     CALL InitPointSources(idxe) 
+#endif
     DEALLOCATE( idxe ) 
     !
     ! Now, let us compute some of the important matrices in the ADER-DG method 
@@ -542,6 +545,7 @@ SUBROUTINE ADERDGInit
           ENDDO
          ENDDO
         ENDDO
+#ifdef LIMITER
         IF(N>0) THEN
             DO iVar = 1, nVar 
                 Limiter(iElem)%lmin(iVar) = MINVAL(uh(iVar,:,:,:,iElem)) 
@@ -568,6 +572,7 @@ SUBROUTINE ADERDGInit
                 ENDDO             
             ENDIF              
         ENDIF
+#endif 
     ENDDO    
     !
     IF(nParam.GT.0) THEN

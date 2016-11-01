@@ -26,6 +26,7 @@ PROGRAM ADERDG3D
         ENDIF 
         ! Compute the time step size according to the CFL condition 
         CALL CalcTimeStep 
+#ifdef LIMITER
         ! Limiter stuff 
         IF(N > 0) THEN
             CALL GetMinMax 
@@ -33,6 +34,7 @@ PROGRAM ADERDG3D
             recompute(:) = 0 
             CALL Saveolduh
         ENDIF     
+#endif
         ! Process the point sources
         CALL RunPointSources     
         ! ADER predictor step 
@@ -62,20 +64,24 @@ PROGRAM ADERDG3D
         ! Do the element update (compute the candidate solution) 
         DO iElem  = 1, nElem
             CALL ElementUpdate(uh(:,:,:,:,iElem),duh(:,:,:,:,iElem))
+#ifdef LIMITER
             IF(N > 0) THEN
                 CALL DMP(dmpresult,uh(:,:,:,:,iElem),Limiter(iElem),0.0) 
                 IF(.NOT.dmpresult) THEN
                     recompute(iElem) = 1
                     nRecompute = nRecompute + 1 
                 ENDIF 
-            ENDIF       
-        ENDDO         
+            ENDIF   
+#endif     
+        ENDDO    
+#ifdef LIMITER     
         IF( N > 0 ) THEN
             CALL SpreadRecompute 
             CALL AllocateLimiter             
             CALL SubcellRecompute 
             CALL UpdateLimiter 
-        ENDIF         
+        ENDIF     
+#endif    
         IF(MOD(timestep,10)==0) THEN
             PRINT *, ' n = ', timestep, ' t = ', time, 'nRec = ', nRecompute, ' %troub = ', REAL(nRecompute)/REAL(nElem)*100
             !CALL WriteData

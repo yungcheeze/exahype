@@ -84,6 +84,9 @@ SUBROUTINE WriteData
             ENDIF        
         ENDDO
     ELSE
+        PRINT *, "LIMITER NOT SUPPORTED IN THIS BUILD"
+        EXIT 
+#ifdef LIMITER
         lx0 = x(:,tri(1,i)) 
         CALL GetSubcell_uh(outuh,i) 
         nc = 0 
@@ -99,6 +102,7 @@ SUBROUTINE WriteData
              ENDDO 
            ENDDO
         ENDDO 
+#endif
     ENDIF    
   ENDDO
 
