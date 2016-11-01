@@ -13,6 +13,7 @@
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+#include <string>
 #include <limits>
 
 #include "exahype/Cell.h"
@@ -410,15 +411,15 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     }
   }
 
-  double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  double* oldSolution = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
+  double* solution    = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+  double* newSolution = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(solution[i]),cellDescription.toString(),"solution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   double admissibleTimeStepSize=0;
   std::memcpy(oldSolution,solution,getUnknownsPerCell()*sizeof(double));
-  solutionUpdate(solutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+  solutionUpdate(solution,solutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);

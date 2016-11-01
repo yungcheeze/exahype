@@ -204,13 +204,15 @@ public:
       const int level) = 0;
 
   /**
-   * @param luh is a pointer to 3^d pointers to doubles
+   * @param luh points to the the new solution values.
+   * @param luh_old is a pointer to 3^d pointers to old solution values
    * @param dt Time step size that is to be used.
    * @param maxAdmissibleDt Maximum time step size that would have been
    *        possible. If maxAdmissibleDt<dt, then we know that no time
    *        step has been done.
    */
-  virtual void solutionUpdate(double* luh[THREE_POWER_D],
+  virtual void solutionUpdate(double* luh,
+                              double* luh_old[THREE_POWER_D],
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const double dt, double& maxAdmissibleDt) = 0;
 

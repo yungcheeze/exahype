@@ -147,7 +147,8 @@ template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-double solutionUpdate(double** luhCellwise,
+double solutionUpdate(double* luh_new,
+                      double** luhCellwise,
                       const tarch::la::Vector<DIMENSIONS, double>& dx,
                       double dt, int numberOfVariables, int basisSize) {
   const int size_extended =
@@ -299,7 +300,7 @@ double solutionUpdate(double** luhCellwise,
       PDESource(ws, src);
 
       for (int l = 0; l < numberOfVariables; l++) {
-        luhCellwise[4][idx_local(j, k, l)] +=
+        luh_new[idx_local(j, k, l)] +=
             dt / cellSize[0] * (Fx[idx_Fx(j, k, l)] - Fx[idx_Fx(j, k + 1, l)]) +
             dt / cellSize[1] * (Fy[idx_Fy(j, k, l)] - Fy[idx_Fy(j + 1, k, l)]) +
             dt * src[l];

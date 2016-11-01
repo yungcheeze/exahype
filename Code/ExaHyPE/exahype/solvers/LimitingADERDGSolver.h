@@ -180,14 +180,23 @@ public:
 
   /**
    * Roll back the solution in troubled cell descriptions (Troubled) and their direct
-   * neighbours (NeighbourOfTroubledCell).
-   *
-   * In the next iteration, perform the recomputation such that all cells
-   * are on the same time level again.
+   * neighbours (NeighbourOfTroubledCell) and second degree neighbours
+   * (NeighbourIsNeighbourOfTroubledCell).
    */
   void reinitialiseSolvers(
       exahype::records::ADERDGCellDescription& cellDescription,
       const exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  /**
+   * Recompute the solution in the troubled cells and the neighbours of
+   * first and second degree so that all cells have performed the same number of
+   * global time steps again.
+   */
+  void recomputeSolution(
+      const int cellDescriptionsIndex,
+      const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 

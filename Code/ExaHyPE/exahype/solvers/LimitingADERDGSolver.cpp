@@ -263,7 +263,8 @@ bool exahype::solvers::LimitingADERDGSolver::solutionIsTroubled(SolverPatch& sol
  * Assumes that the status of the cells is either Ok or Troubled
  * at the start of the limiter spreading.
  */
-void exahype::solvers::LimitingADERDGSolver::unifyMergedLimiterStatus(SolverPatch& solverPatch) {
+void exahype::solvers::LimitingADERDGSolver::unifyMergedLimiterStatus(
+    SolverPatch& solverPatch) {
   // 1. Determine new limiter status.
   SolverPatch::LimiterStatus limiterStatus = SolverPatch::LimiterStatus::Ok;
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
@@ -352,13 +353,13 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
   case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
   case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
     switch (previousLimiterStatus) {
-    case SolverPatch::LimiterStatus::Troubled:
+    case SolverPatch::LimiterStatus::Troubled:  // TODO(Dominic): Add to docu: Here we work with a valid old FVM solution
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
       _limiter->rollbackSolution(
           fineGridCell.getCellDescriptionsIndex(),limiterElement,
           fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add update or old solution field such that we can perform a rollback
       break;
-    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::Ok: // TODO(Dominic): Add to docu: Here we work with a valid old ADER-DG solution
     case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
       if (limiterElement==exahype::solvers::Solver::NotFound) {
         assertion(previousLimiterStatus==SolverPatch::LimiterStatus::Ok);
@@ -367,8 +368,13 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
         // TODO(Dominic): This is some sort of mesh refinement.
         // In AMR settings, we need to add ancestor and descendant cells
         // after we add a limiter cell description (this will be fun).
-        fineGridCell.addNewCellDescription(solverPatch.getSolverNumber(),LimiterPatch::Type::Cell,
-            solverPatch.getLevel(),solverPatch.getParentIndex(),solverPatch.getSize(),solverPatch.getOffset());
+        fineGridCell.addNewCellDescription(
+            solverPatch.getSolverNumber(),
+            LimiterPatch::Type::Cell,
+            solverPatch.getLevel(),
+            solverPatch.getParentIndex(),
+            solverPatch.getSize(),
+            solverPatch.getOffset());
       }
 
       _solver->rollbackSolution(
@@ -389,4 +395,58 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
   default:
     break;
   }
+}
+
+void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
+        const int cellDescriptionsIndex,
+         const int element,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getLimiterStatus();
+  solverPatch.setLimiterStatus(solverPatch.getMergedLimiterStatus(0));
+
+  int limiterElement =
+      _limiter->tryGetElement(
+          cellDescriptionsIndex,solverPatch.getSolverNumber());
+
+  switch (solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Ok:
+      assertion(limiterElement==exahype::solvers::Solver::NotFound);
+      // do nothing
+      break;
+    case SolverPatch::LimiterStatus::NewlyNeighbourIsNeighbourOfTroubledCell:
+      _solver->updateSolution(cellDescriptionsIndex,limiterElement,
+                              fineGridVertices,fineGridVerticesEnumerator);
+      break;
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+      _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
+                               fineGridVertices,fineGridVerticesEnumerator);
+      break;
+    case SolverPatch::LimiterStatus::Troubled:
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+      _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
+                               fineGridVertices,fineGridVerticesEnumerator);
+      break;
+  }
+}
+
+///////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2,
+    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempStateSizedVectors,
+    double**                                  tempStateSizedSquareMatrices) {
+  SolverPatch& solverPatch1 = _solver->getCellDescription(cellDescriptionsIndex1,element1);
+  SolverPatch& solverPatch2 = _solver->getCellDescription(cellDescriptionsIndex2,element2);
+
+  if (solverPatch1.getLimiterStatus()==)
 }
