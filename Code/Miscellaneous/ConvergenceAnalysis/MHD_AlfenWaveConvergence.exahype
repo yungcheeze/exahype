@@ -25,7 +25,7 @@ exahype-project  MHDSolver
     /* this is the grid for the MHD AlfenWave test */
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 1.0
+    end-time                 = 6.0
   end computational-domain
 
   shared-memory
@@ -48,6 +48,7 @@ exahype-project  MHDSolver
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
   end optimisation
   
   solver ADER-DG MHDSolver
@@ -60,7 +61,7 @@ exahype-project  MHDSolver
     language           = C
     constants          = {initialdata:alfenwave}
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables= 9
       time     = 0.0
       repeat   = @VTKOUTPUTREPEAT@
@@ -68,17 +69,15 @@ exahype-project  MHDSolver
       select   = {}
     end plot
     
-    /* this is the fake plotter used to compute global integrals */
-    /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 0
       time = 0.0
       repeat = @CONVOUTPUTREPEAT@
-      output = ./these-files-should-not-be-there
+      output = ./global-integrals
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = @VTKOUTPUTREPEAT@
@@ -86,11 +85,19 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = @VTKOUTPUTREPEAT@
       output    = ./exact-primitive
+      select = {}
+    end plot
+
+    plot vtk::Legendre::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./errors-conserved
       select = {}
     end plot
 
