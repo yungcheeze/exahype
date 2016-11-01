@@ -66,12 +66,12 @@ SUBROUTINE InitialData(x, Q)
 	
 	! Call here one of
 	! CALL InitialBlast(x, Q)
-	! Call InitialAlfenWave(x, Q)
+	Call InitialAlfenWave(x, Q)
 	! Call InitialRotor(x,Q)
 	! Call InitialBlast(x, Q)
 	! Call InitialOrsagTang(x, Q)
 
-	CALL InitialDataByExaHyPESpecFile(x,Q)
+	! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
 
 SUBROUTINE InitialAlfenWave(x, Q)
