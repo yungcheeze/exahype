@@ -20,13 +20,14 @@
     
     ! And even more parameters
     
-    REAL, PARAMETER                :: gamma = 5.0/3.0
+    ! 4/3 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
+    REAL, PARAMETER                :: gamma = 4.0/3.0
       
     ! Divergence cleaning.
     ! Vasco: 0.5
     ! Michael D: Dont use it!
-    ! We do not have made use of sources anyway 
 
-    REAL, PARAMETER :: DivCleaning_a = 0.0  ! Vasco: 0.5, Michael D: No.
+    ! 1.0 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
+    REAL, PARAMETER :: DivCleaning_a = 1.0  ! Vasco: 0.5, Michael D: No.
 
   END MODULE Parameters  

@@ -46,10 +46,7 @@ void MHDSolver::MHDSolver::adjustedSolutionValues(const double* const x,const do
 }
 
 void MHDSolver::MHDSolver::source(const double* const Q, double* S) {
-  // TODO: pass this to Fortran.
-  for(int i=0; i < nVar; i++) {
-    S[i] = 0.0;
-  }
+  pdesource_(S, Q);
 }
 
 
@@ -104,7 +101,6 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
         fluxOut[m] += weight * F[F_idx(normalNonZero, m)];
      }
   }
-  const int statem=6; // the interesting component
 
   // debugging stuff:
   //printf("stateOut[%d]=%.5e == stateIn[%d]=%.5e at t=%f, dt=%f x=%.5e, y=%.5e, Equals=%e\n", statem, stateOut[statem], statem, stateIn[statem], t, dt, x[0], x[1], stateOut[statem] - stateIn[statem]);

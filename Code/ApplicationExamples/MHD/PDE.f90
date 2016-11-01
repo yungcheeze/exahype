@@ -143,3 +143,17 @@ SUBROUTINE PDEFlux(F,Q)
   !
 END SUBROUTINE PDEFlux 
  
+SUBROUTINE PDESource(S,Q) 
+  USE Parameters, ONLY : nVar, nDim, gamma, DivCleaning_a
+  USE, INTRINSIC :: ISO_C_BINDING 
+  IMPLICIT NONE 
+  ! Argument list  
+  REAL, INTENT(IN)  :: Q(nVar) 
+  REAL, INTENT(OUT) :: S(nVar)
+  ! Local variables  
+  
+  S = 0.0
+
+  S(9) = - DivCleaning_a * Q(9)
+
+END SUBROUTINE PDESource

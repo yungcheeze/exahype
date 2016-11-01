@@ -75,11 +75,11 @@ SUBROUTINE PDECons2Prim(V,Q,iErr)
   REAL        :: iRho
   REAL, PARAMETER :: epsilon = 1e-14
   INTEGER     :: i, iter, indx_nr(2)
-  REAL        :: sx, sy, sz, bx, by, bz
+  REAL        :: dr, sx, sy, sz, bx, by, bz
   REAL        :: v2, sb, den, vb, zeta, cs    
   REAL        :: gamma1, G1, G12, x1, x2, eps
   REAL        :: rho, vx, vy, vz, p
-  REAL        :: lf, lf2, lf3, lf4, gam,d,e,s2,b2,e2,sb2,w,ww
+  REAL        :: lf, lf2, lf3, lf4, gam,e,s2,b2,e2,sb2,w,ww
   REAL        :: RTSAFE_C2P_RMHD1, RTSAFE_C2P_RMHD2, RTSAFE_C2P_RHD1, RTSAFE_C2P_RHD2
   REAL        :: k(3), B(3), vel(3)
   REAL        :: p1,q1,dd,phi,temp1, H, k2, kB, T2
@@ -109,7 +109,7 @@ SUBROUTINE PDECons2Prim(V,Q,iErr)
   FAILED = .FALSE.
   gamma1 = gamma/(gamma - 1.0)
   gam    = 1.0/gamma1
-  d    = Q(1)
+  dr   = Q(1)
   sx   = Q(2)
   sy   = Q(3)
   sz   = Q(4)
@@ -126,7 +126,7 @@ SUBROUTINE PDECons2Prim(V,Q,iErr)
   !
   x1   = 0.
   x2   = 1.-eps
-  v2   = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,nDim,e,s2,b2,sb2,w,FAILED)
+  v2   = RTSAFE_C2P_RMHD1(x1,x2,tol,gam,dr,e,s2,b2,sb2,w,FAILED)
   !
   IF (FAILED) THEN
      iErr = -1
@@ -142,7 +142,7 @@ SUBROUTINE PDECons2Prim(V,Q,iErr)
      den  = 1.0/(w+b2)
      vb   = sb/w
      !
-     rho  = nDim*sqrt(1.-v2)
+     rho  = dr*sqrt(1.-v2)
      vx   = (sx + vb*bx)*den
      vy   = (sy + vb*by)*den
      vz   = (sz + vb*bz)*den
