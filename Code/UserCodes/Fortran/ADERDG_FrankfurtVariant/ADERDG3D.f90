@@ -2,14 +2,18 @@ PROGRAM ADERDG3D
     USE typesDef
     IMPLICIT NONE
     ! Local variables
-    INTEGER :: i,j,k,iElem,iFace
+    INTEGER :: i,j,k,iElem,iFace,nRecompute 
     REAL, POINTER :: lQbndL(:,:,:),lFbndL(:,:,:),lQbndR(:,:,:),lFbndR(:,:,:)
+    LOGICAL       :: dmpresult 
+    !
     PRINT *, ' ----------------------------------------- ' 
-    PRINT *, '    A simple introduction to 3D ADER-DG    ' 
+    PRINT *, '   A simple introduction to 3D ADER-DG 2.0 ' 
+    PRINT *, '    with a posteriori subcell FV limiter   ' 
+    PRINT *, ' ----------------------------------------- ' 
     PRINT *, '      Written by Michael Dumbser           ' 
     PRINT *, '      University of Trento, Italy          ' 
     PRINT *, ' ----------------------------------------- ' 
-
+    !
     ! We first need to compute the relevant matrices, set initial
     ! conditions and prepare some necessary stuff...  
     CALL ADERDGInit 
@@ -22,9 +26,22 @@ PROGRAM ADERDG3D
         ENDIF 
         ! Compute the time step size according to the CFL condition 
         CALL CalcTimeStep 
+        ! Limiter stuff 
+        IF(N > 0) THEN
+            CALL GetMinMax 
+            nRecompute   = 0 
+            recompute(:) = 0 
+            CALL Saveolduh
+        ENDIF     
+        ! Process the point sources
+        CALL RunPointSources     
         ! ADER predictor step 
         DO iElem  = 1, nElem
-            CALL ADERSpaceTimePredictor(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem))  
+#ifdef ELASTICITY 
+          CALL ADERSpaceTimePredictorLinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem),iElem)  
+#else
+          CALL ADERSpaceTimePredictorNonlinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem))  
+#endif             
         ENDDO    
         ! Compute the element volume integral 
         DO iElem  = 1, nElem
@@ -34,19 +51,35 @@ PROGRAM ADERDG3D
         CALL BoundaryConditions 
         ! Solve the Riemann problems and compute the surface integrals 
         DO iFace = 1, nFace
-            CALL ADERRiemannSolver( Face(iFace)%qL,Face(iFace)%FL,Face(iFace)%qR,Face(iFace)%FR,Face(iFace)%nv )   
+            CALL ADERRiemannSolver( Face(iFace)%qL,Face(iFace)%FL,Face(iFace)%paramL,Face(iFace)%qR,Face(iFace)%FR,Face(iFace)%paramR,Face(iFace)%nv )   
         ENDDO    
         ! Compute the surface integrals of the test function multiplied with the numerical flux 
         DO iElem  = 1, nElem
             CALL ADERSurfaceIntegral(duh(:,:,:,:,iElem),FBnd(:,:,:,:,iElem))
-        ENDDO           
-        ! Do the element update 
+        ENDDO       
+        ! Add source terms
+        CALL AddPointSources    
+        ! Do the element update (compute the candidate solution) 
         DO iElem  = 1, nElem
             CALL ElementUpdate(uh(:,:,:,:,iElem),duh(:,:,:,:,iElem))
-        ENDDO                   
-        IF(MOD(timestep,10)==0) THEN
-            PRINT *, ' n = ', timestep, ' t = ', time 
+            IF(N > 0) THEN
+                CALL DMP(dmpresult,uh(:,:,:,:,iElem),Limiter(iElem),0.0) 
+                IF(.NOT.dmpresult) THEN
+                    recompute(iElem) = 1
+                    nRecompute = nRecompute + 1 
+                ENDIF 
+            ENDIF       
+        ENDDO         
+        IF( N > 0 ) THEN
+            CALL SpreadRecompute 
+            CALL AllocateLimiter             
+            CALL SubcellRecompute 
+            CALL UpdateLimiter 
         ENDIF         
+        IF(MOD(timestep,10)==0) THEN
+            PRINT *, ' n = ', timestep, ' t = ', time, 'nRec = ', nRecompute, ' %troub = ', REAL(nRecompute)/REAL(nElem)*100
+            !CALL WriteData
+        ENDIF  
         time = time + dt 
     ENDDO    
     CALL CPU_TIME(tCPU2)
@@ -58,6 +91,8 @@ PROGRAM ADERDG3D
     
     CALL WriteData
     
+    CALL AnalyseDG 
+
     PRINT *, ' ----------------------------------------- ' 
     PRINT *, '  Program terminated. Ciao.                ' 
     PRINT *, ' ----------------------------------------- ' 

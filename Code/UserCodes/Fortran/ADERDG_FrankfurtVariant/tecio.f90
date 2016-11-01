@@ -1,4 +1,4 @@
-      INTERFACE
+      INTERFACE 
 
 
       SUBROUTINE tecforeign112 &
@@ -311,3 +311,4 @@
 
 
       END INTERFACE
+

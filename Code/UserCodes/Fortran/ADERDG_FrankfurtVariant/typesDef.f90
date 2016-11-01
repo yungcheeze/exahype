@@ -4,10 +4,17 @@ MODULE typesDef
   !
   ! ================================== This part of the typesDef can be modified by the user.  ================================== 
   !
-  INTEGER, PARAMETER :: N = 3                               ! Polynomial degree of our approximation in space and time 
-  INTEGER, PARAMETER :: nDim = 3                            ! The number of space dimensions that we actually want to simulate 
+  INTEGER, PARAMETER :: N = 4                               ! Polynomial degree of our approximation in space and time 
+  INTEGER, PARAMETER :: nDim = 2                            ! The number of space dimensions that we actually want to simulate 
   REAL, PARAMETER    :: CFL = 0.9                           ! The Courant-Friedrichs-Lewy number < 1 
+#ifdef EULER
   INTEGER, PARAMETER :: nVar = 5                            ! The number of variables of the PDE system 
+  INTEGER, PARAMETER :: nParam = 0                          ! The number of static parameters for the PDE system 
+#endif 
+#ifdef ELASTICITY
+  INTEGER, PARAMETER :: nVar = 9                            ! The number of variables of the PDE system 
+  INTEGER, PARAMETER :: nParam = 3                          ! The number of material parameters for the PDE system 
+#endif   
   !
   ! ==================================           Do NOT change the stuff below                 ==================================
   !
@@ -26,6 +33,10 @@ MODULE typesDef
   REAL               :: F0(N+1), F1(N+1,N+1)                ! Time flux matrices 
   REAL               :: K1(N+1,N+1), iK1(N+1,N+1)           ! F1 - Ktau 
   INTEGER            :: dn(d)                               ! number of direct neighbors in each dimension 
+  REAL               :: MT(N+1,N+1), iMT(N+1,N+1)           ! Time mass matrix (for point source terms) 
+  INTEGER            :: Face2Neigh(3,6)                     ! Mapping from face to neighbor index 
+  ! Periodic boundary conditions 
+  LOGICAL            :: Periodic(d)                         ! periodic BC in x, y, z direction 
   ! Stuff related to the problem setup, mesh and output 
   INTEGER            :: IMAX, JMAX, KMAX, NMAX              ! The number of cells in each space dimension & max. number of time steps 
   INTEGER            :: nElem, nFace, nNode                 ! The number of elements, faces and nodes 
@@ -42,13 +53,30 @@ MODULE typesDef
   REAL               :: SubOutputMatrix((N+1)**d,(N+1)**d)  ! Matrix needed for the plotting of the results on a fine subgrid 
   INTEGER            :: subtri(2**d,N**d)                   ! subcell connectivity (for fine output) 
   REAL               :: allsubxi(d,(N+1)**d)                ! subnodes (for fine output) 
-  ! Some diagnostics                                        ! 
+  ! Some diagnostics or data analysis                       ! 
   REAL               :: tCPU1, tCPU2                        ! CPU times 
   INTEGER(8)         :: TEU                                 ! total element updates 
-  !
+  INTEGER            :: AnalyseType   
+  CHARACTER(LEN=200) :: ICType  
+  ! Data needed for the subcell limiter 
+  INTEGER, PARAMETER :: nSubLim = 2*N+1                     ! number of subcells 
+  INTEGER            :: nSubLimV(d)                         ! vector for number of subcells in each dimension 
+  REAL, POINTER      :: uh2lim(:,:), lim2uh(:,:)            ! mapping from DG polynomials to the subcells and back 
+  REAL, POINTER      :: uh2lob(:,:)                         ! mapping from the DG polynomials to the Gauss-Lobatto points 
+  REAL               :: xiLob(N+1), wLob(N+1)               ! Gauss lobatto points and weights 
+  INTEGER, POINTER   :: neighbor(:,:,:,:)                   ! set of Voronoi neighbors of a cell 
+  REAL, POINTER      :: olduh(:,:,:,:,:)                    ! for the a posteriori limiter, we need the possibility to go back 
+  INTEGER, POINTER   :: recompute(:)                        ! map containing the troubled zones that need to be recomputed 
+  INTEGER            :: subtrilim(2**d,(nSubLim)**d)        ! subcell connectivity (for fine output) 
+  REAL               :: subxilim(d,(nSubLim+1)**d)          ! subnodes (for fine output) 
+  REAL               :: xilimbary(nSubLim)                  ! barycenters of the subcells 
+  ! Definition of the unit reference element 
+  REAL               :: ReferenceElement(d,2**d) 
+  ! 
   TYPE tFace
     REAL, POINTER    :: qL(:,:,:), qR(:,:,:)                ! pointer to left and right boundary-extrapolated state vector 
     REAL, POINTER    :: FL(:,:,:), FR(:,:,:)                ! pointer to left and right boundary-extrapolated flux vector 
+    REAL, POINTER    :: paramL(:,:,:), paramR(:,:,:)        ! pointer to left and right boundary-extrapolated material parameters 
     INTEGER          :: Left, Right                         ! pointer to left and right element 
     REAL             :: nv(d)                               ! face normal vector 
   END TYPE      
@@ -62,11 +90,30 @@ MODULE typesDef
   REAL, POINTER      :: Fhi(:,:,:,:,:,:)                    ! the time-averaged coefficients of the flux tensor of the space-time predictor (nVar, d, nDOF(1), nDOF(2), nDOF(3), nElem) 
   REAL, POINTER      :: qbnd(:,:,:,:,:)                     ! the boundary-extrapolated data for the state vector Q in the element 
   REAL, POINTER      :: Fbnd(:,:,:,:,:)                     ! the boundary-extrapolated data for the normal flux F in the element 
+  REAL, POINTER      :: parh(:,:,:,:,:)                     ! the coefficients of the DG polynomial for the material parameters (nParam, nDOF(1), nDOF(2), nDOF(3), nElem) 
+  REAL, POINTER      :: parbnd(:,:,:,:,:)                   ! the boundary-extrapolated material parameters 
+  !
+  TYPE tLimiter 
+      INTEGER        :: status, oldstatus 
+      REAL, POINTER  :: Lh(:,:,:,:) 
+      REAL, POINTER  :: NewLh(:,:,:,:) 
+      REAL           :: lmin(nVar), lmax(nVar)       
+  END TYPE tLimiter  
+  TYPE(tLimiter), POINTER :: Limiter(:) 
+  !
+  TYPE tPointSource
+      INTEGER        :: iElem, waveform 
+      REAL           :: xP(d), xiP(d)  
+      REAL, POINTER  :: phi(:,:,:) 
+      REAL, POINTER  :: sigma(:,:), SrcInt(:) 
+  END TYPE tPointSource
+  INTEGER                     :: nPointSource
+  TYPE(tPointSource), POINTER :: PointSrc(:) 
   !
   ! Important info and parameters concerning the governing PDE system 
   !
   TYPE tEquations 
-      REAL           :: gamma 
+      REAL           :: gamma, Pi  
   END TYPE tEquations 
   
   TYPE(tEquations)   :: EQN 

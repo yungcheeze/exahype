@@ -15,21 +15,36 @@ SUBROUTINE CalcTimeStep
     !
     dt = 1e20 
     DO iElem = 1, nElem
-        DO k = 1, nDOF(3) 
-         DO j = 1, nDOF(2) 
-          DO i = 1, nDOF(1) 
-            denom = 0.   
-            DO iDim = 1, nDim
-                CALL PDEEigenvalues(Lambda,uh(:,i,j,k,iElem),nv(:,iDim)) 
-                denom = denom + MAXVAL(ABS(Lambda))/dx(iDim) 
+        IF(Limiter(iElem)%status==0) THEN
+            DO k = 1, nDOF(3) 
+             DO j = 1, nDOF(2) 
+              DO i = 1, nDOF(1) 
+                denom = 0.   
+                DO iDim = 1, nDim
+                    CALL PDEEigenvalues(Lambda,uh(:,i,j,k,iElem),parh(:,i,j,k,iElem),nv(:,iDim)) 
+                    denom = denom + MAXVAL(ABS(Lambda))/dx(iDim) 
+                ENDDO        
+                dt = MIN(dt, CFL*PNPMTable(N)/denom )    
+              ENDDO
+             ENDDO
             ENDDO        
-            dt = MIN(dt, CFL*PNPMTable(N)/denom )    
-          ENDDO
-         ENDDO
-        ENDDO        
+        ELSE
+            DO k = 1, nSubLimV(3) 
+             DO j = 1, nSubLimV(2) 
+              DO i = 1, nSubLimV(1) 
+                denom = 0.   
+                DO iDim = 1, nDim
+                    CALL PDEEigenvalues(Lambda,Limiter(iElem)%Lh(:,i,j,k),parh(:,i,j,k,iElem),nv(:,iDim)) 
+                    denom = denom + MAXVAL(ABS(Lambda))/dx(iDim) 
+                ENDDO        
+                dt = MIN(dt, CFL*PNPMTable(N)/denom )    
+              ENDDO
+             ENDDO
+            ENDDO        
+        ENDIF        
     ENDDO
     ! 
-    IF(time+dt>tend) THEN
+    IF(time>tend) THEN
         dt = tend - time
     ENDIF 
     ! 

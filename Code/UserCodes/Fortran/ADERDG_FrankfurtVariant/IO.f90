@@ -3,13 +3,16 @@ SUBROUTINE WriteData
   USE ISO_C_BINDING
   IMPLICIT NONE 
   include 'tecio.f90' 
-  CHARACTER(LEN=200) :: Filename,FilenameCSV,Title,ScratchDir, VarString   
-  CHARACTER(LEN=10)  :: Name(nVar) 
+  CHARACTER(LEN=200) :: Filename,Title,ScratchDir, VarString   
+  CHARACTER(LEN=10)  :: VarName(nVar) 
+  CHARACTER(LEN=10)  :: ParName(nParam) 
   CHARACTER(LEN=10)  :: cmyrank 
-  INTEGER            :: v,iElem,k,i,j,ii,jj,c,nc,iRet,iDim,iErr 
+  INTEGER            :: i,j,ii,jj,kk,c,nc,iRet,iDim,iErr  
   REAL               :: QN(nVar),VN(nVar),Vav(nVar),Vmin(nVar),ldx(d),lx0(d),lxb(d),ux(nVar),uy(nVar)
-  REAL               :: LocNode(nVar,(N+1)**nDim), GradNode(nVar,(N+1)**nDim,d),  xvec(d), x0(d), xGP(d)
-  INTEGER            :: nSubNodes, nPlotElem, nSubPlotElem, nRealNodes, ZoneType, nVertex, nDOFs   
+  REAL               :: LocNode(nVar,(N+1)**nDim), GradNode(nVar,(N+1)**nDim,d),  xvec(d) 
+  REAL               :: ParNode(nParam,(N+1)**nDim)
+  REAL               :: outuh(nVar,1:nSubLimV(1)+1,1:nSubLimV(2)+1,1:nSubLimV(3)+1) 
+  INTEGER            :: nSubNodes, nSubPlotElem, nRealNodes, ZoneType, nVertex, nDOFs   
   REAL(8)            :: loctime 
   INTEGER*4, POINTER :: NData(:,:)  
   REAL*4, POINTER    :: DataArray(:,:),TempArray(:) 
@@ -17,8 +20,6 @@ SUBROUTINE WriteData
   REAL*4             :: Test 
   POINTER   (NullPtr,Null)
   Integer*4 Null(*)
-  integer, parameter :: out_unit=20
-  
   !
   visdouble = 0
   nVertex = 2**nDim 
@@ -26,38 +27,79 @@ SUBROUTINE WriteData
   PRINT *, ' Writing data to file ', TRIM(FileName) 
   !
   NullPtr = 0 
-  nPlotElem =  0
   nSubPlotElem = 0
   nRealNodes = 0  
   DO i = 1, nElem
-     nPlotElem = nPlotElem + 1
-     nSubPlotElem = nSubPlotElem + N**nDim  
-     nSubNodes = (N+1)**nDim  
+     IF(Limiter(i)%status.EQ.0) THEN   
+        nSubPlotElem = nSubPlotElem + N**nDim  
+        nSubNodes = (N+1)**nDim  
+     ELSE
+        nSubPlotElem = nSubPlotElem + (nSubLim)**nDim  
+        nSubNodes = (nSubLim+1)**nDim  
+     ENDIF
      nRealNodes = nRealNodes + nSubNodes 
   ENDDO
   ALLOCATE(NData(nVertex,nSubPlotElem))  
-  ALLOCATE(DataArray(nRealNodes,nDim+nVar+1))  
+  ALLOCATE(DataArray(nRealNodes,nDim+nVar+nParam+2))  
   c  = 0 
   nc = 0 
   DO i = 1, nElem
-    DO j = 1, N**nDim 
-        c = c + 1  
-        NData(:,c) = nc + subtri(1:nVertex,j)
-    ENDDO 
-    nc = nc + (N+1)**nDim   
+    IF(Limiter(i)%status.EQ.0) THEN
+        DO j = 1, N**nDim
+            c = c + 1  
+            NData(:,c) = nc + subtri(1:nVertex,j)
+        ENDDO 
+        nc = nc + (N+1)**nDim  
+    ELSE
+        DO j = 1, (nSubLim)**nDim 
+            c = c + 1 
+            NData(:,c) = nc + subtrilim(1:nVertex,j)
+        ENDDO 
+        nc = nc + (nSubLim+1)**nDim  
+    ENDIF 
+    !DO j = 1, N**nDim 
+    !    c = c + 1  
+    !    NData(:,c) = nc + subtri(1:nVertex,j)
+    !ENDDO 
+    !nc = nc + (N+1)**nDim   
   ENDDO
   nDOFs = PRODUCT(nDOF(1:nDim)) 
   c = 0 
-  DO i = 1, nElem      
-    LocNode = MATMUL( RESHAPE( uh(:,:,:,:,i), (/ nVar, nDOFs /) ), SubOutputMatrix(1:nDOFs,1:(N+1)**nDim) ) 
-    lx0 = x(:,tri(1,i)) 
-    DO j = 1, (N+1)**nDim  
-        QN(:) = LocNode(:,j) 
-        xvec = lx0 + allsubxi(:,j)*dx 
-        CALL PDECons2Prim(VN,QN,iErr)
-        c = c + 1 
-        DataArray(c,:) = (/ xvec(1:nDim), VN, REAL(i) /)   
-    ENDDO
+  DO i = 1, nElem 
+    IF(Limiter(i)%status.EQ.0) THEN
+        LocNode = MATMUL( RESHAPE( uh(:,:,:,:,i), (/ nVar, nDOFs /) ), SubOutputMatrix(1:nDOFs,1:(N+1)**nDim) ) 
+#ifdef ELASTICITY
+        ParNode = MATMUL( RESHAPE( parh(:,:,:,:,i), (/ nParam, nDOFs /) ), SubOutputMatrix(1:nDOFs,1:(N+1)**nDim) )  
+#endif
+        lx0 = x(:,tri(1,i)) 
+        DO j = 1, (N+1)**nDim  
+            QN(:) = LocNode(:,j) 
+            xvec = lx0 + allsubxi(:,j)*dx 
+            CALL PDECons2Prim(VN,QN,iErr)
+            c = c + 1         
+            IF(nParam.EQ.0) THEN
+                DataArray(c,:) = (/ xvec(1:nDim), VN, REAL(i), REAL(Limiter(i)%status) /)   
+            ELSE
+                DataArray(c,:) = (/ xvec(1:nDim), VN, ParNode(:,j), REAL(i), REAL(Limiter(i)%status) /)   
+            ENDIF        
+        ENDDO
+    ELSE
+        lx0 = x(:,tri(1,i)) 
+        CALL GetSubcell_uh(outuh,i) 
+        nc = 0 
+         DO kk = 1, nSubLimV(3)+dn(3) 
+           DO jj = 1, nSubLimV(2)+dn(2) 
+             DO ii = 1, nSubLimV(1)+dn(1)    
+                nc = nc + 1 
+                QN(:) = outuh(:,ii,jj,kk) 
+                xvec = lx0 + subxilim(:,nc)*dx 
+                CALL PDECons2Prim(VN,QN,iErr)
+                c = c + 1 
+                DataArray(c,:) = (/ xvec(1:nDim), VN, REAL(i), REAL(Limiter(i)%status) /)   
+             ENDDO 
+           ENDDO
+        ENDDO 
+    ENDIF    
   ENDDO
 
   WRITE(Title,'(a,f9.4,a)') 'Time t = ', time, ''//C_NULL_CHAR  
@@ -73,60 +115,25 @@ SUBROUTINE WriteData
    WRITE(VarString,*) 'x y z ' 
    ZoneType = 5 ! FEM Brick 
   END SELECT 
-  CALL PDEVarName(Name)  
+  CALL PDEVarName(VarName)  
   DO i = 1, nVar        
-     WRITE(VarString,'(a,a,a,a)') TRIM(VarString), ' ', TRIM(Name(i)) , ' '   
+     WRITE(VarString,'(a,a,a,a)') TRIM(VarString), ' ', TRIM(VarName(i)) , ' '   
   ENDDO
-  WRITE(VarString,'(a,a)') TRIM(VarString), ' iE ' 
-
+  CALL PDEParName(ParName)  
+  DO i = 1, nParam         
+     WRITE(VarString,'(a,a,a,a)') TRIM(VarString), ' ', TRIM(ParName(i)) , ' '   
+  ENDDO
+  WRITE(VarString,'(a,a)') TRIM(VarString), ' iE limiter ' 
+  
   iret = TecIni112(TRIM(Title)//''//C_NULL_CHAR,TRIM(Varstring)//''//C_NULL_CHAR,TRIM(FileName)//''//C_NULL_CHAR,TRIM(ScratchDir)//''//C_NULL_CHAR,0,0,visdouble) 
   loctime = time 
   iRet = TecZne112('Zone'//C_NULL_CHAR, ZoneType, nRealNodes, nSubPlotElem, 0, 0, 0, 0, loctime, 0, 0, 1, 0, 0, 0, 0, 0, Null, Null, Null, 0) 
-  iRet = TecDat112( nRealNodes*(nDim+nVar+1), DataArray, visdouble )
+  iRet = TecDat112( nRealNodes*(nDim+nVar+nParam+2), DataArray, visdouble )
   iRet = TecNod112(NData)
   iRet = TecEnd112()
 
   DEALLOCATE(NData,DataArray)  
-  
 
-  if (timestep.ne.0) then
-    WRITE(FilenameCSV,'(a,a1,i0.0,a)') TRIM(BaseFile),'-', timestep, '.csv'
-  else
-    WRITE(FilenameCSV,'(a,a)') TRIM(BaseFile),'-0.csv'
-  endif
-  
-  open (unit=out_unit,file=FilenameCSV)  
-  
-  ! DOF exporter
-  DO iElem = 1, nElem
-    x0 = x(:,tri(1,iElem)) ! get the coordinate of the lower left node 
-    DO k = 1, nDOF(3)
-     DO j = 1, nDOF(2) 
-      DO i = 1, nDOF(1) 
-      
-        xGP = x0 + (/ xiGPN(i), xiGPN(j), xiGPN(k) /)*dx(:) 
-        !DO v = 1, nVAR
-        !  PRINT *, uh(v,i,j,k, iElem)
-        !ENDDO
-        !PRINT *, xGP
-        !PRINT *, time
-        !PRINT *, timestep
-        !PRINT *, x0
-        !PRINT *, xiGPN(i)
-        !PRINT *, xiGPN(j)
-        !PRINT *, xiGPN(k)
-        !PRINT *, FilenameCSV
-        
-        
-        write (out_unit,'(F,A,F,A,F,A,F,A,F,A,F,A,F,A,F)') xGP(1), ',', xGP(2), ',', time, ',', uh(1,i,j,k, iElem), ',', uh(2,i,j,k, iElem), ',', uh(3,i,j,k, iElem), ',', uh(4,i,j,k, iElem), ',', uh(5,i,j,k, iElem)
-        !PRINT *, 
-        !PRINT *, '---------------------------------------------'
-      ENDDO
-     ENDDO 
-    ENDDO
-  ENDDO
-  
-  close (out_unit)
 END SUBROUTINE WriteData 
     
 
