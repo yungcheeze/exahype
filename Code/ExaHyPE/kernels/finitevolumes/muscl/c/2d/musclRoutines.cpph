@@ -39,13 +39,73 @@ double minmod(double a, double b) {
   }
 }
 
+//void gather(const double* const* luhCellwise, double* luh, int basisSize,
+//            int numberOfVariables) {
+//  kernels::idx3 idx_luh(basisSize + 2, basisSize + 2, numberOfVariables);
+//  kernels::idx3 idx_cell(basisSize, basisSize, numberOfVariables);
+//
+//  // inside
+//  for (int j = 1; j < basisSize + 1; j++) {
+//    for (int k = 1; k < basisSize + 1; k++) {
+//      for (int l = 0; l < numberOfVariables; l++) {
+//        luh[idx_luh(j, k, l)] = luhCellwise[4][idx_cell(j - 1, k - 1, l)];
+//      }
+//    }
+//  }
+//
+//  // left (k = 0)
+//  for (int j = 1; j < basisSize + 1; j++) {
+//    const int k = 0;
+//    for (int l = 0; l < numberOfVariables; l++) {
+//      luh[idx_luh(j, k, l)] = luhCellwise[3][idx_cell(j - 1, basisSize - 1, l)];
+//    }
+//  }
+//
+//  // right (k = basisSize + 1)
+//  for (int j = 1; j < basisSize + 1; j++) {
+//    const int k = basisSize + 1;
+//    for (int l = 0; l < numberOfVariables; l++) {
+//      luh[idx_luh(j, k, l)] = luhCellwise[5][idx_cell(j - 1, 0, l)];
+//    }
+//  }
+//
+//  // bottom (j = 0)
+//  {
+//    const int j = 0;
+//    for (int k = 1; k < basisSize + 1; k++) {
+//      for (int l = 0; l < numberOfVariables; l++) {
+//        luh[idx_luh(j, k, l)] =
+//            luhCellwise[1][idx_cell(basisSize - 1, k - 1, l)];
+//      }
+//    }
+//  }
+//
+//  // top (j = basisSize + 1)
+//  {
+//    const int j = basisSize + 1;
+//    for (int k = 1; k < basisSize + 1; k++) {
+//      for (int l = 0; l < numberOfVariables; l++) {
+//        luh[idx_luh(j, k, l)] = luhCellwise[7][idx_cell(0, k - 1, l)];
+//      }
+//    }
+//  }
+//}
+
+}  // namespace
+
+namespace kernels {
+namespace finitevolumes {
+namespace muscl {
+namespace c {
+
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda),
           void PDEFlux(const double* const Q, double** F)>
 double riemannSolver(double* F, const double* qL, const double* qR,
-                     int numberOfVariables, int normalNonZero) {
-  double* sL = new double[numberOfVariables];
-  double* sR = new double[numberOfVariables];
+                     int numberOfVariables, int normalNonZero,
+                     double** tempStateSizedArrays) { // TODO(Dominic): I need four of those
+  double* sL = tempStateSizedArrays[0]; 
+  double* sR = tempStateSizedArrays[1];
 
   PDEEigenvalues(qL, normalNonZero, sL);
   PDEEigenvalues(qR, normalNonZero, sR);
@@ -64,10 +124,8 @@ double riemannSolver(double* F, const double* qL, const double* qR,
     }
   }
 
-  double* fl = new double[2 * numberOfVariables];
-  double* fr = new double[2 * numberOfVariables];
-  double* FL[2] = {fl, fl + numberOfVariables};
-  double* FR[2] = {fr, fr + numberOfVariables};
+  double* FL[2] = {tempStateSizedArrays[0],tempStateSizedArrays[1]};
+  double* FR[2] = {tempStateSizedArrays[2],tempStateSizedArrays[3]};
   PDEFlux(qL, FL);
   PDEFlux(qR, FR);
 
@@ -76,178 +134,119 @@ double riemannSolver(double* F, const double* qL, const double* qR,
            0.5 * s_max * (qL[i] - qR[i]);
   }
 
-  delete[] sL;
-  delete[] sR;
-  delete[] fl;
-  delete[] fr;
-
   return s_max;  // TODO(guera): Use to check if dt in solutionUpdate was OK
 }
-
-void gather(const double* const* luhCellwise, double* luh, int basisSize,
-            int numberOfVariables) {
-  kernels::idx3 idx_luh(basisSize + 2, basisSize + 2, numberOfVariables);
-  kernels::idx3 idx_cell(basisSize, basisSize, numberOfVariables);
-
-  // inside
-  for (int j = 1; j < basisSize + 1; j++) {
-    for (int k = 1; k < basisSize + 1; k++) {
-      for (int l = 0; l < numberOfVariables; l++) {
-        luh[idx_luh(j, k, l)] = luhCellwise[4][idx_cell(j - 1, k - 1, l)];
-      }
-    }
-  }
-
-  // left (k = 0)
-  for (int j = 1; j < basisSize + 1; j++) {
-    const int k = 0;
-    for (int l = 0; l < numberOfVariables; l++) {
-      luh[idx_luh(j, k, l)] = luhCellwise[3][idx_cell(j - 1, basisSize - 1, l)];
-    }
-  }
-
-  // right (k = basisSize + 1)
-  for (int j = 1; j < basisSize + 1; j++) {
-    const int k = basisSize + 1;
-    for (int l = 0; l < numberOfVariables; l++) {
-      luh[idx_luh(j, k, l)] = luhCellwise[5][idx_cell(j - 1, 0, l)];
-    }
-  }
-
-  // bottom (j = 0)
-  {
-    const int j = 0;
-    for (int k = 1; k < basisSize + 1; k++) {
-      for (int l = 0; l < numberOfVariables; l++) {
-        luh[idx_luh(j, k, l)] =
-            luhCellwise[1][idx_cell(basisSize - 1, k - 1, l)];
-      }
-    }
-  }
-
-  // top (j = basisSize + 1)
-  {
-    const int j = basisSize + 1;
-    for (int k = 1; k < basisSize + 1; k++) {
-      for (int l = 0; l < numberOfVariables; l++) {
-        luh[idx_luh(j, k, l)] = luhCellwise[7][idx_cell(0, k - 1, l)];
-      }
-    }
-  }
-}
-
-}  // namespace
-
-namespace kernels {
-namespace finitevolumes {
-namespace muscl {
-namespace c {
 
 template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
 double solutionUpdate(double* luh_new,
-                      double** luhCellwise,
                       const tarch::la::Vector<DIMENSIONS, double>& dx,
-                      double dt, int numberOfVariables, int basisSize) {
-  const int size_extended =
-      (basisSize + 2) * (basisSize + 2) * numberOfVariables;
-  idx3 idx_extended(basisSize + 2, basisSize + 2, numberOfVariables);
-
-  idx3 idx_local(basisSize, basisSize, numberOfVariables);
+                      double dt, int numberOfVariables, int basisSize) { // everything is done in the interior
+//  const int size_extended =
+//      (basisSize + 2) * (basisSize + 2) * numberOfVariables;
+//  idx3 idx_extended(basisSize + 2, basisSize + 2, numberOfVariables);
+  const int basisSize2 = basisSize * basisSize;
+  idx3 idx(basisSize, basisSize, numberOfVariables);
   
   const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
 
-  // 1. Gather data from neighbouring cells
-  double* luh = new double[size_extended];
-  gather(luhCellwise, luh, basisSize, numberOfVariables);
-
   // 2. Compute slopes
-  double* slopex = new double[size_extended];
-  double* slopey = new double[size_extended];
+  const int slopesPerCoordinateAxis = (basisSize-2)*basisSize*numberOfVariables
+  double* slopex = new double[slopesPerCoordinateAxis]; // temp: basisSize2*numberOfVariables
+  double* slopey = new double[slopesPerCoordinateAxis]; // temp: basisSize2*numberOfVariables
 
-  std::fill(slopex, slopex + size_extended, 0.0);
-  std::fill(slopey, slopey + size_extended, 0.0);
+  std::fill(slopex, slopesPerCoordinateAxis, 0.0);
+  std::fill(slopey, slopesPerCoordinateAxis, 0.0);
 
-  for (int j = 1; j < basisSize + 1; j++) {
-    for (int k = 1; k < basisSize + 1; k++) {
+  // x-slopes
+  for (int j = 0; j < basisSize; j++) {
+    for (int k = 1; k < basisSize-1; k++) {
       for (int l = 0; l < numberOfVariables; l++) {
-        slopex[idx_extended(j, k, l)] =
-            minmod(luh[idx_extended(j, k + 1, l)] - luh[idx_extended(j, k, l)],
-                   luh[idx_extended(j, k, l)] - luh[idx_extended(j, k - 1, l)]);
-        slopey[idx_extended(j, k, l)] =
-            minmod(luh[idx_extended(j + 1, k, l)] - luh[idx_extended(j, k, l)],
-                   luh[idx_extended(j, k, l)] - luh[idx_extended(j - 1, k, l)]);
+        slopex[idx(j, k, l)] =
+            minmod(luh[idx(j, k + 1, l)] - luh[idx(j, k, l)],
+                   luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]);
+      }
+    }
+  }
+  // y-slopes
+  for (int j = 1; j < basisSize-1; j++) {
+    for (int k = 0; k < basisSize; k++) {
+      for (int l = 0; l < numberOfVariables; l++) {
+        slopey[idx(j, k, l)] =
+            minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],
+                luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]);
       }
     }
   }
 
   // 3. Source evaluation, boundary extrapolation and time evolution
-  double* flx = new double[numberOfVariables * DIMENSIONS];
-  double* F[2] = {flx, flx + numberOfVariables};
+  double* flx = new double[numberOfVariables * DIMENSIONS]; // temp var; DIMENSIONS*numberOfVariables
+  double* F[DIMENSIONS] = {flx, flx + numberOfVariables};
   double* src = new double[numberOfVariables];
 
-  double* slopet = new double[size_extended];
+  double* slopet = new double[slopesPerCoordinateAxis];
+  
+  double* wLx = new double[slopesPerCoordinateAxis]; // temp var; ~slopesPerCoordinateAxis
+  double* wRx = new double[slopesPerCoordinateAxis]; // temp var; 
+  double* wLy = new double[slopesPerCoordinateAxis]; // temp var; 
+  double* wRy = new double[slopesPerCoordinateAxis]; // temp var; 
 
-  double* wLx = new double[size_extended]; // temp var
-  double* wRx = new double[size_extended]; // temp var
-  double* wLy = new double[size_extended]; // temp var
-  double* wRy = new double[size_extended]; // temp var
-
-  std::fill(wLx, wLx + size_extended, 0.0);
-  std::fill(wRx, wRx + size_extended, 0.0);
-  std::fill(wLy, wLy + size_extended, 0.0);
-  std::fill(wRy, wRy + size_extended, 0.0);
-
-  for (int j = 0; j < basisSize + 2; j++) {
-    for (int k = 0; k < basisSize + 2; k++) {
-      double* Qt = slopet + idx_extended(j, k, 0);
+  std::fill(wLx, wLx + slopesPerCoordinateAxis, 0.0);
+  std::fill(wRx, wRx + slopesPerCoordinateAxis, 0.0);
+  std::fill(wLy, wLy + slopesPerCoordinateAxis, 0.0);
+  std::fill(wRy, wRy + slopesPerCoordinateAxis, 0.0);
+  
+  // x-extrapolated values TODO(Dominic): Can this be combined with the slopex loop?
+  for (int j = 0; j < basisSize; j++) {
+    for (int k = 1; k < basisSize-1; k++) {
+      double* Qt = slopet + idx(j, k, 0);
       // source
-      PDESource(luh + idx_extended(j, k, 0), Qt);
+      PDESource(luh + idx(j, k, 0), Qt);
 
       // x
       for (int l = 0; l < numberOfVariables; l++) {
-        wLx[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] - 0.5 * slopex[idx_extended(j, k, l)]; // write;
-        wRx[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] + 0.5 * slopex[idx_extended(j, k, l)]; // write;
+        wLx[idx(j, k, l)] =
+            luh[idx(j, k, l)] - 0.5 * slopex[idx(j, k, l)]; // write;
+        wRx[idx(j, k, l)] =
+            luh[idx(j, k, l)] + 0.5 * slopex[idx(j, k, l)]; // write;
       }
 
-      PDEFlux(wLx + idx_extended(j, k, 0), F);
+      PDEFlux(wLx + idx(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
         Qt[l] += F[0][l] / cellSize[0];
       }
 
-      PDEFlux(wRx + idx_extended(j, k, 0), F);
+      PDEFlux(wRx + idx(j, k, 0), F);
       for (int l = 0; l < numberOfVariables; l++) {
         Qt[l] -= F[0][l] / cellSize[0];
       }
 
       // y
       for (int l = 0; l < numberOfVariables; l++) {
-        wLy[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] - 0.5 * slopey[idx_extended(j, k, l)]; // write 
-        wRy[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] + 0.5 * slopey[idx_extended(j, k, l)]; // write
+        wLy[idx(j, k, l)] =
+            luh[idx(j, k, l)] - 0.5 * slopey[idx(j, k, l)]; // write 
+        wRy[idx(j, k, l)] =
+            luh[idx(j, k, l)] + 0.5 * slopey[idx(j, k, l)]; // write
       }
 
-      PDEFlux(wLy + idx_extended(j, k, 0), F); // read
+      PDEFlux(wLy + idx(j, k, 0), F); // read
       for (int l = 0; l < numberOfVariables; l++) { 
         Qt[l] += F[1][l] / cellSize[1];
       }
  
-      PDEFlux(wRy + idx_extended(j, k, 0), F); // read
+      PDEFlux(wRy + idx(j, k, 0), F); // read
       for (int l = 0; l < numberOfVariables; l++) { 
         Qt[l] -= F[1][l] / cellSize[1];
       }
 
       // Evolve
       for (int l = 0; l < numberOfVariables; l++) {
-        wLx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
-        wRx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
-        wLy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
-        wRy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wLx[idx(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wRx[idx(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wLy[idx(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wRy[idx(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
       }
     }
   }
@@ -300,7 +299,7 @@ double solutionUpdate(double* luh_new,
       PDESource(ws, src);
 
       for (int l = 0; l < numberOfVariables; l++) {
-        luh_new[idx_local(j, k, l)] +=
+        luh_new[idx(j, k, l)] +=
             dt / cellSize[0] * (Fx[idx_Fx(j, k, l)] - Fx[idx_Fx(j, k + 1, l)]) +
             dt / cellSize[1] * (Fy[idx_Fy(j, k, l)] - Fy[idx_Fy(j + 1, k, l)]) +
             dt * src[l];
