@@ -47,6 +47,9 @@ svg {
 
 <p>This is a convergence report generated at <strong>${DATE}</strong> on ${HOST} by ${WHOAMI}.
 
+<p>At this test, <strong>ExaHyPE ${CONVERGENCE_PASSED}</strong>. For details see below.
+
+
 <h2>Simulations</h2>
 <p>The following table gives an overview about the state and parameters of the individual
 simulations which were run. In total, to run this convergence test, <strong>${TOTAL_CPU_HOURS}
@@ -75,12 +78,21 @@ different resolutions. The convergence rates are computed for the quantity <stro
 ${CONVERGENCE_SVG_FIGURE}
 
 <h2>Final time convergence/error table</h2>
-<p>The convergence order of these simulations is:
+<p>For a final time, we display the convergence numbers in the following table. It is
+<em>l1norm</em> the Manhattan norm, <em>l2norm</em> the Euclidean norm, <em>max</em> the
+infinity norm (maximum norm). The values <em>o1norm</em>, <em>o2norm</em> and <em>omax</em>
+are the computed convergence orders for thes enorms.
 
 ${COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE}
 
+<p>By summing up the difference between the ideal scaling (convergence rate = polynomial order + 1)
+and the real scaling in all norms, we have an average factor of <strong>${CONVERGENCE_QUALITY_INDICATOR}</strong>.
+This factor should be at the order of unity. We deduce: ExaHyPE <strong>${CONVERGENCE_PASSED}</strong>.
+
 <h2>Evolution data</h2>
 
-<p>To inspect all the detailled tables, see the details file.
+<p>To inspect much more details, you may either proceed to the <a href="./">simulations
+directory</a> or to the <a href="${LINK_DETAILED_REPORT}">detailed report with all the
+evolution data</a>.
 
 

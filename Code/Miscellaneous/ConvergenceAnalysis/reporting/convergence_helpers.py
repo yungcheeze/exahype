@@ -5,8 +5,10 @@
 #
 # SK, 2016
 
-from os import path, stat#
+import os
+from os import path, stat
 from functools import partial
+
 
 def read_simulation_params(envfile):
 	"""
@@ -48,6 +50,8 @@ def trygenfromtxt(f, *args, **kwargs):
 	except:
 		return None
 
+def is_headless():
+	return not 'DISPLAY' in os.environ
 
 def gensvg(figure):
 	"""

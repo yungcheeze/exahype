@@ -19,7 +19,17 @@ import itertools, operator
 
 # a module in this directory
 from convergence_helpers import read_simulation_params, is_empty_file, simfile, gensvg, \
-	Template, shortenPathsInTable, stripConstantColumns, keepColumnsIf, time_parser, RemoveStringInColumns
+	Template, shortenPathsInTable, stripConstantColumns, keepColumnsIf, time_parser, \
+	RemoveStringInColumns, is_headless
+
+# be_headless: do not show up matplotlib windows even if an X11
+# terminal is attached. Set False if you want to do work with plots.
+be_headless = True
+
+# run simulation statistics program before with
+# ./showSimulationProgress.sh  | grep FINISHED | awk '{print $1}' > simulations.txt
+# or so
+simulationListFilename='./simulations.txt'
 
 try:
 	p = int(sys.argv[1])
@@ -27,9 +37,7 @@ try:
 	report_outputfile = "simulations/generated-report-p%d.html"%p
 except:
 	print "Using all p orders"
-	# determine finished simulations with
-	# ./showSimulationProgress.sh  | grep finished | awk '{print $1}' > finished-simulations.txt
-	simulations = [l.rstrip() for l in open('finished-simulations.txt')]
+	simulations = None
 	report_outputfile = "simulations/generated-report.html"
 
 # simulations is a list to dictionaries holding simulation data.
@@ -48,11 +56,23 @@ idxQuantityFileName = 'QuantityFileName'
 minimalReductionsLengths = lambda SimRow: SimRow['EachRedLength'] > 120
 emptyDirectoryCheck = lambda SimRow: not is_empty_file(SimRow['SimulationName'])
 # now choose:
-filterBadSimulations = minimalReductionsLengths
+goodSimulations = minimalReductionsLengths
+
+# Load table of simulations
+# The shellscript takes around ~ 10-60 Seconds to generate the data, therefore
+# the generation is offloaded.
+statisticstable = pd.read_csv(simulationListFilename, sep="\t")
+assert idxSimName in statisticstable.columns
+# strip whitespace so a comparison is possible
+statisticstable[idxSimName] = statisticstable[idxSimName].map(str.strip)
+
+if not simulations:
+	simulations = list(statisticstable[idxSimName])
 
 overview = Template("reporting/template-overview.html", report_outputfile).addStatistics()
 evolution = Template("reporting/template-evolution.html", "simulations/evolution.html").addStatistics()
-tpl = { 'QUANTITY': quantity }
+overview.set('LINK_DETAILED_REPORT', path.basename(evolution.outputfile)) # link them together
+tpl = { 'QUANTITY': quantity } # common template variables
 
 print "Will work with %d simulations: " % len(simulations)
 for t in enumerate(simulations): print " %i. %s" % t
@@ -68,7 +88,6 @@ simtable = pd.DataFrame()
 simtable[idxSimName] = simulations
 simtable[idxParamFileName] = paramfiles
 simtable[idxQuantityFileName] = quantityfiles
-shortenPathsInTable(simtable, [idxParamFileName, idxQuantityFileName]) # for later html output
 
 # 1B) read parameter files of each simulation
 paramdicts = map(read_simulation_params, paramfiles) # list of dicts
@@ -87,7 +106,7 @@ ncells = widths / meshsizes
 # 1D) Beautifying of paramtable
 # the following beautifying is only done for printing the paramtable
 # beautify the parameter table: keep only columns with "EXA" inside
-# paramtable = keepColumnsIf(paramtable, lambda c: 'EXA' in c)
+## paramtable = keepColumnsIf(paramtable, lambda c: 'EXA' in c)
 # filter out PWD and OLDPWD which sometimes occur -.-
 paramtable = keepColumnsIf(paramtable, lambda c: 'PWD' not in c)
 
@@ -97,19 +116,22 @@ shortenPathsInTable(paramtable, ['EXABINARY', 'EXASPECFILE'])
 idxNcells = 'nCells'
 paramtable[idxNcells] = ncells
 tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html()
-# todo: Extract the "meaning" columns which hold documentation about the exa-columns.
-
-# 1E) Read file about status of simulations (:= simulation statistics)
-statisticstable = pd.read_csv("./logSimProgress.txt", sep="\t")
-assert idxSimName in statisticstable.columns
-# strip whitespace so a comparison is possible
-statisticstable[idxSimName] = statisticstable[idxSimName].map(str.strip)
 tpl['SIMULATION_STATISTICS_TABLE'] = statisticstable.to_html()
-# todo: Create this on runtime without a shellscript
+
+# todo: Extract the "meaning" columns which hold documentation about the exa-columns.
 
 # 1F) Compose a shorter simulation table which contains paramtable and statistics
 #     as well as shorten by extracting constant parameters
 fullsimtable = pd.merge(simtable, pd.merge(paramtable, statisticstable, on=idxSimName), on=idxSimName)
+
+# Compute the filter of entries which will be processed in the further steps
+includedSimulations = fullsimtable.apply(goodSimulations, axis=1) # row-wise
+idxIgnoredSims='IgnoredSimulations'
+IgnoredKeyworder = lambda b: "Included" if b else "Discarded"
+fullsimtable[idxIgnoredSims] = includedSimulations.map(IgnoredKeyworder)
+
+# shorten paths for reduction
+shortenPathsInTable(fullsimtable, [idxParamFileName, idxQuantityFileName])
 reducedsimtable, constant_parameters = stripConstantColumns(fullsimtable)
 # delete stuff we don't need, beautify up table
 reducedsimtable = keepColumnsIf(reducedsimtable, lambda c: 'EXABINARY' not in c)
@@ -118,7 +140,7 @@ RemoveStringInColumns(reducedsimtable, 'EXA', inplace=True)
 tpl['SIMULATION_TABLE'] = reducedsimtable.to_html()
 tpl['CONSTANT_PARAMETERS'] = constant_parameters.to_html()
 
-# 1G) Compute the total walltime
+# 1H) Compute the total walltime
 idxWalltime = 'Walltime' # as set in showSimulationProgress.sh
 # standard time format (from /bin/time) is like "601m17.780s".
 # We ignore the seconds and sum up the minutes
@@ -131,7 +153,12 @@ tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours)
 ## STEP 2: Load Error tables and compute convergence rate
 ## ======================================================
 
-# 2A) Load the error table CSV files
+# 2A) Filter out all bad entries which are no further interesting for automatic
+#     processing
+paramtable = paramtable[includedSimulations]
+quantityfiles = simtable[includedSimulations][idxQuantityFileName]
+
+# 2B) Load the error table CSV files
 
 # Caveats with header detection is very sensible to the first line's format.
 # this will not work:
@@ -167,8 +194,9 @@ print "For the following number of cells, we have this number of simlations:"
 print simulationsPerNCells
 print "So we can compare up to %d simulations for convergence analysis" % maxcomparisons
 
-print "This is the full error table from all simulations (%d entries):" % len(errors)
-print errors
+# too much data:
+#print "This is the full error table from all simulations (%d entries):" % len(errors)
+#print errors
 
 idxplotindex = 'plotindex' # the column counting the rows in each simulation
 
@@ -180,17 +208,12 @@ idxplotindex = 'plotindex' # the column counting the rows in each simulation
 # one we can do plots showing the convergence order during evolution,
 # with the last one we can show compact tables.
 ceslice = errors.query('%s <= %d' % (idxplotindex, maxcomparisons))
-celast = ceslice.groupby(by=[idxporder,idxcells], as_index=False).last().sort([idxporder,idxcells])
+celast = ceslice.groupby(by=[idxporder,idxcells], as_index=False).last().sort_values(by=[idxporder,idxcells])
 # either do groupby(..., as_index=False) and then .sort([idxporder,idxcells])
 # or do as above: groupby() with index but still taking .last()
 # celast: could also replace .last() by .tail(1) but would loose row index information
-# CAVEAT: Make sure indices are unique! Otherwise the for ce.iterrows() will fail.
+# CAVEAT: Make sure indices are unique! Otherwise the `for row in ce.iterrows()` will fail.
 ce = ceslice
-
-# @TODO: From here, go on with ce = celast for making
-overview.set('COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE', 'to be done with celast')
-# @TODO: In the same time, go on with ceslice for making
-
 
 # no index any more
 # to get rid of the index:
@@ -204,17 +227,20 @@ def findSmallerNcellsThan(num):
 	smallerNcells = ncells[ ncells < num ]
 	return np.nan if not len(smallerNcells) else smallerNcells.max()
 
+#def compute_convergence_order(ce):
+#	"ce: common error table"
+#	ce = ce.copy(deep=True)
 idxprev = 'nSmaller' # column name of linked idxcells ('nCells')
 ce[idxprev] = ce[idxcells].apply(findSmallerNcellsThan)
 
 # insert the convergence measures for these columns
 # we dropped 'min avg' as they don't tell us so much concerning convergence
-columns = 'l1norm l2norm max'.split()
-outcols = ["o"+c for c in columns]
+errorColumns = 'l1norm l2norm max'.split()
+rateColumns = ["o"+c for c in errorColumns]
 idxtime = 'time' # the column for time
 
 # add the new columns 
-for newcol in outcols:
+for newcol in rateColumns:
 	ce[newcol] = 0.0
 
 # Turn on or off row entanglement debugging
@@ -253,7 +279,7 @@ for rowindex, row in ce.iterrows():
 	#print "I am in row %d and matched nCells(%f) with prev(%f), outcome:" % (rowindex, row[idxcells], row[idxprev])
 	#print pd.concat([ row.to_frame().T, targetrow ])
 
-	for col, outcol in zip(columns, outcols):
+	for col, outcol in zip(errorColumns, rateColumns):
 		value = np.log(row[col] / targetrow[col]) / np.log( targetrow[idxcells] / row[idxcells] )
 		#print "Computed row[%s]=%f" % (outcol, value)
 		ce.set_value(rowindex, outcol, value)
@@ -261,16 +287,10 @@ for rowindex, row in ce.iterrows():
 	if giveComparisonColumn:
 		ce.set_value(rowindex, idxcomparisoncolumn, str(list(targetrow[[idxplotindex,idxcells,idxtime,'l1norm']].values.flatten()))) # yes that's stupid
 
-# print out a subset of the table
-print "Comptuted this convergence table for the individual reductions"
-print "(as l1norm, infnorm=max, etc.)"
-convergence_table = ce[[idxporder,idxcells,idxprev,idxplotindex,idxtime] + columns + outcols + ([idxcomparisoncolumn] if giveComparisonColumn else [])]
-convergence_table = convergence_table.sort([idxporder, idxcells, idxplotindex])
-# do this for trying grouped output formatting:
-#convergence_table = convergence_table.groupby(by=[idxporder, idxcells]).last()
-#print convergence_table
 
-
+print "Computing convergence tables..."
+#convEvolution = compute_convergence_order(ceslice)
+#convFinal = compute_convergence_order(celast)
 
 # nice compact display of small and large floats, integers
 #compactfloat = lambda f: sub(r'\.0+$', '',(u'%.3'+('f' if abs(f)<999 else 'e'))%f)
@@ -278,11 +298,34 @@ convergence_table = convergence_table.sort([idxporder, idxcells, idxplotindex])
 
 # full tables which do *not* go to the overview
 
+# print out a subset of the table
+print "Comptuted this convergence table for the individual reductions"
+print "(as l1norm, infnorm=max, etc.)"
+convergence_table = ce[[idxporder,idxcells,idxprev,idxplotindex,idxtime] + errorColumns + rateColumns + ([idxcomparisoncolumn] if giveComparisonColumn else [])]
+convergence_table = convergence_table.sort_values(by=[idxporder, idxcells, idxplotindex])
+final_time_convergence_table = convergence_table.groupby(by=[idxporder, idxcells]).last()
+
+# We can also programmatically decide whether decent convergence
+# is present or not. We measure acceptability as the difference from
+# ideal scaling.
+def acceptability(row):
+	# assuming the ideal scaling is always bigger than the real scaling, we sum
+	# up defects which are an indicator about scaling quality
+	return sum([ (row[idxporder]+1) - row[rateCol] for rateCol in rateColumns ])
+
+convergenceQuality = convergence_table.apply(acceptability, axis=1)
+convergenceQualityIndicator = convergenceQuality.mean()
+
+# todo: We can give names
+convergenceQualityBelowNames = { 1: 'excellent', 5: 'passes', 10: 'failed' }
+convergencePassed = ( convergenceQualityIndicator < 5.0 )
+
+tpl['CONVERGENCE_QUALITY_INDICATOR'] = "%.2f" % convergenceQualityIndicator
+tpl['CONVERGENCE_PASSED'] = ('PASSED' if convergencePassed else 'FAILED')
+
 tpl['ERROR_EVOLUTION_TABLE'] = errors.to_html()
 tpl['CONVERGENCE_EVOLUTION_TABLE'] = convergence_table.to_html() #float_format=compactfloat)
-
-
-
+tpl['COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE'] = final_time_convergence_table.to_html()
 
 
 # we can generate plots, create strings holding the SVG file and embed
@@ -292,16 +335,34 @@ do_plots=True
 if do_plots:
 	print "Doing plots"
 	import matplotlib
-	matplotlib.use('Agg') # if headless
+	if be_headless or is_headless():
+		matplotlib.use('Agg')
 	import matplotlib.pyplot as plt
 	plt.ion(); plt.clf()
 
-	ycolumn = 'ol2norm'
-	reprID = paramtable.at[0, 'EXAHYPE_INITIALDATA']
-	reprSpecFile = paramtable.at[0, 'EXASPECFILE']
+	##### SIMPLE ERROR EVOLUTION PLOTS
+	errorPlot = plt.figure(figsize=(18,8))
+	ycolumn = 'max' # l2norm, l1norm
 
-	fig = plt.figure(figsize=(18,8)) # plt.gcf()
-	fig.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
+	for (p,nc),rows in errors.groupby(by=[idxporder,idxcells]):
+		plt.plot(rows[idxtime], rows[ycolumn], label="P=%d,Nc=%d"%(p,nc))
+	plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
+	plt.subplots_adjust(right=0.8)
+	plt.title("Error evolution: %s of quantity %s" % (ycolumn, quantity))
+	plt.xlabel("Simulation time")
+	plt.ylabel("Error")
+	ax = plt.gca()
+	ax.set_yscale('log')
+	plt.ylim(1e-10, 1e0)
+
+	##### CONVERGENCE EVOLUTION PLOTS
+
+	ycolumn = 'ol2norm'
+	reprID = paramtable['EXAHYPE_INITIALDATA'].iloc[0]
+	reprSpecFile = paramtable['EXASPECFILE'].iloc[0]
+
+	convergencePlot = plt.figure(figsize=(18,8)) # plt.gcf()
+	convergencePlot.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
 
 	uniquelist = lambda k: list(np.unique(k))
 	lookupdict = lambda k,v: dict(zip(k,v))
@@ -324,7 +385,7 @@ if do_plots:
 		plt.subplot(1, len(allncells)-1, Ni+1)
 
 		plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
-		for (p,nc),rows in (convergence_table[convergence_table[idxcells]==Ncur]).sort([idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
+		for (p,nc),rows in (convergence_table[convergence_table[idxcells]==Ncur]).sort_values(by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
 			treshholdToShowPoints = 40
 			style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
 			plt.plot(rows[idxtime], rows[ycolumn], style, label="P=%d" % int(p), color=colors[p])#, marker=markers[nc])
@@ -334,11 +395,21 @@ if do_plots:
 		plt.legend().draggable()
 		plt.ylim(0,10)
 
-	tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(fig)
-	tpl['ERROR_SVG_FIGURE'] = 'To be done'
+	tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
+	tpl['ERROR_SVG_FIGURE'] = gensvg(errorPlot)
 else:
 	tpl['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 	tpl['ERROR_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 
+
 overview.execute(tpl, verbose=True)
 evolution.execute(tpl, verbose=True)
+
+print "Convergence test results:"
+print "Convergence factor is %.2f" % convergenceQualityIndicator
+print "Convergence test is " + ("PASSED" if convergencePassed else "FAILED")
+
+# other programs can use exit value to determine outcome of test
+sys.exit(0 if convergencePassed else -3)
+
+
