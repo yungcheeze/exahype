@@ -20,14 +20,14 @@
 # directory where all simulations are stored in
 export SIMBASE=${SIMBASE:=simulations/}
 
-# path to the exahype executable to use
-export EXABINARY=${EXABINARY:=$(exa root)/$(exa find-binary MHD)}
+export MeaningBinary="Path to the ExaHyPE executable to use"
+export ExaBinary=${ExaBinary=$(exa root)/$(exa find-binary MHD)}
 
-# path of the spec file to use
-export EXASPECFILE=${EXASPECFILE:=MHD_AlfenWaveConvergence.exahype}
+export MeaningSpecfile="path of the spec file to use"
+export ExaSpecfile=${ExaSpecfile=MHD_AlfenWaveConvergence.exahype}
 
-# how much TBB cores to use for shared memory parallelization
-export EXATBBCORES=${EXATBBCORES:=16}
+export MeaningTbbCores="How much TBB cores to use for shared memory parallelization"
+export ExaTbbCores=${ExaTbbCores:=16}
 
 function errormsg {
 	echo -e "Usage: $0 [-p <num>] [-m <num>]"
@@ -42,16 +42,18 @@ while [[ $# -gt 1 ]]; do
 	key="$1"
 	case $key in
 		-p|--polyorder)
-		export EXAPORDER="$2"
-		EXABINARY="$EXABINARY-p$EXAPORDER"
-		if [ ! -e "$EXABINARY" ]; then
-			echo -e "Failure: $EXABINARY does not exist. Please compile for order $EXAPORDER"
+		export MeaningpOrder="Polynomial order for ADER-DG"
+		export ExapOrder="$2"
+		ExaBinary="$ExaBinary-p$ExapOrder"
+		if [ ! -e "$ExaBinary" ]; then
+			echo -e "Failure: $ExaBinary does not exist. Please compile for order $ExapOrder"
 			exit -2
 		fi
 		shift # past argument
 		;;
 		-m|--meshsize)
-		export EXAMESHSIZE="$2"
+		export MeaningMeshSize="Minimum meshsize (to pass to specfile), the coarsest grid resolution"
+		export ExaMeshSize="$2"
 		shift # past argument
 		;;
 		# --default) # example binary string
@@ -66,15 +68,15 @@ while [[ $# -gt 1 ]]; do
 done
 
 # check if all neccessary arguments are nonempty
-[[ ! ${EXAPORDER} ]] && errormsg
-[[ ! ${EXAMESHSIZE} ]] && errormsg
+[[ ! ${ExapOrder} ]] && errormsg
+[[ ! ${ExaMeshSize} ]] && errormsg
 
 # exit script in case of error starting from here
 set -e
 
 # compose and setup simulation parameter directory
 mkdir -p "$SIMBASE"
-SIMDIR="$SIMBASE/p${EXAPORDER}-meshsize${EXAMESHSIZE}/"
+SIMDIR="$SIMBASE/p${ExapOrder}-meshsize${ExaMeshSize}/"
 if [ -e "$SIMDIR" ]; then
 	echo "WIPING existing simulation at $SIMDIR"
 	rm -r "$SIMDIR";
@@ -92,15 +94,15 @@ echo "Redirecting further output to $LOGFILE and executing ExaHyPE in background
 exec > >(stdbuf -o0 awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' > $LOGFILE) 2>&1
 
 # convert possibly relative paths to absolute ones
-EXABINARY=$(readlink -f "$EXABINARY")
-EXASPECFILE=$(readlink -f "$EXASPECFILE")
+ExaBinary=$(readlink -f "$ExaBinary")
+ExaSpecfile=$(readlink -f "$ExaSpecfile")
 # and get the pure filenames
-BASE_EXABINARY=$(basename "$EXABINARY")
-BASE_EXASPECFILE=$(basename "$EXASPECFILE")
+BASE_ExaBinary=$(basename "$ExaBinary")
+BASE_ExaSpecfile=$(basename "$ExaSpecfile")
 
 # populate simulation directory with absolute symlinks
-ln -s "$EXABINARY" "$SIMDIR/"
-cp "$EXASPECFILE" "$SIMDIR/"
+ln -s "$ExaBinary" "$SIMDIR/"
+cp "$ExaSpecfile" "$SIMDIR/"
 
 cd "$SIMDIR"
 
@@ -109,10 +111,14 @@ mkdir -p output
 
 # set initial data to use.
 #export EXAHYPE_INITIALDATA="MovingGauss2D"
-export EXAHYPE_INITIALDATA="ShuVortex"
+export exahype_parameter_workaround="yes"
+export exahype_initialdata="AlfenWave"
+export EXAHYPE_INITIALDATA="$exahype_initialdata"
 
 # parameters for setting up the specfile
+export MeaningSPEC_WIDTH="Grid extend in x direction"
 export EXASPEC_WIDTH="1.0"
+export MeaningSPEC_HEIGHT="Grid extend in y direction"
 export EXASPEC_HEIGHT="1.0"
 export EXASPEC_ENDTIME="1.0"
 export HOST="$(hostname)"
@@ -120,30 +126,32 @@ export DATE="$(date)"
 
 # parameters deciding how frequently output is made. As a first criterion,
 # 1 output dump with the highest resolution is 250MB.
-export EXACONVOUTPUTREPEAT="0.05"
-export EXAVTKOUTPUTREPEAT="0.05"
+export MeaningConvOutputRepeat="Time delta how frequently the data convolution output (integrals) is made"
+export ExaConvOutputRepeat="0.05"
+export MeaningVtkOutputRepeat="Time delta how frequently the full point-wise VTK output is made"
+export ExaVtkOutputRepeat="0.05"
 
 # change spec file contents:
-function exaspecrepl { sed -i "$1" $BASE_EXASPECFILE; }
+function exaspecrepl { sed -i "$1" $BASE_ExaSpecfile; }
 
 exaspecrepl '/@comment@/d'
 exaspecrepl "s/@WIDTH@/$EXASPEC_WIDTH/g"
 exaspecrepl "s/@ENDTIME@/$EXASPEC_ENDTIME/g"
-exaspecrepl "s/@ORDER@/$EXAPORDER/g"
-exaspecrepl "s/@MESHSIZE@/$EXAMESHSIZE/g"
+exaspecrepl "s/@ORDER@/$ExapOrder/g"
+exaspecrepl "s/@MESHSIZE@/$ExaMeshSize/g"
 exaspecrepl "s/@HOST@/$HOST/g"
 exaspecrepl "s/@DATE@/$DATE/g"
-exaspecrepl "s/@TBBCORES@/$EXATBBCORES/g"
-exaspecrepl "s/@CONVOUTPUTREPEAT@/$EXACONVOUTPUTREPEAT/g"
-exaspecrepl "s/@VTKOUTPUTREPEAT@/$EXAVTKOUTPUTREPEAT/g"
+exaspecrepl "s/@TBBCORES@/$ExaTbbCores/g"
+exaspecrepl "s/@CONVOUTPUTREPEAT@/$ExaConvOutputRepeat/g"
+exaspecrepl "s/@VTKOUTPUTREPEAT@/$ExaVtkOutputRepeat/g"
 
 echo "This is $0 on $HOST at $DATE"
 echo "Running with the following parameters:"
-env | grep -iE 'exa|sim' | tee parameters.env
+env | grep -iE 'exa|sim|meaning' | tee parameters.env
 echo
 
 # run it
-time ./$BASE_EXABINARY $BASE_EXASPECFILE && echo "Finished ExaHyPE successfully" || 
+time ./$BASE_ExaBinary $BASE_ExaSpecfile && echo "Finished ExaHyPE successfully" || 
 	{ echo "ExaHyPE binary failed!"; exit -2; }
 
 echo "Packing simulation outcome to results.tar.gzip"

@@ -15,13 +15,11 @@ from glob import glob
 from os import path, stat
 from re import match, sub
 from os import path
-from string import Template # HTML output
-import itertools
-import StringIO
-# just for statistics
-from datetime import datetime
-from socket import gethostname
-from getpass import getuser
+import itertools, operator
+
+# a module in this directory
+from convergence_helpers import read_simulation_params, is_empty_file, simfile, gensvg, \
+	Template, shortenPathsInTable, stripConstantColumns, keepColumnsIf, time_parser, RemoveStringInColumns
 
 try:
 	p = int(sys.argv[1])
@@ -29,69 +27,55 @@ try:
 	report_outputfile = "simulations/generated-report-p%d.html"%p
 except:
 	print "Using all p orders"
+	# determine finished simulations with
+	# ./showSimulationProgress.sh  | grep finished | awk '{print $1}' > finished-simulations.txt
 	simulations = [l.rstrip() for l in open('finished-simulations.txt')]
 	report_outputfile = "simulations/generated-report.html"
 
+# simulations is a list to dictionaries holding simulation data.
+
 # which quantity shall we look at, in the moment?
-quantity = 'error-rho.asc'
+quantity = 'error-bx.asc' # was error-rho.asc
 quantityfile="output/" + quantity
-report_templatefile = "report/report-template.html"
 
-def read_simulation_params(envfile):
-	"""
-	Small function to parse files in this format:
-	EXAMESHSIZE=0.0037037037037
-	EXAPORDER=2.0
-	EXAHYPE_INITIALDATA=MovingGauss2D
-	...
-	Returns dictionary like
-	{
-	'EXAMESHSIZE': 0.0037037037037,
-	'EXAPORDER': 2.0,
-	'EXAHYPE_INITIALDATA': 'MovingGauss2D',
-	...
-	}
-	"""
-	params = {}
-	with open(envfile, 'r') as fh:
-		for line in fh:
-			res = match(r'^([a-zA-Z0-9_]+)=(.*)$', line)
-			if res:
-				k, v = res.group(1), res.group(2)
-				# try to cast the value as a float,
-				# as this is a common data type in our buisness
-				try:
-					params[k] = float(v)
-				except:
-					params[k] = v
-	return params
+# these are names for columns in our dataframes which can appear as columns
+# in input and output data
+idxSimName = 'SimulationName' # also used in showSimulationProgress.sh
+idxParamFileName = 'ParamFileName'
+idxQuantityFileName = 'QuantityFileName'
 
-# just a helper function to detect empty files
-filenotempty = lambda f: stat(f).st_size != 0
-simfile = lambda fname: lambda simdir: path.join(simdir, fname)
+# What criterion do make to filter out bad simulations? These are examples:
+minimalReductionsLengths = lambda SimRow: SimRow['EachRedLength'] > 120
+emptyDirectoryCheck = lambda SimRow: not is_empty_file(SimRow['SimulationName'])
+# now choose:
+filterBadSimulations = minimalReductionsLengths
 
-# fault tolerant genfromtxt
-def trygenfromtxt(f, *args, **kwargs):
-	try:
-		return np.genfromtxt(f, *args, **kwargs)
-	except:
-		return None
+overview = Template("reporting/template-overview.html", report_outputfile).addStatistics()
+evolution = Template("reporting/template-evolution.html", "simulations/evolution.html").addStatistics()
+tpl = { 'QUANTITY': quantity }
 
-# filter out empty simulations
-# @todo, does not work right now, have to check on `quantityfiles`
-simulations = filter(filenotempty, simulations)
-
-print "Have read %d non-empty simulations: " % len(simulations)
+print "Will work with %d simulations: " % len(simulations)
 for t in enumerate(simulations): print " %i. %s" % t
 
-# determine filenames
-quantityfiles = map(simfile(quantityfile), simulations)
-paramfiles = map(simfile('parameters.env'), simulations)
+## STEP 1: Retrieve Simulation parameters and statistics
+## =====================================================
 
-# read parameter files
+paramfiles = map(simfile('parameters.env'), simulations)
+quantityfiles = map(simfile(quantityfile), simulations)
+
+# 1A) In the first step, simtable will hold information about simulation paths
+simtable = pd.DataFrame()
+simtable[idxSimName] = simulations
+simtable[idxParamFileName] = paramfiles
+simtable[idxQuantityFileName] = quantityfiles
+shortenPathsInTable(simtable, [idxParamFileName, idxQuantityFileName]) # for later html output
+
+# 1B) read parameter files of each simulation
 paramdicts = map(read_simulation_params, paramfiles) # list of dicts
 paramtable = pd.DataFrame(paramdicts) # single table
+paramtable[idxSimName] = simulations # give an index column
 
+# 1C) Compute number of cells, etc.
 porders = paramtable['EXAPORDER']
 meshsizes = paramtable['EXAREALMESHSIZE'] # if not available, use 'EXAMESHSIZE'
 widths = paramtable['EXASPEC_WIDTH']
@@ -100,17 +84,54 @@ if not np.all(widths == widths[0]):
 	print "WARNING: Not all simulation domains are equal! Sizes are: ", widths
 ncells = widths / meshsizes
 
+# 1D) Beautifying of paramtable
 # the following beautifying is only done for printing the paramtable
 # beautify the parameter table: keep only columns with "EXA" inside
-cols = [col for col in paramtable.columns if 'EXA' in col]
-paramtable = paramtable[cols]
+# paramtable = keepColumnsIf(paramtable, lambda c: 'EXA' in c)
+# filter out PWD and OLDPWD which sometimes occur -.-
+paramtable = keepColumnsIf(paramtable, lambda c: 'PWD' not in c)
+
 # beautify the parameter table: shorten the paths
-possiblepathcolumns = ['EXABINARY', 'EXASPECFILE']
-for col in possiblepathcolumns:
-	try: paramtable[col] = paramtable[col].map(path.basename)
-	except e: pass
+shortenPathsInTable(paramtable, ['EXABINARY', 'EXASPECFILE'])
 # store number of cells back into paramtable for dumping
-paramtable['POST_NUMBEROFCELLS'] = ncells
+idxNcells = 'nCells'
+paramtable[idxNcells] = ncells
+tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html()
+# todo: Extract the "meaning" columns which hold documentation about the exa-columns.
+
+# 1E) Read file about status of simulations (:= simulation statistics)
+statisticstable = pd.read_csv("./logSimProgress.txt", sep="\t")
+assert idxSimName in statisticstable.columns
+# strip whitespace so a comparison is possible
+statisticstable[idxSimName] = statisticstable[idxSimName].map(str.strip)
+tpl['SIMULATION_STATISTICS_TABLE'] = statisticstable.to_html()
+# todo: Create this on runtime without a shellscript
+
+# 1F) Compose a shorter simulation table which contains paramtable and statistics
+#     as well as shorten by extracting constant parameters
+fullsimtable = pd.merge(simtable, pd.merge(paramtable, statisticstable, on=idxSimName), on=idxSimName)
+reducedsimtable, constant_parameters = stripConstantColumns(fullsimtable)
+# delete stuff we don't need, beautify up table
+reducedsimtable = keepColumnsIf(reducedsimtable, lambda c: 'EXABINARY' not in c)
+RemoveStringInColumns(reducedsimtable, 'EXA', inplace=True)
+
+tpl['SIMULATION_TABLE'] = reducedsimtable.to_html()
+tpl['CONSTANT_PARAMETERS'] = constant_parameters.to_html()
+
+# 1G) Compute the total walltime
+idxWalltime = 'Walltime' # as set in showSimulationProgress.sh
+# standard time format (from /bin/time) is like "601m17.780s".
+# We ignore the seconds and sum up the minutes
+timedeltas = map(time_parser(r'\s*(?P<minutes>\d+)m'), fullsimtable[idxWalltime])
+totaltime = reduce(operator.add, timedeltas)
+totalhours = totaltime.total_seconds() / (60*60)
+tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours)
+
+
+## STEP 2: Load Error tables and compute convergence rate
+## ======================================================
+
+# 2A) Load the error table CSV files
 
 # Caveats with header detection is very sensible to the first line's format.
 # this will not work:
@@ -151,6 +172,9 @@ print errors
 
 idxplotindex = 'plotindex' # the column counting the rows in each simulation
 
+
+# 2B) Compute the convergence rate
+
 # we can either choose all overlapping data points for the common
 # error (ceslice) or only the very last entry (celast). With the first
 # one we can do plots showing the convergence order during evolution,
@@ -162,6 +186,11 @@ celast = ceslice.groupby(by=[idxporder,idxcells], as_index=False).last().sort([i
 # celast: could also replace .last() by .tail(1) but would loose row index information
 # CAVEAT: Make sure indices are unique! Otherwise the for ce.iterrows() will fail.
 ce = ceslice
+
+# @TODO: From here, go on with ce = celast for making
+overview.set('COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE', 'to be done with celast')
+# @TODO: In the same time, go on with ceslice for making
+
 
 # no index any more
 # to get rid of the index:
@@ -239,23 +268,22 @@ convergence_table = ce[[idxporder,idxcells,idxprev,idxplotindex,idxtime] + colum
 convergence_table = convergence_table.sort([idxporder, idxcells, idxplotindex])
 # do this for trying grouped output formatting:
 #convergence_table = convergence_table.groupby(by=[idxporder, idxcells]).last()
-print convergence_table
+#print convergence_table
 
-# prepare the HTML template
-tmplvars = {}
-tmplvars['DATE'] = datetime.now().strftime("%c")
-tmplvars['HOST'] = gethostname()
-tmplvars['WHOAMI'] = getuser()
 
-tmplvars['QUANTITY'] = quantity
 
 # nice compact display of small and large floats, integers
 #compactfloat = lambda f: sub(r'\.0+$', '',(u'%.3'+('f' if abs(f)<999 else 'e'))%f)
 #compactfloat = lambda f: (u'%.3'+('f' if abs(f)<999 else 'e'))%f
 
-tmplvars['PARAMS_TABLE'] = paramtable.to_html()
-tmplvars['ERROR_TABLE'] = errors.to_html()
-tmplvars['CONVERGENCE_TABLE'] = convergence_table.to_html()#float_format=compactfloat)
+# full tables which do *not* go to the overview
+
+tpl['ERROR_EVOLUTION_TABLE'] = errors.to_html()
+tpl['CONVERGENCE_EVOLUTION_TABLE'] = convergence_table.to_html() #float_format=compactfloat)
+
+
+
+
 
 # we can generate plots, create strings holding the SVG file and embed
 # the figures as inline SVG to the HTML file.
@@ -306,18 +334,11 @@ if do_plots:
 		plt.legend().draggable()
 		plt.ylim(0,10)
 
-	imgdata = StringIO.StringIO()
-	fig.savefig(imgdata, format='svg')
-	imgdata.seek(0)
-	bigplot = imgdata.buf
-	tmplvars['CONVERGENCE_SVG_FIGURE'] = bigplot
+	tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(fig)
+	tpl['ERROR_SVG_FIGURE'] = 'To be done'
 else:
-	tmplvars['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
+	tpl['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
+	tpl['ERROR_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 
-tmpl=open(report_templatefile, 'r').read().strip()
-html = Template(tmpl).substitute(tmplvars)
-
-with open(report_outputfile, 'w') as out:
-	out.write(html)
-
-print "Wrote report to %s." % report_outputfile
+overview.execute(tpl, verbose=True)
+evolution.execute(tpl, verbose=True)

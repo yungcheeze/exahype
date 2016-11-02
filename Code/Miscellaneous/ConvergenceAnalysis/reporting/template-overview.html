@@ -1,0 +1,86 @@
+<!Doctype html>
+<html>
+<title>ExaHyPE Convergence report overview</title>
+<style type="text/css">
+/**
+ * Mini style for improving the layout of the Convergence report
+ * in ExaHyPE. Embedded to ensure portability.
+ * SK, 22. Sept 2016
+ **/
+
+body {
+	font: 90% Arial,Verdana,sans-serif;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th,td {
+	padding: .3em;
+}
+
+th {
+	background-color: #eee;
+}
+
+th,td {
+	border: 1px solid #aaa;
+}
+
+tr:hover {
+	background-color: yellow;
+}
+
+strong {
+	background-color: yellow;
+}
+
+svg {
+	/* responsive */
+	max-width: 100%;
+}
+</style>
+<body>
+
+<h1>ExaHyPE Convergence report overview</h1>
+
+<p>This is a convergence report generated at <strong>${DATE}</strong> on ${HOST} by ${WHOAMI}.
+
+<h2>Simulations</h2>
+<p>The following table gives an overview about the state and parameters of the individual
+simulations which were run. In total, to run this convergence test, <strong>${TOTAL_CPU_HOURS}
+CPU hours</strong> (node hours) have been burned.
+
+${SIMULATION_TABLE}
+
+<p>The following parameters have been constant for all runs, thus not appearing as columns
+to avoid cluttering:
+
+${CONSTANT_PARAMETERS}
+
+<p>To inspect the specification files with all further parameters, go
+straight into the <a href="./">simulations directory</a>.
+
+<h2>Errors</h2>
+<p>This plot shows the errors of the simulations compared to the exact solutions over the
+simulation time. The errors are shown on the quantity <strong>${QUANTITY}</strong>.
+
+${ERROR_SVG_FIGURE}
+
+<h2>Convergence rates</h2>
+<p>This plot shows the convergence rates of the individual simulations as comparisons between
+different resolutions. The convergence rates are computed for the quantity <strong>${QUANTITY}</strong>.
+
+${CONVERGENCE_SVG_FIGURE}
+
+<h2>Final time convergence/error table</h2>
+<p>The convergence order of these simulations is:
+
+${COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE}
+
+<h2>Evolution data</h2>
+
+<p>To inspect all the detailled tables, see the details file.
+
+
