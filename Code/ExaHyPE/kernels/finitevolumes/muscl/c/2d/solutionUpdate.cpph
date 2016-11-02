@@ -98,7 +98,7 @@ void gather(const double* const* luhCellwise, double* luh, int basisSize,
     }
   }
 
-  // bottom (k = 0)
+  // left (k = 0)
   for (int j = 1; j < basisSize + 1; j++) {
     const int k = 0;
     for (int l = 0; l < numberOfVariables; l++) {
@@ -106,7 +106,7 @@ void gather(const double* const* luhCellwise, double* luh, int basisSize,
     }
   }
 
-  // top (k = basisSize + 1)
+  // right (k = basisSize + 1)
   for (int j = 1; j < basisSize + 1; j++) {
     const int k = basisSize + 1;
     for (int l = 0; l < numberOfVariables; l++) {
@@ -114,7 +114,7 @@ void gather(const double* const* luhCellwise, double* luh, int basisSize,
     }
   }
 
-  // left (j = 0)
+  // bottom (j = 0)
   {
     const int j = 0;
     for (int k = 1; k < basisSize + 1; k++) {
@@ -125,7 +125,7 @@ void gather(const double* const* luhCellwise, double* luh, int basisSize,
     }
   }
 
-  // right (j = basisSize + 1)
+  // top (j = basisSize + 1)
   {
     const int j = basisSize + 1;
     for (int k = 1; k < basisSize + 1; k++) {
@@ -190,10 +190,10 @@ double solutionUpdate(double* luh_new,
 
   double* slopet = new double[size_extended];
 
-  double* wLx = new double[size_extended];
-  double* wRx = new double[size_extended];
-  double* wLy = new double[size_extended];
-  double* wRy = new double[size_extended];
+  double* wLx = new double[size_extended]; // temp var
+  double* wRx = new double[size_extended]; // temp var
+  double* wLy = new double[size_extended]; // temp var
+  double* wRy = new double[size_extended]; // temp var
 
   std::fill(wLx, wLx + size_extended, 0.0);
   std::fill(wRx, wRx + size_extended, 0.0);
@@ -209,9 +209,9 @@ double solutionUpdate(double* luh_new,
       // x
       for (int l = 0; l < numberOfVariables; l++) {
         wLx[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] - 0.5 * slopex[idx_extended(j, k, l)];
+            luh[idx_extended(j, k, l)] - 0.5 * slopex[idx_extended(j, k, l)]; // write;
         wRx[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] + 0.5 * slopex[idx_extended(j, k, l)];
+            luh[idx_extended(j, k, l)] + 0.5 * slopex[idx_extended(j, k, l)]; // write;
       }
 
       PDEFlux(wLx + idx_extended(j, k, 0), F);
@@ -227,27 +227,27 @@ double solutionUpdate(double* luh_new,
       // y
       for (int l = 0; l < numberOfVariables; l++) {
         wLy[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] - 0.5 * slopey[idx_extended(j, k, l)];
+            luh[idx_extended(j, k, l)] - 0.5 * slopey[idx_extended(j, k, l)]; // write 
         wRy[idx_extended(j, k, l)] =
-            luh[idx_extended(j, k, l)] + 0.5 * slopey[idx_extended(j, k, l)];
+            luh[idx_extended(j, k, l)] + 0.5 * slopey[idx_extended(j, k, l)]; // write
       }
 
-      PDEFlux(wLy + idx_extended(j, k, 0), F);
-      for (int l = 0; l < numberOfVariables; l++) {
+      PDEFlux(wLy + idx_extended(j, k, 0), F); // read
+      for (int l = 0; l < numberOfVariables; l++) { 
         Qt[l] += F[1][l] / cellSize[1];
       }
-
-      PDEFlux(wRy + idx_extended(j, k, 0), F);
-      for (int l = 0; l < numberOfVariables; l++) {
+ 
+      PDEFlux(wRy + idx_extended(j, k, 0), F); // read
+      for (int l = 0; l < numberOfVariables; l++) { 
         Qt[l] -= F[1][l] / cellSize[1];
       }
 
       // Evolve
       for (int l = 0; l < numberOfVariables; l++) {
-        wLx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l];
-        wRx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l];
-        wLy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l];
-        wRy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l];
+        wLx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wRx[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wLy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
+        wRy[idx_extended(j, k, l)] += 0.5 * dt * Qt[l]; // read,write
       }
     }
   }
@@ -267,7 +267,7 @@ double solutionUpdate(double* luh_new,
     for (int k = 0; k < basisSize + 1; k++) {
       double s_max_x = riemannSolver<PDEEigenvalues, PDEFlux>(
           Fx + idx_Fx(j, k, 0), wRx + idx_extended(j + 1, k, 0),
-          wLx + idx_extended(j + 1, k + 1, 0), numberOfVariables, 0);
+          wLx + idx_extended(j + 1, k + 1, 0), numberOfVariables, 0); // TODO(Dominic): Merging of data happens here; read wRx wLx
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula.
       dt_max_allowed = std::min(
@@ -280,7 +280,7 @@ double solutionUpdate(double* luh_new,
     for (int k = 0; k < basisSize; k++) {
       double s_max_y = riemannSolver<PDEEigenvalues, PDEFlux>(
           Fy + idx_Fy(j, k, 0), wRy + idx_extended(j, k + 1, 0),
-          wLy + idx_extended(j + 1, k + 1, 0), numberOfVariables, 1);
+          wLy + idx_extended(j + 1, k + 1, 0), numberOfVariables, 1); // TODO(Dominic): Merging of data happens here; read wRy wLy
       dt_max_allowed = std::min(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
     }
