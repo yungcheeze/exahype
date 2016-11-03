@@ -39,58 +39,6 @@ double minmod(double a, double b) {
   }
 }
 
-//void gather(const double* const* luhCellwise, double* luh, int basisSize,
-//            int numberOfVariables) {
-//  kernels::idx3 idx_luh(basisSize + 2, basisSize + 2, numberOfVariables);
-//  kernels::idx3 idx_cell(basisSize, basisSize, numberOfVariables);
-//
-//  // inside
-//  for (int j = 1; j < basisSize + 1; j++) {
-//    for (int k = 1; k < basisSize + 1; k++) {
-//      for (int l = 0; l < numberOfVariables; l++) {
-//        luh[idx_luh(j, k, l)] = luhCellwise[4][idx_cell(j - 1, k - 1, l)];
-//      }
-//    }
-//  }
-//
-//  // left (k = 0)
-//  for (int j = 1; j < basisSize + 1; j++) {
-//    const int k = 0;
-//    for (int l = 0; l < numberOfVariables; l++) {
-//      luh[idx_luh(j, k, l)] = luhCellwise[3][idx_cell(j - 1, basisSize - 1, l)];
-//    }
-//  }
-//
-//  // right (k = basisSize + 1)
-//  for (int j = 1; j < basisSize + 1; j++) {
-//    const int k = basisSize + 1;
-//    for (int l = 0; l < numberOfVariables; l++) {
-//      luh[idx_luh(j, k, l)] = luhCellwise[5][idx_cell(j - 1, 0, l)];
-//    }
-//  }
-//
-//  // bottom (j = 0)
-//  {
-//    const int j = 0;
-//    for (int k = 1; k < basisSize + 1; k++) {
-//      for (int l = 0; l < numberOfVariables; l++) {
-//        luh[idx_luh(j, k, l)] =
-//            luhCellwise[1][idx_cell(basisSize - 1, k - 1, l)];
-//      }
-//    }
-//  }
-//
-//  // top (j = basisSize + 1)
-//  {
-//    const int j = basisSize + 1;
-//    for (int k = 1; k < basisSize + 1; k++) {
-//      for (int l = 0; l < numberOfVariables; l++) {
-//        luh[idx_luh(j, k, l)] = luhCellwise[7][idx_cell(0, k - 1, l)];
-//      }
-//    }
-//  }
-//}
-
 }  // namespace
 
 namespace kernels {
