@@ -159,24 +159,24 @@ public class Helpers {
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
-        new java.io.File(currentDirectory + "/Miscellaneous/CodeGenerator/Driver.py");
-    if (pathToCodeGenerator.exists()) {
-      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels.");
+        new java.io.File(currentDirectory + "/CodeGenerator/Driver.py");
+    if (!pathToCodeGenerator.exists()) {
+      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + currentDirectory + "/CodeGenerator/Driver.py");
       return;
     }
 
     String numericsParameter = isLinear ? "linear" : "nonlinear";
 
     // set up the command to execute the code generator
-    String args = " " + solverName + " " + numberOfUnknowns + " " + order + " "
+    String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + pathToLibxsmm + " "
+        + currentDirectory + "/" + "../libxsmm" + " " // + pathToLibxsmm + " " //TODO JMG fix pathToLibxsmm
         + "--precision=DP"; // double precision
 
     String bashCommand = "python " + pathToCodeGenerator + args;
 
     Runtime runtime = Runtime.getRuntime();
-
+	System.out.println("Codegenerator command line: "+bashCommand);
     // execute the command line program
     Process codeGenerator = runtime.exec(bashCommand);
 
