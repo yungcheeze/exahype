@@ -110,7 +110,7 @@ class SpaceTimePredictorGenerator:
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                  \
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n'  \
-                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.hpp"\n'\
+                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"\n'\
                              '#include "kernels/aderdg/optimised/asm_scatter.c"\n\n'
 
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
