@@ -25,26 +25,31 @@ class exahype::records::FiniteVolumesCellDescription {
    * The time stamp the correction phase is working with.
    */
   parallelise persistent double timeStamp;
-
-  /**
-   *  Index referring to the (old) solution DoF associated with this cell
-   *  description.
-   */
-  parallelise persistent int solution;
   
   /**
    *  Index referring to the old solution DoF associated with this cell
    *  description.
    */
   parallelise persistent int oldSolution;
-  
   /**
-   *  Index pointing to the solution DoF belonging to this cell.
-   *  Resembles also the state of the previous time step during update
-   * calculations.
-   *  Symbol: \f$ u_h \f$.
+   * Index referring to the old solution DoF associated with this cell
+   * description.
    */
   parallelise persistent int solution;
+  
+  /**
+   *  Index referring to the boundary extrapolated 
+   *  old solution DoF associated with this cell
+   *  description.
+   */
+  parallelise persistent int extrapolatedSolution[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   *  Index referring to the boundary extrapolated 
+   *  old solution DoF associated with this cell
+   *  description.
+   */
+  parallelise persistent int fluctuations[DIMENSIONS_TIMES_TWO];
   
   /**
    * Space-tree level of the cell this FiniteVolumesCellDescription is associated
