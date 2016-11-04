@@ -47,8 +47,8 @@ GenericEulerKernelTest::~GenericEulerKernelTest() {}
 void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
 
-  testMethod(testSpaceTimePredictorLinear);
-  testMethod(testSpaceTimePredictorNonlinear);
+//  testMethod(testSpaceTimePredictorLinear);
+//  testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);
   testMethod(testVolumeIntegralNonlinear);
   testMethod(testRiemannSolverLinear);
