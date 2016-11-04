@@ -65,18 +65,14 @@ double riemannSolver(double* F, const double* qL, const double* qR,
   double s_max = -1.0;
   for (int i = 0; i < numberOfVariables; i++) {
     const double abs_sL_i = std::abs(sL[i]);
-    if (abs_sL_i > s_max) { // TODO(Dominic): Change to 
-      s_max = abs_sL_i;
-    }
+    s_max = std::max( abs_sL_i, s_max );
   }
   for (int i = 0; i < numberOfVariables; i++) {
     const double abs_sR_i = std::abs(sR[i]);
-    if (abs_sR_i > s_max) { // TODO(Dominic): Change to 
-      s_max = abs_sR_i;
-    }
+    s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL[2] = {tempStateSizedArrays[0],tempStateSizedArrays[1]}; // TODO(Dominic): MAKE FL and FR input arguments
+  double* FL[2] = {tempStateSizedArrays[0],tempStateSizedArrays[1]};
   double* FR[2] = {tempStateSizedArrays[2],tempStateSizedArrays[3]};
   PDEFlux(qL, FL);
   PDEFlux(qR, FR);
@@ -89,12 +85,20 @@ double riemannSolver(double* F, const double* qL, const double* qR,
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
 }
 
+
+/**
+ * Solve the Riemann problem between all extrapolated boundary
+ * values in the arrays QL,QR.
+ * 
+ * Boundary layers are partially overlapping (edges/corners).
+ */
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda),
           void PDEFlux(const double* const Q, double** F)>
-double riemannSolver(double* FL, double* FR, const double* QL, const double* QR,
-                     int basisSize, int numberOfVariables, int normalNonZero,
-                     double** tempStateSizedArrays) { // TODO(Dominic): I need four of those
+double riemannSolverPatchBoundary(
+    double* FL, double* FR, const double* QL, const double* QR,
+    int basisSize, int numberOfVariables, int normalNonZero,
+    double** tempStateSizedArrays) { // TODO(Dominic): I need four of those
   double s_max = -1.0;
     
   idx2 idx_Fn(basisSize,numberOfVariables);
@@ -114,6 +118,11 @@ double riemannSolver(double* FL, double* FR, const double* QL, const double* QR,
   return s_max;  // TODO(guera): Use to check if dt in solutionUpdate was OK
 }
 
+/** 
+ * Boundary treatment.
+ * 
+ * Boundary layers are partially overlapping (edges/corners).
+ */
 void solutionUpdatePatchBoundary(
     double* luh_new,const double* lFhbnd,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -131,13 +140,13 @@ void solutionUpdatePatchBoundary(
   if (faceIndex==0) {
     for (int i=0; i<basisSize; ++i) {
       for (int l=0; l<basisSize; ++l) {
-        luh_new[idx(i,0,l)]         += sign* dt / cellSize[0] * lFhbnd[0][idx_Fn(i,l)];
+        luh_new[idx(i,0,l)]         += dt / cellSize[0] * lFhbnd[0][idx_Fn(i,l)];
       }
     }
   } else if (faceIndex==1) {
     for (int i=0; i<basisSize; ++i) {
       for (int l=0; l<basisSize; ++l) {
-        luh_new[idx(i,basisSize,l)] += sign* dt / cellSize[0] * lFhbnd[1][idx_Fn(i,l)];
+        luh_new[idx(i,basisSize,l)] -= dt / cellSize[0] * lFhbnd[1][idx_Fn(i,l)];
       }
     }
   } else if (faceIndex==2) {
@@ -160,8 +169,10 @@ void solutionUpdatePatchBoundary(
  * 
  * Memory layout: [x_i-1/2], [x_i+1/2], [y_j-1/2], [y_j+1/2] *basisSize,numberOfVariables 
  */
-void extrapolation(double* luhbnd,const double* luh, int numberOfVariables,
-                  int basisSize) {
+void extrapolation(
+    double* luhbnd, double* lFhbnd,
+    const double* luh, 
+    int numberOfVariables,int basisSize) {
   idx3 idx(basisSize,basisSize,numberOfVariables);
   idx2 idx_Fn(basisSize,numberOfVariables);
   
@@ -183,10 +194,10 @@ template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-double solutionUpdatePatchInterior(double* luh_new,
-                      double* luh,
-                      const tarch::la::Vector<DIMENSIONS, double>& dx,
-                      double dt, int numberOfVariables, int basisSize) { // everything is done in the interior
+double solutionUpdatePatchInterior(
+    double* luh_new, const double* luh,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    double dt, int numberOfVariables, int basisSize) { // everything is done in the interior
   const int basisSize2 = basisSize * basisSize;
   idx3 idx(basisSize, basisSize, numberOfVariables);
   
@@ -196,8 +207,11 @@ double solutionUpdatePatchInterior(double* luh_new,
   double dt_max_allowed = std::numeric_limits<double>::max();
   static const double EXAHYPE_CFL_FACTOR = 0.9; // TODO(Dominic): Move this out.
   
-  // todo I need five of those
-  double** tempStateSizedArrays;
+  // TODO(Dominic): Move into parameter list.
+  double** tempStateSizedArrays = new double[5];
+  for (int i=0; i<5; ++i) {
+    tempStateSizedArrays[i] = new double[numberOfVariables];
+  }
   
   // x edges 
   double* Fn = tempStateSizedArrays[0];
@@ -241,7 +255,7 @@ double solutionUpdatePatchInterior(double* luh_new,
 
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
-  // 5. Add the source terms
+  // 5. Add the source terms 
   double* source = tempStateSizedArrays[0]; // temp var; state sized vector
   
   for (int j = 0; j < basisSize; j++) {
@@ -254,6 +268,12 @@ double solutionUpdatePatchInterior(double* luh_new,
     }
   }
 
+  // clean up. TODO(Dominic): Move out
+  for (int i=0; i<5; ++i) {
+    delete[] tempStateSizedArrays[i];
+  }
+  delete[] tempStateSizedArrays;
+  
   return dt_max_allowed;
 }
 

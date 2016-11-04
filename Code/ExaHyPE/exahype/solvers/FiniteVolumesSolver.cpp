@@ -380,46 +380,18 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-//  exahype::Cell::resetNeighbourMergeHelperVariables(
-//      cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add helper variables.
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
-  // TODO(Dominic): update solution (This should be separated in mergeNeighbours and updateSolution
-  const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
-      multiscalelinkedcell::getIndicesAroundCell(
-          exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
-
-  // todo MPI
-  // todo Boundary
-#ifdef SharedTBB
-  // force exit as executing while this is not fully implemented produces hard to debug races
-  // at least for SRHD compiled with icpc (in this case the result may look overall good but with some random values appearing at random in some cells)
-  logError("exahype::solvers::FiniteVolumesSolver::updateSolution","Shared-memory not yet implemented !!!");
-  exit(-1);
-#endif
-  assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-      VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
-      fineGridVerticesEnumerator.toString());
-
-  double* solutions[THREE_POWER_D];
-  for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-    if (Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-      exahype::records::FiniteVolumesCellDescription& pNeighbour =
-          getCellDescription(neighbourCellDescriptionsIndices[nScalar],element);
-      solutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
-    } else {
-      solutions[nScalar] = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    }
-  }
-
-  double* solution    = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  double* newSolution = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
+  double* solution    = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
+  double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+  std::memcpy(solution,newSolution,getUnknownsPerCell()*sizeof(double)); // Copy (current solution) in old solution field.
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(solution[i]),cellDescription.toString(),"solution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   double admissibleTimeStepSize=0;
-  std::memcpy(oldSolution,solution,getUnknownsPerCell()*sizeof(double));
-  solutionUpdate(solution,solutions,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+  solutionUpdate()(newSolution,solution,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
@@ -435,6 +407,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getSize(),
         cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
   }
+
+
 
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(solution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
@@ -507,6 +481,8 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
       cellDescription2.getType()==CellDescription::Cell) {
     synchroniseTimeStepping(cellDescription1);
     synchroniseTimeStepping(cellDescription2);
+
+
   }
 
   return;

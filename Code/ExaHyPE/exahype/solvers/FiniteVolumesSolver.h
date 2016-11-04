@@ -181,15 +181,99 @@ public:
   FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
 
   /**
-   * @param luh is a pointer to 3^d pointers to doubles
+   * \param luh is a pointer to 3^d pointers to doubles
    */
   virtual double stableTimeStepSize(
       double* luh[THREE_POWER_D],
       const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
   /**
+   * Extrapolates the volume averages values onto the boundary.
    *
+   * Depending on the implementation (if reconstruction is applied),
+   * the boundary layer might not just contain a single layer and might
+   * further have limits (0-a,basis+a).
+   *
+   * \param luh points to the the new solution values.
+   * \param luhbnd points to the extrapolated solution values.
+   * \param lFhbnd points to the extrapolated flux values.
+   * \param dt Time step size that is to be used.
+   * \param maxAdmissibleDt Maximum time step size that would have been
+   *        possible. If maxAdmissibleDt<dt, then we know that no time
+   *        step has been done.
    */
+  virtual void extrapolation(
+      double* luhbnd,
+      const double* luh) = 0;
+
+//  /**
+//   * Extrapolates the volume averages values onto the boundary.
+//   *
+//   * Depending on the implementation (if reconstruction is applied),
+//   * the boundary layer might not just contain a single layer and might
+//   * further have limits (0-a,basis+a).
+//   *
+//   * Edge/Corner exchange must have been performed before this method is called.
+//   *
+//   * \param luh points to the the new solution values.
+//   * \param luhbnd points to the extrapolated solution values.
+//   * \param lFhbnd points to the extrapolated flux values.
+//   * \param dt Time step size that is to be used.
+//   * \param maxAdmissibleDt Maximum time step size that would have been
+//   *        possible. If maxAdmissibleDt<dt, then we know that no time
+//   *        step has been done.
+//   */
+//  virtual void reconstructionPatchBoundary(
+//      const double* QL, const double* QR,
+//      const double* luh) = 0;
+
+  /**
+   * Solve the Riemann problem between all extrapolated boundary
+   * values in the arrays QL,QR.
+   * Boundary layers are partially overlapping (edges/corners).
+   */
+  virtual void double riemannSolverPatchBoundary(
+      double* FL, double* FR, const double* QL, const double* QR,
+      int basisSize, int numberOfVariables, int normalNonZero,
+      double** tempStateSizedArrays) = 0;
+
+  /**
+   * Update the volume averages in the interior of a patch which do not need any
+   * volume averages of neighbouring patches for the Riemann solve and/or
+   * reconstruction.
+   *
+   * \param luh_new points to the the new solution values (volume averages).
+   * \param luh points to the the old solution values (volume averages).
+   * \param dt Time step size that is to be used.
+   * \param maxAdmissibleDt Maximum time step size that would have been
+   *        possible. If maxAdmissibleDt<dt, then we know that no time
+   *        step has been done.
+   */
+  virtual void solutionUpdatePatchInterior(
+      double* luh_new,
+      const double* luh,
+      double** tempStateSizedArrays,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double dt, double& maxAdmissibleDt) = 0;
+
+  /**
+   * Update the volume averages at the boundary of a patch.
+   * In this case, we need volume averages of neighbouring patches for
+   * the Riemann solve and/or reconstruction.
+   *
+   * \param luh_new points to the the new solution values.
+   * \param lFhbnd points to the the computed fluxes at the patch's boundary faces.
+   * \param dt Time step size that is to be used.
+   * \param maxAdmissibleDt Maximum time step size that would have been
+   *        possible. If maxAdmissibleDt<dt, then we know that no time
+   *        step has been done.
+   */
+  virtual void solutionUpdatePatchBoundary(
+      double* luh_new,
+      const double* lFhbnd,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double dt, double& maxAdmissibleDt) = 0;
+
   virtual void solutionAdjustment(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
@@ -203,18 +287,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
       const int level) = 0;
 
-  /**
-   * @param luh points to the the new solution values.
-   * @param luh_old is a pointer to 3^d pointers to old solution values
-   * @param dt Time step size that is to be used.
-   * @param maxAdmissibleDt Maximum time step size that would have been
-   *        possible. If maxAdmissibleDt<dt, then we know that no time
-   *        step has been done.
-   */
-  virtual void solutionUpdate(double* luh,
-                              double* luh_old[THREE_POWER_D],
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double dt, double& maxAdmissibleDt) = 0;
 
   double getMinTimeStamp() const override;
 
