@@ -15,19 +15,13 @@
 # Released under the BSD 3 Open Source License.
 # For the full license text, see LICENSE.txt
 #
-#
-# @section DESCRIPTION
-#
-# Generates the code for the volume integral
-# for a specific configuration
-#
+
+
+import os
+from jinja2 import Template
 
 import Backend
 from MatmulConfig import MatmulConfig
-import FunctionSignatures
-import Utils
-import os
-from jinja2 import Template
 
 class CpphGemms:
     m_context = {}
