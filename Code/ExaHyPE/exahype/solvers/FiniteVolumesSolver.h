@@ -181,112 +181,88 @@ public:
   FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
 
   /**
-   * \param luh is a pointer to 3^d pointers to doubles
+   * \brief Returns a stable time step size.
+   *
+   * \param[in] luh             Cell-local solution DoF.
+   * \param[in] tempEigenvalues A temporary array of size equalling the number of variables.
+   * \param[in] cellSize        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
-      double* luh[THREE_POWER_D],
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
+      const double* const luh,
+      double* tempEigenvalues,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
-   * Extrapolates the volume averages values onto the boundary.
+   * Extract volume averages belonging to the boundary layer
+   * of the neighbour patch and store them in the ghost layer
+   * of the current patch.
    *
    * Depending on the implementation (if reconstruction is applied),
-   * the boundary layer might not just contain a single layer and might
-   * further have limits (0-a,basis+a).
+   * the boundary layer/ghost layer might not just be a single layer.
    *
-   * \param luh points to the the new solution values.
-   * \param luhbnd points to the extrapolated solution values.
-   * \param lFhbnd points to the extrapolated flux values.
-   * \param dt Time step size that is to be used.
-   * \param maxAdmissibleDt Maximum time step size that would have been
-   *        possible. If maxAdmissibleDt<dt, then we know that no time
-   *        step has been done.
+   * \param luhbnd Points to the extrapolated solution values.
+   * \param luh Points to the the new solution values.
+   * \param neighbourPosition Contains the relative position of the neighbour patch
+   * with respect to the patch this method was invoked for. The entries of the vector are in the range
+   * {-1,0,1}.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in touchVertexFirstTime and mergeWithNeighbour
+   * in mapping Merging.
+   *
+   * <h2>MPI</h2>
+   * No ghost layer is necessary if a patch is surrounded only
+   * by local cells. However as soon as the cell is adjacent
+   * to a MPI boundary this becomes necessary.
+   * We thus always hold ghost layers.
    */
-  virtual void extrapolation(
+  virtual void ghostLayerFilling(
+      double* luh,
+      const double* luhNeighbour,
+      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) = 0;
+
+  /**
+   * Similar to ghostLayerFilling but we do not work with
+   * complete patches from a local neighbour here but with smaller arrays received
+   * from a remote neighbour or containing boundary conditions.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in mergeWithNeighbour in mapping Merging.
+   */
+  virtual void ghostLayerFillingAtBoundary(
+      double* luh,
+      const double* luhbnd,
+      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
+
+  /**
+   * Extract boundary layers of \p luh before
+   * sending them away via MPI.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in prepareSendToNeighbour in mapping Sending.
+   */
+  virtual void boundaryLayerExtraction(
       double* luhbnd,
-      const double* luh) = 0;
-
-//  /**
-//   * Extrapolates the volume averages values onto the boundary.
-//   *
-//   * Depending on the implementation (if reconstruction is applied),
-//   * the boundary layer might not just contain a single layer and might
-//   * further have limits (0-a,basis+a).
-//   *
-//   * Edge/Corner exchange must have been performed before this method is called.
-//   *
-//   * \param luh points to the the new solution values.
-//   * \param luhbnd points to the extrapolated solution values.
-//   * \param lFhbnd points to the extrapolated flux values.
-//   * \param dt Time step size that is to be used.
-//   * \param maxAdmissibleDt Maximum time step size that would have been
-//   *        possible. If maxAdmissibleDt<dt, then we know that no time
-//   *        step has been done.
-//   */
-//  virtual void reconstructionPatchBoundary(
-//      const double* QL, const double* QR,
-//      const double* luh) = 0;
-
-  /**
-   * Solve the Riemann problem between all extrapolated boundary
-   * values in the arrays QL,QR.
-   * Boundary layers are partially overlapping (edges/corners).
-   */
-  virtual void double riemannSolverPatchBoundary(
-      double* FL, double* FR, const double* QL, const double* QR,
-      int basisSize, int numberOfVariables, int normalNonZero,
-      double** tempStateSizedArrays) = 0;
-
-  /**
-   * Update the volume averages in the interior of a patch which do not need any
-   * volume averages of neighbouring patches for the Riemann solve and/or
-   * reconstruction.
-   *
-   * \param luh_new points to the the new solution values (volume averages).
-   * \param luh points to the the old solution values (volume averages).
-   * \param dt Time step size that is to be used.
-   * \param maxAdmissibleDt Maximum time step size that would have been
-   *        possible. If maxAdmissibleDt<dt, then we know that no time
-   *        step has been done.
-   */
-  virtual void solutionUpdatePatchInterior(
-      double* luh_new,
       const double* luh,
-      double** tempStateSizedArrays,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double dt, double& maxAdmissibleDt) = 0;
+      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
 
-  /**
-   * Update the volume averages at the boundary of a patch.
-   * In this case, we need volume averages of neighbouring patches for
-   * the Riemann solve and/or reconstruction.
-   *
-   * \param luh_new points to the the new solution values.
-   * \param lFhbnd points to the the computed fluxes at the patch's boundary faces.
-   * \param dt Time step size that is to be used.
-   * \param maxAdmissibleDt Maximum time step size that would have been
-   *        possible. If maxAdmissibleDt<dt, then we know that no time
-   *        step has been done.
-   */
-  virtual void solutionUpdatePatchBoundary(
-      double* luh_new,
-      const double* lFhbnd,
+  virtual void solutionUpdate(
+      double* luhNew,const double* luh,
+      double** tempStateSizedArrays,double** tempUnknowns,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double dt, double& maxAdmissibleDt) = 0;
 
   virtual void solutionAdjustment(
-      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   virtual bool hasToAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
-
-  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-      const int level) = 0;
-
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   double getMinTimeStamp() const override;
 
@@ -368,6 +344,8 @@ public:
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 

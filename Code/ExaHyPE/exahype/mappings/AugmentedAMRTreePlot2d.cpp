@@ -377,7 +377,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
           _limiterStatusWriter->plotCell(
-              cellIndex, static_cast<int>(pFine.getLimiterStatus(0)));
+              cellIndex, static_cast<int>(pFine.getLimiterStatus()));
           solverFound = true;
         }
       }

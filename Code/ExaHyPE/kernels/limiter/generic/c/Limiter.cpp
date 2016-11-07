@@ -174,7 +174,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
           for(iz=0; iz<basisSize3D; iz++) {
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
-                  lobValue += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,iVar), ix, iy, iz)
+                  lobValue += luh[idx(iz,iy,ix,iVar)]
                               #if DIMENSIONS == 3
                               * uh2lob[order][idxConv(iz,z)]
                               #endif

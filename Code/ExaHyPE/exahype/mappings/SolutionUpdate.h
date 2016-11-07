@@ -70,6 +70,48 @@ class exahype::mappings::SolutionUpdate {
    */
   exahype::State _localState;
 
+  /**
+   * An array of 5 pointers to arrays of a length that equals the
+   * number of variables per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempStateSizedArrays = nullptr;
+
+  /**
+   * An array of pointers to arrays of a length that equals the
+   * number of solution unknowns per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempUnknowns = nullptr;
+
+  /**
+   * Initialises the temporary variables.
+   *
+   * \note We parallelise over the domain
+   * (mapping is copied for each thread) and
+   * over the solvers registered on a cell.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void prepareTemporaryVariables();
+
+  /**
+   * Deletes the temporary variables.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void deleteTemporaryVariables();
+
  public:
   /**
    * Run through the whole tree. Run concurrently on the fine grid.

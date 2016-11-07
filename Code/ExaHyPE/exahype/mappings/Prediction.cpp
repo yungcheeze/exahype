@@ -96,7 +96,8 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG ||
+        solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) { // TODO(Dominic): Consider LimitingADERDG solvers
       auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
 
       _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
@@ -133,7 +134,8 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
 
     int solverNumber=0;
     for (auto solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG ||
+          solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         //
         for (int i=0; i<4; ++i) {
           delete[] _tempSpaceTimeUnknowns[solverNumber][i];
@@ -168,8 +170,11 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
   }
 }
 
-exahype::mappings::Prediction::Prediction() {
-}
+exahype::mappings::Prediction::Prediction() :
+        _tempSpaceTimeUnknowns(nullptr),
+        _tempSpaceTimeFluxUnknowns(nullptr),
+        _tempUnknowns(nullptr),
+        _tempFluxUnknowns(nullptr){}
 
 exahype::mappings::Prediction::~Prediction() {
   deleteTemporaryVariables();
@@ -258,13 +263,14 @@ void exahype::mappings::Prediction::enterCell(
         performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
         } break;
       case exahype::solvers::Solver::Type::LimitingADERDG: {
-        exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
-            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-        exahype::Cell::resetNeighbourMergeHelperVariables(
-            cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): This method will be also necessary for the FVM solver.
-
-        performPredictionAndVolumeIntegral(solver->_solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+        // TODO(Dominic): Assess
+        //        exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+//        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+//        exahype::Cell::resetNeighbourMergeHelperVariables(
+//            cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): This method will be also necessary for the FVM solver.
+//
+//        performPredictionAndVolumeIntegral(solver->_solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
         } break;
       default:
         break;

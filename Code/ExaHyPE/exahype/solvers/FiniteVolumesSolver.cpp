@@ -230,7 +230,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated
         DataHeap::getInstance().deleteData(cellDescription.getOldSolution());
 
         cellDescription.setSolution(-1);
-        cellDescription.setOldSolution(-1)
+        cellDescription.setOldSolution(-1);
         }
         break;
       default:
@@ -337,7 +337,23 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
     const int cellDescriptionsIndex,
     const int element,
     double*   tempEigenvalues) {
-  // do nothing (for now). See discussion within body of function mappings/SolutionUpdate::enterCell(...).
+  CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
+
+  if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
+    //         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo
+    double* solution = exahype::DataHeap::getInstance().getData(p.getSolution()).data();
+
+    double admissibleTimeStepSize = stableTimeStepSize(
+        solution, tempEigenvalues, p.getSize());
+
+    assertion(!std::isnan(admissibleTimeStepSize));
+
+    p.setTimeStamp(p.getTimeStamp()+p.getTimeStepSize());
+    p.setTimeStepSize(admissibleTimeStepSize);
+
+    return admissibleTimeStepSize;
+  }
+
   return std::numeric_limits<double>::max();
 }
 
@@ -348,8 +364,8 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-//  exahype::Cell::resetNeighbourMergeHelperVariables(
-//      cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add flags.
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+      cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add flags.
 
   if (cellDescription.getType()==CellDescription::Cell
 //      && cellDescription.getRefinementEvent()==CellDescription::None
@@ -359,12 +375,14 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getTimeStamp())) {
+        cellDescription.getTimeStamp(),
+        cellDescription.getTimeStepSize())) {
       solutionAdjustment(
           luh,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
+          cellDescription.getTimeStamp(),
+          cellDescription.getTimeStepSize());
     }
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
@@ -376,6 +394,8 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
 void exahype::solvers::FiniteVolumesSolver::updateSolution(
     const int cellDescriptionsIndex,
     const int element,
+    double** tempStateSizedArrays,
+    double** tempUnknowns,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
@@ -385,13 +405,15 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  std::memcpy(solution,newSolution,getUnknownsPerCell()*sizeof(double)); // Copy (current solution) in old solution field.
+  std::copy(solution,solution+getUnknownsPerCell(),newSolution); // Copy (current solution) in old solution field.
   for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(std::isfinite(solution[i]),cellDescription.toString(),"solution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   double admissibleTimeStepSize=0;
-  solutionUpdate()(newSolution,solution,cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+  solutionUpdate(
+      newSolution,solution,tempStateSizedArrays,tempUnknowns,
+      cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
@@ -400,18 +422,17 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   if (hasToAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
       cellDescription.getSize(),
-      cellDescription.getTimeStamp())) {
+      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),cellDescription.getTimeStepSize())) {
     solutionAdjustment(
-        solution,
+        newSolution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getTimeStamp(), cellDescription.getTimeStepSize());
+        cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
+        cellDescription.getTimeStepSize());
   }
 
-
-
   for (int i=0; i<getUnknownsPerCell(); i++) {
-    assertion3(std::isfinite(solution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
+    assertion3(std::isfinite(newSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 }
 
@@ -482,7 +503,11 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     synchroniseTimeStepping(cellDescription1);
     synchroniseTimeStepping(cellDescription2);
 
+    double* solution1 = DataHeap::getInstance().getData(cellDescription1.getSolution()).data();
+    double* solution2 = DataHeap::getInstance().getData(cellDescription2.getSolution()).data();
 
+    ghostLayerFilling(solution1,solution2,pos1-pos2);
+    ghostLayerFilling(solution2,solution1,pos2-pos1);
   }
 
   return;

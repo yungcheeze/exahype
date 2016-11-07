@@ -87,10 +87,80 @@ exahype::mappings::SolutionUpdate::descendSpecification() {
 tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
     "exahype::mappings::SolutionUpdate");
 
+void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
+  assertion(_tempUnknowns         ==nullptr);
+  assertion(_tempStateSizedArrays ==nullptr);
+
+  int numberOfSolvers   = exahype::solvers::RegisteredSolvers.size();
+  _tempStateSizedArrays = new double**[numberOfSolvers];
+  _tempUnknowns         = new double**[numberOfSolvers];
+
+  int solverNumber=0;
+  for (auto solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
+        solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      auto finiteVolumesSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+      _tempStateSizedArrays[solverNumber] = new double*[5];
+      for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+        _tempStateSizedArrays[solverNumber][i] =
+            new double[finiteVolumesSolver->getNumberOfVariables()];
+      }
+      //
+      // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
+      _tempUnknowns[solverNumber] = nullptr;
+    } else {
+      _tempStateSizedArrays[solverNumber] = nullptr;
+      _tempUnknowns        [solverNumber] = nullptr;
+    }
+
+    ++solverNumber;
+  }
+}
+
+void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
+  if (_tempStateSizedArrays!=nullptr) {
+    assertion(_tempUnknowns!=nullptr);
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
+          solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        //
+        for (int i=0; i<4; ++i) {
+          delete[] _tempStateSizedArrays[solverNumber][i];
+        }
+        delete[] _tempStateSizedArrays[solverNumber];
+        _tempStateSizedArrays[solverNumber] = nullptr;
+        // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
+        _tempUnknowns[solverNumber] = nullptr;
+      }
+
+      ++solverNumber;
+    }
+
+    delete[] _tempStateSizedArrays;
+    delete[] _tempUnknowns;
+    _tempStateSizedArrays = nullptr;
+    _tempUnknowns         = nullptr;
+  }
+}
+
+exahype::mappings::SolutionUpdate::SolutionUpdate() {
+  // do nothing
+}
+
+exahype::mappings::SolutionUpdate::~SolutionUpdate() {
+  deleteTemporaryVariables();
+}
+
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
-    : _localState(masterThread._localState) {}
+: _localState(masterThread._localState),
+  _tempStateSizedArrays(nullptr),
+  _tempUnknowns(nullptr) {
+  prepareTemporaryVariables();
+}
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
     const SolutionUpdate& workerThread) {
@@ -109,23 +179,23 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  // TODO(Dominic): Change back to solvers. cellIsNewlyTroubledOrNewlyOk
-
-
   if (fineGridCell.isInitialised()) {
-    const int numberOfCouplings = exahype::solvers::RegisteredSolverCouplings.size();
+    const int numberOfSolver = exahype::solvers::RegisteredSolvers.size();
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined7;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfCouplings, methodTrace);
-    pfor(i, 0, numberOfCouplings, grainSize)
-      auto coupling = exahype::solvers::RegisteredSolverCouplings[i];
-      if (coupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
-        exahype::solvers::CellWiseCoupling* cellWiseCoupling =
-            static_cast<exahype::solvers::CellWiseCoupling*>(coupling);
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolver, methodTrace);
+    pfor(i, 0, numberOfSolver, grainSize)
+      auto solver = exahype::solvers::RegisteredSolvers[i];
 
-        cellWiseCoupling->couple(
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),
-            fineGridVertices,fineGridVerticesEnumerator);
+            element,
+            _tempStateSizedArrays[i],
+            _tempUnknowns[i],
+            fineGridVertices,
+            fineGridVerticesEnumerator);
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
@@ -139,24 +209,21 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 
   _localState = solverState;
 
+  prepareTemporaryVariables();
+
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
+void exahype::mappings::SolutionUpdate::endIteration(
+    exahype::State& solverState) {
+  deleteTemporaryVariables();
+}
 
 //
 // Below all methods are nop.
 //
 //=====================================
 
-
-
-exahype::mappings::SolutionUpdate::SolutionUpdate() {
-  // do nothing
-}
-
-exahype::mappings::SolutionUpdate::~SolutionUpdate() {
-  // do nothing
-}
 
 void exahype::mappings::SolutionUpdate::createHangingVertex(
     exahype::Vertex& fineGridVertex,
@@ -370,11 +437,6 @@ void exahype::mappings::SolutionUpdate::leaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionUpdate::endIteration(
-    exahype::State& solverState) {
   // do nothing
 }
 

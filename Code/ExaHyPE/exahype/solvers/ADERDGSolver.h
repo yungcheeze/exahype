@@ -478,28 +478,29 @@ private:
       CellDescription& cellDescription,
       const int faceIndex,
       const CellDescription::LimiterStatus& neighbourLimiterStatus) const {
-    switch (cellDescription.getLimiterStatus(faceIndex)) {
-    case CellDescription::LimiterStatus::Ok:
-
-      switch (neighbourLimiterStatus) {
-      case CellDescription::LimiterStatus::Troubled:
-        cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsTroubledCell);
-        break;
-      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
-        cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
-        break;
-      default:
-        // This includes limiter status "Ok".
-        // Note that we initialise the limiter with status "Ok" in every iteration
-        // before we check again.
-        break;
-      }
-
-      break;
-      default:
-        // Do nothing.
-        break;
-    }
+    // TODO(Dominic): Assess
+//    switch (cellDescription.getLimiterStatus(faceIndex)) {
+//        case CellDescription::LimiterStatus::Ok:
+//
+//          switch (neighbourLimiterStatus) {
+//          case CellDescription::LimiterStatus::Troubled:
+//            cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsTroubledCell);
+//            break;
+//          case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+//            cellDescription.setLimiterStatus(faceIndex,CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
+//            break;
+//          default:
+//            // This includes limiter status "Ok".
+//            // Note that we initialise the limiter with status "Ok" in every iteration
+//            // before we check again.
+//            break;
+//          }
+//
+//          break;
+//          default:
+//            // Do nothing.
+//            break;
+//        }
   }
 
   /**
@@ -897,30 +898,28 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, const double dt) = 0;
 
   /**
-   * @brief Returns a stable time step size.
+   * \brief Returns a stable time step size.
    *
-   * @param[in] luh       Cell-local solution DoF.
-   * @param[in] cellSize        Extent of the cell in each coordinate direction.
+   * \param[in] luh             Cell-local solution DoF.
+   * \param[in] tempEigenvalues A temporary array of size equalling the number of variables.
+   * \param[in] cellSize        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
       const double* const luh,
       double* tempEigenvalues,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
-  /**
-   * This operation allows you to impose time-dependent solution values
-   * as well as to add contributions of source terms.
-   * Please be aware that this operation is called per time step if
-   * the corresponding predicate hasToUpdateSolution() yields true for the
-   * region.
-   */
   virtual void solutionAdjustment(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double time, double dt) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   virtual bool hasToAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double t) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -935,7 +934,8 @@ public:
   // since this is was the user expects.
   virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
       const double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double time,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const double time,
       const int level) = 0;
 
   /**
@@ -1177,15 +1177,33 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+  /**
+   * <h2>Solution adjustments</h2>
+   * The solution is initially at time
+   * cellDescription.getCorrectorTimeStamp().
+   * The value cellDescription.getCorrectorTimeStepSize()
+   * has initially no meaning and
+   * equals std::numeric_limits<double>::max().
+   */
   void setInitialConditions(
       const int cellDescriptionsIndex,
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
+  /**
+   * <h2>Solution adjustments</h2>
+   * After the update, the solution is at time
+   * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
+   * The value cellDescription.getCorrectorTimeStepSize()
+   * handed to the solution adjustment function is the one
+   * used to update the solution.
+   */
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 

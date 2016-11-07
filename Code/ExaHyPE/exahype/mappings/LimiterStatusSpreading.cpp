@@ -89,17 +89,15 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (fineGridCell.isInitialised()) {
-    for (auto* solverCoupling : exahype::solvers::RegisteredSolverCouplings) {
-      if (solverCoupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
-        auto* cellWiseCoupling = static_cast<exahype::solvers::CellWiseCoupling*>(solverCoupling);
-
-        // todo(Dominic): Determine if limiter
-
-        if (cellWiseCoupling->getType()==exahype::solvers::CellWiseCoupling::Type::)
-      }
-    }
-  }
+//  if (fineGridCell.isInitialised()) {
+//    for (auto* solverCoupling : exahype::solvers::RegisteredSolverCouplings) {
+//      if (solverCoupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
+//        auto* cellWiseCoupling = static_cast<exahype::solvers::CellWiseCoupling*>(solverCoupling);
+//
+//        // todo(Dominic): Determine if limiter
+//      }
+//    }
+//  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
