@@ -5,9 +5,21 @@
 #include "tarch/parallel/NodePool.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
 
+
 #ifdef Parallel
 #include <mpi.h>
 #endif
+
+
+/**
+ * We provide two ways to exchange load balancing information: blocking and
+ * non-blocking. Blocking should be faster, but we did encounter a couple of
+ * deadlocks if we used blocking data exchange.
+ */
+namespace {
+  const int UseBlockingSendAndReceive = false;
+}
+
 
 tarch::logging::Log  mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
 int                  mpibalancing::HotspotBalancing::_loadBalancingTag = -1;
@@ -29,6 +41,7 @@ mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsest
   if (_loadBalancingTag<0) {
     _loadBalancingTag = tarch::parallel::Node::reserveFreeTag("mpibalancing::HotspotBalancing");
     assertion(_loadBalancingTag>=0);
+    logInfo( "HotspotBalancing(bool,int)", "reserved tag " << _loadBalancingTag << " for load balancing" );
   }
 }
 
@@ -192,8 +205,29 @@ void mpibalancing::HotspotBalancing::mergeWithMaster(
   bool    workerCouldNotEraseDueToDecomposition
 ) {
   #ifdef Parallel
+  logDebug( "HotspotBalancing(bool,int)", "receive load balancing information on tag " << _loadBalancingTag << " from worker " << workerRank );
+
   double workerWeight;
-  MPI_Recv( &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+
+  if (UseBlockingSendAndReceive) {
+    MPI_Recv( &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  }
+  else {
+    MPI_Request* sendRequestHandle = new MPI_Request();
+    MPI_Status   status;
+    int          flag = 0;
+    MPI_Irecv(
+      &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag,
+      tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
+    );
+    MPI_Test( sendRequestHandle, &flag, &status );
+    while (!flag) {
+      MPI_Test( sendRequestHandle, &flag, &status );
+      tarch::parallel::Node::getInstance().receiveDanglingMessages();
+    }
+    delete sendRequestHandle;
+  }
+
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
   _weightMap[workerRank]                             = workerWeight > 1.0 ? workerWeight : 1.0;
   #endif
@@ -203,12 +237,30 @@ void mpibalancing::HotspotBalancing::mergeWithMaster(
 void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
   double localWeight
 ) {
-  #ifdef Parallel
   _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
 
   double ranksWeight = getMaximumWeightOfWorkers();
 
-  MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
+  #ifdef Parallel
+  logDebug( "HotspotBalancing(bool,int)", "send load balancing information on tag " << _loadBalancingTag << " to master " << tarch::parallel::NodePool::getInstance().getMasterRank() );
+  if (UseBlockingSendAndReceive) {
+    MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
+  }
+  else {
+    MPI_Request* sendRequestHandle = new MPI_Request();
+    MPI_Status   status;
+    int          flag = 0;
+    MPI_Isend(
+      &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag,
+      tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
+    );
+    MPI_Test( sendRequestHandle, &flag, &status );
+    while (!flag) {
+      MPI_Test( sendRequestHandle, &flag, &status );
+      tarch::parallel::Node::getInstance().receiveDanglingMessages();
+    }
+    delete sendRequestHandle;
+  }
   #endif
 }
 
