@@ -1,0 +1,37 @@
+// ==============================================
+// Please do not change the implementations below
+// =============================---==============
+#include "MyEulerSolver.h"
+#include "kernels/finitevolumes/godunov/c/2d/godunov.cpph"
+
+/*CHANGED*/
+double EulerFVM::MyEulerSolver::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double maxAdmissibleDt = kernels::finitevolumes::godunov::c::stableTimeStepSize<eigenvalues>(luh, tempEigenvalues, dx, getNumberOfVariables(), 10 /* patchSize */);
+  return maxAdmissibleDt;
+}
+
+/*CHANGED*/
+void EulerFVM::MyEulerSolver::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS, double>& dx,const double dt, double& maxAdmissibleDt) {
+  maxAdmissibleDt = kernels::finitevolumes::godunov::c::solutionUpdate<flux,source,eigenvalues>(luhNew, luh, tempStateSizedArrays, tempUnknowns, dx, dt, getNumberOfVariables(), 10 /* patchSize */);
+}
+
+void EulerFVM::MyEulerSolver::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+  kernels::finitevolumes::godunov::c::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+}
+
+/*NEW*/
+void EulerFVM::MyEulerSolver::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
+  kernels::finitevolumes::godunov::c::ghostLayerFilling( luh, luhNeighbour, neighbourPosition, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+}
+/*NEW*/
+void EulerFVM::MyEulerSolver::ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  kernels::finitevolumes::godunov::c::ghostLayerFillingAtBoundary( luh, luhbnd, boundaryPosition, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+}
+/*NEW*/
+void EulerFVM::MyEulerSolver::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  kernels::finitevolumes::godunov::c::boundaryLayerExtraction( luhbnd, luh, boundaryPosition, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+}
+/*NEW*/
+void EulerFVM::MyEulerSolver::boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS, double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
+  kernels::finitevolumes::godunov::c::boundaryConditions(*this,stateOut, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero);
+}
