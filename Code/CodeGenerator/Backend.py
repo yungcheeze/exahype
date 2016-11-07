@@ -218,7 +218,7 @@ def generateComputeKernels():
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()
-    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(m_config)
+    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(generateContext(m_config))
     solutionAdjustmentGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
