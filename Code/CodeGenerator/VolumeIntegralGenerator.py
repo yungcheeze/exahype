@@ -30,7 +30,7 @@ import os
 from jinja2 import Template
 
 class VolumeIntegralGenerator:
-    m_config = {}
+    m_context = {}
 
     # linear/nonlinear
     m_type   = ""
@@ -41,18 +41,12 @@ class VolumeIntegralGenerator:
 
 
     def __init__(self, i_config, i_numerics):
-        self.m_config = i_config
+        self.m_context = i_config
         self.m_type   = i_numerics
 
 
     def generateCode(self):
         dir = os.path.dirname(__file__)+'/'
-        context = {}
-        context['nDim'] = self.m_config['nDim']
-        context['nVar'] = self.m_config['nVar']
-        context['nVarPad'] = Backend.getSizeWithPadding(self.m_config['nVar'])
-        context['nDoF'] = self.m_config['nDof']
-        context['nDoFPad'] = Backend.getSizeWithPadding(self.m_config['nDof'])
     
         if(self.m_type == 'linear'):
             pass
@@ -60,21 +54,22 @@ class VolumeIntegralGenerator:
             self.__generateNonlinearGemms()
             with open(dir+'templates/volumeIntegralNonLinear.template', 'r') as tmp:
                 template = Template(tmp.read())
-                context['gemm_x'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_x'
-                context['gemm_y'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_y'
-                context['gemm_z'] = 'gemm_'+str(self.m_config['nVar'])+'_'+str(self.m_config['nDof'])+'_'+str(self.m_config['nDof'])+'_lduh_z'
-                context['lFhi_padY'] = Backend.getSizeWithPadding(self.m_config['nVar']) \
-                                 * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
-                context['lFhi_padZ'] = 2* Backend.getSizeWithPadding(self.m_config['nVar']) \
-                                 * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])                 
-                context['i_seq'] = range(0,self.m_config['nDof'])
-                if(self.m_config['nDim'] >= 3):
-                    context['j_seq'] = range(0,self.m_config['nDof'])
+                gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
+                self.m_context['gemm_x'] = gemmName+'_lduh_x'
+                self.m_context['gemm_y'] = gemmName+'_lduh_y'
+                self.m_context['gemm_z'] = gemmName+'_lduh_z'
+                self.m_context['lFhi_padY'] = Backend.getSizeWithPadding(self.m_context['nVar']) \
+                                 * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])
+                self.m_context['lFhi_padZ'] = 2 * Backend.getSizeWithPadding(self.m_context['nVar']) \
+                                 * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])                 
+                self.m_context['i_seq'] = range(0,self.m_context['nDof'])
+                if(self.m_context['nDim'] >= 3):
+                    self.m_context['j_seq'] = range(0,self.m_context['nDof'])
                 else:
-                    context['j_seq'] = [0]
+                    self.m_context['j_seq'] = [0]
                 
-                with open(dir+self.m_filename, 'w') as out:
-                    out.write(template.render(context))
+                with open(self.m_filename, 'w') as out:
+                    out.write(template.render(self.m_context))
 
 
     def __generateNonlinearGemms(self):
@@ -92,17 +87,17 @@ class VolumeIntegralGenerator:
 
         # (1) MATMUL( lFhi_x(:,:,j,k), TRANSPOSE(Kxi) )
         l_matmul_x = MatmulConfig(  # M
-                                    self.m_config['nVar'],                             \
+                                    self.m_context['nVar'],                             \
                                     # N
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # K
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
                                     # LDB
-                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
                                     # LDC
-                                    self.m_config['nVar'],                             \
+                                    self.m_context['nVar'],                             \
                                     # alpha 
                                     1,                                                 \
                                     # beta
@@ -121,17 +116,17 @@ class VolumeIntegralGenerator:
 
         # (2) MATMUL( lFhi_y(:,:,i,k), TRANSPOSE(Kxi) )
         l_matmul_y = MatmulConfig(  # M
-                                    self.m_config['nVar'],                             \
+                                    self.m_context['nVar'],                             \
                                     # N
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # K
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
                                     # LDB
-                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
                                     # LDC
-                                    self.m_config['nVar']*self.m_config['nDof'],       \
+                                    self.m_context['nVar']*self.m_context['nDof'],       \
                                     # alpha 
                                     1,                                                 \
                                     # beta
@@ -150,17 +145,17 @@ class VolumeIntegralGenerator:
 
         # (3) MATMUL( lFhi_z(:,:,i,j), TRANSPOSE(Kxi) )
         l_matmul_z = MatmulConfig(  # M
-                                    self.m_config['nVar'],                             \
+                                    self.m_context['nVar'],                             \
                                     # N
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # K
-                                    self.m_config['nDof'],                             \
+                                    self.m_context['nDof'],                             \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
                                     # LDB
-                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
                                     # LDC
-                                    self.m_config['nVar']*(self.m_config['nDof']**2),  \
+                                    self.m_context['nVar']*(self.m_context['nDof']**2),  \
                                     # alpha 
                                     1,                                                 \
                                     # beta

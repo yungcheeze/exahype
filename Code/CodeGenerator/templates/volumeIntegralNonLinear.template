@@ -11,23 +11,24 @@ void kernels::aderdg::optimised::volumeIntegral(
   const double* restrict const lFhi, 
   const tarch::la::Vector<DIMENSIONS,double> &dx
 ) {
-  memset(lduh, 0, sizeof(lduh)*{{nVar*(nDoF**nDim)}});
+  memset(lduh, 0, sizeof(lduh)*{{nVar*(nDof**nDim)}});
 
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
 {%- for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
 {%- for i in i_seq%}
 
 #pragma simd
-  for(int it=0;it<{{nDoF*nDoFPad}};it++) 
-    s_m[it] = weights2[{{i+j*nDoF}}]/dx[0] * Kxi_T[it];
+  for(int it=0;it<{{nDof*nDofPad}};it++) 
+    s_m[it] = weights2[{{i+j*nDof}}]/dx[0] * Kxi_T[it];
 
-  {{gemm_x}}(&lFhi[{{(j*nDoF+i) * nVarPad * nDoF}}],&s_m[0],&lduh[{{(j*nDoF+i) * nVar * nDoF}}]);
-  {{gemm_y}}(&lFhi[{{(j*nDoF+i) * nVarPad * nDoF + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDoF*nDoF+i) * nVar}}]);
+  {{gemm_x}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
+  {{gemm_y}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
 {%- if nDim == 3 %} 
-  {{gemm_z}}(&lFhi[{{(j*nDoF+i) * nVarPad * nDoF + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDoF+i) * nVar}}]);
+  {{gemm_z}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padZ}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar}}]);
 {%- endif %}  
 
 {%- endfor%}
 {%- endfor%}
 
 }
+
