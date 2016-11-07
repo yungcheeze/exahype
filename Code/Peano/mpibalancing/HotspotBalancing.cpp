@@ -216,13 +216,38 @@ void mpibalancing::HotspotBalancing::mergeWithMaster(
     MPI_Request* sendRequestHandle = new MPI_Request();
     MPI_Status   status;
     int          flag = 0;
+    clock_t      timeOutWarning   = -1;
+    clock_t      timeOutShutdown  = -1;
+    bool         triggeredTimeoutWarning = false;
     MPI_Irecv(
       &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag,
       tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
     );
     MPI_Test( sendRequestHandle, &flag, &status );
     while (!flag) {
+      if (timeOutWarning==-1)   timeOutWarning   = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+      if (timeOutShutdown==-1)  timeOutShutdown  = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
       MPI_Test( sendRequestHandle, &flag, &status );
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+        (clock()>timeOutWarning) &&
+        (!triggeredTimeoutWarning)
+      ) {
+        tarch::parallel::Node::getInstance().writeTimeOutWarning(
+          "mpibalancing::HotspotBalancing",
+          "mergeWithMaster(...)", workerRank,_loadBalancingTag,1
+        );
+        triggeredTimeoutWarning = true;
+      }
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+        (clock()>timeOutShutdown)
+      ) {
+        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+          "mpibalancing::HotspotBalancing",
+          "mergeWithMaster(...)",workerRank,_loadBalancingTag,1
+        );
+      }
       tarch::parallel::Node::getInstance().receiveDanglingMessages();
     }
     delete sendRequestHandle;
@@ -250,13 +275,38 @@ void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
     MPI_Request* sendRequestHandle = new MPI_Request();
     MPI_Status   status;
     int          flag = 0;
+    clock_t      timeOutWarning   = -1;
+    clock_t      timeOutShutdown  = -1;
+    bool         triggeredTimeoutWarning = false;
     MPI_Isend(
       &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag,
       tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
     );
     MPI_Test( sendRequestHandle, &flag, &status );
     while (!flag) {
+      if (timeOutWarning==-1)   timeOutWarning   = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+      if (timeOutShutdown==-1)  timeOutShutdown  = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
       MPI_Test( sendRequestHandle, &flag, &status );
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+        (clock()>timeOutWarning) &&
+        (!triggeredTimeoutWarning)
+      ) {
+        tarch::parallel::Node::getInstance().writeTimeOutWarning(
+          "mpibalancing::HotspotBalancing",
+          "setLocalWeightAndNotifyMaster(double)", tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, 1
+        );
+        triggeredTimeoutWarning = true;
+      }
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+        (clock()>timeOutShutdown)
+      ) {
+        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+          "mpibalancing::HotspotBalancing",
+          "setLocalWeightAndNotifyMaster(double)", tarch::parallel::NodePool::getInstance().getMasterRank(),_loadBalancingTag,1
+        );
+      }
       tarch::parallel::Node::getInstance().receiveDanglingMessages();
     }
     delete sendRequestHandle;
