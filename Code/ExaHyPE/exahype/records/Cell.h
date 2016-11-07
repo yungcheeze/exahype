@@ -34,7 +34,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/10/2016 17:19
+    * @date   07/11/2016 14:18
     */
    class exahype::records::Cell { 
       
@@ -48,8 +48,6 @@ namespace exahype {
          
          struct PersistentRecords {
             int _CellDescriptionsIndex;
-            double _localWorkload;
-            double _globalWorkload;
             bool _isInside;
             State _state;
             int _level;
@@ -74,7 +72,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+            PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
             
             
             inline int getCellDescriptionsIndex() const 
@@ -93,46 +91,6 @@ namespace exahype {
  #endif 
  {
                _CellDescriptionsIndex = CellDescriptionsIndex;
-            }
-            
-            
-            
-            inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _localWorkload;
-            }
-            
-            
-            
-            inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _localWorkload = localWorkload;
-            }
-            
-            
-            
-            inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _globalWorkload;
-            }
-            
-            
-            
-            inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _globalWorkload = globalWorkload;
             }
             
             
@@ -392,7 +350,7 @@ namespace exahype {
          /**
           * Generated
           */
-         Cell(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+         Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
          
          /**
           * Generated
@@ -416,46 +374,6 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-         }
-         
-         
-         
-         inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._localWorkload;
-         }
-         
-         
-         
-         inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._localWorkload = localWorkload;
-         }
-         
-         
-         
-         inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._globalWorkload;
-         }
-         
-         
-         
-         inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._globalWorkload = globalWorkload;
          }
          
          
@@ -846,7 +764,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   21/10/2016 17:19
+       * @date   07/11/2016 14:18
        */
       class exahype::records::CellPacked { 
          
@@ -856,8 +774,6 @@ namespace exahype {
             
             struct PersistentRecords {
                int _CellDescriptionsIndex;
-               double _localWorkload;
-               double _globalWorkload;
                int _level;
                tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                int _responsibleRank;
@@ -880,7 +796,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+               PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                
                
                inline int getCellDescriptionsIndex() const 
@@ -899,46 +815,6 @@ namespace exahype {
  #endif 
  {
                   _CellDescriptionsIndex = CellDescriptionsIndex;
-               }
-               
-               
-               
-               inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _localWorkload;
-               }
-               
-               
-               
-               inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _localWorkload = localWorkload;
-               }
-               
-               
-               
-               inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _globalWorkload;
-               }
-               
-               
-               
-               inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _globalWorkload = globalWorkload;
                }
                
                
@@ -1221,7 +1097,7 @@ namespace exahype {
             /**
              * Generated
              */
-            CellPacked(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+            CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
             
             /**
              * Generated
@@ -1245,46 +1121,6 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-            }
-            
-            
-            
-            inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._localWorkload;
-            }
-            
-            
-            
-            inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._localWorkload = localWorkload;
-            }
-            
-            
-            
-            inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._globalWorkload;
-            }
-            
-            
-            
-            inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._globalWorkload = globalWorkload;
             }
             
             
@@ -1702,7 +1538,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   21/10/2016 17:19
+          * @date   07/11/2016 14:18
           */
          class exahype::records::Cell { 
             
@@ -1716,8 +1552,6 @@ namespace exahype {
                
                struct PersistentRecords {
                   int _CellDescriptionsIndex;
-                  double _localWorkload;
-                  double _globalWorkload;
                   bool _isInside;
                   State _state;
                   #ifdef UseManualAlignment
@@ -1743,7 +1577,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                  PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                   
                   
                   inline int getCellDescriptionsIndex() const 
@@ -1762,46 +1596,6 @@ namespace exahype {
  #endif 
  {
                      _CellDescriptionsIndex = CellDescriptionsIndex;
-                  }
-                  
-                  
-                  
-                  inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _localWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _localWorkload = localWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _globalWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _globalWorkload = globalWorkload;
                   }
                   
                   
@@ -2081,7 +1875,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               Cell(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+               Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                
                /**
                 * Generated
@@ -2105,46 +1899,6 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-               }
-               
-               
-               
-               inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._localWorkload;
-               }
-               
-               
-               
-               inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._localWorkload = localWorkload;
-               }
-               
-               
-               
-               inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._globalWorkload;
-               }
-               
-               
-               
-               inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._globalWorkload = globalWorkload;
                }
                
                
@@ -2555,7 +2309,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   21/10/2016 17:19
+             * @date   07/11/2016 14:18
              */
             class exahype::records::CellPacked { 
                
@@ -2565,8 +2319,6 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      int _CellDescriptionsIndex;
-                     double _localWorkload;
-                     double _globalWorkload;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                      int _responsibleRank;
                      bool _subtreeHoldsWorker;
@@ -2590,7 +2342,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                     PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                      
                      
                      inline int getCellDescriptionsIndex() const 
@@ -2609,46 +2361,6 @@ namespace exahype {
  #endif 
  {
                         _CellDescriptionsIndex = CellDescriptionsIndex;
-                     }
-                     
-                     
-                     
-                     inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _localWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _localWorkload = localWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _globalWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _globalWorkload = globalWorkload;
                      }
                      
                      
@@ -2951,7 +2663,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  CellPacked(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                  CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                   
                   /**
                    * Generated
@@ -2975,46 +2687,6 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-                  }
-                  
-                  
-                  
-                  inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._localWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._localWorkload = localWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._globalWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._globalWorkload = globalWorkload;
                   }
                   
                   
@@ -3453,7 +3125,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   21/10/2016 17:19
+             * @date   07/11/2016 14:18
              */
             class exahype::records::Cell { 
                
@@ -4142,7 +3814,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   21/10/2016 17:19
+                * @date   07/11/2016 14:18
                 */
                class exahype::records::CellPacked { 
                   
@@ -4870,7 +4542,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   21/10/2016 17:19
+                * @date   07/11/2016 14:18
                 */
                class exahype::records::Cell { 
                   
@@ -4884,8 +4556,6 @@ namespace exahype {
                      
                      struct PersistentRecords {
                         int _CellDescriptionsIndex;
-                        double _localWorkload;
-                        double _globalWorkload;
                         bool _isInside;
                         State _state;
                         int _level;
@@ -4912,7 +4582,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         
                         inline int getCellDescriptionsIndex() const 
@@ -4931,46 +4601,6 @@ namespace exahype {
  #endif 
  {
                            _CellDescriptionsIndex = CellDescriptionsIndex;
-                        }
-                        
-                        
-                        
-                        inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _localWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _localWorkload = localWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _globalWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _globalWorkload = globalWorkload;
                         }
                         
                         
@@ -5270,7 +4900,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     Cell(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                     Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                      
                      /**
                       * Generated
@@ -5294,46 +4924,6 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-                     }
-                     
-                     
-                     
-                     inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._localWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._localWorkload = localWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._globalWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._globalWorkload = globalWorkload;
                      }
                      
                      
@@ -5764,7 +5354,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   21/10/2016 17:19
+                   * @date   07/11/2016 14:18
                    */
                   class exahype::records::CellPacked { 
                      
@@ -5774,8 +5364,6 @@ namespace exahype {
                         
                         struct PersistentRecords {
                            int _CellDescriptionsIndex;
-                           double _localWorkload;
-                           double _globalWorkload;
                            int _level;
                            tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                            int _responsibleRank;
@@ -5800,7 +5388,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            
                            inline int getCellDescriptionsIndex() const 
@@ -5819,46 +5407,6 @@ namespace exahype {
  #endif 
  {
                               _CellDescriptionsIndex = CellDescriptionsIndex;
-                           }
-                           
-                           
-                           
-                           inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _localWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _localWorkload = localWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _globalWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _globalWorkload = globalWorkload;
                            }
                            
                            
@@ -6181,7 +5729,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        CellPacked(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
@@ -6205,46 +5753,6 @@ namespace exahype {
  #endif 
  {
                            _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-                        }
-                        
-                        
-                        
-                        inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._localWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._localWorkload = localWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._globalWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._globalWorkload = globalWorkload;
                         }
                         
                         
@@ -6703,7 +6211,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   21/10/2016 17:19
+                   * @date   07/11/2016 14:18
                    */
                   class exahype::records::Cell { 
                      
@@ -7269,7 +6777,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   21/10/2016 17:19
+                      * @date   07/11/2016 14:18
                       */
                      class exahype::records::CellPacked { 
                         
@@ -7874,7 +7382,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   21/10/2016 17:19
+                      * @date   07/11/2016 14:18
                       */
                      class exahype::records::Cell { 
                         
@@ -7888,8 +7396,6 @@ namespace exahype {
                            
                            struct PersistentRecords {
                               int _CellDescriptionsIndex;
-                              double _localWorkload;
-                              double _globalWorkload;
                               bool _isInside;
                               State _state;
                               #ifdef UseManualAlignment
@@ -7913,7 +7419,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+                              PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                               
                               
                               inline int getCellDescriptionsIndex() const 
@@ -7932,46 +7438,6 @@ namespace exahype {
  #endif 
  {
                                  _CellDescriptionsIndex = CellDescriptionsIndex;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _globalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _globalWorkload = globalWorkload;
                               }
                               
                               
@@ -8211,7 +7677,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           Cell(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+                           Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                            
                            /**
                             * Generated
@@ -8235,46 +7701,6 @@ namespace exahype {
  #endif 
  {
                               _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-                           }
-                           
-                           
-                           
-                           inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._localWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._localWorkload = localWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._globalWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._globalWorkload = globalWorkload;
                            }
                            
                            
@@ -8645,7 +8071,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   21/10/2016 17:19
+                         * @date   07/11/2016 14:18
                          */
                         class exahype::records::CellPacked { 
                            
@@ -8655,8 +8081,6 @@ namespace exahype {
                               
                               struct PersistentRecords {
                                  int _CellDescriptionsIndex;
-                                 double _localWorkload;
-                                 double _globalWorkload;
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                  int _responsibleRank;
                                  bool _subtreeHoldsWorker;
@@ -8678,7 +8102,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+                                 PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                                  
                                  
                                  inline int getCellDescriptionsIndex() const 
@@ -8697,46 +8121,6 @@ namespace exahype {
  #endif 
  {
                                     _CellDescriptionsIndex = CellDescriptionsIndex;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _localWorkload = localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _globalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _globalWorkload = globalWorkload;
                                  }
                                  
                                  
@@ -8999,7 +8383,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              CellPacked(const int& CellDescriptionsIndex, const double& localWorkload, const double& globalWorkload, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
+                              CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                               
                               /**
                                * Generated
@@ -9023,46 +8407,6 @@ namespace exahype {
  #endif 
  {
                                  _persistentRecords._CellDescriptionsIndex = CellDescriptionsIndex;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getGlobalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._globalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setGlobalWorkload(const double& globalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._globalWorkload = globalWorkload;
                               }
                               
                               
@@ -9461,7 +8805,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   21/10/2016 17:19
+                         * @date   07/11/2016 14:18
                          */
                         class exahype::records::Cell { 
                            
@@ -10068,7 +9412,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   21/10/2016 17:19
+                            * @date   07/11/2016 14:18
                             */
                            class exahype::records::CellPacked { 
                               
@@ -10714,7 +10058,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   21/10/2016 17:19
+                            * @date   07/11/2016 14:18
                             */
                            class exahype::records::Cell { 
                               
@@ -11362,7 +10706,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   21/10/2016 17:19
+                               * @date   07/11/2016 14:18
                                */
                               class exahype::records::CellPacked { 
                                  
