@@ -5,6 +5,9 @@
 #include "tarch/parallel/NodePool.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
 
+#ifdef Parallel
+#include <mpi.h>
+#endif
 
 tarch::logging::Log  mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
 int                  mpibalancing::HotspotBalancing::_loadBalancingTag = -1;
@@ -188,21 +191,25 @@ void mpibalancing::HotspotBalancing::mergeWithMaster(
   int     workerRank,
   bool    workerCouldNotEraseDueToDecomposition
 ) {
+  #ifdef Parallel
   double workerWeight;
   MPI_Recv( &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
   _weightMap[workerRank]                             = workerWeight > 1.0 ? workerWeight : 1.0;
+  #endif
 }
 
 
 void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
   double localWeight
 ) {
+  #ifdef Parallel
   _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
 
   double ranksWeight = getMaximumWeightOfWorkers();
 
   MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
+  #endif
 }
 
 
