@@ -68,6 +68,29 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("#include \"kernels/aderdg/optimised/Kernels.h\"\n");
     writer.write("\n\n\n");
 	
+	// constructor
+    if (_hasConstants) {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
+    }
+    else {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs):\n");
+    }
+
+
+    writer.write("  exahype::solvers::ADERDGSolver("
+        + "\""+solverName+"\", nVar /* numberOfUnknowns */, "
+        + "nParams /* numberOfParameters */, order + 1 "
+        + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
+        "std::move(profiler)) {\n");
+    if(_hasConstants) {
+       writer.write("  init(cmdlineargs, constants);\n");
+    } else {
+       writer.write("  init(cmdlineargs);\n");
+       writer.write("  // PS: If you miss access to user constants here, enable them in the toolkit\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+	
 	//TODO JMG Remove fluxSplitted when not needed anymore
     writer.write("void " + projectName + "::" + solverName
         + "::fluxSplitted(const double* const Q, double* f, double* g"+(_dimensions == 2 ? "" : ", double* h")+") {\n");
@@ -207,8 +230,24 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS, double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {\n");
+    if (_enableProfiler) {
+        writer.write("  _profiler->start(\"boundaryConditions\");\n");
+    }
+    //ToDo only available as c++ implementation, reference it in Fortran namespace
+    //writer.write("  kernels::aderdg::generic::" + languageNamespace
+    writer.write(" // kernels::aderdg::generic::c" 
+            + "::boundaryConditions"
+            + "( *this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero ); //TODO JMG, uncomment in Toolkit when kernel implemented \n"); //TODO JMG, uncomment when kernel implemented
+    if (_enableProfiler) {
+        writer.write("  _profiler->stop(\"boundaryConditions\");\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
   }
 
+  /*
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(
@@ -274,5 +313,155 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a typesDef.f90.\n");
+  }
+  */ //TODO JMG
+  
+    @Override
+  public final void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
+      String projectName) throws java.io.IOException {
+    Helpers.writeMinimalADERDGSolverUserImplementation(solverName, writer, projectName,
+        _numberOfUnknowns, _numberOfParameters, _order, _hasConstants);
+
+    int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
+
+      // flux
+      writer.write("void " + projectName + "::" + solverName
+            + "::flux(const double* const Q, double** F) {\n");
+      writer.write("  // Dimensions             = " + _dimensions + "\n");
+      writer.write(
+          "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+              + " (#unknowns + #parameters)\n\n");
+      writer.write("  double* f = F[0];\n");
+      writer.write("  double* g = F[1];\n");
+      if (_dimensions == 3) {
+        writer.write("  double* h = F[2];\n");
+      }
+      writer.write("\n");
+      writer.write("  // @todo Please implement\n");
+      writer.write("  // f\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  f[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+      }
+      writer.write("  // g\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  g[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+      }
+      if (_dimensions == 3) {
+        writer.write("  // h\n");
+        writer.write("  // @todo Please implement\n");
+        for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+          writer.write("  h[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+        }
+      }
+      writer.write("}\n");
+
+    writer.write("\n\n\n");
+
+
+      // source
+      writer.write("void " + projectName + "::" + solverName + "::source(const double* const Q, double* S) {\n");
+      writer.write("  // Number of variables = " + _numberOfUnknowns + " + " +  _numberOfParameters + "\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  S[" + i + "] = 0.0;\n");
+      }
+      writer.write("}\n");
+    writer.write("\n\n\n");
+      
+    // boundary conditions
+    writer.write("void " + projectName + "::" + solverName
+            + "::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {\n");
+    writer.write("  // Dimensions             = " + _dimensions + "\n");
+    writer.write(
+            "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+            + " (#unknowns + #parameters)\n\n");
+    writer.write("\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  // fluxOut\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  fluxOut[" + String.format("%" + digits + "d", i) + "] = fluxIn[" + String.format("%" + digits + "d", i) + "];\n");
+    }
+    writer.write("  // stateOut\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  stateOut[" + String.format("%" + digits + "d", i) + "] = stateIn[" + String.format("%" + digits + "d", i) + "];\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    
+
+      // eigenvalues
+      writer.write("void " + projectName + "::" + solverName
+          + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
+      writer.write("  // Dimensions             = " + _dimensions + "\n");
+      writer.write(
+          "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+              + " (#unknowns + #parameters)\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+      }
+      writer.write("}\n");
+
+    writer.write("\n\n\n");
+    
+    //initial conditions
+    writer.write("bool " + projectName + "::" + solverName
+        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+        + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
+    writer.write("  // Dimensions             = " + _dimensions + "\n");
+    writer.write(
+        "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+            + " (#unknowns + #parameters)\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+      writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+
+    // refinement control
+    writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
+        + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return exahype::solvers::Solver::RefinementControl::Keep;\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+
+      // ncp
+
+      writer.write("void " + projectName + "::" + solverName
+          + "::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {\n");
+      writer.write("  // Dimensions             = " + _dimensions + "\n");
+      writer.write("  // Number of variables    = "
+          + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+          + " (#unknowns + #parameters)\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < _dimensions * (_numberOfUnknowns + _numberOfParameters); i++) {
+          writer.write("  BgradQ[" + i + "] = 0.0;\n");
+      }
+      writer.write("}\n");
+
+    writer.write("\n\n\n");
+
+
+      // matrixb
+      writer.write("void " + projectName + "::" + solverName + "::matrixb(const double* const Q, const int normalNonZero, double* Bn) {\n");
+      writer.write("  // Number of variables    = "
+          + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+          + " (#unknowns + #parameters)\n");
+      writer.write("  // @todo Please implement\n");
+      for (int i = 0; i < (_numberOfUnknowns + _numberOfParameters) * (_numberOfUnknowns + _numberOfParameters); i++) {
+        writer.write("Bn[" + i + "] = 0.0;\n");
+      }
+      writer.write("}\n");
+
+    writer.write("\n\n\n");
   }
 }
