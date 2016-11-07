@@ -43,11 +43,7 @@ peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecifi
 
 
 peano::MappingSpecification   exahype::mappings::LoadBalancing::leaveCellSpecification() {
-  #ifdef Parallel
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
-  #else
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
-  #endif
 }
 
 
@@ -64,9 +60,7 @@ void exahype::mappings::LoadBalancing::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  #ifdef Parallel
-  fineGridCell.clearLoadBalancingWorkloads();
-  #endif
+  _numberOfLocalCells++;
 }
 
 
@@ -79,20 +73,6 @@ void exahype::mappings::LoadBalancing::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-
-  #ifdef Parallel
-  coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell,false);
-
-  // ohne das geht es
-  if (coarseGridCell.isRoot()) {
-    mpibalancing::HotspotBalancing::increaseLocalWeight(
-      fineGridCell.getLocalWorkload()
-    );
-  }
-  #endif
-
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
@@ -114,14 +94,10 @@ void exahype::mappings::LoadBalancing::mergeWithMaster(
 ) {
   logTraceIn( "mergeWithMaster(...)" );
 
-  coarseGridCell.restrictLoadBalancingWorkloads(workerGridCell,true);
-  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+  mpibalancing::HotspotBalancing::mergeWithMaster(
     worker,
-    workerGridCell.getGlobalWorkload(),
     workerState.getCouldNotEraseDueToDecompositionFlag()
   );
-
-  logDebug( "mergeWithMaster(...)", "merged received/fine cell " << workerGridCell.toString() << " from rank " << worker << " into coarse cell " << coarseGridCell.toString() );
 
   logTraceOut( "mergeWithMaster(...)" );
 }
@@ -135,11 +111,6 @@ void exahype::mappings::LoadBalancing::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-
-  localCell.clearLoadBalancingWorkloads();
-
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 #endif
 
@@ -354,7 +325,7 @@ void exahype::mappings::LoadBalancing::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  // do nothing
+  mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(_numberOfLocalCells);
 }
 
 
@@ -414,6 +385,7 @@ void exahype::mappings::LoadBalancing::touchVertexLastTime(
 void exahype::mappings::LoadBalancing::beginIteration(
   exahype::State&  solverState
 ) {
+  _numberOfLocalCells = 0;
 }
 
 
