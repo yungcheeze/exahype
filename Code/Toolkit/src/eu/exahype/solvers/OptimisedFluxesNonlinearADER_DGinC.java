@@ -26,21 +26,34 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
-
+    IncludeOnceHelper ifndef = new IncludeOnceHelper(writer, solverName+"_CLASS_HEADER");
+    ifndef.open();
+    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
     writer.write("  private:\n");
+	writer.write(
+        "    static void flux(const double* const Q, double** F);\n"); //TODO JMG Remove fluxSplitted when not needed anymore
     if (_dimensions == 2) {
-      writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
+      writer.write("    static void fluxSplitted(const double* const Q, double* f, double* g);\n");
     } else {
       writer.write(
-          "    static void flux(const double* const Q, double* f, double* g, double* h);\n");
+          "    static void fluxSplitted(const double* const Q, double* f, double* g, double* h);\n");
     }
+	
     writer.write(
         "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write(
         "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
+		
+    writer.write("    void init(std::vector<std::string>& cmdlineargs"+(_hasConstants ? ", exahype::Parser::ParserView& constants" : "")+");\n");
+    writer.write("    void source(const double* const Q, double* S);\n");
+    writer.write("    void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
+    writer.write(
+        "    void ncp(const double* const Q, const double* const gradQ, double* BgradQ);\n");
+    writer.write(
+        "    void matrixb(const double* const Q, const int normalNonZero, double* Bn);\n");
 
     writer.write("};\n\n\n");
+	ifndef.close();
   }
 
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
@@ -54,12 +67,25 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("#include \"kernels/aderdg/optimised/Kernels.h\"\n");
     writer.write("\n\n\n");
+	
+	//TODO JMG Remove fluxSplitted when not needed anymore
+    writer.write("void " + projectName + "::" + solverName
+        + "::fluxSplitted(const double* const Q, double* f, double* g"+(_dimensions == 2 ? "" : ", double* h")+") {\n");
+    writer.write("   double* F["+_dimensions+"];\n");
+	writer.write("   F[0] = f;\n");
+	writer.write("   F[1] = g;\n");
+	if(_dimensions == 3) 
+		writer.write("   F[2] = h;\n");
+	writer.write("   flux(Q,F);\n");
+    writer.write("}\n");
+	writer.write("\n\n\n");
+	
     writer.write("void " + projectName + "::" + solverName
         + "::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {\n");
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"spaceTimePredictor\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::picardLoop<flux>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );\n");
+    writer.write("   kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );\n"); //TODO remove fluxSplitted for flux
     writer.write("   kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );\n");
     writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );\n");
     if (_enableProfiler) {
@@ -142,7 +168,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"faceUnknownsProlongation\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("   // kernels::aderdg::optimised::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented \n"); //TODO JMG, uncomment when kernel implemented
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"faceUnknownsProlongation\");\n");
     }
@@ -153,7 +179,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"faceUnknownsRestriction\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  // kernels::aderdg::optimised::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented \n"); //TODO JMG, uncomment when kernel implemented
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"faceUnknownsRestriction\");\n");
     }
@@ -164,7 +190,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"volumeUnknownsProlongation\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  // kernels::aderdg::optimised::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented \n"); //TODO JMG, uncomment when kernel implemented
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"volumeUnknownsProlongation\");\n");
     }
@@ -175,7 +201,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     if (_enableProfiler) {
       writer.write("   _profiler->start(\"volumeUnknownsRestriction\");\n");
     }
-    writer.write("   kernels::aderdg::optimised::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("  // kernels::aderdg::optimised::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() ); //TODO JMG, uncomment in Toolkit when kernel implemented \n"); //TODO JMG, uncomment when kernel implemented
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"volumeUnknownsRestriction\");\n");
     }
