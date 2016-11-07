@@ -74,7 +74,7 @@ exahype::adapters::NeighbourDataMerging::~NeighbourDataMerging() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::NeighbourDataMerging::NeighbourDataMerging(const NeighbourDataMerging&  masterThread):
-  _map2Merging(masterThread._map2Merging) , 
+  _map2Merging(masterThread._map2Merging) ,
   _map2PostProcessing(masterThread._map2PostProcessing) 
 
 {

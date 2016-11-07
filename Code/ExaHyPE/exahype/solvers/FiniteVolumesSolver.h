@@ -51,19 +51,33 @@ private:
   static tarch::logging::Log _log;
 
   /**
-   * Total number of unknowns in a cell.
+   * Total number of volume averages and ghost values in a patch.
+   * This number does include ghost values.
    */
-  int _unknownsPerCell;
+  int _unknownsPerPatch;
 
   /**
-   * Total number of unknowns per cell face.
+   * Width of the ghost layer used for
+   * reconstruction and Riemann solves.
    */
-  int _unknownsPerFace;
+  int _ghostLayerWidth;
 
   /**
-   * Total number of unknowns per cell boundary.
+   * Total number of ghost values surrounding a patch.
    */
-  int _unknownsPerCellBoundary;
+  int _ghostValuesPerPatch;
+
+  /**
+   * Total number of volume averages per face of the patch.
+   * This number does not include ghost values.
+   */
+  int _unknownsPerPatchFace;
+
+  /**
+   * Total number of volume averages per boundary of the patch.
+   * This number does not include ghost values.
+   */
+  int _unknownsPerPatchBoundary;
 
   /**
    * Minimum time stamps of all patches.
@@ -167,12 +181,12 @@ public:
    }
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
-                      int numberOfParameters, int nodesPerCoordinateAxis,
-                      double maximumMeshSize,
-                      exahype::solvers::Solver::TimeStepping timeStepping,
-                      std::unique_ptr<profilers::Profiler> profiler =
-                          std::unique_ptr<profilers::Profiler>(
-                              new profilers::simple::NoOpProfiler("")));
+      int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
+      double maximumMeshSize,
+      exahype::solvers::Solver::TimeStepping timeStepping,
+      std::unique_ptr<profilers::Profiler> profiler =
+          std::unique_ptr<profilers::Profiler>(
+              new profilers::simple::NoOpProfiler("")));
 
   virtual ~FiniteVolumesSolver() {}
 
@@ -246,6 +260,26 @@ public:
       const double* luh,
       const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
 
+  /**
+   * Return the state variables at the boundary.
+   *
+   * @param[inout] stateOut
+   * @param[in]    stateIn
+   * @param[in]    cellCentre    Cell centre.
+   * @param[in]    cellSize      Cell size.
+   * @param[in]    t             The time.
+   * @param[in]    dt            A time step size.
+   * @param[in]    normalNonZero Index of the nonzero normal vector component,
+   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
+   */
+  virtual void boundaryConditions(double* stateOut,
+      const double* const stateIn,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const double t,const double dt,
+      const int faceIndex,
+      const int normalNonZero) = 0;
+
   virtual void solutionUpdate(
       double* luhNew,const double* luh,
       double** tempStateSizedArrays,double** tempUnknowns,
@@ -267,10 +301,28 @@ public:
   double getMinTimeStamp() const override;
 
   /**
-   * This operation returns the number of unknowns per cell located in
-   * the interior of a cell.
+   * The number of unknowns per patch.
+   * This number does not include ghost layer values.
    */
-  int getUnknownsPerCell() const;
+  int getUnknownsPerPatch() const;
+
+  /**
+   * Get the width of the ghost layer of the patch.
+   */
+  int getGhostLayerWidth() const;
+
+  /**
+   * Get the total number of ghost values per patch.
+   */
+  int getGhostValuesPerPatch() const;
+
+  /**
+   * This operation returns the number of unknowns per
+   * face of a patch.
+   *
+   * This number does not include ghost values.
+   */
+  int getUnknownsPerFace() const;
 
   /**
    * Run over all solvers and identify the minimal time step size.

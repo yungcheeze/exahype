@@ -18,7 +18,7 @@
 // *.cpp
 #include "tarch/multicore/Lock.h"
 
-#include "kernels/limiter/generic/c/Limiter.h"
+#include "kernels/limiter/generic/Limiter.h"
 
 namespace exahype {
 namespace solvers {

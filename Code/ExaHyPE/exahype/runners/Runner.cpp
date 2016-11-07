@@ -666,7 +666,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
-  repository.iterate();
+  repository.iterate(); // todo uncomment
 
   // no merging and sending
   // TODO(Dominic):

@@ -101,7 +101,7 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
         solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       auto finiteVolumesSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
       _tempStateSizedArrays[solverNumber] = new double*[5];
-      for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+      for (int i=0; i<5; ++i) { // max; see spaceTimePredictorNonlinear
         _tempStateSizedArrays[solverNumber][i] =
             new double[finiteVolumesSolver->getNumberOfVariables()];
       }
@@ -126,7 +126,7 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
       if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
           solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         //
-        for (int i=0; i<4; ++i) {
+        for (int i=0; i<5; ++i) {
           delete[] _tempStateSizedArrays[solverNumber][i];
         }
         delete[] _tempStateSizedArrays[solverNumber];
@@ -180,11 +180,11 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    const int numberOfSolver = exahype::solvers::RegisteredSolvers.size();
+    const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined7;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolver, methodTrace);
-    pfor(i, 0, numberOfSolver, grainSize)
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
+    pfor(i, 0, numberOfSolvers, grainSize)
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
