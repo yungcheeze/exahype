@@ -1,0 +1,57 @@
+#include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+
+template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)> 
+  void kernels::aderdg::optimised::solutionAdjustment(
+  double* luh,
+  const tarch::la::Vector<DIMENSIONS,double>& center,
+  const tarch::la::Vector<DIMENSIONS,double>& dx,
+  const double t,
+  const double dt
+) {
+  double x[{{nDimPad}}] __attribute__((aligned(ALIGNMENT)));
+  
+{#- //gcc and icc specify distinct ways to inform the compiler about guaranteed alignment. #}
+{#- // gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT); #}
+{#- // icc: __assume_aligned(a, ALIGNMENT); #}
+{#- // the default gcc on the cluster exhibits a well-known bug in alignment assumptions #}
+{#- // => we skip gcc here #}
+{#- // do not query __GNUC__ - icc also defines this #}
+#ifdef __INTEL_COMPILER
+  __assume_aligned(kernels::aderdg::optimised::weights1, ALIGNMENT);
+#endif
+
+{%- if nDim == 2 %} 
+  for(int ii=0;ii<{{nDof}};ii++) {
+    const double qr = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][ii];
+    for(int jj=0;jj<{{nDof}};jj++) {
+      const double qs = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][jj];
+      x[0] = center[0] + dx[0] * (qr - 0.5);
+      x[1] = center[1] + dx[1] * (qs - 0.5);
+
+      const double weight = kernels::aderdg::optimised::weights1[ii] * kernels::aderdg::optimised::weights1[jj];
+      const int startIndex = (ii+{{nDof}}*jj)*{{nVar}};
+      PDESolutionAdjustment(x, weight, t, dt, &luh[startIndex]);
+    }
+  }
+{%- endif %}
+{%- if nDim == 3 %} 
+  for(int ii=0;ii<{{nDof}};ii++) {
+    const double qr = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][ii];
+    for(int jj=0;jj<{{nDof}};jj++) {
+      const double qs = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][jj];
+      for(int kk=0;kk<{{nDof}};kk++) {
+        const double qt = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][kk];
+        x[0] = center[0] + dx[0] * (qr - 0.5);
+        x[1] = center[1] + dx[1] * (qs - 0.5);
+        x[2] = center[2] + dx[2] * (qt - 0.5);
+
+        const double weight = kernels::aderdg::optimised::weights1[ii] * kernels::aderdg::optimised::weights1[jj] * kernels::aderdg::optimised::weights1[kk];
+        const int startIndex = (ii+{{nDof}}*jj+{{nDof ** 2}}*kk)*{{nVar}};
+        PDESolutionAdjustment(x, weight, t, dt, &luh[startIndex]);
+      }
+    }
+  }
+{%- endif %}
+}
+
