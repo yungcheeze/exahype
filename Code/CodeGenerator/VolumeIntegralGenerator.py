@@ -22,12 +22,12 @@
 # for a specific configuration
 #
 
-import Backend
-from MatmulConfig import MatmulConfig
-import FunctionSignatures
-import Utils
 import os
 from jinja2 import Template
+
+import Backend
+from MatmulConfig import MatmulConfig
+
 
 class VolumeIntegralGenerator:
     m_context = {}
