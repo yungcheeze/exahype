@@ -6,7 +6,8 @@
 #include "peano/parallel/loadbalancing/Oracle.h"
 
 
-tarch::logging::Log mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
+tarch::logging::Log  mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
+int                  mpibalancing::HotspotBalancing::_loadBalancingTag = -1;
 
 
 bool                        mpibalancing::HotspotBalancing::_forkHasFailed = false;
@@ -21,6 +22,11 @@ mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsest
   _maxForksOnCriticalWorker(THREE_POWER_D) {
   _workerCouldNotEraseDueToDecomposition.insert( std::pair<int,bool>(tarch::parallel::Node::getInstance().getRank(), false) );
   _regularLevelAlongBoundary = coarsestRegularInnerAndOuterGridLevel;
+
+  if (_loadBalancingTag<0) {
+    _loadBalancingTag = tarch::parallel::Node::reserveFreeTag("mpibalancing::HotspotBalancing");
+    assertion(_loadBalancingTag>=0);
+  }
 }
 
 
@@ -28,7 +34,7 @@ mpibalancing::HotspotBalancing::~HotspotBalancing() {
 }
 
 
-double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() {
   double maximumWeight = std::numeric_limits<double>::min();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second > maximumWeight ) {
@@ -39,7 +45,7 @@ double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
 }
 
 
-double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() {
   double minimumWeight  = std::numeric_limits<double>::max();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second < minimumWeight ) {
@@ -130,8 +136,6 @@ void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::load
   identifyCriticalPathes( commandFromMaster );
   computeMaxForksOnCriticalWorker( commandFromMaster );
 
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] =0.0;
-
   logTraceOut("receivedStartCommand(LoadBalancingFlag)" );
 }
 
@@ -180,20 +184,25 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
 }
 
 
-void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+void mpibalancing::HotspotBalancing::mergeWithMaster(
   int     workerRank,
-  double  workerWeight,
   bool    workerCouldNotEraseDueToDecomposition
 ) {
+  double workerWeight;
+  MPI_Recv( &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
   _weightMap[workerRank]                             = workerWeight > 1.0 ? workerWeight : 1.0;
 }
 
 
-void mpibalancing::HotspotBalancing::increaseLocalWeight(
+void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
   double localWeight
 ) {
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] += localWeight;
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
+
+  double ranksWeight = getMaximumWeightOfWorkers();
+
+  MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
 }
 
 

@@ -38,167 +38,110 @@ peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
  * therefore the false argument in the snippet above.
  *
  * This oracle will not work properly, as we haven't fed it yet with a cost
- * model. It cannot know which rank is member along the critical paths. In this
- * introductory example, I realise a cell-based cost model and, for this,
- * augment my cell definition:
+ * model. It cannot know which rank is member along the critical paths.
+ *
+ * There are many different cost models one could design and I originally
+ * proposed to use a tree-based cost model in most conversations and also in my
+ * dissertation. Such a model assigns each leaf a cost and then restricts this
+ * cost bottom-up. The approach works fine as long as you do not use Peano's
+ * new feature to overlap the grid with the domain boundary and to deploy
+ * boundary grid segments to other ranks. In this case, a grammar-based cost
+ * analysis has to fail as information is not propagated through all the
+ * coarse outside tree parts.
+ *
+ * I therefore propose a more global approach with this balancing that is even
+ * simpler and applies this tree-grammar cost idea to the rank topology only.
+ * To use it, I propose to add a counter _numberOfInnerCells to your mappping
+ * that connects to the load balancing. This flag is set to zero in
+ * beginIteration() and we increment it in enterCell() or leaveCell(). Please
+ * ensure that you synchronise accesses properly in a TBB environment.
  *
  * <pre>
-Packed-Type: int;
-
-class exahype::dastgen::Cell {
-  [...]
-
-  #ifdef Parallel
-  persistent parallelise double localWorkload;
-  persistent parallelise double globalWorkload;
-  #endif
-};
-  </pre>
- *
- * For each node in the spacetree, we hold the sum of its weight of all
- * children (globalWorkload) and we also hold the sum of all children that are
- * processed by the very same rank (localWorkload). I next typically introduce
- * a new mapping for the load balancing.
- *
- * To befill this mapping with functionality, I have to extend my cell. The
- * example below is inspired by the ExaHyPE project:
- *
- * <pre>
-
-void exahype::Cell::clearLoadBalancingWorkloads() {
-  if (isRefined()) {
-    _cellData.setLocalWorkload(0.0);
-    _cellData.setGlobalWorkload(0.0);
-  }
-  else {
-    _cellData.setLocalWorkload(1.0);
-    _cellData.setGlobalWorkload(1.0);
-  }
-}
-
-
-void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote) {
-  if (isRemote) {
-    _cellData.setGlobalWorkload(
-      std::max(_cellData.getLocalWorkload(), childCell._cellData.getGlobalWorkload())
-    );
-  }
-  else {
-    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
-    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
-  }
-}
-
-
-double exahype::Cell::getLocalWorkload() const {
-  return _cellData.getLocalWorkload();
-}
-
-
-double exahype::Cell::getGlobalWorkload() const {
-  _cellData.getGlobalWorkload();
-}
-
-
-  </pre>
- *
- *
- * We finally invoke the routines in the new load balancing mapping:
- *
- * - In enterCell, we call clearLoadBalancingWorkloads().
- * - In leaveCell, we call restrictLoadBalancingWorkloads() on the parent cell
- *   and pass it the fine grid cell.
- * - In mergeWithMaster(), we invoke it on the local cell plugging in the
- *   received worker cell.
- *
- * <pre>
-
-void exahype::mappings::LoadBalancing::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+void boxmg::mappings::CreateGrid::beginIteration(
+  boxmg::State&  solverState
 ) {
-  fineGridCell.clearLoadBalancingWorkloads();
+  srand(time(NULL));
+
+  _numberOfInnerCells = 0;
 }
 
-
-void exahype::mappings::LoadBalancing::leaveCell(
-      exahype::Cell&           fineGridCell,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+void boxmg::mappings::CreateGrid::leaveCell(
+  boxmg::Cell&           fineGridCell,
+  boxmg::Vertex * const  fineGridVertices,
+  const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+  boxmg::Vertex * const  coarseGridVertices,
+  const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+  boxmg::Cell&           coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-
-  coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell,false);
-
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
+  _numberOfInnerCells++;
 }
-
-
-#ifdef Parallel
-void exahype::mappings::LoadBalancing::mergeWithMaster(
-  const exahype::Cell&                       workerGridCell,
-  exahype::Vertex * const                    workerGridVertices,
-  const peano::grid::VertexEnumerator&       workerEnumerator,
-  exahype::Cell&                             fineGridCell,
-  exahype::Vertex * const                    fineGridVertices,
-  const peano::grid::VertexEnumerator&       fineGridVerticesEnumerator,
-  exahype::Vertex * const                    coarseGridVertices,
+   </pre>
+ *
+ * We could use Peano's grid statistics to derive exactly this information, but
+ * most people prefer to count manually and kick out the (expensive) grid analysis
+ * of Peano in production runs. The analysed counter now is sent to the master in
+ * prepareSendToMaster():
+ *
+ <pre>
+ void boxmg::mappings::CreateGrid::prepareSendToMaster(
+  boxmg::Cell&                       localCell,
+  boxmg::Vertex *                    vertices,
+  const peano::grid::VertexEnumerator&       verticesEnumerator,
+  const boxmg::Vertex * const        coarseGridVertices,
   const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-  exahype::Cell&                             coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell,
-  int                                        worker,
-  const exahype::State&                      workerState,
-  exahype::State&                            masterState
+  const boxmg::Cell&                 coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
+  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
 
-  coarseGridCell.restrictLoadBalancingWorkloads(workerGridCell,true);
-  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
-    worker,
-    workerGridCell.getGlobalWorkload(),
-    workerState.getCouldNotEraseDueToDecompositionFlag()
+  mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
+    _numberOfInnerCells
   );
 
-  logDebug( "mergeWithMaster(...)", "merged received/fine cell " << workerGridCell.toString() << " from rank " << worker << " into coarse cell " << coarseGridCell.toString() );
-
-  logTraceOut( "mergeWithMaster(...)" );
+  logTraceOut( "prepareSendToMaster(...)" );
 }
-
-
-
-void exahype::mappings::LoadBalancing::mergeWithWorker(
-  exahype::Cell&           localCell,
-  const exahype::Cell&     receivedMasterCell,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                          level
+ <\pre>
+ *
+ * The same routine also bookkeeps the cost locally. In return for the send, we
+ * have to plug into mergeWithMaster to receive all load balancing data:
+ *
+ * <pre>
+void boxmg::mappings::CreateGrid::mergeWithMaster(
+  const boxmg::Cell&           workerGridCell,
+  boxmg::Vertex * const        workerGridVertices,
+  const peano::grid::VertexEnumerator& workerEnumerator,
+  boxmg::Cell&                 fineGridCell,
+  boxmg::Vertex * const        fineGridVertices,
+  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+  boxmg::Vertex * const        coarseGridVertices,
+  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+  boxmg::Cell&                 coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+  int                                                                  worker,
+  const boxmg::State&          workerState,
+  boxmg::State&                masterState
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-
-  localCell.clearLoadBalancingWorkloads();
-
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
+  mpibalancing::HotspotBalancing::mergeWithMaster(
+    worker,
+    workerState.getCouldNotEraseDueToDecompositionFlag()
+  );
 }
-#endif
-
-
-void endIteration( ...) {
-  set local workload
-}
-
-  </pre>
- * Two calls to receivedMergeWithMaster() and in endIteration
- * or leaveCell, respectively, connect the cost model to the
- * balancing.
+   </pre>
+ *
+ *
+ * <h2> Troubshooting </h2>
+ *
+ * I sometimes run into the situation that the grid is correctly balanced for
+ * small(er) grids but that the load balancing degenerates into something
+ * ill-balanced when you create a finer grid. Finding such issues can be
+ * very painful. From time to time, I had the issue that I had fused grid
+ * construction and load balancing. This led to the situation that the load
+ * balancing started to fork off some subpartitions on some ranks. Such a
+ * fork-off unfortunately leads to the situation that refine instructions
+ * along the domain boundary are postponed by one iteration while others
+ * run through straight ahead.
+ *
  *
  * <h2>Behaviour</h2>
  *
@@ -221,7 +164,6 @@ void endIteration( ...) {
  *   before due to the domain decomposition and if joins are globally allowed,
  *   we join this one to facilitate that erases pass through and the global
  *   grid becomes smaller.
- *
  *
  * <h3>  receivedStartCommand </h3>
  *
@@ -309,32 +251,23 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
  
     int getRegularLevelAlongBoundary() const override;
 
+
     /**
-     * Should be called in mergeWithMaster. Typically usage is as follows:
-     *
-     * <pre>
-  fineGridCell.restrictLoadBalancingWorkloads(workerGridCell);
-  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
-    worker,
-    workerGridCell.getGlobalWorkload(),
-    workerState.getCouldNotEraseDueToDecompositionFlag()
-  );
-       <pre>
+     * Receive load balancing information from worker rank.
      */
-    static void receivedMergeWithMaster(
+    static void mergeWithMaster(
       int     workerRank,
-      double  workerWeight,
       bool    workerCouldNotEraseDueToDecomposition
     );
 
     /**
-     * This operation is typically invoked in endIteration().
+     * Inform about number of local cells (or, more abstract, local cost),
+     * bookmark this information and send the updated value to the parent
+     * rank.
      *
-     * If a rank deploys all of its 3^d coarsest ranks to other nodes, i.e. is
-     * a pure administration rank, then this routine is automatically not
-     * called if you follow the recipes above and plug into leaveCell.
+     * This operation is typically called in prepareSendToMaster().
      */
-    static void increaseLocalWeight(
+    static void setLocalWeightAndNotifyMaster(
       double  localWeight
     );
 
@@ -347,14 +280,14 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      * e.g.) or some values might also have been updated in the current
      * traversal.
      */
-    double getMaximumWeightOfWorkers() const;
+    static double getMaximumWeightOfWorkers();
 
     /**
      * @see getMaximumWeightOfWorkers()
      * @see Class documentation clarifying why we have to exclude weights
      *      smaller than one explicitly.
      */
-    double getMinimumWeightOfWorkers() const;
+    static double getMinimumWeightOfWorkers();
 
     /**
      * Run through all the workers and insert those that have a critical weight
@@ -383,6 +316,8 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
     static bool                 _forkHasFailed;
 
     static int                  _regularLevelAlongBoundary;
+
+    static int                  _loadBalancingTag;
 
     /**
      * Global flag set at construction time.
