@@ -288,7 +288,7 @@ double solutionUpdate(
   // x edges 
   double* Fn = tempStateSizedArrays[0];
   for (int j = patchBegin; j < patchEnd+1; j++) {
-    for (int k = patchBegin; k < patchEnd+1; k++) {
+    for (int k = patchBegin-1; k < patchEnd+1; k++) {
       double s_max_x = 
           riemannSolver<PDEEigenvalues, PDEFlux>(
               Fn, 
@@ -308,13 +308,13 @@ double solutionUpdate(
   }
 
   // y edges
-  for (int j = patchBegin; j < patchEnd+1; j++) {
+  for (int j = patchBegin-1; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
       double s_max_y = riemannSolver<PDEEigenvalues, PDEFlux>(
           Fn, 
           luh + idx(j, k, 0),
           luh + idx(j+1, k, 0), 
-          numberOfVariables, 1, &tempStateSizedArrays[1]); // TODO(Dominic): Merging of data happens here; read wRy wLy
+          numberOfVariables, 1, tempStateSizedArrays + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
       
@@ -421,10 +421,7 @@ void boundaryConditions(SolverType& solver,
   // Determine if face is "left" (=0 for faceIndex=0,2,4) or "right" face (=1 for faceIndex=1,2,3).
   const int f = faceIndex-2*normalNonZero;
 
-  constexpr int patchBegin=1;
-  const int     patchEnd=basisSize;
-  idx2 idx(basisSize+2,numberOfVariables);
-  
+  idx2 idx(basisSize,numberOfVariables);
   // Determine the free direction from the non-zero normal entry.
   // @todo(Dominic,31/07/16) I might have confused these directions. Please start here with the debugging.
   int d1=0;
@@ -445,8 +442,8 @@ void boundaryConditions(SolverType& solver,
   // TODO(Dominic) Fix this.
   x[normalNonZero] = cellCentre[normalNonZero] + 
       (-0.5 + (double) f)*( cellSize[normalNonZero] + 1.0/(2.0*basisSize) ); // cell center of the outside cell (not the patch center). TODO(Dominic): Verify! 
-  for (int i = patchBegin; i < patchEnd+1; i++) {  // loop over dof
-    const double q = (2.0*(i-patchBegin)+1.0)/(2.0*basisSize); //linspace
+  for (int i = 0; i < basisSize; i++) {  // loop over dof
+    const double q = (2.0*i+1.0)/(2.0*basisSize); //linspace
     
     x[d1] = cellCentre[d1] + cellSize[d1] * (q - 0.5);
     solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,

@@ -20,9 +20,11 @@
 #include "exahype/Vertex.h"
 #include "exahype/VertexOperations.h"
 
-#include "exahype/amr/AdaptiveMeshRefinement.h"
+#include "peano/utils/Loop.h"
 
 #include "tarch/multicore/Lock.h"
+
+#include "exahype/amr/AdaptiveMeshRefinement.h"
 
 
 namespace {
@@ -385,7 +387,7 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
   if (cellDescription.getType()==CellDescription::Cell
 //      && cellDescription.getRefinementEvent()==CellDescription::None
       ) {
-    double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* solution = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -393,7 +395,7 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
         cellDescription.getTimeStamp(),
         cellDescription.getTimeStepSize())) {
       solutionAdjustment(
-          luh,
+          solution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
           cellDescription.getTimeStamp(),
@@ -401,7 +403,7 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     }
 
     for (int i=0; i<_unknownsPerPatch+_ghostValuesPerPatch; i++) {
-      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"setInitialConditions(...)",i);
+      assertion3(std::isfinite(solution[i]),cellDescription.toString(),"setInitialConditions(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
 }
@@ -420,10 +422,17 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getOldSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  std::copy(solution,solution+_unknownsPerPatch,newSolution); // Copy (current solution) in old solution field.
-  for (int i=0; i<_unknownsPerPatch+_ghostValuesPerPatch; i++) {
-    assertion3(std::isfinite(solution[i]),cellDescription.toString(),"solution[i]",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  std::copy(newSolution,newSolution+_unknownsPerPatch+_ghostValuesPerPatch,solution); // Copy (current solution) in old solution field.
+
+  dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
+    if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
+    && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
+      for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
+      }
+    }
+  }
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -446,9 +455,15 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  for (int i=0; i<_unknownsPerPatch+_ghostValuesPerPatch; i++) {
-    assertion3(std::isfinite(newSolution[i]),cellDescription.toString(),"finiteVolumeSolution[i]",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
+    if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
+    && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
+      for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
+      }
+    }
+  }
 }
 
 

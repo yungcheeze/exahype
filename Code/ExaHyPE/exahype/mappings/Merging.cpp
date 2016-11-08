@@ -80,106 +80,106 @@ tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
 
 void exahype::mappings::Merging::prepareTemporaryVariables() {
-//  if (_tempStateSizedVectors==nullptr) {
-//    assertion(_tempStateSizedSquareMatrices==nullptr);
-//
-//    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-//    _tempStateSizedVectors          = new double**[numberOfSolvers];
-//    _tempStateSizedSquareMatrices   = new double**[numberOfSolvers];
-//    _tempFaceUnknownsArray          = new double**[numberOfSolvers];
-////    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
-//
-//    // TOOD(Dominic): Check if we need number of parameters too
-//    int solverNumber=0;
-//    for (auto solver : exahype::solvers::RegisteredSolvers) {
-//      _tempStateSizedVectors[solverNumber] = new double*[5];
-//      for (int i=0; i<5; ++i) { // see riemanSolverLinear
-//        _tempStateSizedVectors[solverNumber][i] = new double[solver->getNumberOfVariables()];
-//      }
-//      //
-//      _tempStateSizedSquareMatrices[solverNumber] = new double*[3];
-//      for (int i=0; i<3; ++i) { // see riemanSolverLinear
-//        _tempStateSizedSquareMatrices[solverNumber][i] =
-//            new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
-//      }
-//
-//      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-//        auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-//
-//        _tempFaceUnknownsArray[solverNumber] = new double*[3];
-//        for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-//          _tempFaceUnknownsArray[solverNumber][i] = new double[aderdgSolver->getUnknownsPerFace()];
-//        }
-////        _tempSpaceTimeFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getSpaceTimeUnknownsPerFace()]; todo
-//        // see spaceTimePredictorLinear
-//      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-//        auto finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(solver);
-//        _tempFaceUnknownsArray[solverNumber] = new double*[2];
-//        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
-//          _tempFaceUnknownsArray[solverNumber][i] = new double[finiteVolumesSolver->getUnknownsPerFace()];
-//        }
-//      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-//        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
-//        // with size of FV array since 2*N+1 > N+1.
-//        assertionMsg(false,"Please implement!");
-//      } else {
-//        _tempFaceUnknownsArray[solverNumber] = nullptr;
-////        _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
-//      }
-//
-//      ++solverNumber;
-//    }
-//  } // todo uncomment
+  if (_tempStateSizedVectors==nullptr) {
+    assertion(_tempStateSizedSquareMatrices==nullptr);
+
+    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+    _tempStateSizedVectors          = new double**[numberOfSolvers];
+    _tempStateSizedSquareMatrices   = new double**[numberOfSolvers];
+    _tempFaceUnknownsArray          = new double**[numberOfSolvers];
+//    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
+
+    // TOOD(Dominic): Check if we need number of parameters too
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      _tempStateSizedVectors[solverNumber] = new double*[5];
+      for (int i=0; i<5; ++i) { // see riemanSolverLinear
+        _tempStateSizedVectors[solverNumber][i] = new double[solver->getNumberOfVariables()];
+      }
+      //
+      _tempStateSizedSquareMatrices[solverNumber] = new double*[3];
+      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+        _tempStateSizedSquareMatrices[solverNumber][i] =
+            new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
+      }
+
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+
+        _tempFaceUnknownsArray[solverNumber] = new double*[3];
+        for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+          _tempFaceUnknownsArray[solverNumber][i] = new double[aderdgSolver->getUnknownsPerFace()];
+        }
+//        _tempSpaceTimeFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getSpaceTimeUnknownsPerFace()]; todo
+        // see spaceTimePredictorLinear
+      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+        auto finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(solver);
+        _tempFaceUnknownsArray[solverNumber] = new double*[2];
+        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
+          _tempFaceUnknownsArray[solverNumber][i] = new double[finiteVolumesSolver->getUnknownsPerFace()];
+        }
+      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
+        // with size of FV array since 2*N+1 > N+1.
+        assertionMsg(false,"Please implement!");
+      } else {
+        _tempFaceUnknownsArray[solverNumber] = nullptr;
+//        _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
+      }
+
+      ++solverNumber;
+    }
+  }
 }
 
 void exahype::mappings::Merging::deleteTemporaryVariables() {
-//  if (_tempStateSizedVectors!=nullptr) {
-//    assertion(_tempStateSizedSquareMatrices!=nullptr);
-//
-//    int solverNumber=0;
-//    for (auto solver : exahype::solvers::RegisteredSolvers) {
-//      for (int i=0; i<5; ++i) { // see riemanSolverLinear
-//        delete[] _tempStateSizedVectors[solverNumber][i];
-//      }
-//      delete[] _tempStateSizedVectors[solverNumber];
-//      //
-//      for (int i=0; i<3; ++i) { // see riemanSolverLinear
-//        delete[] _tempStateSizedSquareMatrices[solverNumber][i];
-//      }
-//      delete[] _tempStateSizedSquareMatrices[solverNumber];
-//
-//
-//      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-//        for (int i=0; i<3; ++i) { // see riemanSolverLinear
-//          delete[] _tempFaceUnknownsArray[solverNumber][i];
-//        }
-//        delete[] _tempFaceUnknownsArray[solverNumber];
-//        //        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
-//      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-//        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
-//          delete[] _tempFaceUnknownsArray[solverNumber][i];
-//        }
-//        delete[] _tempFaceUnknownsArray[solverNumber];
-//      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-//        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
-//        // with size of FV array since 2*N+1 > N+1.
-//        assertionMsg(false,"Please implement!");
-//      }
-//      _tempFaceUnknownsArray [solverNumber] = nullptr;
-////      _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
-//
-//      ++solverNumber;
-//    }
-//
-//    delete[] _tempStateSizedVectors;
-//    delete[] _tempStateSizedSquareMatrices;
-//    delete[] _tempFaceUnknownsArray;
-////    delete[] _tempSpaceTimeFaceUnknownsArray; todo
-//    _tempStateSizedVectors           = nullptr;
-//    _tempStateSizedSquareMatrices    = nullptr;
-//    _tempFaceUnknownsArray           = nullptr;
-////    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
-//  } // todo uncomment
+  if (_tempStateSizedVectors!=nullptr) {
+    assertion(_tempStateSizedSquareMatrices!=nullptr);
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      for (int i=0; i<5; ++i) { // see riemanSolverLinear
+        delete[] _tempStateSizedVectors[solverNumber][i];
+      }
+      delete[] _tempStateSizedVectors[solverNumber];
+      //
+      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+        delete[] _tempStateSizedSquareMatrices[solverNumber][i];
+      }
+      delete[] _tempStateSizedSquareMatrices[solverNumber];
+
+
+      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        for (int i=0; i<3; ++i) { // see riemanSolverLinear
+          delete[] _tempFaceUnknownsArray[solverNumber][i];
+        }
+        delete[] _tempFaceUnknownsArray[solverNumber];
+        //        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
+      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
+          delete[] _tempFaceUnknownsArray[solverNumber][i];
+        }
+        delete[] _tempFaceUnknownsArray[solverNumber];
+      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
+        // with size of FV array since 2*N+1 > N+1.
+        assertionMsg(false,"Please implement!");
+      }
+      _tempFaceUnknownsArray [solverNumber] = nullptr;
+//      _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
+
+      ++solverNumber;
+    }
+
+    delete[] _tempStateSizedVectors;
+    delete[] _tempStateSizedSquareMatrices;
+    delete[] _tempFaceUnknownsArray;
+//    delete[] _tempSpaceTimeFaceUnknownsArray; todo
+    _tempStateSizedVectors           = nullptr;
+    _tempStateSizedSquareMatrices    = nullptr;
+    _tempFaceUnknownsArray           = nullptr;
+//    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
+  }
 }
 
 exahype::mappings::Merging::Merging()
@@ -280,11 +280,11 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
             if (element2>=0 && element1>=0) {
-//              solver->mergeNeighbours(
-//                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-//                  _tempFaceUnknownsArray[solverNumber],
-//                  _tempStateSizedVectors[solverNumber],
-//                  _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+              solver->mergeNeighbours(
+                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                  _tempFaceUnknownsArray[solverNumber],
+                  _tempStateSizedVectors[solverNumber],
+                  _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
             }
 
             #ifdef Debug // TODO(Dominic)
@@ -314,22 +314,21 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                        cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
 
             if (element1 >= 0) {
-//              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-//                                            _tempFaceUnknownsArray[solverNumber],
-//                                            _tempStateSizedVectors[solverNumber],
-//                                            _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
+                                            _tempFaceUnknownsArray[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
 
-              #ifdef Debug // TODO(Dominic)
+              #ifdef Debug
               _boundaryFaceSolves++;
               #endif
             }
             if (element2 >= 0){
-//              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-//                                            _tempFaceUnknownsArray[solverNumber],
-//                                            _tempStateSizedVectors[solverNumber],
-//                                            _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
-
-              #ifdef Debug // TODO(Dominic)
+              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
+                                            _tempFaceUnknownsArray[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
+              #ifdef Debug
               _boundaryFaceSolves++;
               #endif
             }
