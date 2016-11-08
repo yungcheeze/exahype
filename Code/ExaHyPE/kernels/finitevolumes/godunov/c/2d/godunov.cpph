@@ -301,8 +301,8 @@ double solutionUpdate(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   += dt / cellSize[0] * Fn[l];  
-        luh_new[idx(j, k+1, l)] -= dt / cellSize[0] * Fn[l];
+        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
+        luh_new[idx(j, k+1, l)] += dt / cellSize[0] * Fn[l];
       }
     }
   }
@@ -319,8 +319,8 @@ double solutionUpdate(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   += dt / cellSize[0] * Fn[l];  
-        luh_new[idx(j+1, k, l)] -= dt / cellSize[0] * Fn[l];
+        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
+        luh_new[idx(j+1, k, l)] += dt / cellSize[0] * Fn[l];
       }
     }
   }
@@ -334,7 +334,7 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd+1; k++) {
       PDESource(&luh[idx(j, k, 0)], source);      
       for (int l = 0; l < numberOfVariables; l++) {
-        luh_new[idx(j, k, l)] += dt * source[l];
+        luh_new[idx(j, k, l)] += dt * source[l]; // TODO(Dominic): Potential bug
       }
     }
   }
