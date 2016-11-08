@@ -9,7 +9,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
-  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize,
+  public GenericFiniteVolumesMUSCLinC(int dimensions, int numberOfVariables, int numberOfParameters, int patchSize,
       boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables = numberOfVariables;
     _numberOfParameters = numberOfParameters;

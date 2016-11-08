@@ -1,15 +1,9 @@
 package eu.exahype;
 
-import java.io.IOException;
-
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.ACoupleSolvers;
 import eu.exahype.node.PSolver;
-import eu.exahype.node.AFiniteVolumesSolver;
-import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
-import eu.exahype.node.AComputationalDomain;
 
 
 public class CreateCouplingRoutines extends DepthFirstAdapter {

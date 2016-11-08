@@ -8,7 +8,7 @@ public class UserDefinedFiniteVolumesinC implements Solver {
   private int _patchSize;
   private boolean _hasConstants;
 
-  public UserDefinedFiniteVolumesinC(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
+  public UserDefinedFiniteVolumesinC(int dimensions, int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _patchSize = patchSize;
