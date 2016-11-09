@@ -82,7 +82,7 @@ void Euler::ADERDG::boundaryValues(const double* const x,const double t, const i
 }
 
 
-bool Euler::ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool Euler::ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   if (tarch::la::equals(t, 0.0)) {
     return true;
   }

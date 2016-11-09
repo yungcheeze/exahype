@@ -151,7 +151,7 @@ void Elastic::MyElasticSolver::eigenvalues(const double* const Q,
 
 bool Elastic::MyElasticSolver::hasToAdjustSolution(
     const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     return true;

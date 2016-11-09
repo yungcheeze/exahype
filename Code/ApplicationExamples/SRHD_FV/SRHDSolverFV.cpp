@@ -27,7 +27,7 @@ void SRHD::SRHDSolverFV::adjustedSolutionValues(const double* const x,const doub
 }
 
 
-bool SRHD::SRHDSolverFV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {
+bool SRHD::SRHDSolverFV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
   // @todo Please implement
   if ( tarch::la::equals(t,0.0) ) {
     // Tell kernel that you want to set initial conditions 

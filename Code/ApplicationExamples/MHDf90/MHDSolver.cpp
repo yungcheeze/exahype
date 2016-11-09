@@ -70,7 +70,7 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 
 
 
-bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   // @todo Please implement
   return (t < 1e-10);
 }

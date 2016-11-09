@@ -34,7 +34,7 @@ void MHDSolver::MHDSolver::eigenvalues(const double* const Q, const int normalNo
 
 
 
-bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   return (t < 1e-10);
 }
 
