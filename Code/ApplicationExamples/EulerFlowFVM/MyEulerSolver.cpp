@@ -1,13 +1,6 @@
 #include "MyEulerSolver.h"
 
 
-
-EulerFVM::MyEulerSolver::MyEulerSolver(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::FiniteVolumesSolver("MyEulerSolver", 5, 0, cellsPerCoordinateAxis, 1 /* ghost layer width */, maximumMeshSize, timeStepping, std::move(profiler)) {
-  // @todo Please implement/augment if required
-}
-
-
 bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   // @todo Please implement
   if ( tarch::la::equals(t,0.0) ) {
