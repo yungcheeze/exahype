@@ -3,12 +3,15 @@ package eu.exahype.solvers;
 import java.io.IOException;
 
 public class Helpers {
+  /**
+   * @deprecated This method will soon be replaced by a template-based generation scheme.
+   */
   public static void writeMinimalADERDGSolverHeader(
       String solverName, java.io.BufferedWriter writer, String projectName, boolean hasConstants,
-      int order, int dimensions, int numberOfUnknowns, int numberOfParameters) throws IOException {
+      int order, int dimensions, int numberOfUnknowns, int numberOfParameters, boolean enableProfiler) throws IOException {
     writeHeaderCopyright(writer);
     writeHeaderIncludesAndDefines(writer, solverName, projectName);
-    writeHeaderMinimalADERDGClassSignature(writer, solverName, projectName, hasConstants, order, dimensions, numberOfUnknowns, numberOfParameters);
+    writeHeaderMinimalADERDGClassSignature(writer, solverName, projectName, hasConstants, order, dimensions, numberOfUnknowns, numberOfParameters, enableProfiler);
   }
 
   public static void writeMinimalFiniteVolumesSolverHeader(
@@ -20,10 +23,12 @@ public class Helpers {
 
   /**
    * Creates all the public operations that are mandatory for any solver.
+   * 
+   * @deprecated This method will soon be replaced by a template-based generation scheme.
    */
   private static void writeHeaderMinimalADERDGClassSignature(
       java.io.BufferedWriter writer, String solverName, String projectName, boolean hasConstants,
-      int order, int dimensions, int numberOfUnknowns, int numberOfParameters) throws IOException {
+      int order, int dimensions, int numberOfUnknowns, int numberOfParameters, boolean enableProfiler) throws IOException {
     writer.write(
         "class " + projectName + "::" + solverName + ": public exahype::solvers::ADERDGSolver {\n");
     writer.write("  public:\n");
@@ -39,10 +44,14 @@ public class Helpers {
     
     
     if (hasConstants) {
-      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping"+
+    (enableProfiler ? ", std::unique_ptr<exahype::profilers::Profiler> profiler" : "")+
+    ", std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);\n\n");
     }
     else {
-      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping"+
+    (enableProfiler ? ", std::unique_ptr<exahype::profilers::Profiler> profiler" : "")+
+    ", std::vector<std::string>& cmdlineargs);\n\n");
     }
 
     writer.write(
@@ -62,7 +71,7 @@ public class Helpers {
     writer.write(
         "    void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;\n");
     writer.write(
-        "    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t) override;\n");
+        "    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;\n");
     writer.write(
         "    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) override;\n");
     writer.write(

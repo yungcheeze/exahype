@@ -84,8 +84,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
         _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
         _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
       }
-      _writer.write("#include \"exahype/solvers/SingleSolverCoupling.h\"\n");
-      _writer.write("#include \"exahype/solvers/ADERDGAPosterioriSubcellLimiter.h\"\n\n");
 
       _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {\n");
       if (node.getSolver().size() == 0) {

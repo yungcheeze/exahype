@@ -28,7 +28,8 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
       throws java.io.IOException {
     IncludeOnceHelper ifndef = new IncludeOnceHelper(writer, solverName+"_CLASS_HEADER");
     ifndef.open();
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
+    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters, 
+        _enableProfiler);
     writer.write("  private:\n");
 	writer.write(
         "    static void flux(const double* const Q, double** F);\n"); //TODO JMG Remove fluxSplitted when not needed anymore
@@ -408,7 +409,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     
     //initial conditions
     writer.write("bool " + projectName + "::" + solverName
-        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return false;\n");
     writer.write("}\n");

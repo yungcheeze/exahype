@@ -134,7 +134,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
-        numberOfParameters, order, hasConstants);
+        numberOfParameters, order, hasConstants, _enableProfiler);
     }
     else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
