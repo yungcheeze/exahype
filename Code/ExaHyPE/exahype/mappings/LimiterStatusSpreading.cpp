@@ -89,10 +89,15 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (fineGridCell.isInitialised()) {
-    // TODO(Dominic): Add FV patche if status is Troubled, NeighbourIsTroubled,
-    // or NeighbourOfTroubledNeighbour and no patch exists.
-  }
+//  if (fineGridCell.isInitialised()) {
+//    for (auto* solverCoupling : exahype::solvers::RegisteredSolverCouplings) {
+//      if (solverCoupling->getType()==exahype::solvers::SolverCoupling::Type::CellWise) {
+//        auto* cellWiseCoupling = static_cast<exahype::solvers::CellWiseCoupling*>(solverCoupling);
+//
+//        // todo(Dominic): Determine if limiter
+//      }
+//    }
+//  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 

@@ -45,6 +45,7 @@ ElasticityKernelTest::~ElasticityKernelTest() {}
 
 void ElasticityKernelTest::run() {
   _log.info("ElasticityKernelTest::run()", "ElasticityKernelTest is active");
+  // TODO(Dominic): Assess
 //  testMethod(testPDEFluxes);
 //
 //  testMethod(testSpaceTimePredictorLinear);

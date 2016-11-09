@@ -30,6 +30,7 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   int           _fileCounter;
   std::string   _filename;
   int           _numberOfCellsPerAxis;
+  int           _ghostLayerWidth;
   int           _solverUnknowns;
   int           _writtenUnknowns;
   std::string   _select;
@@ -48,7 +49,7 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   static tarch::logging::Log _log;
 
  public:
-  FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+  FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
   virtual ~FiniteVolumes2VTKAscii();
 
   virtual void init(const std::string& filename, int numberOfCellsPerAxis, int unknowns, int writtenUnknowns, const std::string& select);

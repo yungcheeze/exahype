@@ -1,328 +1,90 @@
-/**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
+/*
+ * LimitingADERDGSolver.h
  *
- * The project has received funding from the European Union's Horizon
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
+ *  Created on: 26 Oct 2016
+ *      Author: dominic
+ */
 
-#ifndef _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
-#define _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
+#ifndef LIMITEDADERDGSOLVER_H_
+#define LIMITEDADERDGSOLVER_H_
 
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
-#include "exahype/solvers/Solver.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 
-#include "exahype/records/FiniteVolumesCellDescription.h"
+#include "exahype/mappings/Prediction.h"
+#include "exahype/mappings/LimiterStatusSpreading.h"
 
-#include "exahype/Cell.h"
-#include "exahype/Vertex.h"
+// *.cpp
+#include "tarch/multicore/Lock.h"
+
+#include "kernels/limiter/generic/Limiter.h"
 
 namespace exahype {
 namespace solvers {
-class FiniteVolumesSolver;
-}  // namespace solvers
-}  // namespace exahype
 
+class LimitingADERDGSolver;
 
+} /* namespace solvers */
+} /* namespace exahype */
 
-class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
-public:
-  typedef exahype::DataHeap DataHeap;
+class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
 
   /**
-   * Rank-local heap that stores FiniteVolumesCellDescription instances.
-   *
-   * \note This heap might be shared by multiple FiniteVolumesSolver instances
-   * that differ in their solver number and other attributes.
-   * @see solvers::Solver::RegisteredSolvers.
+   * This mapping needs access to the _solver variable of LimitingADERDGSolver.
    */
-  typedef exahype::records::FiniteVolumesCellDescription CellDescription;
-  typedef peano::heap::PlainHeap<CellDescription> Heap;
-
+  friend class exahype::mappings::Prediction;
+  friend class exahype::mappings::LimiterStatusSpreading;
 private:
+  /**
+   * A flag indicating that the limiter domain has changed.
+   * This might be the case if either a cell has been
+   * newly marked as troubled or healed.
+   */
+  bool _limiterDomainChanged;
+
+  typedef exahype::records::ADERDGCellDescription SolverPatch;
+  typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
+
+  typedef exahype::records::FiniteVolumesCellDescription LimiterPatch;
+  typedef peano::heap::PlainHeap<LimiterPatch> LimiterHeap;
+
+
   /**
    * Log device.
    */
   static tarch::logging::Log _log;
 
   /**
-   * Total number of volume averages and ghost values in a patch.
-   * This number does include ghost values.
+   * The ADERDG solver.
    */
-  int _unknownsPerPatch;
+  exahype::solvers::ADERDGSolver* _solver;
 
   /**
-   * Width of the ghost layer used for
-   * reconstruction and Riemann solves.
+   * The finite volumes solver used for the a posteriori subcell limiting.
    */
-  int _ghostLayerWidth;
+  exahype::solvers::FiniteVolumesSolver* _limiter;
+
 
   /**
-   * Total number of ghost values surrounding a patch.
+   * Determine the limiter status after a limiter status spreading
+   * iteration.
    */
-  int _ghostValuesPerPatch;
+  void unifyMergedLimiterStatus(SolverPatch& solverPatch);
 
   /**
-   * Total number of volume averages per face of the patch.
-   * This number does not include ghost values.
+   * Checks if updated solution
+   * of the ADER-DG solver is valid
+   * or if it contains unphysical oscillations.
    */
-  int _unknownsPerPatchFace;
-
-  /**
-   * Total number of volume averages per boundary of the patch.
-   * This number does not include ghost values.
-   */
-  int _unknownsPerPatchBoundary;
-
-  /**
-   * Minimum time stamps of all patches.
-   */
-  double _minTimeStamp;
-
-  /**
-   * Minimum time step size of all patches.
-   */
-  double _minTimeStepSize;
-
-  /**
-   * Next minimum step size of all patches.
-   */
-  double _nextMinTimeStepSize;
-
-  /**
-   * Synchonises the cell description time stamps
-   * and time step sizes with the solver ones
-   * according to the time stepping mode that
-   * is switched on.
-   */
-  void synchroniseTimeStepping(CellDescription& cellDescription);
-
-#ifdef Parallel
-  /**
-   * Data messages per neighbour communication.
-   * This information is required by the sendEmpty...(...)
-   * method.
-   */
-  static const int DataMessagesPerNeighbourCommunication;
-  /**
-   * Data messages per fork/join communication.
-   * This information is required by the sendEmpty...(...)
-   * method.
-   */
-  static const int DataMessagesPerForkOrJoinCommunication;
-  /**
-   * Data messages per master worker communication.
-   * This information is required by the sendEmpty...(...)
-   * method.
-   */
-  static const int DataMessagesPerMasterWorkerCommunication;
-#endif
-
+  bool solutionIsTroubled(SolverPatch& solverPatch);
 public:
-  /**
-    * Returns the ADERDGCellDescription.
-    */
-   static Heap::HeapEntries& getCellDescriptions(
-       const int cellDescriptionsIndex) {
-     assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-     return Heap::getInstance().getData(cellDescriptionsIndex);
-   }
-
-   /**
-    * Returns the ADERDGCellDescription.
-    */
-   static CellDescription& getCellDescription(
-       const int cellDescriptionsIndex,
-       const int element) {
-     assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
-     assertion2(element>=0,cellDescriptionsIndex,element);
-     assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
-
-     return Heap::getInstance().getData(cellDescriptionsIndex)[element];
-   }
-
-   /**
-    * Checks if no unnecessary memory is allocated for the cell description.
-    * If this is not the case, it deallocates the unnecessarily allocated memory.
-    */
-   void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-   /**
-    * Checks if all the necessary memory is allocated for the cell description.
-    * If this is not the case, it allocates the necessary
-    * memory for the cell description.
-    */
-   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-   /**
-    * Initialise cell description of type Cell.
-    * Initialise the refinement event with None.
-    */
-   void addNewCell(
-       exahype::Cell& fineGridCell,
-       exahype::Vertex* const fineGridVertices,
-       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-       const int coarseGridCellDescriptionsIndex,
-       const int solverNumber);
-
-   /**
-    * Returns if a ADERDGCellDescription type holds face data.
-    */
-   static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
-     return cellDescriptionType==CellDescription::Cell ||
-            cellDescriptionType==CellDescription::Ancestor   ||
-            cellDescriptionType==CellDescription::Descendant;
-   }
-
-  FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
-      int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
-      double maximumMeshSize,
-      exahype::solvers::Solver::TimeStepping timeStepping,
-      std::unique_ptr<profilers::Profiler> profiler =
-          std::unique_ptr<profilers::Profiler>(
-              new profilers::simple::NoOpProfiler("")));
-
-  virtual ~FiniteVolumesSolver() {}
-
-  // Disallow copy and assignment
-  FiniteVolumesSolver(const FiniteVolumesSolver& other) = delete;
-  FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
-
-  /**
-   * \brief Returns a stable time step size.
-   *
-   * \param[in] luh             Cell-local solution DoF.
-   * \param[in] tempEigenvalues A temporary array of size equalling the number of variables.
-   * \param[in] cellSize        Extent of the cell in each coordinate direction.
+  /*
+   * A time stamp minimised over all the ADERDG and FV solver
+   * patches.
    */
-  virtual double stableTimeStepSize(
-      const double* const luh,
-      double* tempEigenvalues,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
-
-  /**
-   * Extract volume averages belonging to the boundary layer
-   * of the neighbour patch and store them in the ghost layer
-   * of the current patch.
-   *
-   * Depending on the implementation (if reconstruction is applied),
-   * the boundary layer/ghost layer might not just be a single layer.
-   *
-   * \param luhbnd Points to the extrapolated solution values.
-   * \param luh Points to the the new solution values.
-   * \param neighbourPosition Contains the relative position of the neighbour patch
-   * with respect to the patch this method was invoked for. The entries of the vector are in the range
-   * {-1,0,1}.
-   *
-   * \note The theoretical arithmetic intensity of this operation is zero.
-   * \note This operation is invoked per vertex in touchVertexFirstTime and mergeWithNeighbour
-   * in mapping Merging.
-   *
-   * <h2>MPI</h2>
-   * No ghost layer is necessary if a patch is surrounded only
-   * by local cells. However as soon as the cell is adjacent
-   * to a MPI boundary this becomes necessary.
-   * We thus always hold ghost layers.
-   */
-  virtual void ghostLayerFilling(
-      double* luh,
-      const double* luhNeighbour,
-      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) = 0;
-
-  /**
-   * Similar to ghostLayerFilling but we do not work with
-   * complete patches from a local neighbour here but with smaller arrays received
-   * from a remote neighbour or containing boundary conditions.
-   *
-   * \note The theoretical arithmetic intensity of this operation is zero.
-   * \note This operation is invoked per vertex in mergeWithNeighbour in mapping Merging.
-   */
-  virtual void ghostLayerFillingAtBoundary(
-      double* luh,
-      const double* luhbnd,
-      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
-
-  /**
-   * Extract boundary layers of \p luh before
-   * sending them away via MPI.
-   *
-   * \note The theoretical arithmetic intensity of this operation is zero.
-   * \note This operation is invoked per vertex in prepareSendToNeighbour in mapping Sending.
-   */
-  virtual void boundaryLayerExtraction(
-      double* luhbnd,
-      const double* luh,
-      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
-
-  /**
-   * Return the state variables at the boundary.
-   *
-   * @param[inout] stateOut
-   * @param[in]    stateIn
-   * @param[in]    cellCentre    Cell centre.
-   * @param[in]    cellSize      Cell size.
-   * @param[in]    t             The time.
-   * @param[in]    dt            A time step size.
-   * @param[in]    normalNonZero Index of the nonzero normal vector component,
-   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
-   */
-  virtual void boundaryConditions(double* stateOut,
-      const double* const stateIn,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-      const double t,const double dt,
-      const int faceIndex,
-      const int normalNonZero) = 0;
-
-  virtual void solutionUpdate(
-      double* luhNew,const double* luh,
-      double** tempStateSizedArrays,double** tempUnknowns,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double dt, double& maxAdmissibleDt) = 0;
-
-  virtual void solutionAdjustment(
-      double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) = 0;
-
-  virtual bool hasToAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      const double t,
-      const double dt) = 0;
-
   double getMinTimeStamp() const override;
-
-  /**
-   * The number of unknowns per patch.
-   * This number does not include ghost layer values.
-   */
-  int getUnknownsPerPatch() const;
-
-  /**
-   * Get the width of the ghost layer of the patch.
-   */
-  int getGhostLayerWidth() const;
-
-  /**
-   * Get the total number of ghost values per patch.
-   */
-  int getGhostValuesPerPatch() const;
-
-  /**
-   * This operation returns the number of unknowns per
-   * face of a patch.
-   *
-   * This number does not include ghost values.
-   */
-  int getUnknownsPerFace() const;
 
   /**
    * Run over all solvers and identify the minimal time step size.
@@ -344,17 +106,11 @@ public:
   double getNextMinTimeStepSize() const override;
 
   bool isValidCellDescriptionIndex(
-      const int cellDescriptionsIndex) const override {
-    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
-  }
+      const int cellDescriptionsIndex) const override ;
 
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
-
-  SubcellPosition computeSubcellPositionOfCellOrAncestor(
-        const int cellDescriptionsIndex,
-        const int element) override;
 
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
@@ -393,6 +149,12 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
+  /**
+   * This method assumes the ADERDG solver's cell-local limiter status has
+   * already been determined.
+   *
+   * \see determineLimiterStatusAfterLimiterStatusSpreading(...)
+   */
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
@@ -402,21 +164,40 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Rolls back the solver's solution on the
-   * particular cell description.
-   * This method is used by the ADER-DG a-posteriori
-   * subcell limiter (LimitingADERDGSolver).
-   *
-   * <h2>Open issues</h2>
-   * A rollback is of course not possible if we have adjusted the solution
-   * values. Assuming the rollback is invoked by a LimitingADERDGSolver,
-   * we should use the adjusted FVM solution as reference solution.
-   * A similar issue occurs if we impose initial conditions that
-   * include a discontinuity.
+   * We use this method to determine the limiter status of
+   * a cell description after a solution update. This methods checks
+   * which cell is troubled and which cell holds a valid solution.
+   * If the limiter subdomain changes, i.e., if a cell changes from holding a
+   * valid solution (Ok) to troubled (Troubled) or vice versa,
+   * this function returns true.
    */
-  void rollbackSolution(
+  bool determineLimiterStatusAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element);
+
+  /**
+   * Roll back the solution in troubled cell descriptions (Troubled) and their direct
+   * neighbours (NeighbourOfTroubledCell) and second degree neighbours
+   * (NeighbourIsNeighbourOfTroubledCell).
+   */
+  void reinitialiseSolvers(
+      exahype::records::ADERDGCellDescription& cellDescription,
+      exahype::Cell& fineGridCell,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  /**
+   * Recompute the solution in the troubled cells and the neighbours of
+   * first and second degree so that all cells have performed the same number of
+   * global time steps again.
+   */
+  void recomputeSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
@@ -677,4 +458,5 @@ public:
   void toString (std::ostream& out) const override;
 };
 
-#endif
+
+#endif /* LIMITEDADERDGSOLVER_H_ */

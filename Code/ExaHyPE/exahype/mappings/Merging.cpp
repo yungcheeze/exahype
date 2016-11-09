@@ -110,9 +110,18 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
           _tempFaceUnknownsArray[solverNumber][i] = new double[aderdgSolver->getUnknownsPerFace()];
         }
-
 //        _tempSpaceTimeFaceUnknownsArray[solverNumber] = new double[aderdgSolver->getSpaceTimeUnknownsPerFace()]; todo
         // see spaceTimePredictorLinear
+      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+        auto finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(solver);
+        _tempFaceUnknownsArray[solverNumber] = new double*[2];
+        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
+          _tempFaceUnknownsArray[solverNumber][i] = new double[finiteVolumesSolver->getUnknownsPerFace()];
+        }
+      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
+        // with size of FV array since 2*N+1 > N+1.
+        assertionMsg(false,"Please implement!");
       } else {
         _tempFaceUnknownsArray[solverNumber] = nullptr;
 //        _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
@@ -145,7 +154,16 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
           delete[] _tempFaceUnknownsArray[solverNumber][i];
         }
         delete[] _tempFaceUnknownsArray[solverNumber];
-//        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
+        //        delete[] _tempSpaceTimeFaceUnknownsArray[solverNumber]; todo
+      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+        for (int i=0; i<2; ++i) { // see FiniteVolumesSolver::applyBoundaryConditions(...)
+          delete[] _tempFaceUnknownsArray[solverNumber][i];
+        }
+        delete[] _tempFaceUnknownsArray[solverNumber];
+      } else if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        // TODO(Dominic): Please implement. Initialise "number of ADER-DG arrays" arrays
+        // with size of FV array since 2*N+1 > N+1.
+        assertionMsg(false,"Please implement!");
       }
       _tempFaceUnknownsArray [solverNumber] = nullptr;
 //      _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; todo
@@ -266,7 +284,7 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                   cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
                   _tempFaceUnknownsArray[solverNumber],
                   _tempStateSizedVectors[solverNumber],
-                  _tempStateSizedSquareMatrices[solverNumber]);
+                  _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
             }
 
             #ifdef Debug // TODO(Dominic)
@@ -301,7 +319,7 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
 
-              #ifdef Debug // TODO(Dominic)
+              #ifdef Debug
               _boundaryFaceSolves++;
               #endif
             }
@@ -310,8 +328,7 @@ void exahype::mappings::Merging::touchVertexFirstTime(
                                             _tempFaceUnknownsArray[solverNumber],
                                             _tempStateSizedVectors[solverNumber],
                                             _tempStateSizedSquareMatrices[solverNumber]);
-
-              #ifdef Debug // TODO(Dominic)
+              #ifdef Debug
               _boundaryFaceSolves++;
               #endif
             }

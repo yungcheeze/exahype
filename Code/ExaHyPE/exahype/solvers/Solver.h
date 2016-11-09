@@ -98,7 +98,7 @@ class exahype::solvers::Solver {
   /**
    * The type of a solver.
    */
-  enum class Type { ADER_DG, FiniteVolumes };
+  enum class Type { ADER_DG, FiniteVolumes, LimitingADERDG }; // TODO(Dominic): Get rid of the underscore
 
   /**
    * The time stepping mode.
@@ -346,15 +346,36 @@ class exahype::solvers::Solver {
    * as well as to add contributions of source terms.
    * Please be aware that this operation is called per time step if
    * the corresponding predicate hasToUpdateSolution() yields true for the
-   * region.
+   * region and time interval.
+   *
+   * \param t  The new time stamp after the solution update.
+   * \param dt The time step size that was used to update the solution.
+   *           This time step size was computed based on the old solution.
+   *           If we impose initial conditions, i.e, t=0, this value
+   *           equals std::numeric_limits<double>::max().
    */
   virtual void solutionAdjustment(
-      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
+  /**
+   * This hook can be used to trigger solution adjustments within the
+   * region corresponding to \p cellCentre and \p dx
+   * and the time interval corresponding to t and dt.
+   *
+   * \param t  The new time stamp after the solution update.
+   * \param dt The time step size that was used to update the solution.
+   *           This time step size was computed based on the old solution.
+   *           If we impose initial conditions, i.e, t=0, this value
+   *           equals std::numeric_limits<double>::max().
+   */
   virtual bool hasToAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -590,6 +611,8 @@ class exahype::solvers::Solver {
   virtual void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
 

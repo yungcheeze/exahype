@@ -8,7 +8,7 @@ public class UserDefinedFiniteVolumesinFortran implements Solver {
   private int _patchSize;
   private boolean _hasConstants;
 
-  public UserDefinedFiniteVolumesinFortran(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
+  public UserDefinedFiniteVolumesinFortran(int dimensions, int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _patchSize = patchSize;

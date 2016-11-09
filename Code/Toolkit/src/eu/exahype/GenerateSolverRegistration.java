@@ -3,6 +3,7 @@ package eu.exahype;
 import java.util.*;
 
 import eu.exahype.analysis.DepthFirstAdapter;
+import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 import eu.exahype.node.ACoupleSolvers;
@@ -20,6 +21,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   private int _plotterNumber;
   private int _couplingNumber;
   
+  private boolean _enableProfiler = false;
+  
   private String _solverName;
 
   private String _projectName;
@@ -32,7 +35,11 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     _couplingNumber          = 0;
   }
   
-
+  @Override
+  public void inAProfiling(AProfiling node) {
+    _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
+  }
+  
   @Override
   public void inAProject(AProject node) {
     _projectName = node.getName().toString().trim();
@@ -65,6 +72,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
       _writer.write("#include \"exahype/profilers/ProfilerFactory.h\"\n");
       _writer.write("#include \"exahype/solvers/Solver.h\"\n");
+      _writer.write("#include \"exahype/solvers/SolverCoupling.h\"\n\n");
       _writer.write("#include \"kernels/KernelCalls.h\"\n\n");
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
@@ -148,13 +156,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler), "+
-                          "cmdlineargs");
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                           (_enableProfiler ? ", std::move(profiler)": "")+
+                           ", cmdlineargs");
       if (node.getConstants()!=null) {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }
       _methodBodyWriter.write( "  ));\n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
   
@@ -184,12 +192,12 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)" );
+                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
       _methodBodyWriter.write( "  ));\n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       

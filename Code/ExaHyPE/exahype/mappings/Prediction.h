@@ -95,6 +95,12 @@ class exahype::mappings::Prediction {
    */
   static tarch::logging::Log _log;
 
+  void performPredictionAndVolumeIntegral(
+      exahype::solvers::ADERDGSolver* solver,
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
   /**
    * Per solver, temporary variables for storing degrees of freedom of space-time predictor
    * sized variables.
