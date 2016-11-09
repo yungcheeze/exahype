@@ -165,9 +165,10 @@ void exahype::Cell::addNewCellDescription(
     const exahype::records::FiniteVolumesCellDescription::RefinementEvent
         refinementEvent,
 */
-    const int level, const int parentIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& offset) {
+    const int level,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -194,8 +195,8 @@ void exahype::Cell::addNewCellDescription(
   //newCellDescription.setRefinementEvent(refinementEvent);
 
   // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(size);
-  newCellDescription.setOffset(offset);
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
 
   // Initialise helper variables
 //  newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
@@ -217,8 +218,8 @@ void exahype::Cell::addNewCellDescription(
   const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
   const int                                     level,
   const int                                     parentIndex,
-  const tarch::la::Vector<DIMENSIONS, double>&  size,
-  const tarch::la::Vector<DIMENSIONS, double>&  offset) {
+  const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+  const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -257,8 +258,8 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
   // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(size);
-  newCellDescription.setOffset(offset);
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
 
   // Initialise MPI helper variables
   #ifdef Parallel

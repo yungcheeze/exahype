@@ -238,18 +238,20 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const exahype::records::ADERDGCellDescription::Type cellType,
       const exahype::records::ADERDGCellDescription::RefinementEvent
           refinementEvent,
-      const int level, const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+      const int level,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>& cellOffset);
 
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::FiniteVolumesCellDescription::Type cellType,
 //      const exahype::records::FiniteVolumesCellDescription::RefinementEvent
 //          refinementEvent,    @todo Dominic
-      const int level, const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+      const int level,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>& cellOffset);
 
   /**
    * @return if this cell is initialised.
