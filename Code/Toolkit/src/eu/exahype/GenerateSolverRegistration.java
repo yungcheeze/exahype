@@ -74,6 +74,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
       if(_useOptimizedKernels) {
         _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
+        _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
       }
       _writer.write("#include \"exahype/solvers/SingleSolverCoupling.h\"\n");
       _writer.write("#include \"exahype/solvers/ADERDGAPosterioriSubcellLimiter.h\"\n\n");
@@ -238,6 +239,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::initBasisFunctions(orders);\n");
       if(_useOptimizedKernels) {
         _methodBodyWriter.write("  kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  kernels::aderdg::optimised::initDGMatrices(orders);\n");
       }
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
       _methodBodyWriter.write("\n");
@@ -255,6 +257,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::freeBasisFunctions(orders);\n");
       if(_useOptimizedKernels) {
         _methodBodyWriter.write("  kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  kernels::aderdg::optimised::freeDGMatrices(orders);\n");
       }    
       _methodBodyWriter.write(
           "\n"+
