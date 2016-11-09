@@ -8,12 +8,13 @@
 #ifndef LIMITEDADERDGSOLVER_H_
 #define LIMITEDADERDGSOLVER_H_
 
-#include "exahype/solvers/Solver.h"
-
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include "tarch/multicore/BooleanSemaphore.h"
+
+#include "exahype/mappings/Prediction.h"
+#include "exahype/mappings/LimiterStatusSpreading.h"
 
 // *.cpp
 #include "tarch/multicore/Lock.h"
@@ -23,7 +24,7 @@
 namespace exahype {
 namespace solvers {
 
-class LimitingADERDGSolver : public Solver {};
+class LimitingADERDGSolver;
 
 } /* namespace solvers */
 } /* namespace exahype */
@@ -36,12 +37,6 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
   friend class exahype::mappings::Prediction;
   friend class exahype::mappings::LimiterStatusSpreading;
 private:
-  /**
-   * A semaphore for serialising the adding and removing of limiter patches
-   * for the limiter heap.
-   */
-  tarch::multicore::BooleanSemaphore _semaphoreForLimiterHeapAccess;
-
   /**
    * A flag indicating that the limiter domain has changed.
    * This might be the case if either a cell has been
@@ -163,6 +158,8 @@ public:
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
@@ -185,7 +182,9 @@ public:
    */
   void reinitialiseSolvers(
       exahype::records::ADERDGCellDescription& cellDescription,
-      const exahype::Cell& fineGridCell,
+      exahype::Cell& fineGridCell,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
@@ -197,6 +196,8 @@ public:
   void recomputeSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
