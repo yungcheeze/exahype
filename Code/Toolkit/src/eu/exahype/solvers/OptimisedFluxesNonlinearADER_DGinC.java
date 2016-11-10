@@ -71,10 +71,10 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
 	
 	// constructor
     if (_hasConstants) {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
     }
     else {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::vector<std::string>& cmdlineargs):\n");
     }
 
 
