@@ -29,8 +29,8 @@ srcGen
 Build a test
 ************
 
-Generate the optimized kernel in Codegenerator directory with Codegenrator/generateAllDegrees.sh
-Adapt the script variable (min/max order, path to Codegenerator) and Makefile preprocessor variable (in particular NVAR and NVARPAD = nvar with arch specific padding)
+Generate the optimized kernel in Codegenerator directory with Codegenerator/generateAllDegrees.sh
+Adapt the script variable (min/max order, path to Codegenerator, dim=3) and Makefile preprocessor variable (in particular NVAR and NVARPAD = nvar with arch specific padding)
 Run the sh script
 If needed adapt glue file to include more/less order
 make
