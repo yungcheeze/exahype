@@ -1662,10 +1662,10 @@ void exahype::solvers::ADERDGSolver::mergeLimiterDataOfNeighbours(
 
   // We need to copy the limiter status since the routines below modify
   // the limiter status on the cell descriptions.
-  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
-  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
-  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
+//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
+//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move function into LimitingADERDG
 }
 
 void exahype::solvers::ADERDGSolver::mergeNeighbours(
@@ -1723,10 +1723,10 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   // We need to copy the limiter status since the routines below modify
   // the limiter status on the cell descriptions.
-  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
-  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
-  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
+//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
+//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move whole function into LimitingADERDG/LimiterStatusSpreading
 
   // TODO(Dominic): This needs to consider the NeighbourOfNeighbourCells
   if (pLeft.getMergedLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {

@@ -68,10 +68,35 @@ private:
 
 
   /**
+   * Determine a new merged limiter status based on the neighbours merged
+   * limiter status.
+   *
+   * This method is used during the limiter status spreading.
+   * It assumes that the merged limiter statuses are initialised with
+   * Ok or Troubled before the spreading.
+   * It further assumes that a unique value is written again to
+   * the merged limiter status fields after the limiter status of all neighbours
+   * of a solver patch have been merged with the limiter status of the patch.
+   * (see exahype::solvers::LimitingADERDG::updateLimiterStatus).
+   *
+   * Determining the merged limiter status:
+   * | Status     | Neighbour's Status | Merged Status |
+   * --------------------------------------------------|
+   * | O          | O/NNT              | O
+   * | ~          | T                  | NT
+   * | ~          | NT                 | NNT
+   * | NNT        | T                  | NT
+   */
+  void mergeWithNeighbourLimiterStatus(
+      SolverPatch& solverPatch,
+      const int faceIndex,
+      const SolverPatch::LimiterStatus& neighbourLimiterStatus) const;
+
+  /**
    * Determine the limiter status after a limiter status spreading
    * iteration.
    */
-  void unifyMergedLimiterStatus(SolverPatch& solverPatch);
+  exahype::solvers::LimitingADERDGSolver::SolverPatch::LimiterStatus determineLimiterStatus(SolverPatch& solverPatch) const;
 
   /**
    * Checks if updated solution
@@ -170,15 +195,69 @@ public:
    * If the limiter subdomain changes, i.e., if a cell changes from holding a
    * valid solution (Ok) to troubled (Troubled) or vice versa,
    * this function returns true.
+   *
+   * The function further sets the merged limiter statuses per face
+   * to the value Ok or Troubled.
+   * It does not change the value of the cell-based limiter status field.
+   * This value is necessary to keep track of the local history of the
+   * limiter status.
    */
   bool determineLimiterStatusAfterSolutionUpdate(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
-   * Roll back the solution in troubled cell descriptions (Troubled) and their direct
-   * neighbours (NeighbourOfTroubledCell) and second degree neighbours
-   * (NeighbourIsNeighbourOfTroubledCell).
+   * Update the limiter status with a unified value based on
+   * the merged limiter statuses per face of the cell.
+   *
+   * After the status has been determined, it
+   * is written to the merged limiter status fields per face.
+   *
+   * <h2>Determining the unified value</h2>
+   * If all of the merged limiter status fields
+   * are set to Troubled, the limiter status is changed to Troubled.
+   * (There is either all or none of the statuses set to Troubled.)
+   *
+   * Otherwise and if at least one of the merged statuses is set to NeighbourOfTroubledCell,
+   * the status is set to NeighbourOfTroubledCell.
+   *
+   * Otherwise and if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
+   * the status is set to NeighbourIsNeighbourOfTroubledCell.
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   */
+  void updateLimiterStatus(int cellDescriptionsIndex, int element);
+
+  /**
+   * Reinitialises cells that have been subject to a limiter status change.
+   * This method is invoked (during and??) after the limiter status spreading.
+   *
+   * The method has to take into account which solution, the solver's
+   * or the limiter's, was populated with valid solution values
+   * in the last iteration. The action of this method is
+   * thus based on the new and old limiter status.
+   *
+   * We perform the following actions based on the
+   * old and new limiter status:
+   *
+   * | New Status | Old Status | Action                                                                                                                                        |
+   * ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   * | O          | O          | Do nothing.                                                                                                                                   |
+   * | ~          | T/NT/NNT   | Remove the limiter patch.                                                                                                                     |
+   * | T/NT/NNT   | T/NT       | Roll back the limiter solution.                                                                                                               |
+   * | ~          | O/NNT      | Roll back the solver solution. Initialise limiter patch if necessary. Project (old, valid) solver solution onto the limiter's solution space. |
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * We do not overwrite the old limiter status set in this method.
+   * We compute the new limiter status based on the merged limiter statuses associated
+   * with the faces.
+   *
+   * TODO(Dominic)
+   * Adapters:
+   * LimitingADERDGSolver LimiterStatusSpreading
+   * LimitingADERDGSolver Reinitialisation
+   * LimitingADERDGSolver Recomputation
    */
   void reinitialiseSolvers(
       exahype::records::ADERDGCellDescription& cellDescription,
