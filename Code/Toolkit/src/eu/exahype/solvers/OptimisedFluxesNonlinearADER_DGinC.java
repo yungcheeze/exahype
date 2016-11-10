@@ -81,8 +81,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
     writer.write("  exahype::solvers::ADERDGSolver("
         + "\""+solverName+"\", nVar /* numberOfUnknowns */, "
         + "nParams /* numberOfParameters */, order + 1 "
-        + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
-        "std::move(profiler)) {\n");
+        + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping) {\n");
     if(_hasConstants) {
        writer.write("  init(cmdlineargs, constants);\n");
     } else {
