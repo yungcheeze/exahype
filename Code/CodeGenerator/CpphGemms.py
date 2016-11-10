@@ -40,18 +40,18 @@ class CpphGemms:
 
 
     def generateCode(self):
-        dir = os.path.dirname(__file__)+'/'
+        dir = os.path.dirname(__file__)
         self.m_context['gemm_a_b_c']  = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
     
         if(self.m_type == 'linear'):
             pass
         else:
-            with open(dir+'templates/CpphGemms_h.template', 'r') as tmp:
+            with open(os.path.join(dir,'templates/CpphGemms_h.template'), 'r') as tmp:
                 template = Template(tmp.read())
                 with open(self.m_filenameRoot+'.h', 'w') as out:
                     out.write(template.render(self.m_context))
                     
-            with open(dir+'templates/CpphGemms_cpp.template', 'r') as tmp:
+            with open(os.path.join(dir,'templates/CpphGemms_cpp.template'), 'r') as tmp:
                 template = Template(tmp.read())
                 with open(self.m_filenameRoot+'.cpp', 'w') as out:
                     out.write(template.render(self.m_context))

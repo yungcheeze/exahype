@@ -111,8 +111,9 @@ Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 # uncomment when using the Toolkit call chain
 #pathToOutputDirectory = "../../Code/ExaHyPE/kernels/aderdg/optimised"
 # used for testing as standalone tool
-dir = os.path.dirname(__file__)+'/'
-pathToOutputDirectory = dir+"../ExaHyPE/kernels/aderdg/optimised"
+
+dir = os.path.dirname(__file__)
+pathToOutputDirectory = os.path.join(dir,"../ExaHyPE/kernels/aderdg/optimised")
 prepareOutputDirectory(pathToOutputDirectory)
 
 # --------------------------------------------------------

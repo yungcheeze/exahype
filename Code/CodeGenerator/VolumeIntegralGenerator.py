@@ -46,13 +46,13 @@ class VolumeIntegralGenerator:
 
 
     def generateCode(self):
-        dir = os.path.dirname(__file__)+'/'
+        dir = os.path.dirname(__file__)
     
         if(self.m_type == 'linear'):
             pass
         else:
             self.__generateNonlinearGemms()
-            with open(dir+'templates/volumeIntegralNonLinear.template', 'r') as tmp:
+            with open(os.path.join(dir,'templates/volumeIntegralNonLinear.template'), 'r') as tmp:
                 template = Template(tmp.read())
                 gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
                 self.m_context['gemm_x'] = gemmName+'_lduh_x'
