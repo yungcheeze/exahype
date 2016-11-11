@@ -1,6 +1,14 @@
   MODULE typesDef 
     IMPLICIT NONE  
     PUBLIC  
+
+    !
+    ! A note by Sven: This typesDef is actually only really used by the Fortran kernels theirselves.
+    ! It contains these ADER matrices hardcoded for d=3, N=3.
+    ! That's it.
+    !
+
+
     ! 
     ! ================================== This part of the typesDef can be modified by the user.  ==================================  
     ! 
@@ -28,7 +36,7 @@
     END TYPE       
     TYPE(tFace), POINTER :: Face(:)  
     
-    REAL, PARAMETER                :: gamma = 5.0/3.0
+    REAL, PARAMETER                :: gamma = 4.0/3.0
       
     ! Divergence cleaning.
     ! Vasco: 0.5
