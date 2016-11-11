@@ -111,6 +111,17 @@ case $CMD in
 	"reader") # passes commands to the exahype python conversion toolkit. Use "--help" for help.
 		exec $GITROOT/Code/Miscellaneous/Postprocessing/exareader.py $@
 		;;
+	"run") # quickly start an application inside it's directory
+		cdapp
+		export EXAHYPE_SKIP_TESTS=TRUE
+		ROOT=$(subreq root)
+		BINARY=$(subreq find-binary $APPNAME) && [[ -e "$ROOT/$BINARY" ]] || fail "Could not find binary ($BINARY)"
+		SPECFILE=$(subreq find-specfile $APPNAME)
+		info "Starting $APPNAME with SKIP_TESTS." | tee run.log
+		# the directory handling of this tool is really awkward.
+		# Would prefer relative directories here.
+		$ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | tee -a run.log
+		;;
 	"sim") # lightweight simulation managament
 		exec $GITROOT/Code/Miscellaneous/BuildScripts/sim.sh $@
 		;;
