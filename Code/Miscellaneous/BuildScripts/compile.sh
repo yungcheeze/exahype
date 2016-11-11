@@ -118,7 +118,8 @@ done
 for fmodule in Parameters.f90 typesDef.f90; do
 	if [ -e $fmodule ]; then
 		echo -e "Precompiling $fmodule as otherwise build fails"
-		gfortran -c $fmodule
+		FORTFLAGS="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
+		gfortran $FORTFLAGS -c $fmodule
 	fi
 done
 
