@@ -19,6 +19,7 @@
 #include "ADERDG2ProbeAscii.h"
 #include "FiniteVolumes2VTKAscii.h"
 #include "exahype/solvers/Solver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
@@ -53,6 +54,7 @@ exahype::plotters::Plotter::Plotter(
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
+
   switch (solvers::RegisteredSolvers[_solver]->getType()) {
     case exahype::solvers::Solver::Type::ADER_DG:
       /**
@@ -96,7 +98,9 @@ exahype::plotters::Plotter::Plotter(
        * not work for strings, so we map it onto an if-then-else cascade.
        */
       if (_identifier.compare( FiniteVolumes2VTKAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKAscii(postProcessing);
+        _device = new FiniteVolumes2VTKAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
 /*
       else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {

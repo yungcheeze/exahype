@@ -36,7 +36,7 @@ void SRHD::SRHDSolver::eigenvalues(const double* const Q, const int normalNonZer
 
 
 
-bool SRHD::SRHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool SRHD::SRHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   return (t < 1e-10);
 
   // This would be the alternative invocation via Fortran.

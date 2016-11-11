@@ -25,13 +25,19 @@
 
 tarch::logging::Log exahype::plotters::FiniteVolumes2VTKAscii::_log("exahype::plotters::FiniteVolumes2VTKAscii");
 
-exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(
+    exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+    const int ghostLayerWidth):
   Device(postProcessing),
   _fileCounter(-1),
+  _numberOfCellsPerAxis(-1),
+  _ghostLayerWidth(ghostLayerWidth),
+  _solverUnknowns(-1),
+  _writtenUnknowns(-1),
   _patchWriter(nullptr),
   _gridWriter(nullptr),
   _timeStampDataWriter(nullptr),
-  _cellDataWriter(nullptr) {
+  _cellDataWriter(nullptr){
 }
 
 
@@ -161,31 +167,35 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     double* sourceValue = new double[_solverUnknowns];
     double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
-    dfor(i,_numberOfCellsPerAxis) {
-      if (_writtenUnknowns>0) {
-        _timeStampDataWriter->plotCell(cellIndex, timeStamp);
-      }
+    dfor(i,_numberOfCellsPerAxis+_ghostLayerWidth) {
+      if (tarch::la::allSmaller(i,_numberOfCellsPerAxis+_ghostLayerWidth)
+          && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
+        if (_writtenUnknowns>0) {
+          _timeStampDataWriter->plotCell(cellIndex, timeStamp);
+        }
 
-      for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      sourceValue[unknown] = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)*_solverUnknowns+unknown];
-      }
+        for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+          sourceValue[unknown] =
+            u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis+2*_ghostLayerWidth)*_solverUnknowns+unknown];
+        } // !!! Be aware of the "2*_ghostLayerWidth" !!!
 
-      assertion(sizeOfPatch(0)==sizeOfPatch(1));
+        assertion(sizeOfPatch(0)==sizeOfPatch(1));
 
-      _postProcessing->mapQuantities(
-        offsetOfPatch,
-        sizeOfPatch,
-        offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_numberOfCellsPerAxis)),
-        i,
-        sourceValue,
-        value,
-        timeStamp
-      );
-        
-      if (_writtenUnknowns>0) {
-        _cellDataWriter->plotCell(cellIndex, value, _writtenUnknowns);
+        _postProcessing->mapQuantities(
+          offsetOfPatch,
+          sizeOfPatch,
+          offsetOfPatch + (i-_ghostLayerWidth).convertScalar<double>()* (sizeOfPatch(0)/(_numberOfCellsPerAxis)),
+          i-_ghostLayerWidth,
+          sourceValue,
+          value,
+          timeStamp
+        );
+
+        if (_writtenUnknowns>0) {
+          _cellDataWriter->plotCell(cellIndex, value, _writtenUnknowns);
+        }
+        cellIndex++;
       }
-      cellIndex++;
     }
 
     delete[] sourceValue;

@@ -165,9 +165,10 @@ void exahype::Cell::addNewCellDescription(
     const exahype::records::FiniteVolumesCellDescription::RefinementEvent
         refinementEvent,
 */
-    const int level, const int parentIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
+    const int level,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -194,14 +195,15 @@ void exahype::Cell::addNewCellDescription(
   //newCellDescription.setRefinementEvent(refinementEvent);
 
   // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(size);
-  newCellDescription.setOffset(cellCentre);
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
 
   // Initialise helper variables
 //  newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
 
   // Default field data indices
   newCellDescription.setSolution(-1);
+  newCellDescription.setOldSolution(-1);
 
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
@@ -216,8 +218,8 @@ void exahype::Cell::addNewCellDescription(
   const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
   const int                                     level,
   const int                                     parentIndex,
-  const tarch::la::Vector<DIMENSIONS, double>&  size,
-  const tarch::la::Vector<DIMENSIONS, double>&  cellCentre) {
+  const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+  const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -256,8 +258,8 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
   // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(size);
-  newCellDescription.setOffset(cellCentre);
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
 
   // Initialise MPI helper variables
   #ifdef Parallel
@@ -306,56 +308,3 @@ int exahype::Cell::getNumberOfFiniteVolumeCellDescriptions() const {
   return exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
       getCellDescriptionsIndex()).size();
 }
-
-
-#ifdef Parallel
-void exahype::Cell::clearLoadBalancingWorkloads() {
-  if (isRefined()) {
-    _cellData.setLocalWorkload(0.0);
-    _cellData.setGlobalWorkload(0.0);
-  }
-  else {
-    // @todo really insert here the number of real solvers and weight them accordingly
-    _cellData.setLocalWorkload(1.0);
-    _cellData.setGlobalWorkload(1.0);
-  }
-}
-
-
-void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote) {
-  if (isRemote) {
-    // _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
-    _cellData.setGlobalWorkload(
-      std::max(_cellData.getLocalWorkload(), childCell._cellData.getGlobalWorkload())
-    );
-  }
-  else {
-    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
-    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
-  }
-
-  if ( exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(getCellDescriptionsIndex()) ) {
-    const double embeddedADERDGCells = getNumberOfADERDGCellDescriptions();
-    const double embeddedFVPatches   = getNumberOfFiniteVolumeCellDescriptions();
-
-    // @todo this will require further tuning and it might become necessary to
-    //       take the order or patch size into account.
-    double additionalWeight = 4.0 * embeddedADERDGCells + 1.0 * embeddedFVPatches;
-
-    assertion(additionalWeight>=0.0);
-
-    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + additionalWeight );
-    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + additionalWeight );
-  }
-}
-
-
-double exahype::Cell::getLocalWorkload() const {
-  return _cellData.getLocalWorkload();
-}
-
-
-double exahype::Cell::getGlobalWorkload() const {
-  return _cellData.getGlobalWorkload();
-}
-#endif

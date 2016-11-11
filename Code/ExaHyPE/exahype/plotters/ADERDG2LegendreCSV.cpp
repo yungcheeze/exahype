@@ -28,7 +28,7 @@ using namespace std;
 
 
 std::string exahype::plotters::ADERDG2LegendreCSV::getIdentifier() {
-  return "vtk::Legendre::nodes::ascii";
+  return "csv::Legendre::nodes::ascii";
 }
 
 exahype::plotters::ADERDG2LegendreCSV::ADERDG2LegendreCSV(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
@@ -40,6 +40,8 @@ exahype::plotters::ADERDG2LegendreCSV::ADERDG2LegendreCSV(exahype::plotters::Plo
   _fileCounter(-1),
   _isBinary(isBinary),
   _plotCells(plotCells) {
+    
+    
 }
 
 
@@ -56,6 +58,11 @@ void exahype::plotters::ADERDG2LegendreCSV::init(
   _select            = select;
   _writtenUnknowns   = writtenUnknowns;
   
+#ifndef Dim2
+    cout << "ADERDG2LegendreCSV::init(...)" << "Plotter is not yet implemented for 3d" << endl;
+    exit(-42);
+  
+#endif  
 }
 
 
@@ -113,11 +120,11 @@ void exahype::plotters::ADERDG2LegendreCSV::plotPatch(
   // VV-Todo assert(dim==2)
   // cout << offsetOfPatch(0) << endl;
 
-  int treeDepth = log(sizeOfPatch(0))/log(1./3.) + eps;
-  double increment = pow(1./3., treeDepth);
-  int xIndex = offsetOfPatch(0)/increment + eps;
-  int yIndex = offsetOfPatch(1)/increment + eps;
-  int elementsPerAxis = pow(3., treeDepth) + eps;
+  // int treeDepth = log(sizeOfPatch(0))/log(1./3.) + eps;
+  // double increment = pow(1./3., treeDepth);
+  // int xIndex = offsetOfPatch(0)/increment + eps;
+  // int yIndex = offsetOfPatch(1)/increment + eps;
+  // int elementsPerAxis = pow(3., treeDepth) + eps;
 
   // cout << offsetOfPatch << endl;
   // cout << sizeOfPatch << endl;

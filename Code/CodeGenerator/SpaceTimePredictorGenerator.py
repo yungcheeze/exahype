@@ -74,11 +74,11 @@ class SpaceTimePredictorGenerator:
                         '// computed as \n'                                                               \
                         '// \\hat{q}^{n+1} = K_{1}^{-1}[F_0 \\cdot \\hat{u} - K_{\\xi} \\cdot \\hat{F}^{n}] \n'
 
-        l_includeStatement = '#include "string.h"\n'                                           \
+        l_includeStatement = '#include <cstring>\n'                                           \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
                              '#include "kernels/aderdg/optimised/DGMatrices.h"\n'              \
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
-                             '#include "kernels/aderdg/optimised/asm_picard.c"\n\n'
+                             '#include "kernels/aderdg/optimised/CpphGemms.h"\n\n'
 
         l_functionSignature = FunctionSignatures.getPicardLoopSignature(self.m_config['nDim']) + " {\n"
 
@@ -125,7 +125,7 @@ class SpaceTimePredictorGenerator:
     def __writeHeaderForCauchyKovalewski(self, i_pathToFile):
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
                              '#include "kernels/aderdg/optimised/DGMatrices.h"\n' \
-                             '#include "string.h"\n'                              \
+                             '#include <string.h>\n'                              \
                              '#include "kernels/aderdg/optimised/asm_cauchyKovalewski.c"\n\n'
         l_functionSignature = FunctionSignatures.getCauchyKovalewskiSignature()+" {\n"
 

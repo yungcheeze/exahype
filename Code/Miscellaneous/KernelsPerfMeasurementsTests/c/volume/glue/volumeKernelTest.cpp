@@ -66,9 +66,9 @@ static volatile int iTest;
 
 void allocLocal(int nVar, int nVarPadded, int nDOF) {
   lduh = new double[nVar*nDOF*nDOF*nDOF];
-	lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*2];
+	lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*4];
 	memset(lduh, 1.5, nVar*nDOF*nDOF*nDOF*sizeof(double));
-	memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*3*sizeof(double)*2);
+	memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*4*sizeof(double));
 }
 
 void freeLocal() {

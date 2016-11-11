@@ -27,6 +27,7 @@
 import os
 from os.path import join
 from os.path import isfile
+import copy
 import subprocess
 import errno
 from glob import iglob
@@ -41,6 +42,7 @@ import SolutionAdjustmentGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
+import CpphGemms
 import string
 import re
 
@@ -199,11 +201,16 @@ def generateCommonHeader():
 
     l_sourceFile.close()
 
+def generateContext(i_config):
+    context = copy.copy(i_config)
+    context['nVarPad'] = getSizeWithPadding(i_config['nVar'])
+    context['nDofPad'] = getSizeWithPadding(i_config['nDof'])
+    return context
 
 def generateComputeKernels():
     spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(m_config, m_numerics)
     spaceTimePredictorGenerator.generateCode()
-    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(m_config, m_numerics)
+    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config), m_numerics)
     volumeIntegralGenerator.generateCode()
     surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(m_config, m_numerics)
     surfaceIntegralGenerator.generateCode()
@@ -211,7 +218,7 @@ def generateComputeKernels():
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()
-    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(m_config)
+    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(generateContext(m_config))
     solutionAdjustmentGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
@@ -219,6 +226,8 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
+    cpphGemms = CpphGemms.CpphGemms(generateContext(m_config), m_numerics)
+    cpphGemms.generateCode()
 
 
 

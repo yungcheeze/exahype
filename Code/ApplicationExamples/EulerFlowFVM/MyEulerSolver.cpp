@@ -1,18 +1,11 @@
 #include "MyEulerSolver.h"
 
-
-
-//EulerFVM::MyEulerSolver::MyEulerSolver(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-//  exahype::solvers::FiniteVolumesSolver("MyEulerSolver", 5, 0, cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
-  // @todo Please implement/augment if required
+// TODO(Dominic): Assess
+//void EulerFVM::MyEulerSolver::init() {
+//  // empty
 //}
 
-void EulerFVM::MyEulerSolver::init() {
-  // empty
-}
-
-
-bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {
+bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   // @todo Please implement
   if ( tarch::la::equals(t,0.0) ) {
     // Tell kernel that you want to set initial conditions 
@@ -45,7 +38,6 @@ void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
         1.0e-1;
   }
 }
-
 
 exahype::solvers::Solver::RefinementControl EulerFVM::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   // @todo Please implement
@@ -129,4 +121,40 @@ void EulerFVM::MyEulerSolver::source(const double* const Q, double* S) {
   S[4] = 0.0;
 }
 
+void EulerFVM::MyEulerSolver::boundaryValues(
+    const double* const x,
+    const double t,const double dt,
+    const int faceIndex,
+    const int normalNonZero,
+    const double* const stateIn,
+    double* stateOut) {
+  // Dimensions             = 2
+  // Number of variables    = 5 (#unknowns + #parameters)
+
+    // Compute boundary state.
+//    InitialData(x, stateOut, t);
+
+    // This copy is not neccessary as we do have one component of
+    // F already pointing to fluxOut.
+    /*
+    for (int i=0; i<5; i++) {
+      fluxOut[i] = F[normalNonZero][i];
+    }
+    */
+
+  // The problem with these definitions is that in a simulation
+  // with a global nonzero velocity (as in MovingGauss2D), errnous
+  // values move into the simulation domain very quickly. So these
+  // boundary conditions are not good at all. Instead, we should
+  // have per default "vacuum" boundary conditions, so that vacuum
+  // values enter the grid as soon as matter moves away.
+
+  //  // stateOut
+  //  // @todo Please implement
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
+}
 

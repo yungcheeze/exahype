@@ -1,14 +1,11 @@
 package eu.exahype;
 
-import java.io.IOException;
-
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
-import eu.exahype.node.AComputationalDomain;
-
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -137,7 +134,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
-        numberOfParameters, order, hasConstants);
+        numberOfParameters, order, hasConstants, _enableProfiler);
     }
     else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
@@ -266,16 +263,19 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+    }
+    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
+    	solver = new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
 
     if (solver == null) {

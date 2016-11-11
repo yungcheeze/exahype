@@ -1,0 +1,6 @@
+#include "kernels/aderdg/optimised/CpphGemms.h"
+#include "kernels/aderdg/optimised/Kernels.h"
+
+// picard gemms
+#include "kernels/aderdg/optimised/asm_picard.c"
+

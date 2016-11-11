@@ -23,7 +23,8 @@ namespace c {
 //Fortran (Limiter.f90): GetSubcellData
 // Allocate lim memory via
 // double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim) {
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
@@ -49,10 +50,10 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize; ix++) {
                 lim[idxLim(z,y,x,v)] += luh[idxLuh(iz,iy,ix,v)] 
-#if DIMENSIONS == 3
-                                          * uh2lim[basisSize-1][idxConv(iz,z)]
-#endif
-                                          * uh2lim[basisSize-1][idxConv(iy,y)] * uh2lim[basisSize-1][idxConv(ix,x)];
+                                        #if DIMENSIONS == 3
+                                        * uh2lim[basisSize-1][idxConv(iz,z)]
+                                        #endif
+                                        * uh2lim[basisSize-1][idxConv(iy,y)] * uh2lim[basisSize-1][idxConv(ix,x)];
               }
             }
           }
@@ -64,7 +65,8 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 }
 
 //Fortran (Limiter.f90): PutSubcellData
-void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
@@ -90,10 +92,10 @@ void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, 
             for(iy=0; iy<basisSizeLim; iy++) {
               for(ix=0; ix<basisSizeLim; ix++) {
                 luh[idxLuh(z,y,x,v)] += lim[idxLim(iz,iy,ix,v)] 
-#if DIMENSIONS == 3
-                                          * lim2uh[basisSize-1][idxConv(iz,z)] 
-#endif
-                                          * lim2uh[basisSize-1][idxConv(iy,y)] * lim2uh[basisSize-1][idxConv(ix,x)];
+                                        #if DIMENSIONS == 3
+                                        * lim2uh[basisSize-1][idxConv(iz,z)]
+                                        #endif
+                                        * lim2uh[basisSize-1][idxConv(iy,y)] * lim2uh[basisSize-1][idxConv(ix,x)];
               }
             }
           }
@@ -133,8 +135,7 @@ void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables
   compareWithADERDGSolutionAtGaussLobattoNodes(luh, numberOfVariables, basisSize, localMinPerVariables, localMaxPerVariables);
 }
 
-
-bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables) {
+bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables) {
   //parameters
   double minMarginOfError = 0.0001;
   double diffScaling      = 0.001;
@@ -143,28 +144,28 @@ bool isTroubledCell(const double* const luh, const double* const lduh, const dou
 #if DIMENSIONS == 3
   const int basisSize3D = basisSize;
 #else
-  const int basisSize3D = 1;  
+  const int basisSize3D = 1;
 #endif
 
   idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
   idx2 idxConv(basisSize, basisSize);
-  int x, y, z, iVar ,ix, iy, iz; 
+  int x, y, z, iVar ,ix, iy, iz;
   double min, max, lobValue, boundaryMin, boundaryMax, ldiff;
 
   for(iVar = 0; iVar < numberOfVariables; iVar++) {
-    min = anticipateLuh(luh, lduh, dt, order, iVar, 0, 0, 0);
-    max = min;   
-    
+    min = luh[iVar];
+    max = min;
+
     //get min/max from luh
     for(z=0; z<basisSize3D; z++) {
       for(y=0; y<basisSize; y++) {
         for(x=0; x<basisSize; x++) {
-          min = std::min ( min, anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
-          max = std::max ( max, anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
+          min = std::min ( min, luh[idx(z, y, x, iVar)] );
+          max = std::max ( max, luh[idx(z, y, x, iVar)] );
         }
       }
     }
-    
+
     //get min/max from lob: project and compare
     for(z=0; z<basisSize3D; z++) {
       for(y=0; y<basisSize; y++) {
@@ -173,11 +174,11 @@ bool isTroubledCell(const double* const luh, const double* const lduh, const dou
           for(iz=0; iz<basisSize3D; iz++) {
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
-                  lobValue += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,iVar), ix, iy, iz)
-#if DIMENSIONS == 3
-                                        * uh2lob[order][idxConv(iz,z)] 
-#endif
-                                        * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
+                  lobValue += luh[idx(iz,iy,ix,iVar)]
+                              #if DIMENSIONS == 3
+                              * uh2lob[order][idxConv(iz,z)]
+                              #endif
+                              * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
               }
             }
           }
@@ -189,7 +190,7 @@ bool isTroubledCell(const double* const luh, const double* const lduh, const dou
         }
       }
     }
-    
+
     //evaluate troubled status for the given iVar
     boundaryMin = boundaryMinPerVariables[iVar];
     for (int x=1; x<DIMENSIONS_TIMES_TWO; x+=numberOfVariables) {
@@ -208,11 +209,91 @@ bool isTroubledCell(const double* const luh, const double* const lduh, const dou
       return true;
     }
   }
-  
-  //TODO JMG (todo or not needed???) check PDE positivity and lim data not NAN 
-  
+
+  //TODO JMG (todo or not needed???) check PDE positivity and lim data not NAN
+
   return false;
 }
+
+//bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables) {
+//  //parameters
+//  double minMarginOfError = 0.0001;
+//  double diffScaling      = 0.001;
+//
+//  const int order = basisSize-1;
+//#if DIMENSIONS == 3
+//  const int basisSize3D = basisSize;
+//#else
+//  const int basisSize3D = 1;
+//#endif
+//
+//  idx4 idx(basisSize3D, basisSize, basisSize, numberOfVariables);
+//  idx2 idxConv(basisSize, basisSize);
+//  int x, y, z, iVar ,ix, iy, iz;
+//  double min, max, lobValue, boundaryMin, boundaryMax, ldiff;
+//
+//  for(iVar = 0; iVar < numberOfVariables; iVar++) {
+//    min = anticipateLuh(luh, lduh, dt, order, iVar, 0, 0, 0);
+//    max = min;
+//
+//    //get min/max from luh
+//    for(z=0; z<basisSize3D; z++) {
+//      for(y=0; y<basisSize; y++) {
+//        for(x=0; x<basisSize; x++) {
+//          min = std::min ( min, anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
+//          max = std::max ( max, anticipateLuh(luh, lduh, dt, order, idx(z, y, x, iVar), x, y, z) );
+//        }
+//      }
+//    }
+//
+//    //get min/max from lob: project and compare
+//    for(z=0; z<basisSize3D; z++) {
+//      for(y=0; y<basisSize; y++) {
+//        for(x=0; x<basisSize; x++) {
+//          lobValue = 0;
+//          for(iz=0; iz<basisSize3D; iz++) {
+//            for(iy=0; iy<basisSize; iy++) {
+//              for(ix=0; ix<basisSize;ix++) {
+//                  lobValue += anticipateLuh(luh, lduh, dt, order, idx(iz,iy,ix,iVar), ix, iy, iz)
+//                              #if DIMENSIONS == 3
+//                              * uh2lob[order][idxConv(iz,z)]
+//                              #endif
+//                              * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
+//              }
+//            }
+//          }
+//          if(min > lobValue) {
+//            min = lobValue;
+//          } else if(max < lobValue) {
+//            max = lobValue;
+//          }
+//        }
+//      }
+//    }
+//
+//    //evaluate troubled status for the given iVar
+//    boundaryMin = boundaryMinPerVariables[iVar];
+//    for (int x=1; x<DIMENSIONS_TIMES_TWO; x+=numberOfVariables) {
+//      boundaryMin = std::min( boundaryMin, boundaryMinPerVariables[x+iVar] );
+//    }
+//    boundaryMax = boundaryMaxPerVariables[iVar];
+//    for (int x=1; x<DIMENSIONS_TIMES_TWO; x+=numberOfVariables) {
+//      boundaryMax = std::max( boundaryMax, boundaryMaxPerVariables[x+iVar] );
+//    }
+//    ldiff = (boundaryMax - boundaryMin) * diffScaling;
+//    assertion1(tarch::la::greaterEquals(ldiff,0.0),ldiff);
+//    ldiff = std::max( ldiff, minMarginOfError );
+//
+//    if((min < (boundaryMin - ldiff)) ||
+//       (max > (boundaryMax + ldiff))) {
+//      return true;
+//    }
+//  }
+//
+//  //TODO JMG (todo or not needed???) check PDE positivity and lim data not NAN
+//
+//  return false;
+//}
 
 
 //*************************
@@ -244,10 +325,10 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
                 lob[idx(z,y,x,v)] += luh[idx(iz,iy,ix,v)] 
-#if DIMENSIONS == 3
-                                        * uh2lob[basisSize-1][idxConv(iz,z)] 
-#endif
-                                        * uh2lob[basisSize-1][idxConv(iy,y)] * uh2lob[basisSize-1][idxConv(ix,x)];
+                                     #if DIMENSIONS == 3
+                                     * uh2lob[basisSize-1][idxConv(iz,z)]
+                                     #endif
+                                     * uh2lob[basisSize-1][idxConv(iy,y)] * uh2lob[basisSize-1][idxConv(ix,x)];
               }
             }
           }
@@ -287,10 +368,10 @@ const int order = basisSize-1;
             for(iy=0; iy<basisSize; iy++) {
               for(ix=0; ix<basisSize;ix++) {
                 lobValue += luh[idx(iz,iy,ix,v)] 
-#if DIMENSIONS == 3
-                                      * uh2lob[order][idxConv(iz,z)] 
-#endif
-                                      * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
+                            #if DIMENSIONS == 3
+                            * uh2lob[order][idxConv(iz,z)]
+                            #endif
+                            * uh2lob[order][idxConv(iy,y)] * uh2lob[order][idxConv(ix,x)];
               }
             }
           }

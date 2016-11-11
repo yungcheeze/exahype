@@ -238,18 +238,20 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const exahype::records::ADERDGCellDescription::Type cellType,
       const exahype::records::ADERDGCellDescription::RefinementEvent
           refinementEvent,
-      const int level, const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+      const int level,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>& cellOffset);
 
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::FiniteVolumesCellDescription::Type cellType,
 //      const exahype::records::FiniteVolumesCellDescription::RefinementEvent
 //          refinementEvent,    @todo Dominic
-      const int level, const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+      const int level,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>& cellOffset);
 
   /**
    * @return if this cell is initialised.
@@ -272,13 +274,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const std::string&                   methodTraceOfCaller
   );
-
-  #ifdef Parallel
-  void clearLoadBalancingWorkloads();
-  void restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote);
-  double getLocalWorkload() const;
-  double getGlobalWorkload() const;
-  #endif
 };
 
 #endif

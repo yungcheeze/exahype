@@ -44,6 +44,8 @@ private:
    * Logging device for the trace macros.
    */
   static tarch::logging::Log  _log;
+
+  int _numberOfLocalCells;
 public:
   /**
    * Nothing to be done

@@ -7,19 +7,22 @@ public class UserDefinedADER_DGinC implements Solver {
   private int _numberOfParameters;
   private int _order;
   private boolean _hasConstants;
+  private boolean _enableProfiler;
 
-  public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order, boolean hasConstants) {
+  public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order, boolean hasConstants, boolean enableProfiler) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _order = order;
     _hasConstants = hasConstants;
+    _enableProfiler = enableProfiler;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
      int dimensions_placeholder = -1; // fixme: We don't have dimensions here.
      int numberOfUnknowns_placeholder = -1; // fixme with the same reason.
-     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, dimensions_placeholder, numberOfUnknowns_placeholder, _numberOfParameters);
+     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, dimensions_placeholder, numberOfUnknowns_placeholder, _numberOfParameters,
+         _enableProfiler);
 
     writer.write("};\n\n\n");
   }
@@ -97,7 +100,7 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("bool " + projectName + "::" + solverName
-            + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+            + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return false;\n");
     writer.write("}\n");

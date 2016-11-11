@@ -30,8 +30,14 @@ exahype-project  EulerFVM
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.5
+    end-time                 = 1.0
   end computational-domain
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 1
+    properties-file          = sharedmemory.properties
+  end shared-memory
  
   solver Finite-Volumes MyEulerSolver
     variables         = 5
@@ -39,7 +45,7 @@ exahype-project  EulerFVM
     patch-size        = 10
     maximum-mesh-size = 0.15
     time-stepping     = global
-    kernel            = generic::MUSCL
+    kernel            = generic::Godunov
     language          = C
     plot vtk::Cartesian::cells::ascii
       variables = 5

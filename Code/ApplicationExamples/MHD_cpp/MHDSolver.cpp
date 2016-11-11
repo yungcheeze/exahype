@@ -423,7 +423,7 @@ void MHDSolver::MHDSolver::flux(const double* const Q, double** F) {
 #endif
 }
 
-bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   return tarch::la::equals(t,0.0);
 
 //  // Fixed the following.

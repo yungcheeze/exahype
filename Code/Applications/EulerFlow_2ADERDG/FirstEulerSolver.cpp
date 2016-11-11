@@ -92,7 +92,7 @@ void Euler::FirstEulerSolver::eigenvalues(const double* const Q, const int norma
 
 
 
-bool Euler::FirstEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool Euler::FirstEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   if (tarch::la::equals(t, 0.0)) {
     return true;
   }

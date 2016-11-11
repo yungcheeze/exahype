@@ -1,0 +1,13 @@
+#ifndef EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
+#define EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
+
+// picard gemms
+void {{gemm_a_b_c}}_rhs_x(const double* A, const double* B, double* C);
+void {{gemm_a_b_c}}_rhs_y(const double* A, const double* B, double* C);
+{%- if nDim == 3 %} 
+void {{gemm_a_b_c}}_rhs_z(const double* A, const double* B, double* C);
+{%- endif %}  
+void {{gemm_a_b_c}}_lqh(const double* A, const double* B, double* C);
+
+#endif //EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
+

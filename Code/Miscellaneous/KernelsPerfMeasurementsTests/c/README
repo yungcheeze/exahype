@@ -13,7 +13,7 @@
  
 
  
-Test for performance measurement.
+Test for performance measurement (all uses dimension =3).
 
 By default should be the empty layout configured for nvar=9 and hsw
 

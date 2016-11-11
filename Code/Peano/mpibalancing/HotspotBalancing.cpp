@@ -6,7 +6,23 @@
 #include "peano/parallel/loadbalancing/Oracle.h"
 
 
-tarch::logging::Log mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
+#ifdef Parallel
+#include <mpi.h>
+#endif
+
+
+/**
+ * We provide two ways to exchange load balancing information: blocking and
+ * non-blocking. Blocking should be faster, but we did encounter a couple of
+ * deadlocks if we used blocking data exchange.
+ */
+namespace {
+  const int UseBlockingSendAndReceive = false;
+}
+
+
+tarch::logging::Log  mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
+int                  mpibalancing::HotspotBalancing::_loadBalancingTag = -1;
 
 
 bool                        mpibalancing::HotspotBalancing::_forkHasFailed = false;
@@ -21,6 +37,12 @@ mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsest
   _maxForksOnCriticalWorker(THREE_POWER_D) {
   _workerCouldNotEraseDueToDecomposition.insert( std::pair<int,bool>(tarch::parallel::Node::getInstance().getRank(), false) );
   _regularLevelAlongBoundary = coarsestRegularInnerAndOuterGridLevel;
+
+  if (_loadBalancingTag<0) {
+    _loadBalancingTag = tarch::parallel::Node::reserveFreeTag("mpibalancing::HotspotBalancing");
+    assertion(_loadBalancingTag>=0);
+    logInfo( "HotspotBalancing(bool,int)", "reserved tag " << _loadBalancingTag << " for load balancing" );
+  }
 }
 
 
@@ -28,7 +50,7 @@ mpibalancing::HotspotBalancing::~HotspotBalancing() {
 }
 
 
-double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() {
   double maximumWeight = std::numeric_limits<double>::min();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second > maximumWeight ) {
@@ -39,7 +61,7 @@ double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
 }
 
 
-double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() {
   double minimumWeight  = std::numeric_limits<double>::max();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second < minimumWeight ) {
@@ -130,8 +152,6 @@ void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::load
   identifyCriticalPathes( commandFromMaster );
   computeMaxForksOnCriticalWorker( commandFromMaster );
 
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] =0.0;
-
   logTraceOut("receivedStartCommand(LoadBalancingFlag)" );
 }
 
@@ -180,20 +200,118 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
 }
 
 
-void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+void mpibalancing::HotspotBalancing::mergeWithMaster(
   int     workerRank,
-  double  workerWeight,
   bool    workerCouldNotEraseDueToDecomposition
 ) {
+  #ifdef Parallel
+  logDebug( "HotspotBalancing(bool,int)", "receive load balancing information on tag " << _loadBalancingTag << " from worker " << workerRank );
+
+  double workerWeight;
+
+  if (UseBlockingSendAndReceive) {
+    MPI_Recv( &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  }
+  else {
+    MPI_Request* sendRequestHandle = new MPI_Request();
+    MPI_Status   status;
+    int          flag = 0;
+    clock_t      timeOutWarning   = -1;
+    clock_t      timeOutShutdown  = -1;
+    bool         triggeredTimeoutWarning = false;
+    MPI_Irecv(
+      &workerWeight, 1, MPI_DOUBLE, workerRank, _loadBalancingTag,
+      tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
+    );
+    MPI_Test( sendRequestHandle, &flag, &status );
+    while (!flag) {
+      if (timeOutWarning==-1)   timeOutWarning   = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+      if (timeOutShutdown==-1)  timeOutShutdown  = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+      MPI_Test( sendRequestHandle, &flag, &status );
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+        (clock()>timeOutWarning) &&
+        (!triggeredTimeoutWarning)
+      ) {
+        tarch::parallel::Node::getInstance().writeTimeOutWarning(
+          "mpibalancing::HotspotBalancing",
+          "mergeWithMaster(...)", workerRank,_loadBalancingTag,1
+        );
+        triggeredTimeoutWarning = true;
+      }
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+        (clock()>timeOutShutdown)
+      ) {
+        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+          "mpibalancing::HotspotBalancing",
+          "mergeWithMaster(...)",workerRank,_loadBalancingTag,1
+        );
+      }
+      tarch::parallel::Node::getInstance().receiveDanglingMessages();
+    }
+    delete sendRequestHandle;
+  }
+
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
   _weightMap[workerRank]                             = workerWeight > 1.0 ? workerWeight : 1.0;
+  #endif
 }
 
 
-void mpibalancing::HotspotBalancing::increaseLocalWeight(
+void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
   double localWeight
 ) {
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] += localWeight;
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
+
+  double ranksWeight = getMaximumWeightOfWorkers();
+
+  #ifdef Parallel
+  logDebug( "HotspotBalancing(bool,int)", "send load balancing information on tag " << _loadBalancingTag << " to master " << tarch::parallel::NodePool::getInstance().getMasterRank() );
+  if (UseBlockingSendAndReceive) {
+    MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
+  }
+  else {
+    MPI_Request* sendRequestHandle = new MPI_Request();
+    MPI_Status   status;
+    int          flag = 0;
+    clock_t      timeOutWarning   = -1;
+    clock_t      timeOutShutdown  = -1;
+    bool         triggeredTimeoutWarning = false;
+    MPI_Isend(
+      &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag,
+      tarch::parallel::Node::getInstance().getCommunicator(), sendRequestHandle
+    );
+    MPI_Test( sendRequestHandle, &flag, &status );
+    while (!flag) {
+      if (timeOutWarning==-1)   timeOutWarning   = tarch::parallel::Node::getInstance().getDeadlockWarningTimeStamp();
+      if (timeOutShutdown==-1)  timeOutShutdown  = tarch::parallel::Node::getInstance().getDeadlockTimeOutTimeStamp();
+      MPI_Test( sendRequestHandle, &flag, &status );
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutWarningEnabled() &&
+        (clock()>timeOutWarning) &&
+        (!triggeredTimeoutWarning)
+      ) {
+        tarch::parallel::Node::getInstance().writeTimeOutWarning(
+          "mpibalancing::HotspotBalancing",
+          "setLocalWeightAndNotifyMaster(double)", tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, 1
+        );
+        triggeredTimeoutWarning = true;
+      }
+      if (
+        tarch::parallel::Node::getInstance().isTimeOutDeadlockEnabled() &&
+        (clock()>timeOutShutdown)
+      ) {
+        tarch::parallel::Node::getInstance().triggerDeadlockTimeOut(
+          "mpibalancing::HotspotBalancing",
+          "setLocalWeightAndNotifyMaster(double)", tarch::parallel::NodePool::getInstance().getMasterRank(),_loadBalancingTag,1
+        );
+      }
+      tarch::parallel::Node::getInstance().receiveDanglingMessages();
+    }
+    delete sendRequestHandle;
+  }
+  #endif
 }
 
 

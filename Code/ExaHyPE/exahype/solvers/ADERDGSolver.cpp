@@ -1333,12 +1333,14 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp())) {
+        cellDescription.getCorrectorTimeStamp(),
+        cellDescription.getCorrectorTimeStepSize())) {
       solutionAdjustment(
           luh,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp(), cellDescription.getCorrectorTimeStepSize());
+          cellDescription.getCorrectorTimeStamp(),
+          cellDescription.getCorrectorTimeStepSize());
     }
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
@@ -1350,6 +1352,8 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
 void exahype::solvers::ADERDGSolver::updateSolution(
     const int cellDescriptionsIndex,
     const int element,
+    double** tempStateSizedArrays,
+    double** tempUnknowns,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
@@ -1384,16 +1388,52 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp())) {
+        cellDescription.getCorrectorTimeStamp(),
+        cellDescription.getCorrectorTimeStepSize())) {
       solutionAdjustment(
           luh,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp(), cellDescription.getCorrectorTimeStepSize());
+          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+          cellDescription.getCorrectorTimeStepSize());
     }
 
 
     // TODO(Dominic): setSolutionMinMaxAndAnalyseValidity()
+
+    for (int i=0; i<getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  }
+  assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
+}
+
+void exahype::solvers::ADERDGSolver::rollbackSolution(
+    const int cellDescriptionsIndex,
+    const int element,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+  // reset helper variables
+  CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
+      cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
+    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
+
+    for (int i=0; i<getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+
+    solutionUpdate(luh,lduh,-cellDescription.getCorrectorTimeStepSize()); // Be aware of the "-".
+
+    // TODO(Dominic): A rollback is of course not possible if we have adjusted the solution
+    // values. In this case, we should use the adjusted FVM solution as reference.
+    // A similar issue occurs if we impose the initial conditions.
+     assertion(!hasToAdjustSolution(cellDescription.getOffset()+0.5*cellDescription.getSize(),
+                  cellDescription.getSize(),
+                  cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+                  cellDescription.getCorrectorTimeStamp()));
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
@@ -1622,10 +1662,10 @@ void exahype::solvers::ADERDGSolver::mergeLimiterDataOfNeighbours(
 
   // We need to copy the limiter status since the routines below modify
   // the limiter status on the cell descriptions.
-  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getLimiterStatus(faceIndexLeft);
-  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getLimiterStatus(faceIndexRight);
-  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
+//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
+//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move function into LimitingADERDG
 }
 
 void exahype::solvers::ADERDGSolver::mergeNeighbours(
@@ -1683,14 +1723,14 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   // We need to copy the limiter status since the routines below modify
   // the limiter status on the cell descriptions.
-  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getLimiterStatus(faceIndexLeft);
-  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getLimiterStatus(faceIndexRight);
-  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft);
+//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
+//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
+//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
+//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move whole function into LimitingADERDG/LimiterStatusSpreading
 
   // TODO(Dominic): This needs to consider the NeighbourOfNeighbourCells
-  if (pLeft.getLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
-    assertion4(pRight.getLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
+  if (pLeft.getMergedLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
+    assertion4(pRight.getMergedLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
         pLeft.toString(),pRight.toString(),faceIndexLeft,faceIndexRight);
     solveRiemannProblemAtInterface(
         pLeft,pRight,faceIndexLeft,faceIndexRight,

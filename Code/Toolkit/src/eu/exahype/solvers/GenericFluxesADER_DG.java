@@ -29,7 +29,7 @@ public class GenericFluxesADER_DG implements Solver {
       throws IOException {
      IncludeOnceHelper ifndef = new IncludeOnceHelper(writer, solverName+"_CLASS_HEADER");
      ifndef.open();
-     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters);
+     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants, _order, _dimensions, _numberOfUnknowns, _numberOfParameters, _enableProfiler);
 
     writer.write("\n");
     writer.write("    void init(std::vector<std::string>& cmdlineargs"+(_hasConstants ? ", exahype::Parser::ParserView& constants" : "")+");\n");
@@ -61,18 +61,19 @@ public class GenericFluxesADER_DG implements Solver {
 
     // constructor
     if (_hasConstants) {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping"+
+          (_enableProfiler ? ", std::unique_ptr<exahype::profilers::Profiler> profiler":"")+", std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):\n");
     }
     else {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, std::vector<std::string>& cmdlineargs):\n");
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping"+
+          (_enableProfiler ? ", std::unique_ptr<exahype::profilers::Profiler> profiler":"")+", std::vector<std::string>& cmdlineargs):\n");
     }
-
 
     writer.write("  exahype::solvers::ADERDGSolver("
         + "\""+solverName+"\", nVar /* numberOfUnknowns */, "
         + "nParams /* numberOfParameters */, order + 1 "
-        + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
-        "std::move(profiler)) {\n");
+        + " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping" +
+        (_enableProfiler ?", std::move(profiler)":"")+") {\n");
     if(_hasConstants) {
        writer.write("  init(cmdlineargs, constants);\n");
     } else {
@@ -367,7 +368,7 @@ public class GenericFluxesADER_DG implements Solver {
     
     //initial conditions
     writer.write("bool " + projectName + "::" + solverName
-        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return false;\n");
     writer.write("}\n");

@@ -29,31 +29,52 @@ namespace limiter {
 namespace generic {
 namespace c {
 
-// Projection ADERDG -> FV
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int basisSizeLim, double* const lim);
-// Projection FV -> ADERDG
-void projectOnADERDGSpace(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
+/**
+ * \brief Projection ADERDG -> FV
+ *
+ * Projects the ADERDG solution onto
+ * the finite volumes limiter space.
+ *
+ * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1).
+ */
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim);
+/**
+ * \brief Projection FV -> ADERDG
+ *
+ * Projects the finite volumes limiter solution onto
+ * the DG space.
+ *
+ * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1)
+ */
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
 
-//Test if the anticipated DG solution is troubled
-bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+//Test if the DG solution is troubled
+bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+
+// TODO(Dominic): @JM: We have to do a rollback in every neighbour cell of the troubled cells. Furthermore, the
+// troubled cells are not that many compared to the non-troubled ones. Thus, I decided to get
+// rid of the solution anticipation. I am sorry for the confusion.
+//bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
 
 //************************
 //*** Helper functions ***
 //************************
 
-inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
-  return (luh[idx] + kernels::gaussLegendreWeights[order][x] * kernels::gaussLegendreWeights[order][y]
-#if DIMENSIONS == 3
-                                                  * kernels::gaussLegendreWeights[order][z]
-#endif
-                                                  /dt * lduh[idx]);
-}
+//inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
+//  double weight =
+//  #if DIMENSIONS == 3
+//  kernels::gaussLegendreWeights[order][z] *
+//  #endif
+//  kernels::gaussLegendreWeights[order][y] * kernels::gaussLegendreWeights[order][x];
+//
+//  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler might not able to optimise for the dt=0 case.
+//}
 
 inline int getBasisSizeLim(const int basisSize) {
-  return 2*(basisSize-1) +1;
+  return 2*(basisSize-1)+1;
 }
 
 //*************************

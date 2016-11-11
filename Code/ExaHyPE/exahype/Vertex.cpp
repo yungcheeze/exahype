@@ -131,6 +131,7 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
       const int faceIndex2 = 2 * normalOfExchangedFace +
           (pos1(normalOfExchangedFace) > pos2(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
+      // ADER-DG
       if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
         for (auto& p1 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
@@ -139,7 +140,6 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
             return true;
           }
         }
-        // TODO(Dominic): Finite volumes
       } else if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
         for (auto& p2 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
@@ -148,7 +148,25 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
             return true;
           }
         }
-        // TODO(Dominic): Finite volumes
+      }
+
+      // Finite Volumes
+      if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
+        for (auto& p1 : exahype::solvers::
+            FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
+          if (!p1.getIsInside(faceIndex1)
+              && !p1.getRiemannSolvePerformed(faceIndex1)) {
+            return true;
+          }
+        }
+      } else if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
+        for (auto& p2 : exahype::solvers::
+            FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
+          if (!p2.getIsInside(faceIndex2)
+              && !p2.getRiemannSolvePerformed(faceIndex2)) {
+            return true;
+          }
+        }
       }
     }
   }
@@ -160,7 +178,7 @@ void exahype::Vertex::setMergePerformed(
         const tarch::la::Vector<DIMENSIONS,int>& pos2,
         bool state) const {
   if (tarch::la::countEqualEntries(pos1,pos2)!=(DIMENSIONS-1)) {
-    return; // We only consider faces; no corners.
+    return; // We only consider faces; no corners. TODO(Dominic): Be aware of this
   }
 
   const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
@@ -180,21 +198,31 @@ void exahype::Vertex::setMergePerformed(
 //  std::cout << ">>Set: pos1=" << pos1.toString() << ", pos2=" << pos2.toString() <<
 //            ", faceIndex1=" << faceIndex1 << ", faceIndex2=" << faceIndex2 << std::endl;
 
+  // ADER-DG
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
-    for (auto& p1 : exahype::solvers::
-        ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
+    for (auto& p1 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
       p1.setRiemannSolvePerformed(faceIndex1,state);
     }
   }
-  // TODO(Dominic): Finite volumes are missing.
 
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
-    for (auto& p2 : exahype::solvers::
-        ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
+    for (auto& p2 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
       p2.setRiemannSolvePerformed(faceIndex2,state);
     }
   }
-  // TODO(Dominic): Finite volumes are missing.
+
+  // Finite Volumes:
+  if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
+    for (auto& p1 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
+      p1.setRiemannSolvePerformed(faceIndex1,state);
+    }
+  }
+
+  if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
+    for (auto& p2 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
+      p2.setRiemannSolvePerformed(faceIndex2,state);
+    }
+  }
 }
 
 #ifdef Parallel

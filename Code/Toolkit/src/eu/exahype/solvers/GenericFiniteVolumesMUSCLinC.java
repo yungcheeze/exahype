@@ -9,7 +9,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
-  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize,
+  public GenericFiniteVolumesMUSCLinC(int dimensions, int numberOfVariables, int numberOfParameters, int patchSize,
       boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -110,7 +110,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
     
     writer.write("bool " + projectName + "::" + solverName
-        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {\n");
+        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
     writer.write("    // Tell kernel that you want to set initial conditions \n");

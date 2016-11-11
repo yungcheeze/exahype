@@ -1,9 +1,13 @@
 package eu.exahype;
 
+import java.util.*;
+
 import eu.exahype.analysis.DepthFirstAdapter;
+import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 import eu.exahype.node.ACoupleSolvers;
+import eu.exahype.node.AAderdgSolver;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -17,9 +21,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   private int _plotterNumber;
   private int _couplingNumber;
   
+  private boolean _enableProfiler = false;
+  
   private String _solverName;
 
   private String _projectName;
+  
+  private boolean _useOptimizedKernels = false; //at least one solver uses optimized kernels
 
   public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -27,10 +35,23 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     _couplingNumber          = 0;
   }
   
-
+  @Override
+  public void inAProfiling(AProfiling node) {
+    _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
+  }
+  
   @Override
   public void inAProject(AProject node) {
     _projectName = node.getName().toString().trim();
+    LinkedList<PSolver> solvers = node.getSolver();
+    for(PSolver psolver : solvers) {
+      if(psolver instanceof AAderdgSolver) {
+        AAderdgSolver asolver = (AAderdgSolver) psolver;
+        _useOptimizedKernels = _useOptimizedKernels || (asolver.getLanguage().getText().trim().equals("C") 
+                                  && (asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
+                                      ||  asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
+      }
+    }
 
     try {
       java.io.File logFile = new java.io.File(
@@ -51,6 +72,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
       _writer.write("#include \"exahype/profilers/ProfilerFactory.h\"\n");
       _writer.write("#include \"exahype/solvers/Solver.h\"\n");
+      _writer.write("#include \"exahype/solvers/SolverCoupling.h\"\n\n");
       _writer.write("#include \"kernels/KernelCalls.h\"\n\n");
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
@@ -58,8 +80,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
-      _writer.write("#include \"exahype/solvers/SingleSolverCoupling.h\"\n");
-      _writer.write("#include \"exahype/solvers/ADERDGAPosterioriSubcellLimiter.h\"\n\n");
+      if(_useOptimizedKernels) {
+        _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
+        _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
+      }
 
       _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {\n");
       if (node.getSolver().size() == 0) {
@@ -130,13 +154,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler), "+
-                          "cmdlineargs");
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                           (_enableProfiler ? ", std::move(profiler)": "")+
+                           ", cmdlineargs");
       if (node.getConstants()!=null) {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }
       _methodBodyWriter.write( "  ));\n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
   
@@ -166,12 +190,12 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)" );
+                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
       _methodBodyWriter.write( "  ));\n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolverCouplings.push_back( new exahype::solvers::SingleSolverCoupling("+_kernelNumber+") );\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       
@@ -219,6 +243,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::initLimiterProjectionMatrices(orders);\n"+
           "  kernels::initDGMatrices(orders);\n" +
           "  kernels::initBasisFunctions(orders);\n");
+      if(_useOptimizedKernels) {
+        _methodBodyWriter.write("  kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  kernels::aderdg::optimised::initDGMatrices(orders);\n");
+      }
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
       _methodBodyWriter.write("\n");
       _methodBodyWriter.write("\n");
@@ -232,7 +260,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::freeGaussLobattoNodesAndWeights(orders);\n"+
           "  kernels::freeLimiterProjectionMatrices(orders);\n"+
           "  kernels::freeDGMatrices(orders);\n"+
-          "  kernels::freeBasisFunctions(orders);\n\n"+
+          "  kernels::freeBasisFunctions(orders);\n");
+      if(_useOptimizedKernels) {
+        _methodBodyWriter.write("  kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(orders);\n");
+        _methodBodyWriter.write("  kernels::aderdg::optimised::freeDGMatrices(orders);\n");
+      }    
+      _methodBodyWriter.write(
+          "\n"+
           "  for (auto solver : exahype::solvers::RegisteredSolvers) {\n"+
           "    delete solver;\n"+
           "  }\n"+

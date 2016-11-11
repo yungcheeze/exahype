@@ -95,6 +95,12 @@ class exahype::mappings::Prediction {
    */
   static tarch::logging::Log _log;
 
+  void performPredictionAndVolumeIntegral(
+      exahype::solvers::ADERDGSolver* solver,
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
   /**
    * Per solver, temporary variables for storing degrees of freedom of space-time predictor
    * sized variables.
@@ -199,6 +205,14 @@ class exahype::mappings::Prediction {
    * spaceTimePredictor(...) as well as the solver's volumeIntegral(...) routines if
    * the the fine grid cell functions as a compute cell (Cell) for the solver.
    * Please see the discussion in the class header.
+   *
+   * <h2>Limiting ADER-DG solver</h2>
+   * We only perform a predictor computation if the cell description's limiter status is of type
+   * Ok, NeighbourIsTroubledCell, or NeighbourIsNeighbourOfTroubledCell. These
+   * cells require time-extrapolated boundary-extrapolated solution values from their neighbours
+   * to compute the normal fluxes/fluctuations at the cell boundary.
+   * Cell descriptions with limiter status Troubled do not hold a valid ADER-DG solution and thus
+   * cannot provide these data.
    *
    * @see enterCellSpecification()
    */

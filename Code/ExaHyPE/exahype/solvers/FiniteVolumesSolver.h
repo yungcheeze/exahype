@@ -51,19 +51,33 @@ private:
   static tarch::logging::Log _log;
 
   /**
-   * Total number of unknowns in a cell.
+   * Total number of volume averages and ghost values in a patch.
+   * This number does include ghost values.
    */
-  int _unknownsPerCell;
+  int _unknownsPerPatch;
 
   /**
-   * Total number of unknowns per cell face.
+   * Width of the ghost layer used for
+   * reconstruction and Riemann solves.
    */
-  int _unknownsPerFace;
+  int _ghostLayerWidth;
 
   /**
-   * Total number of unknowns per cell boundary.
+   * Total number of ghost values surrounding a patch.
    */
-  int _unknownsPerCellBoundary;
+  int _ghostValuesPerPatch;
+
+  /**
+   * Total number of volume averages per face of the patch.
+   * This number does not include ghost values.
+   */
+  int _unknownsPerPatchFace;
+
+  /**
+   * Total number of volume averages per boundary of the patch.
+   * This number does not include ghost values.
+   */
+  int _unknownsPerPatchBoundary;
 
   /**
    * Minimum time stamps of all patches.
@@ -167,12 +181,12 @@ public:
    }
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
-                      int numberOfParameters, int nodesPerCoordinateAxis,
-                      double maximumMeshSize,
-                      exahype::solvers::Solver::TimeStepping timeStepping,
-                      std::unique_ptr<profilers::Profiler> profiler =
-                          std::unique_ptr<profilers::Profiler>(
-                              new profilers::simple::NoOpProfiler("")));
+      int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
+      double maximumMeshSize,
+      exahype::solvers::Solver::TimeStepping timeStepping,
+      std::unique_ptr<profilers::Profiler> profiler =
+          std::unique_ptr<profilers::Profiler>(
+              new profilers::simple::NoOpProfiler("")));
 
   virtual ~FiniteVolumesSolver() {}
 
@@ -181,46 +195,134 @@ public:
   FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
 
   /**
-   * @param luh is a pointer to 3^d pointers to doubles
+   * \brief Returns a stable time step size.
+   *
+   * \param[in] luh             Cell-local solution DoF.
+   * \param[in] tempEigenvalues A temporary array of size equalling the number of variables.
+   * \param[in] cellSize        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
-      double* luh[THREE_POWER_D],
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
+      const double* const luh,
+      double* tempEigenvalues,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
+   * Extract volume averages belonging to the boundary layer
+   * of the neighbour patch and store them in the ghost layer
+   * of the current patch.
    *
+   * Depending on the implementation (if reconstruction is applied),
+   * the boundary layer/ghost layer might not just be a single layer.
+   *
+   * \param luhbnd Points to the extrapolated solution values.
+   * \param luh Points to the the new solution values.
+   * \param neighbourPosition Contains the relative position of the neighbour patch
+   * with respect to the patch this method was invoked for. The entries of the vector are in the range
+   * {-1,0,1}.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in touchVertexFirstTime and mergeWithNeighbour
+   * in mapping Merging.
+   *
+   * <h2>MPI</h2>
+   * No ghost layer is necessary if a patch is surrounded only
+   * by local cells. However as soon as the cell is adjacent
+   * to a MPI boundary this becomes necessary.
+   * We thus always hold ghost layers.
    */
+  virtual void ghostLayerFilling(
+      double* luh,
+      const double* luhNeighbour,
+      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) = 0;
+
+  /**
+   * Similar to ghostLayerFilling but we do not work with
+   * complete patches from a local neighbour here but with smaller arrays received
+   * from a remote neighbour or containing boundary conditions.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in mergeWithNeighbour in mapping Merging.
+   */
+  virtual void ghostLayerFillingAtBoundary(
+      double* luh,
+      const double* luhbnd,
+      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
+
+  /**
+   * Extract boundary layers of \p luh before
+   * sending them away via MPI.
+   *
+   * \note The theoretical arithmetic intensity of this operation is zero.
+   * \note This operation is invoked per vertex in prepareSendToNeighbour in mapping Sending.
+   */
+  virtual void boundaryLayerExtraction(
+      double* luhbnd,
+      const double* luh,
+      const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) = 0;
+
+  /**
+   * Return the state variables at the boundary.
+   *
+   * @param[inout] stateOut
+   * @param[in]    stateIn
+   * @param[in]    cellCentre    Cell centre.
+   * @param[in]    cellSize      Cell size.
+   * @param[in]    t             The time.
+   * @param[in]    dt            A time step size.
+   * @param[in]    normalNonZero Index of the nonzero normal vector component,
+   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
+   */
+  virtual void boundaryConditions(double* stateOut,
+      const double* const stateIn,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const double t,const double dt,
+      const int faceIndex,
+      const int normalNonZero) = 0;
+
+  virtual void solutionUpdate(
+      double* luhNew,const double* luh,
+      double** tempStateSizedArrays,double** tempUnknowns,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double dt, double& maxAdmissibleDt) = 0;
+
   virtual void solutionAdjustment(
-      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   virtual bool hasToAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
-
-  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-      const int level) = 0;
-
-  /**
-   * @param luh is a pointer to 3^d pointers to doubles
-   * @param dt Time step size that is to be used.
-   * @param maxAdmissibleDt Maximum time step size that would have been
-   *        possible. If maxAdmissibleDt<dt, then we know that no time
-   *        step has been done.
-   */
-  virtual void solutionUpdate(double* luh[THREE_POWER_D],
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double dt, double& maxAdmissibleDt) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) = 0;
 
   double getMinTimeStamp() const override;
 
   /**
-   * This operation returns the number of unknowns per cell located in
-   * the interior of a cell.
+   * The number of unknowns per patch.
+   * This number does not include ghost layer values.
    */
-  int getUnknownsPerCell() const;
+  int getUnknownsPerPatch() const;
+
+  /**
+   * Get the width of the ghost layer of the patch.
+   */
+  int getGhostLayerWidth() const;
+
+  /**
+   * Get the total number of ghost values per patch.
+   */
+  int getGhostValuesPerPatch() const;
+
+  /**
+   * This operation returns the number of unknowns per
+   * face of a patch.
+   *
+   * This number does not include ghost values.
+   */
+  int getUnknownsPerFace() const;
 
   /**
    * Run over all solvers and identify the minimal time step size.
@@ -294,8 +396,29 @@ public:
   void updateSolution(
       const int cellDescriptionsIndex,
       const int element,
+      double** tempStateSizedArrays,
+      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  /**
+   * Rolls back the solver's solution on the
+   * particular cell description.
+   * This method is used by the ADER-DG a-posteriori
+   * subcell limiter (LimitingADERDGSolver).
+   *
+   * <h2>Open issues</h2>
+   * A rollback is of course not possible if we have adjusted the solution
+   * values. Assuming the rollback is invoked by a LimitingADERDGSolver,
+   * we should use the adjusted FVM solution as reference solution.
+   * A similar issue occurs if we impose initial conditions that
+   * include a discontinuity.
+   */
+  void rollbackSolution(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   void preProcess(
       const int cellDescriptionsIndex,

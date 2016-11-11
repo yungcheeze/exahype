@@ -68,13 +68,13 @@ using namespace std::chrono;
 
 void allocLocal(int nVar, int nVarPadded, int nDOF) {
   lQi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF];
-  lFi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*3*2];
+  lFi = new double[nVarPadded*nDOF*nDOF*nDOF*nDOF*4];
   lQhi = new double[nVarPadded*nDOF*nDOF*nDOF];
-  lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*3*2];
+  lFhi = new double[nVarPadded*nDOF*nDOF*nDOF*4];
   memset(lQi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*sizeof(double));
-  memset(lFi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*3*sizeof(double)*2);
+  memset(lFi, 1.5, nVarPadded*nDOF*nDOF*nDOF*nDOF*4*sizeof(double));
   memset(lQhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*sizeof(double));
-  memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*3*sizeof(double)*2);
+  memset(lFhi, 1.5, nVarPadded*nDOF*nDOF*nDOF*4*sizeof(double));
 }
 
 void freeLocal() {
