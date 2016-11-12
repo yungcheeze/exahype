@@ -1,5 +1,6 @@
 /**
  * Euler Flow specfile for convergence analysis.
+ * This setup is for a ShuVortex simulation.
  *
  *@comment@ This file is a TEMPLATE, it has variables denoted
  *@comment@ like "@VARNAME@" and replaced by a script before
@@ -21,14 +22,14 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = @WIDTH@, @WIDTH@
+    width                    = @ExaWidth@, @ExaWidth@
     offset                   = 0.0, 0.0
-    end-time                 = @ENDTIME@
+    end-time                 = @ExaEndTime@
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = @TBBCORES@
+    cores                    = @ExaTbbCores@
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -51,8 +52,8 @@ exahype-project  Euler
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
-    order             = @ORDER@
-    maximum-mesh-size = @MESHSIZE@
+    order             = @ExapOrder@
+    maximum-mesh-size = @ExaMeshSize@
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
@@ -60,7 +61,7 @@ exahype-project  Euler
     plot vtk::Cartesian::cells::ascii
       variables = 5
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./conserved
       select = {}
     end plot
@@ -70,7 +71,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
-      repeat = @CONVOUTPUTREPEAT@
+      repeat = @ExaConvOutputRepeat@
       output = ./output/these-files-should-not-be-there
       select = {}
     end plot
@@ -78,7 +79,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./primitive
       select = {}
     end plot
@@ -86,7 +87,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./exact-primitive
       select = {}
     end plot

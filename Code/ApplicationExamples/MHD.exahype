@@ -102,6 +102,14 @@ exahype-project  MHDSolver
       output    = ./errors-conserved
       select = {}
     end plot
+
+    plot vtk::Legendre::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./relative-errors-conserved
+      select = {}
+    end plot
   end solver
 
 end exahype-project

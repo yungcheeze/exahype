@@ -5,6 +5,9 @@
 h=$(mktemp)
 SEP="\t"
 
+# where to look for simulations
+SIMBASE="${SIMBASE:=simulations/}"
+
 echo -en "SimulationName${SEP}"
 echo -en "NumReductionFiles${SEP}"
 echo -en "EachRedLength${SEP}"
@@ -12,9 +15,10 @@ echo -en "NumLinesLog${SEP}"
 echo -en "FinishedStatus${SEP}"
 echo -e  "Walltime"
 
-for sim in $(find simulations/ -maxdepth 1 -type d | sort); do
-	[[ $sim == "simulations/" ]] && continue
-	printf "%-40s" $sim
+for sim in $(find $SIMBASE -maxdepth 1 -type d | sort); do
+	[[ $sim == "$SIMBASE" ]] && continue
+	shortsimname="$(basename "$sim")"
+	printf "%-40s" $shortsimname
 	if ls $sim/output/*.asc > $h 2>/dev/null; then
 		echo -ne "$SEP" $(ls $(<$h) | wc -l) # number of files
 		echo -ne "$SEP" $(wc -l $(<$h) | head -n-1 | awk '{ print $1 }' | uniq) # entries in each file
@@ -24,7 +28,13 @@ for sim in $(find simulations/ -maxdepth 1 -type d | sort); do
 		elif T=$(grep -oh "ExaHyPE binary failed" $sim/*.log); then
 			echo -ne "$SEP FAILED"
 		else
-			echo -ne "$SEP '" $(grep -h step $sim/*.log | tail -n1 | awk '{print $6" "$7" "$8" "$9 }') "'"
+			if LASTSTEP=$(grep -h step $sim/*.log); then
+				# red black box, thats why we log for, isnt it?
+				BLACKBOX="'$(echo "$LASTSTEP" | tail -n1 | awk '{print $6" "$7" "$8" "$9 }')'"
+			else
+				BLACKBOX="CRASHED"
+			fi
+			echo -ne "$SEP $BLACKBOX"
 		fi
 		#if T=$(tail $sim/*.log | grep user | awk '{ print $4 }'); then
 		if T=$(grep -E "user\s+[0-9]" $sim/*.log | awk '{ print $4 }'); then

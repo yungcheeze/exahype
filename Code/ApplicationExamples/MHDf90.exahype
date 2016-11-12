@@ -32,36 +32,53 @@ exahype-project  MHDSolver
     kernel             = generic::fluxes::nonlinear
     language           = Fortran
 
+    /* do not trust vtk::Legendre::vertices as it contains bugs */
     plot vtk::Legendre::vertices::ascii
-      variables = 9
-      time      = 0.0
-      repeat    = 0.025
-      output    = ./conserved
-      select    = {}
+      variables= 9
+      time     = 0.0
+      repeat   = 0.05
+      output   = ./conserved
+      select   = {}
     end plot
     
     plot vtk::Legendre::vertices::ascii
       variables = 0
-      time      = 0.0
-      repeat    = 0.025
-      output    = ./output/global-integrals-fake-plotter
-      select    = {}
+      time = 0.0
+      repeat = 0.05
+      output = ./global-integrals
+      select = {}
     end plot
 
     plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.025
-      output    = ./exact
-      select    = {}
+      repeat    = 0.05
+      output    = ./primitive
+      select = {}
     end plot
 
     plot vtk::Legendre::vertices::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.025
-      output    = ./error
-      select    = {}
+      repeat    = 0.05
+      output    = ./exact-primitive
+      select = {}
+    end plot
+
+    plot vtk::Legendre::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./errors-conserved
+      select = {}
+    end plot
+
+    plot vtk::Legendre::vertices::ascii
+      variables = 9
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./relative-errors-conserved
+      select = {}
     end plot
   end solver
 
