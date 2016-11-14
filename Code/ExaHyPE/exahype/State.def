@@ -203,12 +203,9 @@ class exahype::dastgen::State {
   persistent double timeStepSizeWeightForPredictionRerun;
   
   /**
-   * This flag can used to notify the master thread or rank
+   * This flag is used to notify the master thread or rank
    * that the number of troubled cells has changed, i.e.,
    * more or less cells need limiting.
-   *
-   * The master rank can then react and perform
-   * two limiter status spreading iterations.
    */
-  parallelise persistent bool troubledDomainHasChanged;
+  parallelise persistent bool limiterDomainHasChanged;
 };

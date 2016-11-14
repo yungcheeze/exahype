@@ -89,6 +89,13 @@ class exahype::mappings::SolutionUpdate {
   double*** _tempUnknowns = nullptr;
 
   /**
+   * Per solver, we hold a status flag indicating
+   * if the limiter domain of the solver has
+   * changed.
+   */
+  bool* _limiterDomainHasChanged = nullptr;
+
+  /**
    * Initialises the temporary variables.
    *
    * \note We parallelise over the domain

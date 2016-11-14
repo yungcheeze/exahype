@@ -18,9 +18,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
-
-#include "exahype/solvers/CellWiseCoupling.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -88,12 +86,14 @@ tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
     "exahype::mappings::SolutionUpdate");
 
 void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
-  assertion(_tempUnknowns         ==nullptr);
-  assertion(_tempStateSizedArrays ==nullptr);
+  assertion(_limiterDomainHasChanged ==nullptr);
+  assertion(_tempUnknowns            ==nullptr);
+  assertion(_tempStateSizedArrays    ==nullptr);
 
-  int numberOfSolvers   = exahype::solvers::RegisteredSolvers.size();
-  _tempStateSizedArrays = new double**[numberOfSolvers];
-  _tempUnknowns         = new double**[numberOfSolvers];
+  int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
+  _limiterDomainHasChanged = new bool    [numberOfSolvers];
+  _tempStateSizedArrays    = new double**[numberOfSolvers];
+  _tempUnknowns            = new double**[numberOfSolvers];
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
@@ -112,6 +112,8 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
       _tempStateSizedArrays[solverNumber] = nullptr;
       _tempUnknowns        [solverNumber] = nullptr;
     }
+    //
+    _limiterDomainHasChanged[solverNumber] = false;
 
     ++solverNumber;
   }
@@ -119,7 +121,8 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
 
 void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
   if (_tempStateSizedArrays!=nullptr) {
-    assertion(_tempUnknowns!=nullptr);
+    assertion(_limiterDomainHasChanged!=nullptr);
+    assertion(_tempUnknowns           !=nullptr);
 
     int solverNumber=0;
     for (auto solver : exahype::solvers::RegisteredSolvers) {
@@ -138,10 +141,12 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
       ++solverNumber;
     }
 
+    delete[] _limiterDomainHasChanged;
     delete[] _tempStateSizedArrays;
     delete[] _tempUnknowns;
-    _tempStateSizedArrays = nullptr;
-    _tempUnknowns         = nullptr;
+    _limiterDomainHasChanged = nullptr;
+    _tempStateSizedArrays    = nullptr;
+    _tempUnknowns            = nullptr;
   }
 }
 
@@ -196,6 +201,13 @@ void exahype::mappings::SolutionUpdate::enterCell(
             _tempUnknowns[i],
             fineGridVertices,
             fineGridVerticesEnumerator);
+
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          bool limiterDomainHasChanged =
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              determineLimiterStatusAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
+          _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
+        }
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
@@ -216,6 +228,12 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State& solverState) {
+  bool limiterDomainHasChanged = solverState.limiterDomainHasChanged();
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    limiterDomainHasChanged |= _limiterDomainHasChanged[solverNumber];
+  }
+  solverState.setLimiterDomainHasChanged(limiterDomainHasChanged);
+
   deleteTemporaryVariables();
 }
 

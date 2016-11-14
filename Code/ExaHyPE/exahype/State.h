@@ -310,12 +310,12 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
 
-  void setTroubledDomainHasChanged(bool state) {
-    _stateData.setTroubledDomainHasChanged(true);
+  void setLimiterDomainHasChanged(bool state) {
+    _stateData.setLimiterDomainHasChanged(state);
   }
 
-  bool troubledDomainHasChanged() const  {
-    return _stateData.getFuseADERDGPhases();
+  bool limiterDomainHasChanged() const {
+      return _stateData.getLimiterDomainHasChanged();
   }
 
   #ifdef Parallel
