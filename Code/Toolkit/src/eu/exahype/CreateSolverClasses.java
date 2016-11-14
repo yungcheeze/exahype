@@ -127,6 +127,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
     
+    if (order < 1 || order > 9) {
+      System.err.println("ERROR: Only polynomial degrees of 1..9 are supported.");
+      valid = false;
+      return;
+    }
+    
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
