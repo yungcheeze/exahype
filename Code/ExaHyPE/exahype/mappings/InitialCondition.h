@@ -48,6 +48,26 @@ class exahype::mappings::InitialCondition {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Per solver, hold a flag indicating
+   * if the limiter domain has changed.
+   *
+   * This flag has only a meaning if
+   * the corresponding solver is
+   * of type exahype::solvers::LimitingADERDGSolver.
+   */
+  bool* _limiterDomainHasChanged;
+
+  /**
+   * Allocate the ::_limiterDomainHasChanged array.
+   */
+  void prepareTemporaryVariables();
+
+  /**
+   * Free the ::_limiterDomainHasChanged array.
+   */
+  void deleteTemporaryVariables();
+
  public:
   /**
    * Run through the whole grid. Run concurrently on the fine grid.

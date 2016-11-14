@@ -232,8 +232,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToSolutionUpdateContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
     // We need to reset this flag only at this point (cf. workflow in Runner).
-    _stateData.setTroubledDomainHasChanged(false);
+    _stateData.setLimiterDomainHasChanged(false);
   }
 
   void switchToTimeStepSizeComputationContext() {

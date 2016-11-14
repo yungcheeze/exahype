@@ -20,7 +20,24 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/CellWiseCoupling.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
+
+void exahype::mappings::InitialCondition::prepareTemporaryVariables() {
+  assertion(_limiterDomainHasChanged ==nullptr);
+  int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
+  _limiterDomainHasChanged = new bool    [numberOfSolvers];
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    _limiterDomainHasChanged[solverNumber] = false;
+  }
+}
+
+void exahype::mappings::InitialCondition::deleteTemporaryVariables() {
+  if (_limiterDomainHasChanged!=nullptr) {
+    delete[] _limiterDomainHasChanged;
+    _limiterDomainHasChanged = nullptr;
+  }
+}
 
 peano::CommunicationSpecification
 exahype::mappings::InitialCondition::communicationSpecification() {
