@@ -126,28 +126,37 @@ private:
   const int _dataPerCell;
 
   /**
-   * Minimum corrector time stamp.
+   * Minimum corrector time step size of all
+   * cell descriptions in the previous iteration.
+   */
+  double _previousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
    */
   double _minCorrectorTimeStamp;
 
   /**
-   * Minimum predictor time stamp. Always equal or larger
-   * than the minimum corrector time stamp.
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
    */
   double _minPredictorTimeStamp;
 
   /**
-   * Corrector time step size.
+   * Minimum corrector time step size of
+   * all cell descriptions.
    */
   double _minCorrectorTimeStepSize;
 
   /**
-   * Predictor time step size.
+   * Minimum predictor time step size of
+   * all cell descriptions.
    */
   double _minPredictorTimeStepSize;
 
   /**
-   * Predictor time step size.
+   * Minimum next predictor time step size of
+   * all cell descriptions.
    */
   double _minNextPredictorTimeStepSize;
 
@@ -432,49 +441,6 @@ private:
       double**  tempStateSizedSquareMatrices);
 
   /**
-   * TODO(Dominc): Remove after docu is recycled.
-   *
-   * This operation sets the solutions' minimum and maximum value on a cell.
-   * The routine is to be invoked after the code has determined the new minimum
-   * and maximum value within a cell. In turn, it evaluates whether the new
-   * minimum and maximum value have decreased or grown, respectively.
-   *
-   * If the new min/max values indicate that the new solution comprises
-   * oscillations, the routine returns false. This is an indicator that the
-   * solution should be limited.
-   *
-   * If the new min/max values fit, the routine returns true.
-   *
-   * <h2>Implementation</h2>
-   * We hold the min/max information exclusively on the faces. The first thing
-   * the routine does is to project the min/max values into the cell. For this
-   * it evaluates the 2d faces. The projected value then is compared to the
-   * arguments. Once the results of the operation is determined, the routine
-   * writes the new arguments onto the 2d face entries. This, on the one hand,
-   * stores the data for the subsequent time step, but it also propagates the
-   * min/max information into the face-connected neighbours.
-   *
-   * @param  min          New minimum values within the cell. Array of length
-   *                      _numberOfUnknowns.
-   * @param  max          New maximum values within the cell
-   * @param  solverIndex  Number of the solver within the cell. Please ensure
-   *                      that solverIndex refers to an ADER-DG solver.
-   * @return True if the new min and max values fit into the restricted min
-   *   max solutions. Return false if we seem to run into oscillations.
-   */
-//  void setSolutionMinMax(double* min, double* max) const;
-
-  /**
-   * Merge the solution min and max values on a face between two cell
-   * descriptions. Signature is similar to the solver of a Riemann problem.
-   */
-  void mergeSolutionMinMaxOnFace(
-      CellDescription& pLeft,
-      CellDescription& pRight,
-      const int faceIndexLeft,
-      const int faceIndexRight) const;
-
-  /**
    * Checks if no unnecessary memory is allocated for the cell description.
    * If this is not the case, it deallocates the unnecessarily allocated memory.
    *
@@ -535,15 +501,6 @@ private:
       double**  tempFaceUnknownsArrays,
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
-
-  /**
-   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
-   * for MPI where min and max value are explicitly exchanged through messages.
-   */
-  void mergeSolutionMinMaxOnFace(
-      CellDescription&  cellDescription,
-      int                              faceIndex,
-      double* min, double* max) const;
 
   /**
    * Sets heap indices of all ADER-DG cell descriptions that were
@@ -1006,6 +963,12 @@ public:
   void startNewTimeStep() override;
 
   /**
+   * Roll back the time step data to the
+   * ones of the previous time step.
+   */
+  void rollbackToPreviousTimeStep();
+
+  /**
    * After the mesh has been updated,
    * reset the predictor time stamp to
    * the value corrector time stamp plus
@@ -1066,11 +1029,11 @@ public:
     return getMinCorrectorTimeStepSize();
   }
 
-  double getNextMinTimeStepSize() const override {
+  double getMinNextTimeStepSize() const override {
     return getMinPredictorTimeStepSize();
   }
 
-  void updateNextTimeStepSize( double value ) override {
+  void updateMinNextTimeStepSize( double value ) override {
     updateMinNextPredictorTimeStepSize(value);
   }
 
@@ -1149,6 +1112,16 @@ public:
       double*   tempEigenvalues) override;
 
   /**
+   * Rolls the solver time step data back to the
+   * previous time step for a cell description.
+   * Note that the newest time step
+   * data is lost in this process.
+   */
+  void rollbackToPreviousTimeStep(
+      const int cellDescriptionsIndex,
+      const int element);
+
+  /**
    * <h2>Solution adjustments</h2>
    * The solution is initially at time
    * cellDescription.getCorrectorTimeStamp().
@@ -1224,14 +1197,6 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
-  void mergeLimiterDataOfNeighbours(
-        const int                                 cellDescriptionsIndex1,
-        const int                                 element1,
-        const int                                 cellDescriptionsIndex2,
-        const int                                 element2,
-        const tarch::la::Vector<DIMENSIONS, int>& pos1,
-        const tarch::la::Vector<DIMENSIONS, int>& pos2);
-
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,

@@ -407,7 +407,7 @@ class exahype::solvers::Solver {
    */
   virtual double getMinTimeStepSize() const = 0;
 
-  virtual void updateNextTimeStepSize(double value) = 0;
+  virtual void updateMinNextTimeStepSize(double value) = 0;
 
   virtual void initInitialTimeStamp(double value) = 0;
 
@@ -441,7 +441,7 @@ class exahype::solvers::Solver {
    */
   virtual void reinitTimeStepData() = 0;
 
-  virtual double getNextMinTimeStepSize() const =0;
+  virtual double getMinNextTimeStepSize() const=0;
 
   /**
    * Run over all solvers and identify the minimal time stamp.

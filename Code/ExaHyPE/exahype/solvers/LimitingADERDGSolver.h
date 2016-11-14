@@ -13,8 +13,10 @@
 
 #include "tarch/multicore/BooleanSemaphore.h"
 
+#include "exahype/mappings/Merging.h"
 #include "exahype/mappings/Prediction.h"
 #include "exahype/mappings/LimiterStatusSpreading.h"
+#include "exahype/mappings/SolutionRecomputation.h"
 
 // *.cpp
 #include "tarch/multicore/Lock.h"
@@ -34,8 +36,10 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
   /**
    * This mapping needs access to the _solver variable of LimitingADERDGSolver.
    */
+  friend class exahype::mappings::Merging;
   friend class exahype::mappings::Prediction;
   friend class exahype::mappings::LimiterStatusSpreading;
+  friend class exahype::mappings::SolutionRecomputation;
 private:
   /**
    * A flag indicating that the limiter domain has changed.
@@ -66,6 +70,48 @@ private:
    */
   exahype::solvers::FiniteVolumesSolver* _limiter;
 
+  /**
+   * TODO(Dominc): Remove after docu is recycled.
+   *
+   * This operation sets the solutions' minimum and maximum value on a cell.
+   * The routine is to be invoked after the code has determined the new minimum
+   * and maximum value within a cell. In turn, it evaluates whether the new
+   * minimum and maximum value have decreased or grown, respectively.
+   *
+   * If the new min/max values indicate that the new solution comprises
+   * oscillations, the routine returns false. This is an indicator that the
+   * solution should be limited.
+   *
+   * If the new min/max values fit, the routine returns true.
+   *
+   * <h2>Implementation</h2>
+   * We hold the min/max information exclusively on the faces. The first thing
+   * the routine does is to project the min/max values into the cell. For this
+   * it evaluates the 2d faces. The projected value then is compared to the
+   * arguments. Once the results of the operation is determined, the routine
+   * writes the new arguments onto the 2d face entries. This, on the one hand,
+   * stores the data for the subsequent time step, but it also propagates the
+   * min/max information into the face-connected neighbours.
+   *
+   * @param  min          New minimum values within the cell. Array of length
+   *                      _numberOfUnknowns.
+   * @param  max          New maximum values within the cell
+   * @param  solverIndex  Number of the solver within the cell. Please ensure
+   *                      that solverIndex refers to an ADER-DG solver.
+   * @return True if the new min and max values fit into the restricted min
+   *   max solutions. Return false if we seem to run into oscillations.
+   */
+  //  void setSolutionMinMax(double* min, double* max) const;
+
+  /**
+   * Merge the solution min and max values on a face between two cell
+   * descriptions. Signature is similar to that of the solver of a Riemann problem.
+   */
+  void mergeSolutionMinMaxOnFace(
+      SolverPatch& pLeft,
+      SolverPatch& pRight,
+      const int faceIndexLeft,
+      const int faceIndexRight) const;
 
   /**
    * Determine a new merged limiter status based on the neighbours merged
@@ -92,6 +138,21 @@ private:
       const int faceIndex,
       const SolverPatch::LimiterStatus& neighbourLimiterStatus) const;
 
+  void mergeWithNeighbourLimiterStatus(
+      SolverPatch& solverPatch,
+      const int faceIndex,
+      const SolverPatch::LimiterStatus& neighbourLimiterStatus,
+      const SolverPatch::LimiterStatus& neighbourOfNeighbourLimiterStatus) const;
+
+  /**
+   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
+   * for MPI where min and max value are explicitly exchanged through messages.
+   */
+  void mergeSolutionMinMaxOnFace(
+      SolverPatch&  cellDescription,
+      int               faceIndex,
+      double* min, double* max) const;
+
   /**
    * Determine the limiter status after a limiter status spreading
    * iteration.
@@ -116,7 +177,9 @@ public:
    */
   double getMinTimeStepSize() const override;
 
-  void updateNextTimeStepSize( double value ) override;
+  double getMinNextTimeStepSize() const override;
+
+  void updateMinNextTimeStepSize(double value) override;
 
   void initInitialTimeStamp(double value) override;
 
@@ -126,9 +189,13 @@ public:
 
   void startNewTimeStep() override;
 
-  void reinitTimeStepData() override;
+  /**
+   * Roll back the time step data to the
+   * ones of the previous time step.
+   */
+  void rollbackToPreviousTimeStep();
 
-  double getNextMinTimeStepSize() const override;
+  void reinitTimeStepData() override;
 
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override ;
@@ -168,6 +235,23 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+ /**
+   * Rollback to the previous time step, i.e,
+   * overwrite the time step size and time stamp
+   * fields of the solver and limiter patches
+   * by the values used in the previous iteration.
+   */
+  void rollbackToPreviousTimeStep(
+      const int cellDescriptionsIndex,
+      const int solverElement);
+
+  /**
+   * TODO(Dominic): I need the whole limiter recomputation
+   * procedure also for the initial conditions.
+   *
+   * This includes computing, sending, and merging
+   * of the min/max values.
+   */
   void setInitialConditions(
       const int cellDescriptionsIndex,
       const int element,
@@ -260,17 +344,46 @@ public:
    * LimitingADERDGSolver Recomputation
    */
   void reinitialiseSolvers(
-      exahype::records::ADERDGCellDescription& cellDescription,
+      const int cellDescriptionsIndex,
+      const int element,
       exahype::Cell& fineGridCell,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
 
   /**
-   * Recompute the solution in the troubled cells and the neighbours of
-   * first and second degree so that all cells have performed the same number of
-   * global time steps again.
+   * Recompute the solution in cells that have been subject to a limiter status change
+   * This method is invoked after the solver reinitialisation
+   * (see exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers).
+   *
+   * It evolves the solution of the solver and limiter in the reinitialised cells to the
+   * correct time stamp.
+   *
+   * We perform the following actions based on the
+   * new limiter status:
+   *
+   * |New Status | Action                                                                                                                                      |
+   * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
+   * |O          | Do nothing. Solver solution has been evolved correctly before.                                                                              |
+   * |T/NT       | Evolve FV solver project result onto the ADER-DG space.                                                                                     |
+   * |NNT        | Evolve solver and project its solution onto the limiter solution space. (We had to do a rollback beforehand in the reinitialisation phase.) |
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * We do not overwrite the old limiter status set in this method.
+   * We compute the new limiter status based on the merged limiter statuses associated
+   * with the faces.
+   *
+   * <h2>Overlapping status spreading and reinitialisation with solution reconputation</h2>
+   * We can recompute the new solution in cells with status Troubled after one iteration
+   * since old solution values from direct neighbours are available then.
+   *
+   * We can recompute the
+   *
+   * TODO(Dominic)
+   * Adapters:
+   * LimitingADERDGSolver LimiterStatusSpreading
+   * LimitingADERDGSolver Reinitialisation
+   * LimitingADERDGSolver Recomputation
    */
   void recomputeSolution(
       const int cellDescriptionsIndex,
@@ -303,6 +416,52 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  /**
+   *
+   */
+  void mergeLimiterStatusOfNeighbours(
+        const int                                 cellDescriptionsIndex1,
+        const int                                 element1,
+        const int                                 cellDescriptionsIndex2,
+        const int                                 element2,
+        const tarch::la::Vector<DIMENSIONS, int>& pos1,
+        const tarch::la::Vector<DIMENSIONS, int>& pos2);
+
+  /**
+   * TODO(Dominic): Not sure if this is necessary.
+   */
+  void mergeLimiterStatusOfNeighboursOfNeighbours(
+          const int                                 cellDescriptionsIndex1,
+          const int                                 element1,
+          const int                                 cellDescriptionsIndex2,
+          const int                                 element2,
+          const tarch::la::Vector<DIMENSIONS, int>& pos1,
+          const tarch::la::Vector<DIMENSIONS, int>& pos2);
+
+  /**
+   * Merge solver boundary data (and other values) of two adjacent
+   * cells.
+   *
+   * The solver involved in the neighbour merge
+   * is selected according to the following scheme:
+   *
+   * | Status A | Status B | Solver to Merge
+   * ---------------------------------------
+   * | O        | O        | ADER-DG       |
+   * | O        | NNT      | ADER-DG       |// O|NNT x O|NNT
+   * | NNT      | O        | ADER-DG       |
+   * | NNT      | NNT      | ADER-DG       |
+   *
+   * | NNT      | NT       | FV            |
+   * | NT       | NNT      | FV            | // NT&NNT | N&NNT
+   *
+   * | NT       | NT       | FV            |
+   * | NT       | T        | FV            |
+   * | T        | NT       | FV            | // T|NT x T|NT
+   * | T        | T        | FV            |
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   */
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -314,6 +473,10 @@ public:
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
+  /**
+   * Depending on the limiter status, we impose boundary conditions
+   * onto the solution of the solver or of the limiter.
+   */
   void mergeWithBoundaryData(
       const int                                 cellDescriptionsIndex,
       const int                                 element,

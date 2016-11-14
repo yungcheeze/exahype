@@ -80,6 +80,12 @@ private:
   int _unknownsPerPatchBoundary;
 
   /**
+   * Minimum time step size of all patches
+   * in the previous iteration.
+   */
+  double _previousMinTimeStepSize;
+
+  /**
    * Minimum time stamps of all patches.
    */
   double _minTimeStamp;
@@ -90,9 +96,10 @@ private:
   double _minTimeStepSize;
 
   /**
-   * Next minimum step size of all patches.
+   * Minimum stable time step size of all patches for
+   * the next iteration.
    */
-  double _nextMinTimeStepSize;
+  double _minNextTimeStepSize;
 
   /**
    * Synchonises the cell description time stamps
@@ -329,7 +336,7 @@ public:
    */
   double getMinTimeStepSize() const override;
 
-  void updateNextTimeStepSize( double value ) override;
+  void updateMinNextTimeStepSize( double value ) override;
 
   void initInitialTimeStamp(double value) override;
 
@@ -339,9 +346,15 @@ public:
 
   void startNewTimeStep() override;
 
+  /**
+   * Roll back the time step data to the
+   * ones of the previous time step.
+   */
+  void rollbackToPreviousTimeStep();
+
   void reinitTimeStepData() override;
 
-  double getNextMinTimeStepSize() const override;
+  double getMinNextTimeStepSize() const override;
 
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override {
@@ -387,6 +400,16 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+  /**
+   * Rolls the solver time step data back to the
+   * previous time step for a cell description.
+   * Note that the newest time step
+   * data is lost in this process.
+   */
+  void rollbackToPreviousTimeStep(
+      const int cellDescriptionsIndex,
+      const int element);
+
   void setInitialConditions(
       const int cellDescriptionsIndex,
       const int element,
@@ -419,6 +442,10 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  void swapSolutionAndPreviousSolution(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   void preProcess(
       const int cellDescriptionsIndex,

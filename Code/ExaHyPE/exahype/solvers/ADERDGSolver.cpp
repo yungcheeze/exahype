@@ -389,6 +389,8 @@ void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
 void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
+      _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize;
+
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
 
@@ -408,6 +410,30 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
 
   _minCellSize     = _nextMinCellSize;
   _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+}
+
+void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minPredictorTimeStamp    = _minCorrectorTimeStamp;
+      _minPredictorTimeStepSize = _minCorrectorTimeStepSize;
+      _minCorrectorTimeStamp    = _minCorrectorTimeStamp-_previousMinCorrectorTimeStepSize;
+      _minCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+
+      _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+      break;
+    case TimeStepping::GlobalFixed:
+      _minPredictorTimeStamp    = _minCorrectorTimeStamp;
+      _minPredictorTimeStepSize = _minCorrectorTimeStepSize;
+      _minCorrectorTimeStamp    = _minCorrectorTimeStamp-_previousMinCorrectorTimeStepSize;
+      _minCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+      break;
+  }
+
+//  _minCellSize     = _nextMinCellSize;
+//  _maxCellSize     = _nextMaxCellSize; // TODO(Dominic): What to do with these fields?
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
@@ -1305,6 +1331,7 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     // Note that these local quantities might
     // be overwritten again by the synchronisation
     // happening in the next time step.
+    cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
     cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
     cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
     cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStamp() +
@@ -1315,6 +1342,18 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
   }
 
   return std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
+    const int cellDescriptionsIndex,
+    const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  cellDescription.setPredictorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+  cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp());
+  cellDescription.setCorrectorTimeStepSize(cellDescription.getPreviousCorrectorTimeStepSize());
+  cellDescription.setCorrectorTimeStamp(
+      cellDescription.getCorrectorTimeStamp()-cellDescription.getPreviousCorrectorTimeStepSize());
 }
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
@@ -1621,53 +1660,6 @@ void exahype::solvers::ADERDGSolver::restrictData(
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
-void exahype::solvers::ADERDGSolver::mergeLimiterDataOfNeighbours(
-      const int                                 cellDescriptionsIndex1,
-      const int                                 element1,
-      const int                                 cellDescriptionsIndex2,
-      const int                                 element2,
-      const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) {
-  assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
-
-  const int normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
-  assertion(normalDirection >= 0 && normalDirection < DIMENSIONS);
-  const int faceIndex1 = 2 * normalDirection +
-      (pos2(normalDirection) > pos1(normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-  const int faceIndex2 = 2 * normalDirection +
-      (pos1(normalDirection) > pos2(normalDirection) ? 1 : 0);   // !!! Be aware of the ">" !!!
-
-  int cellDescriptionsIndexLeft  = cellDescriptionsIndex1;
-  int elementLeft                = element1;
-  int faceIndexLeft              = faceIndex1;
-
-  int cellDescriptionsIndexRight = cellDescriptionsIndex2;
-  int elementRight               = element2;
-  int faceIndexRight             = faceIndex2;
-
-  if (pos1(normalDirection) > pos2(normalDirection)) {
-    cellDescriptionsIndexLeft  = cellDescriptionsIndex2;
-    elementLeft                = element2;
-    faceIndexLeft              = faceIndex2;
-
-    cellDescriptionsIndexRight = cellDescriptionsIndex1;
-    elementRight               = element1;
-    faceIndexRight             = faceIndex1;
-  }
-
-  CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
-  CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
-
-  mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
-
-  // We need to copy the limiter status since the routines below modify
-  // the limiter status on the cell descriptions.
-//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
-//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
-//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move function into LimitingADERDG
-}
-
 void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 cellDescriptionsIndex1,
     const int                                 element1,
@@ -1719,23 +1711,9 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     true
   );
 
-  mergeSolutionMinMaxOnFace(pLeft,pRight,faceIndexLeft,faceIndexRight);
-
-  // We need to copy the limiter status since the routines below modify
-  // the limiter status on the cell descriptions.
-//  const CellDescription::LimiterStatus& limiterStatusLeft  = pLeft.getMergedLimiterStatus(faceIndexLeft);
-//  const CellDescription::LimiterStatus& limiterStatusRight = pRight.getMergedLimiterStatus(faceIndexRight);
-//  mergeWithNeighbourLimiterStatus(pLeft,faceIndexLeft,limiterStatusRight);
-//  mergeWithNeighbourLimiterStatus(pRight,faceIndexRight,limiterStatusLeft); // TODO(Dominic): Move whole function into LimitingADERDG/LimiterStatusSpreading
-
-  // TODO(Dominic): This needs to consider the NeighbourOfNeighbourCells
-  if (pLeft.getMergedLimiterStatus(faceIndexLeft)==CellDescription::LimiterStatus::Ok) {
-    assertion4(pRight.getMergedLimiterStatus(faceIndexRight)==CellDescription::LimiterStatus::Ok,
-        pLeft.toString(),pRight.toString(),faceIndexLeft,faceIndexRight);
-    solveRiemannProblemAtInterface(
-        pLeft,pRight,faceIndexLeft,faceIndexRight,
-        tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
-  }
+  solveRiemannProblemAtInterface(
+      pLeft,pRight,faceIndexLeft,faceIndexRight,
+      tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
@@ -1870,6 +1848,7 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   double* stateOut = tempFaceUnknownsArrays[1];
   double* fluxOut  = tempFaceUnknownsArrays[2];
 
+  // TODO(Dominic): Hand in space-time volume data. Time integrate it afterwards
   boundaryConditions(fluxOut,stateOut,
       fluxIn,stateIn,
       p.getOffset() + 0.5*p.getSize(), // centre
@@ -1906,40 +1885,6 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     assertion5(std::isfinite(fluxIn[ii]),p.toString(),faceIndex,normalDirection,ii,fluxIn[ii]);
     assertion5(std::isfinite(fluxOut[ii]),p.toString(),faceIndex,normalDirection,ii,fluxOut[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-}
-
-void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
-  CellDescription& pLeft,
-  CellDescription& pRight,
-  const int faceIndexLeft,
-  const int faceIndexRight
-) const {
-  if (pLeft.getType()==CellDescription::Cell ||
-      pRight.getType()==CellDescription::Cell) {
-    assertion( pLeft.getSolverNumber() == pRight.getSolverNumber() );
-    const int numberOfVariables = getNumberOfVariables();
-    double* minLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMin()  ).data()  + faceIndexLeft  * numberOfVariables;
-    double* minRight = DataHeap::getInstance().getData( pRight.getSolutionMin()  ).data() + faceIndexRight * numberOfVariables;
-    double* maxLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMax()  ).data()  + faceIndexLeft  * numberOfVariables;
-    double* maxRight = DataHeap::getInstance().getData( pRight.getSolutionMax()  ).data() + faceIndexRight * numberOfVariables;
-
-    for (int i=0; i<numberOfVariables; i++) {
-      const double min = std::min(
-          *(minLeft+i),
-          *(minRight+i)
-      );
-      const double max = std::max(
-          *(maxLeft+i),
-          *(maxRight+i)
-      );
-
-      *(minLeft+i)  = min;
-      *(minRight+i) = min;
-
-      *(maxLeft+i)  = max;
-      *(maxRight+i) = max;
-    }
-  } // else do nothing
 }
 
 #ifdef Parallel
@@ -2518,27 +2463,6 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
         faceIndex, normalDirection, indexOfQValues, indexOfFValues,
         ii, QR[ii], QL[ii], FR[ii], FL[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-}
-
-void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
-  CellDescription&  cellDescription,
-  int                                       faceIndex,
-  double* min, double* max) const {
-  if (cellDescription.getType() == CellDescription::Cell ||
-      cellDescription.getType() == CellDescription::Ancestor ||
-      cellDescription.getType() == CellDescription::Descendant
-      ) {
-    assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
-    const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ])->getNumberOfVariables();
-
-    for (int i=0; i<numberOfVariables; i++) {
-      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceIndex*numberOfVariables]  =
-        std::min( DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceIndex*numberOfVariables], min[i] );
-      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceIndex*numberOfVariables]  =
-        std::max( DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceIndex*numberOfVariables], max[i] );
-    }
-  }
 }
 
 void exahype::solvers::ADERDGSolver::dropNeighbourData(
