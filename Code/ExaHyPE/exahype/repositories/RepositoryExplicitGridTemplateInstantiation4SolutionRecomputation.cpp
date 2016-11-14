@@ -24,6 +24,7 @@
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
+ #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/SolutionRecomputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 

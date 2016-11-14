@@ -1,7 +1,7 @@
-#include "exahype/adapters/SolutionRecomputation.h"
+#include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::SolutionRecomputation::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::communicationSpecification()
    & exahype::mappings::TimeStepSizeComputation::communicationSpecification()
@@ -10,7 +10,7 @@ peano::CommunicationSpecification   exahype::adapters::SolutionRecomputation::co
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::touchVertexLastTimeSpecification()
    & exahype::mappings::TimeStepSizeComputation::touchVertexLastTimeSpecification()
@@ -19,7 +19,7 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::touchVer
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::touchVertexFirstTimeSpecification()
    & exahype::mappings::TimeStepSizeComputation::touchVertexFirstTimeSpecification()
@@ -28,7 +28,7 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::touchVer
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::enterCellSpecification()
    & exahype::mappings::TimeStepSizeComputation::enterCellSpecification()
@@ -37,7 +37,7 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::enterCel
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::leaveCellSpecification()
    & exahype::mappings::TimeStepSizeComputation::leaveCellSpecification()
@@ -46,7 +46,7 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::leaveCel
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::ascendSpecification()
    & exahype::mappings::TimeStepSizeComputation::ascendSpecification()
@@ -55,7 +55,7 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::ascendSp
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionRecomputation::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SolutionRecomputation::descendSpecification()
    & exahype::mappings::TimeStepSizeComputation::descendSpecification()
@@ -64,16 +64,16 @@ peano::MappingSpecification   exahype::adapters::SolutionRecomputation::descendS
 }
 
 
-exahype::adapters::SolutionRecomputation::SolutionRecomputation() {
+exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::SolutionRecomputationAndTimeStepSizeComputation() {
 }
 
 
-exahype::adapters::SolutionRecomputation::~SolutionRecomputation() {
+exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::~SolutionRecomputationAndTimeStepSizeComputation() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::SolutionRecomputation::SolutionRecomputation(const SolutionRecomputation&  masterThread):
+exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::SolutionRecomputationAndTimeStepSizeComputation(const SolutionRecomputationAndTimeStepSizeComputation&  masterThread):
   _map2SolutionRecomputation(masterThread._map2SolutionRecomputation) , 
   _map2TimeStepSizeComputation(masterThread._map2TimeStepSizeComputation) 
 
@@ -81,7 +81,7 @@ exahype::adapters::SolutionRecomputation::SolutionRecomputation(const SolutionRe
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithWorkerThread(const SolutionRecomputation& workerThread) {
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithWorkerThread(const SolutionRecomputationAndTimeStepSizeComputation& workerThread) {
   _map2SolutionRecomputation.mergeWithWorkerThread(workerThread._map2SolutionRecomputation);
   _map2TimeStepSizeComputation.mergeWithWorkerThread(workerThread._map2TimeStepSizeComputation);
 
@@ -89,7 +89,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithWorkerThread(const Solut
 #endif
 
 
-void exahype::adapters::SolutionRecomputation::createHangingVertex(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -105,7 +105,7 @@ void exahype::adapters::SolutionRecomputation::createHangingVertex(
 }
 
 
-void exahype::adapters::SolutionRecomputation::destroyHangingVertex(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -120,7 +120,7 @@ void exahype::adapters::SolutionRecomputation::destroyHangingVertex(
 }
 
 
-void exahype::adapters::SolutionRecomputation::createInnerVertex(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -135,7 +135,7 @@ void exahype::adapters::SolutionRecomputation::createInnerVertex(
 }
 
 
-void exahype::adapters::SolutionRecomputation::createBoundaryVertex(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -150,7 +150,7 @@ void exahype::adapters::SolutionRecomputation::createBoundaryVertex(
 }
 
 
-void exahype::adapters::SolutionRecomputation::destroyVertex(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -165,7 +165,7 @@ void exahype::adapters::SolutionRecomputation::destroyVertex(
 }
 
 
-void exahype::adapters::SolutionRecomputation::createCell(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -180,7 +180,7 @@ void exahype::adapters::SolutionRecomputation::createCell(
 }
 
 
-void exahype::adapters::SolutionRecomputation::destroyCell(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -196,7 +196,7 @@ void exahype::adapters::SolutionRecomputation::destroyCell(
 
 
 #ifdef Parallel
-void exahype::adapters::SolutionRecomputation::mergeWithNeighbour(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -210,7 +210,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithNeighbour(
 }
 
 
-void exahype::adapters::SolutionRecomputation::prepareSendToNeighbour(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::prepareSendToNeighbour(
   exahype::Vertex&  vertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -223,7 +223,7 @@ void exahype::adapters::SolutionRecomputation::prepareSendToNeighbour(
 }
 
 
-void exahype::adapters::SolutionRecomputation::prepareCopyToRemoteNode(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::prepareCopyToRemoteNode(
   exahype::Vertex&  localVertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -236,7 +236,7 @@ void exahype::adapters::SolutionRecomputation::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::SolutionRecomputation::prepareCopyToRemoteNode(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::prepareCopyToRemoteNode(
   exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -249,7 +249,7 @@ void exahype::adapters::SolutionRecomputation::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -263,7 +263,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithRemoteDataDueToForkOrJoi
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -277,7 +277,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithRemoteDataDueToForkOrJoi
 }
 
 
-bool exahype::adapters::SolutionRecomputation::prepareSendToWorker(
+bool exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -295,7 +295,7 @@ bool exahype::adapters::SolutionRecomputation::prepareSendToWorker(
 }
 
 
-void exahype::adapters::SolutionRecomputation::prepareSendToMaster(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::prepareSendToMaster(
   exahype::Cell&                       localCell,
   exahype::Vertex *                    vertices,
   const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -310,7 +310,7 @@ void exahype::adapters::SolutionRecomputation::prepareSendToMaster(
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithMaster(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -331,7 +331,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithMaster(
 }
 
 
-void exahype::adapters::SolutionRecomputation::receiveDataFromMaster(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -349,7 +349,7 @@ void exahype::adapters::SolutionRecomputation::receiveDataFromMaster(
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithWorker(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithWorker(
   exahype::Cell&           localCell, 
   const exahype::Cell&     receivedMasterCell,
   const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -362,7 +362,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithWorker(
 }
 
 
-void exahype::adapters::SolutionRecomputation::mergeWithWorker(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::mergeWithWorker(
   exahype::Vertex&        localVertex,
   const exahype::Vertex&  receivedMasterVertex,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -376,7 +376,7 @@ void exahype::adapters::SolutionRecomputation::mergeWithWorker(
 #endif
 
 
-void exahype::adapters::SolutionRecomputation::touchVertexFirstTime(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -391,7 +391,7 @@ void exahype::adapters::SolutionRecomputation::touchVertexFirstTime(
 }
 
 
-void exahype::adapters::SolutionRecomputation::touchVertexLastTime(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -406,7 +406,7 @@ void exahype::adapters::SolutionRecomputation::touchVertexLastTime(
 }
 
 
-void exahype::adapters::SolutionRecomputation::enterCell(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -421,7 +421,7 @@ void exahype::adapters::SolutionRecomputation::enterCell(
 }
 
 
-void exahype::adapters::SolutionRecomputation::leaveCell(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -436,7 +436,7 @@ void exahype::adapters::SolutionRecomputation::leaveCell(
 }
 
 
-void exahype::adapters::SolutionRecomputation::beginIteration(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::beginIteration(
   exahype::State&  solverState
 ) {
   _map2SolutionRecomputation.beginIteration( solverState );
@@ -445,7 +445,7 @@ void exahype::adapters::SolutionRecomputation::beginIteration(
 }
 
 
-void exahype::adapters::SolutionRecomputation::endIteration(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::endIteration(
   exahype::State&  solverState
 ) {
   _map2SolutionRecomputation.endIteration( solverState );
@@ -456,7 +456,7 @@ void exahype::adapters::SolutionRecomputation::endIteration(
 
 
 
-void exahype::adapters::SolutionRecomputation::descend(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -470,7 +470,7 @@ void exahype::adapters::SolutionRecomputation::descend(
 }
 
 
-void exahype::adapters::SolutionRecomputation::ascend(
+void exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,

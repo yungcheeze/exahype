@@ -27,7 +27,8 @@
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
- #include "exahype/adapters/SolutionRecomputation.h" 
+ #include "exahype/adapters/Reinitialisation.h" 
+ #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
@@ -71,7 +72,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndADERDGTimeStep> _gridWithPlotAndADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionRerun> _gridWithPredictionRerun;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionRecomputation> _gridWithSolutionRecomputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation> _gridWithSolutionRecomputationAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
@@ -94,7 +96,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measurePredictionRerunCPUTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
-    tarch::timing::Measurement _measureSolutionRecomputationCPUTime;
+    tarch::timing::Measurement _measureReinitialisationCPUTime;
+    tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
@@ -114,7 +117,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measurePredictionRerunCalendarTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
-    tarch::timing::Measurement _measureSolutionRecomputationCalendarTime;
+    tarch::timing::Measurement _measureReinitialisationCalendarTime;
+    tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
@@ -172,7 +176,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPlotAndADERDGTimeStep();    
     virtual void switchToPredictionRerun();    
     virtual void switchToLimiterStatusSpreading();    
-    virtual void switchToSolutionRecomputation();    
+    virtual void switchToReinitialisation();    
+    virtual void switchToSolutionRecomputationAndTimeStepSizeComputation();    
     virtual void switchToNeighbourDataMerging();    
     virtual void switchToPrediction();    
     virtual void switchToSolutionUpdate();    
@@ -192,7 +197,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const;
     virtual bool isActiveAdapterPredictionRerun() const;
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
-    virtual bool isActiveAdapterSolutionRecomputation() const;
+    virtual bool isActiveAdapterReinitialisation() const;
+    virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterSolutionUpdate() const;

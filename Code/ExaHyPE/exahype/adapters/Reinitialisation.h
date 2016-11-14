@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_SolutionRecomputation_H_
-#define EXAHYPE_ADAPTERS_SolutionRecomputation_H_
+#ifndef EXAHYPE_ADAPTERS_Reinitialisation_H_
+#define EXAHYPE_ADAPTERS_Reinitialisation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,14 +18,13 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionRecomputation.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Reinitialisation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class SolutionRecomputation;
+        class Reinitialisation;
       } 
 }
 
@@ -37,13 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::SolutionRecomputation {
+class exahype::adapters::Reinitialisation {
   private:
-    typedef mappings::SolutionRecomputation Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::Reinitialisation Mapping0;
 
-     Mapping0  _map2SolutionRecomputation;
-     Mapping1  _map2TimeStepSizeComputation;
+     Mapping0  _map2Reinitialisation;
 
 
   public:
@@ -55,16 +52,16 @@ class exahype::adapters::SolutionRecomputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    SolutionRecomputation();
+    Reinitialisation();
 
     #if defined(SharedMemoryParallelisation)
-    SolutionRecomputation(const SolutionRecomputation& masterThread);
+    Reinitialisation(const Reinitialisation& masterThread);
     #endif
 
-    virtual ~SolutionRecomputation();
+    virtual ~Reinitialisation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const SolutionRecomputation& workerThread);
+    void mergeWithWorkerThread(const Reinitialisation& workerThread);
     #endif
 
     void createInnerVertex(

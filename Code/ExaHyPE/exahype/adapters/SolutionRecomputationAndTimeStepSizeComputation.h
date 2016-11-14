@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_SolutionRecomputation_H_
-#define EXAHYPE_ADAPTERS_SolutionRecomputation_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionRecomputationAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_SolutionRecomputationAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -25,7 +25,7 @@
 
 namespace exahype {
       namespace adapters {
-        class SolutionRecomputation;
+        class SolutionRecomputationAndTimeStepSizeComputation;
       } 
 }
 
@@ -37,7 +37,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::SolutionRecomputation {
+class exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation {
   private:
     typedef mappings::SolutionRecomputation Mapping0;
     typedef mappings::TimeStepSizeComputation Mapping1;
@@ -55,16 +55,16 @@ class exahype::adapters::SolutionRecomputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    SolutionRecomputation();
+    SolutionRecomputationAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    SolutionRecomputation(const SolutionRecomputation& masterThread);
+    SolutionRecomputationAndTimeStepSizeComputation(const SolutionRecomputationAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~SolutionRecomputation();
+    virtual ~SolutionRecomputationAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const SolutionRecomputation& workerThread);
+    void mergeWithWorkerThread(const SolutionRecomputationAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

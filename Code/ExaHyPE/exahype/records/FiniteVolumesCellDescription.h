@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   10/11/2016 20:31
+    * @date   14/11/2016 13:37
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -53,18 +53,9 @@ namespace exahype {
             int _solverNumber;
             double _timeStepSize;
             double _timeStamp;
-            int _oldSolution;
+            double _previousTimeStepSize;
             int _solution;
-            #ifdef UseManualAlignment
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution __attribute__((aligned(VectorisationAlignment)));
-            #else
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution;
-            #endif
-            #ifdef UseManualAlignment
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations __attribute__((aligned(VectorisationAlignment)));
-            #else
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations;
-            #endif
+            int _previousSolution;
             int _level;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -103,7 +94,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -166,22 +157,22 @@ namespace exahype {
             
             
             
-            inline int getOldSolution() const 
+            inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _oldSolution;
+               return _previousTimeStepSize;
             }
             
             
             
-            inline void setOldSolution(const int& oldSolution) 
+            inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _oldSolution = oldSolution;
+               _previousTimeStepSize = previousTimeStepSize;
             }
             
             
@@ -206,118 +197,22 @@ namespace exahype {
             
             
             
-            /**
-             * Generated and optimized
-             * 
-             * If you realise a for loop using exclusively arrays (vectors) and compile 
-             * with -DUseManualAlignment you may add 
-             * \code
-             #pragma vector aligned
-             #pragma simd
-             \endcode to this for loop to enforce your compiler to use SSE/AVX.
-             * 
-             * The alignment is tied to the unpacked records, i.e. for packed class
-             * variants the machine's natural alignment is switched off to recude the  
-             * memory footprint. Do not use any SSE/AVX operations or 
-             * vectorisation on the result for the packed variants, as the data is misaligned. 
-             * If you rely on vectorisation, convert the underlying record 
-             * into the unpacked version first. 
-             * 
-             * @see convert()
-             */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+            inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _extrapolatedSolution;
+               return _previousSolution;
             }
             
             
             
-            /**
-             * Generated and optimized
-             * 
-             * If you realise a for loop using exclusively arrays (vectors) and compile 
-             * with -DUseManualAlignment you may add 
-             * \code
-             #pragma vector aligned
-             #pragma simd
-             \endcode to this for loop to enforce your compiler to use SSE/AVX.
-             * 
-             * The alignment is tied to the unpacked records, i.e. for packed class
-             * variants the machine's natural alignment is switched off to recude the  
-             * memory footprint. Do not use any SSE/AVX operations or 
-             * vectorisation on the result for the packed variants, as the data is misaligned. 
-             * If you rely on vectorisation, convert the underlying record 
-             * into the unpacked version first. 
-             * 
-             * @see convert()
-             */
-            inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+            inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _extrapolatedSolution = (extrapolatedSolution);
-            }
-            
-            
-            
-            /**
-             * Generated and optimized
-             * 
-             * If you realise a for loop using exclusively arrays (vectors) and compile 
-             * with -DUseManualAlignment you may add 
-             * \code
-             #pragma vector aligned
-             #pragma simd
-             \endcode to this for loop to enforce your compiler to use SSE/AVX.
-             * 
-             * The alignment is tied to the unpacked records, i.e. for packed class
-             * variants the machine's natural alignment is switched off to recude the  
-             * memory footprint. Do not use any SSE/AVX operations or 
-             * vectorisation on the result for the packed variants, as the data is misaligned. 
-             * If you rely on vectorisation, convert the underlying record 
-             * into the unpacked version first. 
-             * 
-             * @see convert()
-             */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _fluctuations;
-            }
-            
-            
-            
-            /**
-             * Generated and optimized
-             * 
-             * If you realise a for loop using exclusively arrays (vectors) and compile 
-             * with -DUseManualAlignment you may add 
-             * \code
-             #pragma vector aligned
-             #pragma simd
-             \endcode to this for loop to enforce your compiler to use SSE/AVX.
-             * 
-             * The alignment is tied to the unpacked records, i.e. for packed class
-             * variants the machine's natural alignment is switched off to recude the  
-             * memory footprint. Do not use any SSE/AVX operations or 
-             * vectorisation on the result for the packed variants, as the data is misaligned. 
-             * If you rely on vectorisation, convert the underlying record 
-             * into the unpacked version first. 
-             * 
-             * @see convert()
-             */
-            inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _fluctuations = (fluctuations);
+               _previousSolution = previousSolution;
             }
             
             
@@ -731,7 +626,7 @@ namespace exahype {
          /**
           * Generated
           */
-         FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+         FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
          
          /**
           * Generated
@@ -799,22 +694,22 @@ namespace exahype {
          
          
          
-         inline int getOldSolution() const 
+         inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._oldSolution;
+            return _persistentRecords._previousTimeStepSize;
          }
          
          
          
-         inline void setOldSolution(const int& oldSolution) 
+         inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._oldSolution = oldSolution;
+            _persistentRecords._previousTimeStepSize = previousTimeStepSize;
          }
          
          
@@ -839,170 +734,22 @@ namespace exahype {
          
          
          
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+         inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._extrapolatedSolution;
+            return _persistentRecords._previousSolution;
          }
          
          
          
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+         inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._extrapolatedSolution = (extrapolatedSolution);
-         }
-         
-         
-         
-         inline int getExtrapolatedSolution(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._extrapolatedSolution[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setExtrapolatedSolution(int elementIndex, const int& extrapolatedSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._extrapolatedSolution[elementIndex]= extrapolatedSolution;
-            
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._fluctuations;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._fluctuations = (fluctuations);
-         }
-         
-         
-         
-         inline int getFluctuations(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._fluctuations[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setFluctuations(int elementIndex, const int& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._fluctuations[elementIndex]= fluctuations;
-            
+            _persistentRecords._previousSolution = previousSolution;
          }
          
          
@@ -1643,7 +1390,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   10/11/2016 20:31
+             * @date   14/11/2016 13:37
              */
             class exahype::records::FiniteVolumesCellDescriptionPacked { 
                
@@ -1657,10 +1404,9 @@ namespace exahype {
                      int _solverNumber;
                      double _timeStepSize;
                      double _timeStamp;
-                     int _oldSolution;
+                     double _previousTimeStepSize;
                      int _solution;
-                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution;
-                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations;
+                     int _previousSolution;
                      int _level;
                      tarch::la::Vector<DIMENSIONS,double> _offset;
                      tarch::la::Vector<DIMENSIONS,double> _size;
@@ -1679,7 +1425,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                     PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                      
                      
                      inline int getSolverNumber() const 
@@ -1742,22 +1488,22 @@ namespace exahype {
                      
                      
                      
-                     inline int getOldSolution() const 
+                     inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _oldSolution;
+                        return _previousTimeStepSize;
                      }
                      
                      
                      
-                     inline void setOldSolution(const int& oldSolution) 
+                     inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _oldSolution = oldSolution;
+                        _previousTimeStepSize = previousTimeStepSize;
                      }
                      
                      
@@ -1782,118 +1528,22 @@ namespace exahype {
                      
                      
                      
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                     inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _extrapolatedSolution;
+                        return _previousSolution;
                      }
                      
                      
                      
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                     inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _extrapolatedSolution = (extrapolatedSolution);
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _fluctuations;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _fluctuations = (fluctuations);
+                        _previousSolution = previousSolution;
                      }
                      
                      
@@ -2307,7 +1957,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                  FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                   
                   /**
                    * Generated
@@ -2375,22 +2025,22 @@ namespace exahype {
                   
                   
                   
-                  inline int getOldSolution() const 
+                  inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._oldSolution;
+                     return _persistentRecords._previousTimeStepSize;
                   }
                   
                   
                   
-                  inline void setOldSolution(const int& oldSolution) 
+                  inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._oldSolution = oldSolution;
+                     _persistentRecords._previousTimeStepSize = previousTimeStepSize;
                   }
                   
                   
@@ -2415,170 +2065,22 @@ namespace exahype {
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                  inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._extrapolatedSolution;
+                     return _persistentRecords._previousSolution;
                   }
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                  inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._extrapolatedSolution = (extrapolatedSolution);
-                  }
-                  
-                  
-                  
-                  inline int getExtrapolatedSolution(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._extrapolatedSolution[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setExtrapolatedSolution(int elementIndex, const int& extrapolatedSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._extrapolatedSolution[elementIndex]= extrapolatedSolution;
-                     
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._fluctuations;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._fluctuations = (fluctuations);
-                  }
-                  
-                  
-                  
-                  inline int getFluctuations(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._fluctuations[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setFluctuations(int elementIndex, const int& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._fluctuations[elementIndex]= fluctuations;
-                     
+                     _persistentRecords._previousSolution = previousSolution;
                   }
                   
                   
@@ -3216,7 +2718,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   10/11/2016 20:31
+                      * @date   14/11/2016 13:37
                       */
                      class exahype::records::FiniteVolumesCellDescription { 
                         
@@ -3236,18 +2738,9 @@ namespace exahype {
                               int _solverNumber;
                               double _timeStepSize;
                               double _timeStamp;
-                              int _oldSolution;
+                              double _previousTimeStepSize;
                               int _solution;
-                              #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution;
-                              #endif
-                              #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations;
-                              #endif
+                              int _previousSolution;
                               int _level;
                               #ifdef UseManualAlignment
                               tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -3280,7 +2773,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                              PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                               
                               
                               inline int getSolverNumber() const 
@@ -3343,22 +2836,22 @@ namespace exahype {
                               
                               
                               
-                              inline int getOldSolution() const 
+                              inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _oldSolution;
+                                 return _previousTimeStepSize;
                               }
                               
                               
                               
-                              inline void setOldSolution(const int& oldSolution) 
+                              inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _oldSolution = oldSolution;
+                                 _previousTimeStepSize = previousTimeStepSize;
                               }
                               
                               
@@ -3383,118 +2876,22 @@ namespace exahype {
                               
                               
                               
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                              inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _extrapolatedSolution;
+                                 return _previousSolution;
                               }
                               
                               
                               
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                              inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _extrapolatedSolution = (extrapolatedSolution);
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _fluctuations;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _fluctuations = (fluctuations);
+                                 _previousSolution = previousSolution;
                               }
                               
                               
@@ -3830,7 +3227,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                           FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                            
                            /**
                             * Generated
@@ -3898,22 +3295,22 @@ namespace exahype {
                            
                            
                            
-                           inline int getOldSolution() const 
+                           inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _persistentRecords._oldSolution;
+                              return _persistentRecords._previousTimeStepSize;
                            }
                            
                            
                            
-                           inline void setOldSolution(const int& oldSolution) 
+                           inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._oldSolution = oldSolution;
+                              _persistentRecords._previousTimeStepSize = previousTimeStepSize;
                            }
                            
                            
@@ -3938,170 +3335,22 @@ namespace exahype {
                            
                            
                            
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                           inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _persistentRecords._extrapolatedSolution;
+                              return _persistentRecords._previousSolution;
                            }
                            
                            
                            
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                           inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._extrapolatedSolution = (extrapolatedSolution);
-                           }
-                           
-                           
-                           
-                           inline int getExtrapolatedSolution(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._extrapolatedSolution[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setExtrapolatedSolution(int elementIndex, const int& extrapolatedSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._extrapolatedSolution[elementIndex]= extrapolatedSolution;
-                              
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._fluctuations;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._fluctuations = (fluctuations);
-                           }
-                           
-                           
-                           
-                           inline int getFluctuations(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._fluctuations[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setFluctuations(int elementIndex, const int& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._fluctuations[elementIndex]= fluctuations;
-                              
+                              _persistentRecords._previousSolution = previousSolution;
                            }
                            
                            
@@ -4638,7 +3887,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   10/11/2016 20:31
+                               * @date   14/11/2016 13:37
                                */
                               class exahype::records::FiniteVolumesCellDescriptionPacked { 
                                  
@@ -4652,10 +3901,9 @@ namespace exahype {
                                        int _solverNumber;
                                        double _timeStepSize;
                                        double _timeStamp;
-                                       int _oldSolution;
+                                       double _previousTimeStepSize;
                                        int _solution;
-                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedSolution;
-                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuations;
+                                       int _previousSolution;
                                        int _level;
                                        tarch::la::Vector<DIMENSIONS,double> _offset;
                                        tarch::la::Vector<DIMENSIONS,double> _size;
@@ -4672,7 +3920,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                       PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -4735,22 +3983,22 @@ namespace exahype {
                                        
                                        
                                        
-                                       inline int getOldSolution() const 
+                                       inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          return _oldSolution;
+                                          return _previousTimeStepSize;
                                        }
                                        
                                        
                                        
-                                       inline void setOldSolution(const int& oldSolution) 
+                                       inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          _oldSolution = oldSolution;
+                                          _previousTimeStepSize = previousTimeStepSize;
                                        }
                                        
                                        
@@ -4775,118 +4023,22 @@ namespace exahype {
                                        
                                        
                                        
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                                       inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          return _extrapolatedSolution;
+                                          return _previousSolution;
                                        }
                                        
                                        
                                        
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                                       inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          _extrapolatedSolution = (extrapolatedSolution);
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _fluctuations;
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _fluctuations = (fluctuations);
+                                          _previousSolution = previousSolution;
                                        }
                                        
                                        
@@ -5222,7 +4374,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& oldSolution, const int& solution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                    FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                                     
                                     /**
                                      * Generated
@@ -5290,22 +4442,22 @@ namespace exahype {
                                     
                                     
                                     
-                                    inline int getOldSolution() const 
+                                    inline double getPreviousTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._oldSolution;
+                                       return _persistentRecords._previousTimeStepSize;
                                     }
                                     
                                     
                                     
-                                    inline void setOldSolution(const int& oldSolution) 
+                                    inline void setPreviousTimeStepSize(const double& previousTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._oldSolution = oldSolution;
+                                       _persistentRecords._previousTimeStepSize = previousTimeStepSize;
                                     }
                                     
                                     
@@ -5330,170 +4482,22 @@ namespace exahype {
                                     
                                     
                                     
-                                    /**
-                                     * Generated and optimized
-                                     * 
-                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                     * with -DUseManualAlignment you may add 
-                                     * \code
-                                     #pragma vector aligned
-                                     #pragma simd
-                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                     * 
-                                     * The alignment is tied to the unpacked records, i.e. for packed class
-                                     * variants the machine's natural alignment is switched off to recude the  
-                                     * memory footprint. Do not use any SSE/AVX operations or 
-                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                     * If you rely on vectorisation, convert the underlying record 
-                                     * into the unpacked version first. 
-                                     * 
-                                     * @see convert()
-                                     */
-                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedSolution() const 
+                                    inline int getPreviousSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._extrapolatedSolution;
+                                       return _persistentRecords._previousSolution;
                                     }
                                     
                                     
                                     
-                                    /**
-                                     * Generated and optimized
-                                     * 
-                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                     * with -DUseManualAlignment you may add 
-                                     * \code
-                                     #pragma vector aligned
-                                     #pragma simd
-                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                     * 
-                                     * The alignment is tied to the unpacked records, i.e. for packed class
-                                     * variants the machine's natural alignment is switched off to recude the  
-                                     * memory footprint. Do not use any SSE/AVX operations or 
-                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                     * If you rely on vectorisation, convert the underlying record 
-                                     * into the unpacked version first. 
-                                     * 
-                                     * @see convert()
-                                     */
-                                    inline void setExtrapolatedSolution(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedSolution) 
+                                    inline void setPreviousSolution(const int& previousSolution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._extrapolatedSolution = (extrapolatedSolution);
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getExtrapolatedSolution(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       assertion(elementIndex>=0);
-                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       return _persistentRecords._extrapolatedSolution[elementIndex];
-                                       
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setExtrapolatedSolution(int elementIndex, const int& extrapolatedSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       assertion(elementIndex>=0);
-                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._extrapolatedSolution[elementIndex]= extrapolatedSolution;
-                                       
-                                    }
-                                    
-                                    
-                                    
-                                    /**
-                                     * Generated and optimized
-                                     * 
-                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                     * with -DUseManualAlignment you may add 
-                                     * \code
-                                     #pragma vector aligned
-                                     #pragma simd
-                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                     * 
-                                     * The alignment is tied to the unpacked records, i.e. for packed class
-                                     * variants the machine's natural alignment is switched off to recude the  
-                                     * memory footprint. Do not use any SSE/AVX operations or 
-                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                     * If you rely on vectorisation, convert the underlying record 
-                                     * into the unpacked version first. 
-                                     * 
-                                     * @see convert()
-                                     */
-                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuations() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _persistentRecords._fluctuations;
-                                    }
-                                    
-                                    
-                                    
-                                    /**
-                                     * Generated and optimized
-                                     * 
-                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                     * with -DUseManualAlignment you may add 
-                                     * \code
-                                     #pragma vector aligned
-                                     #pragma simd
-                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                     * 
-                                     * The alignment is tied to the unpacked records, i.e. for packed class
-                                     * variants the machine's natural alignment is switched off to recude the  
-                                     * memory footprint. Do not use any SSE/AVX operations or 
-                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                     * If you rely on vectorisation, convert the underlying record 
-                                     * into the unpacked version first. 
-                                     * 
-                                     * @see convert()
-                                     */
-                                    inline void setFluctuations(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _persistentRecords._fluctuations = (fluctuations);
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getFluctuations(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       assertion(elementIndex>=0);
-                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       return _persistentRecords._fluctuations[elementIndex];
-                                       
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setFluctuations(int elementIndex, const int& fluctuations) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       assertion(elementIndex>=0);
-                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                                       _persistentRecords._fluctuations[elementIndex]= fluctuations;
-                                       
+                                       _persistentRecords._previousSolution = previousSolution;
                                     }
                                     
                                     
