@@ -441,6 +441,29 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
   logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
+  // TODO(Dominic):
+//  if (repository.getState().limiterDomainHasChanged()) {
+//    // Local: Merge the limiter status with stencil width one
+//    // MPI: Send out the limiter status with stencil width two
+//    repository.getState().switchToLimiterStatusSpreadingContext();
+//    repository.switchToLimiterStatusSpreading();
+//    repository.iterate();
+//
+//    // Rollback particualar cells
+//    // MPI: Merge limiter status with stencil width two.
+//    // Local: Merge the limiter status with stencil width one again
+//    repository.switchToReinitialisation();
+//    repository.iterate();
+//
+//    // Update and recompute particular cells
+//    // Maybe plot here again the corrected solution
+//    // After this all the solutions have performed the correct number
+//    // of time steps again.
+//    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+////    repository.switchToInitialLimiterDomainAndTimeStepSizeComputation();
+//    repository.iterate();
+//  }
+
   /*
    * Set the time stamps of the solvers to the initial value again.
    *
@@ -471,6 +494,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.switchToPredictionAndTimeStepSizeComputation();
   }
   repository.iterate();
+
   /*
    * Reset the time stamps of the finite volumes solvers.
    *
@@ -578,7 +602,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
     currentMinTimeStepSize =
         std::min(currentMinTimeStepSize, p->getMinTimeStepSize());
     nextMinTimeStepSize =
-        std::min(nextMinTimeStepSize, p->getNextMinTimeStepSize());
+        std::min(nextMinTimeStepSize, p->getMinNextTimeStepSize());
   }
 
   logInfo("startNewTimeStep(...)",
@@ -672,7 +696,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // TODO(Dominic):
   // Perform the solution update;
   // mark cells as troubled if applicable, send out limiter data and min/max
-  // repository.switchPlotAndSolutionUpdateContext();
+  repository.getState().switchToSolutionUpdateContext();
   if (plot) {
     repository.switchToPlotAndSolutionUpdate();  // Face to cell + Inside cell
   } else {
@@ -680,19 +704,10 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   repository.iterate();
 
-//  // TODO(Dominic): Spread limiter status and recompute solution
-//  if (repository.getState().recomputeADERDGSolution()) {
-//    // Spread the limiter status, add FV subcells
-//    repository.getState().switchToSpreadLimiterStatusContext();
-//    repository.switchToSpreadLimiterStatus();
-//    repository.iterate(2);
-//
-//    TODO(Dominic): Send out limiter status again at the end.
-//    // Maybe plot here again the corrected solution
-//    repository.getState().switchToRecomputeSolutionContext();
-//    repository.switchToRecomputeSolution();
-//    repository.iterate(1);
-//  }
+  // TODO(Dominic): Drop Limiter status
+  repository.getState().switchToTimeStepSizeComputationContext();
+  repository.switchToTimeStepSizeComputation();
+  repository.iterate();
 
 //  #if DIMENSIONS==2 && !defined(Parallel)
 //  if (plot) {
@@ -700,30 +715,41 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 //    repository.iterate();
 //  }
 //  #endif
-
-
-//  repository.getState().switchToPreAMRContext(); // This must stay here.
 //
-//  // TODO(Dominic): Experimental dyn. AMR grid setup that only works
-//  // with standard global time stepping at the moment.
-//  //
-//  // For the refinement criterion try for example a density based one.
-//  //
-//  // Uncomment the following lines for testing dyn. AMR.
-//  createGrid(repository);
-//  const int maxAdaptiveGridDepth = exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers();
-//  logDebug("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","maxAdaptiveGridDepth="<<maxAdaptiveGridDepth);
-//  repository.iterate(maxAdaptiveGridDepth*2); // We need to two iterations for an erasing event.
-//  repository.getState().switchToPostAMRContext();
-//  repository.switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
-//  repository.iterate();
+//  // We mimic the flow of the fused time stepping scheme here.
+//  // Updating the limiter domain is thus done after the time step
+//  // size computation.
+//  // TODO(Dominic): There is currently an issue with moving branch
+//  // below the prediction phase. See below.
+//  if (repository.getState().limiterDomainHasChanged()) {
+//    // Local: Merge the limiter status with stencil width one
+//    // MPI: Send out the limiter status with stencil width two
+//    repository.getState().switchToLimiterStatusSpreadingContext();
+//    repository.switchToLimiterStatusSpreading();
+//    repository.iterate();
+//
+//    // Rollback particualar cells
+//    // MPI: Merge limiter status with stencil width two.
+//    // Local: Merge the limiter status with stencil width one again
+//    repository.switchToReinitialisation();
+//    repository.iterate();
+//
+//    // Update and recompute particular cells
+//    // Maybe plot here again the corrected solution
+//    // After this all the solutions have performed the correct number
+//    // of time steps again.
+//    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+//    repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+//    repository.iterate();
+//  }
 
-  // TODO(Dominic): Drop Limiter status
-  repository.getState().switchToTimeStepSizeComputationContext();
-  repository.switchToTimeStepSizeComputation();
-  repository.iterate();
-
-
+  // TODO(Dominic): Limiting: There is an issue with the prediction in
+  // the limiting context. Since we overwrite the update here again.
+  // A rollback is thus not possible anymore.
+  // The only way out of here would be to store an old and new
+  // ADER-DG solution similar to the finite volumes solver. This is the reason
+  // why we currently only offer the limiting for
+  // the non-fused time stepping variant.
   repository.getState().switchToPredictionContext();
   repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
