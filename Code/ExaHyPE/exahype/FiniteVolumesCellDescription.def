@@ -17,20 +17,32 @@ class exahype::records::FiniteVolumesCellDescription {
   parallelise persistent int solverNumber;
 
   /**
-  * The time step size correction phase is working with.
+  * The time step size this cell description is working with.
   */
   parallelise persistent double timeStepSize;
 
   /**
-   * The time stamp the correction phase is working with.
+   * The time stamp this cell description is working with.
    */
   parallelise persistent double timeStamp;
   
   /**
-   *  Index referring to the old solution DoF associated with this cell
-   *  description.
+   * TODO(Dominic): This is probably not necessary 
+   * for the FVM solver.
+   * 
+   * The time step size this cell description was 
+   * working with in the previous iteration.
+   * 
+   * This field is necessary for performing rollbacks which
+   * is for example required in the context of a-posteriori subcell 
+   * limiting of higher-order schemes.
+   * 
+   * Background:
+   * If the solver has already evolved to a new time step,
+   * the timeStepSize field has been overwritten.
    */
-  parallelise persistent int oldSolution;
+  parallelise persistent double previousTimeStepSize;
+  
   /**
    * Index referring to the old solution DoF associated with this cell
    * description.
@@ -38,18 +50,10 @@ class exahype::records::FiniteVolumesCellDescription {
   parallelise persistent int solution;
   
   /**
-   *  Index referring to the boundary extrapolated 
-   *  old solution DoF associated with this cell
+   *  Index referring to the old solution DoF associated with this cell
    *  description.
    */
-  parallelise persistent int extrapolatedSolution[DIMENSIONS_TIMES_TWO];
-  
-  /**
-   *  Index referring to the boundary extrapolated 
-   *  old solution DoF associated with this cell
-   *  description.
-   */
-  parallelise persistent int fluctuations[DIMENSIONS_TIMES_TWO];
+  parallelise persistent int previousSolution;
   
   /**
    * Space-tree level of the cell this FiniteVolumesCellDescription is associated
