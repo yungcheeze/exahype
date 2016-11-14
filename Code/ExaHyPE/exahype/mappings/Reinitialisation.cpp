@@ -103,6 +103,9 @@ void exahype::mappings::Reinitialisation::enterCell(
     if (element!=exahype::solvers::Solver::NotFound
         && solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
+      limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+      limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
       limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
                                                 fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
     }
@@ -433,12 +436,16 @@ void exahype::mappings::Reinitialisation::leaveCell(
 
 void exahype::mappings::Reinitialisation::beginIteration(
     exahype::State& solverState) {
-  // do nothing
 }
 
 void exahype::mappings::Reinitialisation::endIteration(
     exahype::State& solverState) {
-  // do nothing
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->rollbackToPreviousTimeStep();
+    }
+  }
 }
 
 void exahype::mappings::Reinitialisation::descend(
