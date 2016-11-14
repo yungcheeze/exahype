@@ -51,6 +51,15 @@ event-mapping:
 event-mapping:
   name: LimiterStatusSpreading
 
+event-mapping:
+  name: Reinitialisation
+  
+event-mapping:
+  name: SolutionRecomputation
+  
+// event-mapping:
+//  name: RecomputationFusedTimeStepping
+
 // GridUpdate   
 event-mapping:
   name: GridErasing
@@ -169,10 +178,19 @@ adapter:
   merge-with-user-defined-mapping: Sending
 
 
-// Additional adapters for limiter status spreading and initialisation
-adapter: 
+// Additional adapters for limiter status spreading and recomputation
+adapter: // Has to run two iterations
   name: LimiterStatusSpreading
   merge-with-user-defined-mapping: LimiterStatusSpreading
+
+adapter: // Initialise patches for the NT,NNT cells. No comm. 
+  name: Reinitialisation
+  merge-with-user-defined-mapping: Reinitialisation 
+
+adapter: // One iteration, face comm.
+  name: SolutionRecomputationAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: SolutionRecomputation
+  merge-with-user-defined-mapping: TimeStepSizeComputation
  
 // Additional adapters for 4 phase time stepping
 adapter: 
