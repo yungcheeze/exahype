@@ -175,8 +175,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-    //
-    _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
@@ -197,8 +195,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
-    //
-    _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToPredictionRerunContext() {
@@ -229,25 +225,26 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(true);
     #endif
-    _stateData.setReinitTimeStepData(false); // rename
+    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
     _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   void switchToSolutionUpdateContext() {
+    // We need to reset this flag only at this point (cf. workflow in Runner).
     _stateData.setTroubledDomainHasChanged(false);
   }
 
   void switchToTimeStepSizeComputationContext() {
-      #ifdef Parallel
-      _stateData.setFirstGridSetupIteration(false);
-      #endif
-      _stateData.setReinitTimeStepData(false); // rename
-      _stateData.setFuseADERDGPhases(false);
-      _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-      _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-    }
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+  }
 
   void switchToPostAMRContext() {
     #ifdef Parallel
@@ -258,8 +255,29 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
-  //
 
+  void switchToLimiterStatusSpreadingContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    _stateData.setFuseADERDGPhases(false);
+    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
+  void switchToRecomputeSolutionAndTimeStepSizeComputationContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    _stateData.setFuseADERDGPhases(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
+  //
   void setStabilityConditionOfOneSolverWasViolated(bool state) {
     _stateData.setStabilityConditionOfOneSolverWasViolated(state);
   }
@@ -290,6 +308,14 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   double getTimeStepSizeWeightForPredictionRerun() const {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
+  }
+
+  void setTroubledDomainHasChanged(bool state) {
+    _stateData.setTroubledDomainHasChanged(true);
+  }
+
+  bool troubledDomainHasChanged() const  {
+    return _stateData.getFuseADERDGPhases();
   }
 
   #ifdef Parallel

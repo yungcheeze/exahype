@@ -403,6 +403,7 @@ void solutionAdjustment(
 
       // read initial condition
       PDESolutionAdjustment(x, 0, t, dt, luh+idx_luh(j,i,0));
+      // TODO(Dominic): We should provide the user with more data here to enable her to compute volume averages.
     }
   }
 }

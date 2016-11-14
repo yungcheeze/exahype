@@ -83,7 +83,7 @@ private:
    * Temporary variable per solver for storing
    * face unknowns.
    */
-  double***  _tempFaceUnknownsArray = nullptr;
+  double***  _tempFaceUnknowns = nullptr;
 
   /**
    * Temporary variables per solver for storing state sized (=number of variables)
@@ -111,11 +111,11 @@ private:
   /*
    *  Counter for the interior face solves for debugging purposes.
    */
-  int _interiorFaceSolves;
+  int _interiorFaceMerges;
   /*
    *  Counter for the boundary face solves for debugging purposes.
    */
-  int _boundaryFaceSolves;
+  int _boundaryFaceMerges;
   #endif
 
   #ifdef Parallel
@@ -286,7 +286,7 @@ public:
   virtual ~Merging();
 
   /**
-   * Further initialise temporary variables
+   * Initialise temporary variables
    * if they are not initialised yet (or
    * if a new solver was introuced to the grid.
    * This is why we put the initialisation
@@ -298,6 +298,8 @@ public:
   void beginIteration(exahype::State& solverState);
 
   /**
+   * Frees previously allocated temporary variables.
+   *
    * In debug mode, prints the output of counters.
    */
   void endIteration(exahype::State& solverState);

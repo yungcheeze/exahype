@@ -180,7 +180,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       assertion3(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber]);
     }
 
-    solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+    solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     if (
         (solver->getType()==exahype::solvers::Solver::Type::ADER_DG
             || solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) &&
