@@ -281,9 +281,10 @@ class exahype::records::ADERDGCellDescription {
    * phases of the algorithm.
    */
   ///@{
+  
   /**
-  * The time step size correction phase is working with.
-  */
+   * The time step size the correction phase is working with.
+   */
   parallelise persistent double correctorTimeStepSize;
 
   /**
@@ -291,6 +292,14 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent double correctorTimeStamp;
 
+  /**
+   * The corrector time step size this cell description was working
+   * with in the previous iteration.
+   * 
+   * This variable is necessary for performing rollbacks.
+   */
+  parallelise persistent double previousCorrectorTimeStepSize;
+  
   /**
    * The time step size the prediction phase is working with.
    */
@@ -300,11 +309,6 @@ class exahype::records::ADERDGCellDescription {
    * The time stamp the prediction phase is working with.
    */
   parallelise persistent double predictorTimeStamp;
-
-  /**
-   * The prediction phase time step size for the next sweep.
-   */
-  parallelise persistent double nextPredictorTimeStepSize;
   ///@}
   /**
    * @defgroup VolumeDataIndices Volume Data Indices
