@@ -110,6 +110,8 @@ exahype::plotters::Plotter::Plotter(
         _device = new ADERDG2ProbeAscii();
       }
 */
+    case exahype::solvers::Solver::Type::LimitingADERDG:
+      // do nothing
     break;
   }
 
