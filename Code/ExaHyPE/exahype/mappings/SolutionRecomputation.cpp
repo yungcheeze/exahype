@@ -13,14 +13,13 @@
  
 #include "exahype/mappings/SolutionRecomputation.h"
 
-#include "peano/utils/Globals.h"
-
-#include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "peano/utils/Globals.h"
+#include "peano/utils/Loop.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/CellWiseCoupling.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -88,29 +87,77 @@ tarch::logging::Log exahype::mappings::SolutionRecomputation::_log(
     "exahype::mappings::SolutionRecomputation");
 
 void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
-  assertion(_tempUnknowns         ==nullptr);
-  assertion(_tempStateSizedArrays ==nullptr);
+  assertion(_tempStateSizedVectors       ==nullptr);
+  assertion(_tempStateSizedSquareMatrices==nullptr);
+  assertion(_tempFaceUnknowns            ==nullptr);
+  assertion(_tempUnknowns                ==nullptr);
 
-  int numberOfSolvers   = exahype::solvers::RegisteredSolvers.size();
-  _tempStateSizedArrays = new double**[numberOfSolvers];
-  _tempUnknowns         = new double**[numberOfSolvers];
+  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  _tempStateSizedVectors        = new double**[numberOfSolvers];
+  _tempStateSizedSquareMatrices = new double**[numberOfSolvers];
+  _tempFaceUnknowns             = new double**[numberOfSolvers];
+  _tempUnknowns                 = new double**[numberOfSolvers];
+//    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
-        solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto finiteVolumesSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-      _tempStateSizedArrays[solverNumber] = new double*[5];
-      for (int i=0; i<5; ++i) { // max; see spaceTimePredictorNonlinear
-        _tempStateSizedArrays[solverNumber][i] =
-            new double[finiteVolumesSolver->getNumberOfVariables()];
+    int numberOfStateSizedVectors  = 0; // TOOD(Dominic): Check if we need number of parameters too
+    int numberOfStateSizedMatrices = 0;
+    int numberOfFaceUnknowns       = 0;
+    int lengthOfFaceUnknowns       = 0;
+    int numberOfUnknowns           = 0;
+    int lengthOfUnknowns           = 0;
+    switch (solver->getType()) {
+      case exahype::solvers::Solver::Type::ADER_DG:
+        numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+        numberOfStateSizedMatrices = 3; // See riemannSolverLinear
+        numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
+        lengthOfFaceUnknowns       =
+            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerFace();
+        break;
+      case exahype::solvers::Solver::Type::LimitingADERDG:
+        // Needs the same temporary variables as the normal ADER-DG scheme.
+        numberOfStateSizedVectors  = 5;
+        numberOfStateSizedMatrices = 3;
+        numberOfFaceUnknowns       = 3;
+        lengthOfFaceUnknowns       = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+            _solver->getUnknownsPerFace();
+        break;
+      case exahype::solvers::Solver::Type::FiniteVolumes:
+        // TODO(Dominic): We do not consider high-order FV methods yet;
+        // numberOfUnknowns is thus set to zero.
+        numberOfUnknowns = 0;
+        numberOfStateSizedVectors = 5;
+        break;
+    }
+
+    if (numberOfStateSizedVectors>0) {
+      _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
+      for (int i=0; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
+        _tempStateSizedVectors[solverNumber][i] = new double[solver->getNumberOfVariables()];
       }
-      //
-      // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
-      _tempUnknowns[solverNumber] = nullptr;
-    } else {
-      _tempStateSizedArrays[solverNumber] = nullptr;
-      _tempUnknowns        [solverNumber] = nullptr;
+    }
+    //
+    if (numberOfStateSizedMatrices>0) {
+      _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
+      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+        _tempStateSizedSquareMatrices[solverNumber][i] =
+            new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
+      }
+    }
+    //
+    if (numberOfFaceUnknowns>0) {
+      _tempFaceUnknowns[solverNumber] = new double*[3];
+      for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+        _tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns];
+      }
+    }
+    //
+    if (numberOfUnknowns>0) {
+      _tempUnknowns[solverNumber] = new double*[3];
+      for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+        _tempUnknowns[solverNumber][i] = new double[lengthOfUnknowns];
+      }
     }
 
     ++solverNumber;
@@ -118,34 +165,87 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
 }
 
 void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
-  if (_tempStateSizedArrays!=nullptr) {
-    assertion(_tempUnknowns!=nullptr);
+  if (_tempStateSizedVectors!=nullptr) {
+    assertion(_tempStateSizedSquareMatrices!=nullptr);
 
     int solverNumber=0;
     for (auto solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
-          solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-        //
-        for (int i=0; i<5; ++i) {
-          delete[] _tempStateSizedArrays[solverNumber][i];
+      int numberOfStateSizedVectors  = 0;
+      int numberOfStateSizedMatrices = 0;
+      int numberOfFaceUnknowns       = 0;
+      int numberOfUnknowns           = 0;
+      switch (solver->getType()) {
+        case exahype::solvers::Solver::Type::ADER_DG:
+        case exahype::solvers::Solver::Type::LimitingADERDG:
+          numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+          numberOfStateSizedMatrices = 3; // See riemannSolverLinear
+          numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
+          break;
+        case exahype::solvers::Solver::Type::FiniteVolumes:
+          // TODO(Dominic): We do not consider high-order FV methods yet;
+          // numberOfUnknowns is thus set to zero.
+          numberOfUnknowns = 0;
+          numberOfStateSizedVectors = 5;
+          break;
+      }
+
+      if (numberOfStateSizedVectors>0) {
+        for (int i=0; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
+          delete[] _tempStateSizedVectors[solverNumber][i];
         }
-        delete[] _tempStateSizedArrays[solverNumber];
-        _tempStateSizedArrays[solverNumber] = nullptr;
-        // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
+        delete[] _tempStateSizedVectors[solverNumber];
+        _tempStateSizedVectors[solverNumber] = nullptr;
+      }
+      //
+      if (numberOfStateSizedMatrices>0) {
+        for (int i=0; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
+          delete[] _tempStateSizedSquareMatrices[solverNumber][i];
+        }
+        delete[] _tempStateSizedSquareMatrices[solverNumber];
+        _tempStateSizedSquareMatrices[solverNumber] = nullptr;
+      }
+      //
+      if (numberOfFaceUnknowns>0) {
+        for (int i=0; i<numberOfFaceUnknowns; ++i) { // see riemanSolverLinear
+          delete[] _tempFaceUnknowns[solverNumber][i];
+        }
+        delete[] _tempFaceUnknowns[solverNumber];
+        _tempFaceUnknowns[solverNumber] = nullptr;
+      }
+      //
+      if (numberOfUnknowns>0) {
+        for (int i=0; i<numberOfUnknowns; ++i) { // see riemanSolverLinear
+          delete[] _tempUnknowns[solverNumber][i];
+        }
+        delete[] _tempUnknowns[solverNumber];
         _tempUnknowns[solverNumber] = nullptr;
       }
+      //
+      // _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; // todo
 
       ++solverNumber;
     }
 
-    delete[] _tempStateSizedArrays;
+    delete[] _tempStateSizedVectors;
+    delete[] _tempStateSizedSquareMatrices;
+    delete[] _tempFaceUnknowns;
     delete[] _tempUnknowns;
-    _tempStateSizedArrays = nullptr;
-    _tempUnknowns         = nullptr;
+//    delete[] _tempSpaceTimeFaceUnknownsArray; todo
+    _tempStateSizedVectors        = nullptr;
+    _tempStateSizedSquareMatrices = nullptr;
+    _tempFaceUnknowns             = nullptr;
+    _tempUnknowns                 = nullptr;
+//    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
   }
 }
 
-exahype::mappings::SolutionRecomputation::SolutionRecomputation() {
+exahype::mappings::SolutionRecomputation::SolutionRecomputation()
+ #ifdef Debug
+ :
+ _interiorFaceMerges(0),
+ _boundaryFaceMerges(0)
+ #endif
+{
   // do nothing
 }
 
@@ -157,7 +257,7 @@ exahype::mappings::SolutionRecomputation::~SolutionRecomputation() {
 exahype::mappings::SolutionRecomputation::SolutionRecomputation(
     const SolutionRecomputation& masterThread)
 : _localState(masterThread._localState),
-  _tempStateSizedArrays(nullptr),
+  _tempStateSizedVectors(nullptr),
   _tempUnknowns(nullptr) {
   prepareTemporaryVariables();
 }
@@ -187,15 +287,22 @@ void exahype::mappings::SolutionRecomputation::enterCell(
     pfor(i, 0, numberOfSolvers, grainSize)
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->updateSolution(
-            fineGridCell.getCellDescriptionsIndex(),
-            element,
-            _tempStateSizedArrays[i],
-            _tempUnknowns[i],
-            fineGridVertices,
-            fineGridVerticesEnumerator);
+      if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+          limitingADERSolver->recomputeSolution(
+              fineGridCell.getCellDescriptionsIndex(),
+              element,
+              _tempStateSizedVectors[i],
+              _tempUnknowns[i],
+              fineGridVertices,
+              fineGridVerticesEnumerator);
+
+          // It is important that we update the limiter status only after the recomputation since we use
+          // the previous and current limiter status in the recomputation.
+          limitingADERSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+        }
       }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
@@ -216,8 +323,102 @@ void exahype::mappings::SolutionRecomputation::beginIteration(
 
 void exahype::mappings::SolutionRecomputation::endIteration(
     exahype::State& solverState) {
+  logTraceInWith1Argument("endIteration(State)", solverState);
+
   deleteTemporaryVariables();
+
+  #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
+  logInfo("endIteration(...)","interiorFaceSolves: " << _interiorFaceMerges);
+  logInfo("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceMerges);
+  #endif
+
+  logTraceOutWith1Argument("endIteration(State)", solverState);
 }
+
+void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
+  exahype::Vertex& fineGridVertex,
+  const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+  const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+  exahype::Cell& coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+    dfor2(pos1)
+      dfor2(pos2)
+        if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
+          const peano::datatraversal::autotuning::MethodTrace methodTrace =
+              peano::datatraversal::autotuning::UserDefined2;
+          const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+              parallelise(solvers::RegisteredSolvers.size(), methodTrace);
+          pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
+            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+            const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+            const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+            const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+            if (element2>=0 && element1>=0) {
+              solver->mergeNeighbours(
+                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                  _tempFaceUnknowns[solverNumber],
+                  _tempStateSizedVectors[solverNumber],
+                  _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+            }
+
+            #ifdef Debug // TODO(Dominic)
+            _interiorFaceMerges++;
+            #endif
+          endpfor
+          peano::datatraversal::autotuning::Oracle::getInstance()
+          .parallelSectionHasTerminated(methodTrace);
+
+          fineGridVertex.setMergePerformed(pos1,pos2,true);
+        }
+        if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
+          const peano::datatraversal::autotuning::MethodTrace methodTrace =
+              peano::datatraversal::autotuning::UserDefined3;
+          const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+              parallelise(solvers::RegisteredSolvers.size(), methodTrace);
+          pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
+            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+            const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+            int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+            int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+            assertion4((element1==exahype::solvers::Solver::NotFound &&
+                        element2==exahype::solvers::Solver::NotFound)
+                       || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
+                       || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
+                       cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+
+            if (element1 >= 0) {
+              solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
+                                            _tempFaceUnknowns[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
+
+              #ifdef Debug
+              _boundaryFaceMerges++;
+              #endif
+            }
+            if (element2 >= 0){
+              solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
+                                            _tempFaceUnknowns[solverNumber],
+                                            _tempStateSizedVectors[solverNumber],
+                                            _tempStateSizedSquareMatrices[solverNumber]);
+              #ifdef Debug
+              _boundaryFaceMerges++;
+              #endif
+            }
+          endpfor
+          peano::datatraversal::autotuning::Oracle::getInstance()
+          .parallelSectionHasTerminated(methodTrace);
+
+          fineGridVertex.setMergePerformed(pos1,pos2,true);
+        }
+      enddforx
+    enddforx
+}
+
 
 //
 // Below all methods are nop.
@@ -407,17 +608,6 @@ void exahype::mappings::SolutionRecomputation::mergeWithWorker(
   // do nothing
 }
 #endif
-
-void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
 
 void exahype::mappings::SolutionRecomputation::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,

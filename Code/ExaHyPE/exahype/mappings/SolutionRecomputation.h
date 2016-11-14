@@ -74,10 +74,16 @@ class exahype::mappings::SolutionRecomputation {
    * An array of 5 pointers to arrays of a length that equals the
    * number of variables per solver.
    *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
+   * Temporary variables per solver for storing state sized (=number of variables)
+   * quantities like eigenvalues or averaged states.
    */
-  double*** _tempStateSizedArrays = nullptr;
+  double*** _tempStateSizedVectors = nullptr;
+
+  /**
+   * Temporary variable per solver for storing square matrices
+   * of the size number of variables times number of variables.
+   */
+  double*** _tempStateSizedSquareMatrices = nullptr;
 
   /**
    * An array of pointers to arrays of a length that equals the
@@ -87,6 +93,18 @@ class exahype::mappings::SolutionRecomputation {
    * solver.
    */
   double*** _tempUnknowns = nullptr;
+
+  /**
+   * Temporary variable per solver for storing
+   * space-time face unknowns.
+   */
+//  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
+
+  /**
+   * Temporary variable per solver for storing
+   * face unknowns.
+   */
+  double***  _tempFaceUnknowns = nullptr;
 
   /**
    * Initialises the temporary variables.
@@ -112,16 +130,27 @@ class exahype::mappings::SolutionRecomputation {
    */
   void deleteTemporaryVariables();
 
+  #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
+  /*
+   *  Counter for the interior face solves for debugging purposes.
+   */
+  int _interiorFaceMerges;
+  /*
+   *  Counter for the boundary face solves for debugging purposes.
+   */
+  int _boundaryFaceMerges;
+  #endif
+
  public:
+  /**
+   * \see exahype::mappings::Merging::touchVertexLastTimeSpecification()
+   */
+  static peano::MappingSpecification touchVertexLastTimeSpecification();
   /**
    * Run through the whole tree. Run concurrently on the fine grid.
    */
   static peano::MappingSpecification enterCellSpecification();
 
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
   /**
    * Nop.
    */
@@ -145,21 +174,7 @@ class exahype::mappings::SolutionRecomputation {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
-   * If the fine grid cell functions as compute cell for a solver,
-   * we update the solution of the solver within the fine grid cell
-   * (at a given time).
-   * We further ask the solver if we need to adjust its solution
-   * values within the fine grid cell (at a given time).
-   * If so, we call the corresponding solver routine
-   * that adjusts the solvers' solution values within the fine grid cell.
-   *
-   * <h2>ADER-DG<h2>
-   * For ADER-DG solvers, we call the surfaceIntegral(...) routine before
-   * we call the SolutionRecomputation(...) routine of the solvers.
-   *
-   * <h2>Finite volumes<h2>
-   * For finite volume solvers, we simply call the
-   * SolutionRecomputation(...) routine.
+   * TODO(Dominic): Add docu.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -170,111 +185,39 @@ class exahype::mappings::SolutionRecomputation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Nop.
+   * Initialise temporary variables
+   * if they are not initialised yet (or
+   * if a new solver was introuced to the grid.
+   * This is why we put the initialisation
+   * in beginIteration().
+   *
+   * In debug mode, further resets counters for Riemann solves at
+   * interior
    */
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Nop
+   * Frees previously allocated temporary variables.
+   *
+   * In debug mode, prints the output of counters.
    */
-  SolutionRecomputation();
+  void endIteration(exahype::State& solverState);
 
-#if defined(SharedMemoryParallelisation)
+  #if defined(SharedMemoryParallelisation)
   /**
    * Copy the local state object over to the worker thread.
    */
   SolutionRecomputation(const SolutionRecomputation& masterThread);
-#endif
+  #endif
 
   /**
-   * Nop.
+   * Free previously allocated temporary variables.
    */
   virtual ~SolutionRecomputation();
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  void mergeWithWorkerThread(const SolutionRecomputation& workerThread);
-#endif
-  /**
-   * Nop.
-   */
-  void createInnerVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-  /**
-   * Nop.
-   */
-  void createBoundaryVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-  /**
-   * Nop.
-   */
-  void createHangingVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-  /**
-   * Nop.
-   */
-  void destroyHangingVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-  /**
-   * Nop.
-   */
-  void destroyVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-  /**
-   * Nop.
-   */
-  void createCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-  /**
-   * Nop.
-   */
-  void destroyCell(
-      const exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
 #ifdef Parallel
   /**
-   * Nop.
+   * TODO(Dominic): Please implement.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
                           const exahype::Vertex& neighbour, int fromRank,
@@ -282,12 +225,22 @@ class exahype::mappings::SolutionRecomputation {
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
   /**
-   * Nop.
+   * TODO(Dominic): Please implement.
    */
   void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                               const tarch::la::Vector<DIMENSIONS, double>& x,
                               const tarch::la::Vector<DIMENSIONS, double>& h,
                               int level);
+
+
+
+  //
+  // Below all methods are nop.
+  //
+  //===================================
+
+
+
   /**
    * Nop.
    */
@@ -382,6 +335,95 @@ class exahype::mappings::SolutionRecomputation {
                        const tarch::la::Vector<DIMENSIONS, double>& h,
                        int level);
 #endif
+
+#if defined(SharedMemoryParallelisation)
+  /**
+   * Nop.
+   */
+  void mergeWithWorkerThread(const SolutionRecomputation& workerThread);
+#endif
+  /**
+   * Nop
+   */
+  SolutionRecomputation();
+
+  /**
+   * Nop.
+   */
+  void createInnerVertex(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  /**
+   * Nop.
+   */
+  void createBoundaryVertex(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  /**
+   * Nop.
+   */
+  void createHangingVertex(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  /**
+   * Nop.
+   */
+  void destroyHangingVertex(
+      const exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  /**
+   * Nop.
+   */
+  void destroyVertex(
+      const exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  /**
+   * Nop.
+   */
+  void createCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+  /**
+   * Nop.
+   */
+  void destroyCell(
+      const exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
   /**
    * Nop.
    */
@@ -414,10 +456,7 @@ class exahype::mappings::SolutionRecomputation {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-  /**
-   * Nop.
-   */
-  void endIteration(exahype::State& solverState);
+
   /**
    * Nop.
    */

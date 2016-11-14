@@ -48,6 +48,10 @@ class exahype::mappings::LimiterStatusSpreading {
    */
   static tarch::logging::Log _log;
 
+  #ifdef Debug
+  int _interiorFaceMerges;
+  #endif
+
  public:
   /**
    * Run through the whole grid. Run concurrently on the fine grid.

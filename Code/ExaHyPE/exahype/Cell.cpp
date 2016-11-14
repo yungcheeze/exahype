@@ -203,7 +203,7 @@ void exahype::Cell::addNewCellDescription(
 
   // Default field data indices
   newCellDescription.setSolution(-1);
-  newCellDescription.setOldSolution(-1);
+  newCellDescription.setPreviousSolution(-1);
 
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
