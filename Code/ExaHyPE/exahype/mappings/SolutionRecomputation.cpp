@@ -283,7 +283,9 @@ void exahype::mappings::SolutionRecomputation::enterCell(
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined7;
+    #ifdef SharedMemoryParallelisation
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
+    #endif
     pfor(i, 0, numberOfSolvers, grainSize)
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
@@ -348,8 +350,10 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
         if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
           const peano::datatraversal::autotuning::MethodTrace methodTrace =
               peano::datatraversal::autotuning::UserDefined2;
+          #ifdef SharedMemoryParallelisation
           const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
               parallelise(solvers::RegisteredSolvers.size(), methodTrace);
+          #endif
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
             auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];

@@ -245,9 +245,11 @@ void exahype::mappings::Prediction::enterCell(
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined4;
+    #ifdef SharedMemoryParallelisation
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
+    #endif
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
               fineGridCell.getCellDescriptionsIndex(),i);

@@ -281,7 +281,9 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined8;
+    #ifdef SharedMemoryParallelisation
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
+    #endif
 
     pfor(solverNumber, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver =

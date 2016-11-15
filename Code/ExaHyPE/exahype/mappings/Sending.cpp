@@ -131,8 +131,10 @@ void exahype::mappings::Sending::enterCell(
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined5;
+    #ifdef SharedMemoryParallelisation
     const int grainSize = peano::datatraversal::autotuning::Oracle::
         getInstance().parallelise(numberOfSolvers, methodTrace);
+    #endif
     pfor(solverNumber, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
@@ -163,8 +165,10 @@ void exahype::mappings::Sending::leaveCell(
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined6;
+    #ifdef SharedMemoryParallelisation
     const int grainSize = peano::datatraversal::autotuning::Oracle::
         getInstance().parallelise(numberOfSolvers, methodTrace);
+    #endif
     pfor(solverNumber, 0, numberOfSolvers, grainSize)
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
