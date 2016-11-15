@@ -500,7 +500,7 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
     int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
-      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      if (solver->getType()==exahype::solvers::Solver::Type::ADERDG) {
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
             exahype::solvers::ADERDGSolver::getCellDescription(
                 cellDescriptionsIndex,element);

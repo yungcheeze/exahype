@@ -108,7 +108,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
     int numberOfUnknowns           = 0;
     int lengthOfUnknowns           = 0;
     switch (solver->getType()) {
-      case exahype::solvers::Solver::Type::ADER_DG:
+      case exahype::solvers::Solver::Type::ADERDG:
         numberOfStateSizedVectors  = 5; // See riemannSolverLinear
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
@@ -175,7 +175,7 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
       int numberOfFaceUnknowns       = 0;
       int numberOfUnknowns           = 0;
       switch (solver->getType()) {
-        case exahype::solvers::Solver::Type::ADER_DG:
+        case exahype::solvers::Solver::Type::ADERDG:
         case exahype::solvers::Solver::Type::LimitingADERDG:
           numberOfStateSizedVectors  = 5; // See riemannSolverLinear
           numberOfStateSizedMatrices = 3; // See riemannSolverLinear

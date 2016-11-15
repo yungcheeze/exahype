@@ -56,7 +56,7 @@ exahype::plotters::Plotter::Plotter(
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
 
   switch (solvers::RegisteredSolvers[_solver]->getType()) {
-    case exahype::solvers::Solver::Type::ADER_DG:
+    case exahype::solvers::Solver::Type::ADERDG:
       /**
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.

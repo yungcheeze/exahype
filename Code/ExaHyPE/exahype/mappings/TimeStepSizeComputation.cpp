@@ -182,7 +182,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 
     solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     if (
-        (solver->getType()==exahype::solvers::Solver::Type::ADER_DG
+        (solver->getType()==exahype::solvers::Solver::Type::ADERDG
             || solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) &&
         state.fuseADERDGPhases()
         #ifdef Parallel

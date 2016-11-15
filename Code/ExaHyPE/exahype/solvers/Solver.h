@@ -98,7 +98,7 @@ class exahype::solvers::Solver {
   /**
    * The type of a solver.
    */
-  enum class Type { ADER_DG, FiniteVolumes, LimitingADERDG }; // TODO(Dominic): Get rid of the underscore
+  enum class Type { ADERDG, FiniteVolumes, LimitingADERDG }; // TODO(Dominic): Get rid of the underscore
 
   /**
    * The time stepping mode.
@@ -122,7 +122,12 @@ class exahype::solvers::Solver {
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   /**
-   * TODO(Dominic): Docu.
+   * This struct is used in the AMR context
+   * to lookup a parent cell description and
+   * for computing the subcell position of the child
+   * with respect to this parent.
+   *
+   * TODO(Dominic): Move to more appropriate place.
    */
   typedef struct SubcellPosition {
     int parentCellDescriptionsIndex;
