@@ -53,7 +53,7 @@ class VolumeIntegralGenerator:
         else:
             self.__generateNonlinearGemms()
             with open(os.path.join(dir,'templates/volumeIntegralNonLinear.template'), 'r') as tmp:
-                template = Template(tmp.read())
+                template = Template(tmp.read(), trim_blocks=True)
                 gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
                 self.m_context['gemm_x'] = gemmName+'_lduh_x'
                 self.m_context['gemm_y'] = gemmName+'_lduh_y'

@@ -1,3 +1,16 @@
+{# /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/ #}
+
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 
@@ -11,17 +24,19 @@ template <void PDESolutionAdjustment(const double* const x,const double J_w,cons
 ) {
   double x[{{nDimPad}}] __attribute__((aligned(ALIGNMENT)));
   
-{#- //gcc and icc specify distinct ways to inform the compiler about guaranteed alignment. #}
-{#- // gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT); #}
-{#- // icc: __assume_aligned(a, ALIGNMENT); #}
-{#- // the default gcc on the cluster exhibits a well-known bug in alignment assumptions #}
-{#- // => we skip gcc here #}
-{#- // do not query __GNUC__ - icc also defines this #}
+{#- /*
+  gcc and icc specify distinct ways to inform the compiler about guaranteed alignment.
+  gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT);
+  icc: __assume_aligned(a, ALIGNMENT);
+  the default gcc on the cluster exhibits a well-known bug in alignment assumptions
+     => we skip gcc here
+  do not query __GNUC__ - icc also defines this 
+*/ #}
+
 #ifdef __INTEL_COMPILER
   __assume_aligned(kernels::aderdg::optimised::weights1, ALIGNMENT);
 #endif
-
-{%- if nDim == 2 %} 
+{% if nDim == 2 %} 
   for(int ii=0;ii<{{nDof}};ii++) {
     const double qr = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][ii];
     for(int jj=0;jj<{{nDof}};jj++) {
@@ -34,8 +49,8 @@ template <void PDESolutionAdjustment(const double* const x,const double J_w,cons
       PDESolutionAdjustment(x, weight, t, dt, &luh[startIndex]);
     }
   }
-{%- endif %}
-{%- if nDim == 3 %} 
+{% endif %}
+{% if nDim == 3 %} 
   for(int ii=0;ii<{{nDof}};ii++) {
     const double qr = kernels::aderdg::optimised::gaussLegendreNodes[{{order}}][ii];
     for(int jj=0;jj<{{nDof}};jj++) {
@@ -52,6 +67,6 @@ template <void PDESolutionAdjustment(const double* const x,const double J_w,cons
       }
     }
   }
-{%- endif %}
+{% endif %}
 }
 

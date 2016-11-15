@@ -47,6 +47,6 @@ class SolutionAdjustmentGenerator:
         self.m_context['nDimPad'] = Backend.getSizeWithPadding(self.m_context['nDim'])
         
         with open(dir+'templates/solutionAdjustment.template', 'r') as tmp:
-            template = Template(tmp.read())
+            template = Template(tmp.read(), trim_blocks=True)
             with open(self.m_filename, 'w') as out:
                 out.write(template.render(self.m_context))

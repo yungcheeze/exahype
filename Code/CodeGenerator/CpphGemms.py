@@ -20,9 +20,6 @@
 import os
 from jinja2 import Template
 
-import Backend
-from MatmulConfig import MatmulConfig
-
 class CpphGemms:
     m_context = {}
 
@@ -37,6 +34,7 @@ class CpphGemms:
     def __init__(self, i_config, i_numerics):
         self.m_context = i_config
         self.m_type   = i_numerics
+        
 
 
     def generateCode(self):
@@ -47,12 +45,12 @@ class CpphGemms:
             pass
         else:
             with open(os.path.join(dir,'templates/CpphGemms_h.template'), 'r') as tmp:
-                template = Template(tmp.read())
+                template = Template(tmp.read(), trim_blocks=True)
                 with open(self.m_filenameRoot+'.h', 'w') as out:
                     out.write(template.render(self.m_context))
                     
             with open(os.path.join(dir,'templates/CpphGemms_cpp.template'), 'r') as tmp:
-                template = Template(tmp.read())
+                template = Template(tmp.read(), trim_blocks=True)
                 with open(self.m_filenameRoot+'.cpp', 'w') as out:
                     out.write(template.render(self.m_context))
 
