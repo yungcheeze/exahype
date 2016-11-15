@@ -48,6 +48,11 @@ public class GenericADERDG implements Solver {
 	  content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
 	  content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
 	  
+	  content = content.replaceAll("\\$\\{NumberOfVariables\\}", String.valueOf(_numberOfVariables));
+    content = content.replaceAll("\\$\\{NumberOfParameters\\}",String.valueOf( _numberOfParameters));
+    content = content.replaceAll("\\$\\{Dimensions\\}",String.valueOf( _dimensions));
+    content = content.replaceAll("\\$\\{Order\\}", String.valueOf(_order));
+	  
 	  writer.write(content);
   }
 
@@ -136,10 +141,6 @@ public class GenericADERDG implements Solver {
     } else {
       content = content.replaceAll("\\$\\{Language\\}","c");
     }
-	  
-	  content = content.replaceAll("\\$\\{NumberOfVariables\\}", String.valueOf(_numberOfVariables));
-	  content = content.replaceAll("\\$\\{NumberOfParameters\\}",String.valueOf( _numberOfParameters));
-	  content = content.replaceAll("\\$\\{Order\\}", String.valueOf(_order));
 	  
 	  writer.write(content);
   }
