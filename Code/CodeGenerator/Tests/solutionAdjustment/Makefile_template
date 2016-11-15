@@ -1,0 +1,35 @@
+# This file is part of the ExaHyPE project.
+# Copyright (c) 2016  http://exahype.eu
+# All rights reserved.
+# 
+# The project has received funding from the European Union's Horizon 
+# 2020 research and innovation programme under grant agreement
+# No 671698. For copyrights and licensing, please consult the webpage.
+# 
+# Released under the BSD 3 Open Source License.
+# For the full license text, see LICENSE.txt
+
+
+CC=icpc
+CFLAGS=-I. -std=c++11 -Wall -restrict -O2 {{arch}}
+PREPVAR = -DNVAR={{nVar}} -DORDER={{order}} -DALIGNMENT={{alignment}} -DDIMENSIONS={{dimension}}
+MAIN=test
+
+
+
+OBJ = 	./../Dependencies/Generic/GaussLegendreQuadrature.o \
+		./../Dependencies/Optimised/GaussLegendreQuadrature.o \
+		./glue/pseudoSolver.o \
+		./glue/main.o
+
+.PHONY: default
+default: all
+
+%.o : %.cpp
+	$(CC) -c $(CFLAGS) $(PREPVAR) $*.cpp -o $*.o
+
+all: $(OBJ)
+	$(CC) $(CFLAGS) $(PREPVAR) -o $(MAIN) $(OBJ)
+	
+clean:
+	rm $(OBJ) $(MAIN)

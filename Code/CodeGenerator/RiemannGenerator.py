@@ -64,7 +64,7 @@ class RiemannGenerator:
     def __writeHeaderForRiemannSolver(self):
         l_description = '// Solve the Riemann problems \n\n'
 
-        l_includeStatement = '#include "string.h"\n'                             \
+        l_includeStatement = '#include <cstring>\n'                             \
                              '#include <cmath>\n'                                \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
                              '#include "kernels/aderdg/optimised/DGMatrices.h"\n'\
