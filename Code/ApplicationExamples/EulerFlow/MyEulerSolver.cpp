@@ -122,9 +122,7 @@ bool Euler::MyEulerSolver::hasToAdjustSolution(
 }
 
 void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
-                                                  const double w,
-                                                  const double t,
-                                                  const double dt, double* Q) {
+                                                  const double w,const double t,const double dt, double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
@@ -143,12 +141,9 @@ Euler::MyEulerSolver::refinementCriterion(
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
-					  const double dt,
-                                          const int faceIndex,
-                                          const int normalNonZero,
-                                          const double* const fluxIn,
-                                          const double* const stateIn,
+void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,const double dt,
+                                          const int faceIndex,const int normalNonZero,
+                                          const double* const fluxIn,const double* const stateIn,
                                           double* fluxOut, double* stateOut) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
@@ -204,10 +199,10 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
 }
 
 void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
-	std::memset(BgradQ, 0, nVar * sizeof(double));
+  std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-	std::memset(Bn, 0, nVar * sizeof(double));
+  std::memset(Bn, 0, nVar * sizeof(double));
 }
 
