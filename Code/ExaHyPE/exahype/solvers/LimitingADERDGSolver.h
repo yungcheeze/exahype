@@ -22,10 +22,7 @@
 
 #include "exahype/plotters/Plotter.h"
 
-// *.cpp
-#include "tarch/multicore/Lock.h"
-
-#include "kernels/limiter/generic/Limiter.h"
+#include "exahype/profilers/simple/NoOpProfiler.h"
 
 namespace exahype {
 namespace solvers {
@@ -67,12 +64,12 @@ private:
   /**
    * The ADERDG solver.
    */
-  exahype::solvers::ADERDGSolver* _solver;
+  std::unique_ptr<exahype::solvers::ADERDGSolver> _solver;
 
   /**
    * The finite volumes solver used for the a posteriori subcell limiting.
    */
-  exahype::solvers::FiniteVolumesSolver* _limiter;
+  std::unique_ptr<exahype::solvers::FiniteVolumesSolver> _limiter;
 
   /**
    * TODO(Dominc): Remove after docu is recycled.
@@ -170,6 +167,26 @@ private:
    */
   bool solutionIsTroubled(SolverPatch& solverPatch);
 public:
+
+  LimitingADERDGSolver(
+      std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
+      std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
+      std::unique_ptr<profilers::Profiler> profilerSolver =
+          std::unique_ptr<profilers::Profiler>(
+              new profilers::simple::NoOpProfiler("")),
+      std::unique_ptr<profilers::Profiler> profilerLimiter =
+          std::unique_ptr<profilers::Profiler>(
+              new profilers::simple::NoOpProfiler("")));
+
+  virtual ~LimitingADERDGSolver() {
+    _solver.reset();
+    _limiter.reset();
+  }
+
+  // Disallow copy and assignment
+  LimitingADERDGSolver(const ADERDGSolver& other) = delete;
+  LimitingADERDGSolver& operator=(const ADERDGSolver& other) = delete;
+
   /*
    * A time stamp minimised over all the ADERDG and FV solver
    * patches.
@@ -437,7 +454,6 @@ public:
       const int parentElement,
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
-
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
@@ -518,13 +534,17 @@ public:
       const int                                     cellDescriptionsIndex,
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int                                     level) {
+    assertionMsg(false, "Please implement!");
+  }
 
   static void sendEmptyCellDescriptions(
       const int                                     toRank,
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int                                     level) {
+    assertionMsg(false, "Please implement!");
+  }
 
   /**
    * Receives cell descriptions from rank \p fromRank
@@ -553,7 +573,9 @@ public:
       const int                                     cellDescriptionsIndex,
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int                                     level) {
+    assertionMsg(false, "Please implement!");
+  }
 
   /**
    * Drop cell descriptions received from \p fromRank.
@@ -562,7 +584,9 @@ public:
       const int                                     fromRank,
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int                                     level) {
+    assertionMsg(false, "Please implement!");
+  }
 
   ///////////////////////////////////
   // NEIGHBOUR
@@ -590,7 +614,9 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
@@ -613,60 +639,80 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
   bool hasToSendDataToMaster(
         const int cellDescriptionsIndex,
-        const int element) override;
+        const int element) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithWorkerData(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendDataToMaster(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendEmptyDataToMaster(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithWorkerData(
       const int                                    workerRank,
@@ -674,12 +720,16 @@ public:
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void dropWorkerData(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -687,24 +737,32 @@ public:
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithMasterData(
       const                                        int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override;
+      const int                                    level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendDataToWorker(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void sendEmptyDataToWorker(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void mergeWithMasterData(
       const int                                     masterRank,
@@ -712,17 +770,25 @@ public:
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 
   void dropMasterData(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int                                     level) override {
+    assertionMsg(false, "Please implement!");
+  }
 #endif
 
-  std::string toString() const override;
+  std::string toString() const override {
+    assertionMsg(false, "Please implement!");
+  }
 
-  void toString (std::ostream& out) const override;
+  void toString (std::ostream& out) const override {
+    assertionMsg(false, "Please implement!");
+  }
 };
 
 
