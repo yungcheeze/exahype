@@ -13,10 +13,14 @@
 
 #include "tarch/multicore/BooleanSemaphore.h"
 
+#include "exahype/plotters/Plotter.h"
+
 #include "exahype/mappings/Merging.h"
 #include "exahype/mappings/Prediction.h"
 #include "exahype/mappings/LimiterStatusSpreading.h"
 #include "exahype/mappings/SolutionRecomputation.h"
+
+#include "exahype/plotters/Plotter.h"
 
 // *.cpp
 #include "tarch/multicore/Lock.h"
@@ -34,7 +38,7 @@ class LimitingADERDGSolver;
 class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
 
   /**
-   * This mapping needs access to the _solver variable of LimitingADERDGSolver.
+   * These mappings need access to the _solver and _limiter fields of LimitingADERDGSolver.
    */
   friend class exahype::mappings::Merging;
   friend class exahype::mappings::Prediction;
@@ -204,6 +208,10 @@ public:
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
+  int tryGetLimiterElement(
+      const int cellDescriptionsIndex,
+      const int solverNumber) const;
+
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
@@ -257,6 +265,23 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  /**
+   * Adds a limiter patch to the initially troubled cells, their
+   * neighbours, and their neighbour's neighbours.
+   * Further imposes finite volumes boundary conditions onto the limiter
+   * solution in cells with limiter status Troubled and NeighbourIsTroubled and
+   * then projects this solution onto the DG solver space for those cells.
+   * Finally, projects the ADER-DG initial conditions onto
+   * the FV limiter space for cells with limiter status
+   * NeighbourIsNeighbourOfTroubledCell.
+   */
+  void initialiseLimiter(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
 
   /**
    * This method assumes the ADERDG solver's cell-local limiter status has
