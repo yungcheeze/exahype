@@ -1,5 +1,5 @@
 #include "${Solver}.h"
-#incldue <limits>
+
 #include "tarch/la/ScalarOperations.h"
 
 ${Project}::${Solver}::${Solver}(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping${SolverConstructorSignatureExtension}):
@@ -46,11 +46,3 @@ exahype::solvers::Solver::RefinementControl ${Project}::${Solver}::refinementCri
   // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
-
-// Parameters:
-${Project}
-${Solver}
-${NumberOfVariables}
-${NumberOfParameters}
-${SolverConstructorSignatureExtension} ? ", std::unique_ptr<exahype::profilers::Profiler> profiler" : ""
-${SolverConstructorArgumentExtension} ? ", std::move(profiler)" : ""
