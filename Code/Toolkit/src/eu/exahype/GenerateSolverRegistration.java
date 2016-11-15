@@ -27,7 +27,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
   private String _projectName;
   
-  private boolean _useOptimizedKernels = false; //at least one solver uses optimized kernels
+  private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
 
   public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -47,7 +47,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     for(PSolver psolver : solvers) {
       if(psolver instanceof AAderdgSolver) {
         AAderdgSolver asolver = (AAderdgSolver) psolver;
-        _useOptimizedKernels = _useOptimizedKernels || (asolver.getLanguage().getText().trim().equals("C") 
+        _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().trim().equals("C") 
                                   && (asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
                                       ||  asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
       }
@@ -80,7 +80,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
-      if(_useOptimizedKernels) {
+      if(_useOptimisedKernels) {
         _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
         _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
       }
@@ -243,7 +243,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::initLimiterProjectionMatrices(orders);\n"+
           "  kernels::initDGMatrices(orders);\n" +
           "  kernels::initBasisFunctions(orders);\n");
-      if(_useOptimizedKernels) {
+      if(_useOptimisedKernels) {
         _methodBodyWriter.write("  kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(orders);\n");
         _methodBodyWriter.write("  kernels::aderdg::optimised::initDGMatrices(orders);\n");
       }
@@ -261,7 +261,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  kernels::freeLimiterProjectionMatrices(orders);\n"+
           "  kernels::freeDGMatrices(orders);\n"+
           "  kernels::freeBasisFunctions(orders);\n");
-      if(_useOptimizedKernels) {
+      if(_useOptimisedKernels) {
         _methodBodyWriter.write("  kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(orders);\n");
         _methodBodyWriter.write("  kernels::aderdg::optimised::freeDGMatrices(orders);\n");
       }    
