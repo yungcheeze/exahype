@@ -43,6 +43,7 @@ import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
 import CpphGemms
+import ConfigurationParameters
 import string
 import re
 
@@ -195,7 +196,8 @@ def generateCommonHeader():
     else:
         l_sourceFile.write('#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
-
+    l_sourceFile.write('#include "kernels/aderdg/optimised/ConfigurationParameters.cpph"\n\n')
+    
     # close include guard
     l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
 
@@ -228,6 +230,8 @@ def generateComputeKernels():
     dgMatrixGenerator.generateCode()
     cpphGemms = CpphGemms.CpphGemms(generateContext(m_config), m_numerics)
     cpphGemms.generateCode()
+    configurationParameters = ConfigurationParameters.ConfigurationParameters(generateContext(m_config), m_numerics)
+    configurationParameters.generateCode()
 
 
 
