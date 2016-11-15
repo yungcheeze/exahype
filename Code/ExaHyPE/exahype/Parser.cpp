@@ -55,10 +55,13 @@ double exahype::Parser::getValueFromPropertyString(
 exahype::Parser::Parser() {
   _identifier2Type.insert(
       std::pair<std::string, exahype::solvers::Solver::Type>(
-          "ADER-DG", exahype::solvers::Solver::Type::ADER_DG));
+          "ADER-DG", exahype::solvers::Solver::Type::ADERDG));
   _identifier2Type.insert(
       std::pair<std::string, exahype::solvers::Solver::Type>(
           "Finite-Volumes", exahype::solvers::Solver::Type::FiniteVolumes));
+  _identifier2Type.insert(
+        std::pair<std::string, exahype::solvers::Solver::Type>(
+            "Limiting-ADER-DG", exahype::solvers::Solver::Type::LimitingADERDG));
 
   _identifier2TimeStepping.insert(
       std::pair<std::string, exahype::solvers::Solver::TimeStepping>(
@@ -466,7 +469,7 @@ exahype::solvers::Solver::Type exahype::Parser::getType(
     int solverNumber) const {
   std::string token;
   exahype::solvers::Solver::Type result =
-      exahype::solvers::Solver::Type::ADER_DG;
+      exahype::solvers::Solver::Type::ADERDG;
   token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
   if (_identifier2Type.find(token) != _identifier2Type.end()) {
     result = _identifier2Type.at(token);
@@ -767,7 +770,7 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
     _interpretationErrorOccured = true;
   }
 
-  if (solver->getType() == exahype::solvers::Solver::Type::ADER_DG &&
+  if (solver->getType() == exahype::solvers::Solver::Type::ADERDG &&
       solver->getNodesPerCoordinateAxis() != getOrder(solverNumber) + 1) {
     logError("checkSolverConsistency",
              "'" << getIdentifier(solverNumber)
