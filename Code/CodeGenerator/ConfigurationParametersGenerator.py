@@ -21,7 +21,7 @@ import os
 from jinja2 import Template
 
 
-class ConfigurationParameters:
+class ConfigurationParametersGenerator:
     m_context = {}
 
     # linear/nonlinear

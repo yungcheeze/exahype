@@ -42,8 +42,8 @@ import SolutionAdjustmentGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
-import CpphGemms
-import ConfigurationParameters
+import CpphGemmsGenerator
+import ConfigurationParametersGenerator
 import string
 import re
 
@@ -228,10 +228,10 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
-    cpphGemms = CpphGemms.CpphGemms(generateContext(m_config), m_numerics)
-    cpphGemms.generateCode()
-    configurationParameters = ConfigurationParameters.ConfigurationParameters(generateContext(m_config), m_numerics)
-    configurationParameters.generateCode()
+    cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config), m_numerics)
+    cpphGemmsGenerator.generateCode()
+    configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config), m_numerics)
+    configurationParametersGenerator.generateCode()
 
 
 

@@ -20,7 +20,7 @@
 import os
 from jinja2 import Template
 
-class CpphGemms:
+class CpphGemmsGenerator:
     m_context = {}
 
     # linear/nonlinear
