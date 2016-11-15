@@ -47,7 +47,6 @@ void kernels::initLimiterProjectionMatrices(const std::set<int>& orders) {
   //TODO JMG, use generated values
   int basisSize, basisSizeLim;
   int i,j,k;
-  double* phi;  // TODO(Dominic): JMG please assess this unused variable
   for (int n = 0; n < MAX_ORDER + 1; n++) {
     basisSize = n+1;
     basisSizeLim = 2*n+1;
@@ -55,17 +54,15 @@ void kernels::initLimiterProjectionMatrices(const std::set<int>& orders) {
     uh2lob[n] = new double[basisSize*basisSize]();
     lim2uh[n] = new double[basisSizeLim*basisSize]();
   
-    double* phi = new double[basisSize];
+    double* phi = new double[basisSize]();
     
     {
       idx2 idx(basisSize, basisSizeLim);
       
       const double dxi = 1. / basisSizeLim;
       double xLeft, xi;
-      double xRight; //  TODO(Dominic): JMG please assess this unused variable
       for(i=0; i<basisSizeLim; i++) {
         xLeft = i*dxi;
-        xRight = xLeft+dxi; //  TODO(Dominic): JMG please assess this unused variable
         for(j=0; j<basisSize; j++) {
           xi = xLeft + dxi*gaussLegendreNodes[basisSize-1][j];
           BaseFunc1D(phi, xi, basisSize);
