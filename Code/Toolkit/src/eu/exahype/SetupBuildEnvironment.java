@@ -18,6 +18,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   private DirectoryAndPathChecker _directoryAndPathChecker;
 
   private boolean _requiresFortran;
+  private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
 
   private String _likwidInc;
   private String _likwidLib;
@@ -165,6 +166,12 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           + ". Supported languages are C and Fortran");
       valid = false;
     }
+    
+    _useOptimisedKernels = _useOptimisedKernels 
+                            || (node.getLanguage().getText().trim().equals("C") 
+                                && (node.getKernel().toString().trim().equals(eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier)
+                                    ||  node.getKernel().toString().trim().equals(eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier)));
+    
   }
 
   @Override
@@ -192,6 +199,11 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("\n\n");
       if (_requiresFortran) {
         _writer.write("MIXEDLANG=Yes\n");
+      }
+      if (_useOptimisedKernels) {
+        _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");
+        _writer.write(" PROJECT_CFLAGS += -DTEST_OPT_KERNEL\n");
+        _writer.write("endif\n");
       }
       if (_likwidInc != null) {
         _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
