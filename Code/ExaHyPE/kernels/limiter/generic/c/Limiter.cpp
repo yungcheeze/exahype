@@ -182,11 +182,8 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
               }
             }
           }
-          if(min > lobValue) {
-            min = lobValue;
-          } else if(max < lobValue) {
-            max = lobValue;
-          }
+          min = std::min( min, lobValue );
+          max = std::max( max, lobValue );
         }
       }
     }
@@ -375,11 +372,8 @@ const int order = basisSize-1;
               }
             }
           }
-          if(min[v] > lobValue) {
-            min[v] = lobValue;
-          } else if(max[v] < lobValue) {
-            max[v] = lobValue;
-          }
+          min[v] = std::min( min[v], lobValue );
+          max[v] = std::max( max[v], lobValue );
         }
       }
     }
