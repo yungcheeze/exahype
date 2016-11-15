@@ -127,6 +127,12 @@ class exahype::mappings::Prediction {
   double** _tempFluxUnknowns = nullptr;
 
   /**
+   * Per solver, temporary variables for storing state sized values,
+   * i.e. the state, eigenvalues etc.
+   */
+  double** _tempStateSizedVectors = nullptr;
+
+  /**
    * Initialises the temporary variables.
    *
    * \note We parallelise over the domain

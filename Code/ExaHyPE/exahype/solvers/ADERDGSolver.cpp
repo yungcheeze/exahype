@@ -287,7 +287,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
     int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize,
     exahype::solvers::Solver::TimeStepping timeStepping,
     std::unique_ptr<profilers::Profiler> profiler)
-    : Solver(identifier, Solver::Type::ADER_DG, numberOfVariables,
+    : Solver(identifier, Solver::Type::ADERDG, numberOfVariables,
              numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize,
              timeStepping, std::move(profiler)),
       _unknownsPerFace(numberOfVariables *
@@ -1210,7 +1210,7 @@ void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
   unknownsPerCellBoundary = getUnknownsPerCellBoundary();
   #endif
 
-  assertion1(getType()==exahype::solvers::Solver::Type::ADER_DG,cellDescription.toString());
+  assertion1(getType()==exahype::solvers::Solver::Type::ADERDG,cellDescription.toString());
 
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
@@ -1237,7 +1237,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     double** tempSpaceTimeUnknowns,
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
-    double*  tempFluxUnknowns) {
+    double*  tempFluxUnknowns,
+    double*  tempStateSizedVector) {
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
@@ -1282,6 +1283,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       tempSpaceTimeFluxUnknowns,
       tempUnknowns,
       tempFluxUnknowns,
+      tempStateSizedVector,
       luh,
       cellDescription.getSize(),
       cellDescription.getPredictorTimeStepSize());

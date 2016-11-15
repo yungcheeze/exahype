@@ -88,23 +88,37 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
   assertion(_tempSpaceTimeFluxUnknowns==nullptr);
   assertion(_tempUnknowns             ==nullptr);
   assertion(_tempFluxUnknowns         ==nullptr);
+  assertion(_tempStateSizedVectors    ==nullptr);
 
   int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
   _tempSpaceTimeUnknowns     = new double**[numberOfSolvers];
   _tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers];
   _tempUnknowns              = new double* [numberOfSolvers];
   _tempFluxUnknowns          = new double* [numberOfSolvers];
+  _tempStateSizedVectors     = new double* [numberOfSolvers];
+
+  exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG ||
-        solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) { // TODO(Dominic): Consider LimitingADERDG solvers
-      auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+    switch( solver->getType() ) {
+    case exahype::solvers::Solver::Type::ADERDG:
+      aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+      break;
+    case exahype::solvers::Solver::Type::LimitingADERDG:
+      aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver.get();
+      break;
+    default:
+      aderdgSolver = nullptr;
+      break;
+    }
 
+    if (aderdgSolver!=nullptr) {
       _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
       for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
         _tempSpaceTimeUnknowns[solverNumber][i] =
-            new double[aderdgSolver->getSpaceTimeUnknownsPerCell()];
+            new double[aderdgSolver->getSpaceTimeUnknownsPerCell()+
+                       aderdgSolver->getUnknownsPerCell()];
       }
       //
       _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
@@ -113,14 +127,17 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
             new double[aderdgSolver->getSpaceTimeFluxUnknownsPerCell()];
       }
       //
-      _tempUnknowns    [solverNumber] = new double[aderdgSolver->getUnknownsPerCell()];
+      _tempUnknowns    [solverNumber]      = new double[aderdgSolver->getUnknownsPerCell()];
       //
-      _tempFluxUnknowns[solverNumber] = new double[aderdgSolver->getFluxUnknownsPerCell()];
+      _tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getFluxUnknownsPerCell()];
+       //
+      _tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getNumberOfVariables()];
     } else {
       _tempSpaceTimeUnknowns    [solverNumber] = nullptr;
       _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
       _tempUnknowns             [solverNumber] = nullptr;
       _tempFluxUnknowns         [solverNumber] = nullptr;
+      _tempStateSizedVectors    [solverNumber] = nullptr;
     }
 
     ++solverNumber;
@@ -132,10 +149,11 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
     assertion(_tempSpaceTimeFluxUnknowns!=nullptr);
     assertion(_tempUnknowns             !=nullptr);
     assertion(_tempFluxUnknowns         !=nullptr);
+    assertion(_tempStateSizedVectors    !=nullptr);
 
     int solverNumber=0;
     for (auto solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG ||
+      if (solver->getType()==exahype::solvers::Solver::Type::ADERDG ||
           solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         //
         for (int i=0; i<4; ++i) {
@@ -155,6 +173,9 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
         //
         delete[] _tempFluxUnknowns[solverNumber];
         _tempFluxUnknowns[solverNumber] = nullptr;
+        //
+        delete[] _tempStateSizedVectors[solverNumber];
+        _tempStateSizedVectors[solverNumber] = nullptr;
       }
 
       ++solverNumber;
@@ -164,10 +185,12 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
     delete[] _tempSpaceTimeFluxUnknowns;
     delete[] _tempUnknowns;
     delete[] _tempFluxUnknowns;
+    delete[] _tempStateSizedVectors;
     _tempSpaceTimeUnknowns     = nullptr;
     _tempSpaceTimeFluxUnknowns = nullptr;
     _tempUnknowns              = nullptr;
     _tempFluxUnknowns          = nullptr;
+    _tempStateSizedVectors     = nullptr;
   }
 }
 
@@ -175,7 +198,8 @@ exahype::mappings::Prediction::Prediction() :
         _tempSpaceTimeUnknowns(nullptr),
         _tempSpaceTimeFluxUnknowns(nullptr),
         _tempUnknowns(nullptr),
-        _tempFluxUnknowns(nullptr){}
+        _tempFluxUnknowns(nullptr),
+        _tempStateSizedVectors(nullptr){}
 
 exahype::mappings::Prediction::~Prediction() {
   deleteTemporaryVariables();
@@ -187,7 +211,8 @@ exahype::mappings::Prediction::Prediction(
   _tempSpaceTimeUnknowns(nullptr),
   _tempSpaceTimeFluxUnknowns(nullptr),
   _tempUnknowns(nullptr),
-  _tempFluxUnknowns(nullptr) {
+  _tempFluxUnknowns(nullptr),
+  _tempStateSizedVectors(nullptr) {
   prepareTemporaryVariables();
 }
 
@@ -220,7 +245,8 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
         _tempSpaceTimeUnknowns    [cellDescription.getSolverNumber()],
         _tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
         _tempUnknowns             [cellDescription.getSolverNumber()],
-        _tempFluxUnknowns         [cellDescription.getSolverNumber()]); // todo remove this argument
+        _tempFluxUnknowns         [cellDescription.getSolverNumber()],
+        _tempStateSizedVectors    [cellDescription.getSolverNumber()]); // todo remove this argument
 
     solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
   }
@@ -255,7 +281,7 @@ void exahype::mappings::Prediction::enterCell(
               fineGridCell.getCellDescriptionsIndex(),i);
 
       switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
-      case exahype::solvers::Solver::Type::ADER_DG: {
+      case exahype::solvers::Solver::Type::ADERDG: {
           exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
               exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
           solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
@@ -274,7 +300,7 @@ void exahype::mappings::Prediction::enterCell(
           if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
               || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
               || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
-            performPredictionAndVolumeIntegral(solver->_solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            performPredictionAndVolumeIntegral(solver->_solver.get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
          }
        } break;
       default:

@@ -822,6 +822,7 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
+      double*  tempStateSizedVector,
       const double* const luh,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, const double dt) = 0;
 
@@ -1093,13 +1094,15 @@ public:
    * \param[in] tempSpaceTimeFluxUnknowns Array of size 2 containing space-time predictor volume flux sized temporary arrays (see linear predictor kernel).
    * \param[in] tempUnknowns              Solution sized temporary array.
    * \param[in] tempFluxUnknowns          Volume flux sized temporary array.
+   * \param[in] tempStateSizedVector      A vector of size of the state vector (=number of variables).
    */
   void performPredictionAndVolumeIntegral(
       exahype::records::ADERDGCellDescription& cellDescription,
       double** tempSpaceTimeUnknowns,
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
-      double*  tempFluxUnknowns);
+      double*  tempFluxUnknowns,
+      double*  tempStateSizedVector);
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
