@@ -441,7 +441,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
   logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
-  // TODO(Dominic):
+//  // TODO(Dominic):
 //  if (repository.getState().limiterDomainHasChanged()) {
 //    // Local: Merge the limiter status with stencil width one
 //    // MPI: Send out the limiter status with stencil width two
@@ -449,18 +449,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 //    repository.switchToLimiterStatusSpreading();
 //    repository.iterate();
 //
-//    // Rollback particualar cells
-//    // MPI: Merge limiter status with stencil width two.
-//    // Local: Merge the limiter status with stencil width one again
-//    repository.switchToReinitialisation();
-//    repository.iterate();
-//
 //    // Update and recompute particular cells
 //    // Maybe plot here again the corrected solution
 //    // After this all the solutions have performed the correct number
 //    // of time steps again.
+//    // MPI: Merge limiter status with stencil width two.
+//    // Local: Merge the limiter status with stencil width one again
 //    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
-////    repository.switchToInitialLimiterDomainAndTimeStepSizeComputation();
+//    repository.switchToInitialLimiterDomainAndTimeStepSizeComputation();
 //    repository.iterate();
 //  }
 
@@ -704,23 +700,22 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   repository.iterate();
 
-  // TODO(Dominic): Drop Limiter status
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
   repository.iterate();
 
-//  #if DIMENSIONS==2 && !defined(Parallel)
-//  if (plot) {
-//    repository.switchToPlotAugmentedAMRGrid();
-//    repository.iterate();
-//  }
-//  #endif
-//
-//  // We mimic the flow of the fused time stepping scheme here.
-//  // Updating the limiter domain is thus done after the time step
-//  // size computation.
-//  // TODO(Dominic): There is currently an issue with moving branch
-//  // below the prediction phase. See below.
+  #if DIMENSIONS==2
+  if (plot) {
+    repository.switchToPlotAugmentedAMRGrid();
+    repository.iterate();
+  }
+  #endif
+
+  // We mimic the flow of the fused time stepping scheme here.
+  // Updating the limiter domain is thus done after the time step
+  // size computation.
+  // TODO(Dominic): There is currently an issue with moving branch
+  // below the prediction phase. See below.
 //  if (repository.getState().limiterDomainHasChanged()) {
 //    // Local: Merge the limiter status with stencil width one
 //    // MPI: Send out the limiter status with stencil width two
