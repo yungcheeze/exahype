@@ -21,6 +21,7 @@
 #include "kernels/DGMatrices.h"
 #include "peano/utils/Loop.h"
 
+#include "exahype/solvers/ADERDGSolver.h"
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
@@ -309,6 +310,18 @@ void exahype::plotters::ADERDG2CartesianVTK::plotCellData(
   if (value!=nullptr)        delete[] value;
 }
 
+void exahype::plotters::ADERDG2CartesianVTK::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+
+  if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+    double* solverSolution = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
+
+    plotPatch(
+        aderdgCellDescription.getOffset(),
+        aderdgCellDescription.getSize(), solverSolution,
+        aderdgCellDescription.getCorrectorTimeStamp());
+  }
+}
 
 void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,

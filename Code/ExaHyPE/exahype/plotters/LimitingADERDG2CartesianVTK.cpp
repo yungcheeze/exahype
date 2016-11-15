@@ -28,6 +28,8 @@
 
 #include "kernels/DGBasisFunctions.h"
 
+#include "exahype/solvers/LimitingADERDGSolver.h"
+
 
 std::string exahype::plotters::LimitingADERDG2CartesianVerticesVTKAscii::getIdentifier() {
   return "vtk::Cartesian::vertices::limited::ascii";
@@ -329,6 +331,42 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotCellData(
 
   if (interpoland!=nullptr)  delete[] interpoland;
   if (value!=nullptr)        delete[] value;
+}
+
+void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+
+  if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+    switch(solverPatch.getLimiterStatus()) {
+      case exahype::records::ADERDGCellDescription::LimiterStatus::Ok:
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+        double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
+
+        plotADERDGPatch(
+            solverPatch.getOffset(),
+            solverPatch.getSize(), solverSolution,
+            solverPatch.getCorrectorTimeStamp());
+      } break;
+      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {
+        auto* limitingADERDGSolver =
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
+
+        const int limiterElement =
+            limitingADERDGSolver->tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+        auto& limiterPatch =
+            exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
+
+        double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
+
+        plotFiniteVolumesPatch(
+            limiterPatch.getOffset(),
+            limiterPatch.getSize(), limiterSolution,
+            limiterPatch.getTimeStamp());
+      } break;
+    }
+  }
 }
 
 

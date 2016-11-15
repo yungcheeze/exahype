@@ -163,9 +163,19 @@ class exahype::plotters::Plotter {
      */
     virtual void init(const std::string& filename, int order, int unknowns, int writtenUnknowns, const std::string& select) = 0;
 
+
+    /**
+     * Hand a patch over to the plotter.
+     */
+    virtual void plotPatch(
+        const int cellDescriptionsIndex,
+        const int element) = 0;
+
     /**
      * Hand a patch over to the plotter. Feel free to ignore the passed data if
      * you don't want to plot it.
+     *
+     * \deprecated
      */
     virtual void plotPatch(
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
@@ -191,7 +201,7 @@ class exahype::plotters::Plotter {
   const std::string      _select;
   bool                   _isActive;
 
-  Device*                      _device;
+  Device*                _device;
 
  public:
   /**
@@ -217,9 +227,8 @@ class exahype::plotters::Plotter {
   bool plotDataFromSolver(int solver) const;
   void finishedPlotting();
 
-  void plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-                 const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-                 double* u, double timeStamp);
+  void plotPatch(
+      const int cellDescriptionsIndex,const int element);
 
   std::string getFileName() const;
 

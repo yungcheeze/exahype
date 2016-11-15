@@ -13,13 +13,13 @@
  
 #include "exahype/plotters/Plotter.h"
 
-#include "ADERDG2CartesianVTK.h"
-#include "ADERDG2LegendreVTK.h"
-#include "ADERDG2LegendreCSV.h"
-#include "ADERDG2ProbeAscii.h"
-#include "FiniteVolumes2VTKAscii.h"
-#include "exahype/solvers/Solver.h"
-#include "exahype/solvers/FiniteVolumesSolver.h"
+#include "exahype/plotters/ADERDG2CartesianVTK.h"
+#include "exahype/plotters/ADERDG2LegendreVTK.h"
+#include "exahype/plotters/ADERDG2LegendreCSV.h"
+#include "exahype/plotters/ADERDG2ProbeAscii.h"
+#include "exahype/plotters/FiniteVolumes2VTKAscii.h"
+#include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
@@ -110,8 +110,98 @@ exahype::plotters::Plotter::Plotter(
         _device = new ADERDG2ProbeAscii();
       }
 */
+    break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
-      // do nothing
+      /**
+       * Plotters for amy ADER-DG scheme.
+       *
+       * This is actually some kind of switch expression though switches do
+       * not work for strings, so we map it onto an if-then-else cascade.
+       */
+      if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2ProbeAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCSV(postProcessing);
+      }
+
+      /**
+       * Plotters specifically for the limiting ADER-DG scheme.
+       *
+       * This is actually some kind of switch expression though switches do
+       * not work for strings, so we map it onto an if-then-else cascade.
+       */
+      if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2CartesianVerticesVTKAscii(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+      }
+      if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2CartesianVerticesVTKBinary(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//            solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+      }
+      if (_identifier.compare( LimitingADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2CartesianCellsVTKAscii(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+      }
+      if (_identifier.compare( LimitingADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2CartesianCellsVTKBinary(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+      }
+//      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2LegendreVerticesVTKAscii(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+//      }
+//      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2LegendreVerticesVTKBinary(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+//      }
+//      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2LegendreCellsVTKAscii(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+//      }
+//      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2LegendreCellsVTKBinary(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+//      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2ProbeAscii(
+//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//            solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+//      }
+//      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+//        _device = new LimitingADERDG2LegendreCSV(postProcessing);
+//      }
     break;
   }
 
@@ -207,13 +297,11 @@ bool exahype::plotters::Plotter::plotDataFromSolver(int solver) const {
 
 
 void exahype::plotters::Plotter::plotPatch(
-  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-  double timeStamp
-) {
+  const int cellDescriptionsIndex,
+  const int element) {
   assertion(_device != nullptr);
   if (_device!=nullptr) {
-    _device->plotPatch(offsetOfPatch, sizeOfPatch, u, timeStamp);
+    _device->plotPatch(cellDescriptionsIndex,element);
   }
 }
 

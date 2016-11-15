@@ -23,7 +23,7 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
-
+#include "exahype/solvers/ADERDGSolver.h"
 
 
 
@@ -378,6 +378,18 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
   if (value!=nullptr)        delete[] value;
 }
 
+void exahype::plotters::ADERDG2LegendreVTK::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+
+  if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+    double* solverSolution = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
+
+    plotPatch(
+        aderdgCellDescription.getOffset(),
+        aderdgCellDescription.getSize(), solverSolution,
+        aderdgCellDescription.getCorrectorTimeStamp());
+  }
+}
 
 void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,

@@ -20,6 +20,8 @@
 
 #include "peano/utils/Loop.h"
 
+#include "exahype/solvers/ADERDGSolver.h"
+
 #include <iomanip>
 
 #define eps 1e-13
@@ -107,7 +109,18 @@ exahype::plotters::ADERDG2LegendreCSV::~ADERDG2LegendreCSV() {
 }
 
 
+void exahype::plotters::ADERDG2LegendreCSV::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
+  if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+    double* solverSolution = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
+
+    plotPatch(
+        aderdgCellDescription.getOffset(),
+        aderdgCellDescription.getSize(), solverSolution,
+        aderdgCellDescription.getCorrectorTimeStamp());
+  }
+}
 
 void exahype::plotters::ADERDG2LegendreCSV::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,

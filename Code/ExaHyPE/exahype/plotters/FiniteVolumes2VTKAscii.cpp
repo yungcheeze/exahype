@@ -12,9 +12,11 @@
  **/
  
 #include "FiniteVolumes2VTKAscii.h"
-
 #include "ADERDG2CartesianVTK.h"
+
 #include "tarch/parallel/Node.h"
+
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
 // Should thus be placed in kernel module or the solver
@@ -144,6 +146,21 @@ void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
 exahype::plotters::FiniteVolumes2VTKAscii::~FiniteVolumes2VTKAscii() {
 }
 
+
+void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& cellDescription =
+      exahype::solvers::FiniteVolumesSolver::getCellDescription(
+          cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==exahype::solvers::FiniteVolumesSolver::CellDescription::Type::Cell) {
+    double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+    plotPatch(
+        cellDescription.getOffset(),
+        cellDescription.getSize(), solution,
+        cellDescription.getTimeStamp());
+  }
+}
 
 void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,

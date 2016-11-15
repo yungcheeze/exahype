@@ -86,7 +86,9 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
 
-  virtual void plotPatch(
+  void plotPatch(const int cellDescriptionsIndex, const int element) override;
+
+  void plotPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);

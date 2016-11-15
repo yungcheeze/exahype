@@ -53,8 +53,7 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
 
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter* _gridWriter;
-   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;
-
+  tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;
 
   void writeTimeStampDataToPatch( double timeStamp, int vertexIndex );
 
@@ -79,7 +78,9 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
 
-  virtual void plotPatch(
+  void plotPatch(const int cellDescriptionsIndex, const int element) override;
+
+  void plotPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);

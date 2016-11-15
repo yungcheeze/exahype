@@ -56,7 +56,9 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
 
   static std::string getIdentifier();
 
-  virtual void plotPatch(
+  void plotPatch(const int cellDescriptionsIndex, const int element) override;
+
+  void plotPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);

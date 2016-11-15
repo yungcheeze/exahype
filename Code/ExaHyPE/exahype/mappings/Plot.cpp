@@ -298,81 +298,10 @@ void exahype::mappings::Plot::enterCell(
     for (auto* pPlotter : exahype::plotters::RegisteredPlotters) {
       int solverNumber=0;
       for (auto* solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-        if (element!=exahype::solvers::Solver::NotFound
-            && pPlotter->plotDataFromSolver(solverNumber)) {
-          switch (solver->getType()) {
-            case exahype::solvers::Solver::Type::ADER_DG: {
-              auto& cellDescription =
-                  exahype::solvers::ADERDGSolver::getCellDescription(
-                      fineGridCell.getCellDescriptionsIndex(),element);
-
-              if (cellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-                double* u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-
-                pPlotter->plotPatch(
-                    fineGridVerticesEnumerator.getVertexPosition(),
-                    fineGridVerticesEnumerator.getCellSize(), u,
-                    cellDescription.getCorrectorTimeStamp());
-              }
-            }
-            break;
-          case exahype::solvers::Solver::Type::FiniteVolumes: {
-              auto& cellDescription =
-                  exahype::solvers::FiniteVolumesSolver::getCellDescription(
-                      fineGridCell.getCellDescriptionsIndex(),element);
-
-              if (cellDescription.getType()==
-                  exahype::solvers::FiniteVolumesSolver::CellDescription::Type::Cell) {
-                double*  u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-
-                pPlotter->plotPatch(
-                    fineGridVerticesEnumerator.getVertexPosition(),
-                    fineGridVerticesEnumerator.getCellSize(), u,
-                    cellDescription.getTimeStamp());
-              }
-            }
-            break;
-          case exahype::solvers::Solver::Type::LimitingADERDG: {
-              auto& aderdgCellDescription =
-                  static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                  _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
-
-              if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-                switch(aderdgCellDescription.getLimiterStatus()) {
-                  case exahype::records::ADERDGCellDescription::LimiterStatus::Ok:
-                  case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
-                    double*  u = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
-
-                    pPlotter->plotPatch(
-                        fineGridVerticesEnumerator.getVertexPosition(),
-                        fineGridVerticesEnumerator.getCellSize(), u,
-                        aderdgCellDescription.getCorrectorTimeStamp());
-                  } break;
-                  case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
-                  case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {
-                    const int finiteVolumesElement =
-                        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                        _limiter->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-                    auto& finiteVolumesCellDescription =
-                        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                        _limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),finiteVolumesElement);
-
-                    double*  u = DataHeap::getInstance().getData(finiteVolumesCellDescription.getSolution()).data();
-
-                    pPlotter->plotPatch(
-                        fineGridVerticesEnumerator.getVertexPosition(),
-                        fineGridVerticesEnumerator.getCellSize(), u,
-                        aderdgCellDescription.getCorrectorTimeStamp());
-                  } break;
-                }
-              }
-            }
-            break;
-          default:
-            break;
-          }
+        if (pPlotter->plotDataFromSolver(solverNumber)) {
+          int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+          if (element!=exahype::solvers::Solver::NotFound)
+            pPlotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
         }
         ++solverNumber;
       }

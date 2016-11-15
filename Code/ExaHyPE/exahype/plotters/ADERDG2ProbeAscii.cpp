@@ -7,6 +7,7 @@
 
 #include "kernels/DGBasisFunctions.h"
 
+#include "exahype/solvers/ADERDGSolver.h"
 
 tarch::logging::Log exahype::plotters::ADERDG2ProbeAscii::_log( "exahype::plotters::ADERDG2ProbeAscii" );
 
@@ -105,6 +106,18 @@ std::string exahype::plotters::ADERDG2ProbeAscii::getIdentifier() {
   return "probe::ascii";
 }
 
+void exahype::plotters::ADERDG2ProbeAscii::plotPatch(const int cellDescriptionsIndex, const int element) {
+  auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+
+  if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+    double* solverSolution = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
+
+    plotPatch(
+        aderdgCellDescription.getOffset(),
+        aderdgCellDescription.getSize(), solverSolution,
+        aderdgCellDescription.getCorrectorTimeStamp());
+  }
+}
 
 void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
