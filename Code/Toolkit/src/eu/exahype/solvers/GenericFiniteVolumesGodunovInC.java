@@ -1,13 +1,5 @@
 package eu.exahype.solvers;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.io.InputStream;
-import java.util.Scanner;
-
 import eu.exahype.IOUtils;
 
 public class GenericFiniteVolumesGodunovInC implements Solver {
@@ -16,7 +8,7 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
   private int _dimensions;
   private int _numberOfVariables;
   private int _numberOfParameters;
-  private int _patchSize;
+//  private int _patchSize;
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
@@ -25,7 +17,7 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     _dimensions = dimensions;
     _numberOfVariables = numberOfVariables;
     _numberOfParameters = numberOfParameters;
-    _patchSize = patchSize;
+//    _patchSize = patchSize;
     _enableProfiler = enableProfiler;
     _hasConstants = hasConstants;
   }
@@ -89,22 +81,7 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     
     content = content.replaceAll("\\$\\{Project\\}", projectName);
     content = content.replaceAll("\\$\\{Solver\\}", solverName);
-    //
-    String profilerInclude                     = "";
-    String solverConstructorSignatureExtension = "";
-    String solverConstructorArgumentExtension  = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension  += ", std::move(profiler)";
-    }
-    if (_hasConstants) {
-      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-    }
-    content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
-    content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
-    content = content.replaceAll("\\$\\{SolverConstructorArgumentExtension\\}", solverConstructorArgumentExtension);
-    //
+    
     content = content.replaceAll("\\$\\{Elements\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content = content.replaceAll("\\$\\{Dimensions\\}",String.valueOf(_dimensions));
     
