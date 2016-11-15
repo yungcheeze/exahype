@@ -403,7 +403,7 @@ public class GenericFluxesADER_DG implements Solver {
           + Integer.toString(_numberOfUnknowns + _numberOfParameters)
           + " (#unknowns + #parameters)\n");
       writer.write("  // @todo Please implement\n");
-      for (int i = 0; i < _dimensions * (_numberOfUnknowns + _numberOfParameters); i++) {
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) { 
           writer.write("  BgradQ[" + i + "] = 0.0;\n");
       }
       writer.write("}\n");
