@@ -28,10 +28,11 @@ namespace c {
 namespace {
 
 template <typename SolverType>
-void aderPicardLoopNonlinear(SolverType& solver, const double* luh, const double dt,
+void aderPicardLoopNonlinear(SolverType& solver,
+                             const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              double* lQi, double *lQi_old, double* rhs, double* rhs_0,
-                             double* lFi) {
+                             double* lFi, double* gradQ, double* BGradQ) {
   const int numberOfVariables = solver.getNumberOfVariables();
   const int basisSize = solver.getNodesPerCoordinateAxis();
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables);
@@ -420,6 +421,7 @@ void spaceTimePredictorNonlinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
+    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double dt) {
   const int numberOfVariables = solver.getNumberOfVariables();
@@ -433,12 +435,16 @@ void spaceTimePredictorNonlinear(
   double* rhs_0   = tempSpaceTimeUnknowns[3];
 
   double* lFi     = tempSpaceTimeFluxUnknowns[0];
+  double* gradQ   = tempSpaceTimeFluxUnknowns[1]; // size: basisSize3 * DIMENSIONS * numberOfVariables
 
   double *lQhi    = tempUnknowns;
 
   double *lFhi    = tempFluxUnknowns;
+  
+  double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
 
-  aderPicardLoopNonlinear<SolverType>(solver, luh, dt, dx, lQi, lQi_old, rhs, rhs_0, lFi);
+  aderPicardLoopNonlinear<SolverType>(solver, luh, dt, dx,
+      lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
 
   aderPredictorNonlinear(lQi, lFi, numberOfVariables, basisSize, lQhi,
                          &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x

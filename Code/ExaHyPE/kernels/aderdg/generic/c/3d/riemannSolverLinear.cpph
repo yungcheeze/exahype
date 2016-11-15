@@ -23,9 +23,12 @@ namespace generic {
 namespace c {
 
 template <typename SolverType>
-void riemannSolverLinear(SolverType& solver,
-                         double* FL, double* FR, const double* const QL,
-                         const double* const QR, const double dt,
+void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
+                         const double* const QL, const double* const QR,
+                         double*  tempFaceUnknowns,
+                         double** tempStateSizedVectors,
+                         double** tempStateSizedSquareMatrices,
+                         const double dt,
                          const int normalNonZero) {
   const int numberOfVariables = solver.getNumberOfVariables();
   const int numberOfParameters = solver.getNumberOfParameters();
@@ -34,8 +37,8 @@ void riemannSolverLinear(SolverType& solver,
   const int order = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
-  double* QavL = new double[numberOfVariables];
-  double* QavR = new double[numberOfVariables];
+  double* QavL = tempStateSizedVectors[0]; // size: numberOfVariables
+  double* QavR = tempStateSizedVectors[1]; // size: numberOfVariables
   {
     idx3 idx_QLR(basisSize, basisSize, numberOfVariables);
     std::memset(QavL, 0, numberOfVariables * sizeof(double));
@@ -54,8 +57,8 @@ void riemannSolverLinear(SolverType& solver,
   }
 
   // TODO: Size should be numberOfVariables - numberOfParameters
-  double* LL = new double[numberOfVariables];
-  double* LR = new double[numberOfVariables];
+  double* LL = tempStateSizedVectors[2]; // size: numberOfVariables
+  double* LR = tempStateSizedVectors[3]; // size: numberOfVariables
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
 
@@ -78,15 +81,15 @@ void riemannSolverLinear(SolverType& solver,
   // this will be converted into the left and right fluctuations.
 
   // evaluate the system matrix just once in the averaged state
-  double* Qav = new double[numberOfVariables];
+  double* Qav = tempStateSizedVectors[4]; // size: numberOfVariables
   // Qav = 0.5 * (QavL + QavR) (includes parameters)
   std::transform(QavL, QavL + numberOfVariables, QavR, Qav,
                  [](double a, double b) { return 0.5 * (a + b); });
-  double* Bn = new double[numberOfVariables * numberOfVariables];
+  double* Bn = tempStateSizedSquareMatrices[0]; // size: numberOfVariables * numberOfVariables
   solver.matrixb(Qav, normalNonZero, Bn);
 
-  double* BnMinusIdSmax = new double[numberOfVariables * numberOfVariables];
-  double* BnPlusIdSmax = new double[numberOfVariables * numberOfVariables];
+  double* BnMinusIdSmax = tempStateSizedSquareMatrices[1]; // size: numberOfVariables * numberOfVariables
+  double* BnPlusIdSmax  = tempStateSizedSquareMatrices[2]; // size: numberOfVariables * numberOfVariables
   std::memcpy(BnMinusIdSmax, Bn,
               numberOfVariables * numberOfVariables * sizeof(double));
   std::memcpy(BnPlusIdSmax, Bn,
@@ -97,11 +100,11 @@ void riemannSolverLinear(SolverType& solver,
     // Avoid diffusion of parameters
     for (int i = 0; i < numberOfVariables - numberOfParameters; i++) {
       BnMinusIdSmax[idx_BnPM(i, i)] -= smax;
-      BnPlusIdSmax[idx_BnPM(i, i)] += smax;
+      BnPlusIdSmax[idx_BnPM(i, i)]  += smax;
     }
   }
 
-  double* Q = new double[basisSize2 * numberOfVariables];
+  double* Q = tempFaceUnknowns; // size: basisSize2 * numberOfVariables
   std::transform(QR, QR + basisSize2 * numberOfVariables, QL, Q,
                  [](double a, double b) { return 0.5 * (a - b); });
 
@@ -125,20 +128,6 @@ void riemannSolverLinear(SolverType& solver,
       }
     }
   }
-
-  // Delete heap-allocated arrays
-  delete[] QavL;
-  delete[] QavR;
-  delete[] LL;
-  delete[] LR;
-  delete[] Qav;
-  delete[] Bn;
-  delete[] BnMinusIdSmax;
-  delete[] BnPlusIdSmax;
-  delete[] Q;
-
-  // TODO(guera): Use std::dynarray as a safe way to have all these small
-  // arrays on the stack.
 }
 
 }  // namespace c

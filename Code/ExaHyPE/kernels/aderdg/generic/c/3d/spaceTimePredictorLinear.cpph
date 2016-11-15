@@ -25,8 +25,12 @@ namespace c {
 // instead.
 template <typename SolverType>
 void spaceTimePredictorLinear(SolverType& solver,
-                              double* lQi, double* lFi, double* lQhi,
-                              double* lFhi, double* lQbnd, double* lFbnd,
+                              double* lQbnd, double* lFbnd,
+                              double** tempSpaceTimeUnknowns,
+                              double** tempSpaceTimeFluxUnknowns,
+                              double*  tempUnknowns,
+                              double*  tempFluxUnknowns,
+                              double*  tempStateSizedVector
                               const double* const luh,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const double dt) {
@@ -38,8 +42,7 @@ void spaceTimePredictorLinear(SolverType& solver,
   const int basisSize4 = basisSize2 * basisSize2;
   const int order = basisSize - 1;
 
-  double* lQh = new double[basisSize3 * (basisSize + 1) *
-                           numberOfVariables];  // space-time degrees of freedom
+  double* lQh = tempSpaceTimeUnknowns[0]; // size: basisSize2 * (basisSize + 1) * numberOfVariables];
   std::memset(lQh, 0, basisSize3 * (basisSize + 1) * numberOfVariables *
                           sizeof(double));
   idx5 idx_lQh(basisSize + 1, basisSize, basisSize, basisSize,
@@ -61,16 +64,16 @@ void spaceTimePredictorLinear(SolverType& solver,
     }
   }
 
+  double* lFh = tempSpaceTimeFluxUnknowns[0]; // size: basisSize4 * DIMENSIONS * numberOfVariables
+  idx6 idx_lFh(basisSize, basisSize, basisSize, basisSize, DIMENSIONS,
+               numberOfVariables);
+  
   // spatial gradient of q
-  double* gradQ = new double[basisSize4 * DIMENSIONS * numberOfVariables];
+  double* gradQ = tempSpaceTimeFluxUnknowns[1]; // size: basisSize4 * DIMENSIONS * numberOfVariables
   std::memset(gradQ, 0,
               basisSize4 * DIMENSIONS * numberOfVariables * sizeof(double));
   idx6 idx_gradQ(basisSize, basisSize, basisSize, basisSize, DIMENSIONS,
                  numberOfVariables);
-
-  double* lFh = new double[basisSize4 * DIMENSIONS * numberOfVariables];
-  idx6 idx_lFh(basisSize, basisSize, basisSize, basisSize, DIMENSIONS,
-               numberOfVariables);
 
   // For linear PDE, the fastest space-time predictor is the good old
   // Cauchy-Kovalewski procedure
@@ -363,11 +366,6 @@ void spaceTimePredictorLinear(SolverType& solver,
       }
     }
   }
-
-  // delete heap allocated arrays
-  delete[] lQh;
-  delete[] gradQ;
-  delete[] lFh;
 }
 
 }  // namespace c
