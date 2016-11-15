@@ -26,13 +26,13 @@ kernels::UnivariateFunction** kernels::basisFunctionSecondDerivatives;
 
 
 double kernels::interpolate(
-    const   double*                                      offsetOfPatch,
-    const double*                                      sizeOfPatch,
-    const double*                                      x,
-    int                                          numberOfUnknowns,
-    int                                          unknown,
-    int                                          order,
-    const double*                                      u
+    const double* offsetOfPatch,
+    const double* sizeOfPatch,
+    const double* x,
+    int           numberOfUnknowns,
+    int           unknown,
+    int           order,
+    const double* u
 ) {
   double result = 0.0;
 
