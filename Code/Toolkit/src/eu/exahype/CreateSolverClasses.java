@@ -142,8 +142,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
         numberOfParameters, order, hasConstants, _enableProfiler);
     }
-    else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
+    // TODO(Dominic): I replaced this.
+//    else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
+//      solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
+//        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
+//    }
+    else if (generalKernel.equals( eu.exahype.solvers.GenericADERDG.Identifier )) {
+      solver = new eu.exahype.solvers.GenericADERDG(_dimensions,
         numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
