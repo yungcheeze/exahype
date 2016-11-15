@@ -454,7 +454,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
     && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
       for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+        #if defined(Asserts)
         int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        #endif
         assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
       }
     }
@@ -500,7 +502,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
     && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
       for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+        #if defined(Asserts)
         int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        #endif
         assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
       }
     }
@@ -527,7 +531,7 @@ void exahype::solvers::FiniteVolumesSolver::rollbackSolution(
     const int element,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
 }
 
 void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
