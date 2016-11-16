@@ -77,7 +77,7 @@ class exahype::mappings::SolutionUpdate {
    * These temporary variables are only used by the finite  volumes
    * solver.
    */
-  double*** _tempStateSizedArrays = nullptr;
+  double*** _stateSizedVectors = nullptr;
 
   /**
    * An array of pointers to arrays of a length that equals the

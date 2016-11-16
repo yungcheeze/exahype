@@ -88,11 +88,11 @@ tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
 void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
   assertion(_limiterDomainHasChanged ==nullptr);
   assertion(_tempUnknowns            ==nullptr);
-  assertion(_tempStateSizedArrays    ==nullptr);
+  assertion(_stateSizedVectors       ==nullptr);
 
   int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
   _limiterDomainHasChanged = new bool    [numberOfSolvers];
-  _tempStateSizedArrays    = new double**[numberOfSolvers];
+  _stateSizedVectors       = new double**[numberOfSolvers];
   _tempUnknowns            = new double**[numberOfSolvers];
 
   int solverNumber=0;
@@ -100,17 +100,19 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
     if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
         solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       auto finiteVolumesSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-      _tempStateSizedArrays[solverNumber] = new double*[5];
-      for (int i=0; i<5; ++i) { // max; see spaceTimePredictorNonlinear
-        _tempStateSizedArrays[solverNumber][i] =
-            new double[finiteVolumesSolver->getNumberOfVariables()];
+
+      const int numberOfStateSizedVectors = 2*(1+DIMENSIONS); // max; see kernels::finitevolumes::godunov::solutionUpdate
+      _stateSizedVectors[solverNumber]    = new double*[numberOfStateSizedVectors];
+      _stateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * finiteVolumesSolver->getNumberOfVariables()];
+      for (int i=1; i<numberOfStateSizedVectors; ++i) {
+        _stateSizedVectors[solverNumber][i] = _stateSizedVectors[solverNumber][i-1]+finiteVolumesSolver->getNumberOfVariables();
       }
       //
       // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
       _tempUnknowns[solverNumber] = nullptr;
     } else {
-      _tempStateSizedArrays[solverNumber] = nullptr;
-      _tempUnknowns        [solverNumber] = nullptr;
+      _stateSizedVectors[solverNumber] = nullptr;
+      _tempUnknowns     [solverNumber] = nullptr;
     }
     //
     _limiterDomainHasChanged[solverNumber] = false;
@@ -120,7 +122,7 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
 }
 
 void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
-  if (_tempStateSizedArrays!=nullptr) {
+  if (_stateSizedVectors!=nullptr) {
     assertion(_limiterDomainHasChanged!=nullptr);
     assertion(_tempUnknowns           !=nullptr);
 
@@ -129,11 +131,9 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
       if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes ||
           solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         //
-        for (int i=0; i<5; ++i) {
-          delete[] _tempStateSizedArrays[solverNumber][i];
-        }
-        delete[] _tempStateSizedArrays[solverNumber];
-        _tempStateSizedArrays[solverNumber] = nullptr;
+        delete[] _stateSizedVectors[solverNumber][0];
+        delete[] _stateSizedVectors[solverNumber];
+        _stateSizedVectors[solverNumber] = nullptr;
         // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
         _tempUnknowns[solverNumber] = nullptr;
       }
@@ -142,10 +142,10 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
     }
 
     delete[] _limiterDomainHasChanged;
-    delete[] _tempStateSizedArrays;
+    delete[] _stateSizedVectors;
     delete[] _tempUnknowns;
     _limiterDomainHasChanged = nullptr;
-    _tempStateSizedArrays    = nullptr;
+    _stateSizedVectors       = nullptr;
     _tempUnknowns            = nullptr;
   }
 }
@@ -162,7 +162,8 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
 : _localState(masterThread._localState),
-  _tempStateSizedArrays(nullptr),
+  _limiterDomainHasChanged(nullptr),
+  _stateSizedVectors(nullptr),
   _tempUnknowns(nullptr) {
   prepareTemporaryVariables();
 }
@@ -199,7 +200,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),
             element,
-            _tempStateSizedArrays[i],
+            _stateSizedVectors[i],
             _tempUnknowns[i],
             fineGridVertices,
             fineGridVerticesEnumerator);

@@ -73,8 +73,8 @@ double riemannSolver(double* F, const double* qL, const double* qR,
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]};
-  double* FR[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]};
+  double* FL[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
+  double* FR[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
   PDEFlux(qL, FL);
   PDEFlux(qR, FR);
 
