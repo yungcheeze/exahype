@@ -264,16 +264,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * @TODO bug
    */
   bool isInitialised() const;
-
-  /**
-   * This operation runs a dozen of assertions. It becomes nop if assertions
-   * are switched off.
-   */
-  void validateNoNansInADERDGSolver(
-    int                                  number,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    const std::string&                   methodTraceOfCaller
-  );
 };
 
 #endif
