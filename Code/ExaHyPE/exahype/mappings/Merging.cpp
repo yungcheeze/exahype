@@ -91,7 +91,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    int numberOfStateSizedVectors  = 0; // TOOD(Dominic): Check if we need number of parameters too
+    int numberOfStateSizedVectors  = 0; // TODO(Dominic): Check if we need number of parameters too
     int numberOfStateSizedMatrices = 0;
     int numberOfFaceUnknowns       = 0;
     int lengthOfFaceUnknowns       = 0;
@@ -108,11 +108,14 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         numberOfStateSizedVectors  = 5;
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
-        lengthOfFaceUnknowns       = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-            _solver->getUnknownsPerFace();
+        lengthOfFaceUnknowns       = std::max(
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver->getUnknownsPerFace(),
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiter->getUnknownsPerFace() );
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
-        // Do not allocate any temporary variables. The FV merge does only copy values.
+        numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
+        lengthOfFaceUnknowns =
+            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
         break;
     }
 
@@ -125,15 +128,15 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     //
     if (numberOfStateSizedMatrices>0) {
       _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
-      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+      for (int i=0; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
         _tempStateSizedSquareMatrices[solverNumber][i] =
             new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
       }
     }
     //
     if (numberOfFaceUnknowns>0) {
-      _tempFaceUnknowns[solverNumber] = new double*[3];
-      for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+      _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
+      for (int i=0; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
         _tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns];
       }
     }
@@ -159,7 +162,7 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
           numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
           break;
         case exahype::solvers::Solver::Type::FiniteVolumes:
-          // Do not allocate any temporary variables. The FV merge does only copy values.
+          numberOfFaceUnknowns       = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
           break;
       }
 

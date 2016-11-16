@@ -126,7 +126,10 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
       case exahype::solvers::Solver::Type::FiniteVolumes:
         // TODO(Dominic): We do not consider high-order FV methods yet;
         // numberOfUnknowns is thus set to zero.
-        numberOfUnknowns = 0;
+        numberOfUnknowns     = 0;
+        numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
+        lengthOfFaceUnknowns =
+            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
         numberOfStateSizedVectors = 5;
         break;
     }
@@ -140,22 +143,22 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
     //
     if (numberOfStateSizedMatrices>0) {
       _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
-      for (int i=0; i<3; ++i) { // see riemanSolverLinear
+      for (int i=0; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
         _tempStateSizedSquareMatrices[solverNumber][i] =
             new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
       }
     }
     //
     if (numberOfFaceUnknowns>0) {
-      _tempFaceUnknowns[solverNumber] = new double*[3];
-      for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+      _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
+      for (int i=0; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
         _tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns];
       }
     }
     //
     if (numberOfUnknowns>0) {
-      _tempUnknowns[solverNumber] = new double*[3];
-      for (int i=0; i<3; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+      _tempUnknowns[solverNumber] = new double*[numberOfUnknowns];
+      for (int i=0; i<numberOfUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
         _tempUnknowns[solverNumber][i] = new double[lengthOfUnknowns];
       }
     }
@@ -185,6 +188,7 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
           // TODO(Dominic): We do not consider high-order FV methods yet;
           // numberOfUnknowns is thus set to zero.
           numberOfUnknowns = 0;
+          numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
           numberOfStateSizedVectors = 5;
           break;
       }
