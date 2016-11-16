@@ -1,8 +1,8 @@
 #include "ADERDG.h"
 
-#include <memory>
+#include <cstring>
 
-void Euler::ADERDG::init() {
+void Euler::ADERDG::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the constructur.
   // @todo Please implement/augment if required.
 }
@@ -67,7 +67,7 @@ void Euler::ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIn
 }
 
 
-void Euler::ADERDG::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+void Euler::ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) {
   fluxOut[0] = fluxIn[0];
   fluxOut[1] = fluxIn[1];
   fluxOut[2] = fluxIn[2];
@@ -121,6 +121,14 @@ void Euler::ADERDG::adjustedSolutionValues(const double* const x,const double w,
         std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) ) /
         (0.05 *0.05)) *
         1.0e-1;
+}
+
+void Euler::ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+  std::memset(BgradQ, 0, nVar * sizeof(double));
+}
+
+void Euler::ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+  std::memset(Bn, 0, nVar * sizeof(double));
 }
 
 
