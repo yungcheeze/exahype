@@ -33,7 +33,8 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 
  private:
   static tarch::logging::Log _log;
-  
+
+  static bool _setNcpAndMatrixBToZero;
 
   void testPDEFluxes();
   void testSpaceTimePredictorLinear();

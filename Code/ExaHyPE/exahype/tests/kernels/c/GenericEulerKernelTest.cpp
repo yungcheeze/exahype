@@ -21,6 +21,7 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 
+bool exahype::tests::c::GenericEulerKernelTest::_setNcpAndMatrixBToZero(false);
 
 // TODO: Do not conclude macro definitions with a semicolon?!
 //       (https://goo.gl/22Ac4j)
@@ -46,14 +47,13 @@ GenericEulerKernelTest::~GenericEulerKernelTest() {}
 
 void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
-  // TODO(Dominic): Assess
+  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!")
 //  testMethod(testSpaceTimePredictorLinear);
-//  testMethod(testSpaceTimePredictorNonlinear);
+  testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);
   testMethod(testVolumeIntegralNonlinear);
 
-  // TODO(Dominic): Fix test
-  //  testMethod(testRiemannSolverLinear);
+  testMethod(testRiemannSolverLinear);
   testMethod(testRiemannSolverNonlinear);
   testMethod(testSurfaceIntegralLinear);
   testMethod(testSurfaceIntegralNonlinear);
