@@ -190,12 +190,12 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 
     //evaluate troubled status for the given iVar
     boundaryMin = boundaryMinPerVariables[iVar];
-    for (int x=1; x<DIMENSIONS_TIMES_TWO; x+=numberOfVariables) {
-      boundaryMin = std::min( boundaryMin, boundaryMinPerVariables[x+iVar] );
+    for (int x=1; x<DIMENSIONS_TIMES_TWO; x++) {
+      boundaryMin = std::min( boundaryMin, boundaryMinPerVariables[x*numberOfVariables+iVar] );
     }
     boundaryMax = boundaryMaxPerVariables[iVar];
-    for (int x=1; x<DIMENSIONS_TIMES_TWO; x+=numberOfVariables) {
-      boundaryMax = std::max( boundaryMax, boundaryMaxPerVariables[x+iVar] );
+    for (int x=1; x<DIMENSIONS_TIMES_TWO; x++) {
+      boundaryMax = std::max( boundaryMax, boundaryMaxPerVariables[x*numberOfVariables+iVar] );
     }
     ldiff = (boundaryMax - boundaryMin) * diffScaling;
     assertion1(tarch::la::greaterEquals(ldiff,0.0),ldiff);
