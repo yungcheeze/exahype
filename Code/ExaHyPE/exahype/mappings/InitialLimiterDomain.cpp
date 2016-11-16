@@ -109,7 +109,7 @@ void exahype::mappings::InitialLimiterDomain::enterCell(
       limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
       limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
       limitingADERDGSolver->initialiseLimiter(fineGridCell.getCellDescriptionsIndex(),element,
-                                                fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+                                              fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
     }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);

@@ -166,6 +166,13 @@ private:
    * or if it contains unphysical oscillations.
    */
   bool solutionIsTroubled(SolverPatch& solverPatch);
+
+  /**
+   * Computes the cell-local minimum and maximum
+   * of the solution (per variable)
+   * and makes them accessible per face.
+   */
+  void determineMinAndMax(SolverPatch& solverPatch);
 public:
 
   LimitingADERDGSolver(
@@ -513,6 +520,23 @@ public:
       double**                                  tempFaceUnknownsArrays,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
+
+  /**
+   * Merges only the min max of two neighbours.
+   *
+   * This method is used to detect cells that are
+   * troubled after the imposition of initial conditions.
+   */
+  void mergeSolutionMinMax(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2,
+      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices);
 
   /**
    * Depending on the limiter status, we impose boundary conditions

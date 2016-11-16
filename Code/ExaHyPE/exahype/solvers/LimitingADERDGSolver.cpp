@@ -375,26 +375,42 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   }
 }
 
-/**
- * Checks if updated solution
- * of the ADER-DG solver is valid
- * or if it contains unphysical oscillations.
- */
 bool exahype::solvers::LimitingADERDGSolver::solutionIsTroubled(SolverPatch& solverPatch) {
-  double* solution    = nullptr;
-  double* solutionMin = nullptr;
-  double* solutionMax = nullptr;
-
-  solution = DataHeap::getInstance().getData(
+  double* solution = DataHeap::getInstance().getData(
       solverPatch.getSolution()).data();
-  solutionMin = DataHeap::getInstance().getData(
+  double* solutionMin = DataHeap::getInstance().getData(
       solverPatch.getSolutionMin()).data();
-  solutionMax = DataHeap::getInstance().getData(
+  double* solutionMax = DataHeap::getInstance().getData(
       solverPatch.getSolutionMax()).data();
 
   return kernels::limiter::generic::c::isTroubledCell(
       solution,_solver->getNumberOfVariables(),
       _solver->getNodesPerCoordinateAxis(),solutionMin,solutionMax);
+}
+
+void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(SolverPatch& solverPatch) {
+  double* solution = DataHeap::getInstance().getData(
+      solverPatch.getSolution()).data();
+  double* solutionMin = DataHeap::getInstance().getData(
+      solverPatch.getSolutionMin()).data();
+  double* solutionMax = DataHeap::getInstance().getData(
+      solverPatch.getSolutionMax()).data();
+
+  // Write the result to the face with index "0"
+  kernels::limiter::generic::c::findCellLocalMinAndMax(
+      solution,_numberOfVariables,_nodesPerCoordinateAxis,solutionMin,solutionMax);
+
+  // Copy the result on the other faces as well
+  for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
+    std::copy(
+        solutionMin,
+        solutionMin+_numberOfVariables, // past-the-end element
+        solutionMin+i*_numberOfVariables);
+    std::copy(
+        solutionMax,
+        solutionMax+_numberOfVariables, // past-the-end element
+        solutionMax+i*_numberOfVariables);
+  }
 }
 
 /**
@@ -1020,6 +1036,51 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
     default:
       break;
   }
+}
+
+void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMax(
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2,
+    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempStateSizedVectors,
+    double**                                  tempStateSizedSquareMatrices) {
+  assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
+
+  // 1.1. Determine "left" and "right" solverPatch
+  const int normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
+  assertion(normalDirection >= 0 && normalDirection < DIMENSIONS);
+  const int faceIndex1 = 2 * normalDirection +
+      (pos2(normalDirection) > pos1(normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
+  const int faceIndex2 = 2 * normalDirection +
+      (pos1(normalDirection) > pos2(normalDirection) ? 1 : 0);   // !!! Be aware of the ">" !!!
+
+  int cellDescriptionsIndexLeft  = cellDescriptionsIndex1;
+  int elementLeft                = element1;
+  int faceIndexLeft              = faceIndex1;
+
+  int cellDescriptionsIndexRight = cellDescriptionsIndex2;
+  int elementRight               = element2;
+  int faceIndexRight             = faceIndex2;
+
+  if (pos1(normalDirection) > pos2(normalDirection)) {
+    cellDescriptionsIndexLeft  = cellDescriptionsIndex2;
+    elementLeft                = element2;
+    faceIndexLeft              = faceIndex2;
+
+    cellDescriptionsIndexRight = cellDescriptionsIndex1;
+    elementRight               = element1;
+    faceIndexRight             = faceIndex1;
+  }
+
+  SolverPatch& solverPatchLeft  = _solver->getCellDescription(cellDescriptionsIndexLeft,elementLeft);
+  SolverPatch& solverPatchRight = _solver->getCellDescription(cellDescriptionsIndexRight,elementRight);
+
+  // 1.2. Merge min/max of both solver patches
+  mergeSolutionMinMaxOnFace(solverPatchLeft,solverPatchRight,faceIndexLeft,faceIndexRight);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryData(
