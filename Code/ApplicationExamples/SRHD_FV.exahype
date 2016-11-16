@@ -26,7 +26,7 @@ exahype-project  SRHD
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
-*/ 
+ 
  
   optimisation
     fuse-algorithmic-steps        = off
@@ -36,14 +36,14 @@ exahype-project  SRHD
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
   end optimisation
-
+*/
   solver Finite-Volumes SRHDSolverFV
     variables          = 5
     parameters         = 0
     patch-size         = 5
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::MUSCL
+    kernel             = generic::Godunov
     language           = C
 
     /* Apparently, MUSCL doesnt support vtk::Cartesian::vertices */

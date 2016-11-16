@@ -12,11 +12,6 @@ void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, const double* nv);
 }
 
-void SRHD::SRHDSolverFV::init() {
-  // @todo Please implement/augment if required
-}
-
-
 
 void SRHD::SRHDSolverFV::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   if ( tarch::la::equals(t,0.0) ) {
@@ -68,4 +63,26 @@ void SRHD::SRHDSolverFV::source(const double* const Q, double* S) {
   S[4] = 0.;
 }
 
+void SRHD::SRHDSolverFV::boundaryValues(
+    const double* const x,
+    const double t,const double dt,
+    const int faceIndex,
+    const int normalNonZero,
+    const double* const stateIn,
+    double* stateOut) {
 
+  // The problem with these definitions is that in a simulation
+  // with a global nonzero velocity (as in MovingGauss2D), errnous
+  // values move into the simulation domain very quickly. So these
+  // boundary conditions are not good at all. Instead, we should
+  // have per default "vacuum" boundary conditions, so that vacuum
+  // values enter the grid as soon as matter moves away.
+
+  //  // stateOut
+  //  // @todo Please implement
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
+}
