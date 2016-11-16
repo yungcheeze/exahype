@@ -56,9 +56,9 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
           void PDEFlux(const double* const Q, double** F)>
 double riemannSolver(double* F, const double* qL, const double* qR,
                      int numberOfVariables, int normalNonZero,
-                     double** tempStateSizedArrays) { // TODO(Dominic): I need four of those
-  double* sL = tempStateSizedArrays[0]; 
-  double* sR = tempStateSizedArrays[1];
+                     double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
+  double* sL = tempStateSizedVectors[0]; 
+  double* sR = tempStateSizedVectors[1];
 
   PDEEigenvalues(qL, normalNonZero, sL);
   PDEEigenvalues(qR, normalNonZero, sR);
@@ -73,8 +73,8 @@ double riemannSolver(double* F, const double* qL, const double* qR,
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL[2] = {tempStateSizedArrays[0],tempStateSizedArrays[1]};
-  double* FR[2] = {tempStateSizedArrays[2],tempStateSizedArrays[3]};
+  double* FL[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]};
+  double* FR[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]};
   PDEFlux(qL, FL);
   PDEFlux(qR, FR);
 
@@ -271,7 +271,7 @@ template <void PDEFlux(const double* const Q, double** F),
                               double* lambda)>
 double solutionUpdate(
     double* luh_new, const double* luh,
-    double** tempStateSizedArrays,double** tempUnknowns,
+    double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     double dt, int numberOfVariables, int basisSize) {  
   idx3 idx(basisSize+2, basisSize+2, numberOfVariables);
@@ -286,7 +286,7 @@ double solutionUpdate(
   static const double EXAHYPE_CFL_FACTOR = 0.9; // TODO(Dominic): Move this out.
   
   // x edges 
-  double* Fn = tempStateSizedArrays[0];
+  double* Fn = tempStateSizedVectors[0];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {
       double s_max_x = 
@@ -294,7 +294,7 @@ double solutionUpdate(
               Fn, 
               luh + idx(j, k, 0),
               luh + idx(j, k+1, 0), 
-              numberOfVariables, 0, tempStateSizedArrays + 1);
+              numberOfVariables, 0, tempStateSizedVectors + 1);
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
       dt_max_allowed = std::min(
@@ -314,7 +314,7 @@ double solutionUpdate(
           Fn, 
           luh + idx(j, k, 0),
           luh + idx(j+1, k, 0), 
-          numberOfVariables, 1, tempStateSizedArrays + 1);
+          numberOfVariables, 1, tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
       
@@ -328,7 +328,7 @@ double solutionUpdate(
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Add the source terms 
-  double* source = tempStateSizedArrays[0]; // temp var; state sized vector
+  double* source = tempStateSizedVectors[0]; // temp var; state sized vector
   
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
@@ -403,7 +403,6 @@ void solutionAdjustment(
 
       // read initial condition
       PDESolutionAdjustment(x, 0, t, dt, luh+idx_luh(j,i,0));
-      // TODO(Dominic): We should provide the user with more data here to enable her to compute volume averages.
     }
   }
 }
