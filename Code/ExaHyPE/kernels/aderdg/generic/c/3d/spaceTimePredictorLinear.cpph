@@ -30,7 +30,7 @@ void spaceTimePredictorLinear(SolverType& solver,
                               double** tempSpaceTimeFluxUnknowns,
                               double*  tempUnknowns,
                               double*  tempFluxUnknowns,
-                              double*  tempStateSizedVector
+                              double*  tempStateSizedVector,
                               const double* const luh,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const double dt) {
@@ -170,6 +170,7 @@ void spaceTimePredictorLinear(SolverType& solver,
     }
   }
 
+  double* lQhi = tempUnknowns;
   idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfVariables);
 
   // Immediately compute the time-averaged space-time polynomials
@@ -201,6 +202,7 @@ void spaceTimePredictorLinear(SolverType& solver,
     dtavFac *= dt / (i + 2);
   }
 
+  double* lFhi = tempFluxUnknowns;
   idx5 idx_lFhi(DIMENSIONS, basisSize, basisSize, basisSize, numberOfVariables);
 
   // lFhi(m,l,k,j,i) = lFh(m,i,l,k,j,1)
