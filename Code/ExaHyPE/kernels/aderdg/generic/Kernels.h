@@ -48,43 +48,18 @@
 /** Computes a 1-d node index.
   * The brackets around \p ix allow to write
   * idx1(ix+ox,...), where ox is some offset.
+  *
+  * TODO(Dominic): Get rid of this; only used in c/2d/boundaryConditions.cpph
   */
 #define nidx1(ix) numberOfVariables*(ix)
 
 /** Computes a 2-d node index.
   * The brackets around \p ix and \p iy allow to write
   * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
+  *
+  * TODO(Dominic): Get rid of this; only used in c/3d/boundaryConditions.cpph
   */
 #define nidx2(ix, iy) numberOfVariables*(basisSize * (iy) + ix)
-
-/** Computes a 3-d node index.
-  * The brackets around \p ix, \p iy, and \p iz allow to write
-  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
-  */
-#define nidx3(ix, iy, iz) \
-  numberOfVariables*(basisSize2 * (iz) + basisSize * (iy) + ix)
-
-/** Computes a 1-d index.
-  * The brackets around \p ix allow to write
-  * idx1(ix+ox,...), where ox is some offset.
-  */
-// #define idx1(ix, ivar) numberOfVariables*(ix) + (ivar)
-
-/** Computes a 2-d index.
-  * The brackets around \p ix and \p iy allow to write
-  * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
-  */
-// Please use idxX in ../KernelUtils.h. Attention: Different semantics!
-//#define idx2(ix, iy, ivar) numberOfVariables*(basisSize * (iy) + ix) + ivar
-
-/** Computes a 3-d index.
-  * The brackets around \p ix, \p iy, and \p iz allow to write
-  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
-  */
-/*
-#define idx3(ix, iy, iz, ivar) \
-  numberOfVariables*(basisSize2 * (iz) + basisSize * (iy) + ix) + ivar
-  */
 
 // todo Dominic Etienne Charrier
 // Possibly redundant definition of face indices
@@ -114,6 +89,7 @@ void spaceTimePredictorNonlinear(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
+    double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize);
