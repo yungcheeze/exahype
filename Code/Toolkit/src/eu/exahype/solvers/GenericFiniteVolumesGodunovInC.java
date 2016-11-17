@@ -27,8 +27,8 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
   
-	  content = content.replaceAll("\\$\\{Project\\}", projectName);
-	  content = content.replaceAll("\\$\\{Solver\\}", solverName);
+	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
 	  
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -39,8 +39,8 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
 	  }
-	  content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
-	  content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
+	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  
 	  writer.write(content);
   }
@@ -50,8 +50,8 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverGodunovInCGeneratedCode.template");
     
-	  content = content.replaceAll("\\$\\{Project\\}", projectName);
-	  content = content.replaceAll("\\$\\{Solver\\}", solverName);
+	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
 	  //
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -64,12 +64,12 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
 	  }
-	  content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
-	  content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
-	  content = content.replaceAll("\\$\\{SolverConstructorArgumentExtension\\}", solverConstructorArgumentExtension);
+	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
 	  //
-	  content = content.replaceAll("\\$\\{NumberOfVariables\\}", String.valueOf(_numberOfVariables));
-	  content = content.replaceAll("\\$\\{NumberOfParameters\\}",String.valueOf( _numberOfParameters));
+	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
 	  
 	  writer.write(content);
   }
@@ -79,11 +79,11 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverGodunovInCUserCode.template");
     
-    content = content.replaceAll("\\$\\{Project\\}", projectName);
-    content = content.replaceAll("\\$\\{Solver\\}", solverName);
+    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
     
-    content = content.replaceAll("\\$\\{Elements\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content = content.replaceAll("\\$\\{Dimensions\\}",String.valueOf(_dimensions));
+    content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
+    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
     
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
 
@@ -129,11 +129,11 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
       if (i<_numberOfVariables-1) boundaryValues += "\n";
     }
     
-    content = content.replaceAll("\\$\\{AdjustedSolutionValues\\}",adjustedSolutionValues);
-    content = content.replaceAll("\\$\\{Eigenvalues\\}",eigenvalues);
-    content = content.replaceAll("\\$\\{Flux\\}",flux);
-    content = content.replaceAll("\\$\\{Source\\}",source);
-    content = content.replaceAll("\\$\\{BoundaryValues\\}",boundaryValues);
+    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustedSolutionValues);
+    content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
+    content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
+    content = content.replaceAll("\\{\\{Source\\}\\}",source);
+    content = content.replaceAll("\\{\\{BoundaryValues\\}\\}",boundaryValues);
     
     writer.write(content);
   }
