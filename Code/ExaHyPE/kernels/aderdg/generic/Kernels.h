@@ -347,6 +347,18 @@ void riemannSolverLinear(
     const double dt,
     const int normalNonZero);
 
+template <typename SolverType>
+void boundaryConditions(
+    SolverType& solver,
+    double* fluxOut, double* stateOut,
+    const double* const fluxIn, const double* const stateIn, // TODO(Dominic): Inconsistent order of arguments w.r.t to riemannSolver
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+    const double t, const double dt, const int faceIndex,
+    const int normalNonZero) {
+  std::cout << "WARNING: Boundary conditions are not implemented for Fortran yet! (You can find the code for this output in .../aderdg/generic/Kernels.h)" << std::endl;
+}
+
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
