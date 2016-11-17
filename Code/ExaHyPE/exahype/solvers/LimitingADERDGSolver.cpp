@@ -30,21 +30,28 @@ int exahype::solvers::LimitingADERDGSolver::tryGetElement(
 int exahype::solvers::LimitingADERDGSolver::tryGetLimiterElement(
     const int cellDescriptionsIndex,
     const int solverNumber) const  {
-  return _solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+  return _limiter->tryGetElement(cellDescriptionsIndex,solverNumber);
+}
+
+exahype::solvers::Solver::SubcellPosition exahype::solvers::LimitingADERDGSolver::computeSubcellPositionOfCellOrAncestor(
+      const int cellDescriptionsIndex,
+      const int element) {
+  return _solver->computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
 }
 
 exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
+    const std::string& identifier,
     std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
-    std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
-    std::unique_ptr<profilers::Profiler> profilerSolver,
-    std::unique_ptr<profilers::Profiler> profilerLimiter)
+    std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter)
     :
-    exahype::solvers::Solver(solver->getIdentifier(), Solver::Type::LimitingADERDG, solver->getNumberOfVariables(),
+    exahype::solvers::Solver(identifier, Solver::Type::LimitingADERDG, solver->getNumberOfVariables(),
         solver->getNumberOfParameters(), solver->getNodesPerCoordinateAxis(), solver->getMaximumMeshSize(),
           solver->getTimeStepping()),
-    _limiterDomainChanged(false)
+          _solver(std::move(solver)),
+          _limiter(std::move(limiter)),
+          _limiterDomainChanged(false)
 {
-  assertion(solver->getNumberOfParameters() == 0);
+  assertion(_solver->getNumberOfParameters() == 0);
 }
 
 double exahype::solvers::LimitingADERDGSolver::getMinTimeStamp() const {

@@ -246,7 +246,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
         _tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
         _tempUnknowns             [cellDescription.getSolverNumber()],
         _tempFluxUnknowns         [cellDescription.getSolverNumber()],
-        _tempStateSizedVectors    [cellDescription.getSolverNumber()]); // todo remove this argument
+        _tempStateSizedVectors    [cellDescription.getSolverNumber()]);
 
     solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
   }

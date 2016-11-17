@@ -42,13 +42,6 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
   friend class exahype::mappings::LimiterStatusSpreading;
   friend class exahype::mappings::SolutionRecomputation;
 private:
-  /**
-   * A flag indicating that the limiter domain has changed.
-   * This might be the case if either a cell has been
-   * newly marked as troubled or healed.
-   */
-  bool _limiterDomainChanged;
-
   typedef exahype::records::ADERDGCellDescription SolverPatch;
   typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
 
@@ -70,6 +63,13 @@ private:
    * The finite volumes solver used for the a posteriori subcell limiting.
    */
   std::unique_ptr<exahype::solvers::FiniteVolumesSolver> _limiter;
+
+  /**
+   * A flag indicating that the limiter domain has changed.
+   * This might be the case if either a cell has been
+   * newly marked as troubled or healed.
+   */
+  bool _limiterDomainChanged;
 
   /**
    * TODO(Dominc): Remove after docu is recycled.
@@ -176,14 +176,9 @@ private:
 public:
 
   LimitingADERDGSolver(
+      const std::string& identifier,
       std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
-      std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
-      std::unique_ptr<profilers::Profiler> profilerSolver =
-          std::unique_ptr<profilers::Profiler>(
-              new profilers::simple::NoOpProfiler("")),
-      std::unique_ptr<profilers::Profiler> profilerLimiter =
-          std::unique_ptr<profilers::Profiler>(
-              new profilers::simple::NoOpProfiler("")));
+      std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter);
 
   virtual ~LimitingADERDGSolver() {
     _solver.reset();
@@ -235,6 +230,13 @@ public:
   int tryGetLimiterElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const;
+
+  /**
+    * \see exahype::amr::computeSubcellPositionOfCellOrAncestor
+    */
+  SubcellPosition computeSubcellPositionOfCellOrAncestor(
+      const int cellDescriptionsIndex,
+      const int element) override;
 
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION

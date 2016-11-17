@@ -293,17 +293,58 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double dt, double& maxAdmissibleDt) = 0;
 
+  /**
+   * This operation allows you to impose time-dependent solution values
+   * as well as to add contributions of source terms.
+   * Please be aware that this operation is called per time step if
+   * the corresponding predicate hasToUpdateSolution() yields true for the
+   * region and time interval.
+   *
+   * \param t  The new time stamp after the solution update.
+   * \param dt The time step size that was used to update the solution.
+   *           This time step size was computed based on the old solution.
+   *           If we impose initial conditions, i.e, t=0, this value
+   *           equals std::numeric_limits<double>::max().
+   */
   virtual void solutionAdjustment(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
 
+  /**
+   * This hook can be used to trigger solution adjustments within the
+   * region corresponding to \p cellCentre and \p dx
+   * and the time interval corresponding to t and dt.
+   *
+   * \param t  The new time stamp after the solution update.
+   * \param dt The time step size that was used to update the solution.
+   *           This time step size was computed based on the old solution.
+   *           If we impose initial conditions, i.e, t=0, this value
+   *           equals std::numeric_limits<double>::max().
+   */
   virtual bool hasToAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
+
+  /**
+   * @defgroup AMR Solver routines for adaptive mesh refinement
+   */
+  ///@{
+  /**
+   * The refinement criterion that must be defined by the user.
+   *
+   */
+  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in
+  // the invoking code, i.e., level-> level-1
+  // since this is was the user expects.
+  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
+      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const double time,
+      const int level) = 0;
 
   double getMinTimeStamp() const override;
 

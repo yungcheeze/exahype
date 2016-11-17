@@ -118,7 +118,6 @@ double exahype::solvers::Solver::getMinSolverTimeStampOfAllSolvers() {
     currentMinTimeStamp =
         std::min(currentMinTimeStamp, p->getMinTimeStamp());
   }
-
   return currentMinTimeStamp;
 }
 
