@@ -338,47 +338,59 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
         fineGridVertices,fineGridVerticesEnumerator);
     break;
   case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
-      _solver->updateSolution(
-          cellDescriptionsIndex,element,
-          tempStateSizedArrays,
-          tempUnknowns,
-          fineGridVertices,fineGridVerticesEnumerator);
-      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-      exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
-          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+    _solver->updateSolution(
+        cellDescriptionsIndex,element,
+        tempStateSizedArrays,
+        tempUnknowns,
+        fineGridVertices,fineGridVerticesEnumerator);
+    assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+    exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
+        _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
-      solverSolution = DataHeap::getInstance().getData(
-          solverPatch.getSolution()).data();
-      limiterSolution = DataHeap::getInstance().getData(
-          limiterPatch.getSolution()).data();
+    solverSolution = DataHeap::getInstance().getData(
+        solverPatch.getSolution()).data();
+    limiterSolution = DataHeap::getInstance().getData(
+        limiterPatch.getSolution()).data();
 
-      // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-      kernels::limiter::generic::c::projectOnFVLimiterSpace(
-          solverSolution,_solver->getNumberOfVariables(),
-          _solver->getNodesPerCoordinateAxis(),limiterSolution);
+    // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
+    kernels::limiter::generic::c::projectOnFVLimiterSpace(
+        solverSolution,_solver->getNumberOfVariables(),
+        _solver->getNodesPerCoordinateAxis(),limiterSolution);
+    } break;
+  case SolverPatch::LimiterStatus::Troubled:
+  case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
+    _limiter->updateSolution(
+        cellDescriptionsIndex,element,
+        tempStateSizedArrays,
+        tempUnknowns,
+        fineGridVertices,fineGridVerticesEnumerator);
+    assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+    exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
+        _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+
+    solverSolution = DataHeap::getInstance().getData(
+        solverPatch.getSolution()).data();
+    limiterSolution = DataHeap::getInstance().getData(
+        limiterPatch.getSolution()).data();
+
+    // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
+    kernels::limiter::generic::c::projectOnDGSpace(limiterSolution,_solver->getNumberOfVariables(),
+        _solver->getNodesPerCoordinateAxis(),solverSolution);
+    } break;
+  }
+
+  switch(solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      determineMinAndMax(solverPatch);
       break;
-    }
     case SolverPatch::LimiterStatus::Troubled:
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
-      _limiter->updateSolution(
-          cellDescriptionsIndex,element,
-          tempStateSizedArrays,
-          tempUnknowns,
-          fineGridVertices,fineGridVerticesEnumerator);
-      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-      exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
-          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-
-      solverSolution = DataHeap::getInstance().getData(
-          solverPatch.getSolution()).data();
-      limiterSolution = DataHeap::getInstance().getData(
-          limiterPatch.getSolution()).data();
-
-      // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-      kernels::limiter::generic::c::projectOnDGSpace(limiterSolution,_solver->getNumberOfVariables(),
-          _solver->getNodesPerCoordinateAxis(),solverSolution);
+      // TODO(Dominic): Compute min and max based volume averages for these cells?
+//      exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
+//          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+//      determineMinAndMax(limiterPatch);
       break;
-    }
   }
 }
 
