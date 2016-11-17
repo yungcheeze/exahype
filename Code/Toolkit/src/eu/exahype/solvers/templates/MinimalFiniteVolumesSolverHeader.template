@@ -7,15 +7,15 @@
 // ========================
 #include "exahype/Parser.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
-${ProfilerInclude}
+{{ProfilerInclude}}
 
-namespace ${Project}{
-  class ${Solver};
+namespace {{Project}}{
+  class {{Solver}};
 }
 
-class ${Project}::${Solver} : public exahype::solvers::FiniteVolumesSolver {
+class {{Project}}::{{Solver}} : public exahype::solvers::FiniteVolumesSolver {
   public:
-    ${Solver}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping${ConstructorSignatureExtension})
+    {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{ConstructorSignatureExtension}})
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;
     bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;

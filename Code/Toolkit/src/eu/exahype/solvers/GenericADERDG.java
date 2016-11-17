@@ -33,8 +33,8 @@ public class GenericADERDG implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
   
-	  content = content.replaceAll("\\$\\{Project\\}", projectName);
-	  content = content.replaceAll("\\$\\{Solver\\}", solverName);
+	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
 	  
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -45,13 +45,13 @@ public class GenericADERDG implements Solver {
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
 	  }
-	  content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
-	  content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
+	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  
-	  content = content.replaceAll("\\$\\{NumberOfVariables\\}", String.valueOf(_numberOfVariables));
-    content = content.replaceAll("\\$\\{NumberOfParameters\\}",String.valueOf( _numberOfParameters));
-    content = content.replaceAll("\\$\\{Dimensions\\}",String.valueOf( _dimensions));
-    content = content.replaceAll("\\$\\{Order\\}", String.valueOf(_order));
+	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
+    content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
 	  
 	  writer.write(content);
   }
@@ -61,8 +61,8 @@ public class GenericADERDG implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCGeneratedCode.template");
     
-	  content = content.replaceAll("\\$\\{Project\\}", projectName);
-	  content = content.replaceAll("\\$\\{Solver\\}", solverName);
+	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
 	  //
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -72,74 +72,74 @@ public class GenericADERDG implements Solver {
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorArgumentExtension  += ", std::move(profiler)";
 		  
-      content = content.replaceAll("\\$\\{BeforeSpaceTimePredictor\\}", "  _profiler->start(\"spaceTimePredictor\");");  
-      content = content.replaceAll("\\$\\{AfterSpaceTimePredictor\\}", "  _profiler->stop(\"spaceTimePredictor\");"); 
-      content = content.replaceAll("\\$\\{BeforeSolutionUpdate\\}", "  _profiler->start(\"solutionUpdate\");"); 
-      content = content.replaceAll("\\$\\{AfterSolutionUpdate\\}", "  _profiler->stop(\"solutionUpdate\");"); 
-      content = content.replaceAll("\\$\\{BeforeVolumeIntegral\\}", "  _profiler->start(\"volumeIntegral\");"); 
-      content = content.replaceAll("\\$\\{AfterVolumeIntegral\\}", "  _profiler->stop(\"volumeIntegral\");"); 
-      content = content.replaceAll("\\$\\{BeforeSurfaceIntegral\\}", "  _profiler->start(\"surfaceIntegral\");"); 
-      content = content.replaceAll("\\$\\{AfterSurfaceIntegral\\}", "  _profiler->stop(\"surfaceIntegral\");"); 
-      content = content.replaceAll("\\$\\{BeforeRiemannSolver\\}", "  _profiler->start(\"riemannSolver\");"); 
-      content = content.replaceAll("\\$\\{AfterRiemannSolver\\}", "  _profiler->stop(\"riemannSolver\");"); 
-      content = content.replaceAll("\\$\\{BeforeBoundaryConditions\\}", "  _profiler->start(\"boundaryConditions\");"); 
-      content = content.replaceAll("\\$\\{AfterBoundaryConditions\\}", "  _profiler->stop(\"boundaryConditions\");"); 
-      content = content.replaceAll("\\$\\{BeforeStableTimeStepSize\\}", "  _profiler->start(\"stableTimeStepSize\");"); 
-      content = content.replaceAll("\\$\\{AfterStableTimeStepSize\\}", "  _profiler->stop(\"stableTimeStepSize\");"); 
-      content = content.replaceAll("\\$\\{BeforeSolutionAdjustment\\}", "  _profiler->start(\"solutionAdjustment\");"); 
-      content = content.replaceAll("\\$\\{AfterSolutionAdjustment\\}", "  _profiler->stop(\"solutionAdjustment\");"); 
-      content = content.replaceAll("\\$\\{BeforeFaceUnknownsProlongation\\}", "  _profiler->start(\"faceUnknownsProlongation\");"); 
-      content = content.replaceAll("\\$\\{AfterFaceUnknownsProlongation\\}", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
-      content = content.replaceAll("\\$\\{BeforeFaceUnknownsRestriction\\}", "  _profiler->start(\"faceUnknownsRestriction\");"); 
-      content = content.replaceAll("\\$\\{AfterFaceUnknownsRestriction\\}", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
-      content = content.replaceAll("\\$\\{BeforeVolumeUnknownsProlongation\\}", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
-      content = content.replaceAll("\\$\\{AfterVolumeUnknownsProlongation\\}", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
-      content = content.replaceAll("\\$\\{BeforeVolumeUnknownsRestriction\\}", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
-      content = content.replaceAll("\\$\\{AfterVolumeUnknownsRestriction\\}", "  _profiler->stop(\"volumeUnknownsRestriction\");");
+      content = content.replaceAll("\\{\\{BeforeSpaceTimePredictor\\}\\}", "  _profiler->start(\"spaceTimePredictor\");");  
+      content = content.replaceAll("\\{\\{AfterSpaceTimePredictor\\}\\}", "  _profiler->stop(\"spaceTimePredictor\");"); 
+      content = content.replaceAll("\\{\\{BeforeSolutionUpdate\\}\\}", "  _profiler->start(\"solutionUpdate\");"); 
+      content = content.replaceAll("\\{\\{AfterSolutionUpdate\\}\\}", "  _profiler->stop(\"solutionUpdate\");"); 
+      content = content.replaceAll("\\{\\{BeforeVolumeIntegral\\}\\}", "  _profiler->start(\"volumeIntegral\");"); 
+      content = content.replaceAll("\\{\\{AfterVolumeIntegral\\}\\}", "  _profiler->stop(\"volumeIntegral\");"); 
+      content = content.replaceAll("\\{\\{BeforeSurfaceIntegral\\}\\}", "  _profiler->start(\"surfaceIntegral\");"); 
+      content = content.replaceAll("\\{\\{AfterSurfaceIntegral\\}\\}", "  _profiler->stop(\"surfaceIntegral\");"); 
+      content = content.replaceAll("\\{\\{BeforeRiemannSolver\\}\\}", "  _profiler->start(\"riemannSolver\");"); 
+      content = content.replaceAll("\\{\\{AfterRiemannSolver\\}\\}", "  _profiler->stop(\"riemannSolver\");"); 
+      content = content.replaceAll("\\{\\{BeforeBoundaryConditions\\}\\}", "  _profiler->start(\"boundaryConditions\");"); 
+      content = content.replaceAll("\\{\\{AfterBoundaryConditions\\}\\}", "  _profiler->stop(\"boundaryConditions\");"); 
+      content = content.replaceAll("\\{\\{BeforeStableTimeStepSize\\}\\}", "  _profiler->start(\"stableTimeStepSize\");"); 
+      content = content.replaceAll("\\{\\{AfterStableTimeStepSize\\}\\}", "  _profiler->stop(\"stableTimeStepSize\");"); 
+      content = content.replaceAll("\\{\\{BeforeSolutionAdjustment\\}\\}", "  _profiler->start(\"solutionAdjustment\");"); 
+      content = content.replaceAll("\\{\\{AfterSolutionAdjustment\\}\\}", "  _profiler->stop(\"solutionAdjustment\");"); 
+      content = content.replaceAll("\\{\\{BeforeFaceUnknownsProlongation\\}\\}", "  _profiler->start(\"faceUnknownsProlongation\");"); 
+      content = content.replaceAll("\\{\\{AfterFaceUnknownsProlongation\\}\\}", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
+      content = content.replaceAll("\\{\\{BeforeFaceUnknownsRestriction\\}\\}", "  _profiler->start(\"faceUnknownsRestriction\");"); 
+      content = content.replaceAll("\\{\\{AfterFaceUnknownsRestriction\\}\\}", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
+      content = content.replaceAll("\\{\\{BeforeVolumeUnknownsProlongation\\}\\}", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
+      content = content.replaceAll("\\{\\{AfterVolumeUnknownsProlongation\\}\\}", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
+      content = content.replaceAll("\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
+      content = content.replaceAll("\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "  _profiler->stop(\"volumeUnknownsRestriction\");");
 	  } else {
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeSpaceTimePredictor\\}", "");  
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterSpaceTimePredictor\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeSolutionUpdate\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterSolutionUpdate\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeVolumeIntegral\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterVolumeIntegral\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeSurfaceIntegral\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterSurfaceIntegral\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeRiemannSolver\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterRiemannSolver\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeBoundaryConditions\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterBoundaryConditions\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeStableTimeStepSize\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterStableTimeStepSize\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeSolutionAdjustment\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterSolutionAdjustment\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeFaceUnknownsProlongation\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterFaceUnknownsProlongation\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeFaceUnknownsRestriction\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterFaceUnknownsRestriction\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeVolumeUnknownsProlongation\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterVolumeUnknownsProlongation\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{BeforeVolumeUnknownsRestriction\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\$\\{AfterVolumeUnknownsRestriction\\}", "");
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSpaceTimePredictor\\}\\}", "");  
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSpaceTimePredictor\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSolutionUpdate\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSolutionUpdate\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeIntegral\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeIntegral\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSurfaceIntegral\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSurfaceIntegral\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeRiemannSolver\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterRiemannSolver\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeBoundaryConditions\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterBoundaryConditions\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeStableTimeStepSize\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterStableTimeStepSize\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSolutionAdjustment\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSolutionAdjustment\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeFaceUnknownsProlongation\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterFaceUnknownsProlongation\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeFaceUnknownsRestriction\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterFaceUnknownsRestriction\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeUnknownsProlongation\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsProlongation\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", ""); 
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "");
 	  }
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
 	  }
 	  
-	  content = content.replaceAll("\\$\\{ProfilerInclude\\}",profilerInclude);
-	  content = content.replaceAll("\\$\\{SolverConstructorSignatureExtension\\}", solverConstructorSignatureExtension);
-	  content = content.replaceAll("\\$\\{SolverConstructorArgumentExtension\\}", solverConstructorArgumentExtension);
+	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
 	  
 	  if (_isLinear) {
-	    content = content.replaceAll("\\$\\{NonlinearOrLinear\\}","Linear");
+	    content = content.replaceAll("\\{\\{NonlinearOrLinear\\}\\}","Linear");
 	  } else {
-	    content = content.replaceAll("\\$\\{NonlinearOrLinear\\}","Nonlinear");
+	    content = content.replaceAll("\\{\\{NonlinearOrLinear\\}\\}","Nonlinear");
 	  }
 	  
 	  if (_isFortran) {
-      content = content.replaceAll("\\$\\{Language\\}","fortran");
+      content = content.replaceAll("\\{\\{Language\\}\\}","fortran");
     } else {
-      content = content.replaceAll("\\$\\{Language\\}","c");
+      content = content.replaceAll("\\{\\{Language\\}\\}","c");
     }
 	  
 	  writer.write(content);
@@ -150,11 +150,11 @@ public class GenericADERDG implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
-    content = content.replaceAll("\\$\\{Project\\}", projectName);
-    content = content.replaceAll("\\$\\{Solver\\}", solverName);
+    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
     
-    content = content.replaceAll("\\$\\{Elements\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content = content.replaceAll("\\$\\{Dimensions\\}",String.valueOf(_dimensions));
+    content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
+    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
     
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
 
@@ -217,13 +217,13 @@ public class GenericADERDG implements Solver {
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
     }
     
-    content = content.replaceAll("\\$\\{AdjustedSolutionValues\\}",adjustedSolutionValues);
-    content = content.replaceAll("\\$\\{Eigenvalues\\}",eigenvalues);
-    content = content.replaceAll("\\$\\{Flux\\}",flux);
-    content = content.replaceAll("\\$\\{Source\\}",source);
-    content = content.replaceAll("\\$\\{BoundaryValues\\}",boundaryValues);
-    content = content.replaceAll("\\$\\{NonConservativeProduct\\}",ncp);
-    content = content.replaceAll("\\$\\{MatrixB\\}",matrixb);
+    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustedSolutionValues);
+    content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
+    content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
+    content = content.replaceAll("\\{\\{Source\\}\\}",source);
+    content = content.replaceAll("\\{\\{BoundaryValues\\}\\}",boundaryValues);
+    content = content.replaceAll("\\{\\{NonConservativeProduct\\}\\}",ncp);
+    content = content.replaceAll("\\{\\{MatrixB\\}\\}",matrixb);
     
     writer.write(content);
   }
