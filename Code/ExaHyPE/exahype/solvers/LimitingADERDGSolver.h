@@ -808,6 +808,7 @@ public:
 
   std::string toString() const override {
     assertionMsg(false, "Please implement!");
+    return _solver->toString();
   }
 
   void toString (std::ostream& out) const override {
