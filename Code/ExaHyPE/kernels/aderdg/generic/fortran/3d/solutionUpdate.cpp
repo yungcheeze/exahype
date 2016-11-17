@@ -31,7 +31,6 @@ void kernels::aderdg::generic::fortran::solutionUpdate(
     double *luh, const double *const lduh, const double dt,
     const int numberOfVariables, const int numberOfParameters, 
     const int basisSize) {
-  const int order = basisSize - 1;
 
   double *lduhFortran =
       new double[numberOfVariables * basisSize * basisSize * basisSize];

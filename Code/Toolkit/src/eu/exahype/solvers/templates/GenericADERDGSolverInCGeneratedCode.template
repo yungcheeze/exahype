@@ -64,7 +64,7 @@ ${AfterRiemannSolver}
 
 void ${Project}::${Solver}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
 ${BeforeBoundaryConditions}
-  kernels::aderdg::generic::${Language}::boundaryConditions<${Solver}>(*this,fluxOut,stateOut,fluxIn,stateIn,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
+  kernels::aderdg::generic::c::boundaryConditions<${Solver}>(*this,fluxOut,stateOut,fluxIn,stateIn,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
 ${AfterBoundaryConditions}
 }
 
@@ -89,7 +89,7 @@ ${AfterSolutionAdjustment}
 
 void ${Project}::${Solver}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 ${BeforeFaceUnknownsProlongation}
-  kernels::aderdg::generic::${Language}::faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
 ${AfterFaceUnknownsProlongation}
 }
 
@@ -97,7 +97,7 @@ ${AfterFaceUnknownsProlongation}
 
 void ${Project}::${Solver}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 ${BeforeFaceUnknownsRestriction}
-  kernels::aderdg::generic::${Language}::faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
 ${AfterFaceUnknownsRestriction}
 }
 
@@ -105,7 +105,7 @@ ${AfterFaceUnknownsRestriction}
 
 void ${Project}::${Solver}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 ${BeforeVolumeUnknownsProlongation}
-  kernels::aderdg::generic::${Language}::volumeUnknownsProlongation(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsProlongation(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
 ${AfterVolumeUnknownsProlongation}
 }
 
@@ -113,6 +113,6 @@ ${AfterVolumeUnknownsProlongation}
 
 void ${Project}::${Solver}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 ${BeforeVolumeUnknownsRestriction}
-  kernels::aderdg::generic::${Language}::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
 ${AfterVolumeUnknownsRestriction}
 }
