@@ -92,7 +92,7 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize);
+    const double dt);
 
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int numberOfParameters,
@@ -238,8 +238,7 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const double dt);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
@@ -255,8 +254,7 @@ void spaceTimePredictorLinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const double dt);
 
 /**
  * (At the moment, we always evaluate the time averaged space-time
@@ -322,8 +320,7 @@ template <typename SolverType>
 void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
-                        const double t, const double dt,
-                        const int numberOfVariables, const int basisSize);
+                        const double t, const double dt);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
@@ -337,9 +334,7 @@ void riemannSolverNonlinear(
     double** tempStateSizedVectors,
     double** tempStateSizedSquareMatrices,
     const double dt,
-    const int normalNonZero,
-    const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const int normalNonZero);
 
 template <typename SolverType>
 void riemannSolverLinear(
@@ -350,9 +345,7 @@ void riemannSolverLinear(
     double** tempStateSizedVectors,
     double** tempStateSizedSquareMatrices,
     const double dt,
-    const int normalNonZero,
-    const int numberOfVariables,
-    const int numberOfParameters, const int basisSize);
+    const int normalNonZero);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
@@ -360,8 +353,7 @@ void riemannSolverLinear(
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
+                          const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 void faceUnknownsProlongation(
     double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,

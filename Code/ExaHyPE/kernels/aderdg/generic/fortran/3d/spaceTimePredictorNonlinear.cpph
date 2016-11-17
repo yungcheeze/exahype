@@ -58,8 +58,7 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize){
+    const double dt){
   // circumvent 'const double'
   // double *luhTemp =
       // new double[numberOfVariables * basisSize * basisSize * basisSize];
@@ -71,18 +70,21 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
   double* lQhi = tempUnknowns;
   double* lFhi = tempFluxUnknowns;
 
-  double *dtTemp = new double[1];
-  dtTemp[0] = predictorTimeStepSize;
+  double dtTemp[1];
+  dtTemp[0] = dt;
 
-  double *dxTemp = new double[3];
+  double dxTemp[3];
   dxTemp[0] = dx[0];
   dxTemp[1] = dx[1];
   dxTemp[2] = dx[2];
 
   // space-time predictor:
   aderpicardloopnonlinear_(luh, dtTemp, dxTemp, lQi, lFi);
-  const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
   
+  const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize         = solver.getNodesPerCoordinateAxis();
+  const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
+
   // std::cout << "numSpaceDof: " << numSpaceDof << std::endl;
   // lFhi = [ lFhi_x | lFhi_y | lFhi_z ]
   // aderpredictor_(lQi,lFi,lQhi,lFhi);
@@ -94,8 +96,6 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
                              lQbnd, lFbnd);
 
   // delete[] luhTemp;
-  delete[] dxTemp;
-  delete dtTemp;
 
   // std::ofstream ofs;
   // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);

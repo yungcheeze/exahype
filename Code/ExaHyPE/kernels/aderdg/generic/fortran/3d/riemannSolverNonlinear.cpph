@@ -56,9 +56,7 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     double** tempStateSizedVectors,
     double** tempStateSizedSquareMatrices,
     const double dt,
-    const int normalNonZero,
-    const int numberOfVariables,
-    const int numberOfParameters, const int basisSize){
+    const int normalNonZero){
 
   double* nv = new double[3];
   nv[0] = 0.0;

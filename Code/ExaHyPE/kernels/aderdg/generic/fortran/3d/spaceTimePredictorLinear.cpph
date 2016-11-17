@@ -45,8 +45,7 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize){
+    const double dt){
 
     // double* luhTemp =
       // new double[numberOfVariables * basisSize * basisSize * basisSize];
