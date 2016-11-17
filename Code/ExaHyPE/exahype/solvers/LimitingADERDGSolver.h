@@ -816,6 +816,16 @@ public:
   void toString (std::ostream& out) const override {
     assertionMsg(false, "Please implement!");
   }
+
+  const std::unique_ptr<exahype::solvers::FiniteVolumesSolver>&
+  getLimiter () const {
+    return _limiter;
+  }
+
+  const std::unique_ptr<exahype::solvers::ADERDGSolver>&
+  getSolver () const {
+    return _solver;
+  }
 };
 
 
