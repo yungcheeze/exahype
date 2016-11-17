@@ -103,12 +103,15 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 //    }
 //  }
 
-//alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
+
+//  std::cout << "boundary=" << faceIndex <<  ", t=" << t <<  ", x2D={"<< x[0] << "," << x[1] << "}" << std::endl;
+
+  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
 
   // outflow bc
-  for (int i=0; i<nVar; ++i) {
-    stateOut[i] = stateIn[i];
-  }
+//  for (int i=0; i<nVar; ++i) {
+//    stateOut[i] = stateIn[i];
+//  }
 
   // debugging stuff:
   //printf("stateOut[%d]=%.5e == stateIn[%d]=%.5e at t=%f, dt=%f x=%.5e, y=%.5e, Equals=%e\n", statem, stateOut[statem], statem, stateIn[statem], t, dt, x[0], x[1], stateOut[statem] - stateIn[statem]);
