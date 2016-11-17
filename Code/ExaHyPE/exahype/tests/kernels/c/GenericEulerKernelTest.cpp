@@ -47,7 +47,7 @@ GenericEulerKernelTest::~GenericEulerKernelTest() {}
 
 void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
-  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!")
+  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!");
 //  testMethod(testSpaceTimePredictorLinear);
   testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);

@@ -47,11 +47,12 @@ void ElasticityKernelTest::run() {
   _log.info("ElasticityKernelTest::run()", "ElasticityKernelTest is active");
   // TODO(Dominic): Assess
 //  testMethod(testPDEFluxes);
-//
+  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!");
 //  testMethod(testSpaceTimePredictorLinear);
 //  testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);
 //  testMethod(testVolumeIntegralNonlinear);
+  logWarning("run()","Test testRiemannSolverLinear is disabled!");
 //  testMethod(testRiemannSolverLinear);
 //  testMethod(testRiemannSolverNonlinear);
   testMethod(testSurfaceIntegralLinear);

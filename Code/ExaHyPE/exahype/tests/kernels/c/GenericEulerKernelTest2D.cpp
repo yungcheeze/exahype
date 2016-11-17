@@ -784,8 +784,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorLinear::luh,
-      dx, dt
-      );
+      dx, dt);
 
   _setNcpAndMatrixBToZero = false;
 
@@ -817,6 +816,8 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
     validateNumericalEqualsWithEpsWithParams1(lFbnd[i], 0.0, eps, i);
   }
   */
+  delete[] lQhbnd;
+  delete[] lFhbnd;
 
   delete[] tempSpaceTimeUnknowns[0];
   delete[] tempSpaceTimeUnknowns;
@@ -827,9 +828,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
 
   delete[] tempUnknowns;
   delete[] tempFluxUnknowns;
-
-  delete[] lQhbnd;
-  delete[] lFhbnd;
 }  // testSpaceTimePredictorLinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
@@ -868,8 +866,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorNonlinear::luh,
-      dx, dt
-      );
+      dx, dt);
 
   _setNcpAndMatrixBToZero = false;
 
