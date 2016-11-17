@@ -21,7 +21,7 @@ and the exaplayer.py scripts.
 """
 
 from __future__ import print_function # Py3 compilance
-import sys, argparse, logging
+import sys, argparse, logging, os
 import numpy as  np # for vectorize_concatenate
 
 logger = logging.getLogger("exahelpers")
@@ -32,6 +32,9 @@ unzip = lambda z: zip(*z) # inverse zip
 middle = lambda a: a[int(len(a)/2)]
 first = lambda l: l[0]
 last = lambda l: l[-1]
+
+def is_headless():
+	return not 'DISPLAY' in os.environ
 
 class fileformat:
 	"""
@@ -86,11 +89,14 @@ def vectorize_concatenate(func):
 			outputs = [func(f, *args_without_fname, **kwargs) for i,f in enumerate(fnames)]
 			# vstack does not really work (any more, for some reason) for my
 			# recarrays.
-			#return np.vstack(tuple(outputs))
+			whateverworks = 1
+			if whateverworks == 1:
+				return np.vstack(tuple(outputs))
 
-			# instead, this does:
-			import numpy.lib.recfunctions as nlr
-			return nlr.merge_arrays(outputs, flatten=True)
+			# instead, this does: (no more now... they probably changed the file format again)
+			if whateverworks == 2:
+				import numpy.lib.recfunctions as nlr
+				return nlr.merge_arrays(outputs, flatten=True)
 		else:
 			return func(*args, **kwargs)
 	return func_wrapper

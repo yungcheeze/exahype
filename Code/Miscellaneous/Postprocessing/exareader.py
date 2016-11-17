@@ -279,11 +279,21 @@ class ExaReader:
 		if self.files_as_main:
 			group.add_argument('inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help)
 		else:
-			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', action='append', help=files_help)
+			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help) # action='append',
 		group.add_argument('-i', '--inform', dest='inform', choices=read_formats.choices(), type=str, default='vtk',
 		               help='File format of the input files, VTK takes long, numpy is rather quick.')
 		group.add_argument('-g', '--gridtype', dest='gridtype', choices=grid_formats.choices(), type=str, default='cells',
 		               help='Plotter format used during ExaHyPE run (staggered grid?)')
+
+	def remove_prog_in_inputfiles_list(self, argparser, args):
+		"""
+		A workaround to remove the program name in the args.inputfiles, if present.
+		It's not exact but kind of heuristic.
+		"""
+		logger.info("Removing program name '%s' from inputfiles list" % argparser.prog)
+		programname = argparser.prog
+		argparser.inputfiles = [a for a in args.inputfiles if not programname in a]
+		return argparser
 
 	def read_files_as_requested(self, args):
 		"""Convenience call to convert argparse.Namespace objects to method call parameters"""

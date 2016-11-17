@@ -58,6 +58,11 @@ import sys, argparse, logging
 import numpy as np
 import matplotlib.pyplot as plt
 
+# TODO: cf. headless features at convergence analysis helpers.py
+	#import matplotlib
+	#matplotlib.use('Agg') # if headless
+	#import matplotlib.pyplot as plt
+
 from exahelpers import find_nearest, unzip, middle, first, last
 from exahelpers import ExaFrontend
 from exareader import ExaReader
@@ -109,7 +114,7 @@ class Player:
 		frontend = ExaFrontend(epilog=__doc__,
 			program_description='ExaHyPE simulation data player')
 
-		reader = ExaReader()
+		reader = ExaReader(files_as_main=False) # files_as_main=True does not work for me :(
 		frontend.add_module(reader)
 		frontend.add_module(Player)
 		# TODO: slicer io_group could be used here to specify how to slice.
@@ -117,6 +122,8 @@ class Player:
 		args = frontend.parse_args(args)
 
 		logger.info("Welcome to vtkplayer, your friendly data plotter for ExaHyPE")
+		#args = reader.remove_prog_in_inputfiles_list(frontend.parser, args)
+		logger.info(str(args))
 		sol = reader.read_files_as_requested(args)
 		registry = { 1: Play1D, 2: Play2D }
 		PlayerClass = registry[args.dimensions]
@@ -158,6 +165,7 @@ class Player:
 		with writer.saving(plt.gcf(), output_filename, 100):
 			for t in self.times:
 				self.timeslider.set_val(t)
+				plt.draw()
 				writer.grab_frame()
 		logger.info("Done. Movie at " + output_filename)
 
@@ -298,6 +306,6 @@ class Play2D(Player):
 
 
 if __name__ == "__main__":
-	Player.main(sys.argv)
+	Player.main() # sys.argv
 
 
