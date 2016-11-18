@@ -25,7 +25,7 @@
 #include "ADERDG.h"
 #include "FVM.h"
 
-
+#include "ADERDG_Plotter0.h"
 
 void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {
   exahype::solvers::Solver* solver = nullptr;
@@ -93,7 +93,10 @@ void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmd
       new exahype::solvers::LimitingADERDGSolver("LimitingADERDG",std::move(mainSolver),std::move(limiter)) );
 
   parser.checkSolverConsistency(0);
-  // exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser,new Euler::ADERDG_Plotter0(  *static_cast<Euler::ADERDG*>(exahype::solvers::RegisteredSolvers[0])) ));
+  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser,new Euler::ADERDG_Plotter0(
+      *static_cast<Euler::ADERDG*>(
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[0])->getSolver().get()
+      )) ));
   // exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(1,0,parser,new Euler::FVM_Plotter0(  *static_cast<Euler::FVM*>(exahype::solvers::RegisteredSolvers[1])) ));
 
 
