@@ -2386,11 +2386,12 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         tempStateSizedVectors,
         tempStateSizedSquareMatrices);
 
-    mergeSolutionMinMaxOnFace(
-        p,
-        faceIndex,
-        DataHeap::getInstance().getData(receivedMinMax).data(),
-        DataHeap::getInstance().getData(receivedMinMax).data() + getNumberOfVariables() );
+    // TODO(Dominic): This moved into LimitingADERDGSolver.
+//    mergeSolutionMinMaxOnFace(
+//        p,
+//        faceIndex,
+//        DataHeap::getInstance().getData(receivedMinMax).data(),
+//        DataHeap::getInstance().getData(receivedMinMax).data() + getNumberOfVariables() );
 
     // TODO(Dominic): If anarchic time stepping, receive the time step too.
 
