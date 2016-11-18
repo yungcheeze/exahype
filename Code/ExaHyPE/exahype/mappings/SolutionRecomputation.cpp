@@ -424,38 +424,41 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                        || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
                        cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
 
-            if (element1 >= 0) {
-              auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                  getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
+            if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+              if (element1 >= 0) {
+                auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                    getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
 
-              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                  mergeWithBoundaryDataBasedOnLimiterStatus( // !!! Be aware of indices "2" and "1" and the order of the arguments.
-                                            cellDescriptionsIndex1,element1,
-                                            solverPatch1.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values.
-                                            pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
-                                            _tempFaceUnknowns[solverNumber],
-                                            _tempStateSizedVectors[solverNumber],
-                                            _tempStateSizedSquareMatrices[solverNumber]);
+                static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                    mergeWithBoundaryDataBasedOnLimiterStatus( // !!! Be aware of indices "2" and "1" and the order of the arguments.
+                                              cellDescriptionsIndex1,element1,
+                                              solverPatch1.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values.
+                                              pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
+                                              _tempFaceUnknowns[solverNumber],
+                                              _tempStateSizedVectors[solverNumber],
+                                              _tempStateSizedSquareMatrices[solverNumber]);
 
-              #ifdef Debug
-              _boundaryFaceMerges++;
-              #endif
-            }
-            if (element2 >= 0){
-              auto& solverPatch2 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                  getSolver()->getCellDescription(cellDescriptionsIndex2,element2);
+                #ifdef Debug
+                _boundaryFaceMerges++;
+                #endif
+              }
+              if (element2 >= 0){
+                auto& solverPatch2 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                    getSolver()->getCellDescription(cellDescriptionsIndex2,element2);
 
-              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                  mergeWithBoundaryDataBasedOnLimiterStatus( // !!! Be aware of indices "2" and "1" and the order of the arguments.
-                                            cellDescriptionsIndex2,element2,
-                                            solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
-                                            pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
-                                            _tempFaceUnknowns[solverNumber],
-                                            _tempStateSizedVectors[solverNumber],
-                                            _tempStateSizedSquareMatrices[solverNumber]);
-              #ifdef Debug
-              _boundaryFaceMerges++;
-              #endif
+                static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                    mergeWithBoundaryDataBasedOnLimiterStatus( // !!! Be aware of indices "2" and "1" and the order of the arguments.
+                                              cellDescriptionsIndex2,element2,
+                                              solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
+                                              pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
+                                              _tempFaceUnknowns[solverNumber],
+                                              _tempStateSizedVectors[solverNumber],
+                                              _tempStateSizedSquareMatrices[solverNumber]);
+                #ifdef Debug
+                _boundaryFaceMerges++;
+                #endif
+              }
             }
           endpfor
           peano::datatraversal::autotuning::Oracle::getInstance()
