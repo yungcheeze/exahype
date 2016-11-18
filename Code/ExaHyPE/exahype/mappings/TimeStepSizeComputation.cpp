@@ -219,51 +219,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
   logTraceOutWith1Argument("endIteration(State)", state);
 }
 
-// TODO(Dominic): remove the commented out code.
-//static double startNewTimeStepFV(
-//    const int cellDescriptionsIndex,
-//    const int element,
-//    exahype::Vertex* const fineGridVertices,
-//    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-//  exahype::solvers::FiniteVolumesSolver::CellDescription& p =
-//      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
-//  exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
-//      exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-//
-//  if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
-////         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
-//    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
-//                    exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
-//    assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-//        exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
-//               fineGridVerticesEnumerator.toString());
-//
-//    double* finiteVolumesSolutions[THREE_POWER_D];
-//    for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-//      if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-//        int element = solver->tryGetElement(cellDescriptionsIndex,p.getSolverNumber());
-//        exahype::records::FiniteVolumesCellDescription& pNeighbour =
-//           solver->getCellDescription(neighbourCellDescriptionsIndices[nScalar],element);
-//        finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
-//      } else {
-//        finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(p.getSolution()).data();
-//      }
-//    }
-//
-//    double admissibleTimeStepSize = solver->stableTimeStepSize(
-//        finiteVolumesSolutions, p.getSize());
-//
-//    assertion(!std::isnan(admissibleTimeStepSize));
-//
-//    p.setTimeStamp(p.getTimeStamp()+p.getTimeStepSize());
-//    p.setTimeStepSize(admissibleTimeStepSize);
-//
-//    return admissibleTimeStepSize;
-//  }
-//
-//  return std::numeric_limits<double>::max();
-//}
-
 void exahype::mappings::TimeStepSizeComputation::enterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
