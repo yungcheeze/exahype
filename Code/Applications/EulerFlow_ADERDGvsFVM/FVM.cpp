@@ -1,5 +1,7 @@
 #include "FVM.h"
 
+#include "InitialData.h"
+
 void Euler::FVM::flux(const double* const Q, double** F) {
   
   const double GAMMA = 1.4;
@@ -63,36 +65,13 @@ bool Euler::FVM::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>
 }
 
 
+void Euler::FVM::adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q) {  
+  initialData(x,Q);
+}
+
 exahype::solvers::Solver::RefinementControl Euler::FVM::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
-
-void Euler::FVM::adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q) {  
-/*
-  Q[0] = 1.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
-    Q[4] = 1.0;
-  } else {
-    Q[4] = 0.1;
-  }
-  //Q[4] = floor(10/(1+10*sqrt((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5))));
-*/
-    const double GAMMA = 1.4;
-    Q[0] = 1.;
-    Q[1] = 0.;
-    Q[2] = 0.;
-    Q[3] = 0.;
-    Q[4] =
-        1. / (GAMMA -1) +
-        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) ) /
-        (0.05 *0.05)) *
-        1.0e-1;
-
 }
 
 void Euler::FVM::boundaryValues(
@@ -104,27 +83,6 @@ void Euler::FVM::boundaryValues(
     double* stateOut) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-
-    // Compute boundary state.
-//    InitialData(x, stateOut, t);
-
-    // This copy is not neccessary as we do have one component of
-    // F already pointing to fluxOut.
-    /*
-    for (int i=0; i<5; i++) {
-      fluxOut[i] = F[normalNonZero][i];
-    }
-    */
-
-  // The problem with these definitions is that in a simulation
-  // with a global nonzero velocity (as in MovingGauss2D), errnous
-  // values move into the simulation domain very quickly. So these
-  // boundary conditions are not good at all. Instead, we should
-  // have per default "vacuum" boundary conditions, so that vacuum
-  // values enter the grid as soon as matter moves away.
-
-  //  // stateOut
-  //  // @todo Please implement
   stateOut[0] = stateIn[0];
   stateOut[1] = stateIn[1];
   stateOut[2] = stateIn[2];

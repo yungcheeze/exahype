@@ -10,8 +10,6 @@
 // ========================
 #include "exahype/solvers/ADERDGSolver.h"
 
-
-
 namespace Euler{
   class ADERDG;
 }

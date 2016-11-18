@@ -1,5 +1,7 @@
 #include "ADERDG.h"
 
+#include "InitialData.h"
+
 #include <cstring>
 
 void Euler::ADERDG::init(std::vector<std::string>& cmdlineargs) {
@@ -83,44 +85,14 @@ void Euler::ADERDG::boundaryValues(const double* const x,const double t,const do
 
 
 bool Euler::ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
-  if (tarch::la::equals(t, 0.0)) {
-    return true;
-  }
-  return false;
+  return tarch::la::equals(t, 0.0);
 }
-
-
-exahype::solvers::Solver::RefinementControl Euler::ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
-  // @todo Please implement
-  return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
 
 void Euler::ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
-/*   
-  Q[0] = 0.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
-    Q[4] = 1.0;
-  } else {
-    Q[4] = 0.1;
-  }
-   */
-    const double GAMMA = 1.4;
-    Q[0] = 1.;
-    Q[1] = 0.;
-    Q[2] = 0.;
-    Q[3] = 0.;
-    Q[4] =
-        1. / (GAMMA -1) +
-        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) ) /
-        (0.05 *0.05)) *
-        1.0e-1;
+  Euler::initialData(x,Q);
 }
 
 void Euler::ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
@@ -131,6 +103,7 @@ void Euler::ADERDG::matrixb(const double* const Q, const int normalNonZero, doub
   std::memset(Bn, 0, nVar * sizeof(double));
 }
 
-
-
-
+exahype::solvers::Solver::RefinementControl Euler::ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+  // @todo Please implement
+  return exahype::solvers::Solver::RefinementControl::Keep;
+}
