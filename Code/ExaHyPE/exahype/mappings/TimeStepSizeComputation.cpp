@@ -296,16 +296,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
             solver->startNewTimeStep(
                 fineGridCell.getCellDescriptionsIndex(),element,
                 _tempEigenValues[solverNumber]);
-// TODO(Dominic): remove the commented out lines below.
-//        // We currently rely on startNewTimeStepFV here. But this
-//        // function should be split in startNewTimeStep and updateSolution
-//        // solver functionality.
-//        if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-//          admissibleTimeStepSize =
-//              startNewTimeStepFV(fineGridCell.getCellDescriptionsIndex(),element,
-//                                 fineGridVertices,
-//                                 fineGridVerticesEnumerator);
-//        }
+
         _minTimeStepSizes[solverNumber] = std::min(
             admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
         _minCellSizes[solverNumber] = std::min(
