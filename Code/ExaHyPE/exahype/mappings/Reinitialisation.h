@@ -257,7 +257,7 @@ class exahype::mappings::Reinitialisation {
     /**
      * Nop.
      */
-    Reinitialisation(const LimiterStatusSpreading& masterThread);
+    Reinitialisation(const Reinitialisation& masterThread);
   #endif
 
     /**
@@ -269,7 +269,7 @@ class exahype::mappings::Reinitialisation {
     /**
      * Nop.
      */
-    void mergeWithWorkerThread(const LimiterStatusSpreading& workerThread);
+    void mergeWithWorkerThread(const Reinitialisation& workerThread);
   #endif
 
     /**
