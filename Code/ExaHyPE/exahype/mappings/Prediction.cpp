@@ -285,8 +285,9 @@ void exahype::mappings::Prediction::enterCell(
           exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
               exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
           solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-          exahype::Cell::resetNeighbourMergeHelperVariables(
-              cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Count how often this is used.
+          solver->prepareNextNeighbourMerging(
+              fineGridCell.getCellDescriptionsIndex(),i,
+              fineGridVertices,fineGridVerticesEnumerator);
 
           performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
         } break;
@@ -294,8 +295,9 @@ void exahype::mappings::Prediction::enterCell(
           exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
               exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
           solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-          exahype::Cell::resetNeighbourMergeHelperVariables(
-              cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Count how often this is used.
+          solver->prepareNextNeighbourMerging(
+              fineGridCell.getCellDescriptionsIndex(),i,
+              fineGridVertices,fineGridVerticesEnumerator);
 
           if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
               || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell

@@ -531,7 +531,10 @@ public:
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
-
+  void prepareNextNeighbourMerging(
+        const int cellDescriptionsIndex,const int element,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
 #ifdef Parallel
   static void sendCellDescriptions(
       const int                                     toRank,

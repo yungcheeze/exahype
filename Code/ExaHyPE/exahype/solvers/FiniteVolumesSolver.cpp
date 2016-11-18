@@ -407,8 +407,6 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Add flags.
 
   if (cellDescription.getType()==CellDescription::Cell
 //      && cellDescription.getRefinementEvent()==CellDescription::None
@@ -443,8 +441,6 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
@@ -462,20 +458,20 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     }
   }
 
-//  // TODO(Dominic): Remove
-//  std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
-//  std::cout <<  "Old solution:" << std::endl;
-//  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-//    std::cout <<  "unknown=" << unknown << std::endl;
-//    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-//      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-//      std::cout << newSolution[iScalar] << ",";
-//      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-//        std::cout << std::endl;
-//      }
-//    }
-//  }
-//  std::cout <<  "}" << std::endl;
+  // TODO(Dominic): Remove
+  std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
+  std::cout <<  "Old solution:" << std::endl;
+  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+    std::cout <<  "unknown=" << unknown << std::endl;
+    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
+      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+      std::cout << newSolution[iScalar] << ",";
+      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
+        std::cout << std::endl;
+      }
+    }
+  }
+  std::cout <<  "}" << std::endl;
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -676,6 +672,16 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
 
     ghostLayerFillingAtBoundary(luh,luhbndOut,posBoundary-posCell);
   }
+}
+
+void exahype::solvers::FiniteVolumesSolver::prepareNextNeighbourMerging(
+    const int cellDescriptionsIndex,const int element,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 }
 
 

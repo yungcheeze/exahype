@@ -684,6 +684,17 @@ class exahype::solvers::Solver {
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) =0;
 
+  /**
+   * After all merges with neighbour and boundary data have been performed for all the surrounding
+   * faces of a cell (description), we prepare the neighbour merge helper variables
+   * for the next neighbour merge in one of the following grid traversals.
+   */
+  virtual void prepareNextNeighbourMerging(
+        const int cellDescriptionsIndex,
+        const int element,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const = 0;
+
   #ifdef Parallel
   /**
    * Send solver data to neighbour rank. Read the data from

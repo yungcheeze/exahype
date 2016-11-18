@@ -18,6 +18,7 @@
 #include "exahype/mappings/Merging.h"
 #include "exahype/mappings/Prediction.h"
 #include "exahype/mappings/LimiterStatusSpreading.h"
+#include "exahype/mappings/Reinitialisation.h"
 #include "exahype/mappings/SolutionRecomputation.h"
 
 #include "exahype/plotters/Plotter.h"
@@ -40,6 +41,7 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
   friend class exahype::mappings::Merging;
   friend class exahype::mappings::Prediction;
   friend class exahype::mappings::LimiterStatusSpreading;
+  friend class exahype::mappings::Reinitialisation;
   friend class exahype::mappings::SolutionRecomputation;
 private:
   typedef exahype::records::ADERDGCellDescription SolverPatch;
@@ -69,7 +71,7 @@ private:
    * This might be the case if either a cell has been
    * newly marked as troubled or healed.
    */
-  bool _limiterDomainChanged;
+  bool _limiterDomainHasChanged;
 
   /**
    * TODO(Dominc): Remove after docu is recycled.
@@ -155,8 +157,21 @@ private:
       double* min, double* max) const;
 
   /**
-   * Determine the limiter status after a limiter status spreading
+   * Determine a unified limiter status of a solver patch after a limiter status spreading
    * iteration.
+   *
+   * <h2>Determining the unified value</h2>
+   * If all of the merged limiter status fields
+   * are set to Troubled, the limiter status is changed to Troubled.
+   * (There is either all or none of the statuses set to Troubled.)
+   *
+   * Otherwise and if at least one of the merged statuses is set to NeighbourOfTroubledCell,
+   * the status is set to NeighbourOfTroubledCell.
+   *
+   * Otherwise and if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
+   * the status is set to NeighbourIsNeighbourOfTroubledCell.
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
   exahype::solvers::LimitingADERDGSolver::SolverPatch::LimiterStatus determineLimiterStatus(SolverPatch& solverPatch) const;
 
@@ -173,6 +188,29 @@ private:
    * and makes them accessible per face.
    */
   void determineMinAndMax(SolverPatch& solverPatch);
+
+  /**
+   * Computes the cell-local minimum and maximum
+   * of the limiter's solution (per variable)
+   * and makes them accessible per face.
+   *
+   * This method is used for troubled cells that
+   * do not hold a valid ADER-DG solution.
+   *
+   * <h2>Current implementation</h2>
+   * We currently write -std::numeric_limits<double>::max()
+   * to the solutionMax elements, and +std::numeric_limits<double>::max()
+   * to the solutionMin elements.
+   *
+   * This ensures that the always the value of the non-troubled
+   * cell is taken into account at the interface between
+   * a troubled cell and its neighbour.
+   *
+   * TODO(Dominic): I think we should think of something smarter
+   * here though.
+   */
+  void determineMinAndMax(SolverPatch& solverPatch,LimiterPatch& limiterPatch);
+
 public:
 
   LimitingADERDGSolver(
@@ -211,6 +249,14 @@ public:
           const int element) override;
 
   void startNewTimeStep() override;
+
+  bool limiterDomainHasChanged() {
+    return _limiterDomainHasChanged;
+  }
+
+  void setLimiterDomainHasChanged(bool state) {
+    _limiterDomainHasChanged = state;
+  }
 
   /**
    * Roll back the time step data to the
@@ -345,23 +391,19 @@ public:
    * Update the limiter status with a unified value based on
    * the merged limiter statuses per face of the cell.
    *
-   * After the status has been determined, it
-   * is written to the merged limiter status fields per face.
-   *
-   * <h2>Determining the unified value</h2>
-   * If all of the merged limiter status fields
-   * are set to Troubled, the limiter status is changed to Troubled.
-   * (There is either all or none of the statuses set to Troubled.)
-   *
-   * Otherwise and if at least one of the merged statuses is set to NeighbourOfTroubledCell,
-   * the status is set to NeighbourOfTroubledCell.
-   *
-   * Otherwise and if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
-   * the status is set to NeighbourIsNeighbourOfTroubledCell.
-   *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   * \see ::determineLimiterStatus
    */
-  void updateLimiterStatus(int cellDescriptionsIndex, int element);
+  void updateLimiterStatus(
+      const int cellDescriptionsIndex,const int element) const;
+
+  /**
+   * Update the merged limiter status on every face with a unified value based on
+   * the merged limiter statuses per face of the cell.
+   *
+   * \see ::determineLimiterStatus
+   */
+  void updateMergedLimiterStatus(
+      const int cellDescriptionsIndex,const int element) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.
@@ -488,14 +530,25 @@ public:
           const tarch::la::Vector<DIMENSIONS, int>& pos1,
           const tarch::la::Vector<DIMENSIONS, int>& pos2);
 
+  void mergeNeighbours(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2,
+      double**                                  tempFaceUnknowns,
+      double**                                  tempStateSizedVectors,
+      double**                                  tempStateSizedSquareMatrices) override;
+
   /**
    * Merge solver boundary data (and other values) of two adjacent
-   * cells.
+   * cells based on their limiter status.
    *
    * The solver involved in the neighbour merge
    * is selected according to the following scheme:
    *
-   * | Status A | Status B | Solver to Merge
+   * | Status 1 | Status 2 | Solver to Merge
    * ---------------------------------------
    * | O        | O        | ADER-DG       |
    * | O        | NNT      | ADER-DG       |// O|NNT x O|NNT
@@ -512,16 +565,18 @@ public:
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
-  void mergeNeighbours(
+  void mergeNeighboursBasedOnLimiterStatus(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
       const int                                 cellDescriptionsIndex2,
       const int                                 element2,
+      const SolverPatch::LimiterStatus&         limiterStatus1,
+      const SolverPatch::LimiterStatus&         limiterStatus2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices) override;
+      double**                                  tempStateSizedSquareMatrices);
 
   /**
    * Merges only the min max of two neighbours.
@@ -536,7 +591,7 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices);
 
@@ -549,10 +604,42 @@ public:
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
+  /**
+   * Merge solver boundary data (and other values) of a
+   * cell with the boundary conditions based on the cell's
+   * limiter status.
+   *
+   * The solver involved in the merge
+   * is selected according to the following scheme:
+   *
+   * | Status   | Solver to Merge |
+   * ---------------------------------------
+   * | O        | ADER-DG         |
+   * | NNT      | ADER-DG         |
+   *
+   * | NT       | FV              |
+   * | T        | FV              |
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   */
+  void mergeWithBoundaryDataBasedOnLimiterStatus(
+        const int                                 cellDescriptionsIndex,
+        const int                                 element,
+        const SolverPatch::LimiterStatus&         limiterStatus,
+        const tarch::la::Vector<DIMENSIONS, int>& posCell,
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+        double**                                  tempFaceUnknownsArrays,
+        double**                                  tempStateSizedVectors,
+        double**                                  tempStateSizedSquareMatrices);
+
+  void prepareNextNeighbourMerging(
+      const int cellDescriptionsIndex,const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
 
 #ifdef Parallel
   static void sendCellDescriptions(

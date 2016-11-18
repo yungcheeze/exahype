@@ -208,7 +208,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
   if (_vertexDataWriter!=nullptr)          delete _vertexDataWriter;
   if (_cellDataWriter!=nullptr)            delete _cellDataWriter;
   if (_timeStampVertexDataWriter!=nullptr) delete _timeStampVertexDataWriter;
-  if (_timeStampCellDataWriter!=nullptr) delete _timeStampCellDataWriter;
+  if (_timeStampCellDataWriter!=nullptr)   delete _timeStampCellDataWriter;
   if (_gridWriter!=nullptr)                delete _gridWriter;
   if (_patchWriter!=nullptr)               delete _patchWriter;
 

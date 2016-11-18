@@ -156,24 +156,24 @@ exahype::plotters::Plotter::Plotter(
        * not work for strings, so we map it onto an if-then-else cascade.
        */
       if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
-//        _device = new LimitingADERDG2CartesianVerticesVTKAscii(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+        _device = new LimitingADERDG2CartesianVerticesVTKAscii(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
       if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
-//        _device = new LimitingADERDG2CartesianVerticesVTKBinary(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//            solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+        _device = new LimitingADERDG2CartesianVerticesVTKBinary(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+            solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
       if (_identifier.compare( LimitingADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
-//        _device = new LimitingADERDG2CartesianCellsVTKAscii(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+        _device = new LimitingADERDG2CartesianCellsVTKAscii(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
       if (_identifier.compare( LimitingADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
-//        _device = new LimitingADERDG2CartesianCellsVTKBinary(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
+        _device = new LimitingADERDG2CartesianCellsVTKBinary(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
 //      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
 //        _device = new LimitingADERDG2LegendreVerticesVTKAscii(

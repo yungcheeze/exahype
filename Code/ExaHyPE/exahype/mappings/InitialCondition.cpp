@@ -117,6 +117,10 @@ void exahype::mappings::InitialCondition::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator);
+
         solver->setInitialConditions(
             fineGridCell.getCellDescriptionsIndex(),
             element,

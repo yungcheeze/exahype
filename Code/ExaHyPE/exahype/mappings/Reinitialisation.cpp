@@ -80,6 +80,30 @@ exahype::mappings::Reinitialisation::descendSpecification() {
 tarch::logging::Log exahype::mappings::Reinitialisation::_log(
     "exahype::mappings::Reinitialisation");
 
+void exahype::mappings::Reinitialisation::beginIteration(
+    exahype::State& solverState) {
+
+  #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
+  _interiorFaceMerges = 0;
+  _boundaryFaceMerges = 0;
+  #endif
+}
+
+void exahype::mappings::Reinitialisation::endIteration(
+    exahype::State& solverState) {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->rollbackToPreviousTimeStep();
+    }
+  }
+
+  #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
+  logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
+  logInfo("endIteration(...)","boundary face merges: " << _boundaryFaceMerges);
+  #endif
+}
+
 void exahype::mappings::Reinitialisation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -99,18 +123,24 @@ void exahype::mappings::Reinitialisation::enterCell(
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
     #endif
     pfor(i, 0, numberOfSolvers, grainSize)
-    auto solver = exahype::solvers::RegisteredSolvers[i];
+      auto solver = exahype::solvers::RegisteredSolvers[i];
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-    if (element!=exahype::solvers::Solver::NotFound
-        && solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
 
-      limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
-      limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
-      limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
-                                                fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
-    }
+        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+           && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+          auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
+          limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+          limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
+              fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
+        }
+      }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
@@ -141,7 +171,8 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+              && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -438,20 +469,6 @@ void exahype::mappings::Reinitialisation::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
-}
-
-void exahype::mappings::Reinitialisation::beginIteration(
-    exahype::State& solverState) {
-}
-
-void exahype::mappings::Reinitialisation::endIteration(
-    exahype::State& solverState) {
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->rollbackToPreviousTimeStep();
-    }
-  }
 }
 
 void exahype::mappings::Reinitialisation::descend(

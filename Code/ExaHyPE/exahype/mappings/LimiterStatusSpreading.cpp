@@ -99,17 +99,20 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
     #endif
     pfor(i, 0, numberOfSolvers, grainSize)
-    auto solver = exahype::solvers::RegisteredSolvers[i];
+      auto solver = exahype::solvers::RegisteredSolvers[i];
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-    if (element!=exahype::solvers::Solver::NotFound
-        && solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
 
-      // TODO(Dominic): Rollback solution already here or in next adapter?
-      // Try first to do it in next adapter.
-    }
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+          auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+          limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+        }
+      }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
@@ -141,7 +144,8 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -166,6 +170,22 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
   enddforx
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
+}
+
+void exahype::mappings::LimiterStatusSpreading::beginIteration(
+    exahype::State& solverState) {
+  #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
+  _interiorFaceMerges = 0;
+  _boundaryFaceMerges = 0;
+  #endif
+}
+
+void exahype::mappings::LimiterStatusSpreading::endIteration(
+    exahype::State& solverState) {
+  #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
+  logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
+  logInfo("endIteration(...)","boundary face merges: " << _boundaryFaceMerges);
+  #endif
 }
 
 #ifdef Parallel
@@ -410,16 +430,6 @@ void exahype::mappings::LimiterStatusSpreading::leaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::LimiterStatusSpreading::beginIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
-
-void exahype::mappings::LimiterStatusSpreading::endIteration(
-    exahype::State& solverState) {
   // do nothing
 }
 

@@ -199,6 +199,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator);
+
         solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),
             element,
@@ -236,6 +240,9 @@ void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State& solverState) {
   bool limiterDomainHasChanged = solverState.limiterDomainHasChanged();
   for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber])->
+        setLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
+
     limiterDomainHasChanged |= _limiterDomainHasChanged[solverNumber];
   }
   solverState.setLimiterDomainHasChanged(limiterDomainHasChanged);

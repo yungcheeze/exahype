@@ -1362,6 +1362,8 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+          cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
   // initial conditions
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
@@ -1396,6 +1398,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+        cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
@@ -1435,7 +1439,6 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
           cellDescription.getCorrectorTimeStepSize());
     }
-
 
     // TODO(Dominic): setSolutionMinMaxAndAnalyseValidity()
 
@@ -1884,6 +1887,16 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     assertion5(std::isfinite(fluxIn[ii]),p.toString(),faceIndex,normalDirection,ii,fluxIn[ii]);
     assertion5(std::isfinite(fluxOut[ii]),p.toString(),faceIndex,normalDirection,ii,fluxOut[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+}
+
+void exahype::solvers::ADERDGSolver::prepareNextNeighbourMerging(
+    const int cellDescriptionsIndex,const int element,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  exahype::Cell::resetNeighbourMergeHelperVariables(
+      cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 }
 
 #ifdef Parallel
