@@ -1432,7 +1432,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           luh,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
           cellDescription.getCorrectorTimeStepSize());
     }
 
