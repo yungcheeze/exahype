@@ -113,6 +113,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
+
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
@@ -163,6 +164,8 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
       }
     enddforx
   enddforx
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
 
 #ifdef Parallel

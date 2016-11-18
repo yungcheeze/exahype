@@ -164,6 +164,8 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
       }
     enddforx
   enddforx
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
 
 #ifdef Parallel
