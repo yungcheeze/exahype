@@ -340,8 +340,18 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
       return false;
     }
   }
-  //  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-  //  // FV
+
+  // FV // TODO(Dominic): Make template
+  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
+    if (
+        #if !defined(PeriodicBC)
+        !p.getIsInside(faceIndex) ||
+        #endif
+        p.getFaceDataExchangeCounter(faceIndex)!=0) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -372,8 +382,17 @@ bool exahype::Vertex::hasToMergeWithNeighbourData(
       return false;
     }
   }
-  //  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-  //  // FV
+
+  // FV
+  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(destCellDescriptionsIndex)) {
+    if (
+        #if !defined(PeriodicBC)
+        !p.getIsInside(faceIndex) ||
+        #endif
+        p.getFaceDataExchangeCounter(faceIndex)!=0) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -405,8 +424,13 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
     p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
   }
 
-//  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-//  // FV
+  // FV
+  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
+    int newCounterValue = p.getFaceDataExchangeCounter(faceIndex)-1;
+    assertion2(newCounterValue>=0,newCounterValue,p.toString());
+    assertion1(newCounterValue<TWO_POWER_D,newCounterValue);
+    p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
+  }
 }
 
 void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
@@ -430,8 +454,10 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
     p.setFaceDataExchangeCounter(faceIndex,value);
   }
 
-//  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-//  // FV
+  // FV
+  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(destCellDescriptionsIndex)) {
+    p.setFaceDataExchangeCounter(faceIndex,value);
+  }
 }
 
 #endif
