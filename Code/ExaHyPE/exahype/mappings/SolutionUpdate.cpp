@@ -141,12 +141,12 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
       ++solverNumber;
     }
 
-    delete[] _limiterDomainHasChanged;
     delete[] _stateSizedVectors;
     delete[] _tempUnknowns;
-    _limiterDomainHasChanged = nullptr;
+    delete[] _limiterDomainHasChanged;
     _stateSizedVectors       = nullptr;
     _tempUnknowns            = nullptr;
+    _limiterDomainHasChanged = nullptr;
   }
 }
 
@@ -162,15 +162,17 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
 : _localState(masterThread._localState),
-  _limiterDomainHasChanged(nullptr),
   _stateSizedVectors(nullptr),
-  _tempUnknowns(nullptr) {
+  _tempUnknowns(nullptr),
+  _limiterDomainHasChanged(nullptr) {
   prepareTemporaryVariables();
 }
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
     const SolutionUpdate& workerThread) {
-  // do nothing
+  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    _limiterDomainHasChanged[i] |= workerThread._limiterDomainHasChanged[i];
+  }
 }
 #endif
 
@@ -209,6 +211,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
               determineLimiterStatusAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
+
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
         }
       }
