@@ -165,14 +165,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     logInfo("initSharedMemoryConfiguration()",
         "use dummy shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
-            true, false,             // useMultithreading, measureRuntimes
-            0,                       // grainSizeOfUserDefinedRegions
-            peano::datatraversal::autotuning::OracleForOnePhaseDummy::SplitVertexReadsOnRegularSubtree::Split,
-            true, true,              // pipelineDescendProcessing, pipelineAscendProcessing
-            tarch::la::aPowI(DIMENSIONS,3*3*3*3/2), 3,  // smallestGrainSizeForAscendDescend
-            1,1                      // smallestGrainSizeForEnterLeaveCell, grainSizeForEnterLeaveCell
-            )
+        new peano::datatraversal::autotuning::OracleForOnePhaseDummy()
     );
     break;
   case Parser::MulticoreOracleType::Autotuning:
@@ -186,8 +179,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         "use shared memory oracle sampling");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
-            32,
-            false,  // useThreadPipelining,
+            64,
             true    // logarithmicDistribution
         ));
     break;
