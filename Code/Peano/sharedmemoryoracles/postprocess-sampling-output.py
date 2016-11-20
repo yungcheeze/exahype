@@ -5,79 +5,101 @@ import os
 
 
 Symbol = [ 
-  "s", "o", ">", 
-  "<", "^", "v" 
+  "-s", "-o", "->", 
+  "-<", "-^", "-v", 
+  "-d", "-x", "-*",
+  "--s", "--o", "-->", 
+  "--<", "--^", "--v", 
+  "--d", "--x", "--*",
 ]
 Colour = [
   "#ff0000", "#00ff00", "#0000ff",
-  "#ffff00", "#ff00ff", "#00ffff"
+  "#ffff00", "#ff00ff", "#00ffff",
+  "#ffaa33", "#ff33aa", "#aaff33",
+  "#33ffaa", "#aa33ff", "#33aaff",
 ]
 AlphaValue=0.5
 
 
-def processMeasurement(adapter,phase):
-  try:
-    searchPattern = "adapter=" + str(adapter) + ", phase=" + str(phase) + ","
-    substring    = line.split( searchPattern )[1]
-    substring    = substring.split( "adapter" )[0] # everything left of the remaining string
-  except:
-    return ""
-
-  #print "found data for adapter=" + str(adapter) + ", phase=" + str(phase) + ": " + substring
-  
-  name                = substring.split("name=")[1].split(",")[0] 
-  studiedProblemSizes = substring.split("no-of-problem-sizes-studied=")[1].split(",")[0] 
-
-  htmlOverview.write( "name=" + name + "<br />" );
-  htmlOverview.write( "adapter no=" + str(adapter) + ", phase no=" + str(phase) + "<br />" );
-  htmlOverview.write( "no of studied problem sizes=" + studiedProblemSizes + "<br />" );
-
-  pylab.clf()
+def processMeasurement(adapter):
   currentColourAndSymbol = 0
-  for problemSize in range(0,int(studiedProblemSizes)):
-    problemSizeSubString = substring.split("problem-size=")[problemSize+1]
-    problemSize          = problemSizeSubString.split(",")[0] 
-    grainSizes           = problemSizeSubString.split("no-of-grain-sizes-studied=")[1].split(":")[0] 
+    
+  print  "process adapter " + str(adapter) 
+  
+  pylab.clf()
 
+  searchPattern = "adapter-number=" + str(adapter) 
+  line          = inputFile.readline()
+  while not line=="" and not re.search( searchPattern, line ):
+    line = inputFile.readline()
+    #print "read " + line
+   
+  line            = inputFile.readline()
+  numberOfSamples = int(line.split( "=" )[1])
+  line            = inputFile.readline()
+  line            = inputFile.readline()
+       
+  while not re.search( "end OracleForOnePhaseWithGrainSizeSampling", line):
+    
+    phaseName = line.split( "=" )[0]
+
+    print "read data of phase " + phaseName
+        
     xValues = []
     yValues = []
-    zValues = []
-    
-    for measurement in problemSizeSubString.split( "(grain-size=" )[1:]:
-      grainSize  = float(measurement.split( "," )[0])
-      time       = float(measurement.split( "(" )[1].split( "," )[0])
-      deviation  = float(measurement.split( "deviation=" )[1].split( ")" )[0])
-      xValues.append( grainSize )
-      yValues.append( time )
-      zValues.append( deviation  )
 
-    pylab.plot(xValues, yValues, "-" + Symbol[currentColourAndSymbol],  markersize=10, color=Colour[currentColourAndSymbol], label=str(problemSize) )
-    pylab.plot(xValues, zValues,       Symbol[currentColourAndSymbol],  markersize=12, color=Colour[currentColourAndSymbol], alpha=AlphaValue )
+    entries = line.split( "bin" )
+    for binEntry in range(1,len(entries)):
+      grainSize = entries[binEntry].split( "," )[1].split( ")" )[0] 
+      time      = entries[binEntry].split( "," )[1].split( "(" )[-1] 
+      #print "process entry " + entries[binEntry] + " with grain size " + grainSize + " and timing " + time
+      xValues.append( float(grainSize) )
+      yValues.append( float(time)  )
+
+    pylab.plot(xValues, yValues, Symbol[currentColourAndSymbol],  label=phaseName, markersize=10, color=Colour[currentColourAndSymbol] )
     currentColourAndSymbol = currentColourAndSymbol+1
-    
-  outputFileName = "adapter-" + str(adapter) + "-phase-" + str(phase)
-  print "write file " + outputFileName
-    
-  symbolAndColourCounter = 0
+
+    line = inputFile.readline()
   
   try:     
+    outputFileName = sys.argv[1] + "-adapter+" + str(adapter)
+
     pylab.grid(True)
     pylab.ylabel('[t]=s')
-    pylab.yscale( 'log' )
-    if (xValues[-1]>100):
-      pylab.xscale( 'symlog' )
     pylab.xlabel('grain size')
-    pylab.legend(fontsize=9, framealpha=0.5)
-    pylab.legend(loc='upper left',framealpha=0.5)
+    pylab.legend(fontsize=8, framealpha=0.5, loc='best')
   
-    pylab.savefig( outputFileName + ".png")
-    pylab.savefig( outputFileName + ".pdf")
-    htmlOverview.write( "<img src=\"" + outputFileName + ".png\" /> <br />" );
+    pylab.xscale( 'linear' )
+    pylab.yscale( 'linear' )
+    thisName = outputFileName + "-linear-linear"
+    pylab.savefig( thisName + ".png")
+    pylab.savefig( thisName + ".pdf")
+    htmlOverview.write( "<a href=\"" + thisName + ".pdf\"><img src=\"" + thisName + ".png\" /></a>" );
+  
+    pylab.xscale( 'linear' )
+    pylab.yscale( 'log' )
+    thisName = outputFileName + "-linear-log"
+    pylab.savefig( thisName + ".png")
+    pylab.savefig( thisName + ".pdf")
+    htmlOverview.write( "<a href=\"" + thisName + ".pdf\"><img src=\"" + thisName + ".png\" /></a>" );
+  
+    pylab.xscale( 'log' )
+    pylab.yscale( 'log' )
+    thisName = outputFileName + "-log-log"
+    pylab.savefig( thisName + ".png")
+    pylab.savefig( thisName + ".pdf")
+    htmlOverview.write( "<a href=\"" + thisName + ".pdf\"><img src=\"" + thisName + ".png\" /></a>" );
+
+    pylab.xscale( 'symlog' )
+    pylab.yscale( 'log' )
+    thisName = outputFileName + "-symlog-log"
+    pylab.savefig( thisName + ".png")
+    pylab.savefig( thisName + ".pdf")
+    htmlOverview.write( "<a href=\"" + thisName + ".pdf\"><img src=\"" + thisName + ".png\" /></a>" );
   except:
     print "Unexpected error:", sys.exc_info()[0]
-    return ""
 
-  return name
+  return
 
 
 
@@ -103,32 +125,29 @@ inputFile = open(sys.argv[1], "r" )
 line                  = inputFile.readline()
 totalNumberOfOracles  = int( line.split("=")[1] )
 line                  = inputFile.readline()
-numberOfAdapters      = int( line.split("=")[1] )
-line                  = inputFile.readline()
-adaptersForSteering   = int( line.split("=")[1] )
-line                  = inputFile.readline()
-noOfMethodsCalling    = int( line.split("=")[1] )
+oraclesForSteering    = int( line.split("=")[1] )
 
-htmlOverview.write( "Total number of oracles=" + str(totalNumberOfOracles) );
+htmlOverview.write( "Number of oraces=" + str(totalNumberOfOracles) + " (incl. oracles required for repository/algorithm steering)" );
 htmlOverview.write( "<br />" );
-htmlOverview.write( "Number of adapters=" + str(numberOfAdapters) + " (incl. adapters required for algorithm steering)" );
-htmlOverview.write( "<br />" );
-htmlOverview.write( "Adapters required for repository steering=" + str(adaptersForSteering) );
-htmlOverview.write( "<br />" );
-htmlOverview.write( "Number of methods calling=" + str(noOfMethodsCalling) + " (max)");
+htmlOverview.write( "Oracles required for repository steering=" + str(oraclesForSteering) );
 
 htmlOverview.write( 
+  "<p>The first " + str(oraclesForSteering) + " oracles have to be ignored as they are used by the kernel to control the MPI ranks. The " + str(oraclesForSteering) + "th oracle thus corresponds to the first adapter in your specification file.</p>" 
+);
+htmlOverview.write( 
   "<p>The solid lines present timings for particular problem sizes plus grain sizes. The semitransparent symbols denote the standard deviation belonging to the measurements. Each pair of symbols plus symbols with lines studies one particular problem size over multiple grain sizes. The legend gives the problem size.</p>" 
+);
+htmlOverview.write( 
+  "<p>By default, we create each plot with four different axis scales. Please klick on the respective image in your browser to swith to the PDF version. The PDF file is a vector file, i.e. you can zoom into it.</p>" 
 );
 
 htmlOverview.write( "<h3>Table of content:</h3>" );
 htmlOverview.write( "<ul>" );
-for adapter in range(0,numberOfAdapters-adaptersForSteering):
+for adapter in range(oraclesForSteering,totalNumberOfOracles):
   htmlOverview.write( "<li><a href=\"#adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</a></li>" );
 htmlOverview.write( "</ul>" );
 
-line                  = inputFile.readline()   # The remainder is all written into one line
-for adapter in range(0,numberOfAdapters-adaptersForSteering):
+for adapter in range(oraclesForSteering,totalNumberOfOracles):
   htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
-  for phase in range(0,noOfMethodsCalling):
-    processMeasurement(adapter,phase)
+  processMeasurement(adapter)
+  

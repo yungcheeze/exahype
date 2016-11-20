@@ -16,50 +16,48 @@ AlphaValue=0.5
 
 def processMeasurement(adapter):
   searchPattern = "adapter=" + str(adapter) + ","
-  
-  htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
-  htmlOverview.write( "<table border=\"1\">" );
-  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Grain Size</b></td><td><b>Maximum problem size</b></td><td><b>Standard deviation</b></td><td><b>Remarks</b></td></tr>" );
 
-  inputFile = open(sys.argv[1], "r" )
-  for line in inputFile:
-    try:
-      isRightAdapter = re.search(searchPattern,line)
-      if isRightAdapter and re.search("still determining serial runtime",line):
-        htmlOverview.write( "<tr>" );
-        htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
-        htmlOverview.write( "<td bgcolor=\"red\">still searching for serial runtime, no meaningful data available</td>" );
-        htmlOverview.write( "<td />" );
-        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
-        htmlOverview.write( "<td>Accurate value is value where new measurements do not change std deviation anymore by more  " + line.split( "eps=")[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "</tr>" );
-      if isRightAdapter and re.search("does not scale, oracle is not searching anymore",line):
-        htmlOverview.write( "<tr>" );
-        htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
-        htmlOverview.write( "<td bgcolor=\"white\">does not scale, oracle is not searching anymore</td>" );
-        htmlOverview.write( "<td />" );
-        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
-        htmlOverview.write( "<td>Accurate value is value where new measurements do not change std deviation anymore by more  " + line.split( "eps=")[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "</tr>" );
-      if isRightAdapter and re.search("still searching for optimal grain size",line):
-        htmlOverview.write( "<tr>" );
-        htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
-        htmlOverview.write( "<td bgcolor=\"yellow\">searching (current grain size " );
-        htmlOverview.write( line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "<td>" + line.split( "biggestProblemSize=" )[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
-        htmlOverview.write( "</tr>" );
-      if isRightAdapter and re.search("scales, oracle is not searching anymore",line):
-        htmlOverview.write( "<tr>" );
-        htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
-        htmlOverview.write( "<td bgcolor=\"green\">does scale</td>" );
-        htmlOverview.write( "<td>" + line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "<td>" + line.split( "biggestProblemSize=" )[1].split(",")[0] + "</td>" );
-        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
-        htmlOverview.write( "</tr>" );
-        
-    except:
-      print "ERROR processing adapter " + str(adapter)
+  searchPattern = "adapter-number=" + str(adapter) 
+  line          = inputFile.readline()
+  while not line=="" and not re.search( searchPattern, line ):
+    line = inputFile.readline()
+  
+  htmlOverview.write( "<table border=\"1\">" );
+  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Grain Size</b></td><td><b>Maximum problem size</b></td><td><b>Accuracy</b></td><td><b>Remarks</b></td></tr>" );
+
+  line = inputFile.readline()
+  while not re.search( "end OracleForOnePhaseWithShrinkingGrainSize", line):
+    methodTrace        = line.split( "=")[0]
+    biggestProblemSize = line.split( "=")[1].split( "," )[0]
+    grainSize          = line.split( "=")[1].split( "," )[1]
+    previousGrainSize  = line.split( "=")[1].split( "," )[2]
+    accuracy           = line.split( "eps=")[1].split( "," )[0]
+    
+    isNotScaling       = int(grainSize)==0
+    isStillSearching   = float(accuracy)>1e-8
+    
+    htmlOverview.write( "<tr>" );
+    htmlOverview.write( "<td>" + methodTrace + "</td>" );
+    if isNotScaling and isStillSearching:
+      htmlOverview.write( "<td bgcolor=\"yellow\">" + grainSize + "</td>" );
+    elif isNotScaling:
+      htmlOverview.write( "<td bgcolor=\"red\">" + grainSize + "</td>" );
+    else:
+      htmlOverview.write( "<td bgcolor=\"green\">" + grainSize + "</td>" );
+    htmlOverview.write( "<td>" + biggestProblemSize + "</td>" );
+    if isStillSearching:
+      htmlOverview.write( "<td>" + accuracy + "</td>" );
+    else:
+      htmlOverview.write( "<td bgcolor=\"red\">" + accuracy + "</td>" );
+    
+    htmlOverview.write( "<td>" );
+    if isNotScaling:
+      htmlOverview.write( "Seems not to scale. " );
+    if isStillSearching:
+      htmlOverview.write( "Still searching for accurate data. " );
+    htmlOverview.write( "</td>" );
+    htmlOverview.write( "</tr>" );
+    line = inputFile.readline()  
 
   htmlOverview.write( "</table>" );
       
@@ -79,29 +77,24 @@ htmlOverview = open( sys.argv[1] + ".html",  "w" )
 htmlOverview.write( "<h1>" + sys.argv[1] + "</h1>" );
 
 inputFile = open(sys.argv[1], "r" )
+
 line                  = inputFile.readline()
 totalNumberOfOracles  = int( line.split("=")[1] )
 line                  = inputFile.readline()
-numberOfAdapters      = int( line.split("=")[1] )
-line                  = inputFile.readline()
-adaptersForSteering   = int( line.split("=")[1] )
-line                  = inputFile.readline()
-noOfMethodsCalling    = int( line.split("=")[1] )
-inputFile.close()
+oraclesForSteering    = int( line.split("=")[1] )
 
-htmlOverview.write( "Total number of oracles=" + str(totalNumberOfOracles) );
+htmlOverview.write( "Number of oraces=" + str(totalNumberOfOracles) + " (incl. oracles required for repository/algorithm steering)" );
 htmlOverview.write( "<br />" );
-htmlOverview.write( "Number of adapters=" + str(numberOfAdapters) + " (incl. adapters required for algorithm steering)" );
-htmlOverview.write( "<br />" );
-htmlOverview.write( "Adapters required for repository steering=" + str(adaptersForSteering) );
-htmlOverview.write( "<br />" );
-htmlOverview.write( "Number of methods calling=" + str(noOfMethodsCalling) + " (max)");
+htmlOverview.write( "Oracles required for repository steering=" + str(oraclesForSteering) );
 
 htmlOverview.write( "<h3>Table of content:</h3>" );
 htmlOverview.write( "<ul>" );
-for adapter in range(0,numberOfAdapters-adaptersForSteering):
+for adapter in range(oraclesForSteering,totalNumberOfOracles):
   htmlOverview.write( "<li><a href=\"#adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</a></li>" );
 htmlOverview.write( "</ul>" );
 
-for adapter in range(0,numberOfAdapters-adaptersForSteering):
+htmlOverview.write( "<p>Empty adapter sections imply that this adapter is not used by the code. The adapter order requals the adapter order in the specification file. Only those program phases that are actually used are also displayed.</p>" );
+
+for adapter in range(oraclesForSteering,totalNumberOfOracles):
+  htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
   processMeasurement(adapter)

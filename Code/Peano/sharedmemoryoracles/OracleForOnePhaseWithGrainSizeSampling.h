@@ -46,40 +46,64 @@ class sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling: public peano:
     static tarch::logging::Log  _log;
 
     /**
-     * Map selected grain sizes to measurements.
+     * What do we consider to be an exact value.
      */
-    typedef std::map< int, tarch::timing::Measurement >             ExecutionTimeDatabase;
+    static const double ExactValue;
+
+    struct DataBaseEntry {
+      private:
+        /**
+         * First entry is the number of the bin, the second one is the grain size represented by this bin
+         */
+        int getBin( int problemSize, int currentBin ) const;
+
+        int getGrainSize(int bin) const;
+      public:
+        const int                                _numberOfSamples;
+        const bool                               _logarithmicDistribution;
+
+        /**
+         * Map each bin onto one measurement
+         */
+        std::vector<tarch::timing::Measurement>   _measurements;
+        int                                       _maxProblemSize;
+
+
+        DataBaseEntry();
+        DataBaseEntry(int numberOfSamples, bool logarithmicDistribution, int problemSizeForFirstRequest);
+        void ensureThatRequestIsCoveredBySamplingRange(int problemSize);
+        bool requiresMoreData(int problemSize,int currentBin) const;
+        int getGrainSize(int problemSize,int currentBin) const;
+        void updateMeasurement(int problemSize,int currentBin,double value);
+        std::string toString() const;
+    };
+
 
     /**
-     * Holds for each input problem size the corresponding set of samplings.
+     * Map selected method trace plus grain sizes to measurements.
      */
-    typedef std::map< int, ExecutionTimeDatabase >   ExecutionTimeSamplingDatabase;
+    typedef std::map< peano::datatraversal::autotuning::MethodTrace, DataBaseEntry >    ExecutionTimeDatabase;
 
-    int                            _numberOfSamples;
-    bool                           _logarithmicDistribution;
-    ExecutionTimeSamplingDatabase  _executionTimes;
-    tarch::timing::Measurement*    _currentMeasurement;
+    ExecutionTimeDatabase                _executionTimes;
 
     /**
-     * Only for statistics.
+     * Per iteration we do sample only one bin
      */
-    const int            _adapterNumber;
+    int                                  _currentBin;
 
-    /**
-     * Only for statistics.
-     */
-    const peano::datatraversal::autotuning::MethodTrace    _methodTrace;
-
-    const bool           _useThreadPipelining;
+    const int                            _numberOfSamples;
+    const bool                           _logarithmicDistribution;
   public:
     /**
      * @param numberOfSamples The number of samples that the Oracle will use.
      * @param logarithmicDistribution Decides whether the samples will be distributed in an logarithmic (true) or
      * an equidistant (false) way.
      */
-    OracleForOnePhaseWithGrainSizeSampling(int numberOfSamples, bool useThreadPipelining, bool logarithmicDistribution, int adapterNumber=-1, const peano::datatraversal::autotuning::MethodTrace& methodTrace = peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling);
+    OracleForOnePhaseWithGrainSizeSampling(int numberOfSamples, bool logarithmicDistribution, int adapterNumber=-1);
 
     virtual ~OracleForOnePhaseWithGrainSizeSampling();
+
+    peano::datatraversal::autotuning::GrainSize parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) override;
 
     /**
      * Determine grain size to sample
@@ -92,21 +116,22 @@ class sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling: public peano:
      * (division of integers otherwise gives a spacing of 0 between different
      * sample values).
      */
-    virtual std::pair<int,bool> parallelise(int problemSize);
+    void parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
+
+    void plotStatistics(std::ostream& out, int oracleNumber) const override;
+    void loadStatistics(const std::string& filename, int oracleNumber) override;
 
     /**
+     * This operation is called by the oracle (management) on the active oracle
+     * before it activates another one.
      */
-    virtual void parallelSectionHasTerminated(double elapsedCalendarTime);
-
-    virtual void plotStatistics(std::ostream& out) const;
-    virtual void loadStatistics(const std::string& filename);
-
-    virtual void informAboutElapsedTimeOfLastTraversal(double elapsedTime);
+    void deactivateOracle() override;
+    void activateOracle() override;
 
     /**
      * For this oracle type, the adapter number is completely irrelevant.
      */
-    virtual peano::datatraversal::autotuning::OracleForOnePhase* createNewOracle(int adapterNumber, const peano::datatraversal::autotuning::MethodTrace& methodTrace) const;
+    peano::datatraversal::autotuning::OracleForOnePhase* createNewOracle() const override;
 };
 
 
