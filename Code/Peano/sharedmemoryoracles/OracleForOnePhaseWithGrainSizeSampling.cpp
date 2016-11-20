@@ -94,8 +94,8 @@ sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::DataBaseEntry::Data
 
 void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::DataBaseEntry::ensureThatRequestIsCoveredBySamplingRange(int problemSize) {
   if (
-    _measurements.size()<_numberOfSamples &&
-    problemSize > _measurements.size()
+    static_cast<int>(_measurements.size())<_numberOfSamples &&
+    problemSize > static_cast<int>(_measurements.size())
   ) {
     assertion(_maxProblemSize<problemSize);
     _maxProblemSize = problemSize;
@@ -153,7 +153,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::DataBaseEntry:
 std::string sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::DataBaseEntry::toString() const {
   std::ostringstream msg;
   msg << "(max-problem-size=" << _maxProblemSize;
-  for (int i=0; i<_measurements.size(); i++) {
+  for (int i=0; i<static_cast<int>(_measurements.size()); i++) {
     msg << ",bin(" << i << ","
         << getGrainSize(i) << ")="
         << _measurements[i].toString();
