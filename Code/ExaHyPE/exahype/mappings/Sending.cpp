@@ -128,14 +128,10 @@ void exahype::mappings::Sending::enterCell(
   if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined5;
-    #ifdef SharedMemoryParallelisation
-    const int grainSize = peano::datatraversal::autotuning::Oracle::
-        getInstance().parallelise(numberOfSolvers, methodTrace);
-    #endif
-    pfor(solverNumber, 0, numberOfSolvers, grainSize)
+
+    auto grainSize = peano::datatraversal::autotuning::Oracle::
+        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined5);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
       int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -143,10 +139,10 @@ void exahype::mappings::Sending::enterCell(
         solver->prolongateDataAndPrepareDataRestriction(fineGridCell.getCellDescriptionsIndex(),element);
       }
     endpfor
-    peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
+    grainSize.parallelSectionHasTerminated();
   }
 }
+
 
 void exahype::mappings::Sending::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -162,14 +158,9 @@ void exahype::mappings::Sending::leaveCell(
   if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined6;
-    #ifdef SharedMemoryParallelisation
-    const int grainSize = peano::datatraversal::autotuning::Oracle::
-        getInstance().parallelise(numberOfSolvers, methodTrace);
-    #endif
-    pfor(solverNumber, 0, numberOfSolvers, grainSize)
+    auto grainSize = peano::datatraversal::autotuning::Oracle::
+        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined6);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
       int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -196,8 +187,7 @@ void exahype::mappings::Sending::leaveCell(
         solver->postProcess(fineGridCell.getCellDescriptionsIndex(),element);
       }
     endpfor
-    peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
+    grainSize.parallelSectionHasTerminated();
   }
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);

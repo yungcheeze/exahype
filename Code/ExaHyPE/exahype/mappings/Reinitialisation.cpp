@@ -117,12 +117,8 @@ void exahype::mappings::Reinitialisation::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined7;
-    #ifdef SharedMemoryParallelisation
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
-    #endif
-    pfor(i, 0, numberOfSolvers, grainSize)
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined7);
+    pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
@@ -142,7 +138,7 @@ void exahype::mappings::Reinitialisation::enterCell(
         }
       }
     endpfor
-    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    grainSize.parallelSectionHasTerminated();
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
@@ -162,13 +158,9 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
   dfor2(pos1)
     dfor2(pos2)
       if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices // TODO(Dominic): Probably have to consider Voronoi neighbours later on when we use high order schemes
-        const peano::datatraversal::autotuning::MethodTrace methodTrace =
-            peano::datatraversal::autotuning::UserDefined2;
-        #ifdef SharedMemoryParallelisation
-        const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-            parallelise(solvers::RegisteredSolvers.size(), methodTrace);
-        #endif
-        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize)
+        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined2);
+        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
@@ -188,8 +180,7 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
           _interiorFaceMerges++;
           #endif
         endpfor
-        peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
+        grainSize.parallelSectionHasTerminated();
 
         fineGridVertex.setMergePerformed(pos1,pos2,true);
       }
