@@ -51,6 +51,7 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
           (numberOfVariables + numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerPatchBoundary(
           DIMENSIONS_TIMES_TWO *_unknownsPerPatchFace),
+      _previousMinTimeStepSize(std::numeric_limits<double>::max()),
       _minTimeStamp(std::numeric_limits<double>::max()),
       _minTimeStepSize(std::numeric_limits<double>::max()),
       _minNextTimeStepSize(std::numeric_limits<double>::max()) {
@@ -100,10 +101,12 @@ void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
     CellDescription& cellDescription) {
   switch (_timeStepping) {
     case TimeStepping::Global:
+      cellDescription.setPreviousTimeStepSize(_previousMinTimeStepSize);;
       cellDescription.setTimeStamp(_minTimeStamp);
       cellDescription.setTimeStepSize(_minTimeStepSize);
       break;
     case TimeStepping::GlobalFixed:
+      cellDescription.setPreviousTimeStepSize(_previousMinTimeStepSize);
       cellDescription.setTimeStamp(_minTimeStamp);
       cellDescription.setTimeStepSize(_minTimeStepSize);
       break;
@@ -120,13 +123,15 @@ void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _minTimeStamp        += _minTimeStepSize;
-      _minTimeStepSize      = _minNextTimeStepSize;
-      _minNextTimeStepSize  = std::numeric_limits<double>::max();
+      _previousMinTimeStepSize  = _minTimeStepSize;
+      _minTimeStamp            += _minTimeStepSize;
+      _minTimeStepSize          = _minNextTimeStepSize;
+      _minNextTimeStepSize      = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
-      _minTimeStamp        += _minTimeStepSize;
-      _minTimeStepSize      = _minNextTimeStepSize;
+      _previousMinTimeStepSize  = _minTimeStepSize;
+      _minTimeStamp            += _minTimeStepSize;
+      _minTimeStepSize          = _minNextTimeStepSize;
       break;
   }
 }
@@ -147,7 +152,7 @@ void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
   }
 }
 
-void exahype::solvers::FiniteVolumesSolver::reinitTimeStepData() {
+void exahype::solvers::FiniteVolumesSolver::reinitialiseTimeStepData() {
   switch (_timeStepping) {
     case TimeStepping::Global:
       // do nothing
@@ -398,6 +403,8 @@ void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep(
   cellDescription.setTimeStamp(
       cellDescription.getTimeStamp()-cellDescription.getPreviousTimeStepSize());
   cellDescription.setTimeStepSize(cellDescription.getPreviousTimeStepSize());
+
+  cellDescription.setPreviousTimeStepSize(std::numeric_limits<double>::max());
 }
 
 void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
@@ -459,19 +466,21 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   }
 
   // TODO(Dominic): Remove
-//  std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
-//  std::cout <<  "Old solution:" << std::endl;
-//  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-//    std::cout <<  "unknown=" << unknown << std::endl;
-//    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-//      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-//      std::cout << newSolution[iScalar] << ",";
-//      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-//        std::cout << std::endl;
-//      }
-//    }
-//  }
-//  std::cout <<  "}" << std::endl;
+  if (cellDescriptionsIndex==78) {
+    std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
+    std::cout <<  "Old solution:" << std::endl;
+    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+      std::cout <<  "unknown=" << unknown << std::endl;
+      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
+        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        std::cout << newSolution[iScalar] << ",";
+        if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
+          std::cout << std::endl;
+        }
+      }
+    }
+    std::cout <<  "}" << std::endl;
+  }
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -479,7 +488,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
       cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
-    logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
+    logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
+               cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
 
   if (hasToAdjustSolution(
@@ -600,7 +610,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     double* solution2 = DataHeap::getInstance().getData(cellDescription2.getSolution()).data();
 
 //    std::cout <<  ">> cell=" << cellDescription1.toString() << std::endl;
-//    std::cout <<  "1: Old solution:" << std::endl;
+//    std::cout <<  "Merge-1: Old solution:" << std::endl;
 //    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
 //      std::cout <<  "unknown=" << unknown << std::endl;
 //      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
@@ -617,7 +627,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     ghostLayerFilling(solution2,solution1,pos1-pos2);
 
 //    // TODO(Dominic): Remove
-//    std::cout <<  "1: New solution:" << std::endl;
+//    std::cout <<  "Merge-2: New solution:" << std::endl;
 //    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
 //      std::cout <<  "unknown=" << unknown << std::endl;
 //      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {

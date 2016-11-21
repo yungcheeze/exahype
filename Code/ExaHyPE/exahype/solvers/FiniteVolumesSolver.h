@@ -379,6 +379,14 @@ public:
 
   void updateMinNextTimeStepSize( double value ) override;
 
+  void setMinTimeStepSize(double value) { // TODO(Dominic): Hack
+    _minTimeStepSize = value;
+  }
+
+  void setMinTimeStamp(double value) { // TODO(Dominic): Hack
+    _minTimeStamp = value;
+  }
+
   void initInitialTimeStamp(double value) override;
 
   void synchroniseTimeStepping(
@@ -393,7 +401,7 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reinitTimeStepData() override;
+  void reinitialiseTimeStepData() override;
 
   double getMinNextTimeStepSize() const override;
 

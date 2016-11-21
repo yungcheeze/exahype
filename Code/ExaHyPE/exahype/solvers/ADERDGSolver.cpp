@@ -400,6 +400,8 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
       _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
+      _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize;
+
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
 
@@ -417,12 +419,14 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
+      _minNextPredictorTimeStepSize     = std::numeric_limits<double>::max();
+
       _minPredictorTimeStamp    = _minCorrectorTimeStamp;
       _minPredictorTimeStepSize = _minCorrectorTimeStepSize;
       _minCorrectorTimeStamp    = _minCorrectorTimeStamp-_previousMinCorrectorTimeStepSize;
       _minCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
 
-      _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+      _previousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
       _minPredictorTimeStamp    = _minCorrectorTimeStamp;
@@ -438,7 +442,17 @@ void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
-void exahype::solvers::ADERDGSolver::reinitTimeStepData() {
+void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
+//  _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize; // TODO(Dominic): Should not necessary. Prove by induction
+  _minPredictorTimeStamp            = _minCorrectorTimeStamp+_minCorrectorTimeStepSize;
+  _minCorrectorTimeStamp            =_minPredictorTimeStamp;
+  _minCorrectorTimeStepSize         = _minPredictorTimeStepSize;
+
+  assertionEquals(_minCorrectorTimeStamp,_minPredictorTimeStamp);
+  assertionEquals(_minCorrectorTimeStepSize,_minPredictorTimeStepSize);
+}
+
+void exahype::solvers::ADERDGSolver::reinitialiseTimeStepData() {
   switch (_timeStepping) {
     case TimeStepping::Global:
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
@@ -1343,6 +1357,18 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
   return std::numeric_limits<double>::max();
 }
 
+void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+//  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): Should not be necessary: Prove by induction
+  cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize());
+  cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
+  cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+
+  assertionEquals(cellDescription.getCorrectorTimeStamp(),cellDescription.getPredictorTimeStamp());
+  assertionEquals(cellDescription.getCorrectorTimeStepSize(),cellDescription.getPredictorTimeStepSize());
+}
+
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int element) {
@@ -1353,6 +1379,8 @@ void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
   cellDescription.setCorrectorTimeStepSize(cellDescription.getPreviousCorrectorTimeStepSize());
   cellDescription.setCorrectorTimeStamp(
       cellDescription.getCorrectorTimeStamp()-cellDescription.getPreviousCorrectorTimeStepSize());
+
+  cellDescription.setPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
 }
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
@@ -1422,7 +1450,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     surfaceIntegral(lduh,lFhbnd,cellDescription.getSize());
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution",i);
+      assertion3(std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     solutionUpdate(luh,lduh,cellDescription.getCorrectorTimeStepSize());
@@ -1440,10 +1468,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           cellDescription.getCorrectorTimeStepSize());
     }
 
-    // TODO(Dominic): setSolutionMinMaxAndAnalyseValidity()
-
     for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
+      assertion4(std::isfinite(luh[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
@@ -1474,7 +1500,7 @@ void exahype::solvers::ADERDGSolver::rollbackSolution(
      assertion(!hasToAdjustSolution(cellDescription.getOffset()+0.5*cellDescription.getSize(),
                   cellDescription.getSize(),
                   cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
-                  cellDescription.getCorrectorTimeStamp()));
+                  cellDescription.getCorrectorTimeStepSize()));
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);

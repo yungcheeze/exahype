@@ -978,7 +978,7 @@ public:
    *
    * \note The minimum and maximum cell sizes do
    * not need to be reset to numeric limit values
-   * in every timrefinementCriterione step for uniform mesh refinement
+   * in every time step for uniform mesh refinement
    * static adaptive mesh refinement
    * but we still do it since we want to
    * utilise dynamic adaptive mesh refinement
@@ -994,6 +994,18 @@ public:
   void rollbackToPreviousTimeStep();
 
   /**
+   * If we use the original time stepping
+   * scheme with multiple algorithmic phases,
+   * we have to call this method
+   * after the time step computation phase.
+   *
+   * It ensures that the corrector time stamp
+   * and step size equal their predictor
+   * equivalents.
+   */
+  void reconstructStandardTimeSteppingData();
+
+  /**
    * After the mesh has been updated,
    * reset the predictor time stamp to
    * the value corrector time stamp plus
@@ -1006,7 +1018,7 @@ public:
    * necessary due to the shift
    * of the ADER-DG phases in our implementation.
    */
-  void reinitTimeStepData() override;
+  void reinitialiseTimeStepData() override;
 
   /**
    * Update predictor time step size
@@ -1055,7 +1067,7 @@ public:
   }
 
   double getMinNextTimeStepSize() const override {
-    return getMinPredictorTimeStepSize();
+    return getMinNextPredictorTimeStepSize();
   }
 
   void updateMinNextTimeStepSize( double value ) override {
@@ -1138,6 +1150,19 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+
+  /**
+   * If we use the original time stepping
+   * scheme with multiple algorithmic phases,
+   * we have to call this method
+   * after a time step update with startNewTimeStep().
+   *
+   * It ensures that the corrector time size
+   * is set to the admissible time step size that
+   * was computed using the latest corrector solution.
+   */
+  void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const;
+
   /**
    * Rolls the solver time step data back to the
    * previous time step for a cell description.
@@ -1183,6 +1208,10 @@ public:
    * particular cell description.
    * This method is used by the ADER-DG a-posteriori
    * subcell limiter.
+   *
+   * Uses the corrector time step size to perform the rollback.
+   * Thus make sure to invoke ::rollbackToPreviousTimeStepSize() beforehand
+   * if the patch has already advanced to next time step.
    *
    * <h2>Open issues</h2>
    * A rollback is of course not possible if we have adjusted the solution
