@@ -294,13 +294,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   /**
-   * TODO(Dominic): I think we can make this returning the
-   * value of a static variable that is set by every rank
-   * individually after reading in the configuration file.
-   * This will not change during a simulation.
-   *
-   * Currently _stateData._fuseADERDGPhases() is a persistent parallelised
-   * argument that is broadcasted from each master to its workers.
+   * Indicates that the fused time stepping
+   * scheme is used in the runner
+   * instead of the original one.
    */
   static bool fuseADERDGPhases()  {
     return FuseADERDGPhases;
