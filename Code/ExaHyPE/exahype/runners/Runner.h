@@ -87,6 +87,8 @@ class exahype::runners::Runner {
   void initSolverTimeStamps();
   void initFiniteVolumesSolverTimeStamps();
 
+  void validateInitialSolverTimeStepData(const bool fuseADERDGPhases);
+
   /**
    * Initialise the data compression (or switch it off if we don't need it).
    * The routine is called for each and every rank.
