@@ -66,11 +66,6 @@ class exahype::mappings::TimeStepSizeComputation {
   static tarch::logging::Log _log;
 
   /**
-   * Local copy of the state.
-   */
-  exahype::State _localState;
-
-  /**
    * A minimum time step size for each solver.
    */
   std::vector<double> _minTimeStepSizes;
@@ -104,6 +99,29 @@ class exahype::mappings::TimeStepSizeComputation {
    * allocated per solver.
    */
   void deleteTemporaryVariables();
+
+  /**
+   * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
+   * with stable time step sizes if we detect a-posteriori that the CFL condition was
+   * harmed by the estimated predictor time step size used in the last iteration.
+   */
+  void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::State& state,exahype::solvers::Solver* solver) const;
+
+  /**
+   * If the original time stepping algorithm is used for the ADER-DG scheme,
+   * we need to enforce that the corrector time step size is identical to the
+   * predictor time step size.
+   * We further need to
+   */
+  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver) const;
+
+
+  /**
+   * Similar to ::overwriteCorrectorTimeStepDataWithPredictorValues(exahype::solvers::Solver*) but for
+   * a cell description.
+   */
+  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element) const;
+
  public:
   /**
    * Run through whole tree. Run concurrently on fine grid.
