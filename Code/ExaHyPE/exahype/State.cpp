@@ -21,6 +21,8 @@
 
 #include <limits>
 
+bool exahype::State::FuseADERDGPhases = false;
+
 exahype::State::State() : Base() {
   #ifdef Parallel
   _stateData.setGridConstructionState( exahype::records::State::Default );

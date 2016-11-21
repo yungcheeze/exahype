@@ -67,7 +67,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void readFromCheckpoint(
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
-
   #ifdef Parallel
   /**
    * We need/use this field in the parallel mode, but we use it on the global
@@ -78,6 +77,8 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   int _idleRanksAtLastLookup;
   #endif
  public:
+  static bool FuseADERDGPhases;
+
   /**
    * Default Constructor
    *
@@ -303,12 +304,17 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getReinitTimeStepData();
   }
 
-  void setFuseADERDGPhases(bool state) {
-    _stateData.setFuseADERDGPhases(state);
-  }
-
-  bool fuseADERDGPhases() const  {
-    return _stateData.getFuseADERDGPhases();
+  /**
+   * TODO(Dominic): I think we can make this returning the
+   * value of a static variable that is set by every rank
+   * individually after reading in the configuration file.
+   * This will not change during a simulation.
+   *
+   * Currently _stateData._fuseADERDGPhases() is a persistent parallelised
+   * argument that is broadcasted from each master to its workers.
+   */
+  static bool fuseADERDGPhases()  {
+    return FuseADERDGPhases;
   }
 
   void setTimeStepSizeWeightForPredictionRerun(double value) {
