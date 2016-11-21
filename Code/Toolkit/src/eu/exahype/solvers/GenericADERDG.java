@@ -43,7 +43,11 @@ public class GenericADERDG implements Solver {
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
 	  }
 	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+		  String SolverInitSignatureExtension = ", exahype::Parser::ParserView constants";
+		  String ParserInclude = "#include \"exahype/Parser.h\"";
+		  solverConstructorSignatureExtension += SolverInitSignatureExtension;
+		  content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+		  content = content.replaceAll("\\{\\{ParserInclude\\}\\}", ParserInclude);
 	  }
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
@@ -123,7 +127,15 @@ public class GenericADERDG implements Solver {
       content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "");
 	  }
 	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value?
+		  /* AW(Sven): Because ParserView may not be handed by reference:
+In file included from /home/sven/numrel/exahype/master/Code/./ApplicationExamples/MHD/KernelCalls.cpp:24:0:
+/home/sven/numrel/exahype/master/Code/./ApplicationExamples/MHD/MHDSolver.h:30:5: note:   initializing argument 4 of ‘MHDSolver::MHDSolver::MHDSolver(double, exahype::solvers::Solver::TimeStepping, std::vector<std::__cxx11::basic_string<char> >&, exahype::Parser::ParserView&)’
+     MHDSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
+	^
+		  */
+		  String SolverInitCallExtension = ", constants";
+		  content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
 	  }
 	  
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
@@ -155,7 +167,12 @@ public class GenericADERDG implements Solver {
     
     content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
-    
+
+    if (_hasConstants) {
+        String SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
+        content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+    }
+
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
 
     String adjustedSolutionValues = "  // State variables:\n";

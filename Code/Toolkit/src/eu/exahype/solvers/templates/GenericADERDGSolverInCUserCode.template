@@ -1,6 +1,6 @@
 #include "{{Solver}}.h"
 
-void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs) {
+void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
   // @todo Please implement/augment if required
 }
 

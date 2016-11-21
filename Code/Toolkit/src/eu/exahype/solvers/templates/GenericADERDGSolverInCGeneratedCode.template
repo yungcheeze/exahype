@@ -14,8 +14,7 @@
 
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",nVar /* numberOfUnknowns */,nParams /* numberOfParameters */,order + 1  /* nodesPerCoordinateAxis */,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
-  init(cmdlineargs);
-  // PS: If you miss access to user constants here,enable them in the toolkit
+  init(cmdlineargs{{SolverInitCallExtension}});
 }
 
 
