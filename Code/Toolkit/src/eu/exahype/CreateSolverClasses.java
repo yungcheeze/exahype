@@ -156,10 +156,10 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
         _enableProfiler, hasConstants);
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )) {
-      solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,
+    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
+      solver = new eu.exahype.solvers.OptimisedADERDG(_dimensions,
         numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-        _enableProfiler, hasConstants);
+        _enableProfiler, hasConstants, false);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
        solver = new eu.exahype.solvers.KernelEuler2d();
