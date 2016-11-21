@@ -36,8 +36,9 @@ namespace c {
  * the finite volumes limiter space.
  *
  * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1).
+ * \param[in] ghostLayerWidth The ghost layer width in cells of the finite volumes patch
  */
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim);
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const lim);
 /**
  * \brief Projection FV -> ADERDG
  *
@@ -45,8 +46,9 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
  * the DG space.
  *
  * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1)
+ * \param[in] ghostLayerWidth The ghost layer width in cells of the finite volumes patch.
  */
-void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh);
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);

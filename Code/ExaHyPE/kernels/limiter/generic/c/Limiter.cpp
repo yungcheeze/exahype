@@ -23,27 +23,29 @@ namespace c {
 //Fortran (Limiter.f90): GetSubcellData
 // Allocate lim memory via
 // double* lim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: lim(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3))
-void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, double* const lim) {
+void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const lim) {
   const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
-  const int basisSize3D = basisSize;
-  const int basisSizeLim3D = basisSizeLim;
+  const int basisSize3D       = basisSize;
+  const int basisSizeLim3D    = basisSizeLim;
+  const int ghostLayerWidth3D = ghostLayerWidth;
 #else
-  const int basisSize3D = 1;  
-  const int basisSizeLim3D = 1;
+  constexpr int basisSize3D       = 1;
+  constexpr int basisSizeLim3D    = 1;
+  constexpr int ghostLayerWidth3D = 0;
 #endif
 
   idx4 idxLuh(basisSize3D, basisSize, basisSize, numberOfVariables);
-  idx4 idxLim(basisSizeLim3D, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx4 idxLim(basisSizeLim3D+2*ghostLayerWidth3D, basisSizeLim+2*ghostLayerWidth, basisSizeLim+2*ghostLayerWidth, numberOfVariables);
   idx2 idxConv(basisSize, basisSizeLim); 
   
   int x,y,z,v,ix,iy,iz; 
   
   //tensor operation
-  for(z=0; z<basisSizeLim3D; z++) {
-    for(y=0; y<basisSizeLim; y++) {
-      for(x=0; x<basisSizeLim; x++) {
+  for(z=ghostLayerWidth3D; z<basisSizeLim3D+ghostLayerWidth3D; z++) { // We can skip x,y,z>=basisSizeLim+ghostLayerWidth
+    for(y=ghostLayerWidth; y<basisSizeLim+ghostLayerWidth; y++) {
+      for(x=ghostLayerWidth; x<basisSizeLim+ghostLayerWidth; x++) {
         for(v=0; v<numberOfVariables; v++) {
           lim[idxLim(z,y,x,v)] = 0;
           for(iz=0; iz<basisSize3D; iz++) {
@@ -51,9 +53,10 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
               for(ix=0; ix<basisSize; ix++) {
                 lim[idxLim(z,y,x,v)] += luh[idxLuh(iz,iy,ix,v)] 
                                         #if DIMENSIONS == 3
-                                        * uh2lim[basisSize-1][idxConv(iz,z)]
+                                        * uh2lim[basisSize-1][idxConv(iz,z-ghostLayerWidth3D)]
                                         #endif
-                                        * uh2lim[basisSize-1][idxConv(iy,y)] * uh2lim[basisSize-1][idxConv(ix,x)];
+                                        * uh2lim[basisSize-1][idxConv(iy,y-ghostLayerWidth)]
+                                        * uh2lim[basisSize-1][idxConv(ix,x-ghostLayerWidth)];
               }
             }
           }
@@ -65,19 +68,21 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 }
 
 //Fortran (Limiter.f90): PutSubcellData
-void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, double* const luh) {
+void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const luh) {
   const int basisSizeLim = getBasisSizeLim(basisSize);
   
 #if DIMENSIONS == 3
-  const int basisSize3D = basisSize;
-  const int basisSizeLim3D = basisSizeLim;
+  const int basisSize3D       = basisSize;
+  const int basisSizeLim3D    = basisSizeLim;
+  const int ghostLayerWidth3D = ghostLayerWidth
 #else
-  const int basisSize3D = 1;  
-  const int basisSizeLim3D = 1;
+  constexpr int basisSize3D       = 1;
+  constexpr int basisSizeLim3D    = 1;
+  constexpr int ghostLayerWidth3D = 0;
 #endif
   
   idx4 idxLuh(basisSize3D, basisSize, basisSize, numberOfVariables);
-  idx4 idxLim(basisSizeLim3D, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx4 idxLim(basisSizeLim3D+2*ghostLayerWidth3D, basisSizeLim+2*ghostLayerWidth, basisSizeLim+2*ghostLayerWidth, numberOfVariables);
   idx2 idxConv(basisSizeLim, basisSize);
   
   int x,y,z,v,ix,iy,iz;
@@ -88,14 +93,15 @@ void projectOnDGSpace(const double* const lim, const int numberOfVariables, cons
       for(x=0; x<basisSize; x++) {
         for(v=0; v<numberOfVariables; v++) {
           luh[idxLuh(z,y,x,v)] = 0;
-          for(iz=0; iz<basisSizeLim3D; iz++) {
-            for(iy=0; iy<basisSizeLim; iy++) {
-              for(ix=0; ix<basisSizeLim; ix++) {
+          for(iz=ghostLayerWidth3D; iz<basisSizeLim3D+ghostLayerWidth3D; iz++) { // We can skip ix,iy,iz>=basisSizeLim+ghostLayerWidth
+            for(iy=ghostLayerWidth; iy<basisSizeLim+ghostLayerWidth; iy++) {
+              for(ix=ghostLayerWidth; ix<basisSizeLim+ghostLayerWidth; ix++) {
                 luh[idxLuh(z,y,x,v)] += lim[idxLim(iz,iy,ix,v)] 
                                         #if DIMENSIONS == 3
-                                        * lim2uh[basisSize-1][idxConv(iz,z)]
+                                        * lim2uh[basisSize-1][idxConv(iz-ghostLayerWidth3D,z)]
                                         #endif
-                                        * lim2uh[basisSize-1][idxConv(iy,y)] * lim2uh[basisSize-1][idxConv(ix,x)];
+                                        * lim2uh[basisSize-1][idxConv(iy-ghostLayerWidth,y)]
+                                        * lim2uh[basisSize-1][idxConv(ix-ghostLayerWidth,x)];
               }
             }
           }
@@ -198,7 +204,7 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
       boundaryMax = std::max( boundaryMax, boundaryMaxPerVariables[x*numberOfVariables+iVar] );
     }
     ldiff = (boundaryMax - boundaryMin) * diffScaling;
-    assertion1(tarch::la::greaterEquals(ldiff,0.0),ldiff);
+    assertion3(tarch::la::greaterEquals(ldiff,0.0),ldiff,boundaryMin,boundaryMax);
     ldiff = std::max( ldiff, minMarginOfError );
 
     if((min < (boundaryMin - ldiff)) ||
