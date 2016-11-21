@@ -342,7 +342,7 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
   }
 
   // FV // TODO(Dominic): Make template
-  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
+  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(srcCellDescriptionsIndex)) {
     if (
         #if !defined(PeriodicBC)
         !p.getIsInside(faceIndex) ||
