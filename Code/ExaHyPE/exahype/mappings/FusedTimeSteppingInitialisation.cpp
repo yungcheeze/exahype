@@ -135,7 +135,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::enterCell(
           exahype::solvers::RegisteredSolvers[solverNumber];
 
       if (State::fuseADERDGPhases()) {
-        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),element);
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
         if (element!=exahype::solvers::Solver::NotFound) {
           initialiseFusedTimestepping(solver,fineGridCell.getCellDescriptionsIndex(),element);
         }
