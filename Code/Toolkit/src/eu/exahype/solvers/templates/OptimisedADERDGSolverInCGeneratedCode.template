@@ -18,7 +18,14 @@
   // PS: If you miss access to user constants here,enable them in the toolkit
 }
 
-
+//TODO JMG remove when not needed anymore
+void {{Project}}::{{Solver}}::fluxSplitted(const double* const Q, double* f, double* g{{fluxSplitted_h_signature}}) {
+   double* F[{{fluxSplitted_dim}}];
+   F[0] = f;
+   F[1] = g;
+   {{fluxSplitted_F_h}}
+   flux(Q,F);
+}
 
 void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
 {{BeforeSpaceTimePredictor}}
