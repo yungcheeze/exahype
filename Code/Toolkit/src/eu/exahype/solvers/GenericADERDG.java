@@ -38,17 +38,19 @@ public class GenericADERDG implements Solver {
 	  
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
+	  String SolverInitSignatureExtension        = "";
+	  String ParserInclude                       = "";
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
 	  }
 	  if (_hasConstants) {
-		  String SolverInitSignatureExtension = ", exahype::Parser::ParserView constants";
-		  String ParserInclude = "#include \"exahype/Parser.h\"";
+		  SolverInitSignatureExtension = ", exahype::Parser::ParserView constants";
+		  ParserInclude = "#include \"exahype/Parser.h\"";
 		  solverConstructorSignatureExtension += SolverInitSignatureExtension;
-		  content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
-		  content = content.replaceAll("\\{\\{ParserInclude\\}\\}", ParserInclude);
 	  }
+	  content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+	  content = content.replaceAll("\\{\\{ParserInclude\\}\\}", ParserInclude);
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  
@@ -71,6 +73,7 @@ public class GenericADERDG implements Solver {
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
+	  String SolverInitCallExtension             = "";
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
@@ -134,10 +137,11 @@ In file included from /home/sven/numrel/exahype/master/Code/./ApplicationExample
      MHDSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
 	^
 		  */
-		  String SolverInitCallExtension = ", constants";
-		  content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
+		   SolverInitCallExtension = ", constants";
+		  
 	  }
-	  
+
+	  content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
@@ -168,10 +172,11 @@ In file included from /home/sven/numrel/exahype/master/Code/./ApplicationExample
     content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
 
+    String SolverInitSignatureExtension = "";
     if (_hasConstants) {
-        String SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
-        content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+        SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
     }
+    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
 
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
 
