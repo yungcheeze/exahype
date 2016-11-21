@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_InitialLimiterDomainAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_InitialLimiterDomainAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlot2d_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlot2d_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,14 +18,18 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/InitialLimiterDomain.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Prediction.h"
+ #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class InitialLimiterDomainAndTimeStepSizeComputation;
+        class PredictionAndPlot2d;
       } 
 }
 
@@ -37,13 +41,21 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::InitialLimiterDomainAndTimeStepSizeComputation {
+class exahype::adapters::PredictionAndPlot2d {
   private:
-    typedef mappings::InitialLimiterDomain Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::Prediction Mapping2;
+    typedef mappings::Plot Mapping3;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping4;
+    typedef mappings::Sending Mapping5;
 
-     Mapping0  _map2InitialLimiterDomain;
-     Mapping1  _map2TimeStepSizeComputation;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2Merging;
+     Mapping2  _map2Prediction;
+     Mapping3  _map2Plot;
+     Mapping4  _map2AugmentedAMRTreePlot2d;
+     Mapping5  _map2Sending;
 
 
   public:
@@ -55,16 +67,16 @@ class exahype::adapters::InitialLimiterDomainAndTimeStepSizeComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    InitialLimiterDomainAndTimeStepSizeComputation();
+    PredictionAndPlot2d();
 
     #if defined(SharedMemoryParallelisation)
-    InitialLimiterDomainAndTimeStepSizeComputation(const InitialLimiterDomainAndTimeStepSizeComputation& masterThread);
+    PredictionAndPlot2d(const PredictionAndPlot2d& masterThread);
     #endif
 
-    virtual ~InitialLimiterDomainAndTimeStepSizeComputation();
+    virtual ~PredictionAndPlot2d();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const InitialLimiterDomainAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlot2d& workerThread);
     #endif
 
     void createInnerVertex(

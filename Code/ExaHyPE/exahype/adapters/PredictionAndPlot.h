@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlot_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlot_H_
 
 
 #include "tarch/logging/Log.h"
@@ -22,14 +22,13 @@
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictionAndPlotAndTimeStepSizeComputation;
+        class PredictionAndPlot;
       } 
 }
 
@@ -41,21 +40,19 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation {
+class exahype::adapters::PredictionAndPlot {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
     typedef mappings::Prediction Mapping2;
     typedef mappings::Plot Mapping3;
-    typedef mappings::TimeStepSizeComputation Mapping4;
-    typedef mappings::Sending Mapping5;
+    typedef mappings::Sending Mapping4;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2Prediction;
      Mapping3  _map2Plot;
-     Mapping4  _map2TimeStepSizeComputation;
-     Mapping5  _map2Sending;
+     Mapping4  _map2Sending;
 
 
   public:
@@ -67,16 +64,16 @@ class exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictionAndPlotAndTimeStepSizeComputation();
+    PredictionAndPlot();
 
     #if defined(SharedMemoryParallelisation)
-    PredictionAndPlotAndTimeStepSizeComputation(const PredictionAndPlotAndTimeStepSizeComputation& masterThread);
+    PredictionAndPlot(const PredictionAndPlot& masterThread);
     #endif
 
-    virtual ~PredictionAndPlotAndTimeStepSizeComputation();
+    virtual ~PredictionAndPlot();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictionAndPlotAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlot& workerThread);
     #endif
 
     void createInnerVertex(

@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/LimiterStatusSpreading.h"
 
 
@@ -38,9 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::LimiterStatusSpreading {
   private:
-    typedef mappings::LimiterStatusSpreading Mapping0;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::LimiterStatusSpreading Mapping1;
 
-     Mapping0  _map2LimiterStatusSpreading;
+     Mapping0  _map2Merging;
+     Mapping1  _map2LimiterStatusSpreading;
 
 
   public:

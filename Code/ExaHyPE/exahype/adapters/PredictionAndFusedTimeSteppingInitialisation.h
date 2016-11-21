@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictionAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_PredictionAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
+#define EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -21,7 +21,7 @@
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
- #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
  #include "exahype/mappings/PostProcessing.h"
  #include "exahype/mappings/Sending.h"
 
@@ -29,7 +29,7 @@
 
 namespace exahype {
       namespace adapters {
-        class PredictionAndTimeStepSizeComputation;
+        class PredictionAndFusedTimeSteppingInitialisation;
       } 
 }
 
@@ -41,19 +41,19 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictionAndTimeStepSizeComputation {
+class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
     typedef mappings::Prediction Mapping2;
-    typedef mappings::TimeStepSizeComputation Mapping3;
+    typedef mappings::FusedTimeSteppingInitialisation Mapping3;
     typedef mappings::PostProcessing Mapping4;
     typedef mappings::Sending Mapping5;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2Prediction;
-     Mapping3  _map2TimeStepSizeComputation;
+     Mapping3  _map2FusedTimeSteppingInitialisation;
      Mapping4  _map2PostProcessing;
      Mapping5  _map2Sending;
 
@@ -67,16 +67,16 @@ class exahype::adapters::PredictionAndTimeStepSizeComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictionAndTimeStepSizeComputation();
+    PredictionAndFusedTimeSteppingInitialisation();
 
     #if defined(SharedMemoryParallelisation)
-    PredictionAndTimeStepSizeComputation(const PredictionAndTimeStepSizeComputation& masterThread);
+    PredictionAndFusedTimeSteppingInitialisation(const PredictionAndFusedTimeSteppingInitialisation& masterThread);
     #endif
 
-    virtual ~PredictionAndTimeStepSizeComputation();
+    virtual ~PredictionAndFusedTimeSteppingInitialisation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictionAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const PredictionAndFusedTimeSteppingInitialisation& workerThread);
     #endif
 
     void createInnerVertex(
