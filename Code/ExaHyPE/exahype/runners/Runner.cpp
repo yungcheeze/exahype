@@ -589,8 +589,14 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
     assertionEquals(solver->getMinTimeStamp(),0.0);
     assertion1(std::isfinite(solver->getMinTimeStepSize()),solver->getMinTimeStepSize());
     assertion1(solver->getMinTimeStepSize()>0,solver->getMinTimeStepSize());
-    assertionEquals(solver->getMinNextTimeStepSize(),std::numeric_limits<double>::max());
 
+    switch(solver->getTimeStepping()) {
+      case exahype::solvers::Solver::TimeStepping::Global:
+        assertionEquals(solver->getMinNextTimeStepSize(),std::numeric_limits<double>::max());
+        break;
+      case exahype::solvers::Solver::TimeStepping::GlobalFixed:
+        break;
+    }
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG: {
         auto* aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
@@ -603,7 +609,14 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         } else {
           assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),0.0);
         }
-        assertionEquals(aderdgSolver->getMinNextPredictorTimeStepSize(),std::numeric_limits<double>::max());
+        switch(solver->getTimeStepping()) {
+          case exahype::solvers::Solver::TimeStepping::Global:
+            assertionEquals(aderdgSolver->getMinNextPredictorTimeStepSize(),std::numeric_limits<double>::max());
+            break;
+          case exahype::solvers::Solver::TimeStepping::GlobalFixed:
+            break;
+        }
+
       }  break;
       case exahype::solvers::Solver::Type::LimitingADERDG: {
         // ADER-DG
@@ -617,14 +630,26 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         } else {
           assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),0.0);
         }
-        assertionEquals(aderdgSolver->getMinNextPredictorTimeStepSize(),std::numeric_limits<double>::max());
+        switch(solver->getTimeStepping()) {
+          case exahype::solvers::Solver::TimeStepping::Global:
+            assertionEquals(aderdgSolver->getMinNextPredictorTimeStepSize(),std::numeric_limits<double>::max());
+            break;
+          case exahype::solvers::Solver::TimeStepping::GlobalFixed:
+            break;
+        }
 
         // Finite Volumes
         auto* finiteVolumesSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter().get();
         assertionEquals(finiteVolumesSolver->getMinTimeStamp(),0.0);
         assertion1(std::isfinite(finiteVolumesSolver->getMinTimeStepSize()),finiteVolumesSolver->getMinTimeStepSize());
         assertion1(finiteVolumesSolver->getMinTimeStepSize()>0,finiteVolumesSolver->getMinTimeStepSize());
-        assertionEquals(finiteVolumesSolver->getMinNextTimeStepSize(),std::numeric_limits<double>::max());
+        switch(solver->getTimeStepping()) {
+          case exahype::solvers::Solver::TimeStepping::Global:
+            assertionEquals(finiteVolumesSolver->getMinNextTimeStepSize(),std::numeric_limits<double>::max());
+            break;
+          case exahype::solvers::Solver::TimeStepping::GlobalFixed:
+            break;
+        }
 
         // Compare ADER-DG vs Finite-Volumes
         assertionEquals(finiteVolumesSolver->getMinTimeStamp(),aderdgSolver->getMinCorrectorTimeStamp());
