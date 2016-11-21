@@ -41,19 +41,21 @@ void MHDSolver::MHDSolver::surfaceIntegral(double* lduh,const double* const lFhb
   kernels::aderdg::generic::c::surfaceIntegralNonlinear(lduh,lFhbnd,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
 }
 
-
+int globalRiemannSolverCounter(0);
 
 void MHDSolver::MHDSolver::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
+  const int basissize = order + 1;
+  globalRiemannSolverCounter++;
 
   // First call Fortran as we know it works and doesn't corrupt data.
   // output quantities
-  double fort_FL[nVar];
-  double fort_FR[nVar];
+  double fort_FL[basissize*basissize*nVar];
+  double fort_FR[basissize*basissize*nVar];
   // input quantities. May be copied for security. Not used do far.
-  double fort_QL[nVar];
-  double fort_QR[nVar];
+  double fort_QL[basissize*basissize*nVar];
+  double fort_QR[basissize*basissize*nVar];
   // temporary storage for computation
   double *fort_tempFaceUnknownsArray = NULL; // This is never used.
   double *fort_tempStateSizedVectors[nDim];
@@ -70,11 +72,11 @@ void MHDSolver::MHDSolver::riemannSolver(double* FL,double* FR,const double* con
 
   // now compare data
   const double accepterror = 1e-10;
-  for(int i=0; i<nVar; i++) {
+  for(int i=0; i<basissize*basissize*nVar; i++) {
     double errorFL = std::abs(fort_FL[i] - FL[i]);
     double errorFR = std::abs(fort_FR[i] - FR[i]);
-    if(errorFL > accepterror) printf("FL[%d]=%e fort_FL[%d]=%e errorFL=%e\n", i, FL[i], i, fort_FL[i], errorFL);
-    if(errorFR > accepterror) printf("FR[%d]=%e fort_FR[%d]=%e errorFR=%e\n", i, FR[i], i, fort_FR[i], errorFR);
+    if(errorFL > accepterror) printf("%d. FL[%d]=%+e fort_FL[%d]=%+e errorFL=%e\n", globalRiemannSolverCounter, i, FL[i], i, fort_FL[i], errorFL);
+    if(errorFR > accepterror) printf("%d. FR[%d]=%+e fort_FR[%d]=%+e errorFR=%e\n", globalRiemannSolverCounter, i, FR[i], i, fort_FR[i], errorFR);
   }
 }
 
