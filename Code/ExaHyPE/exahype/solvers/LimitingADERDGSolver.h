@@ -248,6 +248,13 @@ public:
           const int cellDescriptionsIndex,
           const int element) override;
 
+  void reconstructStandardTimeSteppingData() { // TODO(Dominic): Hack
+    //  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+    _solver->reconstructStandardTimeSteppingData();
+    _limiter->setMinTimeStamp(_solver->getMinCorrectorTimeStamp());
+    _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
+  }
+
   void startNewTimeStep() override;
 
   bool limiterDomainHasChanged() {
@@ -264,7 +271,7 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reinitTimeStepData() override;
+  void reinitialiseTimeStepData() override;
 
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override ;
@@ -314,6 +321,19 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+
+  void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
+    _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
+
+    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+    const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+    if (limiterElement!=exahype::solvers::Solver::NotFound) {
+      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+      limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch.setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
+    }
+  }
 
  /**
    * Rollback to the previous time step, i.e,
@@ -368,6 +388,15 @@ public:
       double** tempUnknowns,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  /**
+   * Determine the new cell-local min max values.
+   *
+   * Must be invoked after ::determineLimiterStatusAfterSolutionUpdate.
+   */
+  void determineMinAndMax(
+      const int cellDescriptionsIndex,
+      const int element);
 
   /**
    * We use this method to determine the limiter status of
