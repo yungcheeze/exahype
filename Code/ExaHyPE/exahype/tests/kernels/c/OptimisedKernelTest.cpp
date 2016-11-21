@@ -14,6 +14,9 @@
 #ifdef TEST_OPT_KERNEL
 
 #include <sstream>
+#include <iomanip> 
+#include <random>
+#include <cstring>
 
 #include "exahype/tests/kernels/c/OptimisedKernelTest.h"
 
@@ -30,7 +33,12 @@ namespace exahype {
 namespace tests {
 namespace c {
 
-const double OptimisedKernelTest::eps = 1.0e-13;
+int OptimisedKernelTest::_numberOfVariables;
+int OptimisedKernelTest::_basisSize;
+int OptimisedKernelTest::_order; 
+ 
+const double OptimisedKernelTest::eps  = 1.0e-13;
+const double OptimisedKernelTest::eps2 = 1.0e-12; //for known reordered operations
 #ifdef Dim2
 const std::string OptimisedKernelTest::dim = "2";
 #endif
@@ -55,11 +63,7 @@ void OptimisedKernelTest::adjustedSolutionValues(const double* const x,
                                                   const double dt, double* Q) {
 
   double GAMMA = 1.4;
-  Q[0] = 1.;
-  Q[1] = 0.;
-  Q[2] = 0.;
-  Q[3] = 0.;
-  Q[4] = 1. / (GAMMA -1) +
+  Q[0] = 1. / (GAMMA -1) +
         std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) 
 #if DIMENSIONS == 3     
           + (x[2] -0.5) *(x[2] -0.5)
@@ -71,6 +75,15 @@ void OptimisedKernelTest::adjustedSolutionValues(const double* const x,
 #endif        
         )) *
         1.0e-1;
+  
+  // fill the rest with 
+  for(int i=1; i<_numberOfVariables; i++) {
+    Q[i] = i*x[0]*x[1]
+#if DIMENSIONS == 3
+          *x[2]
+#endif       
+      ;
+  }
 }
 
 int OptimisedKernelTest::getNumberOfVariables() {
@@ -86,14 +99,14 @@ int OptimisedKernelTest::getNodesPerCoordinateAxis() {
 void OptimisedKernelTest::run() {
   _log.info("OptimisedKernelTest::run()", "OptimisedKernelTest is active");
   testMethod(testSolutionAdjustment);
-  
+  testMethod(testSolutionUpdate);
 
 }
 
 
 void OptimisedKernelTest::testSolutionAdjustment() {
   std::ostringstream out;
-  out << "Test solutionAdjustment, ORDER="<< _order <<", NVAR=" << _numberOfVariables;
+  out << "Test solutionAdjustment with gaussian pulse on Q[0], ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testSolutionAdjustment()", out.str());
   
 #if DIMENSIONS == 2     
@@ -123,6 +136,54 @@ void OptimisedKernelTest::testSolutionAdjustment() {
   delete[] luh_generic;
   delete[] luh_optimised;
 }
+
+
+void OptimisedKernelTest::testSolutionUpdate() {
+  std::ostringstream out;
+  out << "Test testSolutionUpdate with random values, ORDER="<< _order <<", NVAR=" << _numberOfVariables;
+  logInfo("OptimisedKernelTest::testSolutionUpdate()", out.str());
+  
+#if DIMENSIONS == 2     
+  const int luhSize = _numberOfVariables*_basisSize*_basisSize;
+#else
+  const int luhSize = _numberOfVariables*_basisSize*_basisSize*_basisSize;
+#endif 
+
+  const double dt = 0.05;
+  double* luh_generic = new double[luhSize];
+  double* luh_optimised = new double[luhSize];
+  double* lduh_generic = new double[luhSize];
+  double* lduh_optimised = new double[luhSize];
+  
+  std::random_device rd; //to generate a randome seed
+  std::mt19937 mt(rd()); //mersenne twister random number generator with random seed
+  std::uniform_real_distribution<double> dist(-1.0, 1.0); // [-1.0,1.0)
+  
+  for(int i=0; i<luhSize; i++) {
+    luh_generic[i] = dist(mt);
+    lduh_generic[i] = dist(mt);
+  }
+
+  std::memcpy(luh_optimised, luh_generic, luhSize*sizeof(double));
+  std::memcpy(lduh_optimised, lduh_generic, luhSize*sizeof(double));
+
+  kernels::aderdg::generic::c::solutionUpdate( luh_generic, lduh_generic, dt, _numberOfVariables, 0, _basisSize );
+  kernels::aderdg::optimised::solutionUpdate( luh_optimised, lduh_optimised, dt );
+  
+  for(int i=0; i<luhSize; i++) {
+    validateNumericalEqualsWithEps(luh_generic[i], luh_optimised[i], eps2);
+  }
+  
+  delete[] luh_generic;
+  delete[] luh_optimised;
+  delete[] lduh_generic;
+  delete[] lduh_optimised;
+
+}
+
+
+
+
 
 }  // namespace c
 }  // namespace tests
