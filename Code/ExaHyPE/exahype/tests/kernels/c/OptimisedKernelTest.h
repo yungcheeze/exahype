@@ -44,13 +44,15 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   
   //tests
   void testSolutionAdjustment();
+  void testSolutionUpdate();
 
  private:
   static tarch::logging::Log _log;
   static const double eps;  // for quick adaption of the test cases
-  int _numberOfVariables;
-  int _basisSize;
-  int _order;
+  static const double eps2;  // for quick adaption of the test cases
+  static int _numberOfVariables;
+  static int _basisSize;
+  static int _order;
   static const std::string dim; // for log
 
 
