@@ -211,8 +211,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
               determineLimiterStatusAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
-
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
+
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
     endpfor
