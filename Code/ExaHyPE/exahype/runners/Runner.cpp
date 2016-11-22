@@ -467,8 +467,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   initSolverTimeStamps();
 
-  validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
-
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
@@ -488,6 +486,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
   }
   repository.iterate();
+
+  validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
 
 //  /*
 //   * Reset the time stamps of the finite volumes solvers.
