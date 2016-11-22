@@ -165,16 +165,6 @@ class exahype::dastgen::State {
   persistent bool reinitTimeStepData;
   
   /**
-   * Flag indicating if we run the fused ADER-DG time
-   * stepping variant.
-   * 
-   * <h2>MPI</h2>
-   * This flag does not need to be parallelised since
-   * we use it only for the global master rank.
-   */
-  persistent bool fuseADERDGPhases;
-  
-  /**
    * This flag indicates if at least one solver
    * has performed a time step with an 
    * instable (too large) time step size and

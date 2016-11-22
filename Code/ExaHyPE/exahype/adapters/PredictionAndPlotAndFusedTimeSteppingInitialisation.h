@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PlotAndSolutionUpdate_H_
-#define EXAHYPE_ADAPTERS_PlotAndSolutionUpdate_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlotAndFusedTimeSteppingInitialisation_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlotAndFusedTimeSteppingInitialisation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -19,15 +19,17 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/SolutionUpdate.h"
- #include "exahype/mappings/PostProcessing.h"
+ #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PlotAndSolutionUpdate;
+        class PredictionAndPlotAndFusedTimeSteppingInitialisation;
       } 
 }
 
@@ -39,17 +41,21 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PlotAndSolutionUpdate {
+class exahype::adapters::PredictionAndPlotAndFusedTimeSteppingInitialisation {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::Plot Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::PostProcessing Mapping3;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::Prediction Mapping2;
+    typedef mappings::Plot Mapping3;
+    typedef mappings::FusedTimeSteppingInitialisation Mapping4;
+    typedef mappings::Sending Mapping5;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2Plot;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2PostProcessing;
+     Mapping1  _map2Merging;
+     Mapping2  _map2Prediction;
+     Mapping3  _map2Plot;
+     Mapping4  _map2FusedTimeSteppingInitialisation;
+     Mapping5  _map2Sending;
 
 
   public:
@@ -61,16 +67,16 @@ class exahype::adapters::PlotAndSolutionUpdate {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PlotAndSolutionUpdate();
+    PredictionAndPlotAndFusedTimeSteppingInitialisation();
 
     #if defined(SharedMemoryParallelisation)
-    PlotAndSolutionUpdate(const PlotAndSolutionUpdate& masterThread);
+    PredictionAndPlotAndFusedTimeSteppingInitialisation(const PredictionAndPlotAndFusedTimeSteppingInitialisation& masterThread);
     #endif
 
-    virtual ~PlotAndSolutionUpdate();
+    virtual ~PredictionAndPlotAndFusedTimeSteppingInitialisation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PlotAndSolutionUpdate& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlotAndFusedTimeSteppingInitialisation& workerThread);
     #endif
 
     void createInnerVertex(

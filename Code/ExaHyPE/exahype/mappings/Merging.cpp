@@ -269,8 +269,8 @@ void exahype::mappings::Merging::endIteration(
   deleteTemporaryVariables();
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
-  logInfo("endIteration(...)","interiorFaceSolves: " << _interiorFaceMerges);
-  logInfo("endIteration(...)","boundaryFaceSolves: " << _boundaryFaceMerges);
+  logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
+  logInfo("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
   #endif
 
   logTraceOutWith1Argument("endIteration(State)", solverState);

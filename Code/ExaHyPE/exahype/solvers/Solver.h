@@ -392,7 +392,7 @@ class exahype::solvers::Solver {
    * function, a new next time step size
    * has already been computed.
    */
-  virtual void reinitTimeStepData() = 0;
+  virtual void reinitialiseTimeStepData() = 0;
 
   virtual double getMinNextTimeStepSize() const=0;
 

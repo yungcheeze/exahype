@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_TimeStepSizeComputation_H_
-#define EXAHYPE_MAPPINGS_TimeStepSizeComputation_H_
+#ifndef EXAHYPE_MAPPINGS_FusedTimeSteppingInitialisation_H_
+#define EXAHYPE_MAPPINGS_FusedTimeSteppingInitialisation_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -30,35 +30,27 @@
 
 namespace exahype {
   namespace mappings {
-    class TimeStepSizeComputation;
+    class FusedTimeSteppingInitialisation;
   }
 }
 
 /**
- * Determine a global time step size
+ * This mapping is used to set the corrector time stamp and
+ * step size to the predictor values for every ADER-DG solver
+ * itself and the cell descriptions belonging to this solver.
+ * Further adds the predictor time step
+ * size on the predictor time stamp for
+ * every ADER-DG solver and its
+ * cell descriptions.
  *
- * The global time step computation runs through all the cells. Per cell, it
- * runs through all involved solvers and determines the corresponding minimal
- * time step sizes. Once the traversal terminates, all solvers thus know what
- * the minimal permitted time step size is. We now take the minimal time step
- * sizes and inform the solvers about them through
- * updateMinNextPredictorTimeStepSize().
+ * !!! Rationale:
+ * In the fused time stepping scheme, the predictor
+ * time stamp must be one time step size ahead of the
+ * corrector time stamp.
  *
- * In the subsequent time step, these minimal time step sizes then are used by
- * synchroniseTimeStepping() (see notably the mapping NewTimeStep) to move the
- * patch forward in time. There is no need to take extra care for the
- * optimistic time step choice - we can determine from outside whether we tend
- * to overshoot and thus have to rerun the predictor. This is done in the
- * runner.
- *
- * <h2>Multicore parallelisation</h2>
- * See documentation of _minTimeStepSizes/
- *
- * <h2>MPI parallelisation</h2>
- *
- * @author Dominic Charrier, Tobias Weinzierl
+ * @author Dominic Charrier
  */
-class exahype::mappings::TimeStepSizeComputation {
+class exahype::mappings::FusedTimeSteppingInitialisation {
  private:
   /**
    * Logging device for the trace macros.
@@ -66,62 +58,21 @@ class exahype::mappings::TimeStepSizeComputation {
   static tarch::logging::Log _log;
 
   /**
-   * A minimum time step size for each solver.
+   * Sets the corrector time stamp and step size to the
+   * predictor values. Adds the predictor time step
+   * size on the predictor time stamp.
+   *
+   * !!! Rationale:
+   * In the fused time stepping scheme, the predictor
+   * time stamp must be one time step size ahead of the
+   * corrector time stamp.
    */
-  std::vector<double> _minTimeStepSizes;
+  void initialiseFusedTimestepping(exahype::solvers::Solver* solver) const;
 
   /**
-   * A minimum cell size for each solver.
+   * Similar to ::initialiseFusedTimestepping(exahype::solvers::Solver*) but per cell description.
    */
-  std::vector<double> _minCellSizes;
-
-  /**
-   * A maximum cell size for each solver.
-   */
-  std::vector<double> _maxCellSizes;
-
-  double** _tempEigenValues = nullptr;
-
-  /**
-   * Prepare a appropriately sized vector _minTimeStepSizes
-   * with elements initiliased to MAX_DOUBLE.
-   */
-  void prepareLocalTimeStepVariables();
-
-  /**
-   * Per solver, allocate a temporary eigenvalues
-   * array.
-   */
-  void prepareTemporaryVariables();
-
-  /**
-   * Free memory reserved for the eigenvalue vectors we have
-   * allocated per solver.
-   */
-  void deleteTemporaryVariables();
-
-  /**
-   * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver
-   * with stable time step sizes if we detect a-posteriori that the CFL condition was
-   * harmed by the estimated predictor time step size used in the last iteration.
-   */
-  void reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(exahype::State& state,exahype::solvers::Solver* solver) const;
-
-  /**
-   * If the original time stepping algorithm is used for the ADER-DG scheme,
-   * we need to enforce that the corrector time step size is identical to the
-   * predictor time step size.
-   * We further need to
-   */
-  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver) const;
-
-
-  /**
-   * Similar to ::overwriteCorrectorTimeStepDataWithPredictorValues(exahype::solvers::Solver*) but for
-   * a cell description.
-   */
-  void reconstructStandardTimeSteppingData(exahype::solvers::Solver* solver,const int cellDescriptionsIndex,const int element) const;
-
+  void initialiseFusedTimestepping(exahype::solvers::Solver* solver,const int cellDescriptionsIndex, const int element) const;
  public:
   /**
    * Run through whole tree. Run concurrently on fine grid.
@@ -138,30 +89,17 @@ class exahype::mappings::TimeStepSizeComputation {
   static peano::MappingSpecification descendSpecification();
 
   /**
-   * The global time step computation does synchronise the individual cells
-   * with the solver instances from the master. The actual
-   * synchronisation/consistency routines
-   * for the solvers are done in NewTimeStep and
-   * the SpaceTimePredictor.
-   *
-   * The fundamental job of the global time step mapping is to report back to
-   * the master what time step is permitted. As all those operations are
-   * actually done in enterCell---also the veto of a global time step is done
-   * in the Riemann solver, i.e. before enterCell---we can send back data as
-   * soon as the traversal operation leaves the local subtree.
+   * TODO(Dominic): Currently, we need to broadcast the state in order
+   * to get the information if the fused time stepping algorithm
+   * was chosen by the user. However since we agreed that
+   * status does not change during the simulation time,
+   * we can set a on each rank's State a static flag
+   * in Runner::run();
    */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
-   * If the fine grid cell functions as compute cell for a solver,
-   * compute a stable time step size.
-   *
-   * Then update the time stamp of the compute cell
-   * and update the minimum solver time stamp and
-   * time step size.
-   *
-   * Finally, update the minimum and maximum mesh cell size
-   * fields per solver with the size of the fine grid cell.
+   * \see ::initialiseFusedTimestepping(exahype::solvers::Solver*,const int,const int).
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -172,71 +110,35 @@ class exahype::mappings::TimeStepSizeComputation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Delete temporary variables for all threads.
+   * Nop.
    */
-  virtual ~TimeStepSizeComputation();
+  virtual ~FusedTimeSteppingInitialisation();
   #if defined(SharedMemoryParallelisation)
   /**
-   * Initialise temporary variables for worker threads.
+   * Copy the state from the master.
    */
-  TimeStepSizeComputation(const TimeStepSizeComputation& masterThread);
+  FusedTimeSteppingInitialisation(const FusedTimeSteppingInitialisation& masterThread);
   #endif
 
   /**
-   * Start iteration/grid sweep.
-   * Make the state clear its accumulated values.
-   *
-   * Further initialise temporary variables
-   * if they are not initialised yet (or
-   * if a new solver was introuced to the grid.
-   * This is why we put the initialisation
-   * in beginIteration().
-   *
-   * \note Is called once per rank.
+   * \see ::initialiseFusedTimestepping(exahype::solvers::Solver*).
    */
   void beginIteration(exahype::State& solverState);
 
+
+  //
+  // Below every routine is nop.
+  //
+  // ==================================
+
+
   /**
-   * Runs over all the registered solvers and sets the
-   * reduced minimum time step sizes. Then updates the minimum time stamp
-   * of the solvers.
-   *
-   * Iterate over the solvers and start a new time step
-   * on every solver.
-   *
-   * <h2>Fused ADER-DG time stepping</h2>
-   * If we use the fused ADER-DG time stepping algorithm,
-   * The solver or (the solver belonging to the global master in the MPI context)
-   * is not allowed to perform the time step update
-   * directly. It first has to check if the previously used
-   * min predictor time step size was stable one.
-   * Otherwise, we would corrupt the corrector time stamp
-   * with an invalid value.
-   *
-   * <h2>MPI</h2>
-   * Here we start again a new time step "in the small" on the
-   * worker rank and overwrite it later on again if a synchronisation is applied
-   * by the master rank.
-   *
-   * It is important to keep in mind that endIteration() on a worker
-   * is called before the prepareSendToMaster routine.
-   * We thus send out the current time step size from
-   * the worker to the master.
-   *
-   * On the master, the mergeWithMaster routine is however called
-   * before endIteration.
-   * We thus merge the received time step size with the next
-   * time step size on the master.
-   *
-   * \see exahype::mappings::Sending,exahype::mappings::Merging
+   * Nop.
    */
   void endIteration(exahype::State& solverState);
 #ifdef Parallel
   /**
-   * This routine is called on the worker.
-   *
-   * Send the local array of minimal time step sizes up to the master. This is
-   * one MPI_Send on the whole array.
+   * Nop.
    */
   void prepareSendToMaster(
       exahype::Cell& localCell, exahype::Vertex* vertices,
@@ -247,14 +149,7 @@ class exahype::mappings::TimeStepSizeComputation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Through the result of this routine, we can skip worker-master data
-   * transfer as all other mappings return false. Such a skip is advantageous
-   * if the runner has decided to trigger multiple grid traversals in one
-   * batch. This in turn automatically disables the load balancing.
-   *
-   * Our strategy thus is as follows: If we may skip the reduction, i.e. the
-   * user has enabled this optimisation in the ExaHyPE spec file, then we
-   * return false if load balancing is disabled.
+   * Nop.
    */
   bool prepareSendToWorker(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -266,8 +161,7 @@ class exahype::mappings::TimeStepSizeComputation {
       int worker);
 
   /**
-   * This routine is called on the master.
-   * TODO(Dominic): Docu.
+   * Nop.
    */
   void mergeWithMaster(
       const exahype::Cell& workerGridCell,
@@ -358,13 +252,13 @@ class exahype::mappings::TimeStepSizeComputation {
   /**
    * Nop.
    */
-  TimeStepSizeComputation();
+  FusedTimeSteppingInitialisation();
 
  #if defined(SharedMemoryParallelisation)
    /**
     * Nop.
     */
-   void mergeWithWorkerThread(const TimeStepSizeComputation& workerThread);
+   void mergeWithWorkerThread(const FusedTimeSteppingInitialisation& workerThread);
  #endif
    /**
     * Nop.

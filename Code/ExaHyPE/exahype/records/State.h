@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   14/11/2016 20:13
+    * @date   21/11/2016 18:38
     */
    class exahype::records::State { 
       
@@ -53,7 +53,6 @@ namespace exahype {
             MergeMode _mergeMode;
             SendMode _sendMode;
             bool _reinitTimeStepData;
-            bool _fuseADERDGPhases;
             bool _stabilityConditionOfOneSolverWasViolated;
             double _timeStepSizeWeightForPredictionRerun;
             bool _limiterDomainHasChanged;
@@ -72,7 +71,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline MergeMode getMergeMode() const 
@@ -131,26 +130,6 @@ namespace exahype {
  #endif 
  {
                _reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _fuseADERDGPhases;
-            }
-            
-            
-            
-            inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _fuseADERDGPhases = fuseADERDGPhases;
             }
             
             
@@ -374,7 +353,7 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
@@ -438,26 +417,6 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-         }
-         
-         
-         
-         inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._fuseADERDGPhases;
-         }
-         
-         
-         
-         inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
          }
          
          
@@ -758,7 +717,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   14/11/2016 20:13
+       * @date   21/11/2016 18:38
        */
       class exahype::records::StatePacked { 
          
@@ -772,7 +731,6 @@ namespace exahype {
                MergeMode _mergeMode;
                SendMode _sendMode;
                bool _reinitTimeStepData;
-               bool _fuseADERDGPhases;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
                bool _limiterDomainHasChanged;
@@ -797,7 +755,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline MergeMode getMergeMode() const 
@@ -856,26 +814,6 @@ namespace exahype {
  #endif 
  {
                   _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _fuseADERDGPhases;
-               }
-               
-               
-               
-               inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _fuseADERDGPhases = fuseADERDGPhases;
                }
                
                
@@ -1117,7 +1055,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -1181,26 +1119,6 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._fuseADERDGPhases;
-            }
-            
-            
-            
-            inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
             }
             
             
@@ -1516,7 +1434,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   14/11/2016 20:13
+          * @date   21/11/2016 18:38
           */
          class exahype::records::State { 
             
@@ -1542,7 +1460,6 @@ namespace exahype {
                   MergeMode _mergeMode;
                   SendMode _sendMode;
                   bool _reinitTimeStepData;
-                  bool _fuseADERDGPhases;
                   bool _stabilityConditionOfOneSolverWasViolated;
                   double _timeStepSizeWeightForPredictionRerun;
                   bool _limiterDomainHasChanged;
@@ -1585,7 +1502,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -1684,26 +1601,6 @@ namespace exahype {
  #endif 
  {
                      _reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _fuseADERDGPhases;
-                  }
-                  
-                  
-                  
-                  inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _fuseADERDGPhases = fuseADERDGPhases;
                   }
                   
                   
@@ -2323,7 +2220,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2427,26 +2324,6 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._fuseADERDGPhases;
-               }
-               
-               
-               
-               inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                }
                
                
@@ -3205,7 +3082,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   14/11/2016 20:13
+             * @date   21/11/2016 18:38
              */
             class exahype::records::StatePacked { 
                
@@ -3223,7 +3100,6 @@ namespace exahype {
                      MergeMode _mergeMode;
                      SendMode _sendMode;
                      bool _reinitTimeStepData;
-                     bool _fuseADERDGPhases;
                      bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
                      bool _limiterDomainHasChanged;
@@ -3264,7 +3140,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -3363,26 +3239,6 @@ namespace exahype {
  #endif 
  {
                         _reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _fuseADERDGPhases;
-                     }
-                     
-                     
-                     
-                     inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _fuseADERDGPhases = fuseADERDGPhases;
                      }
                      
                      
@@ -4029,7 +3885,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -4133,26 +3989,6 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._fuseADERDGPhases;
-                  }
-                  
-                  
-                  
-                  inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                   }
                   
                   
@@ -4936,7 +4772,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   14/11/2016 20:13
+             * @date   21/11/2016 18:38
              */
             class exahype::records::State { 
                
@@ -4962,7 +4798,6 @@ namespace exahype {
                      MergeMode _mergeMode;
                      SendMode _sendMode;
                      bool _reinitTimeStepData;
-                     bool _fuseADERDGPhases;
                      bool _stabilityConditionOfOneSolverWasViolated;
                      double _timeStepSizeWeightForPredictionRerun;
                      bool _limiterDomainHasChanged;
@@ -4984,7 +4819,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -5083,26 +4918,6 @@ namespace exahype {
  #endif 
  {
                         _reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _fuseADERDGPhases;
-                     }
-                     
-                     
-                     
-                     inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _fuseADERDGPhases = fuseADERDGPhases;
                      }
                      
                      
@@ -5386,7 +5201,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -5490,26 +5305,6 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._fuseADERDGPhases;
-                  }
-                  
-                  
-                  
-                  inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                   }
                   
                   
@@ -5880,7 +5675,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   14/11/2016 20:13
+                * @date   21/11/2016 18:38
                 */
                class exahype::records::StatePacked { 
                   
@@ -5898,7 +5693,6 @@ namespace exahype {
                         MergeMode _mergeMode;
                         SendMode _sendMode;
                         bool _reinitTimeStepData;
-                        bool _fuseADERDGPhases;
                         bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
                         bool _limiterDomainHasChanged;
@@ -5926,7 +5720,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
                         inline GridConstructionState getGridConstructionState() const 
@@ -6025,26 +5819,6 @@ namespace exahype {
  #endif 
  {
                            _reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _fuseADERDGPhases;
-                        }
-                        
-                        
-                        
-                        inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _fuseADERDGPhases = fuseADERDGPhases;
                         }
                         
                         
@@ -6355,7 +6129,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
@@ -6459,26 +6233,6 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._fuseADERDGPhases;
-                     }
-                     
-                     
-                     
-                     inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                      }
                      
                      
@@ -6874,7 +6628,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   14/11/2016 20:13
+                * @date   21/11/2016 18:38
                 */
                class exahype::records::State { 
                   
@@ -6894,7 +6648,6 @@ namespace exahype {
                         MergeMode _mergeMode;
                         SendMode _sendMode;
                         bool _reinitTimeStepData;
-                        bool _fuseADERDGPhases;
                         bool _stabilityConditionOfOneSolverWasViolated;
                         double _timeStepSizeWeightForPredictionRerun;
                         bool _limiterDomainHasChanged;
@@ -6934,7 +6687,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         
                         inline MergeMode getMergeMode() const 
@@ -6993,26 +6746,6 @@ namespace exahype {
  #endif 
  {
                            _reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _fuseADERDGPhases;
-                        }
-                        
-                        
-                        
-                        inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _fuseADERDGPhases = fuseADERDGPhases;
                         }
                         
                         
@@ -7572,7 +7305,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
@@ -7636,26 +7369,6 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._fuseADERDGPhases;
-                     }
-                     
-                     
-                     
-                     inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                      }
                      
                      
@@ -8344,7 +8057,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   14/11/2016 20:13
+                   * @date   21/11/2016 18:38
                    */
                   class exahype::records::StatePacked { 
                      
@@ -8358,7 +8071,6 @@ namespace exahype {
                            MergeMode _mergeMode;
                            SendMode _sendMode;
                            bool _reinitTimeStepData;
-                           bool _fuseADERDGPhases;
                            bool _stabilityConditionOfOneSolverWasViolated;
                            double _timeStepSizeWeightForPredictionRerun;
                            bool _limiterDomainHasChanged;
@@ -8396,7 +8108,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                           PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                            
                            
                            inline MergeMode getMergeMode() const 
@@ -8455,26 +8167,6 @@ namespace exahype {
  #endif 
  {
                               _reinitTimeStepData = reinitTimeStepData;
-                           }
-                           
-                           
-                           
-                           inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _fuseADERDGPhases;
-                           }
-                           
-                           
-                           
-                           inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _fuseADERDGPhases = fuseADERDGPhases;
                            }
                            
                            
@@ -9052,7 +8744,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& fuseADERDGPhases, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& limiterDomainHasChanged, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         /**
                          * Generated
@@ -9116,26 +8808,6 @@ namespace exahype {
  #endif 
  {
                            _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getFuseADERDGPhases() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._fuseADERDGPhases;
-                        }
-                        
-                        
-                        
-                        inline void setFuseADERDGPhases(const bool& fuseADERDGPhases) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._fuseADERDGPhases = fuseADERDGPhases;
                         }
                         
                         

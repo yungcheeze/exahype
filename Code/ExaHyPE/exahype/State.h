@@ -67,7 +67,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void readFromCheckpoint(
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
-
   #ifdef Parallel
   /**
    * We need/use this field in the parallel mode, but we use it on the global
@@ -78,6 +77,8 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   int _idleRanksAtLastLookup;
   #endif
  public:
+  static bool FuseADERDGPhases;
+
   /**
    * Default Constructor
    *
@@ -172,7 +173,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
     // One of the two points where we need to reset this flag (cf. workflow in Runner).
@@ -184,7 +184,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
@@ -194,7 +193,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
@@ -208,7 +206,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
@@ -218,7 +215,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
@@ -228,7 +224,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(true);
     #endif
     _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
@@ -238,7 +233,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
     // One of the two points where we need to reset this flag (cf. workflow in Runner).
@@ -250,7 +244,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
@@ -260,7 +253,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(true);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
@@ -270,7 +262,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
@@ -281,7 +272,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
@@ -303,12 +293,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getReinitTimeStepData();
   }
 
-  void setFuseADERDGPhases(bool state) {
-    _stateData.setFuseADERDGPhases(state);
-  }
-
-  bool fuseADERDGPhases() const  {
-    return _stateData.getFuseADERDGPhases();
+  /**
+   * Indicates that the fused time stepping
+   * scheme is used in the runner
+   * instead of the original one.
+   */
+  static bool fuseADERDGPhases()  {
+    return FuseADERDGPhases;
   }
 
   void setTimeStepSizeWeightForPredictionRerun(double value) {

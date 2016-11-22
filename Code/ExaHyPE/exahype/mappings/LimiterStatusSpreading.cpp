@@ -106,6 +106,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
