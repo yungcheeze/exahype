@@ -97,10 +97,12 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     static const double                                  _InitialAccuracy;
     static const double                                  _FinalAccuracy;
 
+
     /**
      * We never do optimise all traces. We only do it with one trace at a time.
      */
     peano::datatraversal::autotuning::MethodTrace        _activeMethodTrace;
+    const bool                                           _learn;
 
     struct DatabaseEntry {
       int                          _biggestProblemSize;
@@ -125,7 +127,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize();
+    OracleForOnePhaseWithShrinkingGrainSize(bool learn);
 
     virtual ~OracleForOnePhaseWithShrinkingGrainSize();
 

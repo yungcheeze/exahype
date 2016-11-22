@@ -27,7 +27,7 @@ exahype-project  MHDSolver
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 

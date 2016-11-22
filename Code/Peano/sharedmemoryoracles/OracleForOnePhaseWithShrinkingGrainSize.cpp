@@ -18,8 +18,9 @@ const double                       sharedmemoryoracles::OracleForOnePhaseWithShr
 const double                       sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_FinalAccuracy(1e-8);
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize():
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
+  _learn(learn),
   _measurements() {
 }
 
@@ -37,7 +38,7 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
     _measurements[askingMethod]._previousMeasuredTime = 0;
   }
 
-  if (_measurements[askingMethod]._currentGrainSize >= problemSize) {
+  if (_measurements[askingMethod]._currentGrainSize >= problemSize || !_learn) {
     return peano::datatraversal::autotuning::GrainSize(
       0,
       false,
@@ -226,7 +227,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle() const {
-  return new OracleForOnePhaseWithShrinkingGrainSize();
+  return new OracleForOnePhaseWithShrinkingGrainSize(_learn);
 }
 
 
@@ -235,18 +236,16 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::deactivateOra
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracle() {
-  if (_measurements.empty()) {
-    logDebug( "activateOracle()", "do not trigger any operation as measurement set is empty" );
-  }
-  else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
-    changeMeasuredMethodTrace();
-    logInfo(
-      "activateOracle()", "no valid search had been triggered before. start search with "
-      << " method-trace=" << toString(_activeMethodTrace)
-    );
-  }
-  else if (_measurements[_activeMethodTrace]._currentMeasurement.isAccurateValue()) {
-    makeAttributesLearn();
-    changeMeasuredMethodTrace();
+  if (_learn) {
+    if (_measurements.empty()) {
+      logDebug( "activateOracle()", "do not trigger any operation as measurement set is empty" );
+    }
+    else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
+      changeMeasuredMethodTrace();
+    }
+    else if (_measurements[_activeMethodTrace]._currentMeasurement.isAccurateValue()) {
+      makeAttributesLearn();
+      changeMeasuredMethodTrace();
+    }
   }
 }
