@@ -81,10 +81,11 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   const int basisSize = order + 1;
 
   double Qgp[nVar];
-  std::memset(stateOut, 0.0, nVar * sizeof(double));
-  std::memset(fluxOut, 0.0, nVar * sizeof(double));
+  std::memset(stateOut, 0, nVar * sizeof(double));
+  std::memset(fluxOut, 0, nVar * sizeof(double));
 
-  double F[nDim * nVar]; // Fortran needs continous storage!
+  double F[3 * nVar]; // Fortran needs continous storage!
+                      // Use always 3 dimensions here since the kernels works with those internally; see nDim in PDE.f90;
   kernels::idx2 F_idx(nDim, nVar);
 
   // Integrate solution in gauss points (Qgp) in time
@@ -97,7 +98,7 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
      pdeflux_(F, Qgp);
      for(int m=0; m < nVar; m++) {
 	//if(m==checkm) printf("fluxOut[%d] += %.20e\n", m, weight * F[normalNonZero][m]);
-	stateOut[m] += weight * Qgp[m];
+        stateOut[m] += weight * Qgp[m];
         fluxOut[m] += weight * F[F_idx(normalNonZero, m)];
      }
   }
