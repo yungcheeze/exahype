@@ -6,6 +6,7 @@
 
 // includes fortran and c kernels
 #include "kernels/aderdg/generic/Kernels.h"
+#include "kernels/KernelUtils.h"
 
 // std::abs
 #include <climits>
@@ -48,36 +49,59 @@ void MHDSolver::MHDSolver::riemannSolver(double* FL,double* FR,const double* con
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
   const int basissize = order + 1;
   globalRiemannSolverCounter++;
-
+#define FORTRANCOMPARISON
+#ifdef FORTRANCOMPARISON
   // First call Fortran as we know it works and doesn't corrupt data.
   // output quantities
   double fort_FL[basissize*basissize*nVar];
   double fort_FR[basissize*basissize*nVar];
+  std::memcpy(fort_FL, FL, basissize*basissize*nVar * sizeof(double));
+  std::memcpy(fort_FR, FR, basissize*basissize*nVar * sizeof(double));
   // input quantities. May be copied for security. Not used do far.
   double fort_QL[basissize*basissize*nVar];
   double fort_QR[basissize*basissize*nVar];
   // temporary storage for computation
   double *fort_tempFaceUnknownsArray = NULL; // This is never used.
-  double *fort_tempStateSizedVectors[nDim];
-  double v1[nVar], v2[nVar], v3[nVar];
-  fort_tempStateSizedVectors[0] = v1;
-  fort_tempStateSizedVectors[1] = v2;
-  if(nDim>2) fort_tempStateSizedVectors[2] = v3;
+  const int numTempStateSizedVectors = 5; // cf. ADERDGSolver.h, line 738ff.
+  double *fort_tempStateSizedVectors[numTempStateSizedVectors];
+  double v1[numTempStateSizedVectors][nVar];
+  for(int i=0; i<numTempStateSizedVectors; i++) {
+    fort_tempStateSizedVectors[i] = v1[i];
+  }
   double **fort_tempStateSizedSquareMatrices = NULL; // Never used
 
-  kernels::aderdg::generic::fortran::riemannSolverNonlinear<MHDSolver>(*this,fort_FL,fort_FR,QL,QR,fort_tempFaceUnknownsArray,fort_tempStateSizedVectors,fort_tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-
+  kernels::aderdg::generic::fortran::riemannSolverNonlinear<MHDSolver>(*this,fort_FL,fort_FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+#endif
   // then call C on the actual data
   kernels::aderdg::generic::c::riemannSolverNonlinear<MHDSolver>(*this,FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
-
+#ifdef FORTRANCOMPARISON
   // now compare data
   const double accepterror = 1e-10;
-  for(int i=0; i<basissize*basissize*nVar; i++) {
-    double errorFL = std::abs(fort_FL[i] - FL[i]);
-    double errorFR = std::abs(fort_FR[i] - FR[i]);
-    if(errorFL > accepterror) printf("%d. FL[%d]=%+e fort_FL[%d]=%+e errorFL=%e\n", globalRiemannSolverCounter, i, FL[i], i, fort_FL[i], errorFL);
-    if(errorFR > accepterror) printf("%d. FR[%d]=%+e fort_FR[%d]=%+e errorFR=%e\n", globalRiemannSolverCounter, i, FR[i], i, fort_FR[i], errorFR);
+  bool error = false;
+  kernels::idx3 idx_FQLR(basissize, basissize, nVar);
+  for (int n = 0; n < basissize; n++) {
+    for (int j = 0; j < basissize; j++) {
+        for (int k = 0; k < nVar - 0; k++) {
+		int i = idx_FQLR(n, j, k);
+		double errorFL = std::abs(fort_FL[i] - FL[i]);
+		double errorFR = std::abs(fort_FR[i] - FR[i]);
+		if(errorFL > accepterror || errorFR > accepterror) {
+			printf("idx(%d,%d,%d) = [%d]\n", n,j,k,i);
+			printf("%d. FL[%d]=%+e fort_FL[%d]=%+e errorFL=%e\n", globalRiemannSolverCounter, i, FL[i], i, fort_FL[i], errorFL);
+			printf("%d. FR[%d]=%+e fort_FR[%d]=%+e errorFR=%e\n", globalRiemannSolverCounter, i, FR[i], i, fort_FR[i], errorFR);
+			error = true;
+		}
+		
+	}
+    }
   }
+  if(!error) {
+   // printf("%d. correct\n", globalRiemannSolverCounter);
+  } else {
+    printf("Stopping since error\n");
+    exit(-1);
+  }
+#endif
 }
 
 

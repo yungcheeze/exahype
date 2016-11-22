@@ -17,9 +17,9 @@ exahype-project  MHDSolver
   architecture               = noarch
 
   computational-domain
-    dimension                = 2
-    width                    = 1.0, 1.0
-    offset                   = 0.0, 0.0
+    dimension                = 3
+    width                    = 1.0, 1.0, 1.0
+    offset                   = 0.0, 0.0, 0.0
     end-time                 = 3.0
   end computational-domain
 
@@ -62,8 +62,11 @@ exahype-project  MHDSolver
     /* choose your iniitial data here. Caveats on whitespace */
     constants = {initialdata:orsagtang}
 
-    /* do not trust vtk::Legendre::vertices as it contains bugs */
-    plot vtk::Legendre::vertices::ascii
+
+    /* do not trust vtk::Cartesian::vertices::ascii as it probably contains bugs */
+    /* use vtk::Legendre::vertices::ascii instead */
+    /* however, Legendre does not work in 3D */
+    plot vtk::Cartesian::vertices::ascii
       variables= 9
       time     = 0.0
       repeat   = 0.05
@@ -71,7 +74,7 @@ exahype-project  MHDSolver
       select   = {}
     end plot
     
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
       repeat = 0.05
@@ -79,7 +82,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -87,7 +90,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -95,7 +98,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -103,7 +106,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 9
       time      = 0.0
       repeat    = 0.05
