@@ -87,7 +87,7 @@ class exahype::runners::Runner {
   void initSolverTimeStamps();
   void initFiniteVolumesSolverTimeStamps();
 
-  void validateInitialSolverTimeStepData(const bool fuseADERDGPhases);
+  void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;
 
   /**
    * Initialise the data compression (or switch it off if we don't need it).
@@ -138,6 +138,8 @@ class exahype::runners::Runner {
    */
   void runOneTimeStampWithThreeSeparateAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
+
+  void validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const;
 
   /**
    * Sets up the geometry, hands it over to a new instance of the repository
