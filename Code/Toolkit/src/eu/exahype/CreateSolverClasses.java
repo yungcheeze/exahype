@@ -6,6 +6,7 @@ import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
+import eu.exahype.node.PSolver;
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -40,6 +41,26 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
     if (node.getSolver().size() == 0) {
       System.out.println("there are no solvers in the specification file ... nothing to be done");
+    }
+    
+    // Only one optimised solver can be used (optimised kernel would be overwritten by the latest solver otherwise)
+    if (node.getSolver().size() > 1) {
+      int optimisedCount = 0;
+      for(PSolver psolver : node.getSolver()) {
+        if(psolver instanceof AAderdgSolver) {
+          AAderdgSolver asolver = (AAderdgSolver) psolver;
+          if(    asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
+              || asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )
+            ){
+              optimisedCount++;
+            }
+        }
+      }
+      if(optimisedCount > 1) {
+        System.err.println("ERROR: Only one optimised solver can be used at a time. Currently "+optimizedCount+" are defined.");
+        valid = false;
+        return;
+      }
     }
 
     _microarchitecture = node.getArchitecture().toString().trim().toLowerCase();
