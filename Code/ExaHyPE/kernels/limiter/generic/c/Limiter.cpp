@@ -74,7 +74,7 @@ void projectOnDGSpace(const double* const lim, const int numberOfVariables, cons
 #if DIMENSIONS == 3
   const int basisSize3D       = basisSize;
   const int basisSizeLim3D    = basisSizeLim;
-  const int ghostLayerWidth3D = ghostLayerWidth
+  const int ghostLayerWidth3D = ghostLayerWidth;
 #else
   constexpr int basisSize3D       = 1;
   constexpr int basisSizeLim3D    = 1;
