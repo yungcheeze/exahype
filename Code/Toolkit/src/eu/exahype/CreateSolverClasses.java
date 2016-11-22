@@ -57,7 +57,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
       }
       if(optimisedCount > 1) {
-        System.err.println("ERROR: Only one optimised solver can be used at a time. Currently "+optimizedCount+" are defined.");
+        System.err.println("ERROR: Only one optimised solver can be used at a time. Currently "+optimisedCount+" are defined.");
         valid = false;
         return;
       }
