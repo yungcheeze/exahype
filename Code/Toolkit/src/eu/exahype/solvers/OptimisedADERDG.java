@@ -61,6 +61,10 @@ public class OptimisedADERDG implements Solver {
 
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
+        
+    Helpers.invokeCodeGenerator(solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+        _microarchitecture, _pathToLibxsmm);
+        
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode.template");
     
