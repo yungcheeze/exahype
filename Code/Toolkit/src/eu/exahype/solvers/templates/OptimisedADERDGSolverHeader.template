@@ -47,7 +47,7 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
  private:
     void init(std::vector<std::string>& cmdlineargs);
     static void flux(const double* const Q, double** F);
-    static void fluxSplitted(const double* const Q, double* f, double* g);
+    static void fluxSplitted(const double* const Q, double* f, double* g{{fluxSplitted_h_signature}});
     static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
     static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
     void source(const double* const Q, double* S);

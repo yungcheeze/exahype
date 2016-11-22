@@ -56,6 +56,12 @@ public class OptimisedADERDG implements Solver {
 	  content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
 	  content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
 	  
+    if(_dimensions == 2) {
+      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", "");  
+    } else { // == 3
+      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", ", double* h");  
+    }
+    
 	  writer.write(content);
   }
 
