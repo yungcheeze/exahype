@@ -994,6 +994,11 @@ public:
   void rollbackToPreviousTimeStep();
 
   /**
+   * Similar to reconstructStandardTimeSteppingData for roll backs.
+   */
+  void reconstructStandardTimeSteppingDataAfterRollback();
+
+  /**
    * If we use the original time stepping
    * scheme with multiple algorithmic phases,
    * we have to call this method
@@ -1172,6 +1177,13 @@ public:
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int element);
+
+  /**
+   * Similar to reconstructStandardTimeSteppingData for roll backs
+   */
+  void reconstructStandardTimeSteppingDataAfterRollback(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   /**
    * <h2>Solution adjustments</h2>

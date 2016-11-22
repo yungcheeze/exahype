@@ -271,6 +271,8 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
+  void reconstructStandardTimeSteppingDataAfterRollback();
+
   void reinitialiseTimeStepData() override;
 
   bool isValidCellDescriptionIndex(
@@ -331,7 +333,7 @@ public:
     if (limiterElement!=exahype::solvers::Solver::NotFound) {
       LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
       limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch.setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
+      limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
     }
   }
 
@@ -344,6 +346,13 @@ public:
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int solverElement);
+
+  /**
+   * Similar to reconstructStandardTimeSteppingData for roll backs
+   */
+  void reconstructStandardTimeSteppingDataAfterRollback(
+      const int cellDescriptionsIndex,
+      const int solverElement) const;
 
   /**
    * TODO(Dominic): I need the whole limiter recomputation

@@ -387,6 +387,14 @@ public:
     _minTimeStamp = value;
   }
 
+  void setMinNextTimeStepSize(double value) { // TODO(Dominic): Hack
+      _minNextTimeStepSize = value;
+  }
+
+  void setPreviousMinTimeStepSize(double value) { // TODO(Dominic): Hack
+    _previousMinTimeStepSize = value;
+  }
+
   void initInitialTimeStamp(double value) override;
 
   void synchroniseTimeStepping(

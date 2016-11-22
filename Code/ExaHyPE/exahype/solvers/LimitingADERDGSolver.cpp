@@ -119,6 +119,15 @@ void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
   _limiter->rollbackToPreviousTimeStep();
 }
 
+void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
+  _solver->reconstructStandardTimeSteppingDataAfterRollback();
+
+  _limiter->setMinTimeStamp(_solver->getMinCorrectorTimeStamp());
+  _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
+  _limiter->setMinNextTimeStepSize(std::numeric_limits<double>::max());
+  _limiter->setPreviousMinTimeStepSize(std::numeric_limits<double>::max());
+}
+
 void exahype::solvers::LimitingADERDGSolver::reinitialiseTimeStepData() {
   _solver->reinitialiseTimeStepData();
   _limiter->reinitialiseTimeStepData();
@@ -195,7 +204,7 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
       int limiterElement =
           _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-      exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
+      LimiterPatch& limiterPatch =
           _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
       solverPatch.setPreviousCorrectorTimeStepSize(limiterPatch.getPreviousTimeStepSize());
@@ -214,16 +223,37 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int solverElement) {
-  SolverPatch& solverPatch =
-      _solver->getCellDescription(cellDescriptionsIndex,solverElement);
   _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement);
 
+  SolverPatch& solverPatch =
+      _solver->getCellDescription(cellDescriptionsIndex,solverElement);
   if (solverPatch.getLimiterStatus()==SolverPatch::Troubled
       || solverPatch.getLimiterStatus()==SolverPatch::NeighbourIsTroubledCell
       || solverPatch.getLimiterStatus()==SolverPatch::NeighbourIsNeighbourOfTroubledCell) {
     int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
     assertion(limiterElement!=exahype::solvers::Solver::NotFound);
     _limiter->rollbackToPreviousTimeStep(cellDescriptionsIndex,limiterElement);
+  }
+}
+
+void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
+    const int cellDescriptionsIndex,
+    const int solverElement) const {
+  _solver->reconstructStandardTimeSteppingDataAfterRollback();
+
+  SolverPatch& solverPatch =
+        _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+  if (solverPatch.getLimiterStatus()==SolverPatch::Troubled
+      || solverPatch.getLimiterStatus()==SolverPatch::NeighbourIsTroubledCell
+      || solverPatch.getLimiterStatus()==SolverPatch::NeighbourIsNeighbourOfTroubledCell) {
+    int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+    assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+    LimiterPatch& limiterPatch =
+        _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+
+    limiterPatch.setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
+    limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+    limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
   }
 }
 
