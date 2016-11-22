@@ -24,6 +24,7 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 #include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/KernelUtils.h"
 
 namespace exahype {
 namespace tests {
@@ -34,16 +35,32 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   OptimisedKernelTest();
   virtual ~OptimisedKernelTest();
 
-  //solver methods
-  static void adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q);
-  
+  //solver getter
   int getNumberOfVariables();
   int getNodesPerCoordinateAxis(); //_basisSize
   
-  void run() override;
+  //solver methods
+  static void adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q);
+  static void flux(const double* const Q, double** F);
+  void source(const double* const Q, double* S);
+  void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
+  void matrixb(const double* const Q, const int normalNonZero, double* Bn);
+   
+#ifdef Dim3  
+  static void fluxSplitted(const double* const Q, double* f, double* g, double* h);
+#else 
+  static void fluxSplitted(const double* const Q, double* f, double* g);
+#endif
+  
+  //solver method implementation
+  static void adjustedSolutionValues_Euler(const double* const x, const double w, const double t, const double dt, double* Q);
+  static void flux_Euler(const double* const Q, double** F);
+  void source_Euler(const double* const Q, double* S);
   
   //tests
+  void run() override;
   void testSolutionAdjustment();
+  void testSpaceTimePredictorNonLinear();
   void testSolutionUpdate();
 
  private:
@@ -53,7 +70,13 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static int _numberOfVariables;
   static int _basisSize;
   static int _order;
+  static int _dim;
+  static bool _isLinear;
   static const std::string dim; // for log
+  
+  int _luhSize;
+  double* _luh; //goes to the call with generic kernel
+  double _dt;  //initialized by testStableTimeStepSize
 
 
 };

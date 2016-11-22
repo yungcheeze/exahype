@@ -39,6 +39,7 @@ class ConfigurationParametersGenerator:
 
     def generateCode(self):
         dir = os.path.dirname(__file__)
+        self.m_context["isLinear"] = "true" if (self.m_type == "linear") else "false" #c++ true/false instead of True/False
 
         with open(os.path.join(dir,'templates/ConfigurationParameters.template'), 'r') as tmp:
             template = Template(tmp.read(), trim_blocks=True)

@@ -22,6 +22,8 @@ namespace kernels {
       inline int getBasisSizePadded()         {return  {{nDofPad}};}
       
       inline int getDimension()               {return  {{nDim}};}
+	  
+      inline bool isLinear()                  {return {{isLinear}};}
 
     }
   }
