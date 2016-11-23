@@ -187,7 +187,7 @@ private:
    * of the solution (per variable)
    * and makes them accessible per face.
    */
-  void determineMinAndMax(SolverPatch& solverPatch);
+  void determineSolverMinAndMax(SolverPatch& solverPatch);
 
   /**
    * Computes the cell-local minimum and maximum
@@ -195,21 +195,10 @@ private:
    * and makes them accessible per face.
    *
    * This method is used for troubled cells that
-   * do not hold a valid ADER-DG solution.
-   *
-   * <h2>Current implementation</h2>
-   * We currently write -std::numeric_limits<double>::max()
-   * to the solutionMax elements, and +std::numeric_limits<double>::max()
-   * to the solutionMin elements.
-   *
-   * This ensures that the always the value of the non-troubled
-   * cell is taken into account at the interface between
-   * a troubled cell and its neighbour.
-   *
-   * TODO(Dominic): I think we should think of something smarter
-   * here though.
+   * do not hold a valid ADER-DG solution,
+   * as well as their neighbours.
    */
-  void determineMinAndMax(SolverPatch& solverPatch,LimiterPatch& limiterPatch);
+  void determineLimiterMinAndMax(SolverPatch& solverPatch,LimiterPatch& limiterPatch);
 
 public:
 
@@ -670,7 +659,7 @@ public:
         const SolverPatch::LimiterStatus&         limiterStatus,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-        double**                                  tempFaceUnknownsArrays,
+        double**                                  tempFaceUnknowns,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices);
 
@@ -776,7 +765,7 @@ public:
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      double**                                     tempFaceUnknownsArrays,
+      double**                                     tempFaceUnknowns,
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
