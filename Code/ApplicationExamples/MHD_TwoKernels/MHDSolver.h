@@ -26,6 +26,7 @@ class MHDSolver::MHDSolver: public exahype::solvers::ADERDGSolver {
     static constexpr int nParams = 0;
     static constexpr int nDim    = 3;
     static constexpr int order   = 3;
+    static constexpr int basisSize   = order+1;
   
     MHDSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
 

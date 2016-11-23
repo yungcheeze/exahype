@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include "KernelUtils.h"
 
 using namespace kernels;
@@ -18,7 +19,9 @@ void idxtest() {
 	printf("Running idxtest\n");
 	
 	idx6 b(m1, m2, m3, m4, m5, m6);
-	idx a(m1, m2, m3, m4, m5, m6);
+	index a(m1, m2, m3, m4, m5, m6);
+	
+	std::cout << "Having created: index" << a.toString() << std::endl;
 	for(int i=0; i < m1; i++) {
 	for(int j=0; j < m2; j++) {
 	for(int k=0; k < m3; k++) {

@@ -16,6 +16,8 @@
 
 #include "../../Peano/tarch/Assertions.h"
 
+#include <sstream>
+
 namespace kernels {
 
 // If you have a C++11-enabled compiler, use this:
@@ -23,17 +25,21 @@ namespace kernels {
 // else this:
 #define C11CONSTEXPR
 
-class idx {
-	static int min(int a, int b) { return (b < a) ? b : a; }
-	static int max(int a, int b) { return (b > a) ? b : a; }
-
-public:
+/**
+ * This is a single successor class for the idx2, idx3, idx4, idx5, idx6 classes.
+ * It works basically like idx6. If you work with less than 6 dimensions, nothing
+ * will change and the compiler optimizes away the unused variables.
+ * 
+ * In contrast to the index classes below, this new index class can also compute
+ * the inverse index.
+ **/
+struct index {
 	// add further indices if you want to support more than maximal 6 indices.
 	const int i0, i1, i2, i3, i4, i5; // Lenghts
 	const int b0, b1, b2, b3, b4, b5; // Basis
 	const int size;
 	
-	idx(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) :
+	index(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) :
 		i0(j0), i1(j1), i2(j2), i3(j3), i4(j4), i5(j5),
 		b0(i1 * i2 * i3 * i4 * i5),
 		b1(i2 * i3 * i4 * i5),
@@ -44,22 +50,6 @@ public:
 		size(j0*j1*j2*j3*j4*j5) {}
 	
 	/**
-	 * Checks if the given indices are in the valid range. Works also if assertions are
-	 * not enabled. Can be handy to check access to variables.
-	 **/
-	C11CONSTEXPR bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
-		// assertion way
-		assertion2(j0 < i0, j1, i1);
-		assertion2(j1 < i1, j2, i2);
-		assertion2(j2 < i2, j3, i3);
-		assertion2(j3 < i3, j4, i4);
-		assertion2(j4 < i4, j5, i5);
-		assertion2(j5 < i5, j6, i6);
-		// non-assertion way:
-		return (j0 < i0) && (j1 < i1) && (j2 < i2) && (j3 < i3) && (j4 < i4) && (j5 < i5);
-	}
-
-	/**
 	 * Compute a single index ("superindex", global index, ...) from the tuples.
 	 **/
 	C11CONSTEXPR int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
@@ -68,9 +58,8 @@ public:
 		assertion2(j2 < i2, j3, i3);
 		assertion2(j3 < i3, j4, i4);
 		assertion2(j4 < i4, j5, i5);
-		assertion2(j5 < i5, j6, i6);
 		
-		return	j0 * b0 + j1 * b1 + j2 * b2 + j3 * b3 + j4 * b4 + j5 * b5;
+		return j0 * b0 + j1 * b1 + j2 * b2 + j3 * b3 + j4 * b4 + j5 * b5;
 	}
 	
 	/**
@@ -109,6 +98,52 @@ public:
 	C11CONSTEXPR int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		return get(j0, j1, j2, j3, j4, j5);
 	}
+	
+	/**
+	 * Checks if the given indices are in the valid range. Works also if assertions are
+	 * not enabled. Can be handy to check access to variables.
+	 **/
+	C11CONSTEXPR bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		// assertion way
+		assertion2(j0 < i0, j1, i1);
+		assertion2(j1 < i1, j2, i2);
+		assertion2(j2 < i2, j3, i3);
+		assertion2(j3 < i3, j4, i4);
+		assertion2(j4 < i4, j5, i5);
+		// non-assertion way:
+		return (j0 < i0) && (j1 < i1) && (j2 < i2) && (j3 < i3) && (j4 < i4) && (j5 < i5);
+	}
+	
+	/**
+	 * Allows to print index tuples.
+	 **/
+	static std::string strIndex(int min=0, int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) {
+		std::stringstream s;
+		s << "(";
+		s << j0;
+		if(j1 > min) s << ", " << j1;
+		if(j2 > min) s << ", " << j2;
+		if(j3 > min) s << ", " << j3;
+		if(j4 > min) s << ", " << j4;
+		if(j5 > min) s << ", " << j5;
+		s << ")";
+		return s.str();
+	}
+	
+	/// Some index to string
+	C11CONSTEXPR std::string getStr(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return strIndex(/*min*/ -1, j0,j1,j2,j3,j4,j5);
+	}
+	C11CONSTEXPR std::string revStr(int pos) const {
+		int j0,j1,j2,j3,j4,j5;
+		rev(pos, j0,j1,j2,j3,j4,j5);
+		return strIndex(/*min*/ -1, j0,j1,j2,j3,j4,j5);
+	}
+
+	/// Object to string
+	C11CONSTEXPR std::string toString() const {
+		return strIndex(/*min*/ +1, i0,i1,i2,i3,i4,i5);
+	}
 };
 
 /**
@@ -124,15 +159,15 @@ public:
  **/
 template<typename T>
 struct array {
-	idx i;
+	index idx;
 	T *data;
 	
-	array(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : i(j0,j1,j2,j3,j4,j5) {
-		data = new T[i.size];
+	array(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : idx(j0,j1,j2,j3,j4,j5) {
+		data = new T[idx.size];
 	}
 	
 	T& operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
-		return data[i(j0, j1, j2, j3, j4, j5)];
+		return data[idx(j0, j1, j2, j3, j4, j5)];
 	}
 
 	~array() { delete data; }
@@ -150,13 +185,13 @@ struct array {
  **/
 template<typename T>
 struct shadow {
-	idx i;
+	index idx;
 	T *data;
 	
-	shadow(T* _data, int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : data(_data), i(j0,j1,j2,j3,j4,j5) {}
+	shadow(T* _data, int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : data(_data), idx(j0,j1,j2,j3,j4,j5) {}
 	
 	T& operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
-		return data[i(j0, j1, j2, j3, j4, j5)];
+		return data[idx(j0, j1, j2, j3, j4, j5)];
 	}
 };
 
