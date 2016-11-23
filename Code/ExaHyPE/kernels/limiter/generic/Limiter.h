@@ -53,6 +53,21 @@ void projectOnDGSpace(const double* const lim, const int numberOfVariables, cons
 // Get the local min/max from the DG and Gauss Lobatto nodes
 void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
 
+/**
+ * Find the minimum and maximum per variable in the limiter solution.
+ *
+ * We need this function to compute the minimum and maximum
+ * values for cells that do not hold a valid ADER-DG
+ * solution (troubled cells) and their neighbours.
+ * See SUBROUTINE GetMinMax in file
+ * ADERDG_Limiter_3D/Limiter.f90.
+ *
+ * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1)
+ * \param[in] ghostLayerWidth The ghost layer width in cells of the finite volumes patch.
+ */
+void findCellLocalLimiterMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth,
+                                   double* const localMinPerVariables, double* const localMaxPerVariables);
+
 //Test if the DG solution is troubled
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
 

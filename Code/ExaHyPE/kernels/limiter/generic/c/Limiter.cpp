@@ -298,6 +298,38 @@ bool isTroubledCell(const double* const luh, const int numberOfVariables, const 
 //  return false;
 //}
 
+/**
+ * localMinPerVariables, localMaxPerVariables are double[numberOfVariables]
+ *
+ * basisSize is the basis size of the ADER-DG scheme.
+ */
+void findCellLocalLimiterMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth,
+                                   double* const localMinPerVariables, double* const localMaxPerVariables) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
+
+#if DIMENSIONS == 3
+  const int basisSizeLim3D    = basisSizeLim;
+  const int ghostLayerWidth3D = ghostLayerWidth;
+#else
+  constexpr int basisSizeLim3D    = 1;
+  constexpr int ghostLayerWidth3D = 0;
+#endif
+  idx4 idxLim(basisSizeLim3D+2*ghostLayerWidth3D, basisSizeLim+2*ghostLayerWidth, basisSizeLim+2*ghostLayerWidth, numberOfVariables);
+
+  for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+    localMinPerVariables[iVar] = std::numeric_limits<double>::max();
+    localMaxPerVariables[iVar] = -std::numeric_limits<double>::max();
+  }
+
+  for (int k=ghostLayerWidth3D; k<basisSizeLim3D+ghostLayerWidth3D; ++k) // skip the last element
+  for (int j=ghostLayerWidth; j<basisSizeLim+ghostLayerWidth; ++j)
+  for (int i=ghostLayerWidth; i<basisSizeLim+ghostLayerWidth; ++i) {
+    for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+      localMinPerVariables[iVar] = std::min ( localMinPerVariables[iVar], lim[idxLim(k,j,i,iVar)] );
+      localMaxPerVariables[iVar] = std::max ( localMaxPerVariables[iVar], lim[idxLim(k,j,i,iVar)] );
+    }
+  }
+}
 
 //*************************
 //*** Private functions ***
