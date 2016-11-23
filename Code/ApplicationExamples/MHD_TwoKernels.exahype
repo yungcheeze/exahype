@@ -19,16 +19,16 @@ exahype-project  MHDSolver
   computational-domain
     /* we compare with Fortran, MUST be 3d */
     dimension                = 3
-    width                    = 1.0, 1.0, 0.5
+    width                    = 1.0, 0.5, 0.5
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 3.0
+    end-time                 = 8.0
   end computational-domain
 
 
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -55,7 +55,7 @@ exahype-project  MHDSolver
     parameters         = 0
     order              = 3
     /* was 0.24 */
-    maximum-mesh-size  = 0.24
+    maximum-mesh-size  = 0.4
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
