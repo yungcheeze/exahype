@@ -172,7 +172,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     logInfo("initSharedMemoryConfiguration()",
         "use autotuning shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize());
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(true)); // TODO(Dominic->Tobias): Please change this to something else depending on the config file.
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
     logInfo("initSharedMemoryConfiguration()",
@@ -857,12 +857,12 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   }
   repository.iterate();
 
-  #if DIMENSIONS==2
-  if (true || plot) {
-    repository.switchToPlotAugmentedAMRGrid();
-    repository.iterate();
-  }
-  #endif
+//  #if DIMENSIONS==2
+//  if (true | plot) {
+//    repository.switchToPlotAugmentedAMRGrid();
+//    repository.iterate();
+//  }
+//  #endif
 }
 
 void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const {
