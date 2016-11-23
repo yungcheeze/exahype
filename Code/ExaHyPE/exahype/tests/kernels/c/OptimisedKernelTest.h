@@ -64,6 +64,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   void testSolutionAdjustment();
   void testStableTimeStep();
   void testSpaceTimePredictorNonLinear();
+  void testVolumeIntegral();
   void testSolutionUpdate();
 
  private:
@@ -81,6 +82,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   int _luhSize;
   double _dt;  //initialized by testStableTimeStepSize
   double* _luh; //goes to the call with generic kernel
+  double* _lduh;
   double* _lFhi_gen; // == tempFluxUnknowns 
   double* _lFhi_opt; // == tempFluxUnknowns
   double* _lQhi_gen; // == tempUnknowns 

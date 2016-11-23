@@ -239,6 +239,8 @@ int OptimisedKernelTest::getNodesPerCoordinateAxis() {
 void OptimisedKernelTest::run() {
   _log.info("OptimisedKernelTest::run()", "OptimisedKernelTest is active");
 
+  _dt = 0.01;
+  
 #ifdef Dim2    
   _luhSize = _numberOfVariables*_basisSize*_basisSize;
   const int basisSizePowDim = _basisSize * _basisSize;
@@ -246,8 +248,8 @@ void OptimisedKernelTest::run() {
   _luhSize = _numberOfVariables*_basisSize*_basisSize*_basisSize;
   const int basisSizePowDim = _basisSize * _basisSize * _basisSize;
 #endif
-  _luh = new double[_luhSize]();
-  _dt = 0.01;
+  _luh  = new double[_luhSize]();
+  _lduh = new double[_luhSize]();
   _lFhi_gen = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
   _lFhi_opt = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
   _lQhi_gen = new double[basisSizePowDim*_numberOfVariables]();
@@ -258,10 +260,12 @@ void OptimisedKernelTest::run() {
   if(!_isLinear) {
     testMethod(testSpaceTimePredictorNonLinear);
   }
+  testMethod(testVolumeIntegral);
   testMethod(testSolutionUpdate);
 
 
   delete[] _luh;
+  delete[] _lduh;
   delete[] _lFhi_gen;
   delete[] _lFhi_opt;
   delete[] _lQhi_gen;
@@ -436,6 +440,29 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   delete[] lFhbnd_optimised;
 }
 
+
+void OptimisedKernelTest::testVolumeIntegral() {
+  std::ostringstream out;
+  out << "Test testVolumeIntegral with random values, ORDER="<< _order <<", NVAR=" << _numberOfVariables;
+  logInfo("OptimisedKernelTest::testVolumeIntegral()", out.str());
+  
+#ifdef Dim2    
+  const double dx[2] = {1.0, 1.0};
+#else
+  const double dx[3] = {1.0, 1.0, 1.0};
+#endif
+
+  double* lduh_opt = new double[_luhSize];
+  
+  kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi_gen, dx[0], _numberOfVariables, 0, _basisSize );
+  kernels::aderdg::optimised::volumeIntegral( lduh_opt, _lFhi_gen, dx[0] );
+  
+  for(int i=0; i<_luhSize; i++) {
+    validateNumericalEqualsWithEps(lduh_opt[i], _lduh[i], eps2);
+  }
+  
+  delete[] lduh_opt;
+}
 
 
 void OptimisedKernelTest::testSolutionUpdate() {
