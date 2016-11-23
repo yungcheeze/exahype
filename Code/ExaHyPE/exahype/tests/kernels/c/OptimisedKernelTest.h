@@ -42,6 +42,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   //solver methods
   static void adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q);
   static void flux(const double* const Q, double** F);
+  static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source(const double* const Q, double* S);
   void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
   void matrixb(const double* const Q, const int normalNonZero, double* Bn);
@@ -55,11 +56,13 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   //solver method implementation
   static void adjustedSolutionValues_Euler(const double* const x, const double w, const double t, const double dt, double* Q);
   static void flux_Euler(const double* const Q, double** F);
+  static void eigenvalues_Euler(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source_Euler(const double* const Q, double* S);
   
   //tests
   void run() override;
   void testSolutionAdjustment();
+  void testStableTimeStep();
   void testSpaceTimePredictorNonLinear();
   void testSolutionUpdate();
 
@@ -67,6 +70,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static tarch::logging::Log _log;
   static const double eps;  // for quick adaption of the test cases
   static const double eps2;  // for quick adaption of the test cases
+  static const double eps3;  // for quick adaption of the test cases
   static int _numberOfVariables;
   static int _basisSize;
   static int _order;
@@ -75,9 +79,12 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static const std::string dim; // for log
   
   int _luhSize;
-  double* _luh; //goes to the call with generic kernel
   double _dt;  //initialized by testStableTimeStepSize
-
+  double* _luh; //goes to the call with generic kernel
+  double* _lFhi_gen; // == tempFluxUnknowns 
+  double* _lFhi_opt; // == tempFluxUnknowns
+  double* _lQhi_gen; // == tempUnknowns 
+  double* _lQhi_opt; // == tempUnknowns
 
 };
 
