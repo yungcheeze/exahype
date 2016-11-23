@@ -119,25 +119,33 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         break;
     }
 
+    _tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
       _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      for (int i=0; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = new double[solver->getNumberOfVariables()];
+      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors*solver->getNumberOfVariables()];
+      for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
+        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + solver->getNumberOfVariables();
       }
     }
     //
+    _tempStateSizedSquareMatrices[solverNumber] = nullptr;
     if (numberOfStateSizedMatrices>0) {
       _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
-      for (int i=0; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
+      _tempStateSizedSquareMatrices[solverNumber][0] =
+          new double[numberOfStateSizedMatrices* solver->getNumberOfVariables() * solver->getNumberOfVariables()];
+      for (int i=1; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
         _tempStateSizedSquareMatrices[solverNumber][i] =
-            new double[solver->getNumberOfVariables() * solver->getNumberOfVariables()];
+            _tempStateSizedSquareMatrices[solverNumber][i-1] +
+            solver->getNumberOfVariables() * solver->getNumberOfVariables();
       }
     }
     //
+    _tempFaceUnknowns[solverNumber] = nullptr;
     if (numberOfFaceUnknowns>0) {
       _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
-      for (int i=0; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-        _tempFaceUnknowns[solverNumber][i] = new double[lengthOfFaceUnknowns];
+      _tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns];
+      for (int i=1; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
+        _tempFaceUnknowns[solverNumber][i] = _tempFaceUnknowns[solverNumber][i-1] + lengthOfFaceUnknowns;
       }
     }
 
@@ -167,25 +175,19 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
       }
 
       if (numberOfStateSizedVectors>0) {
-        for (int i=0; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-          delete[] _tempStateSizedVectors[solverNumber][i];
-        }
+        delete[] _tempStateSizedVectors[solverNumber][0];
         delete[] _tempStateSizedVectors[solverNumber];
         _tempStateSizedVectors[solverNumber] = nullptr;
       }
       //
       if (numberOfStateSizedMatrices>0) {
-        for (int i=0; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
-          delete[] _tempStateSizedSquareMatrices[solverNumber][i];
-        }
+        delete[] _tempStateSizedSquareMatrices[solverNumber][0];
         delete[] _tempStateSizedSquareMatrices[solverNumber];
         _tempStateSizedSquareMatrices[solverNumber] = nullptr;
       }
       //
       if (numberOfFaceUnknowns>0) {
-        for (int i=0; i<numberOfFaceUnknowns; ++i) { // see riemanSolverLinear
-          delete[] _tempFaceUnknowns[solverNumber][i];
-        }
+        delete[] _tempFaceUnknowns[solverNumber][0];
         delete[] _tempFaceUnknowns[solverNumber];
         _tempFaceUnknowns[solverNumber] = nullptr;
       }
