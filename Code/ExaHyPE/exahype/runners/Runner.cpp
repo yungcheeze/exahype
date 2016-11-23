@@ -604,7 +604,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
         if (fuseADERDGPhases) {
-          assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),aderdgSolver->getMinCorrectorTimeStamp());
+          assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),aderdgSolver->getMinPredictorTimeStepSize());
         } else {
           assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),0.0);
         }
@@ -624,7 +624,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
         if (fuseADERDGPhases) {
-          assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),aderdgSolver->getMinNextPredictorTimeStepSize());
+          assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),aderdgSolver->getMinPredictorTimeStepSize());
         } else {
           assertionEquals(aderdgSolver->getMinPredictorTimeStamp(),0.0);
         }
