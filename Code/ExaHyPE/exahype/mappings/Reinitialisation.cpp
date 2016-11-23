@@ -138,20 +138,6 @@ void exahype::mappings::Reinitialisation::enterCell(
            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          //  TODO(Dominic): remove
-          if (fineGridCell.getCellDescriptionsIndex()==78) {
-            logInfo("enterCell(...)","[pre] solverPatch="<<exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0].toString());
-
-            // TODO(Dominic): TimeStamp is smaller than zero already here. Why?
-
-            if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size()>0) {
-              logInfo("enterCell(...)","[pre] limiterPatch="<<exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0].toString());
-            }
-
-            logInfo("enterCell(...)","[pre] solver="<<static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->toString());
-            logInfo("enterCell(...)","[pre] limiter="<<static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->toString());
-          }
-
           limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
 
@@ -164,20 +150,6 @@ void exahype::mappings::Reinitialisation::enterCell(
 
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
-
-          //  TODO(Dominic): remove
-          if (fineGridCell.getCellDescriptionsIndex()==78) {
-            logInfo("enterCell(...)","[post] solverPatch="<<exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0].toString());
-
-            // TODO(Dominic): TimeStamp is smaller than zero already here. Why?
-
-            if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size()>0) {
-              logInfo("enterCell(...)","[post] limiterPatch="<<exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0].toString());
-            }
-
-            logInfo("enterCell(...)","[post] solver="<<static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->toString());
-            logInfo("enterCell(...)","[post] limiter="<<static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->toString());
-          }
         }
       }
     endpfor
