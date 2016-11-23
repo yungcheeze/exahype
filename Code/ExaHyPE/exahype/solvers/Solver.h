@@ -648,6 +648,12 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    *
    * \see tryGetElement
+   *
+   * <h2>Temporary variables</h2>
+   * See  exahype::mappings::Merging::prepareTemporaryVariables()
+   * exahype::mappings::SolutionRecomputation::prepareTemporaryVariables()
+   * for details on the size of the allocation of
+   * the temporary variables.
    */
   virtual void mergeNeighbours(
         const int                                 cellDescriptionsIndex1,
@@ -656,7 +662,7 @@ class exahype::solvers::Solver {
         const int                                 element2,
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
         const tarch::la::Vector<DIMENSIONS, int>& pos2,
-        double**                                  tempFaceUnknownsArrays,
+        double**                                  tempFaceUnknowns,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) = 0;
 
@@ -674,13 +680,19 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    *
    * \see tryGetElement
+   *
+   * <h2>Temporary variables</h2>
+   * See  exahype::mappings::Merging::prepareTemporaryVariables()
+   * exahype::mappings::SolutionRecomputation::prepareTemporaryVariables()
+   * for details on the size of the allocation of
+   * the temporary variables.
    */
   virtual void mergeWithBoundaryData(
         const int                                 cellDescriptionsIndex,
         const int                                 element,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-        double**                                  tempFaceUnknownsArrays,
+        double**                                  tempFaceUnknowns,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices) =0;
 
@@ -760,6 +772,12 @@ class exahype::solvers::Solver {
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
    *                    This is not the solver number.
+   *
+   * <h2>Temporary variables</h2>
+   * See  exahype::mappings::Merging::prepareTemporaryVariables()
+   * exahype::mappings::SolutionRecomputation::prepareTemporaryVariables()
+   * for details on the size of the allocation of
+   * the temporary variables.
    */
   virtual void mergeWithNeighbourData(
       const int                                    fromRank,
@@ -768,7 +786,7 @@ class exahype::solvers::Solver {
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      double**                                     tempFaceUnknownsArrays,
+      double**                                     tempFaceUnknowns,
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
