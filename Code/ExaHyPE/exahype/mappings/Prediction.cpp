@@ -269,7 +269,7 @@ void exahype::mappings::Prediction::enterCell(
         exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
             fineGridCell.getCellDescriptionsIndex()).size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, peano::datatraversal::autotuning::MethodTrace::UserDefined4);
+            numberOfADERDGCellDescriptions, peano::datatraversal::autotuning::MethodTrace::UserDefined9);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize.getGrainSize())
       auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
               fineGridCell.getCellDescriptionsIndex(),i);

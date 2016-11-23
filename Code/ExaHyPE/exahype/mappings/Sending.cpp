@@ -130,7 +130,7 @@ void exahype::mappings::Sending::enterCell(
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
 
     auto grainSize = peano::datatraversal::autotuning::Oracle::
-        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined5);
+        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined12);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
@@ -159,7 +159,7 @@ void exahype::mappings::Sending::leaveCell(
       _localState.getSendMode()==exahype::records::State::ReduceAndMergeTimeStepDataAndSendFaceData) {
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::
-        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined6);
+        getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined13);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
