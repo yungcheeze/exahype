@@ -211,8 +211,8 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
       solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
       solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
 
-      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp());
-      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for fused time stepping.
+      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp()+limiterPatch.getTimeStepSize());
+      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for Standard time stepping.
       break;
     }
   }
@@ -239,7 +239,7 @@ void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
 void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
     const int cellDescriptionsIndex,
     const int solverElement) const {
-  _solver->reconstructStandardTimeSteppingDataAfterRollback();
+  _solver->reconstructStandardTimeSteppingDataAfterRollback(cellDescriptionsIndex,solverElement);
 
   SolverPatch& solverPatch =
         _solver->getCellDescription(cellDescriptionsIndex,solverElement);
@@ -757,7 +757,8 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
 
       // TODO(Dominic): remove
       if (cellDescriptionsIndex==78) {
-        logInfo("recomputeSolution(...)","limiterPatch="<<limiterPatch->toString());
+//        _limiter->printFiniteVolumesSolution(*limiterPatch);
+//        logInfo("reinitialiseSolvers(...)","limiterPatch="<<limiterPatch->toString());
       }
       break;
     }
@@ -1306,8 +1307,18 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiter
       break;
     case SolverPatch::LimiterStatus::Troubled:
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      if (cellDescriptionsIndex==78) { // TODO(Dominic): Remove
+        logInfo("mergeWithBoundaryData(...)","[pre] Merged boundary values.");
+        _limiter->printFiniteVolumesSolution(_limiter->getCellDescription(cellDescriptionsIndex,limiterElement));
+      }
+
       _limiter->mergeWithBoundaryData(cellDescriptionsIndex,limiterElement,posCell,posBoundary,
                                      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+
+      if (cellDescriptionsIndex==78) { // TODO(Dominic): Remove
+        logInfo("mergeWithBoundaryData(...)","[post] Merged boundary values.");
+        _limiter->printFiniteVolumesSolution(_limiter->getCellDescription(cellDescriptionsIndex,limiterElement));
+      }
       break;
     default:
       break;

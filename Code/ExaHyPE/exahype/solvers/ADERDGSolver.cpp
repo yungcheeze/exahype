@@ -3013,9 +3013,9 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_spaceTimeFluxUnknownsPerCell:" << _spaceTimeFluxUnknownsPerCell;
   out << ",";
-  out << "_minCorrectorTimeStamp:" << _minCorrectorTimeStamp;
+  out << "_previousMinCorrectorTimeStepSize:" << _previousMinCorrectorTimeStepSize;
   out << ",";
-  out << "_minPredictorTimeStamp:" << _minPredictorTimeStamp;
+  out << "_minCorrectorTimeStamp:" << _minCorrectorTimeStamp;
   out << ",";
   out << "_minCorrectorTimeStepSize:" << _minCorrectorTimeStepSize;
   out << ",";

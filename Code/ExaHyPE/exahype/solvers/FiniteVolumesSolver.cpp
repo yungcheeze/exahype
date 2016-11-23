@@ -453,33 +453,13 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   std::copy(newSolution,newSolution+_unknownsPerPatch+_ghostValuesPerPatch,solution); // Copy (current solution) in old solution field.
 
-  dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
-    if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
-    && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
-      for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-        #if defined(Asserts)
-        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-        #endif
-        assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
-      }
-    }
-  }
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex);
 
   // TODO(Dominic): Remove
   if (cellDescriptionsIndex==78) {
-    std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
-    std::cout <<  "Old solution:" << std::endl;
-    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-      std::cout <<  "unknown=" << unknown << std::endl;
-      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-        std::cout << newSolution[iScalar] << ",";
-        if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-          std::cout << std::endl;
-        }
-      }
-    }
-    std::cout <<  "}" << std::endl;
+//    std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
+//    std::cout <<  "Old solution:" << std::endl;
+//    printFiniteVolumesSolution(cellDescription);
   }
 
   double admissibleTimeStepSize=0;
@@ -504,31 +484,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
-    if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
-    && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
-      for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-        #if defined(Asserts)
-        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-        #endif
-        assertion3(std::isfinite(newSolution[iScalar]),cellDescription.toString(),newSolution[iScalar],i.toString());
-      }
-    }
-  }
-
-//  // TODO(Dominic): Remove
-//  std::cout <<  "New solution:" << std::endl;
-//  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-//    std::cout <<  "unknown=" << unknown << std::endl;
-//    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-//      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-//      std::cout << newSolution[iScalar] << ",";
-//      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-//        std::cout << std::endl;
-//      }
-//    }
-//  }
-//  std::cout <<  "}" << std::endl;
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex);
 }
 
 
@@ -727,7 +683,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
     const int                                     level) {
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
-
 
   assertionMsg(false,"Please implement!");
 }
@@ -942,6 +897,42 @@ void exahype::solvers::FiniteVolumesSolver::dropMasterData(
 }
 #endif
 
+void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolution(
+    CellDescription& cellDescription,const int cellDescriptionsIndex)  const {
+  double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+  dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
+    if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
+    && tarch::la::allGreater(i,_ghostLayerWidth-1)) {
+      for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+        #if defined(Asserts)
+        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+        #endif
+        assertion4(std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString());
+      }
+    }
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesSolution(
+    CellDescription& cellDescription)  const {
+  #if DIMENSIONS==2
+  double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+    std::cout <<  "unknown=" << unknown << std::endl;
+    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
+      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+      std::cout << solution[iScalar] << ",";
+      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
+        std::cout << std::endl;
+      }
+    }
+  }
+  std::cout <<  "}" << std::endl;
+  #endif
+}
+
 std::string exahype::solvers::FiniteVolumesSolver::toString() const {
   std::ostringstream stringstr;
   toString(stringstr);
@@ -969,6 +960,8 @@ void exahype::solvers::FiniteVolumesSolver::toString (std::ostream& out) const {
   out << "_unknownsPerPatchBoundary:" << _unknownsPerPatchBoundary;
   out << ",";
   out << "_unknownsPerPatch:" << _unknownsPerPatch;
+  out << ",";
+  out << "_previousMinTimeStepSize:" << _previousMinTimeStepSize;
   out << ",";
   out << "_minTimeStamp:" << _minTimeStamp;
   out << ",";

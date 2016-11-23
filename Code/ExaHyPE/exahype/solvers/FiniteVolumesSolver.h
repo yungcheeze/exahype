@@ -759,6 +759,10 @@ public:
       const int                                     level) override;
 #endif
 
+  void validateNoNansInFiniteVolumesSolution(CellDescription& cellDescription,const int cellDescriptionsIndex) const;
+
+  void printFiniteVolumesSolution(CellDescription& cellDescription) const;
+
   std::string toString() const override;
 
   void toString (std::ostream& out) const override;
