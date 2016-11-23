@@ -79,6 +79,8 @@ check spaceTimePredictorCheck("spaceTimePredictor", "checks/spaceTimePredictor.t
 void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
   kernels::darray fQ(2 * DIMENSIONS, basisSize, basisSize, nVar);
   kernels::darray fF(2 * DIMENSIONS, basisSize, basisSize, nVar);
+  std::memcpy(fQ.data, lQhbnd, fQ.idx.size * sizeof(double));
+  std::memcpy(fF.data, lFhbnd, fF.idx.size * sizeof(double));
 
   kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<MHDSolver>(*this,fQ.data,fF.data,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MHDSolver>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
@@ -92,9 +94,10 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
 check solutionUpdateCheck("solutionUpdate", "checks/solutionUpdate.txt");
 void MHDSolver::MHDSolver::solutionUpdate(double* luh,const double* const lduh,const double dt) {
   kernels::darray fort_luh(basisSize, basisSize, basisSize, nVar);
+  std::memcpy(fort_luh.data, lduh, fort_luh.idx.size * sizeof(double));
 
-  kernels::aderdg::generic::c::solutionUpdate(luh,lduh,dt,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
   kernels::aderdg::generic::fortran::solutionUpdate(fort_luh.data,lduh,dt,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::solutionUpdate(luh,lduh,dt,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 
   solutionUpdateCheck.count();
   solutionUpdateCheck("luhFORT", fort_luh.data, "luhCPP", lduh, fort_luh.idx, 1e-10, true);
@@ -104,6 +107,7 @@ void MHDSolver::MHDSolver::solutionUpdate(double* luh,const double* const lduh,c
 check volumeIntegralCheck("volumeIntegral", "checks/volumeIntegral.txt");
 void MHDSolver::MHDSolver::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
   kernels::darray fort_lduh(basisSize, basisSize, basisSize, nVar);
+  std::memcpy(fort_lduh.data, lduh, fort_lduh.idx.size * sizeof(double));
   
   kernels::aderdg::generic::fortran::volumeIntegralNonlinear(fort_lduh.data,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
   kernels::aderdg::generic::c::volumeIntegralNonlinear(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
@@ -116,7 +120,7 @@ void MHDSolver::MHDSolver::surfaceIntegral(double* lduh,const double* const lFhb
   kernels::aderdg::generic::c::surfaceIntegralNonlinear(lduh,lFhbnd,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
 }
 
-check riemannSolverCheck("solutionUpdate", "checks/solutionUpdate.txt");
+check riemannSolverCheck("riemannSolver", "checks/riemannSolver.txt");
 void MHDSolver::MHDSolver::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
@@ -151,14 +155,16 @@ void MHDSolver::MHDSolver::riemannSolver(double* FL,double* FR,const double* con
 }
 
 
-check boundaryConditionsCheck("boundaryConditions", "checks/boundaryConditions.txt");
+//check boundaryConditionsCheck("boundaryConditions", "checks/boundaryConditions.txt");
 void MHDSolver::MHDSolver::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-  kernels::darray F_fluxOut(nVar), F_stateOut(nVar);
+  //kernels::darray F_fluxOut(nVar), F_stateOut(nVar);
+
+  // There is no FORTRAN version of the boundaryConditions!
   kernels::aderdg::generic::c::boundaryConditions<MHDSolver>(*this,fluxOut,stateOut,fluxIn,stateIn,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
   
-  boundaryConditionsCheck.count();
-  boundaryConditionsCheck("FORT_fluxOut", F_fluxOut.data, "fluxOut", fluxOut, F_fluxOut.idx, 1e-10, true);
-  boundaryConditionsCheck("FORT_stateOut", F_stateOut.data, "stateOut", stateOut, F_stateOut.idx, 1e-10, true);
+  //boundaryConditionsCheck.count();
+  //boundaryConditionsCheck("FORT_fluxOut", F_fluxOut.data, "fluxOut", fluxOut, F_fluxOut.idx, 1e-10, true);
+  //boundaryConditionsCheck("FORT_stateOut", F_stateOut.data, "stateOut", stateOut, F_stateOut.idx, 1e-10, true);
 }
 
 
