@@ -37,7 +37,7 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
 
   const double accepterror = 1e-10;
   int errors = 0;
-  double minError = 0, maxError = 1234;
+  double minError = 1234, maxError = 0;
   for(int i0=0; i0<2*DIMENSIONS; i0++) {
   for(int i1=0; i1<basisSize; i1++) {
   for(int i2=0; i2<basisSize; i2++) {
@@ -59,9 +59,11 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
   }
   }
   }
-  if(errors>0) {
-    printf("spaceTimePredictor: %d/%d errors > %e in spaceTimePredictor (minError=%e, maxError=%e)\n", errors, size, accepterror, minError, maxError);
-    exit(-1);
+
+  const int outputAll = 100;
+  if(errors>0 && globalspaceTimePredictorCounter % outputAll == 0) {
+    printf("%10d. spaceTimePredictor: %d/%d errors > %e (minError=%e, maxError=%e)\n", globalspaceTimePredictorCounter, errors, size, accepterror, minError, maxError);
+    //exit(-1);
   }
 }
 
