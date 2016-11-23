@@ -23,14 +23,14 @@ exahype-project  MHDSolver
   computational-domain
     dimension                = 3
     /* this is the grid for the 3D MHD AlfenWave test */
-    width                    = 1.0, 1.0, 1.0
+    width                    = @ExaWidth@, @ExaWidth@, @ExaWidth@
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 12.0
+    end-time                 = @ExaEndTime@
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = @ExaTbbCores@
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -54,49 +54,50 @@ exahype-project  MHDSolver
   solver ADER-DG MHDSolver
     variables          = 9
     parameters         = 0
-    order              = @ORDER@
-    maximum-mesh-size  = @MESHSIZE@
+    order              = @ExapOrder@
+    maximum-mesh-size  = @ExaMeshSize@
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
     constants          = {initialdata:alfenwave}
 
-    plot vtk::Legendre::vertices::ascii
+    /* Used Legendre::vertices here */
+    plot vtk::@ExaVtkFormat@::ascii
       variables= 9
       time     = 0.0
-      repeat   = @VTKOUTPUTREPEAT@
+      repeat   = @ExaVtkOutputRepeat@
       output   = ./conserved
       select   = {}
     end plot
     
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 0
       time = 0.0
-      repeat = @CONVOUTPUTREPEAT@
+      repeat = @ExaConvOutputRepeat@
       output = ./global-integrals
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./primitive
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./exact-primitive
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./errors-conserved
       select = {}
     end plot
