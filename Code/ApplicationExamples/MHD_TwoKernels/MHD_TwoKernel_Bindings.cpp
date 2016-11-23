@@ -19,9 +19,37 @@ MHDSolver::MHDSolver::MHDSolver(double maximumMeshSize,exahype::solvers::Solver:
 }
 
 
+int globalspaceTimePredictorCounter(0);
 
 void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
+  const int basisSize = order + 1;
+
+  globalspaceTimePredictorCounter++;
+  // Fortran comparision: Output arrays
+  kernels::idx4 idx_lQhbnd(2 * DIMENSIONS, basisSize, basisSize, nVar);
+  kernels::idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, nVar);
+  const int size = 2 * DIMENSIONS*basisSize* basisSize*nVar;
+  double fort_lQhbnd[size];
+  double fort_lFhbnd[size];
+
+  kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<MHDSolver>(*this,fort_lQhbnd,fort_lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MHDSolver>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
+
+  const double accepterror = 1e-5;
+  bool error = false;
+  for(int i=1; i<size; i++) {
+	double errorQh = std::abs(fort_lQhbnd[i] - lQhbnd[i]);
+	double errorFh = std::abs(fort_lFhbnd[i] - lFhbnd[i]);
+	if(errorQh > accepterror || errorFh > accepterror) {
+		printf("%d. lQCPP[%i] = %+.20e lQhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i, lQhbnd[i], i, fort_lQhbnd[i], errorQh);
+		printf("%d. lFCPP[%i] = %+.20e lFhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i, lFhbnd[i], i, fort_lFhbnd[i], errorFh);
+		error = true;
+	}
+  }
+  if(error) {
+    printf("Stopping, error in spaceTimePredictor\n");
+    exit(-1);
+  }
 }
 
 
