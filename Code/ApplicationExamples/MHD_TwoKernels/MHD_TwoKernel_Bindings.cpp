@@ -35,19 +35,26 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
   kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<MHDSolver>(*this,fort_lQhbnd,fort_lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MHDSolver>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
 
-  const double accepterror = 1e-5;
-  bool error = false;
-  for(int i=1; i<size; i++) {
+  const double accepterror = 1e-10;
+  int errors = 0;
+  for(int i0=0; i0<2*DIMENSIONS; i0++) {
+  for(int i1=0; i1<basisSize; i1++) {
+  for(int i2=0; i2<basisSize; i2++) {
+  for(int i3=0; i3<nVar; i3++) {
+	int i = idx_lQhbnd(i0,i1,i2,i3);
 	double errorQh = std::abs(fort_lQhbnd[i] - lQhbnd[i]);
 	double errorFh = std::abs(fort_lFhbnd[i] - lFhbnd[i]);
 	if(errorQh > accepterror || errorFh > accepterror) {
-		printf("%d. lQCPP[%i] = %+.20e lQhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i, lQhbnd[i], i, fort_lQhbnd[i], errorQh);
-		printf("%d. lFCPP[%i] = %+.20e lFhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i, lFhbnd[i], i, fort_lFhbnd[i], errorFh);
-		error = true;
+		printf("%d. idx(%i,%i,%i,%i) lQCPP[%i] = %+.20e lQhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lQhbnd[i], i, fort_lQhbnd[i], errorQh);
+		printf("%d. idx(%i,%i,%i,%i) lFCPP[%i] = %+.20e lFhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lFhbnd[i], i, fort_lFhbnd[i], errorFh);
+		errors++;
 	}
   }
-  if(error) {
-    printf("Stopping, error in spaceTimePredictor\n");
+  }
+  }
+  }
+  if(errors>0) {
+    printf("Stopping, %d/%d errors > %e in spaceTimePredictor\n", errors, size, accepterror);
     exit(-1);
   }
 }
