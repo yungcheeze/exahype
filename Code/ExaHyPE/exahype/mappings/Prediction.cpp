@@ -272,37 +272,37 @@ void exahype::mappings::Prediction::enterCell(
       auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, peano::datatraversal::autotuning::MethodTrace::UserDefined9);
       pfor(i, 0, numberOfADERDGCellDescriptions, grainSize.getGrainSize())
-      auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
-          fineGridCell.getCellDescriptionsIndex(),i);
+        auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
+            fineGridCell.getCellDescriptionsIndex(),i);
 
-      switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
-        case exahype::solvers::Solver::Type::ADERDG: {
-          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-              exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-          solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-          solver->prepareNextNeighbourMerging(
-              fineGridCell.getCellDescriptionsIndex(),i,
-              fineGridVertices,fineGridVerticesEnumerator);
+        switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
+          case exahype::solvers::Solver::Type::ADERDG: {
+            exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+                exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+            solver->prepareNextNeighbourMerging(
+                fineGridCell.getCellDescriptionsIndex(),i,
+                fineGridVertices,fineGridVerticesEnumerator);
 
-          performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-        } break;
-        case exahype::solvers::Solver::Type::LimitingADERDG: {
-          exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
-              exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-          solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
-          solver->prepareNextNeighbourMerging(
-              fineGridCell.getCellDescriptionsIndex(),i,
-              fineGridVertices,fineGridVerticesEnumerator);
+            performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+          } break;
+          case exahype::solvers::Solver::Type::LimitingADERDG: {
+            exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+            solver->prepareNextNeighbourMerging(
+                fineGridCell.getCellDescriptionsIndex(),i,
+                fineGridVertices,fineGridVerticesEnumerator);
 
-          if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
-              || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
-              || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
-            performPredictionAndVolumeIntegral(solver->_solver.get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-          }
-        } break;
-        default:
-          break;
-      }
+            if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
+              performPredictionAndVolumeIntegral(solver->_solver.get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            }
+          } break;
+          default:
+            break;
+        }
       endpfor
       grainSize.parallelSectionHasTerminated();
     }
