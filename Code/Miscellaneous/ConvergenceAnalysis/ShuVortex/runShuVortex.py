@@ -59,7 +59,7 @@ settings['ExaTbbCores'] = "1"
 settings['EXAHYPE_SKIP_TESTS'] = "True"
 
 # template to set up a queueing system
-settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=10:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies-Euler"
+settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies-Euler"
 settings['SIMBASE'] = 'simulations/'
 
 def start(polyorder, maxmeshsize, meshsize):
