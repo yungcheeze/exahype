@@ -37,6 +37,7 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
 
   const double accepterror = 1e-10;
   int errors = 0;
+  double minError = 0, maxError = 1234;
   for(int i0=0; i0<2*DIMENSIONS; i0++) {
   for(int i1=0; i1<basisSize; i1++) {
   for(int i2=0; i2<basisSize; i2++) {
@@ -45,16 +46,21 @@ void MHDSolver::MHDSolver::spaceTimePredictor(double* lQhbnd,double* lFhbnd,doub
 	double errorQh = std::abs(fort_lQhbnd[i] - lQhbnd[i]);
 	double errorFh = std::abs(fort_lFhbnd[i] - lFhbnd[i]);
 	if(errorQh > accepterror || errorFh > accepterror) {
-		printf("%d. idx(%i,%i,%i,%i) lQCPP[%i] = %+.20e lQhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lQhbnd[i], i, fort_lQhbnd[i], errorQh);
-		printf("%d. idx(%i,%i,%i,%i) lFCPP[%i] = %+.20e lFhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lFhbnd[i], i, fort_lFhbnd[i], errorFh);
+		//printf("%d. idx(%i,%i,%i,%i) lQCPP[%i] = %+.20e lQhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lQhbnd[i], i, fort_lQhbnd[i], errorQh);
+		//printf("%d. idx(%i,%i,%i,%i) lFCPP[%i] = %+.20e lFhFORT[%i] = %+.20e error=%+e\n", globalspaceTimePredictorCounter, i0,i1,i2,i3, i, lFhbnd[i], i, fort_lFhbnd[i], errorFh);
 		errors++;
 	}
+	// log for statistics
+	minError = std::min(minError, errorQh);
+	minError = std::min(minError, errorFh);
+	maxError = std::max(maxError, errorQh);
+	maxError = std::max(maxError, errorFh);
   }
   }
   }
   }
   if(errors>0) {
-    printf("Stopping, %d/%d errors > %e in spaceTimePredictor\n", errors, size, accepterror);
+    printf("spaceTimePredictor: %d/%d errors > %e in spaceTimePredictor (minError=%e, maxError=%e)\n", errors, size, accepterror, minError, maxError);
     exit(-1);
   }
 }
