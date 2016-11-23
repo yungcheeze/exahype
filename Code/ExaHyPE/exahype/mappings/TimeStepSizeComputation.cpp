@@ -24,6 +24,8 @@
 
 #include <limits>
 
+bool exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
+
 peano::CommunicationSpecification
 exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -231,6 +233,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         #ifdef Parallel
         && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
         #endif
+        && !VetoFusedTimeSteppingTimeStepSizeReinitialisation
     ) {
       reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
     }
@@ -238,6 +241,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     if (state.reinitTimeStepData()) { // TODO(Dominic): Assesss. Might not be necessary for original time stepping scheme.
       solver->reinitialiseTimeStepData();
     }
+
     solver->startNewTimeStep();
 
     if (!exahype::State::fuseADERDGPhases()) {
@@ -246,6 +250,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 
     ++solverNumber;
   }
+
+  VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
   logTraceOutWith1Argument("endIteration(State)", state);
 }
@@ -283,7 +289,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
   if (fineGridCell.isInitialised()) {
     // ADER-DG
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined8);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[solverNumber];

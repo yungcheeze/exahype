@@ -22,6 +22,8 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "exahype/mappings/TimeStepSizeComputation.h"
+
 void exahype::mappings::InitialCondition::prepareTemporaryVariables() {
   assertion(_limiterDomainHasChanged ==nullptr);
   int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
@@ -107,7 +109,7 @@ void exahype::mappings::InitialCondition::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined1);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined2);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
@@ -376,7 +378,7 @@ void exahype::mappings::InitialCondition::beginIteration(
 
 void exahype::mappings::InitialCondition::endIteration(
     exahype::State& solverState) {
-  // do nothing
+  exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = true;
 }
 
 void exahype::mappings::InitialCondition::descend(

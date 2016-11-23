@@ -91,6 +91,8 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
   }
 
   if (aderdgSolver!=nullptr) {
+    assertion(aderdgSolver->getMinPredictorTimeStepSize()>0);
+
     aderdgSolver->updateMinNextPredictorTimeStepSize(aderdgSolver->getMinPredictorTimeStepSize());
     aderdgSolver->startNewTimeStep();
   }
@@ -101,7 +103,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (State::fuseADERDGPhases()) {
+    if (exahype::State::fuseADERDGPhases()) {
       initialiseFusedTimestepping(solver);
     }
   }
@@ -110,7 +112,26 @@ void exahype::mappings::FusedTimeSteppingInitialisation::beginIteration(
 }
 
 void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestepping(exahype::solvers::Solver* solver,const int cellDescriptionsIndex, const int element) const {
-
+  switch (solver->getType()) {
+    case exahype::solvers::Solver::Type::ADERDG: {
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
+          static_cast<exahype::solvers::ADERDGSolver*>(solver)->getCellDescription(cellDescriptionsIndex,element);
+      cellDescription.setPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
+      cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      } break;
+    case exahype::solvers::Solver::Type::LimitingADERDG: {
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+          getSolver().get()->getCellDescription(cellDescriptionsIndex,element);
+      cellDescription.setPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
+      cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      } break;
+    case exahype::solvers::Solver::Type::FiniteVolumes:
+      // do nothing
+      break;
+  }
 }
 
 void exahype::mappings::FusedTimeSteppingInitialisation::enterCell(
@@ -129,14 +150,15 @@ void exahype::mappings::FusedTimeSteppingInitialisation::enterCell(
     // ADER-DG
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     // please use a different UserDefined per mapping/event
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined8);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined1);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[solverNumber];
 
-      if (State::fuseADERDGPhases()) {
+      if (exahype::State::fuseADERDGPhases()) {
         const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
         if (element!=exahype::solvers::Solver::NotFound) {
+          solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
           initialiseFusedTimestepping(solver,fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
