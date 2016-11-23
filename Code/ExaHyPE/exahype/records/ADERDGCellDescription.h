@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/11/2016 18:38
+    * @date   24/11/2016 00:02
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum LimiterStatus {
-            Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
+            Ok = 0, NeighbourIsNeighbourOfTroubledCell = 1, NeighbourIsTroubledCell = 2, Troubled = 3
          };
          
          enum RefinementEvent {
@@ -2467,7 +2467,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   21/11/2016 18:38
+             * @date   24/11/2016 00:02
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -5062,7 +5062,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   21/11/2016 18:38
+                      * @date   24/11/2016 00:02
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -5075,7 +5075,7 @@ namespace exahype {
                            };
                            
                            enum LimiterStatus {
-                              Ok = 0, Troubled = 1, NeighbourIsTroubledCell = 2, NeighbourIsNeighbourOfTroubledCell = 3
+                              Ok = 0, NeighbourIsNeighbourOfTroubledCell = 1, NeighbourIsTroubledCell = 2, Troubled = 3
                            };
                            
                            enum RefinementEvent {
@@ -7226,7 +7226,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   21/11/2016 18:38
+                               * @date   24/11/2016 00:02
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  

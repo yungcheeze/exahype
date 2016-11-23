@@ -376,9 +376,11 @@ class exahype::records::ADERDGCellDescription {
      */
     Ok,
     /**
-     * A cell (still) holds a physically wrong ADER-DG solution. 
+     * A cell can obtain this status only during the limiter
+     * status spreading stage. It indicates that the cell
+     * is direct neighbour to the neighbour of a troubled cell. 
      */
-    Troubled,
+    NeighbourIsNeighbourOfTroubledCell,
     /**
      * A cell can obtain this status only during the limiter
      * status spreading stage. It indicates that the cell
@@ -386,11 +388,9 @@ class exahype::records::ADERDGCellDescription {
      */
     NeighbourIsTroubledCell,
     /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is direct neighbour to the neighbour of a troubled cell. 
+     * A cell (still) holds a physically wrong ADER-DG solution. 
      */
-    NeighbourIsNeighbourOfTroubledCell
+    Troubled
   };
   
   /**
