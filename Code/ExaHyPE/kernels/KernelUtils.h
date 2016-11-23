@@ -18,8 +18,154 @@
 
 namespace kernels {
 
+// If you have a C++11-enabled compiler, use this:
+//#define C11CONSTEXPR constexpr
+// else this:
+#define C11CONSTEXPR
+
+class idx {
+	static int min(int a, int b) { return (b < a) ? b : a; }
+	static int max(int a, int b) { return (b > a) ? b : a; }
+
+public:
+	// add further indices if you want to support more than maximal 6 indices.
+	const int i0, i1, i2, i3, i4, i5; // Lenghts
+	const int b0, b1, b2, b3, b4, b5; // Basis
+	const int size;
+	
+	idx(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) :
+		i0(j0), i1(j1), i2(j2), i3(j3), i4(j4), i5(j5),
+		b0(i1 * i2 * i3 * i4 * i5),
+		b1(i2 * i3 * i4 * i5),
+		b2(i3 * i4 * i5),
+		b3(i4 * i5),
+		b4(i5),
+		b5(1),
+		size(j0*j1*j2*j3*j4*j5) {}
+	
+	/**
+	 * Checks if the given indices are in the valid range. Works also if assertions are
+	 * not enabled. Can be handy to check access to variables.
+	 **/
+	C11CONSTEXPR bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		// assertion way
+		assertion2(j0 < i0, j1, i1);
+		assertion2(j1 < i1, j2, i2);
+		assertion2(j2 < i2, j3, i3);
+		assertion2(j3 < i3, j4, i4);
+		assertion2(j4 < i4, j5, i5);
+		assertion2(j5 < i5, j6, i6);
+		// non-assertion way:
+		return (j0 < i0) && (j1 < i1) && (j2 < i2) && (j3 < i3) && (j4 < i4) && (j5 < i5);
+	}
+
+	/**
+	 * Compute a single index ("superindex", global index, ...) from the tuples.
+	 **/
+	C11CONSTEXPR int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		assertion2(j0 < i0, j1, i1);
+		assertion2(j1 < i1, j2, i2);
+		assertion2(j2 < i2, j3, i3);
+		assertion2(j3 < i3, j4, i4);
+		assertion2(j4 < i4, j5, i5);
+		assertion2(j5 < i5, j6, i6);
+		
+		return	j0 * b0 + j1 * b1 + j2 * b2 + j3 * b3 + j4 * b4 + j5 * b5;
+	}
+	
+	/**
+	 * Inverse index: Get the index tuple for a given index. This is the inverse
+	 * function of get(), so such a call will not do anything:
+	 *    myidx.rev(myidx.get(a,b,c...), a, b, c, ...)
+	 **/
+	void rev(int pos, int& j0, int& j1, int& j2, int& j3, int& j4, int& j5) const {
+		// The algorithm exploits the short notation for int a,b that
+		// a/b == std::floor(a/b). The c's are the contributions at position
+		// i while the j's are the digits for position i. If you want to
+		// increase the overall amount of positions, extend logically.
+		j0 = (pos) / b0;
+		j1 = (pos-j0*b0) / b1;
+		j2 = (pos-j0*b0-j1*b1) / b2;
+		j3 = (pos-j0*b0-j1*b1-j2*b2) / b3;
+		j4 = (pos-j0*b0-j1*b1-j2*b2-j3*b3) / b4;
+		j5 = (pos-j0*b0-j1*b1-j2*b2-j3*b3-j4*b4) / b5;
+	}
+	
+	/* As there are no reference default values, ie. we cannot write
+	 *   void rev(int pos, int& j0=NULL) or
+	 *   void rev(int pos, int& j1=int(), ...)
+	 * we do it with pointers. Now you can write instead
+	 *   int i, j, k;
+	 *   myidx.rev(position, &i, &j, &k);
+	 * which is much more convenient than tracking the non-used indices
+	 * for your own.
+	 */
+	void rev(int pos, int* const j0=NULL, int* const j1=NULL, int* const j2=NULL, int* const j3=NULL, int* const j4=NULL, int* const j5=NULL) const {
+		int a0=0, a1=0, a2=0, a3=0, a4=0, a5=0; // default storages
+		rev(pos, j0?*j0:a0, j1?*j1:a1, j2?*j2:a2, j3?*j3:a3, j4?*j4:a4, j5?*j5:a5);
+	}
+	
+	// syntactic sugar:
+	C11CONSTEXPR int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return get(j0, j1, j2, j3, j4, j5);
+	}
+};
+
+/**
+ * A tiny class for storing a continous n-dimensional array together with its sizes.
+ * You can call instances as getter and setter for elements, ie.
+ * 
+ * 	array<double> L(2,3); // a 2x3 matrix of doubles
+ *	// use as setter
+ *	L(1,2) = 7;
+ *	// or as getter:
+ *	double val = L(1,2);
+ * 
+ **/
+template<typename T>
+struct array {
+	idx i;
+	T *data;
+	
+	array(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : i(j0,j1,j2,j3,j4,j5) {
+		data = new T[i.size];
+	}
+	
+	T& operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return data[i(j0, j1, j2, j3, j4, j5)];
+	}
+
+	~array() { delete data; }
+};
+
+/**
+ * The same as array, just without local storage but instead shadowing data which is not owned.
+ * This can be handy for accessing big arrays stored somewhere else. A tiny example is
+ * 
+ *	double storage[5*7*9];
+ *	dshadow convenient(storage, 5, 7, 9);
+ *	convenient(2,3,8) = 10;
+ *      double val = convenient(2,3,8);
+ *
+ **/
+template<typename T>
+struct shadow {
+	idx i;
+	T *data;
+	
+	shadow(T* _data, int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) : data(_data), i(j0,j1,j2,j3,j4,j5) {}
+	
+	T& operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return data[i(j0, j1, j2, j3, j4, j5)];
+	}
+};
+
+typedef array<double> darray;
+typedef shadow<double> dshadow;
+
+
 struct idx2 {
-  idx2(int I, int J, int line = -1) : I_(I), J_(J), line_(line) {}
+  idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
 
   int operator()(int i, int j) {
     assertion3(i < I_, i, I_, line_);
@@ -27,11 +173,17 @@ struct idx2 {
     return i * J_ + j;
   }
 
-  const int I_, J_, line_;
+  void rev(int pos, int& i, int& j) const {
+    assertion(pos < size);
+    i = pos % J_;
+    j = pos - i * J_;
+  }
+
+  const int I_, J_, size, line_;
 };
 
 struct idx3 {
-  idx3(int I, int J, int K, int line = -1) : I_(I), J_(J), K_(K), line_(line) {}
+  idx3(int I, int J, int K, int line = -1) : I_(I), J_(J), K_(K), size(I*J*K), line_(line) {}
 
   int operator()(int i, int j, int k) {
     assertion3(i < I_, i, I_, line_);
@@ -40,12 +192,12 @@ struct idx3 {
     return i * (J_ * K_) + j * K_ + k;
   }
 
-  const int I_, J_, K_, line_;
+  const int I_, J_, K_, size, line_;
 };
 
 struct idx4 {
   idx4(int I, int J, int K, int L, int line = -1)
-      : I_(I), J_(J), K_(K), L_(L), line_(line) {}
+      : I_(I), J_(J), K_(K), L_(L), size(I*J*K*L), line_(line) {}
 
   int operator()(int i, int j, int k, int l) {
     assertion3(i < I_, i, I_, line_);
@@ -55,12 +207,12 @@ struct idx4 {
     return i * (J_ * K_ * L_) + j * (K_ * L_) + k * L_ + l;
   }
 
-  const int I_, J_, K_, L_, line_;
+  const int I_, J_, K_, L_, size, line_;
 };
 
 struct idx5 {
   idx5(int I, int J, int K, int L, int M, int line = -1)
-      : I_(I), J_(J), K_(K), L_(L), M_(M), line_(line) {}
+      : I_(I), J_(J), K_(K), L_(L), M_(M), size(I*J*K*L*M), line_(line) {}
 
   int operator()(int i, int j, int k, int l, int m) {
     assertion3(i < I_, i, I_, line_);
@@ -72,12 +224,12 @@ struct idx5 {
            l * M_ + m;
   }
 
-  const int I_, J_, K_, L_, M_, line_;
+  const int I_, J_, K_, L_, M_, size, line_;
 };
 
 struct idx6 {
   idx6(int I, int J, int K, int L, int M, int N, int line = -1)
-      : I_(I), J_(J), K_(K), L_(L), M_(M), N_(N), line_(line) {}
+      : I_(I), J_(J), K_(K), L_(L), M_(M), N_(N), size(I*J*K*L*M*N), line_(line) {}
 
   int operator()(int i, int j, int k, int l, int m, int n) {
     assertion3(i < I_, i, I_, line_);
@@ -90,7 +242,7 @@ struct idx6 {
            k * (L_ * M_ * N_) + l * (M_ * N_) + m * N_ + n;
   }
 
-  const int I_, J_, K_, L_, M_, N_, line_;
+  const int I_, J_, K_, L_, M_, N_, size, line_;
 };
 
 }  // namespace kernels
