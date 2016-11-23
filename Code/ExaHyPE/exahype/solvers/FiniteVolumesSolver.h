@@ -534,7 +534,7 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
@@ -543,7 +543,7 @@ public:
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
@@ -638,7 +638,7 @@ public:
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      double**                                     tempFaceUnknownsArrays,
+      double**                                     tempFaceUnknowns,
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -762,6 +762,8 @@ public:
   void validateNoNansInFiniteVolumesSolution(CellDescription& cellDescription,const int cellDescriptionsIndex) const;
 
   void printFiniteVolumesSolution(CellDescription& cellDescription) const;
+
+  void printFiniteVolumesBoundaryLayer(const double* luhbnd)  const;
 
   std::string toString() const override;
 

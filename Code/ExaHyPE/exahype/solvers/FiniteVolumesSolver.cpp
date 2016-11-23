@@ -455,13 +455,6 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex);
 
-  // TODO(Dominic): Remove
-  if (cellDescriptionsIndex==78) {
-//    std::cout <<  ">> cell=" << cellDescription.toString() << std::endl;
-//    std::cout <<  "Old solution:" << std::endl;
-//    printFiniteVolumesSolution(cellDescription);
-  }
-
   double admissibleTimeStepSize=0;
   solutionUpdate(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
@@ -551,7 +544,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
-    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   CellDescription& cellDescription1 = getCellDescription(cellDescriptionsIndex1,element1);
@@ -565,36 +558,8 @@ void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
     double* solution1 = DataHeap::getInstance().getData(cellDescription1.getSolution()).data();
     double* solution2 = DataHeap::getInstance().getData(cellDescription2.getSolution()).data();
 
-//    std::cout <<  ">> cell=" << cellDescription1.toString() << std::endl;
-//    std::cout <<  "Merge-1: Old solution:" << std::endl;
-//    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-//      std::cout <<  "unknown=" << unknown << std::endl;
-//      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-//        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-//        std::cout << solution1[iScalar] << ",";
-//        if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-//          std::cout << std::endl;
-//        }
-//      }
-//    }
-//    std::cout <<  "}" << std::endl;
-
     ghostLayerFilling(solution1,solution2,pos2-pos1);
     ghostLayerFilling(solution2,solution1,pos1-pos2);
-
-//    // TODO(Dominic): Remove
-//    std::cout <<  "Merge-2: New solution:" << std::endl;
-//    for (int unknown=0; unknown < _numberOfVariables; unknown++) {
-//      std::cout <<  "unknown=" << unknown << std::endl;
-//      dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
-//        int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-//        std::cout << solution1[iScalar] << ",";
-//        if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
-//          std::cout << std::endl;
-//        }
-//      }
-//    }
-//    std::cout <<  "}" << std::endl;
   }
 
   return;
@@ -607,7 +572,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     const int                                 element,
     const tarch::la::Vector<DIMENSIONS, int>& posCell,
     const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
@@ -616,16 +581,19 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
     synchroniseTimeStepping(cellDescription);
 
     double* luh       = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    double* luhbndIn  = tempFaceUnknownsArrays[0];
-    double* luhbndOut = tempFaceUnknownsArrays[1];
-    assertion2(tarch::la::countEqualEntries(posCell,posBoundary)==DIMENSIONS-1,posCell.toString(),posBoundary.toString());
+    double* luhbndIn  = tempFaceUnknowns[0];
+    double* luhbndOut = tempFaceUnknowns[1];
 
-    boundaryLayerExtraction(luhbndIn,luh,posBoundary-posCell);
+    assertion1(getUnknownsPerFace() <= &luhbndOut[0] - &luhbndIn[0], &luhbndOut[0]-&luhbndIn[0]);
+
+    assertion2(tarch::la::countEqualEntries(posCell,posBoundary)==DIMENSIONS-1,posCell.toString(),posBoundary.toString());
 
     const int normalNonZero = tarch::la::equalsReturnIndex(posCell, posBoundary);
     assertion(normalNonZero >= 0 && normalNonZero < DIMENSIONS);
     const int faceIndex = 2 * normalNonZero +
         (posCell(normalNonZero) < posBoundary(normalNonZero) ? 1 : 0);
+
+    boundaryLayerExtraction(luhbndIn,luh,posBoundary-posCell);
 
     boundaryConditions(
         luhbndOut,luhbndIn,
@@ -924,7 +892,23 @@ void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesSolution(
     dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
       int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
       std::cout << solution[iScalar] << ",";
-      if (tarch::la::equals(i(0),_nodesPerCoordinateAxis+2*_ghostLayerWidth-1)) {
+      if (i(0)==_nodesPerCoordinateAxis+2*_ghostLayerWidth-1) {
+        std::cout << std::endl;
+      }
+    }
+  }
+  std::cout <<  "}" << std::endl;
+  #endif
+}
+
+void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesBoundaryLayer(const double* luhbnd)  const {
+  #if DIMENSIONS==2
+  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+    std::cout <<  "unknown=" << unknown << std::endl;
+    for(int i=0; i<_nodesPerCoordinateAxis; ++i) {
+      int iScalar = i*_numberOfVariables+unknown;
+      std::cout << luhbnd[iScalar] << ",";
+      if (i==_nodesPerCoordinateAxis-1) {
         std::cout << std::endl;
       }
     }

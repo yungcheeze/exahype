@@ -411,7 +411,7 @@ private:
       CellDescription& pRight,
       const int faceIndexLeft,
       const int faceIndexRight,
-      double**  tempFaceUnknownsArrays,
+      double**  tempFaceUnknowns,
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
 
@@ -436,7 +436,7 @@ private:
   void applyBoundaryConditions(
       CellDescription& p,
       const int faceIndex,
-      double**  tempFaceUnknownsArrays,
+      double**  tempFaceUnknowns,
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
 
@@ -498,7 +498,7 @@ private:
       const int faceIndex,
       const int indexOfQValues,
       const int indexOfFValues,
-      double**  tempFaceUnknownsArrays,
+      double**  tempFaceUnknowns,
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
 
@@ -1272,7 +1272,7 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
@@ -1281,7 +1281,7 @@ public:
       const int                                 element,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-      double**                                  tempFaceUnknownsArrays,
+      double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
@@ -1393,7 +1393,7 @@ public:
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      double**                                     tempFaceUnknownsArrays,
+      double**                                     tempFaceUnknowns,
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,

@@ -1713,7 +1713,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 element2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
-    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
@@ -1759,7 +1759,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
 
   solveRiemannProblemAtInterface(
       pLeft,pRight,faceIndexLeft,faceIndexRight,
-      tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
 }
 
 void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
@@ -1767,7 +1767,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     CellDescription& pRight,
     const int faceIndexLeft,
     const int faceIndexRight,
-    double**  tempFaceUnknownsArrays,
+    double**  tempFaceUnknowns,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   if (pLeft.getType()==CellDescription::Cell ||
@@ -1819,7 +1819,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
     riemannSolver(
         FL,FR,QL,QR,
-        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         std::min(pLeft.getCorrectorTimeStepSize(),
             pRight.getCorrectorTimeStepSize()),
             normalDirection);
@@ -1838,7 +1838,7 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
     const int                                 element,
     const tarch::la::Vector<DIMENSIONS, int>& posCell,
     const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
-    double**                                  tempFaceUnknownsArrays,
+    double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   if (tarch::la::countEqualEntries(posCell,posBoundary)!=(DIMENSIONS-1)) {
@@ -1859,14 +1859,14 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
 
     applyBoundaryConditions(
         cellDescription,faceIndex,
-        tempFaceUnknownsArrays,tempStateSizedVectors,tempStateSizedSquareMatrices);
+        tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
   }
 }
 
 void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     CellDescription& p,
     const int faceIndex,
-    double**  tempFaceUnknownsArrays,
+    double**  tempFaceUnknowns,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   assertion1(p.getRefinementEvent()==CellDescription::None,p.toString());
@@ -1891,8 +1891,8 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   // Synchronise time stepping.
   synchroniseTimeStepping(p);
 
-  double* stateOut = tempFaceUnknownsArrays[1];
-  double* fluxOut  = tempFaceUnknownsArrays[2];
+  double* stateOut = tempFaceUnknowns[1];
+  double* fluxOut  = tempFaceUnknowns[2];
 
   // TODO(Dominic): Hand in space-time volume data. Time integrate it afterwards
   boundaryConditions(fluxOut,stateOut,
@@ -1917,12 +1917,12 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   // @todo(Dominic): Add to docu why we need this. Left or right input
   if (faceIndex % 2 == 0) {
     riemannSolver(fluxOut, fluxIn, stateOut, stateIn,
-        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection);
   } else {
     riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
-        tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
+        tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
         normalDirection);
   }
@@ -2347,7 +2347,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const int                                    element,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
     const tarch::la::Vector<DIMENSIONS, int>&    dest,
-    double**                                     tempFaceUnknownsArrays,
+    double**                                     tempFaceUnknowns,
     double**                                     tempStateSizedVectors,
     double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -2426,7 +2426,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         faceIndex,
         receivedlQhbndIndex,
         receivedlFhbndIndex,
-        tempFaceUnknownsArrays,
+        tempFaceUnknowns,
         tempStateSizedVectors,
         tempStateSizedSquareMatrices);
 
@@ -2460,7 +2460,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     const int faceIndex,
     const int indexOfQValues,
     const int indexOfFValues,
-    double**  tempFaceUnknownsArrays,
+    double**  tempFaceUnknowns,
     double**  tempStateSizedVectors,
     double**  tempStateSizedSquareMatrices) {
   cellDescription.setRiemannSolvePerformed(faceIndex, true);
@@ -2502,7 +2502,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
 
   const int normalDirection = (faceIndex - faceIndex%2)/2; // faceIndex=2*normalNonZero+f, f=0,1
   riemannSolver(FL, FR, QL, QR,
-      tempFaceUnknownsArrays[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
+      tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
       cellDescription.getCorrectorTimeStepSize(),
       normalDirection);
 
