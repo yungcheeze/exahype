@@ -108,7 +108,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
     int lengthOfUnknowns           = 0;
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
-        numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
@@ -117,7 +117,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme
         // plus the ones for the Finite Volume scheme.
-        numberOfStateSizedVectors  = 5;
+        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
@@ -192,7 +192,7 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
       switch (solver->getType()) {
         case exahype::solvers::Solver::Type::ADERDG:
         case exahype::solvers::Solver::Type::LimitingADERDG:
-          numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+          numberOfStateSizedVectors  = 6; // See riemannSolverLinear
           numberOfStateSizedMatrices = 3; // See riemannSolverLinear
           numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
           break;
@@ -248,11 +248,15 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
 }
 
 exahype::mappings::SolutionRecomputation::SolutionRecomputation()
- #ifdef Debug
- :
- _interiorFaceMerges(0),
- _boundaryFaceMerges(0)
- #endif
+   :
+  #ifdef Debug
+  _interiorFaceMerges(0),
+  _boundaryFaceMerges(0),
+  #endif
+  _tempStateSizedVectors(nullptr),
+  _tempStateSizedSquareMatrices(nullptr),
+  _tempUnknowns(nullptr),
+  _tempFaceUnknowns(nullptr)
 {
   // do nothing
 }
@@ -266,7 +270,9 @@ exahype::mappings::SolutionRecomputation::SolutionRecomputation(
     const SolutionRecomputation& masterThread)
 : _localState(masterThread._localState),
   _tempStateSizedVectors(nullptr),
-  _tempUnknowns(nullptr) {
+  _tempStateSizedSquareMatrices(nullptr),
+  _tempUnknowns(nullptr),
+  _tempFaceUnknowns(nullptr) {
   prepareTemporaryVariables();
 }
 
@@ -392,6 +398,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                     solverPatch1.getMergedLimiterStatus(0),
                     solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
                     pos1,pos2,
+                    true,
                     _tempFaceUnknowns[solverNumber],
                     _tempStateSizedVectors[solverNumber],
                     _tempStateSizedSquareMatrices[solverNumber]);
@@ -432,6 +439,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                                               cellDescriptionsIndex1,element1,
                                               solverPatch1.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values.
                                               pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
+                                              true,
                                               _tempFaceUnknowns[solverNumber],
                                               _tempStateSizedVectors[solverNumber],
                                               _tempStateSizedSquareMatrices[solverNumber]);
@@ -449,6 +457,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                                               cellDescriptionsIndex2,element2,
                                               solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
                                               pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
+                                              true,
                                               _tempFaceUnknowns[solverNumber],
                                               _tempStateSizedVectors[solverNumber],
                                               _tempStateSizedSquareMatrices[solverNumber]);

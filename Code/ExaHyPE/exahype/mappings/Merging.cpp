@@ -97,7 +97,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     int lengthOfFaceUnknowns       = 0;
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
-        numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
@@ -105,7 +105,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme.
-        numberOfStateSizedVectors  = 5;
+        numberOfStateSizedVectors  = 6;
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
@@ -165,7 +165,7 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
       switch (solver->getType()) {
         case exahype::solvers::Solver::Type::ADERDG:
         case exahype::solvers::Solver::Type::LimitingADERDG:
-          numberOfStateSizedVectors  = 5; // See riemannSolverLinear
+          numberOfStateSizedVectors  = 6; // See riemannSolverLinear
           numberOfStateSizedMatrices = 3; // See riemannSolverLinear
           numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
           break;

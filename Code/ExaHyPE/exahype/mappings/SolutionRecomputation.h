@@ -62,6 +62,17 @@ class exahype::mappings::SolutionRecomputation {
    */
   static tarch::logging::Log _log;
 
+  #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
+  /*
+   *  Counter for the interior face solves for debugging purposes.
+   */
+  int _interiorFaceMerges;
+  /*
+   *  Counter for the boundary face solves for debugging purposes.
+   */
+  int _boundaryFaceMerges;
+  #endif
+
   /**
    * Local copy of the state.
    *
@@ -129,17 +140,6 @@ class exahype::mappings::SolutionRecomputation {
    * are not copied for every thread.
    */
   void deleteTemporaryVariables();
-
-  #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
-  /*
-   *  Counter for the interior face solves for debugging purposes.
-   */
-  int _interiorFaceMerges;
-  /*
-   *  Counter for the boundary face solves for debugging purposes.
-   */
-  int _boundaryFaceMerges;
-  #endif
 
  public:
   /**
