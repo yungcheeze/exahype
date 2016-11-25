@@ -448,7 +448,7 @@ if do_plots:
 			# this works, but is not desired instead of global markers now:
 			#treshholdToShowPoints = 40
 			#style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
-			# readd style as plt.plot(., ., style, label=...) to activate 
+			# read style as plt.plot(., ., style, label=...) to activate
 			print "Markers: p=%d nc=%d marker=%s" % (p,nc,markers[nc])
 			plt.plot(rows[idxtime], rows[ycolumn], label="P=%d" % int(p), color=colors[p], marker=markers[nc], markersize=25)
 
