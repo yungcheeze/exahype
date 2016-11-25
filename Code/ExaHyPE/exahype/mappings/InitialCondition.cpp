@@ -124,11 +124,66 @@ void exahype::mappings::InitialCondition::enterCell(
             element,
             fineGridVertices,
             fineGridVerticesEnumerator);
+
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          bool limiterDomainHasChanged =
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              updateMergedLimiterStatusAfterSetInitialConditions(fineGridCell.getCellDescriptionsIndex(),element);
+          _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
+
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element); // TODO(Dominic): Before or after?
+        }
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::InitialCondition::InitialCondition(
+    const InitialCondition& masterThread)
+    :
+    _limiterDomainHasChanged(nullptr) {
+  // do nothing
+}
+void exahype::mappings::InitialCondition::mergeWithWorkerThread(
+    const InitialCondition& workerThread) {
+  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    _limiterDomainHasChanged[i] |= workerThread._limiterDomainHasChanged[i];
+  }
+}
+#endif
+
+void exahype::mappings::InitialCondition::beginIteration(
+    exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  prepareTemporaryVariables();
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
+}
+
+void exahype::mappings::InitialCondition::endIteration(
+    exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  // 1. Merge limiter domain status
+  bool limiterDomainHasChanged = solverState.limiterDomainHasChanged();
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber])->
+        setLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
+
+    limiterDomainHasChanged |= _limiterDomainHasChanged[solverNumber];
+  }
+  solverState.setLimiterDomainHasChanged(limiterDomainHasChanged);
+  // 2.
+  deleteTemporaryVariables();
+  // 3. Veto the fused time stepping time step size reinitialisation in TimeStepSizeComputation::enterCell
+  exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = true;
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 //
@@ -244,24 +299,15 @@ void exahype::mappings::InitialCondition::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::InitialCondition::InitialCondition() {
+exahype::mappings::InitialCondition::InitialCondition()
+    :
+    _limiterDomainHasChanged(nullptr){
   // do nothing
 }
 
 exahype::mappings::InitialCondition::~InitialCondition() {
   // do nothing
 }
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::InitialCondition::InitialCondition(
-    const InitialCondition& masterThread) {
-  // do nothing
-}
-void exahype::mappings::InitialCondition::mergeWithWorkerThread(
-    const InitialCondition& workerThread) {
-  // do nothing
-}
-#endif
 
 void exahype::mappings::InitialCondition::createHangingVertex(
     exahype::Vertex& fineGridVertex,
@@ -369,16 +415,6 @@ void exahype::mappings::InitialCondition::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
-}
-
-void exahype::mappings::InitialCondition::beginIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
-
-void exahype::mappings::InitialCondition::endIteration(
-    exahype::State& solverState) {
-  exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = true;
 }
 
 void exahype::mappings::InitialCondition::descend(

@@ -102,6 +102,21 @@ class exahype::mappings::InitialCondition {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
+   * Prepares the temporary variables.
+   */
+  void beginIteration(exahype::State& solverState);
+
+  /**
+   * Vetoes the fused time stepping global
+   * time step reinitialisation in TimeStepSizeComputation::endIteration(...).
+   *
+   * Notifies the state that the limiter domain if the limiter
+   * domain of one of the solvers has changed.
+   * Further deallocates temporary variables.
+   */
+  void endIteration(exahype::State& solverState);
+
+  /**
    * If the fine grid cell functions as compute cell for a solver,
    * we ask the solver if we need to adjust its solution values within the
    * fine grid cell (at a given time). If so, we call the corresponding solver routine
@@ -393,16 +408,6 @@ class exahype::mappings::InitialCondition {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void beginIteration(exahype::State& solverState);
-
-  /**
-   * Nop.
-   */
-  void endIteration(exahype::State& solverState);
 
   /**
    * Nop.
