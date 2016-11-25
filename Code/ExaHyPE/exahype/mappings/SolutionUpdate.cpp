@@ -161,8 +161,7 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread)
-: _localState(masterThread._localState),
-  _stateSizedVectors(nullptr),
+: _stateSizedVectors(nullptr),
   _tempUnknowns(nullptr),
   _limiterDomainHasChanged(nullptr) {
   prepareTemporaryVariables();
@@ -210,11 +209,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              determineLimiterStatusAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
+              updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
-
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
     endpfor
@@ -227,8 +223,6 @@ void exahype::mappings::SolutionUpdate::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  _localState = solverState;
-
   prepareTemporaryVariables();
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
@@ -236,6 +230,8 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
   bool limiterDomainHasChanged = solverState.limiterDomainHasChanged();
   for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber])->
@@ -246,6 +242,8 @@ void exahype::mappings::SolutionUpdate::endIteration(
   solverState.setLimiterDomainHasChanged(limiterDomainHasChanged);
 
   deleteTemporaryVariables();
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 //

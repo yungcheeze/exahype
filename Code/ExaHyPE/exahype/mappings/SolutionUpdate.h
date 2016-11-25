@@ -63,14 +63,6 @@ class exahype::mappings::SolutionUpdate {
   static tarch::logging::Log _log;
 
   /**
-   * Local copy of the state.
-   *
-   * Is set in beginIteration() and yields the maximal time step size we may
-   * do. We use the local state to determine the global minimum time stamp.
-   */
-  exahype::State _localState;
-
-  /**
    * An array of 5 pointers to arrays of a length that equals the
    * number of variables per solver.
    *
@@ -177,22 +169,36 @@ class exahype::mappings::SolutionUpdate {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Nop.
+   * Prepares the temporary variables.
    */
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Nop
+   * Notifies the state that the limiter domain if the limiter
+   * domain of one of the solvers has changed.
+   * Further deallocates temporary variables.
    */
-  SolutionUpdate();
+  void endIteration(exahype::State& solverState);
 
 #if defined(SharedMemoryParallelisation)
   /**
-   * Copy the local state object over to the worker thread.
+   * Prepare the temporary variables for
+   * the worker threads.
    */
   SolutionUpdate(const SolutionUpdate& masterThread);
 #endif
 
+
+  //
+  // Below every method is nop.
+  //
+  // ==================================
+
+
+  /**
+   * Nop.
+   */
+  SolutionUpdate();
   /**
    * Nop.
    */
@@ -421,10 +427,6 @@ class exahype::mappings::SolutionUpdate {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-  /**
-   * Nop.
-   */
-  void endIteration(exahype::State& solverState);
   /**
    * Nop.
    */
