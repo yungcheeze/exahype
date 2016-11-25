@@ -31,7 +31,7 @@ pidlist = lambda processes: " ".join([str(proc.pid) for proc in processes])
 # 3D MHD Wave
 # with default MHD application but in 3D
 polyorders = arange(2,10)
-width = 6.283185
+width = 1.0
 depths = arange(1,6)
 
 meshsize = lambda width, depth: width / 3.**depth  # actual meshsize we will get (dx)
@@ -64,8 +64,8 @@ settings['ExaVtkFormat'] = "Legendre::vertices"
 settings['EXAHYPE_SKIP_TESTS'] = "True"
 
 # template to set up a queueing system
-#settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=MHD3D-p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies"
-settings['QRUNTPL'] = ""
+settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=MHD3D-p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies"
+#settings['QRUNTPL'] = ""
 settings['SIMBASE'] = 'simulations/'
 
 def start(polyorder, maxmeshsize, meshsize):
