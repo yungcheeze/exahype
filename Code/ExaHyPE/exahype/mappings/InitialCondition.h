@@ -138,24 +138,24 @@ class exahype::mappings::InitialCondition {
 
 
 
+#if defined(SharedMemoryParallelisation)
+  /**
+   * Prepare the temporary variables.
+   */
+  InitialCondition(const InitialCondition& masterThread);
+#endif
+
+
   //
   // Below all methods are nop.
   //
   //===================================
 
 
-
   /**
    * Nop
    */
   InitialCondition();
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  InitialCondition(const InitialCondition& masterThread);
-#endif
 
   /**
    * Nop.

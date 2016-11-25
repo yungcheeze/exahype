@@ -146,7 +146,7 @@ exahype::mappings::InitialCondition::InitialCondition(
     const InitialCondition& masterThread)
     :
     _limiterDomainHasChanged(nullptr) {
-  // do nothing
+  prepareTemporaryVariables();
 }
 void exahype::mappings::InitialCondition::mergeWithWorkerThread(
     const InitialCondition& workerThread) {
