@@ -238,7 +238,8 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
                                         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
-    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+
+//    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
 
     solver->performPredictionAndVolumeIntegral(
         cellDescription,

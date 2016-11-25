@@ -950,6 +950,19 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
   ///@}
 
+
+  /**
+   * A criterion determining if the degrees of freedoms of
+   * the cell-wise solution luh are physically admissible.
+   *
+   * \note We require that the cell-local minimum and maximum
+   * of the solution values has been computed
+   * a-priori.
+   *
+   * This operation is required for limiting.
+   */
+  virtual bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) { return true; }
+
   /**
    * Copies the time stepping data from the global solver onto the patch's time
    * meta data.
@@ -1063,6 +1076,10 @@ public:
 
   double getMinPredictorTimeStepSize() const;
 
+  double getPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousMinCorrectorTimeStepSize(double value);
+
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
   }
@@ -1079,9 +1096,12 @@ public:
     updateMinNextPredictorTimeStepSize(value);
   }
 
-  void initInitialTimeStamp(double value) override {
-    setMinCorrectorTimeStamp(0.0);
-    setMinPredictorTimeStamp(0.0);
+  void initSolverTimeStepData(double value) override {
+    setPreviousMinCorrectorTimeStepSize(0.0);
+    setMinCorrectorTimeStepSize(0.0);
+    setMinPredictorTimeStepSize(0.0);
+    setMinCorrectorTimeStamp(value);
+    setMinPredictorTimeStamp(value);
   }
 
   bool isValidCellDescriptionIndex(
@@ -1199,7 +1219,21 @@ public:
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
+  /*
+   * Simply adds the update degrees of freedom
+   * to the solution degrees of freedom.
+   * Does not compute the surface integral.
+   */
+  void addUpdateToSolution(
+      CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
   /**
+   * Computes the surface integral contributions to the
+   * cell update and then adds the update degrees
+   * on the solution degrees of freedom.
+   *
    * <h2>Solution adjustments</h2>
    * After the update, the solution is at time
    * cellDescription.getCorrectorTimeStamp() + cellDescription.getCorrectorTimeStepSize().
@@ -1231,6 +1265,10 @@ public:
    * we should use the adjusted FVM solution as reference solution.
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
+   *
+   * TODO(Dominic): A rollback is of course not possible if we have adjusted the solution
+   * values. In this case, we should use the adjusted FVM solution as reference.
+   * A similar issue occurs if we impose the initial conditions.
    */
   void rollbackSolution(
       const int cellDescriptionsIndex,

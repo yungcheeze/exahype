@@ -362,7 +362,7 @@ class exahype::solvers::Solver {
 
   virtual void updateMinNextTimeStepSize(double value) = 0;
 
-  virtual void initInitialTimeStamp(double value) = 0;
+  virtual void initSolverTimeStepData(double value) = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

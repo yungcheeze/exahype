@@ -74,6 +74,12 @@ private:
   bool _limiterDomainHasChanged;
 
   /**
+   * The maximum
+   */
+  double _DMPMaximumRelaxationParameter;
+  double _DMPDifferenceScaling;
+
+  /**
    * TODO(Dominc): Remove after docu is recycled.
    *
    * This operation sets the solutions' minimum and maximum value on a cell.
@@ -176,11 +182,27 @@ private:
   exahype::solvers::LimitingADERDGSolver::SolverPatch::LimiterStatus determineLimiterStatus(SolverPatch& solverPatch) const;
 
   /**
-   * Checks if updated solution
-   * of the ADER-DG solver is valid
-   * or if it contains unphysical oscillations.
+   * Checks if the updated solution
+   * of the ADER-DG solver contains unphysical oscillations (false)
+   * or not (true).
+   *
+   * Compute the new min and max at the same time.
    */
-  bool solutionIsTroubled(SolverPatch& solverPatch);
+  bool evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(SolverPatch& solverPatch);
+
+  /**
+   * Checks if the updated solution
+   * of the ADER-DG solver contains unphysical oscillations (false)
+   * or not (true).
+   */
+  bool evaluateDiscreteMaximumPrinciple(SolverPatch& solverPatch);
+
+  /**
+   * Checks if the updated solution
+   * of the ADER-DG solver is
+   * a physically admissible one (true).
+   */
+  bool evaluatePhysicalAdmissibilityCriterion(SolverPatch& solverPatch);
 
   /**
    * Computes the cell-local minimum and maximum
@@ -200,8 +222,25 @@ private:
    */
   void determineLimiterMinAndMax(SolverPatch& solverPatch,LimiterPatch& limiterPatch);
 
+  /**
+   * Updates the merged limiter status based on the cell-local ADER-DG solution
+   * values,
+   */
+  void updateMergedLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
+
 public:
 
+  /**
+   * TODO(Dominic): Docu
+   *
+   *
+   * <h2>Discrete maximum principle</h2>
+   * This constructor initialises the maximum relaxation
+   * parameter to the value to \f$ \delta_0 = 1\cdot 10^{-4} \f$
+   * and the difference scaling parameter to \f$ \epsilon = 1\cdot 10^{-3} \f$.
+   * See Dumbser et al., 2014. doi:10.1016/j.jcp.2014.08.009 for more details on
+   * the notation.
+   */
   LimitingADERDGSolver(
       const std::string& identifier,
       std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
@@ -231,14 +270,13 @@ public:
 
   void updateMinNextTimeStepSize(double value) override;
 
-  void initInitialTimeStamp(double value) override;
+  void initSolverTimeStepData(double value) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,
           const int element) override;
 
-  void reconstructStandardTimeSteppingData() { // TODO(Dominic): Hack
-    //  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+  void reconstructStandardTimeSteppingData() {
     _solver->reconstructStandardTimeSteppingData();
     _limiter->setMinTimeStamp(_solver->getMinCorrectorTimeStamp());
     _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
@@ -397,22 +435,48 @@ public:
       const int element);
 
   /**
-   * We use this method to determine the limiter status of
-   * a cell description after a solution update. This methods checks
-   * which cell is troubled and which cell holds a valid solution.
-   * If the limiter subdomain changes, i.e., if a cell changes from holding a
-   * valid solution (Ok) to troubled (Troubled) or vice versa,
-   * this function returns true.
+   * Evaluates a discrete maximum principle (DMP) and
+   * the physical admissibility detection (PAD) criterion for
+   * the solution values stored for a solver patch.
    *
-   * The function further sets the merged limiter statuses per face
-   * to the value Ok or Troubled.
-   * It does not change the value of the cell-based limiter status field.
-   * This value is necessary to keep track of the local history of the
-   * limiter status.
+   * This method then invokes
+   * ::determinMergedLimiterStatusAfterSolutionUpdate(SolverPatch&,const bool)
+   * with the result of these checks.
    */
-  bool determineLimiterStatusAfterSolutionUpdate(
+  bool updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(
       const int cellDescriptionsIndex,
       const int element);
+
+  /**
+   * Similar to ::determineMergedLimiterStatusAfterSolutionUpdate(const int,const int)
+   * but does not evaluate the discrete maximum principle.
+   */
+  bool updateMergedLimiterStatusAfterSetInitialConditions(
+      const int cellDescriptionsIndex,
+      const int element);
+
+  /**
+   * Update the merged limiter status based on
+   * the cell-local solution values.
+   *
+   * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
+   *
+   * \return True if the limiter domain changes in the cell, i.e.,
+   * if a patch with status Ok,NeighbourIsTroubled, or NeighbourOfNeighbourIsTroubled
+   * changes its status to Troubled. Or, if a patch with status Troubled changes its
+   * status to Ok.
+   */
+  bool determinMergedLimiterStatusAfterSolutionUpdate(
+      SolverPatch& solverPatch,const bool isTroubled) const;
+
+  /**
+   * Update the merged limiter status with a unified value based on
+   * the merged limiter statuses per face of the cell.
+   *
+   * \see ::determineLimiterStatus
+   */
+  void updateMergedLimiterStatus(
+      const int cellDescriptionsIndex,const int element) const;
 
   /**
    * Update the limiter status with a unified value based on
@@ -421,15 +485,6 @@ public:
    * \see ::determineLimiterStatus
    */
   void updateLimiterStatus(
-      const int cellDescriptionsIndex,const int element) const;
-
-  /**
-   * Update the merged limiter status on every face with a unified value based on
-   * the merged limiter statuses per face of the cell.
-   *
-   * \see ::determineLimiterStatus
-   */
-  void updateMergedLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
   /**
@@ -591,6 +646,16 @@ public:
    * | T        | T        | FV            |
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * <h2>Solution Recomputation</h2>
+   * If we perform a solution recomputation, we do not need to perform
+   * a solution update in the non-troubled solver patches and the patches
+   * with status neighbourIsNeighbourOfTroubledCell. Instead we
+   * can simply reuse the already computed update to advance in
+   * time to the desired time stamp.
+   *
+   * We thus do not need to merge these patches with neighbour data
+   * in the recomputation phase.
    */
   void mergeNeighboursBasedOnLimiterStatus(
       const int                                 cellDescriptionsIndex1,
@@ -601,6 +666,7 @@ public:
       const SolverPatch::LimiterStatus&         limiterStatus2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
+      const bool                                isRecomputation,
       double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices);
@@ -652,6 +718,18 @@ public:
    * | T        | FV              |
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * <h2>Solution Recomputation</h2>
+   * If we perform a solution recomputation, we do not need to perform
+   * a solution update in the non-troubled solver patches and the patches
+   * with status neighbourIsNeighbourOfTroubledCell. Instead we
+   * can simply reuse the already computed update to advance in
+   * time to the desired time stamp.
+   *
+   * We thus do not need to merge these patches with boundary data
+   * in the recomputation phase.
+   *
+   * \param[in] isRecomputation Flag indicating if this merge is part of a solution recomputation phase.
    */
   void mergeWithBoundaryDataBasedOnLimiterStatus(
         const int                                 cellDescriptionsIndex,
@@ -659,6 +737,7 @@ public:
         const SolverPatch::LimiterStatus&         limiterStatus,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+        const bool                                isRecomputation,
         double**                                  tempFaceUnknowns,
         double**                                  tempStateSizedVectors,
         double**                                  tempStateSizedSquareMatrices);

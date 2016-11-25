@@ -80,6 +80,10 @@ int exahype::solvers::FiniteVolumesSolver::getUnknownsPerFace() const {
   return _unknownsPerPatchFace;
 }
 
+double exahype::solvers::FiniteVolumesSolver::getPreviousMinTimeStepSize() const {
+  return _previousMinTimeStepSize;
+}
+
 double exahype::solvers::FiniteVolumesSolver::getMinTimeStamp() const {
   return _minTimeStamp;
 }
@@ -93,7 +97,9 @@ void exahype::solvers::FiniteVolumesSolver::updateMinNextTimeStepSize(
   _minNextTimeStepSize = std::min(_minNextTimeStepSize, value);
 }
 
-void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
+void exahype::solvers::FiniteVolumesSolver::initSolverTimeStepData(double value) {
+  _previousMinTimeStepSize = 0.0;
+  _minTimeStepSize = 0.0;
   _minTimeStamp = value;
 }
 
@@ -453,7 +459,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   std::copy(newSolution,newSolution+_unknownsPerPatch+_ghostValuesPerPatch,solution); // Copy (current solution) in old solution field.
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex);
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -875,8 +881,8 @@ void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolutio
       for (int unknown=0; unknown < _numberOfVariables; unknown++) {
         #if defined(Asserts)
         int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-        #endif
-        assertion4(std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString());
+        #endif // cellDescription.getTimeStepSize()==0.0 is an initial condition
+        assertion4(tarch::la::equals(cellDescription.getTimeStepSize(),0.0)  || std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString());
       }
     }
   }

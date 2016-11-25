@@ -346,6 +346,14 @@ public:
       const double time,
       const int level) = 0;
 
+  /**
+   * Returns the min time step size of the
+   * previous iteration.
+   * This value is initialised with zero
+   * to enable an initial "rollback".
+   */
+  double getPreviousMinTimeStepSize() const;
+
   double getMinTimeStamp() const override;
 
   /**
@@ -395,7 +403,7 @@ public:
     _previousMinTimeStepSize = value;
   }
 
-  void initInitialTimeStamp(double value) override;
+  void initSolverTimeStepData(double value) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,

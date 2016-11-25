@@ -51,7 +51,9 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           solver->getTimeStepping()),
           _solver(std::move(solver)),
           _limiter(std::move(limiter)),
-          _limiterDomainHasChanged(false)
+          _limiterDomainHasChanged(false),
+          _DMPMaximumRelaxationParameter(1.0e-2),
+          _DMPDifferenceScaling(1.0e-5)
 {
   assertion(_solver->getNumberOfParameters() == 0);
 }
@@ -73,9 +75,9 @@ void exahype::solvers::LimitingADERDGSolver::updateMinNextTimeStepSize(double va
   _limiter->updateMinNextTimeStepSize(value);
 }
 
-void exahype::solvers::LimitingADERDGSolver::initInitialTimeStamp(double value) {
-  _solver->initInitialTimeStamp(value);
-  _limiter->initInitialTimeStamp(value);
+void exahype::solvers::LimitingADERDGSolver::initSolverTimeStepData(double value) {
+  _solver->initSolverTimeStepData(value);
+  _limiter->initSolverTimeStepData(value);
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
@@ -370,15 +372,13 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   case SolverPatch::LimiterStatus::Ok:
     _solver->updateSolution(
         cellDescriptionsIndex,element,
-        tempStateSizedVectors,
-        tempUnknowns,
+        tempStateSizedVectors,tempUnknowns,
         fineGridVertices,fineGridVerticesEnumerator);
     break;
   case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
     _solver->updateSolution(
         cellDescriptionsIndex,element,
-        tempStateSizedVectors,
-        tempUnknowns,
+        tempStateSizedVectors,tempUnknowns,
         fineGridVertices,fineGridVerticesEnumerator);
     assertion(limiterElement!=exahype::solvers::Solver::NotFound);
     exahype::solvers::FiniteVolumesSolver::CellDescription& limiterPatch =
@@ -386,6 +386,8 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
 
     solverSolution = DataHeap::getInstance().getData(
         solverPatch.getSolution()).data();
+
+    _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
     limiterSolution = DataHeap::getInstance().getData(
         limiterPatch.getSolution()).data();
 
@@ -421,18 +423,55 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   }
 }
 
-bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolutionUpdate(
+bool exahype::solvers::LimitingADERDGSolver::updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(
     const int cellDescriptionsIndex,
     const int element) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
+  bool solutionIsValid = evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(solverPatch) &&
+                         evaluatePhysicalAdmissibilityCriterion(solverPatch);
+
+//  determineSolverMinAndMax(solverPatch);
+//  bool solutionIsValid = evaluatePhysicalAdmissibilityCriterion(solverPatch); // force only phys adm. Cr.
+
+
+  switch (solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Troubled:
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
+        const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+        assertion2(limiterElement!=exahype::solvers::Solver::NotFound,limiterElement,cellDescriptionsIndex);
+        LimiterPatch& LimiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        determineLimiterMinAndMax(solverPatch,LimiterPatch);
+      }
+      break;
+    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      // Already computed.
+      break;
+  }
+
+  return determinMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
+}
+
+bool exahype::solvers::LimitingADERDGSolver::updateMergedLimiterStatusAfterSetInitialConditions(
+    const int cellDescriptionsIndex,
+    const int element) {
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+
+  bool solutionIsValid = evaluatePhysicalAdmissibilityCriterion(solverPatch); // Only evaluate the PAD
+
+  return determinMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
+}
+
+bool exahype::solvers::LimitingADERDGSolver::determinMergedLimiterStatusAfterSolutionUpdate(
+    SolverPatch& solverPatch,const bool isTroubled) const {
   bool limiterDomainHasChanged=false;
 
   switch (solverPatch.getLimiterStatus()) {
   case SolverPatch::LimiterStatus::Ok:
   case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
   case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-    if (solutionIsTroubled(solverPatch)) {
+    if (isTroubled) {
       limiterDomainHasChanged = true;
 
       for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
@@ -445,7 +484,7 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
     }
     break;
   case SolverPatch::LimiterStatus::Troubled:
-    if (!solutionIsTroubled(solverPatch)) {
+    if (!isTroubled) {
       limiterDomainHasChanged = true;
 
       for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
@@ -465,7 +504,7 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
 }
 
 
-bool exahype::solvers::LimitingADERDGSolver::solutionIsTroubled(SolverPatch& solverPatch) {
+bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(SolverPatch& solverPatch) {
   double* solution = DataHeap::getInstance().getData(
       solverPatch.getSolution()).data();
   double* solutionMin = DataHeap::getInstance().getData(
@@ -473,9 +512,43 @@ bool exahype::solvers::LimitingADERDGSolver::solutionIsTroubled(SolverPatch& sol
   double* solutionMax = DataHeap::getInstance().getData(
       solverPatch.getSolutionMax()).data();
 
-  return kernels::limiter::generic::c::isTroubledCell(
-      solution,_solver->getNumberOfVariables(),
-      _solver->getNodesPerCoordinateAxis(),solutionMin,solutionMax);
+  // 1. Check if the DMP is satisfied and search for the min and max
+  // Write the new min and max to the storage reserved for face 0
+  bool dmpIsSatisfied = kernels::limiter::generic::c::discreteMaximumPrincipleAndMinAndMaxSearch(
+        solution,_solver->getNumberOfVariables(),_solver->getNodesPerCoordinateAxis(),
+        _DMPMaximumRelaxationParameter, _DMPDifferenceScaling,
+        solutionMin,solutionMax);
+
+  // 2. Copy the result on the other faces as well
+  for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
+    std::copy(
+        solutionMin,
+        solutionMin+_numberOfVariables, // past-the-end element
+        solutionMin+i*_numberOfVariables);
+    std::copy(
+        solutionMax,
+        solutionMax+_numberOfVariables, // past-the-end element
+        solutionMax+i*_numberOfVariables);
+  }
+
+  if (dmpIsSatisfied) {
+    return true;
+  }
+
+  return false;
+}
+
+bool exahype::solvers::LimitingADERDGSolver::evaluatePhysicalAdmissibilityCriterion(SolverPatch& solverPatch) {
+  double* solutionMin = DataHeap::getInstance().getData(
+      solverPatch.getSolutionMin()).data();
+  double* solutionMax = DataHeap::getInstance().getData(
+      solverPatch.getSolutionMax()).data();
+
+  if (_solver->physicalAdmissibilityDetection(solutionMin,solutionMax)) {
+    return true;
+  }
+
+  return false;
 }
 
 void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(
@@ -726,9 +799,9 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
           fineGridVertices,fineGridVerticesEnumerator);
       solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
-      limiterPatch =
-          &LimiterHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[limiterElement];
+      limiterPatch = &_limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
       _limiter->ensureNecessaryMemoryIsAllocated(*limiterPatch);
+
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
       kernels::limiter::generic::c::projectOnFVLimiterSpace(
           solverSolution,_solver->getNumberOfVariables(),
@@ -774,9 +847,7 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       switch (previousLimiterStatus) {
         case SolverPatch::LimiterStatus::Ok:
         case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-          _solver->updateSolution(cellDescriptionsIndex,limiterElement,
-                                  tempStateSizedArrays,tempUnknowns,
-                                  fineGridVertices,fineGridVerticesEnumerator);
+          _solver->addUpdateToSolution(solverPatch,fineGridVertices,fineGridVerticesEnumerator); // It must always be addUpdateToSolution here since we do not want to use compute the surface integral again
 
           assertion(limiterElement!=exahype::solvers::Solver::NotFound);
           limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
@@ -833,11 +904,14 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       break;
     case SolverPatch::LimiterStatus::Troubled:
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+
+      limiterPatch    = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
                                tempStateSizedArrays,tempUnknowns,
                                fineGridVertices,fineGridVerticesEnumerator);
 
-      limiterPatch    = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
       solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
@@ -1095,12 +1169,14 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
 
   // 1. Communicate the data between the solvers that is necessary for the solves
+  const bool isRecomputation=false;
   SolverPatch& solverPatch1 = _solver->getCellDescription(cellDescriptionsIndex1,element1);
   SolverPatch& solverPatch2 = _solver->getCellDescription(cellDescriptionsIndex2,element2);
   mergeNeighboursBasedOnLimiterStatus(
       cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,
       solverPatch1.getLimiterStatus(),solverPatch2.getLimiterStatus(),
       pos1,pos2,
+      isRecomputation,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
 
   // 2. Merge the min and max of both cell description's solver's
@@ -1147,6 +1223,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
     const SolverPatch::LimiterStatus&         limiterStatus2,
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2,
+    const bool                                isRecomputation,
     double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
@@ -1164,8 +1241,10 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
       switch (limiterStatus2) {
         case SolverPatch::LimiterStatus::Ok:
         case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-          _solver->mergeNeighbours(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-                                   tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices); // Which one is left and right is checked internally again.
+          if (!isRecomputation) {
+            _solver->mergeNeighbours(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
+                                     tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices); // Which one is left and right is checked internally again.
+          }
           break;
         default:
           break;
@@ -1196,6 +1275,10 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
         case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
           _limiter->mergeNeighbours(cellDescriptionsIndex1,limiterElement1,cellDescriptionsIndex2,limiterElement2,pos1,pos2,
                                     tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices); // Which one is left and right is checked internally again.
+          if (!isRecomputation) {
+            _solver->mergeNeighbours(cellDescriptionsIndex1,limiterElement1,cellDescriptionsIndex2,limiterElement2,pos1,pos2,
+                                     tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices); // Which one is left and right is checked internally again.
+          }
           break;
         default:
           break;
@@ -1261,8 +1344,11 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryData(
       double**                                  tempStateSizedSquareMatrices) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
+  bool isRecomputation = false;
   mergeWithBoundaryDataBasedOnLimiterStatus(
-      cellDescriptionsIndex,element,solverPatch.getLimiterStatus(),posCell,posBoundary,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      cellDescriptionsIndex,element,solverPatch.getLimiterStatus(),posCell,posBoundary,
+      isRecomputation,
+      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiterStatus(
@@ -1271,6 +1357,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiter
       const SolverPatch::LimiterStatus&         limiterStatus,
       const tarch::la::Vector<DIMENSIONS, int>& posCell,
       const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
+      const bool                                isRecomputation,
       double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) {
@@ -1279,11 +1366,15 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiter
   switch (limiterStatus) {
     case SolverPatch::LimiterStatus::Ok:
     case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      _solver->mergeWithBoundaryData(cellDescriptionsIndex,element,posCell,posBoundary,
-                                     tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      assertion(limiterStatus==SolverPatch::LimiterStatus::Ok || limiterElement!=exahype::solvers::Solver::NotFound);
+      if (!isRecomputation) {
+        _solver->mergeWithBoundaryData(cellDescriptionsIndex,element,posCell,posBoundary,
+                                       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
+      }
       break;
     case SolverPatch::LimiterStatus::Troubled:
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       _limiter->mergeWithBoundaryData(cellDescriptionsIndex,limiterElement,posCell,posBoundary,
                                      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
       break;
