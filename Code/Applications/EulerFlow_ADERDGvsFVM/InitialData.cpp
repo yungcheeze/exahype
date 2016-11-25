@@ -105,5 +105,6 @@ void Euler::explosionProblem(const double* const x,double* Q) {
 #endif
 
 void Euler::initialData(const double* const x,double* Q) {
+  // rarefactionWave(x,Q);
   sodShockTube(x,Q);
 }
