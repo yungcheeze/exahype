@@ -4,6 +4,8 @@
 #   ipython -i finish-convergence-table.py
 # to inspect all the lists and dicts.
 #
+# This program needs at least Pandas 0.17.
+#
 # -- SK, 2016
 
 import numpy as np
@@ -12,9 +14,8 @@ pd.set_option('expand_frame_repr', False) # display for debugging in terminal
 # batteries:
 import sys
 from glob import glob
-from os import path, stat
+from os import path, stat, getenv
 from re import match, sub
-from os import path
 import itertools, operator
 
 # a module in this directory
@@ -22,14 +23,37 @@ from convergence_helpers import read_simulation_params, is_empty_file, simfile, 
 	Template, shortenPathsInTable, stripConstantColumns, keepColumnsIf, time_parser, \
 	RemoveStringInColumns, is_headless
 
+def pdsort(df, by, ascending=True):
+    "a pandas sort workaround which also works with pandas < 0.17"
+    try:
+        # pandas >= 0.17
+        return df.sort_values(by=by, ascending=ascending)
+    except:
+        # pandas < 0.17
+        return df.sort(by, ascending=ascending)
+
+def merge_dicts(*dict_args):
+    '''
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    '''
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
+
+
 # be_headless: do not show up matplotlib windows even if an X11
 # terminal is attached. Set False if you want to do work with plots.
 be_headless = True
 
 # run simulation statistics program before with
-# ./showSimulationProgress.sh  | grep FINISHED | awk '{print $1}' > simulations.txt
-# or so
+# ./showSimulationProgress.sh  | grep FINISHED > simulations.txt
+# or so. Make sure it is a CSV table with column names, not only simulation name!
 simulationListFilename='./simulations.txt'
+
+# add a path before the simulations names, if neccessary.
+simulationPathPrefix = getenv('SIMBASE', '')
 
 try:
 	p = int(sys.argv[1])
@@ -62,9 +86,20 @@ goodSimulations = minimalReductionsLengths
 # The shellscript takes around ~ 10-60 Seconds to generate the data, therefore
 # the generation is offloaded.
 statisticstable = pd.read_csv(simulationListFilename, sep="\t")
-assert idxSimName in statisticstable.columns
+assert idxSimName in statisticstable.columns, "statisticstable misses essential data: "+str(statisticstable)
+
 # strip whitespace so a comparison is possible
 statisticstable[idxSimName] = statisticstable[idxSimName].map(str.strip)
+
+
+# allow to join a path before if simnames are somewhat broken or so.
+if simulationPathPrefix:
+    print "Applying prefix '%s' on each simulation name" % simulationPathPrefix
+    prefixer = lambda simname: path.join(simulationPathPrefix, simname)
+    # if working with pandas:
+    statisticstable[idxSimName] = statisticstable[idxSimName].apply(prefixer)
+    # if working with the list, interchange with if not simulations: ... but doesn't work.
+    #simulations = map(prefixer, simulations)
 
 if not simulations:
 	simulations = list(statisticstable[idxSimName])
@@ -95,9 +130,23 @@ paramtable = pd.DataFrame(paramdicts) # single table
 paramtable[idxSimName] = simulations # give an index column
 
 # 1C) Compute number of cells, etc.
-porders = paramtable['EXAPORDER']
-meshsizes = paramtable['EXAREALMESHSIZE'] # if not available, use 'EXAMESHSIZE'
-widths = paramtable['EXASPEC_WIDTH']
+
+def case_insensitive(df, colname):
+    "find a column name by case-insensitive matching"
+    col_list = list(df)
+    try:
+        # this uses a generator to find the index if it matches, will raise an exception if not found
+        return col_list[next(i for i,v in enumerate(col_list) if v.lower() == colname.lower())]
+    except:
+        raise KeyError("Could not find column '%s' in list of columns '%s'" % (colname, str(col_list)) )
+
+# A case-insensitive finder for paramtable
+ci_paramtable = lambda colname: case_insensitive(paramtable, colname)
+get_ci_paramtable = lambda colname: paramtable[ci_paramtable(colname)]
+
+porders = get_ci_paramtable('EXAPORDER')
+meshsizes = get_ci_paramtable('EXAREALMESHSIZE') # if not available, use 'EXAMESHSIZE'
+widths = get_ci_paramtable('ExaWidth') # used to be calles EXASPEC_WIDTH
 # shall be all equal, of course.
 if not np.all(widths == widths[0]):
 	print "WARNING: Not all simulation domains are equal! Sizes are: ", widths
@@ -111,11 +160,13 @@ ncells = widths / meshsizes
 paramtable = keepColumnsIf(paramtable, lambda c: 'PWD' not in c)
 
 # beautify the parameter table: shorten the paths
-shortenPathsInTable(paramtable, ['EXABINARY', 'EXASPECFILE'])
+shortenPathsInTable(paramtable, map(ci_paramtable, ['EXABINARY', 'EXASPECFILE']))
+linkifyFormatter = { idxSimName: lambda l: u"<a href='%s'>%s</a>"%(l,l) }
+defaultFormatter = { col: None for col in paramtable.columns.values }
 # store number of cells back into paramtable for dumping
 idxNcells = 'nCells'
 paramtable[idxNcells] = ncells
-tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html()
+tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html(formatters=merge_dicts(defaultFormatter, linkifyFormatter))
 tpl['SIMULATION_STATISTICS_TABLE'] = statisticstable.to_html()
 
 # todo: Extract the "meaning" columns which hold documentation about the exa-columns.
@@ -145,9 +196,16 @@ idxWalltime = 'Walltime' # as set in showSimulationProgress.sh
 # standard time format (from /bin/time) is like "601m17.780s".
 # We ignore the seconds and sum up the minutes
 timedeltas = map(time_parser(r'\s*(?P<minutes>\d+)m'), fullsimtable[idxWalltime])
+badlyparsedCriterion = lambda timedelta: not timedelta
+correctlyparsed = map(badlyparsedCriterion, timedeltas)
+errnousentries = len(timedeltas) - len(correctlyparsed) # find not correctly parsed entries
+timedeltas = correctlyparsed
 totaltime = reduce(operator.add, timedeltas)
-totalhours = totaltime.total_seconds() / (60*60)
-tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours)
+try:
+    totalhours = totaltime.total_seconds() / (60*60)
+    tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours) + (" (ignoring %i errnous entries)"%errnousentries if errnousentries else "")
+except:
+    tpl['TOTAL_CPU_HOURS'] = 'Not determinable'
 
 
 ## STEP 2: Load Error tables and compute convergence rate
@@ -208,7 +266,7 @@ idxplotindex = 'plotindex' # the column counting the rows in each simulation
 # one we can do plots showing the convergence order during evolution,
 # with the last one we can show compact tables.
 ceslice = errors.query('%s <= %d' % (idxplotindex, maxcomparisons))
-celast = ceslice.groupby(by=[idxporder,idxcells], as_index=False).last().sort_values(by=[idxporder,idxcells])
+celast = pdsort(ceslice.groupby(by=[idxporder,idxcells], as_index=False).last(), by=[idxporder,idxcells])
 # either do groupby(..., as_index=False) and then .sort([idxporder,idxcells])
 # or do as above: groupby() with index but still taking .last()
 # celast: could also replace .last() by .tail(1) but would loose row index information
@@ -302,7 +360,8 @@ print "Computing convergence tables..."
 print "Comptuted this convergence table for the individual reductions"
 print "(as l1norm, infnorm=max, etc.)"
 convergence_table = ce[[idxporder,idxcells,idxprev,idxplotindex,idxtime] + errorColumns + rateColumns + ([idxcomparisoncolumn] if giveComparisonColumn else [])]
-convergence_table = convergence_table.sort_values(by=[idxporder, idxcells, idxplotindex])
+print convergence_table
+convergence_table = pdsort(convergence_table, by=[idxporder, idxcells, idxplotindex])
 final_time_convergence_table = convergence_table.groupby(by=[idxporder, idxcells]).last()
 
 # We can also programmatically decide whether decent convergence
@@ -358,8 +417,8 @@ if do_plots:
 	##### CONVERGENCE EVOLUTION PLOTS
 
 	ycolumn = 'ol2norm'
-	reprID = paramtable['EXAHYPE_INITIALDATA'].iloc[0]
-	reprSpecFile = paramtable['EXASPECFILE'].iloc[0]
+	reprID = get_ci_paramtable('EXAHYPE_INITIALDATA').iloc[0]
+	reprSpecFile = get_ci_paramtable('EXASPECFILE').iloc[0]
 
 	convergencePlot = plt.figure(figsize=(18,8)) # plt.gcf()
 	convergencePlot.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
@@ -373,22 +432,25 @@ if do_plots:
 	print "Plots are for porders=", allporders, " and ncells=", allncells
 
 	possiblecolors = plt.cm.rainbow(np.linspace(0,1,len(allporders)))
-	possiblestyles = ['-', '--', '-.', ':']
-	possiblemarkers = ['o', 'v', 'x']
+	#possiblestyles = ['-', '--', '-.', ':']
+	possiblemarkers = ['o', 'v','+','h', 'x','<','>',][:len(uniquelist(ncells))] # assert same length
 	# commented out because currently unused, but code works.
 	#assert len(possiblemarkers) == len(uniquelist(ncells))
 	#styles = lookupdict(allncells, possiblestyles)
-	#markers = lookupdict(allncells, possiblemarkers)
+	markers = lookupdict(allncells, possiblemarkers)
 	colors = lookupdict(allporders, possiblecolors)
 
 	for Ni, (Nprev, Ncur) in enumerate(window(allncells)):
 		plt.subplot(1, len(allncells)-1, Ni+1)
 
 		plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
-		for (p,nc),rows in (convergence_table[convergence_table[idxcells]==Ncur]).sort_values(by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
-			treshholdToShowPoints = 40
-			style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
-			plt.plot(rows[idxtime], rows[ycolumn], style, label="P=%d" % int(p), color=colors[p])#, marker=markers[nc])
+		for (p,nc),rows in pdsort(convergence_table[convergence_table[idxcells]==Ncur], by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
+			# this works, but is not desired instead of global markers now:
+			#treshholdToShowPoints = 40
+			#style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
+			# readd style as plt.plot(., ., style, label=...) to activate 
+			print "Markers: p=%d nc=%d marker=%s" % (p,nc,markers[nc])
+			plt.plot(rows[idxtime], rows[ycolumn], label="P=%d" % int(p), color=colors[p], marker=markers[nc], markersize=25)
 
 		plt.xlabel("Simulation time")
 		plt.ylabel("Convergence order")
