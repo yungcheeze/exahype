@@ -68,8 +68,61 @@ void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables
 void findCellLocalLimiterMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth,
                                    double* const localMinPerVariables, double* const localMaxPerVariables);
 
-//Test if the DG solution is troubled
-bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+/**
+ * Similar to ::discreteMaximumPrinciple
+ * but writes back the computed cell-local min and max to the
+ * boundaryMinPerVariables and boundaryMaxPerVariables arrays.
+ */
+bool discreteMaximumPrincipleAndMinAndMaxSearch(const double* const luh, const int numberOfVariables, const int basisSize,
+                    const double DMPMaximumRelaxationParameter,const double DMPDifferenceScaling,
+                    double* boundaryMinPerVariables, double* boundaryMaxPerVariables);
+
+/**
+ * Returns true if the nodal solution degrees of freedom
+ * satisfy a discrete maximum principle.
+ *
+ * \note[24/11/16]
+ * We currently abuse the term Voronoi neighbour for direct neighbour.
+ *
+ * \param[in] luh                           The nodal solution degrees of freedom
+ * \param[in] numberOfVariables             The number of variables of the solved PDE
+ * \param[in] basisSize                     The basis size of the ADER-DG discretisation (approx. order + 1).
+ * \param[in] DMPMaximumRelaxationParameter The relaxation parameter for the discrete maximum principle (DMP).
+ * \param[in] DMPDifferenceScaling          The difference scaling factor for the discrete maximum principle (DMP).
+ * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ *                                          containing the minimum values per variable of the current cell
+ *                                          and its neighbour at the particular face. Together these values
+ *                                          can be used to compute the Voronoi maximum per variable.
+ * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ *                                          containing the minimum values per variable of the current cell
+ *                                          and its neighbour at the particular face. Together these values
+ *                                          can be used to compute the Voronoi maximum per variable.
+ *
+ * <h2>Background</h2>
+ * A candidate solution \f$ u^{*}_h(x,t^{n+1}) \f$ is said to satisfy
+ * the discrete maximum principle if it satisfies a relaxed
+ * maximum principle of the form
+ *
+ * \f[
+ *   \min_{y \in V_i} (u_h(y,t^n)) - \delta \leq \, u^{*}_h(x,t^{n+1}) \leq \, \max_{y \in V_i} (u_h(y,t^n)) + \delta,
+ *   \;\forall \x \in T_i
+ * \f]
+ *
+ * for every element \f$ T_i \f$ in the mesh. Above, $\f$ V_i \f$ is a set containing the Voronoi neighbours
+ * of element \f$ T_i \f$ and the \f$ T_i \f$ itself.
+ * The relaxation parameter \f$ \delta \f$ is computed according to:
+ *
+ * \f[
+ *  \delta = \max \left( \delta_0,\, \epsilon \cdot \left( \max_{y \in V_i} (u_h(y,t^n)) - \min_{y \in V_i} (u_h(y,t^n)) \right) \right),
+ * \f]
+ * with \f$ \delta_0 \f$ denoting the maximum relaxation parameter we want to allow,
+ * and \epsilon scales the difference of Voronoi maximum and minimum.
+ *
+ * See doi:10.1016/j.jcp.2014.08.009 for more details.
+ */
+bool discreteMaximumPrinciple(const double* const luh, const int numberOfVariables, const int basisSize,
+                    const double DMPMaximumRelaxationParameter,const double DMPDifferenceScaling,
+                    const double* const boundaryMinPerVariables, const double* const boundaryMaxnPerVariables);
 
 // TODO(Dominic): @JM: We have to do a rollback in every neighbour cell of the troubled cells. Furthermore, the
 // troubled cells are not that many compared to the non-troubled ones. Thus, I decided to get
