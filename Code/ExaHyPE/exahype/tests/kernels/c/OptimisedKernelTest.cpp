@@ -370,7 +370,7 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
 #ifdef Dim2  
   kernels::idx3 idx_bnd_gen(2 * _dim, _basisSize, _numberOfVariables);
   kernels::idx3 idx_bnd_opt(2 * _dim, _numberOfVariables, _basisSize);
-  for(int i=0; i<4; i++) {
+  for(int i=0; i<2*_dim; i++) {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_numberOfVariables; k++) {
         validateNumericalEqualsWithEps(lQhbnd_optimised[idx_bnd_opt(i,k,j)], lQhbnd_generic[idx_bnd_gen(i,j,k)], eps3);
@@ -395,7 +395,7 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
 #else
   kernels::idx4 idx_bnd_gen(2 * _dim, _basisSize, _basisSize, _numberOfVariables);
   kernels::idx4 idx_bnd_opt(2 * _dim, _numberOfVariables, _basisSize, _basisSize);  
-  for(int i=0; i<4; i++) {
+  for(int i=0; i<2*_dim; i++) {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_basisSize; k++) {
         for(int l=0; l<_numberOfVariables; l++) {

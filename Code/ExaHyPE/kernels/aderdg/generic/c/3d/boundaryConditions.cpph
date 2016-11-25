@@ -73,4 +73,4 @@ void kernels::aderdg::generic::c::boundaryConditions(
   }
 }
 
-#endif  // DIMENSIONS == 2
+#endif  // DIMENSIONS == 3
