@@ -472,12 +472,15 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
                      1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
     double  *tempFaceUnknownsArray        = nullptr;
-    double **tempStateSizedVectors        = new double*[4];
-    tempStateSizedVectors[0]              = new double[4*5];
+    double **tempStateSizedVectors        = new double*[6];
+    tempStateSizedVectors[0]              = new double[6*5];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+5;
     tempStateSizedVectors[2]              = tempStateSizedVectors[1]+5;
     tempStateSizedVectors[3]              = tempStateSizedVectors[2]+5;
-    double **tempStateSizedSquareMatrices = nullptr;
+    tempStateSizedVectors[4]              = tempStateSizedVectors[3]+5;
+    tempStateSizedVectors[5]              = tempStateSizedVectors[4]+5;
+    double **tempStateSizedSquareMatrices = new double*[1];
+    tempStateSizedSquareMatrices[0]       = new double[1*5*5];
 
     // inout:
     double *FL = new double[20];
@@ -500,6 +503,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 
     delete[] FL;
     delete[] FR;
+    delete[] tempStateSizedSquareMatrices[0];
+    delete[] tempStateSizedSquareMatrices;
     delete[] tempStateSizedVectors[0];
     delete[] tempStateSizedVectors;
   }  // test 1
@@ -519,12 +524,15 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
                         testRiemannSolverNonlinear::FR_1_in,
                 20 * sizeof(double));
     double  *tempFaceUnknownsArray        = nullptr;
-    double **tempStateSizedVectors        = new double*[4];
-    tempStateSizedVectors[0]              = new double[4*5];
+    double **tempStateSizedVectors        = new double*[6];
+    tempStateSizedVectors[0]              = new double[6*5];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+5;
     tempStateSizedVectors[2]              = tempStateSizedVectors[1]+5;
     tempStateSizedVectors[3]              = tempStateSizedVectors[2]+5;
-    double **tempStateSizedSquareMatrices = nullptr;
+    tempStateSizedVectors[4]              = tempStateSizedVectors[3]+5;
+    tempStateSizedVectors[5]              = tempStateSizedVectors[4]+5;
+    double **tempStateSizedSquareMatrices = new double*[1];
+    tempStateSizedSquareMatrices[0]       = new double[1*5*5];
 
     kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
         *this,
@@ -553,6 +561,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 
     delete[] FL;
     delete[] FR;
+    delete[] tempStateSizedSquareMatrices[0];
+    delete[] tempStateSizedSquareMatrices;
     delete[] tempStateSizedVectors[0];
     delete[] tempStateSizedVectors;
   }  // test 2
@@ -572,12 +582,15 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
                         testRiemannSolverNonlinear::FR_2_in,
                 20 * sizeof(double));
     double  *tempFaceUnknownsArray        = nullptr;
-    double **tempStateSizedVectors        = new double*[4];
-    tempStateSizedVectors[0]              = new double[4*5];
+    double **tempStateSizedVectors        = new double*[6];
+    tempStateSizedVectors[0]              = new double[6*5];
     tempStateSizedVectors[1]              = tempStateSizedVectors[0]+5;
     tempStateSizedVectors[2]              = tempStateSizedVectors[1]+5;
     tempStateSizedVectors[3]              = tempStateSizedVectors[2]+5;
-    double **tempStateSizedSquareMatrices = nullptr;
+    tempStateSizedVectors[4]              = tempStateSizedVectors[3]+5;
+    tempStateSizedVectors[5]              = tempStateSizedVectors[4]+5;
+    double **tempStateSizedSquareMatrices = new double*[1];
+    tempStateSizedSquareMatrices[0]       = new double[1*5*5];
 
     kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
         *this,
@@ -606,6 +619,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 
     delete[] FL;
     delete[] FR;
+    delete[] tempStateSizedSquareMatrices[0];
+    delete[] tempStateSizedSquareMatrices;
     delete[] tempStateSizedVectors[0];
     delete[] tempStateSizedVectors;
   }  // test3

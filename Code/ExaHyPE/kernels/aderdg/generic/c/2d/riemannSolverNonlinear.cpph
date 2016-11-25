@@ -42,7 +42,6 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   // Compute the average states (and parameters) from the left and the right
   double* QavL = tempStateSizedVectors[0];
   double* QavR = tempStateSizedVectors[1];
-  double* Qavg = new double[numberOfVariables];
   {
     idx2 idx_QLR(basisSize, numberOfVariables);
     std::memset(QavL, 0, numberOfVariables * sizeof(double));
@@ -62,6 +61,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
   
+  double* Qavg = tempStateSizedVectors[4];
   for(int k=0; k < numberOfVariables; k++) {
      Qavg[k] = (QavL[k] + QavR[k]) / 2;
   }
@@ -117,7 +117,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
     }
   }
   
-  delete[] Qavg;
+//  delete[] Qavg;
   delete[] Bn;
   delete[] ncp;
 }

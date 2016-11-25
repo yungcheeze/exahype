@@ -417,13 +417,16 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     FL[i] = static_cast<double>(i + 1);
     FR[i] = static_cast<double>(i - 1);
   }
-  double  *tempFaceUnknowns      = nullptr;
-  double **tempStateSizedVectors = new double*[4];
-  tempStateSizedVectors[0] = new double[4*5]; // nVar
-  tempStateSizedVectors[1] = tempStateSizedVectors[0]+5;
-  tempStateSizedVectors[2] = tempStateSizedVectors[1]+5;
-  tempStateSizedVectors[3] = tempStateSizedVectors[2]+5;
-  double **tempStateSizedSquareMatrices = nullptr;
+  double  *tempFaceUnknownsArray        = nullptr;
+  double **tempStateSizedVectors        = new double*[6];
+  tempStateSizedVectors[0]              = new double[6*5];
+  tempStateSizedVectors[1]              = tempStateSizedVectors[0]+5;
+  tempStateSizedVectors[2]              = tempStateSizedVectors[1]+5;
+  tempStateSizedVectors[3]              = tempStateSizedVectors[2]+5;
+  tempStateSizedVectors[4]              = tempStateSizedVectors[3]+5;
+  tempStateSizedVectors[5]              = tempStateSizedVectors[4]+5;
+  double **tempStateSizedSquareMatrices = new double*[1];
+  tempStateSizedSquareMatrices[0]       = new double[1*5*5];
 
   // inputs:
   // exahype::tests::testdata::generic_euler::testRiemannSolver::QL[80 =
@@ -458,6 +461,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 
   delete[] FL;
   delete[] FR;
+  delete[] tempStateSizedSquareMatrices[0];
+  delete[] tempStateSizedSquareMatrices;
   delete[] tempStateSizedVectors[0];
   delete[] tempStateSizedVectors;
 }  // testRiemannSolverNonlinear
