@@ -171,19 +171,19 @@ public class Helpers {
         new java.io.File(currentDirectory + "/CodeGenerator/Driver.py");
     if (!pathToCodeGenerator.exists()) {
       System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + pathToCodeGenerator.toString());
-      return;
+      throw new IOException();
     }
     
     if(pathToLibxsmm == null || pathToLibxsmm.isEmpty()) {
       System.err.println("ERROR: Libxsmm path not specified");
-      return;
+      throw new IOException();
     }
     
     java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
         new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
     if (!pathToLibxsmmMakefile.exists()) {
       System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
-      return;
+      throw new IOException();
     }
 
     String numericsParameter = isLinear ? "linear" : "nonlinear";
