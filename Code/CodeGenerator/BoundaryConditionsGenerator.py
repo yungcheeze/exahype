@@ -41,7 +41,7 @@ class BoundaryConditionsGenerator:
 
     def generateCode(self):
         dir = os.path.dirname(__file__)
-        self.m_context['blockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
+        self.m_context['blockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
         self.m_context['iVar_range_0_nVar'] = range(0, self.m_context['nVar'])
 
         with open(os.path.join(dir,'templates/boundaryConditions.template'), 'r') as tmp:

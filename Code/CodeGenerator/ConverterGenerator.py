@@ -41,7 +41,7 @@ class ConverterGenerator:
 
     def generateCode(self):
         dir = os.path.dirname(__file__)
-        self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
+        self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
     
         with open(os.path.join(dir,'templates/converter_h.template'), 'r') as tmp:
             template = Template(tmp.read(), trim_blocks=True)
