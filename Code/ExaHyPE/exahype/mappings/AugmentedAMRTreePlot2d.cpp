@@ -438,7 +438,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
   _limiterStatusWriter = _vtkWriter->createCellDataWriter(
-      "Limiter-Status(Ok=0,Troubled=1,NeighbourOfTroubled=2,NeighbourOfNeighbourOfTroubled=3)", 1);
+      "Limiter-Status(Ok=0,NeighbourOfNeighbourOfTroubled=1,NeighbourOfTroubled=2,Troubled=3)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
