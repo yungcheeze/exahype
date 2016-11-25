@@ -13,13 +13,13 @@
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
 # *********************************************************************************************
-PEANO_KERNEL_PEANO_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Peano/peano
-PEANO_KERNEL_TARCH_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Peano/tarch
-PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Peano/multiscalelinkedcell
-PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Peano/sharedmemoryoracles
-PEANO_TOOLBOX_MPI_BLANCING_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Peano/mpibalancing
-EXAHYPE_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./ExaHyPE
-PROJECT_PATH=/home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./Applications/EulerFlow_ADERDGvsFVM
+PEANO_KERNEL_PEANO_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/peano
+PEANO_KERNEL_TARCH_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/tarch
+PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/multiscalelinkedcell
+PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/sharedmemoryoracles
+PEANO_TOOLBOX_MPI_BLANCING_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/mpibalancing
+EXAHYPE_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./ExaHyPE
+PROJECT_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Applications/EulerFlow_ADERDGvsFVM
 EXECUTABLE=ExaHyPE-Euler 
 
 
@@ -30,12 +30,12 @@ PROJECT_CFLAGS+=-DALIGNMENT=16
 # this flag. 
 PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls
 PROJECT_CFLAGS+=-DDim2
-SHAREDMEM=TBB
+#SHAREDMEM=TBB
 
 
 
 
--include /home/hpc/pr63so/ga96nuv3/exahype/ExaHyPE/Code/./ExaHyPE/Makefile
+-include /home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./ExaHyPE/Makefile
 
 
 

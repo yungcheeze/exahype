@@ -41,6 +41,8 @@ class Euler::ADERDG: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
+    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+
     void init(std::vector<std::string>& cmdlineargs);
     void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
     void flux(const double* const Q,double** F);

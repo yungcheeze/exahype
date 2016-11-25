@@ -28,6 +28,8 @@
 #include "ADERDG_Plotter0.h"
 
 void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmdlineargs) {
+  {
+
   exahype::solvers::Solver* solver = nullptr;
 
   {
@@ -89,16 +91,23 @@ void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmd
 
   // Create and register solver
   std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter (static_cast<exahype::solvers::FiniteVolumesSolver*>(solver));
+
+//  exahype::solvers::RegisteredSolvers.push_back(mainSolver.release()); // Comment out
+
   exahype::solvers::RegisteredSolvers.push_back(
       new exahype::solvers::LimitingADERDGSolver("LimitingADERDG",std::move(mainSolver),std::move(limiter)) );
 
-  parser.checkSolverConsistency(0);
+//  parser.checkSolverConsistency(0);
+  
+  }
+
   exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser,new Euler::ADERDG_Plotter0(
       *static_cast<Euler::ADERDG*>(
           static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[0])->getSolver().get()
+//                    exahype::solvers::RegisteredSolvers[0] // Comment
       )) ));
   // exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(1,0,parser,new Euler::FVM_Plotter0(  *static_cast<Euler::FVM*>(exahype::solvers::RegisteredSolvers[1])) ));
-
+  
 
   std::set<int> orders;
   for (const auto p : exahype::solvers::RegisteredSolvers) {

@@ -107,3 +107,15 @@ exahype::solvers::Solver::RefinementControl Euler::ADERDG::refinementCriterion(c
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
+
+bool Euler::ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+  if (QMin[0] < 0.0) return false;
+  if (QMin[4] < 0.0) return false;
+
+  for (int i=0; i<5; ++i) {
+    if (!std::isfinite(QMin[i])) return false;
+    if (!std::isfinite(QMax[i])) return false;
+  }
+
+  return true;
+}
