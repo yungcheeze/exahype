@@ -170,7 +170,19 @@ public class Helpers {
     java.io.File pathToCodeGenerator =
         new java.io.File(currentDirectory + "/CodeGenerator/Driver.py");
     if (!pathToCodeGenerator.exists()) {
-      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + currentDirectory + "/CodeGenerator/Driver.py");
+      System.err.println("ERROR: Code generator not found. Can't generate optimised kernels. Path: " + pathToCodeGenerator.toString());
+      return;
+    }
+    
+    if(pathToLibxsmm == null || pathToLibxsmm.isEmpty()) {
+      System.err.println("ERROR: Libxsmm path not specified");
+      return;
+    }
+    
+    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
+        new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
+    if (!pathToLibxsmmMakefile.exists()) {
+      System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
       return;
     }
 
@@ -179,7 +191,7 @@ public class Helpers {
     // set up the command to execute the code generator
     String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/" + "../libxsmm" + " " // + pathToLibxsmm + " " //TODO JMG fix pathToLibxsmm
+        + currentDirectory + "/"  + pathToLibxsmm + " " 
         + "--precision=DP"; // double precision
 
     String bashCommand = "python " + pathToCodeGenerator + args;
