@@ -43,8 +43,6 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
-    
- private:
     void init(std::vector<std::string>& cmdlineargs);
     static void flux(const double* const Q, double** F);
     static void fluxSplitted(const double* const Q, double* f, double* g{{fluxSplitted_h_signature}});
