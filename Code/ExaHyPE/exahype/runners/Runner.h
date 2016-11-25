@@ -84,7 +84,7 @@ class exahype::runners::Runner {
    * Reset all time stamps to zero. Runs through the solver registry only,
    * i.e. no grid traversal is required.
    */
-  void initSolverTimeStamps();
+  void initSolverTimeStepData();
   void initFiniteVolumesSolverTimeStamps();
 
   void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;

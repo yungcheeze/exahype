@@ -415,7 +415,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface::writeHeader();
 
-  initSolverTimeStamps();
+  initSolverTimeStepData();
   repository.getState().switchToPreAMRContext();
   createGrid(repository);
   /*
@@ -429,43 +429,38 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * since we receive here the metadata
    * that was sent in the last iteration of the grid setup.
    */
-  initSolverTimeStamps();
+  initSolverTimeStepData();
 
   repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
   repository.switchToInitialConditionAndTimeStepSizeComputation();
   repository.iterate();
   logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
-//  // TODO(Dominic):
-//  if (repository.getState().limiterDomainHasChanged()) {
-//    // Local: Merge the limiter status with stencil width one
-//    // MPI: Send out the limiter status with stencil width two
-//    repository.getState().switchToLimiterStatusSpreadingContext();
-//    repository.switchToLimiterStatusSpreading();
-//    repository.iterate();
-//
-//    // Update and recompute particular cells
-//    // Maybe plot here again the corrected solution
-//    // After this all the solutions have performed the correct number
-//    // of time steps again.
-//    // MPI: Merge limiter status with stencil width two.
-//    // Local: Merge the limiter status with stencil width one again
-//    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
-//    repository.switchToInitialLimiterDomainAndTimeStepSizeComputation();
-//    repository.iterate();
-//  }
+  // TODO(Dominic):
+  if (!exahype::State::fuseADERDGPhases() &&
+      repository.getState().limiterDomainHasChanged()) {
+    // Local: Merge the limiter status with stencil width one
+    // MPI: Send out the limiter status with stencil width two
+    repository.getState().switchToLimiterStatusSpreadingContext();
+    repository.switchToLimiterStatusSpreading();
+    repository.iterate();
 
-  /*
-   * Set the time stamps of the solvers to the initial value again.
-   *
-   * !!! Rationale
-   *
-   * The time step size computation
-   * sets the predictor time stamp to the value
-   * of the predictor time stamp plus the admissible
-   * time step size on each patch for each solver.
-   */
-  initSolverTimeStamps();
+    // Rollback all cells
+    // MPI: Merge limiter status with stencil width two.
+    // Local: Merge the limiter status with stencil width one again
+    repository.switchToReinitialisation();
+    repository.iterate();
+
+    // Update and recompute particular cells
+    // Maybe plot here again the corrected solution
+    // After this all the solutions have performed the correct number
+    // of time steps again and we can compute the next time step size
+    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+    repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+    repository.iterate();
+
+    logInfo("runAsMaster(...)","adjusted limiter domain");
+  }
 
   /*
    * Compute current first predictor based on current time step size.
@@ -487,26 +482,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   }
   repository.iterate();
 
-  validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
-
-//  /*
-//   * Reset the time stamps of the finite volumes solvers.
-//   *
-//   * !!! Rationale
-//   * Unlike for the rearranged ADER-DG scheme, we only
-//   * need one warm up iteration for the finite volumes solvers.
-//   * But since we have to perform two time step computations
-//   * to warm up the ADER-DG schemes,
-//   * the finite volumes solvers think they are already
-//   * advanced by one time step after the computation
-//   * of the second time step size.
-//   */
-//  initFiniteVolumesSolverTimeStamps(); // TODO(Dominic): Check if still needed.
 
   /*
    * Finally print the initial time step info.
    */
   printTimeStepInfo(-1);
+
+  validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
 
   const double simulationEndTime = _parser.getSimulationEndTime();
 
@@ -562,9 +544,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   return 0;
 }
 
-void exahype::runners::Runner::initSolverTimeStamps() {
+void exahype::runners::Runner::initSolverTimeStepData() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initInitialTimeStamp(0.0);
+    p->initSolverTimeStepData(0.0);
   }
 }
 
@@ -572,11 +554,11 @@ void exahype::runners::Runner::initFiniteVolumesSolverTimeStamps() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     switch(p->getType()) {
       case exahype::solvers::Solver::Type::FiniteVolumes:
-        p->initInitialTimeStamp(0.0);
+        p->initSolverTimeStepData(0.0);
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->
-          getLimiter()->initInitialTimeStamp(0.0);
+          getLimiter()->initSolverTimeStepData(0.0);
         break;
       case exahype::solvers::Solver::Type::ADERDG:
         break; // do nothing
@@ -600,6 +582,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG: {
         auto* aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+        assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0);
         assertion1(std::isfinite(aderdgSolver->getMinPredictorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
@@ -620,6 +603,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
       case exahype::solvers::Solver::Type::LimitingADERDG: {
         // ADER-DG
         auto* aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
+        assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0);
         assertion1(std::isfinite(aderdgSolver->getMinPredictorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
@@ -638,6 +622,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
 
         // Finite Volumes
         auto* finiteVolumesSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter().get();
+        assertionEquals(finiteVolumesSolver->getPreviousMinTimeStepSize(),0.0);
         assertionEquals(finiteVolumesSolver->getMinTimeStamp(),0.0);
         assertion1(std::isfinite(finiteVolumesSolver->getMinTimeStepSize()),finiteVolumesSolver->getMinTimeStepSize());
         assertion1(finiteVolumesSolver->getMinTimeStepSize()>0,finiteVolumesSolver->getMinTimeStepSize());
@@ -654,16 +639,12 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         assertionEquals(finiteVolumesSolver->getMinTimeStepSize(),aderdgSolver->getMinPredictorTimeStepSize());
       } break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
+        auto* finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(solver);
+        assertionEquals(finiteVolumesSolver->getPreviousMinTimeStepSize(),0.0);
         break;
     }
   }
 }
-
-//void exahype::runners::Runner::validatelSolverTimeStepData() {
-//  for (auto* solver : exahype::solvers::RegisteredSolvers) {
-//
-//  }
-//}
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall) {
   double currentMinTimeStamp    = std::numeric_limits<double>::max();
@@ -821,7 +802,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     repository.switchToLimiterStatusSpreading();
     repository.iterate();
 
-    // Rollback particualar cells
+    // Rollback all cells
     // MPI: Merge limiter status with stencil width two.
     // Local: Merge the limiter status with stencil width one again
     repository.switchToReinitialisation();
@@ -830,10 +811,12 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     // Update and recompute particular cells
     // Maybe plot here again the corrected solution
     // After this all the solutions have performed the correct number
-    // of time steps again.
+    // of time steps again and we can compute the next time step size
     repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
     repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
     repository.iterate();
+
+    logInfo("runAsMaster(...)","adjusted limiter domain");
   }
 
   printTimeStepInfo(1);
@@ -845,7 +828,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // ADER-DG solution similar to the finite volumes solver. This is the reason
   // why we currently only offer the limiting for
   // the non-fused time stepping variant.
-  repository.getState().switchToPredictionContext();
+  repository.getState().switchToPredictionContext(); // Which time stamp do we want to plot?
   if (plot) {
     #if DIMENSIONS==2 && !defined(Parallel)
     repository.switchToPredictionAndPlot2d();  // Cell onto faces
