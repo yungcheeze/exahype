@@ -266,7 +266,7 @@ def getInitialConditionSignature():
 def getStableTimeStepSizeSignature():
     # function signature prototype:
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
-                          "DATATYPE kernels::aderdg::optimised::stableTimeStepSize(\n"                                                                         \
+                          "DATATYPE kernels::aderdg::optimised::stableTimeStepSize(\n"                                           \
                           "  const DATATYPE* restrict const luh,\n"                                                              \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                 \
                           ")"
@@ -282,3 +282,28 @@ def getStableTimeStepSizeSignature():
     return l_functionSignature    
 
 
+def getBoundaryConditionsSignature():
+    # function signature prototype:
+    l_functionSignature =  "template <typename SolverType>\n"                         \
+                           "void kernels::aderdg::optimised::boundaryConditions(\n"                               \
+                           "  SolverType& solver, \n"                                       \
+                           "  DATATYPE* fluxOut, \n"                                          \
+                           "  DATATYPE* stateOut, \n"                                         \
+                           "  const DATATYPE* const fluxIn, \n"                               \
+                           "  const DATATYPE* const stateIn, \n"                              \
+                           "  const tarch::la::Vector<DIMENSIONS, double>& cellCentre, \n"  \
+                           "  const tarch::la::Vector<DIMENSIONS,double>& cellSize, \n"     \
+                           "  const DATATYPE t,const DATATYPE dt, \n"                           \
+                           "  const int faceIndex, \n"                                      \
+                           "  const int normalNonZero \n"                                   \
+                           ")"
+    
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                     
+    if(m_precision=='SP'):
+        l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
+    elif(m_precision=='DP'):
+        l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
+    else:
+        print("FunctionSignatures.getStableTimeStepSizeSignature(): precision not supported")
+                                 
+    return l_functionSignature   

@@ -44,6 +44,8 @@ import WeightsGenerator
 import DGMatrixGenerator
 import CpphGemmsGenerator
 import ConfigurationParametersGenerator
+import BoundaryConditionsGenerator
+import ConverterGenerator
 import string
 import re
 
@@ -172,6 +174,7 @@ def generateCommonHeader():
     l_functionList.append(FunctionSignatures.getSolutionAdjustmentSignature())
     l_functionList.append(FunctionSignatures.getRiemannSolverSignature())
     l_functionList.append(FunctionSignatures.getStableTimeStepSizeSignature())
+    l_functionList.append(FunctionSignatures.getBoundaryConditionsSignature())
 
     # declare c++ functions in header file
     for l_functionSignature in l_functionList:
@@ -197,6 +200,7 @@ def generateCommonHeader():
         l_sourceFile.write('#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/ConfigurationParameters.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/boundaryConditions.cpph"\n\n')
     
     # close include guard
     l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
@@ -232,6 +236,10 @@ def generateComputeKernels():
     cpphGemmsGenerator.generateCode()
     configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config), m_numerics)
     configurationParametersGenerator.generateCode()
+    boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config), m_numerics)
+    boundaryConditionsGenerator.generateCode()
+    converterGenerator = ConverterGenerator.ConverterGenerator(generateContext(m_config), m_numerics)
+    converterGenerator.generateCode()
 
 
 
