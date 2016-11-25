@@ -399,12 +399,43 @@ if do_plots:
 	import matplotlib.pyplot as plt
 	plt.ion(); plt.clf()
 
+	uniquelist = lambda k: list(np.unique(k))
+	uniqueintlist = lambda k: map(int, uniquelist(k))
+	lookupdict = lambda k,v: dict(zip(k,v))
+	window = lambda l: itertools.izip(l, l[1:])
+	iround = lambda f: int(round(f))
+	# repeat tile until it fits to target. or reduce tile down to target.
+	repeatfit = lambda tile, target: (max(1,int(len(target)/len(tile)))*tile)[:len(target)]
+	# apply repeatfit to the lookup values of lookupdict
+	lookupfitdict = lambda k,v: lookupdict(k, repeatfit(v, k))
+
+	allporders, allncells = uniqueintlist(porders), uniqueintlist(ncells)
+	print "Plots are for porders=", allporders, " and ncells=", allncells
+
+	# this never gave good colors:
+	#possiblecolors = plt.cm.jet(np.linspace(0,0.9,len(allporders)))
+	# use instead:
+	possiblecolors = "r g k b m y r c m".split(" ")
+	#possiblestyles = ['-', '--', '-.', ':']
+	possiblemarkers = ['o', '>', 's', 'D','H', '*','<',]
+	# commented out because currently unused, but code works.
+	#assert len(possiblemarkers) == len(uniquelist(ncells))
+	#styles = lookupdict(allncells, possiblestyles)
+	markerdict = lookupfitdict(allporders, possiblemarkers)
+	colordict = lookupfitdict(allncells, possiblecolors)
+	markers = lambda p, nc: markerdict[int(p)]
+	colors = lambda p, nc: colordict[int(nc)]
+
 	##### SIMPLE ERROR EVOLUTION PLOTS
 	errorPlot = plt.figure(figsize=(18,8))
 	ycolumn = 'max' # l2norm, l1norm
 
-	for (p,nc),rows in errors.groupby(by=[idxporder,idxcells]):
-		plt.plot(rows[idxtime], rows[ycolumn], label="P=%d,Nc=%d"%(p,nc))
+	num_markers = 10
+	dt_markers = max(errors[idxtime]) / num_markers
+	for groupidx,rows in errors.groupby(by=[idxporder,idxcells]):
+		# groupidx = (p,nc)
+		plt.plot(rows[idxtime], rows[ycolumn], label="P=%d,Nc=%d"%groupidx, color=colors(*groupidx), marker=markers(*groupidx), markevery=0.03)
+
 	plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
 	plt.subplots_adjust(right=0.8)
 	plt.title("Error evolution: %s of quantity %s" % (ycolumn, quantity))
@@ -423,38 +454,24 @@ if do_plots:
 	convergencePlot = plt.figure(figsize=(18,8)) # plt.gcf()
 	convergencePlot.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
 
-	uniquelist = lambda k: list(np.unique(k))
-	lookupdict = lambda k,v: dict(zip(k,v))
-	window = lambda l: itertools.izip(l, l[1:])
-	iround = lambda f: int(round(f))
-
+	# this is an ugly bug, we are dealing with ints but storing floats
+	# and then making comparisons float(9) == float(9.000000...) which never hold true.
 	allporders, allncells = uniquelist(porders), uniquelist(ncells)
-	print "Plots are for porders=", allporders, " and ncells=", allncells
 
-	possiblecolors = plt.cm.rainbow(np.linspace(0,1,len(allporders)))
-	#possiblestyles = ['-', '--', '-.', ':']
-	possiblemarkers = ['o', 'v','+','h', 'x','<','>',][:len(uniquelist(ncells))] # assert same length
-	# commented out because currently unused, but code works.
-	#assert len(possiblemarkers) == len(uniquelist(ncells))
-	#styles = lookupdict(allncells, possiblestyles)
-	markers = lookupdict(allncells, possiblemarkers)
-	colors = lookupdict(allporders, possiblecolors)
-
+	# do plots for all neighbouring (Nprev, Ncur)
 	for Ni, (Nprev, Ncur) in enumerate(window(allncells)):
 		plt.subplot(1, len(allncells)-1, Ni+1)
 
 		plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
-		for (p,nc),rows in pdsort(convergence_table[convergence_table[idxcells]==Ncur], by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
-			# this works, but is not desired instead of global markers now:
-			#treshholdToShowPoints = 40
-			#style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
-			# read style as plt.plot(., ., style, label=...) to activate
-			print "Markers: p=%d nc=%d marker=%s" % (p,nc,markers[nc])
-			plt.plot(rows[idxtime], rows[ycolumn], label="P=%d" % int(p), color=colors[p], marker=markers[nc], markersize=25)
+		for groupidx,rows in pdsort(convergence_table[convergence_table[idxcells]==Ncur], by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
+			treshholdToShowPoints = 40
+			style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
+			(p,nc) = groupidx
+			plt.plot(rows[idxtime], rows[ycolumn], style, label="P=%d" % int(p))#, color=colors(*groupidx))#, marker=markers[nc], markersize=25)
 
 		plt.xlabel("Simulation time")
 		plt.ylabel("Convergence order")
-		plt.legend().draggable()
+		plt.legend()#.draggable()
 		plt.ylim(0,10)
 
 	tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
