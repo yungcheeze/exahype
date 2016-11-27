@@ -417,7 +417,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     FL[i] = static_cast<double>(i + 1);
     FR[i] = static_cast<double>(i - 1);
   }
-  double  *tempFaceUnknownsArray        = nullptr;
+  double  *tempFaceUnknowns             = nullptr;
   double **tempStateSizedVectors        = new double*[6];
   tempStateSizedVectors[0]              = new double[6*5];
   tempStateSizedVectors[1]              = tempStateSizedVectors[0]+5;
