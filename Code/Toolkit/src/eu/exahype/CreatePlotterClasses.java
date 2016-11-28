@@ -3,6 +3,7 @@ package eu.exahype;
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AFiniteVolumesSolver;
+import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProject;
 import eu.exahype.node.APlotSolution;
 
@@ -22,6 +23,8 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
 
   private boolean                 _enableProfiler;
 
+  private boolean _isForLimitingADERDGSolver;
+
   public CreatePlotterClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
   }
@@ -33,26 +36,41 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
 
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {
-    _solverName     = node.getName().toString().trim();
-    _plotterCounter = -1;
+    _isForLimitingADERDGSolver = false;
+    _solverName           = node.getName().toString().trim();
+    _plotterCounter       = -1;
   }
 
   @Override
   public void inAFiniteVolumesSolver(AFiniteVolumesSolver node) {
-    _solverName     = node.getName().toString().trim();
-    _plotterCounter = -1;
+    _isForLimitingADERDGSolver = false;
+    _solverName           = node.getName().toString().trim();
+    _plotterCounter       = -1;
+  }
+  
+  @Override
+  public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
+    _isForLimitingADERDGSolver = true;
+    _solverName           = node.getName().toString().trim();
+    _plotterCounter       = -1;
   }
   
   private void writePlotterHeader( java.io.BufferedWriter writer, int unknowns, String plotterName ) throws java.io.IOException {
 	eu.exahype.solvers.Helpers.writeHeaderCopyright(writer);
 	writer.write( "#include \"exahype/plotters/Plotter.h\"\n" );
+	if (_isForLimitingADERDGSolver) {
+	  writer.write( "#include \"exahype/solvers/LimitingADERDGSolver.h\"\n" );
+	}
+	
     writer.write( "namespace " + _projectName + "{\n");
     writer.write( "  class " + plotterName + ";\n");
     writer.write( "\n" );
-	writer.write( "  /**\n" );
-	writer.write( "   * Forward declaration\n" );
-	writer.write( "   */\n" );
-	writer.write( "  class " + _solverName + ";\n" );
+	if (!_isForLimitingADERDGSolver) {
+	  writer.write( "  /**\n" );
+	  writer.write( "   * Forward declaration\n" );
+	  writer.write( "   */\n" );
+	  writer.write( "  class " + _solverName + ";\n" );
+	}
     writer.write("}\n\n\n");
     writer.write( "\n" );
     writer.write( "\n" );

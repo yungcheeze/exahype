@@ -1,12 +1,17 @@
 package eu.exahype;
 
+import java.io.IOException;
+
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.AFiniteVolumesSolver;
+import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
+import eu.exahype.solvers.Solver;
+import eu.exahype.solvers.SolverFactory;
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -24,7 +29,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   private String _pathToLibxsmm;
 
   private int _dimensions;
-  
+
   private boolean _enableProfiler;
 
   public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
@@ -42,7 +47,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     if (node.getSolver().size() == 0) {
       System.out.println("there are no solvers in the specification file ... nothing to be done");
     }
-    
+
     // Only one optimised solver can be used (optimised kernel would be overwritten by the latest solver otherwise)
     if (node.getSolver().size() > 1) {
       int optimisedCount = 0;
@@ -51,9 +56,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           AAderdgSolver asolver = (AAderdgSolver) psolver;
           if(    asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
               || asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )
-            ){
-              optimisedCount++;
-            }
+              ){
+            optimisedCount++;
+          }
         }
       }
       if(optimisedCount > 1) {
@@ -88,7 +93,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
 
-  
+
   @Override
   public void inAProfiling(AProfiling node) {
     _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
@@ -97,7 +102,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {
     String solverName = node.getName().toString().trim();
-    
+
     if (_definedSolvers.contains(solverName)) {
       System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
       valid = false;
@@ -106,16 +111,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       _definedSolvers.add(solverName);
     }
 
-    java.io.File headerFile = new java.io.File(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
-    java.io.File userImplementationFile = new java.io.File(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
     java.io.File userPDEFile = null;
     java.io.File userTypesDefFile = null;
-    java.io.File generatedImplementationFile =
-        new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/"
-            + solverName + "_generated.cpp");
-
 
     boolean isFortran = false;
     if (node.getLanguage().getText().trim().equals("C")) {
@@ -134,8 +131,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
 
     String  kernel             = node.getKernel().toString().trim();
-    boolean isLinear           = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("::linear");
-    String generalKernel       = kernel.substring(0, kernel.lastIndexOf("::"));
     int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
     int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
     int     order              = Integer.parseInt(node.getOrder().toString().trim());
@@ -147,44 +142,16 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       valid = false;
       return;
     }
-    
+
     if (order < 1 || order > 9) {
       System.err.println("ERROR: Only polynomial degrees of 1..9 are supported.");
       valid = false;
       return;
     }
     
-    eu.exahype.solvers.Solver solver = null;
-
-    if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
-    }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
-        numberOfParameters, order, hasConstants, _enableProfiler);
-    }
-    // TODO(Dominic): I replaced this.
-//    else if (generalKernel.equals( eu.exahype.solvers.GenericFluxesADER_DG.Identifier )) {
-//      solver = new eu.exahype.solvers.GenericFluxesADER_DG(_dimensions,
-//        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
-//    }
-    else if (generalKernel.equals( eu.exahype.solvers.GenericADERDG.Identifier )) {
-      solver = new eu.exahype.solvers.GenericADERDG(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
-    }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
-      solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
-        numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-        _enableProfiler, hasConstants);
-    }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
-      solver = new eu.exahype.solvers.OptimisedADERDG(_dimensions,
-        numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-        _enableProfiler, hasConstants, false);
-    }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
-       solver = new eu.exahype.solvers.KernelEuler2d();
-    }
+    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
+    eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
+        kernel, isFortran, numberOfVariables, numberOfParameters, order, hasConstants);
 
     if (solver == null) {
       System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
@@ -193,56 +160,23 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
 
+    //
+    // Write the files
+    //
     try {
-      // =====================
-      // Write all the headers
-      // =====================
-      if (headerFile.exists()) {
-        System.out.println("create header of solver " + solverName + " ... header "
-            + headerFile.getAbsoluteFile()
-            + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)");
-      } else {
-        java.io.BufferedWriter headerWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(headerFile));
-        solver.writeHeader(headerWriter, solverName, _projectName);
-        System.out.println("create header of solver " + solverName + " ... ok");
-        headerWriter.close();
-      }
-
-      if (userImplementationFile.exists()) {
-        System.out.println("user's implementation file of solver " + solverName
-            + " ... does exist already. Is not overwritten");
-      } else {
-        java.io.BufferedWriter userImplementationWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(userImplementationFile));
-        solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
-        System.out.println(
-            "create user implementation template of solver " + solverName + " ... please complete");
-        userImplementationWriter.close();
-      }
-
-      if (generatedImplementationFile.exists()) {
-        System.out.println("generated implementation file of solver " + solverName
-            + " ... does exist already. Is overwritten");
-      }
-
-      java.io.BufferedWriter generatedImplementationWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(generatedImplementationFile));
-      solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
-      System.out.println("create generated implementation of solver " + solverName + " ... ok");
-      generatedImplementationWriter.close();
+      tryWriteSolverHeader(solver, solverName);
+      tryWriteSolverUserImplementation(solver, solverName);
+      tryWriteSolverGeneratedImplementation(solver, solverName);
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;
     }
   }
 
-
-
   @Override
   public void inAFiniteVolumesSolver(AFiniteVolumesSolver node) {
     String solverName = node.getName().toString().trim();
-    
+
     if (_definedSolvers.contains(solverName)) {
       System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
       valid = false;
@@ -251,15 +185,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       _definedSolvers.add(solverName);
     }
 
-    java.io.File headerFile = new java.io.File(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
-    java.io.File userImplementationFile = new java.io.File(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
     java.io.File userPDEFile = null;
     java.io.File userTypesDefFile = null;
-    java.io.File generatedImplementationFile =
-        new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/"
-            + solverName + "_generated.cpp");
 
 
     boolean isFortran = false;
@@ -292,23 +219,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
     
-    eu.exahype.solvers.Solver solver = null;
-
-    if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
-    }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
-    }
-    if (isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
-    }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
-    }
-    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
-    	solver = new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
-    }
+    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
+    Solver solver = solverFactory.createFiniteVolumesSolver(
+        kernel,isFortran,numberOfVariables,numberOfParameters,patchSize,hasConstants);
 
     if (solver == null) {
       System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
@@ -317,48 +230,147 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
 
+    //
+    // Write the files
+    //
     try {
-      // =====================
-      // Write all the headers
-      // =====================
-      if (headerFile.exists()) {
-        System.out.println("create header of solver " + solverName + " ... header "
-            + headerFile.getAbsoluteFile()
-            + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)");
-      } else {
-        java.io.BufferedWriter headerWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(headerFile));
-        solver.writeHeader(headerWriter, solverName, _projectName);
-        System.out.println("create header of solver " + solverName + " ... ok");
-        headerWriter.close();
-      }
-
-      if (userImplementationFile.exists()) {
-        System.out.println("user's implementation file of solver " + solverName
-            + " ... does exist already. Is not overwritten");
-      } else {
-        java.io.BufferedWriter userImplementationWriter =
-            new java.io.BufferedWriter(new java.io.FileWriter(userImplementationFile));
-        solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
-        System.out.println(
-            "create user implementation template of solver " + solverName + " ... please complete");
-        userImplementationWriter.close();
-      }
-
-
-      if (generatedImplementationFile.exists()) {
-        System.out.println("generated implementation file of solver " + solverName
-            + " ... does exist already. Is overwritten");
-      }
-
-      java.io.BufferedWriter generatedImplementationWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(generatedImplementationFile));
-      solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
-      System.out.println("create generated implementation of solver " + solverName + " ... ok");
-      generatedImplementationWriter.close();
+      tryWriteSolverHeader(solver, solverName);
+      
+      tryWriteSolverUserImplementation(solver, solverName);
+      
+      tryWriteSolverGeneratedImplementation(solver, solverName);
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;
     }
+  }
+
+  @Override
+  public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
+    String solverName = node.getName().toString().trim();
+
+    if (_definedSolvers.contains(solverName)) {
+      System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
+      valid = false;
+    }
+    else {
+      _definedSolvers.add(solverName);
+    }
+
+    java.io.File userPDEFile = null; // TODO(Dominic): Fortran specifics; not used yet
+    java.io.File userTypesDefFile = null;
+    
+
+    boolean isFortran = false;
+    if (node.getLanguage().getText().trim().equals("C")) {
+      isFortran = false;
+    } else if (node.getLanguage().getText().trim().equals("Fortran")) {
+      isFortran = true;
+      userPDEFile =
+          new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+      userTypesDefFile = new java.io.File(
+          _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
+    } else {
+      System.err.println("ERROR: unknown language for solver " + node.getName().getText()
+          + ". Supported languages are C and Fortran");
+      valid = false;
+      return;
+    }
+
+    String  kernel             = node.getKernel().toString().trim();
+    int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
+    int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
+    int     order              = Integer.parseInt(node.getOrder().toString().trim());
+    int     patchSize          = 2*order+1;
+    boolean hasConstants       = node.getConstants()!=null;
+    
+    String  limiterKernel      = node.getKernelLimiter().toString().trim();
+
+    if (numberOfParameters != 0) {
+      System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
+          " Please add the parameters as additional quantities to your PDE formulation.");
+      valid = false;
+      return;
+    }
+    
+    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
+    Solver solver  = solverFactory.createADERDGSolver(
+        kernel,isFortran,numberOfVariables,numberOfParameters,order,hasConstants);
+    Solver limiter = solverFactory.createFiniteVolumesSolver(
+        limiterKernel,isFortran,numberOfVariables,numberOfParameters,patchSize,hasConstants);
+
+    if (solver == null || limiter == null) {
+      System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
+          + " for language " + node.getLanguage().getText().trim() + " is not supported");
+      valid = false;
+      return;
+    }
+
+    //
+    // Write the files
+    //
+    try {
+      tryWriteSolverHeader(solver, solverName+"_ADERDG");
+      tryWriteSolverHeader(limiter, solverName+"_FV");
+
+      tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
+      tryWriteSolverUserImplementation(limiter,solverName+"_FV");
+
+      tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
+      tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  }
+  
+  private void tryWriteSolverHeader(Solver solver,String solverName) throws IOException {
+    java.io.File solverHeaderFile = new java.io.File(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
+    
+    if (solverHeaderFile.exists()) {
+      System.out.println("create header of solver " + solverName + " ... header "
+          + solverHeaderFile.getAbsoluteFile()
+          + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)");
+    } else {
+      java.io.BufferedWriter headerWriter =
+          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      solver.writeHeader(headerWriter, solverName, _projectName);
+      System.out.println("create header of solver " + solverName + " ... ok");
+      headerWriter.close();
+    }
+  }
+  
+  private void tryWriteSolverUserImplementation(Solver solver, String solverName) throws IOException {
+    java.io.File solverUserImplementationFile = new java.io.File(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
+    
+    if (solverUserImplementationFile.exists()) {
+      System.out.println("user's implementation file of solver " + solverName
+          + " ... does exist already. Is not overwritten");
+    } else {
+      java.io.BufferedWriter userImplementationWriter =
+          new java.io.BufferedWriter(new java.io.FileWriter(solverUserImplementationFile));
+      solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
+      System.out.println(
+          "create user implementation template of solver " + solverName + " ... please complete");
+      userImplementationWriter.close();
+    }
+  }
+  
+  private void tryWriteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
+    java.io.File solverGeneratedImplementationFile = new java.io.File(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
+    
+    if (solverGeneratedImplementationFile.exists()) {
+      System.out.println("generated implementation file of solver " + solverName
+          + " ... does exist already. Is overwritten");
+    }
+
+    java.io.BufferedWriter generatedImplementationWriter =
+        new java.io.BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
+    solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
+    System.out.println("create generated implementation of solver " + solverName + " ... ok");
+    generatedImplementationWriter.close();
   }
 }
