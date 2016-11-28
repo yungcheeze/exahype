@@ -45,37 +45,37 @@ exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification() {
       #else
       peano::MappingSpecification::Nop,
       #endif
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial);
+      peano::MappingSpecification::Serial,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial);
+      peano::MappingSpecification::Serial,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 

@@ -44,13 +44,13 @@ peano::MappingSpecification
 exahype::mappings::Prediction::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::Prediction::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 // The remainder specs all are nop
@@ -58,25 +58,25 @@ peano::MappingSpecification
 exahype::mappings::Prediction::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::Prediction::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
 exahype::mappings::Prediction::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
 exahype::mappings::Prediction::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 tarch::logging::Log exahype::mappings::Prediction::_log(

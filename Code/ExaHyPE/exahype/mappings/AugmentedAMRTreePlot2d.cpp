@@ -42,40 +42,40 @@ peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
-                                     peano::MappingSpecification::Serial);
+                                     peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
-                                     peano::MappingSpecification::Serial);
+                                     peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces);
+      peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
 exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 std::map<tarch::la::Vector<DIMENSIONS + 1, double>, int,

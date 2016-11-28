@@ -56,12 +56,12 @@ exahype-project  Elastic
     variables         = 12
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 3.0
+    maximum-mesh-size = 10.0
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::asc
       variables = 3
       time      = 0.0
       repeat    = 0.2
@@ -76,7 +76,7 @@ exahype-project  Elastic
       variables = 0
       time = 0.0
       repeat = 0.05
-      output = ./output/these-files-should-not-be-there
+      output = ./output/these-files
       select = {}
     end plot
     
