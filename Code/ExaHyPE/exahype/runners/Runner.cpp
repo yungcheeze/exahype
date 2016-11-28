@@ -172,7 +172,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     logInfo("initSharedMemoryConfiguration()",
         "use autotuning shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(true)); // TODO(Dominic->Tobias): Please change this to something else depending on the config file.
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(true));
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
     logInfo("initSharedMemoryConfiguration()",
