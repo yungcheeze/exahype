@@ -30,7 +30,7 @@ void kernels::aderdg::optimised::converter::Bnd_optimised2generic(const double* 
     for(int j=0; j<{{nDof}}; j++) {
       for(int k=0; k<{{nDof}}; k++) {
         for(int l=0; l<{{nVar}}; l++) {
-          gen[idx_bnd_gen(i,j,k,l)] = opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof*nDof}}+k*{{nDof}}];
+          gen[idx_bnd_gen(i,j,k,l)] = opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof}}+k];
         }
       }
     }    
@@ -55,7 +55,7 @@ void kernels::aderdg::optimised::converter::Bnd_generic2optimised(const double* 
     for(int j=0; j<{{nDof}}; j++) {
       for(int k=0; k<{{nDof}}; k++) {
         for(int l=0; l<{{nVar}}; l++) {
-          opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof*nDof}}+k*{{nDof}}] = gen[idx_bnd_gen(i,j,k,l)];
+          opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof}}+k] = gen[idx_bnd_gen(i,j,k,l)];
         }
       }
     }    
