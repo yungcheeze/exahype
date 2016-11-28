@@ -20,32 +20,32 @@ peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKG
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial,true);
 }
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial,true);
 }
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
 peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
