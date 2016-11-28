@@ -1,0 +1,352 @@
+ 0.000856876  info         exahype::runners::Runner::initDataCompression()         switched off any data compression
+ 0.000871181  info         peano::utils::UserInterface::writeHeader()             
+ 0.000878811  info         peano::utils::UserInterface::writeHeader()              Application based upon the PDE framework Peano - 3rd Generation
+ 0.000887632  info         peano::utils::UserInterface::writeHeader()              build: dim=2
+ 0.000894308  info         peano::utils::UserInterface::writeHeader()              optimisations: d-loop persistent-attributes packed opt-static-subtrees recursion-unrolling 
+ 0.000902176  info         peano::utils::UserInterface::writeHeader()              (C) 2005 - 2016   www.peano-framework.org
+ 0.000909805  info         peano::utils::UserInterface::writeHeader()              processes: 1, threads: 1
+ 0.266333     info         exahype::mappings::LoadBalancing::endIteration(State)   memoryUsage    =82 MB
+ 0.266393     info         exahype::runners::Runner::createGrid()                  grid setup iteration #1, idle-nodes=1
+ 0.266437     info         exahype::runners::Runner::createGrid(...)               memoryUsage    =82 MB
+ 0.376893     info         exahype::mappings::LoadBalancing::endIteration(State)   memoryUsage    =82 MB
+ 0.376944     info         exahype::runners::Runner::createGrid()                  grid setup iteration #2, idle-nodes=1
+ 0.376983     info         exahype::runners::Runner::createGrid(...)               memoryUsage    =82 MB
+ 0.48504      info         exahype::mappings::LoadBalancing::endIteration(State)   memoryUsage    =82 MB
+ 0.485089     info         exahype::runners::Runner::createGrid()                  grid setup iteration #3, idle-nodes=1
+ 0.48513      info         exahype::runners::Runner::createGrid(...)               memoryUsage    =82 MB
+ 0.593125     info         exahype::mappings::LoadBalancing::endIteration(State)   memoryUsage    =82 MB
+ 0.593174     info         exahype::runners::Runner::createGrid()                  grid setup iteration #4, idle-nodes=1
+ 0.593215     info         exahype::runners::Runner::createGrid(...)               memoryUsage    =82 MB
+ 0.593238     info         exahype::runners::Runner::createGrid(Repository)        finished grid setup after 4 iterations
+ 0.725052     info         exahype::runners::Runner::runAsMaster(...)              initialised all data and computed first time step size
+ 3.75839      info         exahype::runners::Runner::startNewTimeStep(...)         step 0	t_min          =0
+ 3.75841      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000300019
+ 3.75847      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =83 MB
+ 4.73177      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 4.73181      info         exahype::runners::Runner::startNewTimeStep(...)         step 1	t_min          =0.000300019
+ 4.73182      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048107
+ 4.73189      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =88 MB
+ 7.44775      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 7.44778      info         exahype::runners::Runner::startNewTimeStep(...)         step 2	t_min          =0.000781089
+ 7.4478       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048107
+ 7.44786      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =89 MB
+ 10.4028      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 10.4029      info         exahype::runners::Runner::startNewTimeStep(...)         step 3	t_min          =0.00126216
+ 10.4029      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048107
+ 10.403       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =89 MB
+ 13.2923      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 13.2924      info         exahype::runners::Runner::startNewTimeStep(...)         step 4	t_min          =0.00174323
+ 13.2924      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048107
+ 13.2924      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 16.2452      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 16.2453      info         exahype::runners::Runner::startNewTimeStep(...)         step 5	t_min          =0.0022243
+ 16.2453      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481069
+ 16.2453      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 19.3883      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 19.3883      info         exahype::runners::Runner::startNewTimeStep(...)         step 6	t_min          =0.00270537
+ 19.3884      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481063
+ 19.3884      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 22.5887      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 22.5887      info         exahype::runners::Runner::startNewTimeStep(...)         step 7	t_min          =0.00318643
+ 22.5887      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481067
+ 22.5888      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 25.8329      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 25.833       info         exahype::runners::Runner::startNewTimeStep(...)         step 8	t_min          =0.0036675
+ 25.833       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481063
+ 25.8331      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 29.7305      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 29.7305      info         exahype::runners::Runner::startNewTimeStep(...)         step 9	t_min          =0.00414856
+ 29.7305      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481053
+ 29.7306      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 33.7049      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 33.7049      info         exahype::runners::Runner::startNewTimeStep(...)         step 10	t_min          =0.00462962
+ 33.7049      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481051
+ 33.705       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 37.7068      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 37.7068      info         exahype::runners::Runner::startNewTimeStep(...)         step 11	t_min          =0.00511067
+ 37.7068      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481056
+ 37.7069      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 41.9312      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 41.9312      info         exahype::runners::Runner::startNewTimeStep(...)         step 12	t_min          =0.00559172
+ 41.9312      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481059
+ 41.9313      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 46.1399      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 46.1399      info         exahype::runners::Runner::startNewTimeStep(...)         step 13	t_min          =0.00607278
+ 46.1399      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481062
+ 46.14        info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 50.3586      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 50.3586      info         exahype::runners::Runner::startNewTimeStep(...)         step 14	t_min          =0.00655384
+ 50.3587      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480818
+ 50.3587      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 54.6993      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 54.6993      info         exahype::runners::Runner::startNewTimeStep(...)         step 15	t_min          =0.00703466
+ 54.6994      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481065
+ 54.6994      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 59.1356      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 59.1357      info         exahype::runners::Runner::startNewTimeStep(...)         step 16	t_min          =0.00751573
+ 59.1357      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480859
+ 59.1358      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 63.6264      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 63.6265      info         exahype::runners::Runner::startNewTimeStep(...)         step 17	t_min          =0.00799659
+ 63.6265      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481061
+ 63.6265      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 68.1511      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 68.1511      info         exahype::runners::Runner::startNewTimeStep(...)         step 18	t_min          =0.00847765
+ 68.1511      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480389
+ 68.1512      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 73.2678      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 73.2678      info         exahype::runners::Runner::startNewTimeStep(...)         step 19	t_min          =0.00895804
+ 73.2678      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480913
+ 73.2679      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 78.1531      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 78.1532      info         exahype::runners::Runner::startNewTimeStep(...)         step 20	t_min          =0.00943895
+ 78.1532      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480516
+ 78.1532      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 83.007       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 83.007       info         exahype::runners::Runner::startNewTimeStep(...)         step 21	t_min          =0.00991946
+ 83.007       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048072
+ 83.0071      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 87.9911      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 87.9912      info         exahype::runners::Runner::startNewTimeStep(...)         step 22	t_min          =0.0104002
+ 87.9912      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480625
+ 87.9912      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 93.044       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 93.044       info         exahype::runners::Runner::startNewTimeStep(...)         step 23	t_min          =0.0108808
+ 93.044       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480643
+ 93.0441      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =90 MB
+ 100.414      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 100.414      info         exahype::runners::Runner::startNewTimeStep(...)         step 24	t_min          =0.0113615
+ 100.414      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480624
+ 100.414      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 105.527      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 105.527      info         exahype::runners::Runner::startNewTimeStep(...)         step 25	t_min          =0.0118421
+ 105.527      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480618
+ 105.528      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 110.827      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 110.827      info         exahype::runners::Runner::startNewTimeStep(...)         step 26	t_min          =0.0123227
+ 110.827      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480633
+ 110.827      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 116.018      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 116.018      info         exahype::runners::Runner::startNewTimeStep(...)         step 27	t_min          =0.0128033
+ 116.018      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000478681
+ 116.018      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 121.715      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 121.715      info         exahype::runners::Runner::startNewTimeStep(...)         step 28	t_min          =0.013282
+ 121.715      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.0004776
+ 121.715      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 127.369      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 127.369      info         exahype::runners::Runner::startNewTimeStep(...)         step 29	t_min          =0.0137596
+ 127.369      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480958
+ 127.37       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 133.227      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 133.227      info         exahype::runners::Runner::startNewTimeStep(...)         step 30	t_min          =0.0142406
+ 133.227      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480618
+ 133.227      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 139.162      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 139.162      info         exahype::runners::Runner::startNewTimeStep(...)         step 31	t_min          =0.0147212
+ 139.162      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481013
+ 139.162      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 145.352      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 145.352      info         exahype::runners::Runner::startNewTimeStep(...)         step 32	t_min          =0.0152022
+ 145.352      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480588
+ 145.352      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 151.368      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 151.368      info         exahype::runners::Runner::startNewTimeStep(...)         step 33	t_min          =0.0156828
+ 151.368      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000481033
+ 151.369      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 157.572      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 157.572      info         exahype::runners::Runner::startNewTimeStep(...)         step 34	t_min          =0.0161638
+ 157.572      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480557
+ 157.573      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 163.905      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 163.905      info         exahype::runners::Runner::startNewTimeStep(...)         step 35	t_min          =0.0166444
+ 163.905      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480936
+ 163.905      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 169.94       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 169.941      info         exahype::runners::Runner::startNewTimeStep(...)         step 36	t_min          =0.0171253
+ 169.941      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480527
+ 169.941      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 176.005      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 176.005      info         exahype::runners::Runner::startNewTimeStep(...)         step 37	t_min          =0.0176058
+ 176.005      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480478
+ 176.005      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 182.224      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 182.224      info         exahype::runners::Runner::startNewTimeStep(...)         step 38	t_min          =0.0180863
+ 182.224      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480828
+ 182.224      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 188.173      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 188.173      info         exahype::runners::Runner::startNewTimeStep(...)         step 39	t_min          =0.0185671
+ 188.173      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480524
+ 188.173      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 194.085      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 194.085      info         exahype::runners::Runner::startNewTimeStep(...)         step 40	t_min          =0.0190477
+ 194.085      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480421
+ 194.086      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 200.023      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 200.024      info         exahype::runners::Runner::startNewTimeStep(...)         step 41	t_min          =0.0195281
+ 200.024      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480343
+ 200.024      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 205.963      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 205.963      info         exahype::runners::Runner::startNewTimeStep(...)         step 42	t_min          =0.0200084
+ 205.963      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480293
+ 205.963      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 212.424      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 212.424      info         exahype::runners::Runner::startNewTimeStep(...)         step 43	t_min          =0.0204887
+ 212.424      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480241
+ 212.424      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =99 MB
+ 220.819      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 220.819      info         exahype::runners::Runner::startNewTimeStep(...)         step 44	t_min          =0.020969
+ 220.819      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048017
+ 220.82       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 227.072      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 227.072      info         exahype::runners::Runner::startNewTimeStep(...)         step 45	t_min          =0.0214491
+ 227.072      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048011
+ 227.072      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 233.633      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 233.633      info         exahype::runners::Runner::startNewTimeStep(...)         step 46	t_min          =0.0219292
+ 233.633      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480061
+ 233.633      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 240.191      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 240.191      info         exahype::runners::Runner::startNewTimeStep(...)         step 47	t_min          =0.0224093
+ 240.191      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480024
+ 240.191      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 246.621      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 246.621      info         exahype::runners::Runner::startNewTimeStep(...)         step 48	t_min          =0.0228893
+ 246.621      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000479997
+ 246.621      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 253.058      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 253.058      info         exahype::runners::Runner::startNewTimeStep(...)         step 49	t_min          =0.0233693
+ 253.058      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000449096
+ 253.058      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 259.368      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 259.368      info         exahype::runners::Runner::startNewTimeStep(...)         step 50	t_min          =0.0238184
+ 259.368      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00047997
+ 259.368      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 265.875      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 265.875      info         exahype::runners::Runner::startNewTimeStep(...)         step 51	t_min          =0.0242984
+ 265.875      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000479971
+ 265.875      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 272.389      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 272.389      info         exahype::runners::Runner::startNewTimeStep(...)         step 52	t_min          =0.0247784
+ 272.389      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00047969
+ 272.39       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 278.733      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 278.733      info         exahype::runners::Runner::startNewTimeStep(...)         step 53	t_min          =0.0252581
+ 278.733      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000479989
+ 278.733      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 285.067      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 285.067      info         exahype::runners::Runner::startNewTimeStep(...)         step 54	t_min          =0.025738
+ 285.067      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480008
+ 285.067      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 291.458      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 291.458      info         exahype::runners::Runner::startNewTimeStep(...)         step 55	t_min          =0.0262181
+ 291.458      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480033
+ 291.458      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 298.059      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 298.059      info         exahype::runners::Runner::startNewTimeStep(...)         step 56	t_min          =0.0266981
+ 298.059      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480063
+ 298.059      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 304.474      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 304.474      info         exahype::runners::Runner::startNewTimeStep(...)         step 57	t_min          =0.0271781
+ 304.474      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480096
+ 304.474      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 311.043      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 311.043      info         exahype::runners::Runner::startNewTimeStep(...)         step 58	t_min          =0.0276582
+ 311.043      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00048008
+ 311.043      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 317.646      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 317.646      info         exahype::runners::Runner::startNewTimeStep(...)         step 59	t_min          =0.0281383
+ 317.646      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480065
+ 317.646      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 324.36       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 324.36       info         exahype::runners::Runner::startNewTimeStep(...)         step 60	t_min          =0.0286184
+ 324.36       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480054
+ 324.361      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 331.095      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 331.095      info         exahype::runners::Runner::startNewTimeStep(...)         step 61	t_min          =0.0290984
+ 331.095      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480046
+ 331.095      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 337.96       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 337.96       info         exahype::runners::Runner::startNewTimeStep(...)         step 62	t_min          =0.0295785
+ 337.96       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480042
+ 337.96       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 344.768      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 344.768      info         exahype::runners::Runner::startNewTimeStep(...)         step 63	t_min          =0.0300585
+ 344.768      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480039
+ 344.768      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 351.814      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 351.815      info         exahype::runners::Runner::startNewTimeStep(...)         step 64	t_min          =0.0305386
+ 351.815      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480038
+ 351.815      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 361.245      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 361.245      info         exahype::runners::Runner::startNewTimeStep(...)         step 65	t_min          =0.0310186
+ 361.245      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480037
+ 361.245      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 368.841      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 368.841      info         exahype::runners::Runner::startNewTimeStep(...)         step 66	t_min          =0.0314986
+ 368.841      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480036
+ 368.841      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 376.894      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 376.894      info         exahype::runners::Runner::startNewTimeStep(...)         step 67	t_min          =0.0319787
+ 376.894      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000370546
+ 376.895      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 384.846      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 384.846      info         exahype::runners::Runner::startNewTimeStep(...)         step 68	t_min          =0.0323492
+ 384.846      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480027
+ 384.846      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 394.089      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 394.089      info         exahype::runners::Runner::startNewTimeStep(...)         step 69	t_min          =0.0328293
+ 394.09       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000370526
+ 394.09       info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 403.139      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 403.139      info         exahype::runners::Runner::startNewTimeStep(...)         step 70	t_min          =0.0331998
+ 403.139      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480795
+ 403.139      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 413.036      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 413.036      info         exahype::runners::Runner::startNewTimeStep(...)         step 71	t_min          =0.0336806
+ 413.036      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000370671
+ 413.036      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 422.639      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 422.639      info         exahype::runners::Runner::startNewTimeStep(...)         step 72	t_min          =0.0340512
+ 422.639      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000370224
+ 422.639      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 432.76       info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 432.76       info         exahype::runners::Runner::startNewTimeStep(...)         step 73	t_min          =0.0344215
+ 432.76       info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000369832
+ 432.761      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 443.258      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 443.258      info         exahype::runners::Runner::startNewTimeStep(...)         step 74	t_min          =0.0347913
+ 443.258      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.00040226
+ 443.258      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 454.051      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 454.051      info         exahype::runners::Runner::startNewTimeStep(...)         step 75	t_min          =0.0351936
+ 454.051      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000369707
+ 454.051      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 465.396      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 465.396      info         exahype::runners::Runner::startNewTimeStep(...)         step 76	t_min          =0.0355633
+ 465.396      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000369481
+ 465.396      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 482.683      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 482.683      info         exahype::runners::Runner::startNewTimeStep(...)         step 77	t_min          =0.0359327
+ 482.683      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000369291
+ 482.683      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 506.339      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 506.339      info         exahype::runners::Runner::startNewTimeStep(...)         step 78	t_min          =0.036302
+ 506.339      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000397127
+ 506.339      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 536.117      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 536.118      info         exahype::runners::Runner::startNewTimeStep(...)         step 79	t_min          =0.0366992
+ 536.118      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000300015
+ 536.118      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 571.635      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 571.635      info         exahype::runners::Runner::startNewTimeStep(...)         step 80	t_min          =0.0369992
+ 571.635      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000369313
+ 571.635      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 619.873      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 619.873      info         exahype::runners::Runner::startNewTimeStep(...)         step 81	t_min          =0.0373685
+ 619.873      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000480083
+ 619.873      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
+ 685.641      info         exahype::runners::Runner::runAsMaster(...)              adjusted limiter domain
+ 685.641      info         exahype::runners::Runner::startNewTimeStep(...)         step 82	t_min          =0.0378486
+ 685.641      info         exahype::runners::Runner::startNewTimeStep(...)         	dt_min         =0.000479738
+ 685.641      info         exahype::runners::Runner::startNewTimeStep(...)         	memoryUsage    =97 MB
