@@ -94,8 +94,13 @@ peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
 class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano::datatraversal::autotuning::OracleForOnePhase {
   private:
     static tarch::logging::Log                           _log;
-    static const double                                  _InitialAccuracy;
-    static const double                                  _FinalAccuracy;
+    static const double                                  _InitialRelativeAccuracy;
+    /**
+     * We cannot write std::numeric_limit<double>::max() into a file as most
+     * GNU implementations of sttof fail parsing it. So we use an arbitrary
+     * big constant.
+     */
+    static const double                                  _TimingMax;
 
 
     /**
@@ -107,9 +112,11 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     struct DatabaseEntry {
       int                          _biggestProblemSize;
       int                          _currentGrainSize;
-      tarch::timing::Measurement   _currentMeasurement;
-      int                          _previousGrainSize;
       double                       _previousMeasuredTime;
+      int                          _searchDelta;
+      tarch::timing::Measurement   _currentMeasurement;
+
+      std::string toString() const;
     };
 
 

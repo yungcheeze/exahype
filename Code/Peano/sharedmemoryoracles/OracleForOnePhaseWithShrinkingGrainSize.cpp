@@ -9,13 +9,8 @@
 
 tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_log( "sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize" );
 
-
-#if defined(Asserts)
-const double                       sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialAccuracy(1e-2);
-#else
-const double                       sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialAccuracy(1e-4);
-#endif
-const double                       sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_FinalAccuracy(1e-8);
+const double         sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
+const double         sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_TimingMax( 65536.0 );
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn):
@@ -25,130 +20,166 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseW
 }
 
 
+std::string sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::toString() const {
+  std::ostringstream msg;
+  msg << "(biggest-problem-size=" << _biggestProblemSize
+      << ",current-grain-size=" << _currentGrainSize
+      << ",current-measurement=" << _currentMeasurement.toString()
+      << ",previous-measured-time=" << _previousMeasuredTime
+      << ",search-delta=" << _searchDelta
+      << ")";
+  return msg.str();
+}
+
+
 peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
-  if (
-    _measurements.count(askingMethod)==0
-    ||
-    _measurements[askingMethod]._biggestProblemSize<problemSize
-  ) {
+  assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
+
+  const bool insertNewEntry                          = _measurements.count(askingMethod)==0;
+  const bool resetEntryAsProblemOfSizeHasBeenUnknown = _learn && (_measurements.count(askingMethod)==0 || _measurements[askingMethod]._biggestProblemSize<problemSize );
+
+  if ( insertNewEntry || resetEntryAsProblemOfSizeHasBeenUnknown ) {
     _measurements[askingMethod]._biggestProblemSize   = problemSize;
-    _measurements[askingMethod]._currentGrainSize     = 0;
-    _measurements[askingMethod]._currentMeasurement   = tarch::timing::Measurement(_InitialAccuracy);
-    _measurements[askingMethod]._previousGrainSize    = 0;
-    _measurements[askingMethod]._previousMeasuredTime = 0;
+    _measurements[askingMethod]._currentGrainSize     = problemSize;
+    _measurements[askingMethod]._currentMeasurement   = tarch::timing::Measurement( 0.0 );
+    _measurements[askingMethod]._previousMeasuredTime = _TimingMax;
+    _measurements[askingMethod]._searchDelta          = problemSize/2;
+    logInfo(
+      "parallelise()",
+      "inserted new entry for " + toString(askingMethod)
+      << ": " << _measurements[askingMethod].toString()
+    );
   }
 
-  if (_measurements[askingMethod]._currentGrainSize >= problemSize || !_learn) {
-    return peano::datatraversal::autotuning::GrainSize(
-      0,
-      false,
-      problemSize,
-      askingMethod, nullptr
-    );
-  }
-  else
-    return peano::datatraversal::autotuning::GrainSize(
-      _measurements[askingMethod]._currentGrainSize,
-      _activeMethodTrace==askingMethod && !_measurements[askingMethod]._currentMeasurement.isAccurateValue(),
-      problemSize,
-      askingMethod, this
-    );
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
+  assertion( _measurements.count(askingMethod)>0 );
+
+  const bool trackTime = (_activeMethodTrace==askingMethod)
+                       && (_measurements[askingMethod]._searchDelta>0);
+
+  logDebug(
+    "parallelise()",
+    "will track time for " << toString(askingMethod) << "=" << trackTime <<
+    " with active trace " << toString(_activeMethodTrace)
+  );
+
+  return peano::datatraversal::autotuning::GrainSize(
+    _measurements[askingMethod]._currentGrainSize<problemSize ? _measurements[askingMethod]._currentGrainSize : 0,
+    trackTime,
+    problemSize,
+    askingMethod, this
+  );
 }
 
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasuredMethodTrace() {
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
   _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
 
+  int remainingTriesToFindSearchingTrace = 16;
   while ( _measurements.count(_activeMethodTrace)==0 ) {
     _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
+    if (
+      remainingTriesToFindSearchingTrace>0
+      &&
+      _measurements.count(_activeMethodTrace)==1
+      &&
+      _measurements[_activeMethodTrace]._searchDelta==0
+    ) {
+      remainingTriesToFindSearchingTrace--;
+      logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) << " for measurement " << _measurements[_activeMethodTrace].toString() );
+      _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
+    }
   }
+
+  assertion(_activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
+  logDebug( "changeMeasuredMethodTrace()", "next active method trace " << toString(_activeMethodTrace) << " with existing measurement " << _measurements[_activeMethodTrace].toString() );
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttributesLearn() {
-  if (
-    _measurements[_activeMethodTrace]._currentGrainSize==0
-    &&
-    _measurements[_activeMethodTrace]._currentMeasurement.getAccuracy()>_FinalAccuracy
-  ) {
-    _measurements[_activeMethodTrace]._previousGrainSize    = 0;
-    _measurements[_activeMethodTrace]._previousMeasuredTime = _measurements[_activeMethodTrace]._currentMeasurement.getValue();
-    _measurements[_activeMethodTrace]._currentGrainSize     = _measurements[_activeMethodTrace]._biggestProblemSize/2;
-    _measurements[_activeMethodTrace]._currentMeasurement.erase();
+  assertion( _measurements[_activeMethodTrace]._currentMeasurement.isAccurateValue() );
+  assertion( _measurements[_activeMethodTrace]._searchDelta>0 );
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
 
-    logInfo(
-      "makeAttributesLearn()",
-      "finished serial analysis, continue with"
-      <<  " previous grain size=" << _measurements[_activeMethodTrace]._previousGrainSize
-      << ", previous measured time=" << _measurements[_activeMethodTrace]._previousMeasuredTime
-      << ", current grain size=" << _measurements[_activeMethodTrace]._currentGrainSize
-      << ", current measurement=" << _measurements[_activeMethodTrace]._currentMeasurement.toString()
-      << ", method-trace=" << toString(_activeMethodTrace)
-    );
-  }
-  else if (
+  if (
     _measurements[_activeMethodTrace]._currentMeasurement.getValue() < _measurements[_activeMethodTrace]._previousMeasuredTime
   ) {
-    _measurements[_activeMethodTrace]._previousGrainSize     = _measurements[_activeMethodTrace]._currentGrainSize;
+    logInfo(
+      "makeAttributesLearn()",
+      "found better scaling parameter choice/serial runtime for " << toString(_activeMethodTrace) << ": " << _measurements[_activeMethodTrace].toString()
+    );
+
+    // Previous search has been successful. So we might undershoot
+    while ( _measurements[_activeMethodTrace]._currentGrainSize - _measurements[_activeMethodTrace]._searchDelta <= 0 ) {
+      _measurements[_activeMethodTrace]._searchDelta /= 2;
+    }
+
+    _measurements[_activeMethodTrace]._currentGrainSize     -= _measurements[_activeMethodTrace]._searchDelta;
     _measurements[_activeMethodTrace]._previousMeasuredTime  = _measurements[_activeMethodTrace]._currentMeasurement.getValue();
-    _measurements[_activeMethodTrace]._currentGrainSize     /= 2;
-    _measurements[_activeMethodTrace]._currentMeasurement.erase();
-
-    logInfo(
-      "makeAttributesLearn()",
-      "found better scaling parameter choice, continue with"
-      <<  " previous grain size=" << _measurements[_activeMethodTrace]._previousGrainSize
-      << ", previous measured time=" << _measurements[_activeMethodTrace]._previousMeasuredTime
-      << ", current grain size=" << _measurements[_activeMethodTrace]._currentGrainSize
-      << ", current measurement=" << _measurements[_activeMethodTrace]._currentMeasurement.toString()
-      << ", method-trace=" << toString(_activeMethodTrace)
-    );
-  }
-  else if (
-    _measurements[_activeMethodTrace]._currentMeasurement.getValue() > _measurements[_activeMethodTrace]._previousMeasuredTime
-    &&
-    _measurements[_activeMethodTrace]._previousGrainSize==0
-  ) {
-    _measurements[_activeMethodTrace]._previousGrainSize     = 0;
-    _measurements[_activeMethodTrace]._previousMeasuredTime  = 0;
-    _measurements[_activeMethodTrace]._currentGrainSize      = 0;
     _measurements[_activeMethodTrace]._currentMeasurement.erase();
     _measurements[_activeMethodTrace]._currentMeasurement.increaseAccuracy(2.0);
 
     logInfo(
       "makeAttributesLearn()",
-      "studied parameter configuration seems not to scale at all so switch back to serial setup, continue with"
-      <<  " previous grain size=" << _measurements[_activeMethodTrace]._previousGrainSize
-      << ", previous measured time=" << _measurements[_activeMethodTrace]._previousMeasuredTime
-      << ", current grain size=" << _measurements[_activeMethodTrace]._currentGrainSize
-      << ", current measurement=" << _measurements[_activeMethodTrace]._currentMeasurement.toString()
-      << ", method-trace=" << toString(_activeMethodTrace)
+      "continue with " << _measurements[_activeMethodTrace].toString()
     );
   }
   else if (
     _measurements[_activeMethodTrace]._currentMeasurement.getValue() > _measurements[_activeMethodTrace]._previousMeasuredTime
   ) {
-    // _measurements[_activeMethodTrace]._previousGrainSize     = _measurements[_activeMethodTrace]._previousGrainSize;
-    // _measurements[_activeMethodTrace]._previousMeasuredTime  = _measurements[_activeMethodTrace]._previousMeasuredTime;
-    _measurements[_activeMethodTrace]._currentGrainSize      = _measurements[_activeMethodTrace]._previousGrainSize;
+    logInfo(
+      "makeAttributesLearn()",
+      "parameter choice for " << toString(_activeMethodTrace) << " does not scale: " << _measurements[_activeMethodTrace].toString()
+    );
+
+    _measurements[_activeMethodTrace]._currentGrainSize     += _measurements[_activeMethodTrace]._searchDelta;
+    _measurements[_activeMethodTrace]._previousMeasuredTime  = _TimingMax;
     _measurements[_activeMethodTrace]._currentMeasurement.erase();
     _measurements[_activeMethodTrace]._currentMeasurement.increaseAccuracy(2.0);
 
+    if (_measurements[_activeMethodTrace]._searchDelta<=4) {
+      _measurements[_activeMethodTrace]._searchDelta--;
+    }
+    else {
+      _measurements[_activeMethodTrace]._searchDelta /= 2;
+    }
+
     logInfo(
       "makeAttributesLearn()",
-      "previously studied parameter configuration seems to scale better, continue with previous parameter choice"
-      <<  " previous grain size=" << _measurements[_activeMethodTrace]._previousGrainSize
-      << ", previous measured time=" << _measurements[_activeMethodTrace]._previousMeasuredTime
-      << ", current grain size=" << _measurements[_activeMethodTrace]._currentGrainSize
-      << ", current measurement=" << _measurements[_activeMethodTrace]._currentMeasurement.toString()
-      << ", method-trace=" << toString(_activeMethodTrace)
+      "continue with " << _measurements[_activeMethodTrace].toString() << ". continue to search=" <<
+      (_measurements[_activeMethodTrace]._searchDelta>0)
     );
   }
+
+  // @todo Assertion
+  if ( _measurements[_activeMethodTrace]._currentGrainSize<=0 ) {
+    logInfo(
+      "makeAttributesLearn()",
+      "error for " << _measurements[_activeMethodTrace].toString() << ". measurement=" <<
+      _measurements[_activeMethodTrace].toString()
+    );
+    exit(-1);
+  }
+
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) {
+  assertion( askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
+
+  if (_measurements[_activeMethodTrace]._currentMeasurement.getAccuracy()==0.0 ) {
+    const double computeTime   = costPerProblemElement * static_cast<double>(problemSize);
+    _measurements[_activeMethodTrace]._currentMeasurement.setAccuracy( computeTime * _InitialRelativeAccuracy );
+    logInfo(
+      "parallelSectionHasTerminated(...)",
+      "fix accuracy for " << toString(askingMethod) << " to " << _measurements[_activeMethodTrace].toString()
+    );
+  }
+
   _measurements[askingMethod]._currentMeasurement.setValue( costPerProblemElement );
 }
 
@@ -168,39 +199,49 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
       leftToken   = rightString.substr( 0, rightString.find("=") );
       rightString = rightString.substr( leftToken.size()+1 );
       peano::datatraversal::autotuning::MethodTrace  methodTrace = peano::datatraversal::autotuning::toMethodTrace(leftToken);
+      logDebug( "loadStatistics(...)", "parse properties for " << toString(methodTrace) );
 
       leftToken   = rightString.substr( 0, rightString.find(",") );
       rightString = rightString.substr( leftToken.size()+1 );
       int   biggestProblemSize = std::stoi(leftToken);
+      logDebug( "loadStatistics(...)", "got biggest problem size " << biggestProblemSize );
 
       leftToken   = rightString.substr( 0, rightString.find(",") );
       rightString = rightString.substr( leftToken.size()+1 );
       int   currentGrainSize = std::stoi(leftToken);
-
-      leftToken   = rightString.substr( 0, rightString.find(",") );
-      rightString = rightString.substr( leftToken.size()+1 );
-      int   previousGrainSize = std::stoi(leftToken);
+      logDebug( "loadStatistics(...)", "got current grain size " <<  currentGrainSize );
 
       leftToken   = rightString.substr( 0, rightString.find(",") );
       rightString = rightString.substr( leftToken.size()+1 );
       double previousMeasuredTime = std::stof(leftToken);
+      logDebug( "loadStatistics(...)", "previous measured time is " <<  previousMeasuredTime );
 
-      leftToken   = rightString.substr( 0, rightString.find("eps=") );
-      rightString = rightString.substr( leftToken.size()+4 );
       leftToken   = rightString.substr( 0, rightString.find(",") );
       rightString = rightString.substr( leftToken.size()+1 );
+      int   searchDelta = std::stoi(leftToken);
+
+      //leftToken   = rightString.substr( 0, rightString.find("eps=") );
+      //rightString = rightString.substr( leftToken.size()+4 );
+      //leftToken   = rightString.substr( 0, rightString.find(",") );
+      //rightString = rightString.substr( leftToken.size()+1 );
       double accuracy = std::stof(leftToken);
+      //double accuracy = 0.0;
 
       _measurements[methodTrace]._biggestProblemSize    = biggestProblemSize;
-      _measurements[methodTrace]._previousGrainSize     = previousGrainSize;
       _measurements[methodTrace]._currentGrainSize      = currentGrainSize;
       _measurements[methodTrace]._previousMeasuredTime  = previousMeasuredTime;
+      _measurements[methodTrace]._searchDelta           = searchDelta;
       _measurements[methodTrace]._currentMeasurement.erase();
       _measurements[methodTrace]._currentMeasurement.setAccuracy( accuracy );
+
+      logDebug( "loadStatistics(...)", "added " << toString(methodTrace) << ": "<< _measurements[methodTrace].toString() );
     }
 
-    tagOpen |= str.compare( "adapter-number=" + std::to_string( oracleNumber) )==0;
+    // Older GCC versions require an explicit cast here
+    tagOpen |= str.compare( "adapter-number=" + std::to_string( (long long)oracleNumber) )==0;
   }
+
+  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
 }
 
 
@@ -212,9 +253,9 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
     out << peano::datatraversal::autotuning::toString(measurement.first)
         << "=" << measurement.second._biggestProblemSize
         << "," << measurement.second._currentGrainSize
-        << "," << measurement.second._previousGrainSize
         << "," << measurement.second._previousMeasuredTime
-        << "," << measurement.second._currentMeasurement.toString()
+        << "," << measurement.second._searchDelta
+        << "," << measurement.second._currentMeasurement.getAccuracy()
         << std::endl;
   }
 
@@ -237,14 +278,21 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::deactivateOra
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracle() {
   if (_learn) {
-    if (_measurements.empty()) {
-      logDebug( "activateOracle()", "do not trigger any operation as measurement set is empty" );
-    }
-    else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
-      changeMeasuredMethodTrace();
-    }
-    else if (_measurements[_activeMethodTrace]._currentMeasurement.isAccurateValue()) {
+    //
+    // First check is very important. If we skip it, the second statement would
+    // insert elements into map
+    //
+    if (
+      _activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling
+      &&
+      _measurements[_activeMethodTrace]._currentMeasurement.isAccurateValue()
+      &&
+      _measurements[_activeMethodTrace]._searchDelta>0
+    ) {
       makeAttributesLearn();
+    }
+
+    if (!_measurements.empty()) {
       changeMeasuredMethodTrace();
     }
   }
