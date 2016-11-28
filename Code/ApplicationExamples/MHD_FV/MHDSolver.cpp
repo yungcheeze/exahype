@@ -124,7 +124,7 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 //}
 //
 //void MHDSolver::MHDSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-//	std::memset(Bn, 0, nVar * sizeof(double));
+// std::memset(Bn, 0, nVar * nVar * sizeof(double));
 //}
 
 
