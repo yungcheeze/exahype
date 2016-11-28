@@ -16,32 +16,32 @@ peano::CommunicationSpecification   exahype::adapters::MeshRefinement2Multiscale
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
 peano::MappingSpecification   exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
