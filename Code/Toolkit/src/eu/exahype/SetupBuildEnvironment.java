@@ -59,7 +59,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   @Override
   public void inASharedMemory(ASharedMemory node) {
     try {
-      _writer.write("SHAREDMEM=TBB\n");
+      _writer.write("ifeq ($(SHAREDMEM),)\n");
+      _writer.write("  SHAREDMEM=TBB\n");
+      _writer.write("endif\n");
       System.out.print("shared memory ... TBB (switch to OpenMP manually as indicated below)\n");
 
       if (!System.getenv().containsKey("TBB_INC")) {
@@ -79,7 +81,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   @Override
   public void inADistributedMemory(ADistributedMemory node) {
     try {
-      _writer.write("DISTRIBUTEDMEM=MPI\n");
+      _writer.write("ifeq ($(DISTRIBUTEDMEM),)\n");
+      _writer.write("  DISTRIBUTEDMEM=MPI\n");
+      _writer.write("endif\n");
       System.out.print("mpi ... switched on \n");
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
@@ -198,7 +202,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     try {
       _writer.write("\n\n");
       if (_requiresFortran) {
-        _writer.write("MIXEDLANG=Yes\n");
+        _writer.write("ifeq ($(MIXEDLANG),)\n");
+        _writer.write("  MIXEDLANG=Yes\n");
+        _writer.write("endif\n");
       }
       if (_useOptimisedKernels) {
         _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");
@@ -265,17 +271,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           "  If you run CSH, please replace \"export ARG=VALUE\" with \"setenv ARG VALUE\".\n");
 
       _writer.close();
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
-    }
-  }
-
-  public void inACoupleSolvers(ACoupleSolvers node) {
-    try {
-      if (node.getIdentifier().getText().trim().equals( "cellwise" ) ) {
-        _writer.write("COUPLE_SOLVERS=CellWise\n");
-      }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;
