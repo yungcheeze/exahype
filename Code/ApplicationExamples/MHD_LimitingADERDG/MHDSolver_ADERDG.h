@@ -50,6 +50,8 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
     void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
     void matrixb(const double* const Q,const int normalNonZero,double* Bn);
+
+    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
 };
 
 #endif // __MHDSolver_ADERDG_CLASS_HEADER__
