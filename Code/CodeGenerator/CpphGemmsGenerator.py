@@ -17,8 +17,8 @@
 #
 
 
-import os
-from jinja2 import Template
+import TemplatingUtils
+
 
 class CpphGemmsGenerator:
     m_context = {}
@@ -30,45 +30,14 @@ class CpphGemmsGenerator:
     m_filenameRoot = "CpphGemms"
 
 
-
     def __init__(self, i_config, i_numerics):
         self.m_context = i_config
-        self.m_type   = i_numerics
+        self.m_type    = i_numerics
         
 
-
     def generateCode(self):
-        dir = os.path.dirname(__file__)
         self.m_context['gemm_a_b_c']  = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
-    
-        if(self.m_type == 'linear'):
-            pass
-        else:
-            with open(os.path.join(dir,'templates/CpphGemms_h.template'), 'r') as tmp:
-                template = Template(tmp.read(), trim_blocks=True)
-                with open(self.m_filenameRoot+'.h', 'w') as out:
-                    out.write(template.render(self.m_context))
-                    
-            with open(os.path.join(dir,'templates/CpphGemms_cpp.template'), 'r') as tmp:
-                template = Template(tmp.read(), trim_blocks=True)
-                with open(self.m_filenameRoot+'.cpp', 'w') as out:
-                    out.write(template.render(self.m_context))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.m_context['isLinear'] = (self.m_type == 'linear')
+        
+        TemplatingUtils.renderAsFile('cpphGemms_h.template',   self.m_filenameRoot+'.h',   self.m_context)
+        TemplatingUtils.renderAsFile('cpphGemms_cpp.template', self.m_filenameRoot+'.cpp', self.m_context)

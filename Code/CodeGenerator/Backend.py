@@ -236,9 +236,9 @@ def generateComputeKernels():
     cpphGemmsGenerator.generateCode()
     configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config), m_numerics)
     configurationParametersGenerator.generateCode()
-    boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config), m_numerics)
+    boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config))
     boundaryConditionsGenerator.generateCode()
-    converterGenerator = ConverterGenerator.ConverterGenerator(generateContext(m_config), m_numerics)
+    converterGenerator = ConverterGenerator.ConverterGenerator(generateContext(m_config))
     converterGenerator.generateCode()
 
 

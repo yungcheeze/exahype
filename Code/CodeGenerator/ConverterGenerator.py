@@ -17,57 +17,24 @@
 #
 
 
-import os
-from jinja2 import Template
-
 import Backend
+import TemplatingUtils
+
 
 class ConverterGenerator:
     m_context = {}
-
-    # linear/nonlinear
-    m_type   = ""
 
     # name of generated output file
     m_filenameRoot = "converter"
 
 
-
-    def __init__(self, i_config, i_numerics):
+    def __init__(self, i_config):
         self.m_context = i_config
-        self.m_type   = i_numerics
         
 
-
     def generateCode(self):
-        dir = os.path.dirname(__file__)
         self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
     
-        with open(os.path.join(dir,'templates/converter_h.template'), 'r') as tmp:
-            template = Template(tmp.read(), trim_blocks=True)
-            with open(self.m_filenameRoot+'.h', 'w') as out:
-                out.write(template.render(self.m_context))
-                
-        with open(os.path.join(dir,'templates/converter_cpp.template'), 'r') as tmp:
-            template = Template(tmp.read(), trim_blocks=True)
-            with open(self.m_filenameRoot+'.cpp', 'w') as out:
-                out.write(template.render(self.m_context))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        TemplatingUtils.renderAsFile('converter_h.template',   self.m_filenameRoot+'.h',   self.m_context)
+        TemplatingUtils.renderAsFile('converter_cpp.template', self.m_filenameRoot+'.cpp', self.m_context)
 

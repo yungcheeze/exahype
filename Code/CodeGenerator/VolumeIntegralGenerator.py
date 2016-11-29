@@ -22,10 +22,9 @@
 # for a specific configuration
 #
 
-import os
-from jinja2 import Template
 
 import Backend
+import TemplatingUtils
 from MatmulConfig import MatmulConfig
 
 
@@ -39,37 +38,31 @@ class VolumeIntegralGenerator:
     m_filename = "volumeIntegral.cpp"
 
 
-
     def __init__(self, i_config, i_numerics):
         self.m_context = i_config
-        self.m_type   = i_numerics
+        self.m_type    = i_numerics
 
 
     def generateCode(self):
-        dir = os.path.dirname(__file__)
-    
         if(self.m_type == 'linear'):
             pass
         else:
-            self.__generateNonlinearGemms()
-            with open(os.path.join(dir,'templates/volumeIntegralNonLinear.template'), 'r') as tmp:
-                template = Template(tmp.read(), trim_blocks=True)
-                gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
-                self.m_context['gemm_x'] = gemmName+'_lduh_x'
-                self.m_context['gemm_y'] = gemmName+'_lduh_y'
-                self.m_context['gemm_z'] = gemmName+'_lduh_z'
-                self.m_context['lFhi_padY'] = Backend.getSizeWithPadding(self.m_context['nVar']) \
-                                 * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])
-                self.m_context['lFhi_padZ'] = 2 * Backend.getSizeWithPadding(self.m_context['nVar']) \
-                                 * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])                 
-                self.m_context['i_seq'] = range(0,self.m_context['nDof'])
-                if(self.m_context['nDim'] >= 3):
-                    self.m_context['j_seq'] = range(0,self.m_context['nDof'])
-                else:
-                    self.m_context['j_seq'] = [0]
-                
-                with open(self.m_filename, 'w') as out:
-                    out.write(template.render(self.m_context))
+            self.__generateNonlinearGemms() # generates gemms
+            
+            # initialize context
+            gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
+            self.m_context['gemm_x'] = gemmName+'_lduh_x'
+            self.m_context['gemm_y'] = gemmName+'_lduh_y'
+            self.m_context['gemm_z'] = gemmName+'_lduh_z'
+            self.m_context['lFhi_padY'] = Backend.getSizeWithPadding(self.m_context['nVar']) \
+                             * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])
+            self.m_context['lFhi_padZ'] = 2 * Backend.getSizeWithPadding(self.m_context['nVar']) \
+                             * Backend.getSizeWithPadding(self.m_context['nDof']**self.m_context['nDim'])                 
+            self.m_context['i_seq'] = range(0,self.m_context['nDof'])
+            self.m_context['j_seq'] = range(0,self.m_context['nDof']) if (self.m_context['nDim'] >= 3) else [0]
+            
+            # render template
+            TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
 
 
     def __generateNonlinearGemms(self):
@@ -173,24 +166,4 @@ class VolumeIntegralGenerator:
         l_matmulList.append(l_matmul_z)
 
         Backend.generateAssemblerCode("asm_"+self.m_filename, l_matmulList)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

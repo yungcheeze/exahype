@@ -17,8 +17,7 @@
 #
 
 
-import os
-from jinja2 import Template
+import TemplatingUtils
 
 
 class ConfigurationParametersGenerator:
@@ -28,21 +27,16 @@ class ConfigurationParametersGenerator:
     m_type   = ""
 
     # name of generated output file
-    m_filenameRoot = "ConfigurationParameters"
+    m_filename = "ConfigurationParameters.cpph"
 
-    
     
     def __init__(self, i_config, i_numerics):
         self.m_context = i_config
-        self.m_type   = i_numerics
+        self.m_type    = i_numerics
 
 
     def generateCode(self):
-        dir = os.path.dirname(__file__)
         self.m_context["isLinear"] = "true" if (self.m_type == "linear") else "false" #c++ true/false instead of True/False
 
-        with open(os.path.join(dir,'templates/ConfigurationParameters.template'), 'r') as tmp:
-            template = Template(tmp.read(), trim_blocks=True)
-            with open(self.m_filenameRoot+'.cpph', 'w') as out:
-                out.write(template.render(self.m_context))
-                    
+        TemplatingUtils.renderAsFile('configurationParameters_cpph.template', self.m_filename, self.m_context)
+

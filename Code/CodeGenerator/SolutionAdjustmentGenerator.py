@@ -24,10 +24,9 @@
 # of the generic kernels.
 #
 
-import os
-from jinja2 import Template
 
 import Backend
+import TemplatingUtils
 
 
 class SolutionAdjustmentGenerator:
@@ -42,11 +41,7 @@ class SolutionAdjustmentGenerator:
 
 
     def generateCode(self):
-        dir = os.path.dirname(__file__)+'/'
         self.m_context['order'] = self.m_context['nDof']-1
         self.m_context['nDimPad'] = Backend.getSizeWithPadding(self.m_context['nDim'])
         
-        with open(dir+'templates/solutionAdjustment.template', 'r') as tmp:
-            template = Template(tmp.read(), trim_blocks=True)
-            with open(self.m_filename, 'w') as out:
-                out.write(template.render(self.m_context))
+        TemplatingUtils.renderAsFile('solutionAdjustment_cpph.template', self.m_filename, self.m_context)
