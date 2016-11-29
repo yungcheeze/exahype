@@ -236,7 +236,7 @@ SUBROUTINE InitialRotor(x,Q)
     p0   = 1.0
     rho1 = 10.0
     p1   = 1.0
-    B0   = 1.0
+    B0   = 2.5
     v0   = MHDRotomega  ! this is omega
     r = sqrt ( (x(1)-EPCenter(1))**2 + (x(2)-EPCenter(2))**2)   ! cylindrical
 
@@ -247,12 +247,13 @@ SUBROUTINE InitialRotor(x,Q)
         VV(3) =  0.
         p     =  p1
     ELSE IF (r.GE.EPRadius.AND.r.LT.TaperRadius) THEN
-        f = (TaperRadius - r) / (EPRadius-TaperRadius) ! linear interpolant;
+        f = (TaperRadius - r) / (TaperRadius-EPRadius) ! linear interpolant;
 
         rho   = rho0 + (rho1-rho0) * f
         VV(1) = -v0 * f * x(2)
         VV(2) =  v0 * f * x(1)
         VV(3) =  0.
+        p     =  p1
     ELSE
         rho   = rho0
         VV    = 0.
