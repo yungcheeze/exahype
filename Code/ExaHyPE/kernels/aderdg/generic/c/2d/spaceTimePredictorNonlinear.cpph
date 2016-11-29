@@ -229,6 +229,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
     double sq_res = 0.0;
     for (int i = 0; i < basisSize3 * numberOfVariables; i++) {
       sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
+      assertion3( !std::isnan(lQi[i]), i, dt, dx );
+      assertion3( !std::isnan(lQi_old[i]), i, dt, dx );
     }
     if (sq_res < tol * tol) {
       break;
