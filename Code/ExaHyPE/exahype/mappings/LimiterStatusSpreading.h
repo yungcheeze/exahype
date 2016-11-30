@@ -27,6 +27,8 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
+#include "exahype/mappings/Reinitialisation.h"
+
 namespace exahype {
 namespace mappings {
 class LimiterStatusSpreading;
@@ -53,7 +55,50 @@ class exahype::mappings::LimiterStatusSpreading {
   int _boundaryFaceMerges;
   #endif
 
+#ifdef Parallel
+  /**
+   * Loop over all the solvers and check
+   * if a cell description (ADERDGCellDescription,
+   * FiniteVolumesCellDescription,...) is registered
+   * for the solver type and if the limiter
+   * domain was changed for this solver.
+   * If so, send out the limiter status or empty messages to the
+   * rank \p toRank that owns the neighbouring domain.
+   *
+   * If not so, send out empty messages for the particular
+   * solver.
+   *
+   * \note Not thread-safe.
+   */
+  static void sendMergedLimiterStatusToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /**
+   * Loop over all the solvers and check
+   * send out empty messages for the particular
+   * solver.
+   *
+   * \note Not thread-safe.
+   */
+  static void sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+  #endif
+
  public:
+  friend class exahype::mappings::Reinitialisation;
+
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */

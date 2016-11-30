@@ -137,7 +137,7 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
@@ -192,25 +192,98 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // TODO(Dominic): Send my limiter status to neighbour
-  // TODO(Dominic): Discussion: Send status always or use counters?
-//  dfor2(dest)
-//    dfor2(src)
-//    if (vertex.hasToSendMetadata(src,dest,toRank)) {
-//      vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-//      if (vertex.hasToSendDataToNeighbour(src,dest)) {
-//        sendSolverDataToNeighbour(
-//            toRank,src,dest,
-//            vertex.getCellDescriptionsIndex()[srcScalar],
-//            vertex.getCellDescriptionsIndex()[destScalar],
-//            x,level);
-//      } else {
-//        sendEmptySolverDataToNeighbour(toRank,src,dest,x,level);
-//      }
-//    }
-//    enddforx
-//  enddforx
+  dfor2(dest)
+    dfor2(src)
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+        vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+        if (vertex.hasToSendDataToNeighbour(src,dest)) {
+          sendMergedLimiterStatusToNeighbour(
+              toRank,src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              x,level);
+        } else {
+          sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+              toRank,src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              x,level);
+        }
+      }
+    enddforx
+  enddforx
 }
+
+/*
+ * We only activate send empty data for LimitingADERDGSolvers
+ * where we have detected a change of the limiter domain.
+ * This information should be available on all ranks.
+ * We ignore other solver types.
+ */
+void exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+          toRank,src,dest,x,level);
+    }
+    ++solverNumber;
+  }
+
+  auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+/*
+ * We only activate send empty data for LimitingADERDGSolvers
+ * where we have detected a change of the limiter domain.
+ * This information should be available on all ranks.
+ * We ignore other solver types.
+ */
+void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbour(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        limitingADERDGSolver->sendMergedLimiterStatusToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
+      } else {
+        limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+            toRank,src,dest,x,level);
+      }
+      ++solverNumber;
+    }
+  }
+
+  auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
 
 //
 // Below all methods are nop.
