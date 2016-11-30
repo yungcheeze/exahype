@@ -4,6 +4,10 @@
 #
 #
 
+#### COPIED FROM SHU VORTEX.
+#### SHOULD BE BOTH GENERALIZED AND MERGED
+
+
 """
 Run convergence tests: The EulerFlow ShuVortex.
 Will setup environment variables to execute a templated specification file.
@@ -24,10 +28,10 @@ me = os.path.basename(__file__)
 def log(text): print "%s: %s" % (me, text)
 pidlist = lambda processes: " ".join([str(proc.pid) for proc in processes])
 
-# default values for ShuVortex simulations,
-# cf. the paper of Michael Dumbser
+# 3D MHD Wave
+# with default MHD application but in 3D
 polyorders = arange(2,10)
-width = 2.
+width = 1.0
 depths = arange(1,6)
 
 meshsize = lambda width, depth: width / 3.**depth  # actual meshsize we will get (dx)
@@ -38,16 +42,15 @@ maxmeshsize = lambda meshsize: meshsize * maxmeshsizefactor
 settings = {}
 
 settings['SIMBASE'] = getenv('SIMBASE', default="simulations/")
-settings['ExaBinary'] = shell("echo $(exa root)/$(exa find-binary EulerFlow)")
-settings['ExaSpecfile'] = "ShuVortexConvergenceTpl.exahype"
+settings['ExaBinary'] = shell("echo $(exa root)/$(exa find-binary MHD)")
+settings['ExaSpecfile'] = "MHD_AlfenWave3DConvergence.exahype"
 settings['ExaRunner'] = "../../RunScripts/runTemplatedSpecfile.sh"
 
 # set initial data to use.
-#settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
-settings['EXAHYPE_INITIALDATA']="ShuVortex"
+settings['EXAHYPE_INITIALDATA']="AlfenWave"
 # parameters for setting up the specfile
 settings['ExaWidth']=str(width)
-settings['ExaEndTime']="2.0"
+settings['ExaEndTime']="12.0" # MHD LONG RUN
 # parameters deciding how frequently output is made. As a first criterion,
 # 1 output dump with the highest resolution is 250MB.
 settings['ExaConvOutputRepeat']="0.1"
@@ -55,11 +58,14 @@ settings['ExaVtkOutputRepeat']="0.5"
 # single threaded in the moment.
 settings['ExaTbbCores'] = "1"
 
+settings['ExaVtkFormat'] = "Legendre::vertices"
+
 # this is useful if you compiled with assertions
 settings['EXAHYPE_SKIP_TESTS'] = "True"
 
 # template to set up a queueing system
-settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies-Euler"
+settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=MHD3D-p{ExapOrder}-m{ExaMeshSize}-ConvergenceStudies"
+#settings['QRUNTPL'] = ""
 settings['SIMBASE'] = 'simulations/'
 
 def start(polyorder, maxmeshsize, meshsize):

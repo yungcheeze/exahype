@@ -123,7 +123,9 @@ for fmodule in Parameters.f90 typesDef.f90; do
 	fi
 done
 
+set -o pipefail # fail if make fails
+
 make -j $(nproc) 2>&1 | tee make.log || { echo -e "Make failed, see make.log for full log"; exit -1; }
 
-echo -e "Making $APPNAME finished"
+echo -e "Making $APPNAME finished successfully"
 

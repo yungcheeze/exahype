@@ -101,6 +101,17 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
 
+      // Copy rhs0 -> rhs
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < basisSize; l++) {
+            for (int m = 0; m < numberOfVariables; m++) {
+              rhs[idx_rhs(i, j, k, l, m)] = rhs_0[idx_rhs(i, j, k, l, m)];
+            }
+          }
+        }
+      }
+
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // x direction (independent from the y and z derivatives)
       for (int j = 0; j < basisSize; j++) {
@@ -109,14 +120,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
                                 kernels::gaussLegendreWeights[order][j] *
                                 kernels::gaussLegendreWeights[order][k];
           const double updateSize = weight * dt / dx[0];
-
-          // Copy rhs0 -> rhs
-          // TODO(guera): Move out?!
-          for (int l = 0; l < basisSize; l++) {
-            for (int m = 0; m < numberOfVariables; m++) {
-              rhs[idx_rhs(i, j, k, l, m)] = rhs_0[idx_rhs(i, j, k, l, m)];
-            }
-          }
 
           // Matrix operation
           for (int l = 0; l < basisSize; l++) {

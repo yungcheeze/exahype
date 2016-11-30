@@ -1,34 +1,36 @@
 /**
-
- Ideal Special Relativistic Magnetohydrodynamics.
- A custom ExaHype Kernel written in Fortran,
- currently only 3D,
- provided by Olindo and modified by Sven.
-
- Started 17. June, 2016.
- Based on srhd3dfortran.exahype
-
+ * MHD AlfenWave specfile for convergence analysis.
+ *
+ *@comment@ This file is a TEMPLATE, it has variables denoted
+ *@comment@ like "@VARNAME@" and replaced by a script before
+ *@comment@ handing over to ExaHyPE. Furthermore, these lines
+ *@comment@ starting with "@comment@" are removed from the
+ *@comment@ generated spec file. Instead, there will be a
+ *@comment@ description about the generated file in the
+ *@comment@ following:
+ *
+ * This convergence test is using ideal Special Relativistic
+ * Magnetohydrodynamics using a Fortran kernel, in 2D.
+ *
  */
 exahype-project  MHDSolver
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD_TwoKernels/
+  output-directory           = ./ApplicationExamples/MHD/
   architecture               = noarch
 
   computational-domain
-    /* we compare with Fortran, MUST be 3d */
     dimension                = 3
-    width                    = 1.0, 0.5, 0.5
+    /* this is the grid for the 3D MHD AlfenWave test */
+    width                    = @ExaWidth@, @ExaWidth@, @ExaWidth@
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 8.0
+    end-time                 = @ExaEndTime@
   end computational-domain
-
-
 
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = @ExaTbbCores@
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -50,69 +52,56 @@ exahype-project  MHDSolver
   end optimisation
   
   solver ADER-DG MHDSolver
-    /* for field (=variables) descriptions, see code */
     variables          = 9
     parameters         = 0
-    order              = 3
-    /* was 0.24 */
-    maximum-mesh-size  = 0.4
+    order              = @ExapOrder@
+    maximum-mesh-size  = @ExaMeshSize@
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
-    /* we are using the new Fortran interface */
     language           = C
-    /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:orsagtang}
+    constants          = {initialdata:alfenwave}
 
-    /* do not trust vtk::Cartesian::vertices::ascii as it probably contains bugs */
-    /* use vtk::Legendre::vertices::ascii instead */
-    /* however, Legendre does not work in 3D */
-    plot vtk::Cartesian::vertices::ascii
+    /* Used Legendre::vertices here */
+    plot vtk::@ExaVtkFormat@::ascii
       variables= 9
       time     = 0.0
-      repeat   = 0.05
+      repeat   = @ExaVtkOutputRepeat@
       output   = ./conserved
       select   = {}
     end plot
     
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 0
       time = 0.0
-      repeat = 0.05
+      repeat = @ExaConvOutputRepeat@
       output = ./global-integrals
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./primitive
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./exact-primitive
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::@ExaVtkFormat@::ascii
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./errors-conserved
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
-      variables = 9
-      time      = 0.0
-      repeat    = 0.05
-      output    = ./relative-errors-conserved
-      select = {}
-    end plot
   end solver
 
 end exahype-project

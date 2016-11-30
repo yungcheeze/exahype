@@ -121,7 +121,8 @@ case $CMD in
 		SPECFILE=$(subreq find-specfile $APPNAME)
 		# the directory handling of this tool is really awkward.
 		# Would prefer relative directories here.
-		$ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | tee -a run.log
+		reducedbuf="stdbuf -oL -eL" # for quicker output, no 4k buffering
+		$reducedbuf $ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | $reducedbuf tee -a run.log
 		;;
 	"sim") # lightweight simulation managament
 		exec $GITROOT/Code/Miscellaneous/BuildScripts/sim.sh $@
