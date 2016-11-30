@@ -1,0 +1,83 @@
+{# /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/ #}
+
+#include <tarch/la/Vector.h>
+
+#include <cstring>
+#include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/DGMatrices.h"
+#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+
+
+void kernels::aderdg::optimised::surfaceIntegral( 
+  double* restrict lduh, 
+  const double* restrict const lFbnd, 
+  const tarch::la::Vector<DIMENSIONS,double> &dx
+) {
+  //TODO JMG uncomment when using vectorization
+// #ifdef __INTEL_COMPILER
+  // __assume_aligned(FRCoeff, ALIGNMENT);
+  // __assume_aligned(FLCoeff, ALIGNMENT);
+  // __assume_aligned(weights2, ALIGNMENT);
+// #endif
+
+  // x faces
+  for (int l = 0; l < {{nVar}}; l++) {
+    for (int ij = 0; ij < {{nDofPowDimMinOne}}; ij++) {
+      const double weight = weights2[ij] / dx[0];
+
+      for (int k = 0; k < {{nDof}}; k++) {
+        // left flux minus right flux
+        lduh[ij*{{nDof*nVar}}+k*{{nVar}}+l] -=
+            (lFbnd[{{bndFaceSize*1}}+l*{{bndBlockSize}}+ij] * FRCoeff[k] -
+             lFbnd[{{bndFaceSize*0}}+l*{{bndBlockSize}}+ij] * FLCoeff[k]) *
+            weight;
+      }
+    }
+  }
+
+  // y faces
+  for (int l = 0; l < {{nVar}}; l++) {
+    for (int ik = 0; ik < {{nDofPowDimMinOne}}; ik++) {
+      const double weight = weights2[ik] / dx[1];
+{% if nDim == 3 %} {# // ik in [0..nDof*nDof-1], need to extract i and k to compute the correct shift for luh #}
+      const int ikLuhIndex = ((ik/{{nDof}})*{{nDof*nDof}} + ik % {{nDof}})*{{nVar}};
+{% else %}
+      const int ikLuhIndex = ik*{{nVar}};
+{% endif %} {# // ik in [0..nDof-1] <=> k=ik, i=0 #}
+      for (int j = 0; j < {{nDof}}; j++) {
+        // back flux minus front flux
+        lduh[ikLuhIndex + j*{{nDof*nVar}}+ l] -=
+            (lFbnd[{{bndFaceSize*3}}+l*{{bndBlockSize}}+ik] * FRCoeff[j] -
+             lFbnd[{{bndFaceSize*2}}+l*{{bndBlockSize}}+ik] * FLCoeff[j]) *
+            weight;
+        }
+      }
+  }
+{% if nDim == 3 %}
+  // z faces
+  for (int l = 0; l < {{nVar}}; l++) {
+    for (int jk = 0; jk < {{nDofPowDimMinOne}}; jk++) {
+      const double weight = weights2[jk] / dx[2];
+      for (int i = 0; i < {{nDof}}; i++) {
+        // bottom flux minus top flux
+        lduh[i*{{nDof*nDof*nVar}}+ jk*{{nVar}}+l] -=
+            (lFbnd[{{bndFaceSize*5}}+l*{{bndBlockSize}}+jk] * FRCoeff[i] -
+             lFbnd[{{bndFaceSize*4}}+l*{{bndBlockSize}}+jk] * FLCoeff[i]) *
+            weight;
+      }
+    }
+  }
+{% endif %}
+}
+

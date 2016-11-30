@@ -75,17 +75,7 @@ void {{Project}}::{{Solver}}::volumeIntegral(double* lduh,const double* const lF
 
 void {{Project}}::{{Solver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeSurfaceIntegral}}
-  //TODO JMG, use optimised kernel when fixed
-
-  //kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );
-  
-  double* lFhbnd_gen = new double[ kernels::aderdg::optimised::converter::getBndGenArraySize()];
-  
-  kernels::aderdg::optimised::converter::Bnd_optimised2generic(lFhbnd,lFhbnd_gen);
-  
-  kernels::aderdg::generic::c::surfaceIntegralNonlinear( lduh, lFhbnd_gen, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
-  
-  delete[] lFhbnd_gen;
+  kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );
 {{AfterSurfaceIntegral}}
 }
 

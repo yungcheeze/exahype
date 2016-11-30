@@ -218,7 +218,7 @@ def generateComputeKernels():
     spaceTimePredictorGenerator.generateCode()
     volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config), m_numerics)
     volumeIntegralGenerator.generateCode()
-    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(m_config, m_numerics)
+    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(generateContext(m_config), m_numerics)
     surfaceIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
