@@ -33,6 +33,24 @@ exahype-project  EulerFVM
     end-time                 = 1.0
   end computational-domain
 
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:4}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
+
+  optimisation
+    fuse-algorithmic-steps          = on
+    fuse-algorithmic-steps-factor   = 0.99
+    /* 0.0 und 0.8 sind schon mal zwei Faktoren */
+    timestep-batch-factor           = 0.0
+    skip-reduction-in-batched-time-steps = on
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
+  end optimisation
+
   shared-memory
     identifier               = dummy
     cores                    = 1
@@ -43,7 +61,7 @@ exahype-project  EulerFVM
     variables         = 5
     parameters        = 0
     patch-size        = 10
-    maximum-mesh-size = 0.15
+    maximum-mesh-size = 0.05
     time-stepping     = global
     kernel            = generic::Godunov
     language          = C
