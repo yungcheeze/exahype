@@ -126,6 +126,8 @@ exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeSt
 {
   prepareLocalTimeStepVariables();
   prepareTemporaryVariables();
+
+  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
 }
 
 // Merge over threads
@@ -139,6 +141,8 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
     _maxCellSizes[i] =
         std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
+
+  logInfo("mergeWithWorkerThread(const TimeStepSizeComputation&)","Merge with worker thread");
 }
 #endif
 
@@ -207,8 +211,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     exahype::State& state) {
   logTraceInWith1Argument("endIteration(State)", state);
 
-  deleteTemporaryVariables();
-
   state.setStabilityConditionOfOneSolverWasViolated(false);
 
   int solverNumber=0;
@@ -252,6 +254,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
   }
 
   VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
+
+  deleteTemporaryVariables();
 
   logTraceOutWith1Argument("endIteration(State)", state);
 }

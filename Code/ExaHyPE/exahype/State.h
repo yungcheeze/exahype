@@ -179,13 +179,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setLimiterDomainHasChanged(false);
   }
 
-  void switchToPredictionAndTimeStepSizeComputationContext() {
+  void switchToPredictionAndFusedTimeSteppingInitialisationContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
   void switchToADERDGTimeStepContext() {

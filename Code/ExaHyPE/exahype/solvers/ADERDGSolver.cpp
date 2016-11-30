@@ -2309,29 +2309,29 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
 
-  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
-  if (holdsFaceData(p.getType())) {
-    assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
-    assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
-    assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMin()));
-    assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMax()));
+  if (holdsFaceData(cellDescription.getType())) {
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
 
     const int numberOfFaceDof = getUnknownsPerFace();
     const double* lQhbnd = DataHeap::getInstance().getData(
-        p.getExtrapolatedPredictor()).data() +
+        cellDescription.getExtrapolatedPredictor()).data() +
         (faceIndex * numberOfFaceDof);
     const double* lFhbnd = DataHeap::getInstance().getData(
-        p.getFluctuation()).data() +
+        cellDescription.getFluctuation()).data() +
         (faceIndex * numberOfFaceDof);
 
     logDebug(
         "sendDataToNeighbour(...)",
         "send "<<DataMessagesPerNeighbourCommunication<<" arrays to rank " <<
-        toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
+        toRank << " for cell="<<cellDescription.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
         ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
         ", src=" << src << ", dest=" << dest <<
-        ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
     // We append all the max values to the min values.
@@ -2339,11 +2339,11 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     // and the predictor time step size
     std::vector<double> sentMinMax( 2*getNumberOfVariables() + 2 );
     for (int i=0; i<getNumberOfVariables(); i++) {
-      sentMinMax[i]                        = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex*getNumberOfVariables()+i];
-      sentMinMax[i+getNumberOfVariables()] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex*getNumberOfVariables()+i];
+      sentMinMax[i]                        = DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[faceIndex*getNumberOfVariables()+i];
+      sentMinMax[i+getNumberOfVariables()] = DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[faceIndex*getNumberOfVariables()+i];
     }
-    sentMinMax[2*getNumberOfVariables()] = p.getPredictorTimeStamp();
-    sentMinMax[2*getNumberOfVariables()+1] = p.getPredictorTimeStepSize();
+    sentMinMax[2*getNumberOfVariables()] = cellDescription.getPredictorTimeStamp();
+    sentMinMax[2*getNumberOfVariables()+1] = cellDescription.getPredictorTimeStepSize();
     assertionEquals(sentMinMax.size(),2*static_cast<unsigned int>(getNumberOfVariables())+2);
 
     // Send order: minMax,lQhbnd,lFhbnd
@@ -2401,7 +2401,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
 
-  CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourTypeAsInt);
@@ -2414,23 +2414,23 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
   // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems
   // if one Ancestor is just used for restriction.
-  if(neighbourType==CellDescription::Type::Cell || p.getType()==CellDescription::Type::Cell){
+  if(neighbourType==CellDescription::Type::Cell || cellDescription.getType()==CellDescription::Type::Cell){
     tarch::multicore::Lock lock(_heapSemaphore);
 
     assertion1(holdsFaceData(neighbourType),neighbourType);
-    assertion1(holdsFaceData(p.getType()),p.toString());
+    assertion1(holdsFaceData(cellDescription.getType()),cellDescription.toString());
 
-    assertion4(!p.getRiemannSolvePerformed(faceIndex),
-        faceIndex,cellDescriptionsIndex,p.getOffset().toString(),p.getLevel());
-    assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
-    assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
+    assertion4(!cellDescription.getRiemannSolvePerformed(faceIndex),
+        faceIndex,cellDescriptionsIndex,cellDescription.getOffset().toString(),cellDescription.getLevel());
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
     logDebug(
         "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
-        ", src type=" << p.getType() <<
+        ", src type=" << cellDescription.getType() <<
         ", src=" << src << ", dest=" << dest <<
-        ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
     const int numberOfFaceDof = getUnknownsPerFace();
@@ -2452,32 +2452,25 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         peano::heap::MessageType::NeighbourCommunication);
 
     logDebug(
-        "receiveADERDGFaceData(...)", "[pre] solve Riemann problem with received data." <<
-        " cellDescription=" << p.toString() <<
+        "mergeWithNeighbourData(...)", "[pre] solve Riemann problem with received data." <<
+        " cellDescription=" << cellDescription.toString() <<
         ",faceIndexForCell=" << faceIndex <<
         ",normalOfExchangedFac=" << normalOfExchangedFace <<
         ",x=" << x.toString() << ", level=" << level <<
-        ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
     // TODO collect neighbour time step data here out of receivedMinMax and
     // use it for solveRiemannProblemAtInterface.
 
     solveRiemannProblemAtInterface(
-        p,
+        cellDescription,
         faceIndex,
         receivedlQhbndIndex,
         receivedlFhbndIndex,
         tempFaceUnknowns,
         tempStateSizedVectors,
         tempStateSizedSquareMatrices);
-
-    // TODO(Dominic): This moved into LimitingADERDGSolver.
-//    mergeSolutionMinMaxOnFace(
-//        p,
-//        faceIndex,
-//        DataHeap::getInstance().getData(receivedMinMax).data(),
-//        DataHeap::getInstance().getData(receivedMinMax).data() + getNumberOfVariables() );
 
     // TODO(Dominic): If anarchic time stepping, receive the time step too.
 
@@ -2486,11 +2479,11 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     DataHeap::getInstance().deleteData(receivedMinMax,true);
   } else  {
     logDebug(
-        "receiveADERDGFaceData(...)", "drop three arrays from rank " <<
+        "mergeWithNeighbourData(...)", "drop three arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
         ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
         ", src=" << src << ", dest=" << dest <<
-        ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
     dropNeighbourData(fromRank,src,dest,x,level);
@@ -2817,7 +2810,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   std::vector<double> timeStepDataToSend(0,6);
-  timeStepDataToSend.push_back(_minCorrectorTimeStamp);
+  timeStepDataToSend.push_back(_minCorrectorTimeStamp);  // TODO(Dominic): Append previous time step size
   timeStepDataToSend.push_back(_minCorrectorTimeStepSize);
   timeStepDataToSend.push_back(_minPredictorTimeStamp);
   timeStepDataToSend.push_back(_minPredictorTimeStepSize);
@@ -2843,8 +2836,8 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
             ",data[1]=" << timeStepDataToSend[1] <<
             ",data[2]=" << timeStepDataToSend[2] <<
             ",data[3]=" << timeStepDataToSend[3] <<
-            ",data[4]=" << timeStepDataToSend[2] <<
-            ",data[5]=" << timeStepDataToSend[3]);
+            ",data[4]=" << timeStepDataToSend[4] <<
+            ",data[5]=" << timeStepDataToSend[5]);
     logDebug("sendDataWorker(...)","_minNextPredictorTimeStepSize="<<_minNextPredictorTimeStepSize);
   }
 
@@ -2889,17 +2882,6 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   _maxCellSize              = receivedTimeStepData[5];
 }
 
-void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
-    const int                                     workerRank,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
-  std::vector<double> emptyMessage(0);
-  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
-    DataHeap::getInstance().sendData(
-        emptyMessage, workerRank, x, level,
-        peano::heap::MessageType::MasterWorkerCommunication);
-}
-
 bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
     const int cellDescriptionsIndex,
     const int element) {
@@ -2922,7 +2904,6 @@ bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
 
   return false;
 }
-
 
 void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                     workerRank,
@@ -2960,6 +2941,17 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
   } else {
     sendEmptyDataToWorker(workerRank,x,level);
   }
+}
+
+void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
+    const int                                     workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(

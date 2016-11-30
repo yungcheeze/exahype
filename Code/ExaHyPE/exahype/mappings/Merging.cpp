@@ -380,6 +380,8 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+//    logInfo("mergeWithNeighbour(...)","hasToMerge");  // TODO(Dominic): Remove
+
     dfor2(myDest)
       dfor2(mySrc)
         tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
@@ -389,6 +391,8 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+//          logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");  // TODO(Dominic): Remove
+
           int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
           MetadataHeap::getInstance().receiveData(
@@ -399,6 +403,8 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
+//            logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData"); // TODO(Dominic): Remove
+
             mergeWithNeighbourData(
                 fromRank,
                 vertex.getCellDescriptionsIndex()[srcScalar],
@@ -639,7 +645,7 @@ void exahype::mappings::Merging::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // TODO(Dominic): 1. Copy the received data to the local cell (Maybe just "swap" the indices and delete previous local cell data).
+   // do nothing
 }
 
 void exahype::mappings::Merging::mergeWithRemoteDataDueToForkOrJoin(

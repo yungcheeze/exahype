@@ -459,15 +459,17 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
     repository.iterate();
 
-    logInfo("runAsMaster(...)","adjusted limiter domain");
+    logInfo("runAsMaster(...)","adjusted initial limiter domain");
   }
+
+  logInfo("runAsMaster(...)","start to plot initial solution and compute first prediction");
 
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
-  repository.getState().switchToPredictionAndTimeStepSizeComputationContext();
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
@@ -482,6 +484,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   }
   repository.iterate();
 
+  logInfo("runAsMaster(...)","finished to plot initial solution and compute first prediction");
 
   /*
    * Finally print the initial time step info.

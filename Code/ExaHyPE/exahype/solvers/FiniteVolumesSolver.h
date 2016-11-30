@@ -130,6 +130,31 @@ private:
   static const int DataMessagesPerMasterWorkerCommunication;
 #endif
 
+  /**
+   * Sets heap indices of all finite volumes cell descriptions that were
+   * received due to a fork or join event to
+   * multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+   * and the parent index of the cell descriptions to the specified \p
+   * parentIndex.
+   */
+  static void resetDataHeapIndices(
+      const int cellDescriptionsIndex,
+      const int parentIndex);
+
+  /**
+   * Checks if the parent index of a fine grid cell description
+   * was set to RemoteAdjacencyIndex during a previous forking event.
+   *
+   * If so, check if there exists a coarse grid cell description
+   * which must have been also received during a previous fork event.
+   * If so, update the parent index of the fine grid cell description
+   * with the coarse grid cell descriptions index.
+   */
+  void ensureConsistencyOfParentIndex(
+      CellDescription& cellDescription,
+      const int coarseGridCellDescriptionsIndex,
+      const int solverNumber);
+
 public:
   /**
     * Returns the ADERDGCellDescription.
@@ -597,7 +622,7 @@ public:
    */
   static void mergeCellDescriptionsWithRemoteData(
       const int                                     fromRank,
-      const int                                     cellDescriptionsIndex,
+      exahype::Cell&                                localCell,
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
@@ -617,9 +642,7 @@ public:
   void mergeWithNeighbourMetadata(
         const int neighbourTypeAsInt,
         const int cellDescriptionsIndex,
-        const int element) override {
-    assertionMsg(false,"Please implement!");
-  }
+        const int element) override;
 
   void sendDataToNeighbour(
       const int                                     toRank,
@@ -628,9 +651,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false,"Please implement!");
-  }
+      const int                                     level) override;
 
   void sendEmptyDataToNeighbour(
       const int                                     toRank,
@@ -650,9 +671,7 @@ public:
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false,"Please implement!");
-  }
+      const int                                    level) override;
 
 
   void dropNeighbourData(
@@ -767,7 +786,7 @@ public:
       const int                                     level) override;
 #endif
 
-  void validateNoNansInFiniteVolumesSolution(CellDescription& cellDescription,const int cellDescriptionsIndex) const;
+  void validateNoNansInFiniteVolumesSolution(CellDescription& cellDescription,const int cellDescriptionsIndex,const char* methodTrace) const;
 
   void printFiniteVolumesSolution(CellDescription& cellDescription) const;
 

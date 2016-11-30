@@ -140,6 +140,11 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
       _minTimeStepSize          = _minNextTimeStepSize;
       break;
   }
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
@@ -459,7 +464,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   std::copy(newSolution,newSolution+_unknownsPerPatch+_ghostValuesPerPatch,solution); // Copy (current solution) in old solution field.
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
+//  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -483,7 +488,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex);
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
 
 
@@ -636,7 +641,37 @@ void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
     const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
+      cellDescriptionsIndex);
+
+  for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
+        || cellDescription.getType()==CellDescription::Type::Ancestor) {
+      Solver::SubcellPosition subcellPosition =
+          exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+          <CellDescription,Heap>(cellDescription);
+
+      if (subcellPosition.parentElement!=NotFound) {
+        cellDescription.setType(CellDescription::Type::Ancestor);
+//        cellDescription.setHasToHoldDataForMasterWorkerCommunication(true); TODO(Dominic): Introduce to FiniteVolumesCellDescription.def
+
+        auto finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+            exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+        finiteVolumesSolver->ensureNecessaryMemoryIsAllocated(cellDescription);
+      }
+    } else if (cellDescription.getType()==CellDescription::Type::EmptyDescendant
+        || cellDescription.getType()==CellDescription::Type::Descendant) {
+      cellDescription.setType(CellDescription::Type::Descendant);
+//      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true); TODO(Dominic): Introduce to FiniteVolumesCellDescription.def
+
+      auto finiteVolumesSolver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+      finiteVolumesSolver->ensureNecessaryMemoryIsAllocated(cellDescription);
+    }
+  }
+
+  Heap::getInstance().sendData(cellDescriptionsIndex,
+                               toRank,x,level,messageType);
 }
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(
@@ -651,14 +686,106 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(
 
 void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
     const int                                     fromRank,
-    const int                                     cellDescriptionsIndex,
+    exahype::Cell&                                localCell,
     const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
 
-  assertionMsg(false,"Please implement!");
+  int receivedCellDescriptionsIndex =
+      Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
+  Heap::getInstance().receiveData(
+      receivedCellDescriptionsIndex,fromRank,x,level,messageType);
+
+  if (!Heap::getInstance().getData(receivedCellDescriptionsIndex).empty()) {
+    // TODO(Dominic): We reset the parent and heap indices of a received cell
+    // to -1 and RemoteAdjacencyIndex, respectively.
+    // If we receive parent and children cells during a fork event,
+    //
+    // We use the information of a parentIndex of a fine grid cell description
+    // set to RemoteAdjacencyIndex to update the parent index with
+    // the index of the coarse grid cell description in enterCell(..).
+    resetDataHeapIndices(receivedCellDescriptionsIndex,
+        multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
+
+    localCell.setupMetaData();
+    assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
+        localCell.getCellDescriptionsIndex());
+    Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).reserve(
+        std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
+            Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
+
+    logDebug("mergeCellDescriptionsWithRemoteData(...)","Received " <<
+        Heap::getInstance().getData(receivedCellDescriptionsIndex).size() <<
+        " cell descriptions for cell ("
+        "offset="<< x.toString() <<
+        "level="<< level << ")");
+
+    for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
+      logDebug("mergeCellDescriptionsWithRemoteData(...)","Received " <<
+          " cell description for cell ("
+          "offset="<< x.toString() <<
+          ",level="<< level <<
+          ",isRoot="<< localCell.isRoot() <<
+          ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank() <<
+          ") with type="<< pReceived.getType());
+
+      bool found = false;
+      for (auto& pLocal : Heap::getInstance().getData(localCell.getCellDescriptionsIndex())) {
+        if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
+          found = true;
+
+          assertion(pReceived.getType()==pLocal.getType());
+          if (pLocal.getType()==CellDescription::Type::Cell
+//              || // TODO(Dominic)
+//              pLocal.getType()==CellDescription::Type::EmptyAncestor ||
+//              pLocal.getType()==CellDescription::Type::Ancestor ||
+//              pLocal.getType()==CellDescription::Type::Descendant
+          ) {
+            assertionNumericalEquals2(pLocal.getTimeStamp(),pReceived.getTimeStamp(),
+                pLocal.toString(),pReceived.toString());
+            assertionNumericalEquals2(pLocal.getTimeStepSize(),pReceived.getTimeStepSize(),
+                pLocal.toString(),pReceived.toString());
+          }
+        }
+      }
+
+      if (!found) {
+        FiniteVolumesSolver* solver =
+            static_cast<FiniteVolumesSolver*>(RegisteredSolvers[pReceived.getSolverNumber()]);
+
+        solver->ensureNecessaryMemoryIsAllocated(pReceived);
+        Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).
+            push_back(pReceived);
+      }
+    }
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::resetDataHeapIndices(
+    const int cellDescriptionsIndex,
+    const int parentIndex) {
+  for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    p.setParentIndex(parentIndex);
+
+    // Default field data indices
+    p.setPreviousSolution(-1);
+    p.setSolution(-1);
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::ensureConsistencyOfParentIndex(
+    CellDescription& fineGridCellDescription,
+    const int coarseGridCellDescriptionsIndex,
+    const int solverNumber) {
+  fineGridCellDescription.setParentIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+  int coarseGridElement = tryGetElement(coarseGridCellDescriptionsIndex,solverNumber);
+  if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
+    fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
+    // In this case, we are not at a master worker boundary only our parent is.
+//    fineGridCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);  TODO(Dominic): Introduce to FiniteVolumesCellDescription.def
+  }
 }
 
 /**
@@ -673,35 +800,6 @@ void exahype::solvers::FiniteVolumesSolver::dropCellDescriptions(
 }
 
 ///////////////////////////////////
-// NEIGHBOUR
-///////////////////////////////////
-
-void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
-    const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  std::vector<double> emptyMessage(0);
-  for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
-    DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
-}
-
-void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
-    const int                                     fromRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
-    DataHeap::getInstance().receiveData(
-        fromRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
-}
-
-///////////////////////////////////
 // FORK OR JOIN
 ///////////////////////////////////
 
@@ -711,7 +809,23 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJ
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+      element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (p.getType()==CellDescription::Cell) {
+    double* solution = DataHeap::getInstance().getData(p.getSolution()).data();
+
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
+        ", cell: "<< x << ", level: " << level);
+
+    DataHeap::getInstance().sendData(
+        solution, getUnknownsPerPatch()+getGhostValuesPerPatch(), toRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
+  }
 }
 
 
@@ -733,7 +847,19 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerOrMasterDataDueToFork
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  auto& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  assertion4(tarch::la::equals(x,cellDescription.getOffset()+0.5*cellDescription.getSize()),x,cellDescription.getOffset()+0.5*cellDescription.getSize(),level,cellDescription.getLevel());
+  assertion2(cellDescription.getLevel()==level,cellDescription.getLevel(),level);
+
+  if (cellDescription.getType()==CellDescription::Cell) {
+    logDebug("mergeWithRemoteDataDueToForkOrJoin(...)","[solution] receive from rank "<<fromRank<<
+             ", cell: "<< x << ", level: " << level);
+
+    DataHeap::getInstance().getData(cellDescription.getSolution()).clear();
+    DataHeap::getInstance().receiveData(
+        cellDescription.getSolution(),fromRank,x,level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
+  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoin(
@@ -747,30 +873,322 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 }
 
 ///////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourMetadata(
+      const int neighbourTypeAsInt,
+      const int cellDescriptionsIndex,
+      const int element) {
+  CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
+
+  CellDescription::Type neighbourType =
+      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+  switch(p.getType()) {
+  case CellDescription::Cell:
+    if (p.getRefinementEvent()==CellDescription::None &&
+        (neighbourType==CellDescription::Ancestor ||
+            neighbourType==CellDescription::EmptyAncestor)) {
+      p.setRefinementEvent(CellDescription::AugmentingRequested);
+    }
+    break;
+  case CellDescription::Descendant:
+  case CellDescription::EmptyDescendant:
+    // TODO(Dominic): Add to docu what we do here.
+    if (neighbourType==CellDescription::Cell) {
+//      p.setHasToHoldDataForNeighbourCommunication(true); // TODO(Dominic): Introduce field to FiniteVolumesCellDescription.def
+    }
+
+    // 2. Request further augmentation if necessary (this might get reset if the traversal
+    // is able to descend and finds existing descendants).
+    if (p.getRefinementEvent()==CellDescription::None &&
+        (neighbourType==CellDescription::Ancestor ||
+            neighbourType==CellDescription::EmptyAncestor)) {
+      p.setRefinementEvent(CellDescription::AugmentingRequested);
+    }
+    break;
+  case CellDescription::Ancestor:
+  case CellDescription::EmptyAncestor:
+    // TODO(Dominic): Add to docu what we do here.
+    if (neighbourType==CellDescription::Cell) {
+//      p.setHasToHoldDataForNeighbourCommunication(true);  // TODO(Dominic): Introduce field to FiniteVolumesCellDescription.def
+    }
+    break;
+  default:
+    assertionMsg(false,"Should never be entered in static AMR scenarios!");
+    break;
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendDataToNeighbour(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertion( tarch::la::countEqualEntries(src,dest)==(DIMENSIONS-1) ); // TODO(Dominic): If we only use Godunov
+/*
+  if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
+    return; // We only consider faces; no corners.
+  }
+*/
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (holdsFaceData(cellDescription.getType())) {
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
+
+    const int numberOfFaceDof = getUnknownsPerFace();
+    const int boundaryLayerToSendIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+    double* luhbnd = DataHeap::getInstance().getData(boundaryLayerToSendIndex).data();
+
+    const double* luh = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    boundaryLayerExtraction(luhbnd,luh,dest-src);
+
+    logDebug(
+        "sendDataToNeighbour(...)",
+        "send "<<DataMessagesPerNeighbourCommunication<<" arrays to rank " <<
+        toRank << " for cell="<<cellDescription.getOffset()
+//        << "and face=" << faceIndex
+        << " from vertex x=" << x << ", level=" << level <<
+        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
+        ", src=" << src << ", dest=" << dest
+//        << ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
+    );
+
+    // Send order: minMax,lQhbnd,lFhbnd
+    // Receive order: lFhbnd,lQhbnd,minMax
+    DataHeap::getInstance().sendData(
+        luhbnd, numberOfFaceDof, toRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+    // TODO(Dominic): If anarchic time stepping send the time step over too.
+
+    DataHeap::getInstance().deleteData(boundaryLayerToSendIndex,true);
+  } else {
+    std::vector<double> emptyArray(0,0);
+
+    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
+      DataHeap::getInstance().sendData(
+          emptyArray, toRank, x, level,
+          peano::heap::MessageType::NeighbourCommunication);
+    }
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, toRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
+    const int                                    fromRank,
+    const int                                    neighbourTypeAsInt,
+    const int                                    cellDescriptionsIndex,
+    const int                                    element,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    double**                                     tempFaceUnknowns,
+    double**                                     tempStateSizedVectors,
+    double**                                     tempStateSizedSquareMatrices,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  if (tarch::la::countEqualEntries(src,dest)!=(DIMENSIONS-1)) {
+    return; // We only consider faces; no corners.
+  }
+
+  waitUntilAllBackgroundTasksHaveTerminated();
+  tarch::multicore::Lock lock(_heapSemaphore);
+
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  synchroniseTimeStepping(cellDescription);
+  CellDescription::Type neighbourType =
+      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+
+  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+  const int faceIndex = 2 * normalOfExchangedFace +
+      (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+
+  // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
+  // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems
+  // if one Ancestor is just used for restriction.
+  if(neighbourType==CellDescription::Type::Cell || cellDescription.getType()==CellDescription::Type::Cell){
+    tarch::multicore::Lock lock(_heapSemaphore);
+
+    assertion1(holdsFaceData(neighbourType),neighbourType);
+    assertion1(holdsFaceData(cellDescription.getType()),cellDescription.toString());
+
+    assertion4(!cellDescription.getRiemannSolvePerformed(faceIndex),
+        faceIndex,cellDescriptionsIndex,cellDescription.getOffset().toString(),cellDescription.getLevel());
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
+
+    logDebug(
+        "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
+        fromRank << " for vertex x=" << x << ", level=" << level <<
+        ", src type=" << cellDescription.getType() <<
+        ", src=" << src << ", dest=" << dest <<
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
+    );
+
+    // TODO(Dominic): If anarchic time stepping, receive the time step too.
+    //
+    // Copy the received boundary layer into a ghost layer of the solution.
+    // TODO(Dominic): Pipe it directly through the Riemann solver if
+    // we only use the Godunov method and not higher-order FVM methods.
+    // For methods that are higher order in time, e.g., MUSCL-Hancock, we usually need
+    // corner neighbours. This is why we currently adapt a GATHER-UPDATE algorithm
+    // instead of a SOLVE RIEMANN PROBLEM AT BOUNDARY-UPDATE INTERIOR scheme.
+    const int numberOfFaceDof      = getUnknownsPerFace();
+    const int receivedBoundaryLayerIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+    double* luhbnd = DataHeap::getInstance().getData(receivedBoundaryLayerIndex).data();
+    assertion(DataHeap::getInstance().getData(receivedBoundaryLayerIndex).empty());
+
+
+    // Send order: minMax,lQhbnd,lFhbnd
+    // Receive order: lFhbnd,lQhbnd,minMax
+    DataHeap::getInstance().receiveData(luhbnd, numberOfFaceDof, fromRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+
+    logDebug(
+        "mergeWithNeighbourData(...)", "[pre] solve Riemann problem with received data." <<
+        " cellDescription=" << cellDescription.toString() <<
+        ",faceIndexForCell=" << faceIndex <<
+        ",normalOfExchangedFac=" << normalOfExchangedFace <<
+        ",x=" << x.toString() << ", level=" << level <<
+        ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
+    );
+
+    double* luh = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    ghostLayerFillingAtBoundary(luh,luhbnd,src-dest);
+
+    DataHeap::getInstance().deleteData(receivedBoundaryLayerIndex,true);
+  } else  {
+    logDebug(
+        "mergeWithNeighbourData(...)", "drop one array from rank " <<
+        fromRank << " for vertex x=" << x << ", level=" << level <<
+        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
+        ", src=" << src << ", dest=" << dest
+        << ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
+    );
+
+    dropNeighbourData(fromRank,src,dest,x,level);
+  }
+}
+
+void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        fromRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+}
+
+///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
+
+/*
+ * At the time of sending data to the master,
+ * we have already performed a time step update locally
+ * on the rank. We thus need to communicate the
+ * current min predictor time step size to the master.
+ * The next min predictor time step size is
+ * already reset locally to the maximum double value.
+ *
+ * However on the master's side, we need to
+ * merge the received time step size with
+ * the next min predictor time step size since
+ * the master has not yet performed a time step update
+ * (i.e. called TimeStepSizeComputation::endIteration()).
+ */
 void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  assertionMsg(false,"Please implement!");
+  std::vector<double> timeStepDataToReduce(0,3);
+  timeStepDataToReduce.push_back(_minTimeStepSize);
+  timeStepDataToReduce.push_back(_minCellSize);
+  timeStepDataToReduce.push_back(_maxCellSize);
+
+  assertion1(timeStepDataToReduce.size()==3,timeStepDataToReduce.size());
+  assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
+  if (_timeStepping==TimeStepping::Global) {
+    assertionNumericalEquals1(_minNextTimeStepSize,std::numeric_limits<double>::max(),
+        tarch::parallel::Node::getInstance().getRank());
+  }
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+        "data[0]=" << timeStepDataToReduce[0] <<
+        ",data[1]=" << timeStepDataToReduce[1] <<
+        ",data[2]=" << timeStepDataToReduce[2]);
+  }
+
+  DataHeap::getInstance().sendData(
+      timeStepDataToReduce.data(), timeStepDataToReduce.size(),
+      masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
 }
 
+/**
+ * At the time of the merging,
+ * the workers and the master have already performed
+ * at local update of the next predictor time step size
+ * and of the predictor time stamp.
+ * We thus need to minimise over both quantities.
+ */
 void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  assertionMsg(false,"Please implement!");
-}
+  std::vector<double> receivedTimeStepData(3);
 
+  if (true || tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithWorkerData(...)","Receiving time step data [pre] from rank " << workerRank);
+  }
 
-void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
-    const int                                     masterRank,
-    const int                                     cellDescriptionsIndex,
-    const int                                     element,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level){
-  assertionMsg(false,"Please implement!");
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  assertion1(receivedTimeStepData.size()==3,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
+  assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
+  // The master solver has not yet updated its minNextTimeStepSize.
+  // Thus it does not yet equal MAX_DOUBLE.
+
+  _minNextTimeStepSize = std::min( _minNextTimeStepSize, receivedTimeStepData[0] );
+  _nextMinCellSize     = std::min( _nextMinCellSize, receivedTimeStepData[1] );
+  _nextMaxCellSize     = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
+
+  if (true || tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
+             "data[0]=" << receivedTimeStepData[0] <<
+             ",data[1]=" << receivedTimeStepData[1] <<
+             ",data[2]=" << receivedTimeStepData[2] );
+
+    logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
+             "_minNextTimeStepSize=" << _minNextTimeStepSize <<
+             ",_nextMinCellSize=" << _nextMinCellSize <<
+             ",_nextMaxCellSize=" << _nextMaxCellSize);
+  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
@@ -784,6 +1202,40 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
         peano::heap::MessageType::MasterWorkerCommunication);
 }
 
+void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
+    const int                                     masterRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+      element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Please implement.
+//  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+//
+//  if (cellDescription.getType()==CellDescription::Ancestor) {
+//    double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
+//    double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+//
+//    logDebug("sendDataToMaster(...)","Face data of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
+//        ", cell: "<< x << ", level: " << level);
+//
+//    // No inverted message order since we do synchronous data exchange.
+//    // Order: extrapolatedPredictor,fluctuations.
+//    DataHeap::getInstance().sendData(
+//        extrapolatedPredictor, getUnknownsPerCellBoundary(), masterRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//    DataHeap::getInstance().sendData(
+//        fluctuations, getUnknownsPerCellBoundary(), masterRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//  } else {
+    sendEmptyDataToMaster(masterRank,x,level);
+//  }
+}
+
 void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                     workerRank,
     const int                                     workerTypeAsInt,
@@ -791,13 +1243,86 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  logDebug("mergeWithWorkerData(...)","Merge with worker data from rank "<<workerRank<<
+             ", cell: "<< x << ", level: " << level);
+
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Please implement.
+//  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+//
+//  // The following two assertions assert that cell descriptions on both ranks are together of
+//  // type Cell, Descendant, EmptyAncestor, or Ancestor.
+//  // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
+//  assertion4(cellDescription.getType()==CellDescription::Type::Cell
+//             || cellDescription.getType()==CellDescription::Type::Ancestor
+//             || cellDescription.getType()==CellDescription::Type::EmptyAncestor
+//             || cellDescription.getType()==CellDescription::Type::Descendant,
+//             cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
+//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
+//               && static_cast<CellDescription::Type>(workerTypeAsInt)!=CellDescription::Type::EmptyDescendant
+//               && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::EmptyAncestor
+//                   && cellDescription.getType()==CellDescription::Type::Ancestor)
+//                   && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::Ancestor &&
+//                       cellDescription.getType()==CellDescription::Type::EmptyAncestor),
+//                       cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
+//
+//  if (cellDescription.getType()==CellDescription::Type::Ancestor) {
+//    logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
+//             cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
+//             ", cell: "<< x << ", level: " << level);
+//
+//
+//
+//    // No inverted message order since we do synchronous data exchange.
+//    // Order: extrapolatedPredictor,fluctuations.
+//    // Make sure you clear the arrays before you append(!) data via receive!
+//    DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).clear();
+//    DataHeap::getInstance().getData(cellDescription.getFluctuation()).clear();
+//
+//    DataHeap::getInstance().receiveData(
+//        cellDescription.getExtrapolatedPredictor(), workerRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//    DataHeap::getInstance().receiveData(
+//        cellDescription.getFluctuation(), workerRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//
+//    exahype::solvers::Solver::SubcellPosition subcellPosition =
+//        computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
+//
+//    // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
+//    if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
+//      #if defined(Debug)
+//      CellDescription& parentCellDescription =
+//          getCellDescription(subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement);
+//      #endif
+//
+//      logDebug("mergeWithWorkerData(...)","Restricting face data for solver " <<
+//               cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
+//               " from cell="<< x << ", level=" << level <<
+//               " to cell="<<parentCellDescription.getOffset()+0.5*parentCellDescription.getSize() <<
+//               " level="<<parentCellDescription.getLevel());
+//
+//      restrictData(
+//          cellDescriptionsIndex,element,
+//          subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement,
+//          subcellPosition.subcellIndex);
+//    }
+//  } else  {
+    dropWorkerData(workerRank,x,level);
+//  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
+  logDebug("dropWorkerData(...)","Dropping worker data from rank "<<workerRank<<
+               ", cell: "<< x << ", level: " << level);
+
   for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         workerRank, x, level,
@@ -811,22 +1336,89 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  assertionMsg(false,"Please implement!");
+  std::vector<double> timeStepDataToSend(0,4);
+  timeStepDataToSend.push_back(_minTimeStamp); // TODO(Dominic): Append previous time step size
+  timeStepDataToSend.push_back(_minTimeStepSize);
+
+  timeStepDataToSend.push_back(_minCellSize);
+  timeStepDataToSend.push_back(_maxCellSize);
+
+  assertion1(timeStepDataToSend.size()==4,timeStepDataToSend.size());
+  assertion1(std::isfinite(timeStepDataToSend[0]),timeStepDataToSend[0]);
+  assertion1(std::isfinite(timeStepDataToSend[1]),timeStepDataToSend[1]);
+
+  if (_timeStepping==TimeStepping::Global) {
+    assertionEquals1(_minNextTimeStepSize,std::numeric_limits<double>::max(),
+        tarch::parallel::Node::getInstance().getRank());
+  }
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendDataToWorker(...)","Broadcasting time step data: " <<
+        " data[0]=" << timeStepDataToSend[0] <<
+        ",data[1]=" << timeStepDataToSend[1] <<
+        ",data[2]=" << timeStepDataToSend[2] <<
+        ",data[3]=" << timeStepDataToSend[3]);
+    logDebug("sendDataWorker(...)","_minNextTimeStepSize="<<_minNextTimeStepSize);
+  }
+
+  DataHeap::getInstance().sendData(
+      timeStepDataToSend.data(), timeStepDataToSend.size(),
+      workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  assertionMsg(false,"Please implement!");
+  std::vector<double> receivedTimeStepData(4);
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
 
-  // todo send time step size
+  if (_timeStepping==TimeStepping::Global) {
+    assertionNumericalEquals1(_minNextTimeStepSize,std::numeric_limits<double>::max(),
+        _minNextTimeStepSize);
+  }
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithMasterData(...)","Received time step data: " <<
+        "data[0]="  << receivedTimeStepData[0] <<
+        ",data[1]=" << receivedTimeStepData[1] <<
+        ",data[2]=" << receivedTimeStepData[2] <<
+        ",data[3]=" << receivedTimeStepData[3]);
+  }
+
+  _minTimeStamp    = receivedTimeStepData[0];
+  _minTimeStepSize = receivedTimeStepData[1];
+
+  _minCellSize              = receivedTimeStepData[2];
+  _maxCellSize              = receivedTimeStepData[3];
 }
 
 bool exahype::solvers::FiniteVolumesSolver::hasToSendDataToMaster(
     const int cellDescriptionsIndex,
     const int element) {
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (cellDescription.getType()==CellDescription::Ancestor) {
+    return true;
+  } else if (cellDescription.getType()==CellDescription::EmptyAncestor) {
+    #if defined(Debug) || defined(Asserts)
+    exahype::solvers::Solver::SubcellPosition subcellPosition =
+        computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
+    assertion(subcellPosition.parentElement==exahype::solvers::Solver::NotFound);
+    #endif
+  }
+
   return false;
 }
 
@@ -836,7 +1428,36 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Please implement
+//  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+//  if (cellDescription.getType()==CellDescription::Descendant) {
+//    exahype::solvers::Solver::SubcellPosition subcellPosition =
+//        exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap>(cellDescription);
+//    prolongateFaceDataToDescendant(cellDescription,subcellPosition);
+//
+//    double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
+//    double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
+//
+//    // No inverted message order since we do synchronous data exchange.
+//    // Order: extraplolatedPredictor,fluctuations.
+//    DataHeap::getInstance().sendData(
+//        extrapolatedPredictor, getUnknownsPerCellBoundary(), workerRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//    DataHeap::getInstance().sendData(
+//        fluctuations, getUnknownsPerCellBoundary(), workerRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//
+//    logDebug("sendDataToWorker(...)","Sent face data of solver " <<
+//             cellDescription.getSolverNumber() << " to rank "<< workerRank <<
+//             ", cell: "<< x << ", level: " << level);
+//  } else {
+    sendEmptyDataToWorker(workerRank,x,level);
+//  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
@@ -857,7 +1478,45 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+      element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  // TODO(Dominic): Please implement!
+  //  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  // The following two assertions assert that cell descriptions on both ranks are together of
+  // type Cell, Descendant, EmptyAncestor, or Ancestor.
+  // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
+//  assertion4(cellDescription.getType()==CellDescription::Type::Cell
+//      || cellDescription.getType()==CellDescription::Type::Ancestor
+//      || cellDescription.getType()==CellDescription::Type::EmptyAncestor
+//      || cellDescription.getType()==CellDescription::Type::Descendant,
+//      cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
+//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
+//      && static_cast<CellDescription::Type>(masterTypeAsInt)!=CellDescription::Type::EmptyDescendant
+//      && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::EmptyAncestor
+//          && cellDescription.getType()==CellDescription::Type::Ancestor)
+//          && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::Ancestor &&
+//              cellDescription.getType()==CellDescription::Type::EmptyAncestor),
+//              cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
+//
+//  if (cellDescription.getType()==CellDescription::Descendant) {
+//    logDebug("mergeWithMasterData(...)","Received face data for solver " <<
+//        cellDescription.getSolverNumber() << " from rank "<<masterRank<<
+//        ", cell: "<< x << ", level: " << level);
+//
+//    // No inverted send and receives order since we do synchronous data exchange.
+//    // Order: extraplolatedPredictor,fluctuations
+//    DataHeap::getInstance().receiveData(
+//        cellDescription.getExtrapolatedPredictor(), masterRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//    DataHeap::getInstance().receiveData(
+//        cellDescription.getFluctuation(), masterRank, x, level,
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//  } else {
+    dropMasterData(masterRank,x,level);
+//  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::dropMasterData(
@@ -872,7 +1531,7 @@ void exahype::solvers::FiniteVolumesSolver::dropMasterData(
 #endif
 
 void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolution(
-    CellDescription& cellDescription,const int cellDescriptionsIndex)  const {
+    CellDescription& cellDescription,const int cellDescriptionsIndex,const char* methodTrace)  const {
   double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
   dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
@@ -882,7 +1541,7 @@ void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolutio
         #if defined(Asserts)
         int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
         #endif // cellDescription.getTimeStepSize()==0.0 is an initial condition
-        assertion4(tarch::la::equals(cellDescription.getTimeStepSize(),0.0)  || std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString());
+        assertion5(tarch::la::equals(cellDescription.getTimeStepSize(),0.0)  || std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString(),methodTrace);
       }
     }
   }

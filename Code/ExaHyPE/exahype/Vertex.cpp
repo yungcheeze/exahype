@@ -321,8 +321,9 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
       _vertexData._persistentRecords._CellDescriptionsIndex[srcScalar];
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()) {
-    return false;
+      (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()
+          && exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty())) {
+    return false; // !!! Make sure to consider all solver types here
   }
 
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
@@ -363,8 +364,9 @@ bool exahype::Vertex::hasToMergeWithNeighbourData(
       _vertexData._persistentRecords._CellDescriptionsIndex[destScalar];
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex) ||
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionsIndex).empty()) {
-    return false;
+      (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionsIndex).empty()
+       && exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(destCellDescriptionsIndex).empty())) {
+    return false; // !!! Make sure to consider all solver types here
   }
 
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
@@ -404,7 +406,8 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
       _vertexData._persistentRecords._CellDescriptionsIndex[srcScalar];
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty())
+      (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()
+       && exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()))
     return;
 
   assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().
