@@ -11,6 +11,8 @@ class exahype::dastgen::State {
   /**
    * Indicates if this is the first grid setup iteration.
    * Then, we do not receive any metadata.
+   *
+   * TODO(Dominic): Having this in the State.def should be circumvented
    */
   parallelise persistent bool firstGridSetupIteration;
   #endif

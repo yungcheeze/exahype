@@ -143,6 +143,25 @@ namespace finitevolumes {
 namespace muscl {
 namespace c {
 
+/** 
+ * \brief This is the MUSCL-Hancock solution update.
+ * 
+ * The MUSCL-Hancock scheme combines the TVD (in 1-D) 
+ * MUSCL scheme with a 2nd order time stepping procedure.
+ * 
+ * @deceprecated: This implementation is wrong. We require larger
+ * boundary layers (width=2) from the direct neighbours, 
+ * and also one value from each of the corner neighbours
+ * if we want to perform Hancock's 2nd order time stepping procedure.
+ * The critical point here is the time update of the
+ * boundary extrapolated values. Here, fluxes from
+ * all directions are necessary which implies that
+ * we require one solution value from the corner neighbours.
+ * Otherwise, we cannot compute the slopes of the neighbour cells
+ * adjacent to the corner neighbour cell.
+ * Note that an implementation with stencil width one would
+ * require two solution updates.
+ */
 template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,

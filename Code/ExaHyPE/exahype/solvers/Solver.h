@@ -31,15 +31,6 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-
-// TODO(Dominic): Change to enum
-#define EXAHYPE_FACE_LEFT 0
-#define EXAHYPE_FACE_RIGHT 1
-#define EXAHYPE_FACE_FRONT 2
-#define EXAHYPE_FACE_BACK 3
-#define EXAHYPE_FACE_BOTTOM 4
-#define EXAHYPE_FACE_TOP 5
-
 // todo 08/02/16:Dominic Etienne Charrier
 // move somewhere else
 // is evaluated at compile time

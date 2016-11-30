@@ -127,7 +127,8 @@ exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeSt
   prepareLocalTimeStepVariables();
   prepareTemporaryVariables();
 
-  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
+  // TODO(Dominic): Keep for later.
+//  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
 }
 
 // Merge over threads
@@ -142,7 +143,8 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
         std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
 
-  logInfo("mergeWithWorkerThread(const TimeStepSizeComputation&)","Merge with worker thread");
+  // TODO(Dominic): Keep for later.
+//  logInfo("mergeWithWorkerThread(const TimeStepSizeComputation&)","Merge with worker thread");
 }
 #endif
 
