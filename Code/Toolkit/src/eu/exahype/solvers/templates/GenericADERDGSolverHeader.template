@@ -22,10 +22,11 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
   	// Sorry for being inconsistent here: While AderDGSolver offers the methods getNumberOfVariables() etc.,
     // in static context they cannot be accessed. Thus the toolkit offers you access to the variables here.
     // Thank you,Toolkit!
-    static constexpr int nVar    = {{NumberOfVariables}};
-    static constexpr int nParams = {{NumberOfParameters}};
-    static constexpr int nDim    = {{Dimensions}};
-    static constexpr int order   = {{Order}};
+    static constexpr int nVar      = {{NumberOfVariables}};
+    static constexpr int nParams   = {{NumberOfParameters}};
+    static constexpr int nDim      = {{Dimensions}};
+    static constexpr int order     = {{Order}};
+    static constexpr int basisSize = {{Order}} + 1;
   
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
