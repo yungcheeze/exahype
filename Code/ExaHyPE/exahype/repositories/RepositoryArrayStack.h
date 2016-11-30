@@ -19,8 +19,6 @@
  #include "exahype/adapters/MeshRefinement.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/PredictionAndPlotAndFusedTimeSteppingInitialisation.h" 
- #include "exahype/adapters/PredictionAndPlotAndFusedTimeSteppingInitialisation2d.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
@@ -33,10 +31,9 @@
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
- #include "exahype/adapters/PredictionAndPlot.h" 
- #include "exahype/adapters/PredictionAndPlot2d.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/Plot.h" 
+ #include "exahype/adapters/Plot2d.h" 
 
 
 
@@ -65,8 +62,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinement> _gridWithMeshRefinement;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndFusedTimeSteppingInitialisation> _gridWithPredictionAndPlotAndFusedTimeSteppingInitialisation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndFusedTimeSteppingInitialisation2d> _gridWithPredictionAndPlotAndFusedTimeSteppingInitialisation2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisation> _gridWithPredictionAndFusedTimeSteppingInitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
@@ -79,10 +74,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot2d> _gridWithPredictionAndPlot2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot2d> _gridWithPlot2d;
 
   
    exahype::records::RepositoryState               _repositoryState;
@@ -90,8 +84,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureMeshRefinementCPUTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
-    tarch::timing::Measurement _measurePredictionAndPlotAndFusedTimeSteppingInitialisationCPUTime;
-    tarch::timing::Measurement _measurePredictionAndPlotAndFusedTimeSteppingInitialisation2dCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
@@ -104,16 +96,13 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
-    tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
-    tarch::timing::Measurement _measurePredictionAndPlot2dCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
+    tarch::timing::Measurement _measurePlot2dCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndPlotAndFusedTimeSteppingInitialisationCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndPlotAndFusedTimeSteppingInitialisation2dCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
@@ -126,10 +115,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
-    tarch::timing::Measurement _measurePredictionAndPlot2dCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
+    tarch::timing::Measurement _measurePlot2dCalendarTime;
 
 
   public:
@@ -178,8 +166,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToMeshRefinement();    
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToInitialConditionAndTimeStepSizeComputation();    
-    virtual void switchToPredictionAndPlotAndFusedTimeSteppingInitialisation();    
-    virtual void switchToPredictionAndPlotAndFusedTimeSteppingInitialisation2d();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation();    
     virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
@@ -192,16 +178,13 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToSolutionUpdate();    
     virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();    
     virtual void switchToTimeStepSizeComputation();    
-    virtual void switchToPredictionAndPlot();    
-    virtual void switchToPredictionAndPlot2d();    
     virtual void switchToPrediction();    
     virtual void switchToPlot();    
+    virtual void switchToPlot2d();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;
-    virtual bool isActiveAdapterPredictionAndPlotAndFusedTimeSteppingInitialisation() const;
-    virtual bool isActiveAdapterPredictionAndPlotAndFusedTimeSteppingInitialisation2d() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const;
     virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
@@ -214,10 +197,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterSolutionUpdate() const;
     virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterTimeStepSizeComputation() const;
-    virtual bool isActiveAdapterPredictionAndPlot() const;
-    virtual bool isActiveAdapterPredictionAndPlot2d() const;
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterPlot() const;
+    virtual bool isActiveAdapterPlot2d() const;
 
      
     #ifdef Parallel

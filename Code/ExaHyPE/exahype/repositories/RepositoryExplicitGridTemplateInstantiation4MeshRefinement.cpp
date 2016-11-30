@@ -16,8 +16,6 @@
  #include "exahype/adapters/MeshRefinement.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/PredictionAndPlotAndFusedTimeSteppingInitialisation.h" 
- #include "exahype/adapters/PredictionAndPlotAndFusedTimeSteppingInitialisation2d.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
@@ -30,10 +28,9 @@
  #include "exahype/adapters/SolutionUpdate.h" 
  #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
- #include "exahype/adapters/PredictionAndPlot.h" 
- #include "exahype/adapters/PredictionAndPlot2d.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/Plot.h" 
+ #include "exahype/adapters/Plot2d.h" 
 
 
 namespace peano {
