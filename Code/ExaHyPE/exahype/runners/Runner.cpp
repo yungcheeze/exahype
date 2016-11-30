@@ -462,7 +462,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo("runAsMaster(...)","adjusted initial limiter domain");
   }
 
-  logInfo("runAsMaster(...)","start to plot initial solution and compute first prediction");
+  logInfo("runAsMaster(...)","start to plot initial solution");
 
   /*
    * Compute current first predictor based on current time step size.
@@ -473,18 +473,20 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
-    #if DIMENSIONS==2
-    repository.switchToPredictionAndPlotAndFusedTimeSteppingInitialisation2d();
+    #if DIMENSIONS==2 && !defined(Parallel)
+    repository.switchToPlot2d();  // Cell onto faces
     #else
-    repository.switchToPredictionAndPlotAndFusedTimeSteppingInitialisation();
+    repository.switchToPlot();  // Cell onto faces
     #endif
+    repository.iterate();
+
+    logInfo("runAsMaster(...)","finished to plot initial solution");
   }
-  else {
-    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-  }
+
+  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
   repository.iterate();
 
-  logInfo("runAsMaster(...)","finished to plot initial solution and compute first prediction");
+  logInfo("runAsMaster(...)","finished to compute first prediction");
 
   /*
    * Finally print the initial time step info.
@@ -824,6 +826,15 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 
   printTimeStepInfo(1);
 
+  if (plot) {
+    #if DIMENSIONS==2 && !defined(Parallel)
+    repository.switchToPlot2d();  // Cell onto faces
+    #else
+    repository.switchToPlot();  // Cell onto faces
+    #endif
+    repository.iterate();
+  }
+
   // TODO(Dominic): Limiting: There is an issue with the prediction in
   // the limiting context. Since we overwrite the update here again.
   // A rollback is thus not possible anymore.
@@ -832,23 +843,8 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // why we currently only offer the limiting for
   // the non-fused time stepping variant.
   repository.getState().switchToPredictionContext(); // Which time stamp do we want to plot?
-  if (plot) {
-    #if DIMENSIONS==2 && !defined(Parallel)
-    repository.switchToPredictionAndPlot2d();  // Cell onto faces
-    #else
-    repository.switchToPredictionAndPlot();  // Cell onto faces
-    #endif
-  } else {
-    repository.switchToPrediction();  // Cell onto faces
-  }
+  repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
-
-//  #if DIMENSIONS==2
-//  if (true | plot) {
-//    repository.switchToPlotAugmentedAMRGrid();
-//    repository.iterate();
-//  }
-//  #endif
 }
 
 void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const {
