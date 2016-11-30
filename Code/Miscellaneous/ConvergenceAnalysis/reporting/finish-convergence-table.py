@@ -474,9 +474,16 @@ if do_plots:
 		plt.legend()#.draggable()
 		plt.ylim(0,10)
 
-	tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
-	tpl['ERROR_SVG_FIGURE'] = gensvg(errorPlot)
+	try:
+		tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
+		tpl['ERROR_SVG_FIGURE'] = gensvg(errorPlot)
+	except Exception as e:
+		print "Could not create plots, due to exception:"
+		print e
+		tpl['CONVERGENCE_SVG_FIGURE'] = "<em>Creation crashed!</em"
+		tpl['ERROR_SVG_FIGURE'] = "<em>Creation crashed!</em"
 else:
+	print "Skipped plot creation"
 	tpl['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 	tpl['ERROR_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 
