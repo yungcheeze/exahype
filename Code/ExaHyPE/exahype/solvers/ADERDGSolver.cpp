@@ -1986,7 +1986,7 @@ void exahype::solvers::ADERDGSolver::prepareNextNeighbourMerging(
 }
 
 #ifdef Parallel
-const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication    = 3;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication    = 2;
 const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 1;
 const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunication = 2;
 
@@ -2314,8 +2314,6 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
   if (holdsFaceData(cellDescription.getType())) {
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
-    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
-    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
 
     const int numberOfFaceDof = getUnknownsPerFace();
     const double* lQhbnd = DataHeap::getInstance().getData(
@@ -2334,23 +2332,21 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
-    // We append all the max values to the min values.
-    // We further append the predictor time stamp and
-    // and the predictor time step size
-    std::vector<double> sentMinMax( 2*getNumberOfVariables() + 2 );
-    for (int i=0; i<getNumberOfVariables(); i++) {
-      sentMinMax[i]                        = DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[faceIndex*getNumberOfVariables()+i];
-      sentMinMax[i+getNumberOfVariables()] = DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[faceIndex*getNumberOfVariables()+i];
-    }
-    sentMinMax[2*getNumberOfVariables()] = cellDescription.getPredictorTimeStamp();
-    sentMinMax[2*getNumberOfVariables()+1] = cellDescription.getPredictorTimeStepSize();
-    assertionEquals(sentMinMax.size(),2*static_cast<unsigned int>(getNumberOfVariables())+2);
+    // TODO(Dominic): Send predictor time step data separately
+//    // We append all the max values to the min values.
+//    // We further append the predictor time stamp and
+//    // and the predictor time step size
+//    std::vector<double> sentMinMax( 2*getNumberOfVariables() + 2 );
+//    for (int i=0; i<getNumberOfVariables(); i++) {
+//      sentMinMax[i]                        = DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[faceIndex*getNumberOfVariables()+i];
+//      sentMinMax[i+getNumberOfVariables()] = DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[faceIndex*getNumberOfVariables()+i];
+//    }
+//    sentMinMax[2*getNumberOfVariables()] = cellDescription.getPredictorTimeStamp();
+//    sentMinMax[2*getNumberOfVariables()+1] = cellDescription.getPredictorTimeStepSize();
+//    assertionEquals(sentMinMax.size(),2*static_cast<unsigned int>(getNumberOfVariables())+2);
 
-    // Send order: minMax,lQhbnd,lFhbnd
-    // Receive order: lFhbnd,lQhbnd,minMax
-    DataHeap::getInstance().sendData(
-        sentMinMax, toRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
+    // Send order: lQhbnd,lFhbnd
+    // Receive order: lFhbnd,lQhbnd
     DataHeap::getInstance().sendData(
         lQhbnd, numberOfFaceDof, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
@@ -2436,19 +2432,16 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const int numberOfFaceDof = getUnknownsPerFace();
     int receivedlQhbndIndex   = DataHeap::getInstance().createData(0, numberOfFaceDof);
     int receivedlFhbndIndex   = DataHeap::getInstance().createData(0, numberOfFaceDof);
-    int receivedMinMax        = DataHeap::getInstance().createData(0, 2*getNumberOfVariables());
 
     assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
     assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
-    assertion(DataHeap::getInstance().getData(receivedMinMax).empty());
 
-    // Send order: minMax,lQhbnd,lFhbnd
-    // Receive order: lFhbnd,lQhbnd,minMax
+
+    // Send order: lQhbnd,lFhbnd
+    // Receive order: lFhbnd,lQhbnd
     DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
     DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
-    DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
 
     logDebug(
@@ -2476,7 +2469,6 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
 
     DataHeap::getInstance().deleteData(receivedlQhbndIndex,true);
     DataHeap::getInstance().deleteData(receivedlFhbndIndex,true);
-    DataHeap::getInstance().deleteData(receivedMinMax,true);
   } else  {
     logDebug(
         "mergeWithNeighbourData(...)", "drop three arrays from rank " <<

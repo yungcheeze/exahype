@@ -154,15 +154,6 @@ private:
       const SolverPatch::LimiterStatus& neighbourOfNeighbourLimiterStatus) const;
 
   /**
-   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
-   * for MPI where min and max value are explicitly exchanged through messages.
-   */
-  void mergeSolutionMinMaxOnFace(
-      SolverPatch&  cellDescription,
-      int               faceIndex,
-      double* min, double* max) const;
-
-  /**
    * Determine a unified limiter status of a solver patch after a limiter status spreading
    * iteration.
    *
@@ -227,6 +218,99 @@ private:
    * values,
    */
   void updateMergedLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
+
+#ifdef Parallel
+  /**
+   * Data messages per neighbour communication.
+   * This information is required by the sendEmpty...(...)
+   * methods.
+   */
+  static const int DataMessagesPerNeighbourCommunication;
+  /**
+   * Data messages per fork/join communication.
+   * This information is required by the sendEmpty...(...)
+   * methods.
+   */
+  static const int DataMessagesPerForkOrJoinCommunication;
+  /**
+   * Data messages per master worker communication.
+   * This information is required by the sendEmpty...(...)
+   * methods.
+   */
+  static const int DataMessagesPerMasterWorkerCommunication;
+
+  /**
+   * Send the solution minimum and maximum values per variable
+   * and further the merged limiter status of the solver patch
+   * \p element in heap array \p cellDescriptionsIndex to the
+   * neighbour.
+   *
+   * \see exahype::solvers::Solver::sendDataToNeighbour
+   * for a description of the parameters.
+   */
+  void sendMinAndMaxToNeighbour(
+      const int                                    toRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) const;
+
+  /**
+   * Receive the solution minimum and maximum values per variable
+   * and further the merged limiter status for the solver patch
+   * \p element in heap array \p cellDescriptionsIndex from the
+   * neighbour.
+   *
+   * \see exahype::solvers::Solver::sendDataToNeighbour
+   * for a description of the parameters.
+   */
+  void mergeWithNeighbourMinAndMax(
+      const int                                    fromRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) const;
+
+  /**
+   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
+   * for MPI where min and max value are explicitly exchanged through messages.
+   */
+  void mergeSolutionMinMaxOnFace(
+      SolverPatch&  cellDescription,
+      int               faceIndex,
+      const double* const min, const double* const  max) const;
+
+//  /**
+//   * Send the limiter status
+//   * of the solver patch \p element in heap array
+//   * \p cellDescriptionsIndex to the respective neighbour.
+//   *
+//   * \see exahype::solvers::Solver::sendDataToNeighbour
+//   * for a description of the parameters.
+//   *
+//   * <h2>Heap</h2>
+//   * We currently use the DoubleHeap to
+//   * communicate the enum.
+//   * While it would make sense to use the
+//   * MetadataHeap for this purpose,
+//   * there is a possibility of intermixing
+//   * the communication of the limiter status
+//   * with the communication of the solver
+//   * metadata.
+//   */
+//  void sendMergedLimiterStatusToNeighbour(
+//      const int                                     toRank,
+//      const int                                     cellDescriptionsIndex,
+//      const int                                     element,
+//      const tarch::la::Vector<DIMENSIONS, int>&     src,
+//      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+//      const tarch::la::Vector<DIMENSIONS, double>&  x,
+//      const int                                     level) const;
+#endif
 
 public:
 
@@ -305,13 +389,46 @@ public:
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override ;
 
+  /**
+   * Returns the index of the solver patch registered for the solver with
+   * index \p solverNumber in exahype::solvers::RegisteredSolvers.
+   * If no patch is registered for the solver, this function
+   * returns exahype::solvers::Solver::NotFound.
+   */
   int tryGetElement(
       const int cellDescriptionsIndex,
-      const int solverNumber) const override;
+      const int solverNumber) const override {
+    return _solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+  }
 
+  /**
+   * Returns the index of the limiter patch registered for the solver with
+   * index \p solverNumber in exahype::solvers::RegisteredSolvers.
+   * If no patch is registered for the solver, this function
+   * returns exahype::solvers::Solver::NotFound.
+   */
   int tryGetLimiterElement(
       const int cellDescriptionsIndex,
-      const int solverNumber) const;
+      const int solverNumber) const {
+    return _limiter->tryGetElement(cellDescriptionsIndex,solverNumber);
+  }
+
+  /**
+   * Returns the index of the limiter patch corresponding to
+   * the solver patch with index \p solverElement.
+   * Both patches link to the same ::LimitingADERDGSolver.
+   * If no limiter patch is found, this function
+   * returns exahype::solvers::Solver::NotFound.
+   */
+  int tryGetLimiterElementFromSolverElement(
+      const int cellDescriptionsIndex,
+      const int solverElement) const {
+    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+    assertion(solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled ||
+        solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourIsTroubledCell ||
+        solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
+    return _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+  }
 
   /**
     * \see exahype::amr::computeSubcellPositionOfCellOrAncestor
@@ -601,17 +718,6 @@ public:
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
         const tarch::la::Vector<DIMENSIONS, int>& pos2);
 
-  /**
-   * TODO(Dominic): Not sure if this is necessary.
-   */
-  void mergeLimiterStatusOfNeighboursOfNeighbours(
-          const int                                 cellDescriptionsIndex1,
-          const int                                 element1,
-          const int                                 cellDescriptionsIndex2,
-          const int                                 element2,
-          const tarch::la::Vector<DIMENSIONS, int>& pos1,
-          const tarch::la::Vector<DIMENSIONS, int>& pos2);
-
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -748,74 +854,13 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
 
 #ifdef Parallel
-  static void sendCellDescriptions(
-      const int                                     toRank,
-      const int                                     cellDescriptionsIndex,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) {
-    assertionMsg(false, "Please implement!");
-  }
-
-  static void sendEmptyCellDescriptions(
-      const int                                     toRank,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) {
-    assertionMsg(false, "Please implement!");
-  }
-
-  /**
-   * Receives cell descriptions from rank \p fromRank
-   * and resets the data heap indices to -1.
-   *
-   * If a received cell description has the same
-   * solver number as a cell description in the
-   * array at address \p cellDescriptionsIndex,
-   * we merge the metadata (time stamps, time step size)
-   * of both cell descriptions.
-   *
-   * If no cell description in the array at address
-   * \p cellDescriptionsIndex can be found with the
-   * same solver number than a received cell description,
-   * we push the received cell description to
-   * the back of the array at address \p cellDescriptions
-   * Index.
-   *
-   * This operation is intended to be used in combination
-   * with the solver method mergeWithWorkerOrMasterDataDueToForkOrJoin(...).
-   * Here, we would merge first the cell descriptions sent by the master and worker
-   * and then merge the data that is sent out right after.
-   */
-  static void mergeCellDescriptionsWithRemoteData(
-      const int                                     fromRank,
-      const int                                     cellDescriptionsIndex,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) {
-    assertionMsg(false, "Please implement!");
-  }
-
-  /**
-   * Drop cell descriptions received from \p fromRank.
-   */
-  static void dropCellDescriptions(
-      const int                                     fromRank,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) {
-    assertionMsg(false, "Please implement!");
-  }
-
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
   void mergeWithNeighbourMetadata(
         const int neighbourTypeAsInt,
         const int cellDescriptionsIndex,
-        const int element) override {
-    assertionMsg(false,"Please implement!");
-  }
+        const int element) override;
 
   void sendDataToNeighbour(
       const int                                     toRank,
@@ -824,18 +869,14 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false,"Please implement!");
-  }
+      const int                                     level) override;
 
   void sendEmptyDataToNeighbour(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
@@ -848,90 +889,131 @@ public:
       double**                                     tempStateSizedVectors,
       double**                                     tempStateSizedSquareMatrices,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false,"Please implement!");
-  }
-
+      const int                                    level) override;
 
   void dropNeighbourData(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
+  /**
+   * Receive and merge the merged limiter status sent
+   * by the neighbour at position \p src - \p dest.
+   *
+   * see exahype::solvers::Solver::mergeWithNeighbourData
+   * for details on the parameters.
+   */
+  void mergeWithNeighbourMergedLimiterStatus(
+      const int                                    fromRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) const;
+
+  /**
+   * Drop the merged limiter status sent
+   * by the neighbour at position \p src - \p dest.
+   *
+   * \see exahype::solvers::Solver::dropNeighbourData
+   * for details on the parameters.
+   */
+  void dropNeighbourMergedLimiterStatus(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) const;
+
+  /**
+   *  Send the merged limiter status at position \p dest- \p src to
+   *  the corresponding neighbour.
+   *
+   * \see exahype::solvers::Solver::sendDataToNeighbour
+   * for details on the parameters.
+   */
+  void sendMergedLimiterStatusToNeighbour(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) const;
+
+  /**
+   *  Send an empty array instead of
+   *  the merged limiter status at position \p dest- \p src to
+   *  the corresponding neighbour.
+   *
+   *  \see exahype::solvers::Solver::sendEmptyDataToNeighbour
+   * for details on the parameters.
+   */
+  void sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) const;
+
+  /////////////////////////////////////
+  // FORK OR JOIN
+  /////////////////////////////////////
   void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void dropWorkerOrMasterDataDueToForkOrJoin(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
   bool hasToSendDataToMaster(
         const int cellDescriptionsIndex,
-        const int element) override {
-    assertionMsg(false, "Please implement!");
-  }
+        const int element) override;
 
   void sendDataToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                    level) override;
 
   void mergeWithWorkerData(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                    level) override;
 
   void sendDataToMaster(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void sendEmptyDataToMaster(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void mergeWithWorkerData(
       const int                                    workerRank,
@@ -939,16 +1021,12 @@ public:
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                    level) override;
 
   void dropWorkerData(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -956,32 +1034,24 @@ public:
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                    level) override;
 
   void mergeWithMasterData(
       const                                        int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                    level) override;
 
   void sendDataToWorker(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void sendEmptyDataToWorker(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void mergeWithMasterData(
       const int                                     masterRank,
@@ -989,16 +1059,12 @@ public:
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 
   void dropMasterData(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false, "Please implement!");
-  }
+      const int                                     level) override;
 #endif
 
   std::string toString() const override {

@@ -430,7 +430,10 @@ private:
    * @param[in] cellDescription         The cell description
    * @param[in] faceIndex               The index of the interface
    *                                    from the perspective of the cell/cell
-   * description. One out of (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   *                                    description. The index is computed as 2 times the
+   *                                    position of the normal vector non-zero plus a
+   *                                    value that encodes the normal vector direction
+   *                                    (0 for negative direction, 1 for positive direction).
    * \note Not thread-safe.
    */
   void applyBoundaryConditions(
@@ -459,19 +462,19 @@ private:
   /**
    * Data messages per neighbour communication.
    * This information is required by the sendEmpty...(...)
-   * method.
+   * methods.
    */
   static const int DataMessagesPerNeighbourCommunication;
   /**
    * Data messages per fork/join communication.
    * This information is required by the sendEmpty...(...)
-   * method.
+   * methods.
    */
   static const int DataMessagesPerForkOrJoinCommunication;
   /**
    * Data messages per master worker communication.
    * This information is required by the sendEmpty...(...)
-   * method.
+   * methods.
    */
   static const int DataMessagesPerMasterWorkerCommunication;
 
