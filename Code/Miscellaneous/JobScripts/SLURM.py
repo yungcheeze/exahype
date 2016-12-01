@@ -72,7 +72,7 @@ def writeJobscriptHeader(file, name, thread, process):
   file.write("#SBATCH --mail-type=all "                                                                                            + "\n")
   file.write("#SBATCH --mail-user=varduhn@tum.de "                                                                                 + "\n")
   file.write("#SBATCH --export=NONE "                                                                                              + "\n")
-  file.write("#SBATCH --time=01:00:00 "                                                                                            + "\n")
+  file.write("#SBATCH --time=00:45:00 "                                                                                            + "\n")
   file.write("source /etc/profile.d/modules.sh"                                                                                    + "\n")
   
 def writeJobscript_SetupEnvironment(file, name, dimension, process, thread, h_p_t, compiler, mode, directory):
@@ -172,10 +172,11 @@ def writeJobscript_GenerateUserSpecFile(file, name, dimension, process, thread, 
     file.write("echo \"  end distributed-memory                                            \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  optimisation                                                      \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"    fuse-algorithmic-steps        = on                              \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"    fuse-algorithmic-steps        = off                             \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"    fuse-algorithmic-steps-factor = 0.99                            \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"    timestep-batch-factor           = 0.8                           \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"    skip-reduction-in-batched-time-steps = on                       \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"    skip-reduction-in-batched-time-steps = off                      \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  end optimisation                                                  \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  solver ADER-DG MyEulerSolver                                      \" >> myUserSpec.exahype"                 + "\n")
@@ -217,18 +218,21 @@ def writeJobscript_CompileSources(file, name, dimension, process, thread, h_p_t,
   file.write("make -j56"                                                                                                           + "\n")
 
 def writeJobscript_FilterOutput(file, name, dimension, process, thread, h_p_t, compiler, mode, directory):
-  file.write("echo \"# Level Trace Rank Black or white list entry\"                           >> exahype.log-filter" + "\n")
-  file.write("echo \"# (info or debug) (-1 means all ranks)\"                                 >> exahype.log-filter" + "\n")
-  file.write("echo \"debug tarch -1 black\"                                                   >> exahype.log-filter" + "\n")
-  file.write("echo \"debug peano -1 black\"                                                   >> exahype.log-filter" + "\n")
-  file.write("echo \"info tarch -1 black\"                                                    >> exahype.log-filter" + "\n")
-  file.write("echo \"info peano -1 black\"                                                    >> exahype.log-filter" + "\n")
-  file.write("echo \"info peano::utils::UserInterface -1 white\"                              >> exahype.log-filter" + "\n")
-  file.write("echo \"info exahype -1 white\"                                                  >> exahype.log-filter" + "\n")
-  if mode != "Profile":
-    file.write("echo \"\"                                                                       >> exahype.log-filter" + "\n")
-    file.write("echo \"info peano::parallel::SendReceiveBufferAbstractImplementation -1 black\" >> exahype.log-filter" + "\n")
-  file.write("echo \"info mpibalancing::HotspotBalancing -1 black\"                                                  >> exahype.log-filter" + "\n")
+  file.write("\n")
+  # file.write("echo \"# Level Trace Rank Black or white list entry\"                           >> exahype.log-filter" + "\n")
+  # file.write("echo \"# (info or debug) (-1 means all ranks)\"                                 >> exahype.log-filter" + "\n")
+  # file.write("echo \"debug tarch -1 black\"                                                   >> exahype.log-filter" + "\n")
+  # file.write("echo \"debug peano -1 black\"                                                   >> exahype.log-filter" + "\n")
+  # file.write("echo \"info tarch -1 black\"                                                    >> exahype.log-filter" + "\n")
+  # file.write("echo \"info peano -1 black\"                                                    >> exahype.log-filter" + "\n")
+  # file.write("echo \"info peano::utils::UserInterface -1 white\"                              >> exahype.log-filter" + "\n")
+  # file.write("echo \"info exahype -1 white\"                                                  >> exahype.log-filter" + "\n")
+  # if mode != "Profile":
+    # file.write("echo \"\"                                                                       >> exahype.log-filter" + "\n")
+    # file.write("echo \"info peano::parallel::SendReceiveBufferAbstractImplementation -1 black\" >> exahype.log-filter" + "\n")
+  # file.write("echo \"info mpibalancing::HotspotBalancing -1 black\"                           >> exahype.log-filter" + "\n")
+  # file.write("echo \"info exahype::runners::Runner -1 black\"                  >> exahype.log-filter" + "\n")
+  # file.write("echo \"info exahype::mappings -1 black\"                  >> exahype.log-filter" + "\n")
   
 def writeJobscriptBody_RunExecutable(file, name, dimension, process, thread, h_p_t, compiler, mode, directory):
   if process == 1:
