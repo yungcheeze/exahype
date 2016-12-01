@@ -50,3 +50,8 @@ buildinfo.h
 *.vtk
 *.log-file
 
+#Peano checkout
+peano
+
+#Toolkit binaries
+Code/Toolkit/dist
