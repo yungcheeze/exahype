@@ -281,7 +281,7 @@ private:
    */
   void mergeSolutionMinMaxOnFace(
       SolverPatch&  cellDescription,
-      int               faceIndex,
+      const int     faceIndex,
       const double* const min, const double* const  max) const;
 
 //  /**

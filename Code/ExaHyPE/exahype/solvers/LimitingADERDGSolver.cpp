@@ -1372,27 +1372,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryDataBasedOnLimiter
   }
 }
 
-void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
-  SolverPatch&  SolverPatch,
-  int               faceIndex,
-  const double* const min, const double* const max) const {
-  if (SolverPatch.getType() == SolverPatch::Cell ||
-      SolverPatch.getType() == SolverPatch::Ancestor ||
-      SolverPatch.getType() == SolverPatch::Descendant
-      ) {
-    assertion( exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADERDG );
-    const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ])->getNumberOfVariables();
-
-    for (int i=0; i<numberOfVariables; i++) {
-      DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables]  =
-        std::min( DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables], min[i] );
-      DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables]  =
-        std::max( DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables], max[i] );
-    }
-  }
-}
-
 #ifdef Parallel
 const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerNeighbourCommunication    = 1;
 const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 0;
@@ -1582,6 +1561,27 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMinAndMax(
   mergeSolutionMinMaxOnFace(solverPatch,faceIndex,receivecdMinAndMax,receivecdMinAndMax+_numberOfVariables);
 
   DataHeap::getInstance().deleteData(receivedMinMaxIndex,true);
+}
+
+void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
+  SolverPatch&  SolverPatch,
+  const int           faceIndex,
+  const double* const min, const double* const max) const {
+  if (SolverPatch.getType() == SolverPatch::Cell ||
+      SolverPatch.getType() == SolverPatch::Ancestor ||
+      SolverPatch.getType() == SolverPatch::Descendant
+      ) {
+    assertion( exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADERDG );
+    const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ])->getNumberOfVariables();
+
+    for (int i=0; i<numberOfVariables; i++) {
+      DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables]  =
+        std::min( DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables], min[i] );
+      DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables]  =
+        std::max( DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables], max[i] );
+    }
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMergedLimiterStatus(
