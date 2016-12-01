@@ -4,11 +4,15 @@
 
 Copy and paste these commands to start with a working ExaHyPE application:
 
-    git clone git@gitlab.lrz.de:gi26det/ExaHyPE.git
-    cd ExaHyPE/Code/Peano
-    tar xvfz peano.tar.gz
-    git checkout .gitignore
-    cd ..
+    git clone git@gitlab.lrz.de:exahype/ExaHyPE-Engine.git
+    cd ExaHyPE-Engine
+    svn co svn://svn.code.sf.net/p/peano/code/trunk/src peano	
+    cd Code/Peano
+    ln -s ../../peano/peano peano
+    ln -s ../../peano/tarch tarch
+    cd ../Toolkit/
+    ./build.sh
+    cd ../
     ln -s Toolkit/dist/ExaHyPE.jar
 
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
