@@ -5,9 +5,9 @@
 Copy and paste these commands to start with a working ExaHyPE application:
 
     git clone git@gitlab.lrz.de:exahype/ExaHyPE-Engine.git
-    cd ExaHyPE-Engine
+    cd ExaHyPE-Engine/
     svn co svn://svn.code.sf.net/p/peano/code/trunk/src peano	
-    cd Code/Peano
+    cd Code/Peano/
     ln -s ../../peano/peano peano
     ln -s ../../peano/tarch tarch
     cd ../Toolkit/
@@ -23,6 +23,22 @@ Now you are ready to follow compile and run an ExaHyPE application [according to
     export TBB_LIB=/usr/lib/tbb
     cd ApplicationExamples/EulerFlow && make -j
     ./ExaHyPE-Euler ../EulerFlow.exahype
+    
+### Libxsmm (optional) ###
+
+Libxsmm's code generator is required by the Toolkit when using application taylored optimised kernels to generate the advanced matrix multiplication code. 
+The optimised kernels are optional and can be replaced by the generic ones, thus libxsmm is also optional.
+
+Libxsmm's sources can be found on github: https://github.com/hfp/libxsmm
+
+Quick installation:
+
+    cd ExaHyPE-Engine/
+    git clone https://github.com/hfp/libxsmm.git
+    cd libxsmm/
+    make generator
+
+When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
 ## General remarks ##
 
