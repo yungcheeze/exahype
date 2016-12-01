@@ -22,7 +22,7 @@ exahype-project  Euler
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  libxsmm-path               = ../libxsmm
+  libxsmm-path               = ./Libxsmm
   output-directory           = ./Applications/OptimisedKernel_Euler
   architecture               = noarch
 
