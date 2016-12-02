@@ -5,11 +5,8 @@
 Copy and paste these commands to start with a working ExaHyPE application:
 
     git clone git@gitlab.lrz.de:exahype/ExaHyPE-Engine.git
-    cd ExaHyPE-Engine/
-    svn co svn://svn.code.sf.net/p/peano/code/trunk/src peano	
-    cd Code/Peano/
-    ln -s ../../peano/peano peano
-    ln -s ../../peano/tarch tarch
+    cd ExaHyPE-Engine/Code
+    ./checkout-update-peano.sh
     cd ../Toolkit/
     ./build.sh
     cd ../
