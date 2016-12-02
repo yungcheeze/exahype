@@ -1203,6 +1203,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
   mergeSolutionMinMaxOnFace(solverPatchLeft,solverPatchRight,faceIndexLeft,faceIndexRight);
 }
 
+// TODO(Dominic): Remove limiterstatus1 and limiterStatus2 argument.
+// They depend on the isRecomputation value
 void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus(
     const int                                 cellDescriptionsIndex1,
     const int                                 element1,
@@ -1216,9 +1218,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
     double**                                  tempFaceUnknowns,
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
-  // 2. Merge the boundary data
-  // Merge solver solution or limiter solution values in
-  // non-overlapping parts of solver and limiter:
+  // 1. Merge solver solution or limiter solution values in
+  // non-overlapping parts of solver and limiter domain:
   SolverPatch& solverPatch1 = _solver->getCellDescription(cellDescriptionsIndex1,element1);
   SolverPatch& solverPatch2 = _solver->getCellDescription(cellDescriptionsIndex2,element2);
   int limiterElement1 = tryGetLimiterElement(cellDescriptionsIndex1,solverPatch1.getSolverNumber());
@@ -1254,8 +1255,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
    default:
      break;
   }
-  // Merge limiter solution values in overlapping part
-  // of solver and limiter:
+  // 2. Merge limiter solution values in overlapping part
+  // of solver and limiter domain:
   switch (limiterStatus1) {
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
     case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
@@ -1276,6 +1277,9 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
     default:
       break;
   }
+  // !!! Note that it is not necessary to update the boundary layer of the solver patches with status NeighbourIsNeighbourOfTroubledCell however
+  // we want to use the symmetric mergeNeighbours method of the finite volumes solver.
+  // The non-overlapping part between limiter and solver domains is thus skipped in the parallel mergeWithNeighbourData methods.
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMax(
@@ -1378,7 +1382,7 @@ const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerForkOrJoinCommu
 const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerMasterWorkerCommunication = 0;
 
 ///////////////////////////////////
-// NEIGHBOUR
+// NEIGHBOUR - Time marching
 ///////////////////////////////////
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
       const int neighbourTypeAsInt,
@@ -1387,20 +1391,11 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
   if (limiterElement!=exahype::solvers::Solver::NotFound) {
     _limiter->mergeWithNeighbourMetadata(neighbourTypeAsInt,cellDescriptionsIndex,limiterElement);
-  } // There is no drop method
+  } // There is no drop method for metadata necessary
 
   _solver->mergeWithNeighbourMetadata(neighbourTypeAsInt,cellDescriptionsIndex,element);
 }
 
-/**
- * <h2>Merged limiter status</h2>
- * The merged limiter status is communicated after every
- * solution update. The value per face is however overwritten after
- * the solution update during the normal time marching.
- *
- * Only if the limiter domain is updated the
- * communicated values are actually used.
- */
 void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbour(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -1409,18 +1404,52 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+  sendMinAndMaxToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
 
-  const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-  if (limiterElement!=exahype::solvers::Solver::NotFound) {
-    _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
-  } else {
-    _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  sendDataToNeighbourBasedOnLimiterStatus(
+      toRank,cellDescriptionsIndex,element,src,dest,
+      false,/* isRecomputation */
+      x,level);
+}
+
+void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterStatus(
+        const int                                    toRank,
+        const int                                    cellDescriptionsIndex,
+        const int                                    element,
+        const tarch::la::Vector<DIMENSIONS, int>&    src,
+        const tarch::la::Vector<DIMENSIONS, int>&    dest,
+        const bool                                   isRecomputation,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const int                                    level) const {
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
+  if (isRecomputation) {
+    limiterStatus = solverPatch.getMergedLimiterStatus(0);
   }
 
-  // Finally, the LimitingADERDGSolver's parts:
-  sendMinAndMaxToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-//  sendMergedLimiterStatusToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+  switch (limiterStatus) {
+    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      if (!isRecomputation) {
+        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      } else {
+        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      }
+      _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+      break;
+    case SolverPatch::LimiterStatus::Troubled:
+      _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      break;
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      if (!isRecomputation) {
+        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      } else {
+        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      }
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      break;
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
@@ -1475,40 +1504,6 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
         peano::heap::MessageType::NeighbourCommunication);
 }
 
-void exahype::solvers::LimitingADERDGSolver::sendMergedLimiterStatusToNeighbour(
-    const int                                     toRank,
-    const int                                     cellDescriptionsIndex,
-    const int                                     element,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) const {
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-                                                                          // |src|dest| : 1; |dest|src| : 0
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  const double mergedLimiterStatusAsDouble =
-      static_cast<double>(solverPatch.getMergedLimiterStatus(faceIndex));
-
-  DataHeap::getInstance().sendData(
-      &mergedLimiterStatusAsDouble , 0, toRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
-}
-
-void exahype::solvers::LimitingADERDGSolver::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
-    const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&     src,
-    const tarch::la::Vector<DIMENSIONS, int>&     dest,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) const {
-  std::vector<double> emptyMessage(0);
-  DataHeap::getInstance().sendData(
-      emptyMessage, toRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
-}
-
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourData(
     const int                                    fromRank,
     const int                                    neighbourTypeAsInt,
@@ -1521,25 +1516,57 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourData(
     double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-  if (limiterElement!=exahype::solvers::Solver::NotFound) { // !!! Receive order must be inverted in neighbour comm.
-    _limiter->mergeWithNeighbourData(
-          fromRank,neighbourTypeAsInt,cellDescriptionsIndex,limiterElement,
-          src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
-  } else {
-    _limiter->dropNeighbourData(fromRank,src,dest,x,level);
-  }
-
-  _solver->mergeWithNeighbourData(
-        fromRank,neighbourTypeAsInt,cellDescriptionsIndex,element,
-        src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
+  mergeWithNeighbourDataBasedOnLimiterStatus(
+      fromRank,neighbourTypeAsInt,cellDescriptionsIndex,element,src,dest,
+      false,/*isRecomputation*/
+      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
 
   mergeWithNeighbourMinAndMax(fromRank,cellDescriptionsIndex,element,src,dest,x,level);
 }
 
+void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimiterStatus(
+    const int                                    fromRank,
+    const int                                    neighbourTypeAsInt,
+    const int                                    cellDescriptionsIndex,
+    const int                                    element,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    const bool                                   isRecomputation,
+    double**                                     tempFaceUnknowns,
+    double**                                     tempStateSizedVectors,
+    double**                                     tempStateSizedSquareMatrices,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) const {
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
+  if (isRecomputation) {
+    limiterStatus = solverPatch.getMergedLimiterStatus(0);
+  }
+
+  switch (limiterStatus) {
+    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+      if (!isRecomputation) {
+        _solver->mergeWithNeighbourData(
+                 fromRank,neighbourTypeAsInt,cellDescriptionsIndex,element,
+                 src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
+      } else {
+        _solver->dropNeighbourData(fromRank,src,dest,x,level);
+      }
+      break;
+    case SolverPatch::LimiterStatus::Troubled:
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      _limiter->mergeWithNeighbourData(
+          fromRank,neighbourTypeAsInt,cellDescriptionsIndex,element,
+          src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
+      _solver->dropNeighbourData(fromRank,src,dest,x,level);
+      break;
+  }
+}
+
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMinAndMax(
-    const int
-    fromRank,
+    const int                                    fromRank,
     const int                                    cellDescriptionsIndex,
     const int                                    element,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1584,6 +1611,43 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
   }
 }
 
+///////////////////////////////////////
+// NEIGHBOUR - Limiter status spreading
+///////////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::sendMergedLimiterStatusToNeighbour(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) const {
+  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+  const int faceIndex = 2 * normalOfExchangedFace +
+      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+                                                                          // |src|dest| : 1; |dest|src| : 0
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  const double mergedLimiterStatusAsDouble =
+      static_cast<double>(solverPatch.getMergedLimiterStatus(faceIndex));
+
+  DataHeap::getInstance().sendData(
+      &mergedLimiterStatusAsDouble , 0, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+void exahype::solvers::LimitingADERDGSolver::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) const {
+  std::vector<double> emptyMessage(0);
+  DataHeap::getInstance().sendData(
+      emptyMessage, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMergedLimiterStatus(
     const int                                    fromRank,
     const int                                    cellDescriptionsIndex,
@@ -1598,21 +1662,20 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMergedLimiterStat
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
+  // Merge the limiter status.
   const int receivedMergedLimiterStatusIndex = DataHeap::getInstance().createData(0, 1);
   assertion(DataHeap::getInstance().getData(receivedMergedLimiterStatusIndex).empty());
-
   DataHeap::getInstance().receiveData(receivedMergedLimiterStatusIndex,fromRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
   const double* const receivedMergedLimiterStatus =
       DataHeap::getInstance().getData(receivedMergedLimiterStatusIndex).data();
-
-  // merge the limiter status
   assertion1(std::lround(*receivedMergedLimiterStatus) <= 3,*receivedMergedLimiterStatus);
   assertion1(std::lround(*receivedMergedLimiterStatus) >= 0,*receivedMergedLimiterStatus);
   SolverPatch::LimiterStatus neighbourMergedLimiterStatus =
       static_cast<SolverPatch::LimiterStatus>(std::lround(*receivedMergedLimiterStatus));
   mergeWithNeighbourLimiterStatus(solverPatch,faceIndex,neighbourMergedLimiterStatus);
 
+  // Clean up.
   DataHeap::getInstance().deleteData(receivedMergedLimiterStatusIndex,true); // TODO(Dominic): We are dealing here with an array of size 1 here.
 }
 
@@ -1626,7 +1689,9 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourMergedLimiterStatus(
       peano::heap::MessageType::NeighbourCommunication);
 }
 
-
+///////////////////////////////////////////////////////////
+// NEIGHBOUR - Reinitialisation + SolutionRecomputation
+///////////////////////////////////////////////////////////
 void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -1712,6 +1777,20 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                    level) {
   _solver->sendDataToMaster(masterRank,x,level);
   _limiter->sendDataToMaster(masterRank,x,level);
+
+  // Send the information to master if limiter status has changed or not
+  std::vector<double> dataToSend(0,1);
+  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0);
+  assertion1(dataToSend.size()==1,dataToSend.size());
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendDataToMaster(...)","Sending data to master" <<
+             " data[0]=" << dataToSend[0]);
+  }
+  DataHeap::getInstance().sendData(
+      dataToSend.data(), dataToSend.size(),
+      masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
@@ -1720,6 +1799,17 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
     const int                                    level) {
   _solver->mergeWithWorkerData(workerRank,x,level); // !!! Receive order must be the same in master<->worker comm.
   _limiter->mergeWithWorkerData(workerRank,x,level);
+
+  // Receive the information if limiter status has changed
+  std::vector<double> receivedTimeStepData(0,1);
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+  assertion(tarch::la::equals(receivedTimeStepData[0],1.0) ||
+            tarch::la::equals(receivedTimeStepData[0],-1.0));
+
+  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedTimeStepData[0],1.0) ? true : false;
+  _limiterDomainHasChanged |= workerLimiterDomainHasChanged;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::hasToSendDataToMaster(
@@ -1797,6 +1887,8 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const int                                    level) {
   _solver->sendDataToWorker(workerRank,x,level);
   _limiter->sendDataToWorker(workerRank,x,level);
+
+
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(

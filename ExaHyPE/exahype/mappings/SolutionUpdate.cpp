@@ -114,9 +114,15 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
       _stateSizedVectors[solverNumber] = nullptr;
       _tempUnknowns     [solverNumber] = nullptr;
     }
-    //
-    _limiterDomainHasChanged[solverNumber] = false;
 
+    ++solverNumber;
+  }
+}
+
+void exahype::mappings::SolutionUpdate::prepareLimiterDomainHasChangedFlags() {
+  int solverNumber=0;
+  for (auto solver : exahype::solvers::RegisteredSolvers) {
+    _limiterDomainHasChanged[solverNumber] = false;
     ++solverNumber;
   }
 }
@@ -165,6 +171,7 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
   _tempUnknowns(nullptr),
   _limiterDomainHasChanged(nullptr) {
   prepareTemporaryVariables();
+  prepareLimiterDomainHasChangedFlags();
 }
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
@@ -224,6 +231,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   prepareTemporaryVariables();
+  prepareLimiterDomainHasChangedFlags();
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -246,10 +254,13 @@ void exahype::mappings::SolutionUpdate::endIteration(
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
+
+
 //
 // Below all methods are nop.
 //
 //=====================================
+
 
 
 void exahype::mappings::SolutionUpdate::createHangingVertex(

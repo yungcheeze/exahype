@@ -34,12 +34,12 @@ class Reinitialisation;
 }
 
 /**
- * Update the solution
+ * This mapping is part of three mappings (+adapters) which together perform the limiter
+ * status spreading the recomputation of troubled cells (and their direct) neighbours.
  *
- * We run over all cells of the local spacetree and ask the solver whether there
- * is prescribed data in this point (replace values by user-defined values).
+ * \see exahype::mappings::SolutionRecomputation for more details.
  *
- * @author Dominic Charrier Tobias Weinzierl
+ * @author Dominic Charrier
  */
 class exahype::mappings::Reinitialisation {
  private:
@@ -52,6 +52,42 @@ class exahype::mappings::Reinitialisation {
   int _interiorFaceMerges;
   int _boundaryFaceMerges;
   #endif
+
+#ifdef Parallel
+  /**
+   * We only send empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendEmptyDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /*
+   * We only send solver and empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+#endif
 
  public:
   /**
@@ -110,7 +146,7 @@ class exahype::mappings::Reinitialisation {
         const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
     /**
-     * Nop.
+     * TODO(Dominic): Add docu.
      */
     void touchVertexFirstTime(
         exahype::Vertex& fineGridVertex,
@@ -123,7 +159,7 @@ class exahype::mappings::Reinitialisation {
 
   #ifdef Parallel
     /**
-     * TODO(Dominic): Not implemented yet.
+     * TODO(Dominic): Add docu.
      */
     void mergeWithNeighbour(exahype::Vertex& vertex,
                             const exahype::Vertex& neighbour, int fromRank,
@@ -132,12 +168,50 @@ class exahype::mappings::Reinitialisation {
                             int level);
 
     /**
-     * TODO(Dominic): Not implemented yet.
+     * We only drop the received limiter status for LimitingADERDGSolvers
+     * where we have detected a change of the limiter domain.
+     * This information should be available on all ranks.
+     * We ignore other solver types.
+     *
+     * TODO(Dominic): Add more docu.
+     */
+    static void dropNeighbourMergedLimiterStatus(
+        const int                                    fromRank,
+        const tarch::la::Vector<DIMENSIONS, int>&    src,
+        const tarch::la::Vector<DIMENSIONS, int>&    dest,
+        const int                                    srcCellDescriptionIndex,
+        const int                                    destCellDescriptionIndex,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const int                                    level,
+        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+
+    /**
+     * We only merge the face-wise limiter status for LimitingADERDGSolvers
+     * where we have detected a change of the limiter domain.
+     * This information should be available on all ranks.
+     * We ignore other solver types.
+     *
+     * TODO(Dominic): Add more docu.
+     */
+    static void mergeNeighourMergedLimiterStatus(
+        const int                                    fromRank,
+        const tarch::la::Vector<DIMENSIONS,int>&     src,
+        const tarch::la::Vector<DIMENSIONS,int>&     dest,
+        const int                                    srcCellDescriptionIndex,
+        const int                                    destCellDescriptionIndex,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const int                                    level,
+        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+
+    /**
+     * TODO(Dominic): Add docu.
      */
     void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                                 const tarch::la::Vector<DIMENSIONS, double>& x,
                                 const tarch::la::Vector<DIMENSIONS, double>& h,
                                 int level);
+
+
 
     //
     // Below all methods are nop.

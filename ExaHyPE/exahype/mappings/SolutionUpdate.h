@@ -102,6 +102,12 @@ class exahype::mappings::SolutionUpdate {
   void prepareTemporaryVariables();
 
   /**
+   * Sets the limiter domain has changed flags per
+   * solver to false.
+   */
+  void prepareLimiterDomainHasChangedFlags();
+
+  /**
    * Deletes the temporary variables.
    *
    * \note We need to initialise the temporary variables

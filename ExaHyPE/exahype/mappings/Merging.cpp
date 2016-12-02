@@ -380,7 +380,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-//    logInfo("mergeWithNeighbour(...)","hasToMerge");  // TODO(Dominic): Remove
+      // logInfo("mergeWithNeighbour(...)","hasToMerge");  // TODO(Dominic): Remove
 
     dfor2(myDest)
       dfor2(mySrc)
@@ -391,7 +391,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-//          logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");  // TODO(Dominic): Remove
+          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");  // TODO(Dominic): Remove
 
           int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -403,7 +403,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-//            logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData"); // TODO(Dominic): Remove
+            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData"); // TODO(Dominic): Remove
 
             mergeWithNeighbourData(
                 fromRank,
@@ -432,7 +432,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
   }
 }
 
-void exahype::mappings::Merging::mergeWithNeighbourData(
+void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug for multi-solvers. Invert the order of recev.
         const int fromRank,
         const int srcCellDescriptionIndex,
         const int destCellDescriptionIndex,

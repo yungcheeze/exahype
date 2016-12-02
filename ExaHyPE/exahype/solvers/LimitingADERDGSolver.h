@@ -633,7 +633,7 @@ public:
    * Adapters:
    * LimitingADERDGSolver LimiterStatusSpreading
    * LimitingADERDGSolver Reinitialisation
-   * LimitingADERDGSolver Recomputation
+   * LimitingADERDGSolver SolutionRecomputation
    */
   void reinitialiseSolvers(
       const int cellDescriptionsIndex,
@@ -675,7 +675,7 @@ public:
    * Adapters:
    * LimitingADERDGSolver LimiterStatusSpreading
    * LimitingADERDGSolver Reinitialisation
-   * LimitingADERDGSolver Recomputation
+   * LimitingADERDGSolver SolutionRecomputation
    */
   void recomputeSolution(
       const int cellDescriptionsIndex,
@@ -762,6 +762,9 @@ public:
    *
    * We thus do not need to merge these patches with neighbour data
    * in the recomputation phase.
+   *
+   * TODO(Dominic): Remove limiterstatus1 and limiterStatus2 argument.
+   * They depend on the isRecomputation value
    */
   void mergeNeighboursBasedOnLimiterStatus(
       const int                                 cellDescriptionsIndex1,
@@ -816,7 +819,7 @@ public:
    * is selected according to the following scheme:
    *
    * | Status   | Solver to Merge |
-   * ---------------------------------------
+   * ------------------------------
    * | O        | ADER-DG         |
    * | NNT      | ADER-DG         |
    *
@@ -865,11 +868,39 @@ public:
   void sendDataToNeighbour(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
-      const int                                     elementIndex,
+      const int                                     element,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
+
+  /**
+   * Send data or empty data to the neighbour data based
+   * on the limiter status.
+   *
+   * \param[in] isRecomputation Indicates if this called within a solution recomputation
+   *                            process.
+   * \param[in] limiterStatus   This method is used in two different contexts (see \p isRecomputation)
+   *                            which either make use of the unified face-wise limiter status (isRecomputation)
+   *                            or make use of the cell-wise limiter status (!isRecomputation).
+   *
+   * <h2>SolutionRecomputation</h2>
+   * In case this method is called within a solution recomputation,
+   * the ADER-DG solver does only send empty messages to the neighbour.
+   * Otherwise it merges the received data and adds it to the update.
+   *
+   *  \note This method assumes that there has been a unified face-wise limiter status value
+   *  determined and written back to the faces a-priori.
+   */
+  void sendDataToNeighbourBasedOnLimiterStatus(
+        const int                                    toRank,
+        const int                                    cellDescriptionsIndex,
+        const int                                    element,
+        const tarch::la::Vector<DIMENSIONS, int>&    src,
+        const tarch::la::Vector<DIMENSIONS, int>&    dest,
+        const bool                                   isRecomputation,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const int                                    level) const;
 
   void sendEmptyDataToNeighbour(
       const int                                     toRank,
@@ -891,12 +922,48 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
+  /**
+   * Merge or drop received neighbour data based
+   * on the limiter status.
+   *
+   * \param isRecomputation Indicates if this called within a solution recomputation
+   *                        process.
+   * \param limiterStatus   This method is used in two different contexts (see \p isRecomputation)
+   *                        which either make use of the unified face-wise limiter status (isRecomputation)
+   *                        or make use of the cell-wise limiter status (!isRecomputation).
+   *
+   * <h2>SolutionRecomputation</h2>
+   * In case this method is called within a solution recomputation,
+   * the ADER-DG solver drops the received boundary data.
+   * Otherwise it merges the received data and adds it to the update.
+   *
+   *  \note This method assumes that there has been a unified face-wise limiter status value
+   *  determined and written back to the faces.
+   */
+  void mergeWithNeighbourDataBasedOnLimiterStatus(
+      const int                                    fromRank,
+      const int                                    neighbourTypeAsInt,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const bool                                   isRecomputation,
+      double**                                     tempFaceUnknowns,
+      double**                                     tempStateSizedVectors,
+      double**                                     tempStateSizedSquareMatrices,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) const;
+
   void dropNeighbourData(
       const int                                     fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
+
+  ///////////////////////////////////////
+  // NEIGHBOUR - Limiter status spreading
+  ///////////////////////////////////////
 
   /**
    * Receive and merge the merged limiter status sent

@@ -196,22 +196,24 @@ void exahype::mappings::InitialLimiterDomain::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // TODO(Dominic): Send my limiter status to neighbour
-  // TODO(Dominic): Discussion: Send status always or use counters?
 //  dfor2(dest)
 //    dfor2(src)
-//    if (vertex.hasToSendMetadata(src,dest,toRank)) {
-//      vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-//      if (vertex.hasToSendDataToNeighbour(src,dest)) {
-//        sendSolverDataToNeighbour(
-//            toRank,src,dest,
-//            vertex.getCellDescriptionsIndex()[srcScalar],
-//            vertex.getCellDescriptionsIndex()[destScalar],
-//            x,level);
-//      } else {
-//        sendEmptySolverDataToNeighbour(toRank,src,dest,x,level);
+//      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+//        vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+//        if (vertex.hasToSendDataToNeighbour(src,dest)) {
+//          exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbour(
+//              toRank,src,dest,
+//              vertex.getCellDescriptionsIndex()[srcScalar],
+//              vertex.getCellDescriptionsIndex()[destScalar],
+//              x,level);
+//        } else {
+//          exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+//              toRank,src,dest,
+//              vertex.getCellDescriptionsIndex()[srcScalar],
+//              vertex.getCellDescriptionsIndex()[destScalar],
+//              x,level);
+//        }
 //      }
-//    }
 //    enddforx
 //  enddforx
 }

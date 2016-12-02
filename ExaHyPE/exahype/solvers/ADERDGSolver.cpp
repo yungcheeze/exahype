@@ -2641,7 +2641,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[1] );
   _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
 
-  if (true || tarch::parallel::Node::getInstance().getRank()==
+  if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
              "data[0]=" << receivedTimeStepData[0] <<

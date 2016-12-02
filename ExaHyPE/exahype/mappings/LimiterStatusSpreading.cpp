@@ -383,7 +383,13 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading() {
+exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading()
+#ifdef Debug
+:
+_interiorFaceMerges(0),
+_boundaryFaceMerges(0)
+#endif
+{
   // do nothing
 }
 
@@ -393,7 +399,13 @@ exahype::mappings::LimiterStatusSpreading::~LimiterStatusSpreading() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading(
-    const LimiterStatusSpreading& masterThread) {
+    const LimiterStatusSpreading& masterThread)
+  #ifdef Debug
+  :
+  _interiorFaceMerges(0),
+  _boundaryFaceMerges(0)
+  #endif
+{
   // do nothing
 }
 void exahype::mappings::LimiterStatusSpreading::mergeWithWorkerThread(

@@ -27,8 +27,6 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
-#include "exahype/mappings/Reinitialisation.h"
-
 namespace exahype {
 namespace mappings {
 class LimiterStatusSpreading;
@@ -36,12 +34,12 @@ class LimiterStatusSpreading;
 }
 
 /**
- * Update the solution
+ * This mapping is part of three mappings (+adapters) which together perform the limiter
+ * status spreading the recomputation of troubled cells (and their direct) neighbours.
  *
- * We run over all cells of the local spacetree and ask the solver whether there
- * is prescribed data in this point (replace values by user-defined values).
+ * \see exahype::mappings::SolutionRecomputation for more details.
  *
- * @author Dominic Charrier Tobias Weinzierl
+ * @author Dominic Charrier
  */
 class exahype::mappings::LimiterStatusSpreading {
  private:
@@ -55,6 +53,7 @@ class exahype::mappings::LimiterStatusSpreading {
   int _boundaryFaceMerges;
   #endif
 
+ public:
 #ifdef Parallel
   /**
    * Loop over all the solvers and check
@@ -95,9 +94,6 @@ class exahype::mappings::LimiterStatusSpreading {
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
   #endif
-
- public:
-  friend class exahype::mappings::Reinitialisation;
 
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
