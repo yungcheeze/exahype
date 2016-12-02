@@ -30,6 +30,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
 
+  private boolean _inALimitingADERDGSolver;
+
   public GenerateSolverRegistration(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
     _kernelNumber            = 0;
@@ -144,6 +146,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void inAAderdgSolver(eu.exahype.node.AAderdgSolver node) {
     try {
+      _inALimitingADERDGSolver = false;
+      
       _solverName = node.getName().toString().trim();
 
       _writer.write("#include \"" + _solverName + ".h\"\n");
@@ -179,6 +183,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void inAFiniteVolumesSolver(eu.exahype.node.AFiniteVolumesSolver node) {
     try {
+      _inALimitingADERDGSolver = false;
+      
       _solverName = node.getName().toString().trim();
       int patchSize     = Integer.parseInt(node.getPatchSize().getText());
       
@@ -218,9 +224,15 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"" + plotterName + ".h\"\n");
 
-      _methodBodyWriter.write(
-          "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<" + _projectName + "::" + _solverName + "*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+      if (_inALimitingADERDGSolver) {
+        _methodBodyWriter.write(
+            "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
+                + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n"); 
+      } else {
+        _methodBodyWriter.write(
+            "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
+                + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<" + _projectName + "::" + _solverName + "*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+      }
       _plotterNumber++;
       System.out.println("added plotter ... ok");
     } catch (Exception exc) {
@@ -230,7 +242,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   }
 
   @Override
-  public void outAProject(AProject node) {
+  public void outAProject(AProject node) {    
     try {
       _methodBodyWriter.write("\n");
       _methodBodyWriter.write(
@@ -299,10 +311,11 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
 	public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
     try {
-      _solverName   = node.getName().toString().trim();
-      int order     = Integer.parseInt(node.getOrder().getText());
-      int patchSize = 2*order+1;
+      _inALimitingADERDGSolver = true;
+      
+      _solverName  = node.getName().toString().trim();
 
+      _writer.write("#include \"exahype/solvers/LimitingADERDGSolver.h\"\n");
       _writer.write("#include \"" + _solverName + "_ADERDG.h\"\n");
       _writer.write("#include \"" + _solverName + "_FV.h\"\n");
 
@@ -335,7 +348,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
 
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_FV(2*(aderdgSolver.getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
