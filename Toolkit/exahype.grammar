@@ -6,6 +6,10 @@
 // The project has received funding from the European Union’s Horizon // 2020 research and innovation programme under grant agreement
 // No 671698. For copyrights and licensing, please consult the webpage.
 //
+// Please be aware of the following grammar file before you start to create basic helpers
+// and tokens:
+// http://sablecc.sourceforge.net/grammars/ISOC.grammar.html
+//
 Package eu.exahype;
 
 Helpers
@@ -126,8 +130,8 @@ Tokens
                                       )*)?
                                       '}';
 
-  int_number                        = digit+;
-  float_number                      = (digit+ | digit+ '.' digit+);
+  int_number                        = sign? digit+;
+  float_number                      = sign? ( digit+ | digit+ '.' digit+ );
 
   filename                          = '/' ? (filename_element + '/') * filename_element +;
 
