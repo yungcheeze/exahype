@@ -50,8 +50,25 @@ buildinfo.h
 *.vtk
 *.log-file
 
-#Peano checkout
-peano
+# Any kind of archives
+*.zip
+*.tar.gz
+*.tar.gzip
+*.tar.bzip
 
 #Toolkit binaries
-Code/Toolkit/dist
+Toolkit/dist
+
+# Peano directories:
+# As Peano ships it own .gitignore, this must be stated
+# here. Note also that Peano is managed with subversion
+Peano/peano-ExplicitEulerForHeatEquation-asserts
+Peano/peano
+Peano/tarch
+Peano/files.mk
+Peano/.svn
+Peano/.cvsignore
+Peano/peano.doxygen-configuration
+Peano/src.doxys
+Peano/sharedmemoryoracles.tar.gz
+
