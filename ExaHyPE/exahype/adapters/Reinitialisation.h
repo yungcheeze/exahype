@@ -18,7 +18,9 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Reinitialisation.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -38,9 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::Reinitialisation {
   private:
-    typedef mappings::Reinitialisation Mapping0;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::Reinitialisation Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2Reinitialisation;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2Reinitialisation;
+     Mapping2  _map2PostProcessing;
 
 
   public:

@@ -168,17 +168,17 @@ adapter:
 
 adapter:  
   name: Reinitialisation
-  merge-with-user-defined-mapping: Reinitialisation 
-
-// adapter: 
-//  name: InitialLimiterDomainAndTimeStepSizeComputation
-//  merge-with-user-defined-mapping: InitialLimiterDomain
-//  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Reinitialisation
+  merge-with-user-defined-mapping: PostProcessing 
 
 adapter: 
   name: SolutionRecomputationAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: SolutionRecomputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
  
 // Additional adapters for 4 phase time stepping
 adapter: 
@@ -188,7 +188,7 @@ adapter:
 
 adapter:
   name: SolutionUpdate
-  merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: PostProcessing
 
