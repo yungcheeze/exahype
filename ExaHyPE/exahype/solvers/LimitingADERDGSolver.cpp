@@ -1647,15 +1647,11 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
       SolverPatch.getType() == SolverPatch::Ancestor ||
       SolverPatch.getType() == SolverPatch::Descendant
       ) {
-    assertion( exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADERDG );
-    const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[ SolverPatch.getSolverNumber() ])->getNumberOfVariables();
-
-    for (int i=0; i<numberOfVariables; i++) {
-      DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables]  =
-        std::min( DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*numberOfVariables], min[i] );
-      DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables]  =
-        std::max( DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*numberOfVariables], max[i] );
+    for (int i=0; i<_numberOfVariables; i++) {
+      DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*_numberOfVariables]  =
+        std::min( DataHeap::getInstance().getData( SolverPatch.getSolutionMin()  )[i+faceIndex*_numberOfVariables], min[i] );
+      DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*_numberOfVariables]  =
+        std::max( DataHeap::getInstance().getData( SolverPatch.getSolutionMax()  )[i+faceIndex*_numberOfVariables], max[i] );
     }
   }
 }

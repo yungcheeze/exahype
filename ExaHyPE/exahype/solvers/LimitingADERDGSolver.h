@@ -452,9 +452,6 @@ public:
       const int cellDescriptionsIndex,
       const int solverElement) const {
     SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
-    assertion(solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled ||
-        solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourIsTroubledCell ||
-        solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell);
     return _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
   }
 
