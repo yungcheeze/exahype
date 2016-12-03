@@ -300,8 +300,10 @@ void exahype::mappings::Plot::enterCell(
       for (auto* solver : exahype::solvers::RegisteredSolvers) {
         if (pPlotter->plotDataFromSolver(solverNumber)) {
           int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-          if (element!=exahype::solvers::Solver::NotFound)
+          if (element!=exahype::solvers::Solver::NotFound) {
+            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
             pPlotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
+          }
         }
         ++solverNumber;
       }
