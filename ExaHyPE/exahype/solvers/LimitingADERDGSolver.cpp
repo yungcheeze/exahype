@@ -102,11 +102,24 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
       _limiter->startNewTimeStep();
       break;
   } // TODO(Dominic): Switch-case probably not necessary
+
+  _minCellSize     = _nextMinCellSize;
+  _maxCellSize     = _nextMaxCellSize;
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+
+  logInfo("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
+
+  _limiterDomainHasChanged     = _nextLimiterDomainHasChanged;
+  _nextLimiterDomainHasChanged = false;
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
   _solver->rollbackToPreviousTimeStep();
   _limiter->rollbackToPreviousTimeStep();
+
+  _nextMinCellSize = std::numeric_limits<double>::max();
+  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
 void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
@@ -121,6 +134,42 @@ void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingData
 void exahype::solvers::LimitingADERDGSolver::reinitialiseTimeStepData() {
   _solver->reinitialiseTimeStepData();
   _limiter->reinitialiseTimeStepData();
+}
+
+void exahype::solvers::LimitingADERDGSolver::updateNextMinCellSize(double minCellSize) {
+  _solver->updateNextMinCellSize(minCellSize);
+  _limiter->updateNextMinCellSize(minCellSize);
+
+  assertionEquals(_solver->getNextMinCellSize(),_limiter->getNextMinCellSize());
+  _nextMinCellSize = _solver->getNextMinCellSize();
+}
+
+void exahype::solvers::LimitingADERDGSolver::updateNextMaxCellSize(double maxCellSize) {
+  _solver->updateNextMaxCellSize(maxCellSize);
+  _limiter->updateNextMaxCellSize(maxCellSize);
+
+  assertionEquals(_solver->getNextMaxCellSize(),_limiter->getNextMaxCellSize());
+  _nextMaxCellSize = _solver->getNextMaxCellSize();
+}
+
+double exahype::solvers::LimitingADERDGSolver::getNextMinCellSize() const {
+  assertionEquals(_solver->getNextMinCellSize(),_limiter->getNextMinCellSize());
+  return _solver->getNextMinCellSize();
+}
+
+double exahype::solvers::LimitingADERDGSolver::getNextMaxCellSize() const {
+  assertionEquals(_solver->getNextMaxCellSize(),_limiter->getNextMaxCellSize());
+  return _solver->getNextMaxCellSize();
+}
+
+double exahype::solvers::LimitingADERDGSolver::getMinCellSize() const {
+  assertionEquals(_solver->getMinCellSize(),_limiter->getMinCellSize());
+  return _solver->getMinCellSize();
+}
+
+double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
+  assertionEquals(_solver->getMaxCellSize(),_limiter->getMaxCellSize());
+  return _solver->getMaxCellSize();
 }
 
 ///////////////////////////////////
@@ -1784,7 +1833,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending data to master" <<
+    logInfo("sendDataToMaster(...)","Sending data to master:" <<
              " data[0]=" << dataToSend[0]);
   }
   DataHeap::getInstance().sendData(
@@ -1801,15 +1850,22 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
   _limiter->mergeWithWorkerData(workerRank,x,level);
 
   // Receive the information if limiter status has changed
-  std::vector<double> receivedTimeStepData(0,1);
+  std::vector<double> receivedData(1); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
-      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      receivedData.data(),receivedData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
-  assertion(tarch::la::equals(receivedTimeStepData[0],1.0) ||
-            tarch::la::equals(receivedTimeStepData[0],-1.0));
+  assertion(tarch::la::equals(receivedData[0],1.0) ||
+            tarch::la::equals(receivedData[0],-1.0));
 
-  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedTimeStepData[0],1.0) ? true : false;
-  _limiterDomainHasChanged |= workerLimiterDomainHasChanged;
+  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
+  updateNextLimiterDomainHasChanged(workerLimiterDomainHasChanged);
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logInfo("mergeWithWorkerData(...)","Received data from worker:" <<
+            " data[0]=" << receivedData[0]);
+    logInfo("mergeWithWorkerData(...)","_nextLimiterDomainHasChanged=" << _nextLimiterDomainHasChanged);
+  }
 }
 
 bool exahype::solvers::LimitingADERDGSolver::hasToSendDataToMaster(

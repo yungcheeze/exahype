@@ -380,7 +380,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-      // logInfo("mergeWithNeighbour(...)","hasToMerge");  // TODO(Dominic): Remove
+    // logInfo("mergeWithNeighbour(...)","hasToMerge");
 
     dfor2(myDest)
       dfor2(mySrc)
@@ -391,7 +391,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");  // TODO(Dominic): Remove
+          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
           int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -403,7 +403,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData"); // TODO(Dominic): Remove
+            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
 
             mergeWithNeighbourData(
                 fromRank,

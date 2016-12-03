@@ -273,7 +273,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   //
@@ -310,8 +310,16 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
 
-  void setLimiterDomainHasChanged(bool state) {
-    _stateData.setLimiterDomainHasChanged(state);
+  /**
+   * Updates the limiterDomainHasChanged value.
+   * The reset of this value to false is performed in
+   *
+   * switchToSolutionUpdateContext
+   * switchToInitialConditionAndTimeStepSizeComputationContext
+   *
+   */
+  void updateLimiterDomainHasChanged(bool state) {
+    _stateData.setLimiterDomainHasChanged(_stateData.getLimiterDomainHasChanged() | state);
   }
 
   bool limiterDomainHasChanged() const {

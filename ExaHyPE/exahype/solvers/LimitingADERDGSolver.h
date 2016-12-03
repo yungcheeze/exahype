@@ -74,9 +74,21 @@ private:
   bool _limiterDomainHasChanged;
 
   /**
-   * The maximum
+   * The limiterDomainHasChanged for the next
+   * iteration.
+   */
+  bool _nextLimiterDomainHasChanged;
+
+  /**
+   * The maximum relaxation parameter
+   * used for the discrete maximum principle.
    */
   double _DMPMaximumRelaxationParameter;
+
+  /**
+   * The difference scaling
+   * used for the discrete maximum principle.
+   */
   double _DMPDifferenceScaling;
 
   /**
@@ -368,12 +380,16 @@ public:
 
   void startNewTimeStep() override;
 
-  bool limiterDomainHasChanged() {
+  bool getLimiterDomainHasChanged() {
     return _limiterDomainHasChanged;
   }
 
-  void setLimiterDomainHasChanged(bool state) {
-    _limiterDomainHasChanged = state;
+  bool getNextLimiterDomainHasChanged() {
+    return _nextLimiterDomainHasChanged;
+  }
+
+  void updateNextLimiterDomainHasChanged(bool state) {
+    _nextLimiterDomainHasChanged |= state;
   }
 
   /**
@@ -385,6 +401,18 @@ public:
   void reconstructStandardTimeSteppingDataAfterRollback();
 
   void reinitialiseTimeStepData() override;
+
+  void updateNextMinCellSize(double minCellSize) override;
+
+  void updateNextMaxCellSize(double maxCellSize) override;
+
+  double getNextMinCellSize() const override;
+
+  double getNextMaxCellSize() const override;
+
+  double getMinCellSize() const override;
+
+  double getMaxCellSize() const override;
 
   bool isValidCellDescriptionIndex(
       const int cellDescriptionsIndex) const override ;

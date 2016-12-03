@@ -85,7 +85,6 @@ class exahype::runners::Runner {
    * i.e. no grid traversal is required.
    */
   void initSolverTimeStepData();
-  void initFiniteVolumesSolverTimeStamps();
 
   void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;
 
@@ -129,6 +128,12 @@ class exahype::runners::Runner {
    */
   void recomputePredictorIfNecessary(
       exahype::repositories::Repository& repository);
+
+  /**
+   * Run the three adapters necessary for updating the
+   * limiter domain.
+   */
+  void updateLimiterDomain(exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.

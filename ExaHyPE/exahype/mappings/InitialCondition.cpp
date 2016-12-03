@@ -167,23 +167,33 @@ void exahype::mappings::InitialCondition::beginIteration(
 
 void exahype::mappings::InitialCondition::endIteration(
     exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
+  logTraceInWith1Argument("endIteration(State)", solverState);
 
   // 1. Merge limiter domain status
   bool limiterDomainHasChanged = solverState.limiterDomainHasChanged();
   for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber])->
-        setLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
+    if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      logInfo("endIteration(State)", "_limiterDomainHasChanged[solverNumber]="<<_limiterDomainHasChanged[solverNumber]<<
+                    ",limiterDomainHasChanged="<<limiterDomainHasChanged);
 
-    limiterDomainHasChanged |= _limiterDomainHasChanged[solverNumber];
+      auto* limitingADERDGSolver =
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber]);
+      limitingADERDGSolver->updateNextLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
+
+      limiterDomainHasChanged |= limitingADERDGSolver->getNextLimiterDomainHasChanged();
+
+      logInfo("endIteration(State)", "limitingADERDGSolver->getNextLimiterDomainHasChanged()="<<limitingADERDGSolver->getNextLimiterDomainHasChanged()<<",_limiterDomainHasChanged[solverNumber]="<<_limiterDomainHasChanged[solverNumber]<<
+              ",limiterDomainHasChanged="<<limiterDomainHasChanged);
+    }
   }
-  solverState.setLimiterDomainHasChanged(limiterDomainHasChanged);
+  solverState.updateLimiterDomainHasChanged(limiterDomainHasChanged);
+
   // 2.
   deleteTemporaryVariables();
   // 3. Veto the fused time stepping time step size reinitialisation in TimeStepSizeComputation::enterCell
   exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = true;
 
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
+  logTraceOutWith1Argument("endIteration(State)", solverState);
 }
 
 //
