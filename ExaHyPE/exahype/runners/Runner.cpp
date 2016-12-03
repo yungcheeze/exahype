@@ -444,24 +444,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     updateLimiterDomain(repository);
   }
 
-  logInfo("runAsMaster(...)","start to plot initial solution");
-
-  /*
-   * Compute current first predictor based on current time step size.
-   * Set current time step size as old time step size of next iteration.
-   * Compute the current time step size of the next iteration.
-   */
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-  repository.iterate();
-
-  /*
-   * We plot afterwards since the synchronisation
-   * of time step data is perforemd in the prediction mapping.
-   */
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
+    logInfo("runAsMaster(...)","start to plot initial solution");
     #if DIMENSIONS==2
     repository.switchToPlot2d();  // Cell onto faces
     #else
@@ -471,6 +457,15 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     logInfo("runAsMaster(...)","finished to plot initial solution");
   }
+
+  /*
+   * Compute current first predictor based on current time step size.
+   * Set current time step size as old time step size of next iteration.
+   * Compute the current time step size of the next iteration.
+   */
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+  repository.iterate();
 
   logInfo("runAsMaster(...)","finished to compute first prediction");
 
@@ -622,7 +617,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
 }
 
 void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Repository& repository) {
-  logInfo("updateLimiterDomain(...)","start to set up initial limiter domain");
+  logInfo("updateLimiterDomain(...)","start to update limiter domain");
   repository.getState().switchToLimiterStatusSpreadingContext();
   repository.switchToLimiterStatusSpreading();
   repository.iterate();
@@ -636,7 +631,7 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
 
-  logInfo("updateLimiterDomain(...)","finished to set up initial limiter domain");
+  logInfo("updateLimiterDomain(...)","finished to update limiter domain");
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall) {
@@ -771,9 +766,13 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
+  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update solution");
+
   repository.getState().switchToSolutionUpdateContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
+
+  logInfo("updateLimiterDomain(...)","compute new time step size");
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
@@ -788,6 +787,15 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 
   printTimeStepInfo(1);
 
+  if (plot) {
+    #if DIMENSIONS==2
+    repository.switchToPlot2d();  // Cell onto faces
+    #else
+    repository.switchToPlot();  // Cell onto faces
+    #endif
+    repository.iterate();
+  }
+
   // TODO(Dominic): Limiting: There is an issue with the prediction in
   // the limiting context. Since we overwrite the update here again.
   // A rollback is thus not possible anymore.
@@ -798,19 +806,6 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.getState().switchToPredictionContext(); // Which time stamp do we want to plot?
   repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
-
-  /*
-   * We plot afterwards since the synchronisation
-   * of time step data is perforemd in the prediction mapping.
-   */
-  if (plot) {
-    #if DIMENSIONS==2
-    repository.switchToPlot2d();  // Cell onto faces
-    #else
-    repository.switchToPlot();  // Cell onto faces
-    #endif
-    repository.iterate();
-  }
 }
 
 void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const {
