@@ -64,8 +64,8 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
 	
     writer.write( "namespace " + _projectName + "{\n");
     writer.write( "  class " + plotterName + ";\n");
-    writer.write( "\n" );
 	if (!_isForLimitingADERDGSolver) {
+	  writer.write( "\n" );
 	  writer.write( "  /**\n" );
 	  writer.write( "   * Forward declaration\n" );
 	  writer.write( "   */\n" );
@@ -76,7 +76,11 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
     writer.write( "\n" );
     writer.write( "class " + _projectName + "::" + plotterName + ": public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{\n" );
     writer.write( "  public:\n" );
-    writer.write( "  " + plotterName + "(" + _solverName + "&  solver);\n" );
+    if (!_isForLimitingADERDGSolver) {
+      writer.write( "  " + plotterName + "(" + _solverName + "&  solver);\n" );
+    } else {
+      writer.write( "  " + plotterName + "(exahype::solvers::LimitingADERDGSolver&  solver);\n" );
+    }
     writer.write( "  virtual ~" + plotterName + "();\n" );
     writer.write( "  void startPlotting(double time) override;\n");
     writer.write( "  void finishPlotting() override;\n");
@@ -95,7 +99,11 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
     writer.write( "#include \"" + plotterName + ".h\"\n" );
     writer.write( "\n" );
     writer.write( "\n" );
-    writer.write( _projectName + "::" + plotterName + "::" + plotterName + "(" + _solverName + "&  solver) {\n" );
+    if (!_isForLimitingADERDGSolver) {
+      writer.write( _projectName + "::" + plotterName + "::" + plotterName + "(" + _solverName + "&  solver) {\n" );
+    } else {
+      writer.write( _projectName + "::" + plotterName + "::" + plotterName + "(exahype::solvers::LimitingADERDGSolver&  solver) {\n" );
+    }
     writer.write( "  // @todo Please insert your code here\n" );
     writer.write( "}\n" );
     writer.write( "\n" );
