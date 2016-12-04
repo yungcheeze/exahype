@@ -199,10 +199,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator);
-
         solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),
             element,
@@ -217,6 +213,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
               updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
         }
+
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();

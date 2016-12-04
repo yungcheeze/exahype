@@ -99,16 +99,16 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
-
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
         }
+
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();

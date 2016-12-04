@@ -1051,6 +1051,37 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) const;
 
+  ///////////////////////////////////////
+  // NEIGHBOUR - Solution Recomputation
+  ///////////////////////////////////////
+  /**
+   * TODO(Dominic):
+   * Add more docu.
+   *
+   * We do not send the minimum and maximum solution values
+   * during the solution recomputation process.
+   */
+  void sendEmptySolverAndLimiterDataToNeighbour(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) const;
+
+  /**
+   * TODO(Dominic):
+   * Add more docu.
+   *
+   * We do not send the minimum and maximum solution values
+   * during the solution recomputation process.
+   */
+  void dropNeighbourSolverAndLimiterData(
+        const int                                     fromRank,
+        const tarch::la::Vector<DIMENSIONS, int>&     src,
+        const tarch::la::Vector<DIMENSIONS, int>&     dest,
+        const tarch::la::Vector<DIMENSIONS, double>&  x,
+        const int                                     level) const;
+
   /////////////////////////////////////
   // FORK OR JOIN
   /////////////////////////////////////

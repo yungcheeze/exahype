@@ -1656,6 +1656,21 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
   }
 }
 
+void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
+      DataHeap::getInstance().receiveData(
+          fromRank, x, level,
+          peano::heap::MessageType::NeighbourCommunication);
+
+  _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+  _solver->dropNeighbourData(fromRank,src,dest,x,level);
+}
+
 ///////////////////////////////////////
 // NEIGHBOUR - Limiter status spreading
 ///////////////////////////////////////
@@ -1735,19 +1750,24 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourMergedLimiterStatus(
 }
 
 ///////////////////////////////////////////////////////////
-// NEIGHBOUR - Reinitialisation + SolutionRecomputation
+// NEIGHBOUR - Solution recomputation
 ///////////////////////////////////////////////////////////
-void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
+void exahype::solvers::LimitingADERDGSolver::sendEmptySolverAndLimiterDataToNeighbour(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) const {
+  _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+}
+
+void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
-      DataHeap::getInstance().receiveData(
-          fromRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-
+    const int                                     level) const {
   _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
   _solver->dropNeighbourData(fromRank,src,dest,x,level);
 }

@@ -40,6 +40,13 @@ exahype::mappings::SolutionRecomputation::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
+peano::MappingSpecification
+exahype::mappings::SolutionRecomputation::enterCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
 // Below specs are all nop
 
 peano::MappingSpecification
@@ -48,14 +55,6 @@ exahype::mappings::SolutionRecomputation::touchVertexLastTimeSpecification() {
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-
-peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::enterCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
 
 peano::MappingSpecification
 exahype::mappings::SolutionRecomputation::leaveCellSpecification() {
@@ -543,8 +542,7 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->dropNeighbourData(
-          fromRank,src,dest,x,level);
+      limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
     }
     //
     ++solverNumber;
@@ -583,7 +581,7 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
             x,level);
       } else {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDGSolver->dropNeighbourData(fromRank,src,dest,x,level);
+        limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
       }
     }
     //

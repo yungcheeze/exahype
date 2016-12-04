@@ -132,10 +132,6 @@ void exahype::mappings::Reinitialisation::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
-
         if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
@@ -153,6 +149,11 @@ void exahype::mappings::Reinitialisation::enterCell(
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
         }
+
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done after reinitialisation since we might add new finite volumes patches here.
+                                                          // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -358,7 +359,7 @@ void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(toRank,src,dest,x,level);
     }
     ++solverNumber;
   }
@@ -398,7 +399,7 @@ void exahype::mappings::Reinitialisation::sendDataToNeighbour(
             true, /* isRecomputation */
             x,level);
       } else {
-        limitingADERDGSolver->sendEmptyDataToNeighbour(
+        limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(
             toRank,src,dest,x,level);
       }
       ++solverNumber;
