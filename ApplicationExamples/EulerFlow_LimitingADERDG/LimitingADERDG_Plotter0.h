@@ -6,22 +6,17 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace Euler{
-  class FVM_Plotter0;
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
-  /**
-   * Forward declaration
-   */
-  class FVM;
+namespace Euler{
+  class LimitingADERDG_Plotter0;
 }
 
 
-
-
-class Euler::FVM_Plotter0: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class Euler::LimitingADERDG_Plotter0: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  FVM_Plotter0(FVM&  solver);
-  virtual ~FVM_Plotter0();
+  LimitingADERDG_Plotter0(exahype::solvers::LimitingADERDGSolver&  solver);
+  virtual ~LimitingADERDG_Plotter0();
   void startPlotting(double time) override;
   void finishPlotting() override;
   void mapQuantities(

@@ -1,8 +1,8 @@
-#include "FVM.h"
+#include "LimitingADERDG_FV.h"
 
 #include "InitialData.h"
 
-void Euler::FVM::flux(const double* const Q, double** F) {
+void Euler::LimitingADERDG_FV::flux(const double* const Q, double** F) {
   
   const double GAMMA = 1.4;
 
@@ -30,7 +30,7 @@ void Euler::FVM::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::FVM::source(const double* const Q, double* S) {
+void Euler::LimitingADERDG_FV::source(const double* const Q, double* S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -39,7 +39,7 @@ void Euler::FVM::source(const double* const Q, double* S) {
 }
 
 
-void Euler::FVM::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void Euler::LimitingADERDG_FV::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   
   const double GAMMA = 1.4;
 
@@ -57,7 +57,7 @@ void Euler::FVM::eigenvalues(const double* const Q, const int normalNonZeroIndex
 }
 
 
-bool Euler::FVM::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
+bool Euler::LimitingADERDG_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
   if ( tarch::la::equals(t,0.0) ) {
     return true;
   }
@@ -65,16 +65,16 @@ bool Euler::FVM::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>
 }
 
 
-void Euler::FVM::adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q) {  
+void Euler::LimitingADERDG_FV::adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q) {  
   initialData(x,Q);
 }
 
-exahype::solvers::Solver::RefinementControl Euler::FVM::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
+exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-void Euler::FVM::boundaryValues(
+void Euler::LimitingADERDG_FV::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,

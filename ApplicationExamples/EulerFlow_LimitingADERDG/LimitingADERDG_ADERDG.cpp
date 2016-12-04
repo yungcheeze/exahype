@@ -1,15 +1,15 @@
-#include "ADERDG.h"
+#include "LimitingADERDG_ADERDG.h"
 
 #include "InitialData.h"
 
 #include <cstring>
 
-void Euler::ADERDG::init(std::vector<std::string>& cmdlineargs) {
+void Euler::LimitingADERDG_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the constructur.
   // @todo Please implement/augment if required.
 }
 
-void Euler::ADERDG::flux(const double* const Q, double** F) {
+void Euler::LimitingADERDG_ADERDG::flux(const double* const Q, double** F) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   const double GAMMA = 1.4;
@@ -39,7 +39,7 @@ void Euler::ADERDG::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::ADERDG::source(const double* const Q, double* S) {
+void Euler::LimitingADERDG_ADERDG::source(const double* const Q, double* S) {
   // Number of variables = 5 + 0
   // @todo Please implement
   S[0] = 0.0;
@@ -50,7 +50,7 @@ void Euler::ADERDG::source(const double* const Q, double* S) {
 }
 
 
-void Euler::ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void Euler::LimitingADERDG_ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   const double GAMMA = 1.4;
@@ -69,7 +69,7 @@ void Euler::ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIn
 }
 
 
-void Euler::ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) {
+void Euler::LimitingADERDG_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) {
   fluxOut[0] = fluxIn[0];
   fluxOut[1] = fluxIn[1];
   fluxOut[2] = fluxIn[2];
@@ -84,31 +84,31 @@ void Euler::ADERDG::boundaryValues(const double* const x,const double t,const do
 }
 
 
-bool Euler::ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
+bool Euler::LimitingADERDG_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
   return tarch::la::equals(t, 0.0);
 }
 
-void Euler::ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Euler::LimitingADERDG_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
   Euler::initialData(x,Q);
 }
 
-void Euler::ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void Euler::LimitingADERDG_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
   std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void Euler::ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void Euler::LimitingADERDG_ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
   std::memset(Bn, 0, nVar * sizeof(double));
 }
 
-exahype::solvers::Solver::RefinementControl Euler::ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-bool Euler::ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+bool Euler::LimitingADERDG_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
 
