@@ -38,8 +38,8 @@ void Euler::sodShockTube(const double* const x,double* Q) {
 
 
 void Euler::explosionProblem(const double* const x,double* Q) {
-  // Density and velocities are set to zero (initially).
-  Q[0] = 0.0;
+  // Velocities are set to zero (initially).
+  Q[0] = 1.0;
   
   Q[1] = 0.0;
   Q[2] = 0.0;
@@ -106,5 +106,6 @@ void Euler::explosionProblem(const double* const x,double* Q) {
 
 void Euler::initialData(const double* const x,double* Q) {
   // rarefactionWave(x,Q);
-  sodShockTube(x,Q);
+  // sodShockTube(x,Q);
+  explosionProblem(x,Q);
 }
