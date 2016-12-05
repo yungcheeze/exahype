@@ -622,16 +622,22 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   repository.switchToLimiterStatusSpreading();
   repository.iterate();
 
-  logInfo("updateLimiterDomain(...)","reinitialise cells");
+  #ifdef Parallel
+  logDebug("updateLimiterDomain(...)","merge limiter status of remote neighbours");
+  repository.switchToLimiterStatusMergingMPI();
+  repository.iterate();
+  #endif
+
+  logDebug("updateLimiterDomain(...)","reinitialise cells");
   repository.switchToReinitialisation();
   repository.iterate();
 
-  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
+  logDebug("updateLimiterDomain(...)","recompute solution in troubled cells");
   repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
 
-  logInfo("updateLimiterDomain(...)","finished to update limiter domain");
+  logDebug("updateLimiterDomain(...)","finished to update limiter domain");
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall) {
