@@ -75,14 +75,17 @@ SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     !
     ! The zeroth time derivative (time dof number 1) is the initial condition
     DO k = 1, nDOF(3)
-        DO j = 1, nDOF(2)
-            DO i = 1, nDOF(1)
-                DO iVar = 1, nVar
-                    lqh(iVar,i,j,k,1) = lqh(iVar,i,j,k,1) + luh(iVar,i,j,k)
-                ENDDO
-            ENDDO
-        ENDDO
+       DO j = 1, nDOF(2)
+          DO i = 1, nDOF(1)
+             DO iVar = 1, nVar
+                lqh(iVar,i,j,k,1) = lqh(iVar,i,j,k,1) + luh(iVar,i,j,k)
+                               
+             ENDDO
+          ENDDO
+       ENDDO
     ENDDO
+
+     
     !
     ! For linear PDE, the fastest space-time predictor is the good old Cauchy-Kovalewski procedure
     !
@@ -93,8 +96,12 @@ SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
                 aux = (/ 1., wGPN(j), wGPN(k) /)
                 !rhs(:,:,j,k) = - PRODUCT(aux(1:nDim))/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
                 gradQ(:,1,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
+
+                !print *,  gradQ(:,1,:,j,k,l)
             ENDDO
-        ENDDO
+         ENDDO
+
+        ! stop
         ! y direction (independent from the x and z derivatives) - should not be used for 1D
         IF(nDim>=2) THEN
             DO k = 1, nDOF(3)
@@ -102,9 +109,12 @@ SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
                     aux = (/ 1., wGPN(i), wGPN(k) /)
                     !rhs(:,i,:,k) = rhs(:,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
                     gradQ(:,2,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    !print *,  gradQ(:,2,i,:,k,l)
                 ENDDO
             ENDDO
-        ENDIF
+         ENDIF
+
+         !stop
         ! z direction (independent from the x and y derivatives) - should not be used for 1D and 2D
         IF(nDim>=3) THEN
             DO j = 1, nDOF(2)
@@ -112,9 +122,12 @@ SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
                     aux = (/ 1., wGPN(i), wGPN(j) /)
                     !rhs(:,i,j,:) = rhs(:,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
                     gradQ(:,3,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    !print *,  gradQ(:,3,i,j,:,l)
                 ENDDO
             ENDDO
-        ENDIF
+         ENDIF
+
+         !stop
         ! Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other)
         DO k = 1, nDOF(3)
             DO j = 1, nDOF(2)

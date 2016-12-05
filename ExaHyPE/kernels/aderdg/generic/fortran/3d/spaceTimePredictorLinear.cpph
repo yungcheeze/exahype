@@ -47,40 +47,49 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double dt){
 
-    // double* luhTemp =
-      // new double[numberOfVariables * basisSize * basisSize * basisSize];
-  // memcpy(luhTemp, luh, numberOfVariables * basisSize * basisSize * basisSize *
-                           // sizeof(double));
+    /* TODO: Don't really understand luhTemp. Should ask !! */
+    double* luhTemp =
+     new double[numberOfVariables * basisSize * basisSize * basisSize];
+      for (int i = 0;
+        i < numberOfVariables * basisSize * basisSize * basisSize;
+        i++){
+      luhTemp[i] =  luh[i]; }
+     
+   //memcpy(luhTemp, luh, numberOfVariables * basisSize * basisSize * basisSize *
+   //                         sizeof(double));
 
-  // double* lFhiFortran = new double[numberOfVariables * DIMENSIONS * basisSize *
-                                   // basisSize * basisSize];
-  // for (int i = 0;
-       // i < numberOfVariables * DIMENSIONS * basisSize * basisSize * basisSize;
-       // i++)
-    // lFhiFortran[i] = -123.45;
+   double* lFhiFortran = new double[numberOfVariables * DIMENSIONS * basisSize *
+                                    basisSize * basisSize];
+   for (int i = 0;
+        i < numberOfVariables * DIMENSIONS * basisSize * basisSize * basisSize;
+        i++){
+     lFhiFortran[i] = lFhi[i]; } //-123.45;
 
-  // double* dtTemp = new double[1];
-  // dtTemp[0] = dt;
+   double* dtTemp = new double[1];
+   dtTemp[0] =  predictorTimeStepSize;
 
-  // double* dxTemp = new double[3];
-  // dxTemp[0] = dx[0];
-  // dxTemp[1] = dx[1];
-  // dxTemp[2] = dx[2];
+  double* dxTemp = new double[3];
+  dxTemp[0] = dx[0];
+  dxTemp[1] = dx[1];
+  dxTemp[2] = dx[2];
 
-  // double* lFbndFortran =
-      // new double[numberOfVariables * 6 * basisSize * basisSize];
-  // for (int i = 0; i < numberOfVariables * 6 * basisSize * basisSize; i++) {
-    // lFbndFortran[i] = -123.45;
-  // }
+   double* lFbndFortran =
+       new double[numberOfVariables * 6 * basisSize * basisSize];
+   for (int i = 0; i < numberOfVariables * 6 * basisSize * basisSize; i++) {
+     lFbndFortran[i] =  lFbnd[i]; //-123.45;
+   }
 
-  // double* lQbndFortran =
-      // new double[numberOfVariables * 6 * basisSize * basisSize];
-  // for (int i = 0; i < numberOfVariables * 6 * basisSize * basisSize; i++) {
-    // lQbndFortran[i] = -123.45;
-  // }
+   double* lQbndFortran =
+       new double[numberOfVariables * 6 * basisSize * basisSize];
+   for (int i = 0; i < numberOfVariables * 6 * basisSize * basisSize; i++) {
+     lQbndFortran[i] =  lQbnd[i]; //-123.45;
+   }
 
-  // aderspacetimepredictorlinear_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran,
-                                // luhTemp, dtTemp, dxTemp);
+   //aderspacetimepredictorlinear_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran,
+   //                             luhTemp, dtTemp, dxTemp);
+
+  aderspacetimepredictorlinear_(lQhi, lFhi, lQbnd, lFbnd,
+                                luh, dtTemp, dxTemp);			
 
   // // Permutation of lFhi
   // for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
@@ -130,12 +139,12 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     // }
   // }
 
-  // // delete[] luhTemp;
-  // // delete[] lFhiFortran;
-  // // delete[] lFbndFortran;
-  // // delete[] lQbndFortran;
-  // // delete[] dxTemp;
-  // // delete dtTemp;
+   delete[] luhTemp;
+   delete[] lFhiFortran;
+   delete[] lFbndFortran;
+   delete[] lQbndFortran;
+   delete[] dxTemp;
+   delete dtTemp;
 
   // // std::ofstream ofs;
   // // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);
