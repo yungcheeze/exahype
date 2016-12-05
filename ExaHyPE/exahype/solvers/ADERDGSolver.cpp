@@ -417,7 +417,7 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
 }
 
 void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
-//  _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize; // TODO(Dominic): Should not necessary. Prove by induction
+//  _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize; // TODO(Dominic): Should not necessary.
   _minPredictorTimeStamp    = _minCorrectorTimeStamp+_minCorrectorTimeStepSize;
   _minCorrectorTimeStamp    = _minPredictorTimeStamp;
   _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
@@ -1405,8 +1405,6 @@ void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingDataAfterRol
 
   cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp());       // corrector time stamp is now the previous corrector time stamp
   cellDescription.setPredictorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); // corrector time step size is now the previous corrector time step size
-
-  cellDescription.setPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
 }
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
