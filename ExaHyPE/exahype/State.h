@@ -184,7 +184,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
