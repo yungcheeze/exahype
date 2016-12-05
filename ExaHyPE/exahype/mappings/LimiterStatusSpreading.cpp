@@ -166,6 +166,10 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
 
 void exahype::mappings::LimiterStatusSpreading::beginIteration(
     exahype::State& solverState) {
+  #ifdef Parallel
+  DataHeap::getInstance().startToSendSynchronousData();
+  #endif
+
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;

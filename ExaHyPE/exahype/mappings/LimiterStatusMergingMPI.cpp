@@ -84,6 +84,9 @@ tarch::logging::Log exahype::mappings::LimiterStatusMergingMPI::_log(
 
 void exahype::mappings::LimiterStatusMergingMPI::beginIteration(
     exahype::State& solverState) {
+  #ifdef Parallel
+  DataHeap::getInstance().finishedToSendSynchronousData();
+  #endif
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;

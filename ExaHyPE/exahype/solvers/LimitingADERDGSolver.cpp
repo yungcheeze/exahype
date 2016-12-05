@@ -1482,13 +1482,21 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
 
   switch (limiterStatus) {
     case SolverPatch::LimiterStatus::Ok:
-    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
       if (!isRecomputation) {
         _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
       } else {
         _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
       }
       _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+      break;
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      if (!isRecomputation) {
+        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+        _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      } else {
+        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+        _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      }
       break;
     case SolverPatch::LimiterStatus::Troubled:
       _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
@@ -1849,7 +1857,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
 
   // Send the information to master if limiter status has changed or not
   std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0);
+  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0); // TODO(Dominic): ugly
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1875,10 +1883,10 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
       receivedData.data(),receivedData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
   assertion(tarch::la::equals(receivedData[0],1.0) ||
-            tarch::la::equals(receivedData[0],-1.0));
+            tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
   bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  updateNextLimiterDomainHasChanged(workerLimiterDomainHasChanged);
+  updateNextLimiterDomainHasChanged(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1961,11 +1969,35 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
+  logInfo("sendDataToWorker(...)","sendDataToWorker1");
+
   _solver->sendDataToWorker(workerRank,x,level);
+
+  logInfo("sendDataToWorker(...)","sendDataToWorker2");
+
   _limiter->sendDataToWorker(workerRank,x,level);
+
+  logInfo("sendDataToWorker(...)","sendDataToWorker3");
 
   // TODO(Dominic): Add information that limiter status has been
   // changed for this solver.
+  // Send the information to master if limiter status has changed or not
+  std::vector<double> dataToSend(0,1);
+  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0);
+  assertion1(dataToSend.size()==1,dataToSend.size());
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logInfo("sendDataToWorker(...)","Sending data to worker:" <<
+            " data[0]=" << dataToSend[0]);
+  }
+  logInfo("sendDataToWorker(...)","Sending data to worker:" <<
+              " data[0]=" << dataToSend[0]);
+  DataHeap::getInstance().sendData(
+      dataToSend.data(), dataToSend.size(),
+      workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  logInfo("sendDataToWorker(...)","sendDataToWorker3");
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
@@ -1975,8 +2007,23 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
   _solver->mergeWithMasterData(masterRank,x,level); // !!! Receive order must be the same in master<->worker comm.
   _limiter->mergeWithMasterData(masterRank,x,level);
 
-  // TODO(Dominic): Receive information that limiter status has been
-  // changed for this solver.
+  // Receive the information if limiter status has changed
+  std::vector<double> receivedData(1); // !!! Creates and fills the vector
+  DataHeap::getInstance().receiveData(
+      receivedData.data(),receivedData.size(),masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+  assertion(tarch::la::equals(receivedData[0],1.0) ||
+            tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
+
+  bool masterLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
+  _limiterDomainHasChanged = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logInfo("mergeWithMasterData(...)","Received data from worker:" <<
+            " data[0]=" << receivedData[0]);
+    logInfo("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainHasChanged);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
