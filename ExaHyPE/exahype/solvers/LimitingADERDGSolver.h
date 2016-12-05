@@ -317,6 +317,7 @@ private:
 #endif
 
 public:
+  static bool limiterDomainOfOneSolverHasChanged();
 
   /**
    * TODO(Dominic): Docu
@@ -906,8 +907,12 @@ public:
    * the ADER-DG solver does only send empty messages to the neighbour.
    * Otherwise it merges the received data and adds it to the update.
    *
-   *  \note This method assumes that there has been a unified face-wise limiter status value
-   *  determined and written back to the faces a-priori.
+   * \note This method assumes that there has been a unified face-wise limiter status value
+   * determined and written back to the faces a-priori.
+   *
+   * <h2>Possible optimisations</h2>
+   * Depending on isRecomputation we do not need to send both, solver and limiter,
+   * data for patches with status NeighbourIsNeighbourOfTroubledCell and NeighbourOfTroubledCell.
    */
   void sendDataToNeighbourBasedOnLimiterStatus(
         const int                                    toRank,

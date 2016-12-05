@@ -18,6 +18,16 @@ namespace solvers {
 
 tarch::logging::Log exahype::solvers::LimitingADERDGSolver::_log("exahype::solvers::LimitingADERDGSolver");
 
+bool exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool exahype::solvers::LimitingADERDGSolver::isValidCellDescriptionIndex(
     const int cellDescriptionsIndex) const  {
   return _solver->isValidCellDescriptionIndex(cellDescriptionsIndex);
@@ -40,6 +50,7 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           _solver(std::move(solver)),
           _limiter(std::move(limiter)),
           _limiterDomainHasChanged(false),
+          _nextLimiterDomainHasChanged(false),
           _DMPMaximumRelaxationParameter(1.0e-2),
           _DMPDifferenceScaling(1.0e-5)
 {
@@ -855,6 +866,9 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
       limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
       limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
       limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
+
+      // Copy more geometry information from the solver patch
+      limiterPatch->setIsInside(solverPatch.getIsInside());
       break;
     }
     break;
@@ -1465,54 +1479,6 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbour(
       x,level);
 }
 
-void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterStatus(
-        const int                                    toRank,
-        const int                                    cellDescriptionsIndex,
-        const int                                    element,
-        const tarch::la::Vector<DIMENSIONS, int>&    src,
-        const tarch::la::Vector<DIMENSIONS, int>&    dest,
-        const bool                                   isRecomputation,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const int                                    level) const {
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
-  if (isRecomputation) {
-    limiterStatus = solverPatch.getMergedLimiterStatus(0);
-  }
-
-  switch (limiterStatus) {
-    case SolverPatch::LimiterStatus::Ok:
-      if (!isRecomputation) {
-        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      } else {
-        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-      }
-      _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
-      break;
-    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      if (!isRecomputation) {
-        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-        _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-      } else {
-        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-        _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      }
-      break;
-    case SolverPatch::LimiterStatus::Troubled:
-      _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      break;
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
-      if (!isRecomputation) {
-        _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      } else {
-        _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-      }
-      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      break;
-  }
-}
-
 void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -1549,20 +1515,56 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
       peano::heap::MessageType::NeighbourCommunication);
 }
 
+
+void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterStatus(
+        const int                                    toRank,
+        const int                                    cellDescriptionsIndex,
+        const int                                    element,
+        const tarch::la::Vector<DIMENSIONS, int>&    src,
+        const tarch::la::Vector<DIMENSIONS, int>&    dest,
+        const bool                                   isRecomputation,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const int                                    level) const {
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
+  if (isRecomputation) {
+    limiterStatus = solverPatch.getMergedLimiterStatus(0);
+  }
+
+  switch (limiterStatus) {
+    case SolverPatch::LimiterStatus::Ok:
+      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
+      break;
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      break;
+    case SolverPatch::LimiterStatus::Troubled:
+      _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      break;
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
+      break;
+  }
+}
+
 void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-  _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-
   std::vector<double> emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
+
+  _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourData(
@@ -1969,15 +1971,8 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  logInfo("sendDataToWorker(...)","sendDataToWorker1");
-
   _solver->sendDataToWorker(workerRank,x,level);
-
-  logInfo("sendDataToWorker(...)","sendDataToWorker2");
-
   _limiter->sendDataToWorker(workerRank,x,level);
-
-  logInfo("sendDataToWorker(...)","sendDataToWorker3");
 
   // TODO(Dominic): Add information that limiter status has been
   // changed for this solver.
@@ -1987,17 +1982,13 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToWorker(...)","Sending data to worker:" <<
+    logDebug("sendDataToWorker(...)","Sending data to worker:" <<
             " data[0]=" << dataToSend[0]);
   }
-  logInfo("sendDataToWorker(...)","Sending data to worker:" <<
-              " data[0]=" << dataToSend[0]);
   DataHeap::getInstance().sendData(
       dataToSend.data(), dataToSend.size(),
       workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
-
-  logInfo("sendDataToWorker(...)","sendDataToWorker3");
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
@@ -2020,9 +2011,9 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithMasterData(...)","Received data from worker:" <<
+    logDebug("mergeWithMasterData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logInfo("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainHasChanged);
+    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainHasChanged);
   }
 }
 
