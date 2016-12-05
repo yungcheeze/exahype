@@ -220,8 +220,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
-    logInfo("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
-             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber])
+    logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
+             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
 
     solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
     solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);

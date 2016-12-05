@@ -138,7 +138,7 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -231,7 +231,7 @@ void exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimi
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
           toRank,src,dest,x,level);
@@ -265,7 +265,7 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {

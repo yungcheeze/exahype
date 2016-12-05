@@ -108,7 +108,7 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  logInfo("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
+  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
 
   _limiterDomainHasChanged     = _nextLimiterDomainHasChanged;
   _nextLimiterDomainHasChanged = false;
@@ -1691,8 +1691,14 @@ void exahype::solvers::LimitingADERDGSolver::sendMergedLimiterStatusToNeighbour(
   const double mergedLimiterStatusAsDouble =
       static_cast<double>(solverPatch.getMergedLimiterStatus(faceIndex));
 
+  // TODO(Dominic): Remove
+  if (tarch::parallel::Node::getInstance().getRank()==13
+      && toRank==12) {
+    logInfo("sendMergedLimiterStatusToNeighbour(...)","mergedLimiterStatusAsDouble="<<mergedLimiterStatusAsDouble<<",solverPatch.getMergedLimiterStatus(faceIndex)="<<solverPatch.getMergedLimiterStatus(faceIndex));
+  }
+
   DataHeap::getInstance().sendData(
-      &mergedLimiterStatusAsDouble , 0, toRank, x, level,
+      &mergedLimiterStatusAsDouble,1,toRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
 }
 

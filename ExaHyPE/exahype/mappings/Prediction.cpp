@@ -106,7 +106,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
       aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
       break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
-      aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver.get();
+      aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
       break;
     default:
       aderdgSolver = nullptr;
@@ -298,7 +298,7 @@ void exahype::mappings::Prediction::enterCell(
             if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
                 || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
                 || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
-              performPredictionAndVolumeIntegral(solver->_solver.get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+              performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
             }
           } break;
           default:

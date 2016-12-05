@@ -120,8 +120,8 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver->getUnknownsPerFace(),
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiter->getUnknownsPerFace() );
+                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
         numberOfUnknowns     = 0; // TODO(Dominic): We do not consider high-order FV methods yet; numberOfUnknowns is thus set to zero.
         lengthOfUnknowns     = 0;
         break;
@@ -379,7 +379,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
             auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
               const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
               const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
               const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -428,7 +428,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                        cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2); // TODO(Dominic): Move down
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
               if (element1 >= 0) {
                 auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
                     getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
@@ -540,7 +540,7 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
     }
@@ -565,7 +565,7 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound

@@ -109,8 +109,8 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver->getUnknownsPerFace(),
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiter->getUnknownsPerFace() );
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData

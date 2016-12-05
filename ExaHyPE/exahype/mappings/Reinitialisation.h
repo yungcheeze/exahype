@@ -91,18 +91,25 @@ class exahype::mappings::Reinitialisation {
 
  public:
   /**
+   * Mask out data exchange between master and worker.
+   * Further let Peano handle heap data exchange internally.
+   */
+  static peano::CommunicationSpecification communicationSpecification();
+
+  /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */
   static peano::MappingSpecification enterCellSpecification();
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+
 
   /**
    * Nop.
    */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
   /**
    * Nop.
    */
@@ -115,12 +122,6 @@ class exahype::mappings::Reinitialisation {
    * Nop.
    */
   static peano::MappingSpecification descendSpecification();
-
-  /**
-   * Mask out data exchange between master and worker.
-   * Further let Peano handle heap data exchange internally.
-   */
-  static peano::CommunicationSpecification communicationSpecification();
 
   /**
      * Initialise debug counters.
@@ -161,51 +162,6 @@ class exahype::mappings::Reinitialisation {
     /**
      * TODO(Dominic): Add docu.
      */
-    void mergeWithNeighbour(exahype::Vertex& vertex,
-                            const exahype::Vertex& neighbour, int fromRank,
-                            const tarch::la::Vector<DIMENSIONS, double>& x,
-                            const tarch::la::Vector<DIMENSIONS, double>& h,
-                            int level);
-
-    /**
-     * We only drop the received limiter status for LimitingADERDGSolvers
-     * where we have detected a change of the limiter domain.
-     * This information should be available on all ranks.
-     * We ignore other solver types.
-     *
-     * TODO(Dominic): Add more docu.
-     */
-    static void dropNeighbourMergedLimiterStatus(
-        const int                                    fromRank,
-        const tarch::la::Vector<DIMENSIONS, int>&    src,
-        const tarch::la::Vector<DIMENSIONS, int>&    dest,
-        const int                                    srcCellDescriptionIndex,
-        const int                                    destCellDescriptionIndex,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const int                                    level,
-        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
-
-    /**
-     * We only merge the face-wise limiter status for LimitingADERDGSolvers
-     * where we have detected a change of the limiter domain.
-     * This information should be available on all ranks.
-     * We ignore other solver types.
-     *
-     * TODO(Dominic): Add more docu.
-     */
-    static void mergeNeighourMergedLimiterStatus(
-        const int                                    fromRank,
-        const tarch::la::Vector<DIMENSIONS,int>&     src,
-        const tarch::la::Vector<DIMENSIONS,int>&     dest,
-        const int                                    srcCellDescriptionIndex,
-        const int                                    destCellDescriptionIndex,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const int                                    level,
-        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
-
-    /**
-     * TODO(Dominic): Add docu.
-     */
     void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                                 const tarch::la::Vector<DIMENSIONS, double>& x,
                                 const tarch::la::Vector<DIMENSIONS, double>& h,
@@ -217,6 +173,16 @@ class exahype::mappings::Reinitialisation {
     // Below all methods are nop.
     //
     //===================================
+
+    /**
+     * Nop.
+     */
+    void mergeWithNeighbour(exahype::Vertex& vertex,
+                            const exahype::Vertex& neighbour, int fromRank,
+                            const tarch::la::Vector<DIMENSIONS, double>& x,
+                            const tarch::la::Vector<DIMENSIONS, double>& h,
+                            int level);
+
 
     /**
      * Nop.

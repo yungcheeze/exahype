@@ -35,14 +35,6 @@ class LimitingADERDGSolver;
 
 class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
 
-  /**
-   * These mappings need access to the _solver and _limiter fields of LimitingADERDGSolver.
-   */
-  friend class exahype::mappings::Merging;
-  friend class exahype::mappings::Prediction;
-  friend class exahype::mappings::LimiterStatusSpreading;
-  friend class exahype::mappings::Reinitialisation;
-  friend class exahype::mappings::SolutionRecomputation;
 private:
   typedef exahype::records::ADERDGCellDescription SolverPatch;
   typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
