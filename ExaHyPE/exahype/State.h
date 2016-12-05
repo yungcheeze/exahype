@@ -332,6 +332,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setLimiterDomainHasChanged(_stateData.getLimiterDomainHasChanged() | state);
   }
 
+  /**
+   * @deprecated
+   */
   bool limiterDomainHasChanged() const {
       return _stateData.getLimiterDomainHasChanged();
   }

@@ -56,7 +56,9 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
   friend class VertexOperations;
 
+  static tarch::logging::Log _log;
  public:
+
   /**
    * Default Constructor
    *

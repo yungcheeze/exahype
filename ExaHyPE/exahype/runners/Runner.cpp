@@ -440,7 +440,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   // TODO(Dominic):
   if (!exahype::State::fuseADERDGPhases() &&
-      repository.getState().limiterDomainHasChanged()) {
+      exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
     initSolverTimeStepData();
 
     updateLimiterDomain(repository);
@@ -787,7 +787,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // We mimic the flow of the fused time stepping scheme here.
   // Updating the limiter domain is thus done after the time step
   // size computation.
-  if (repository.getState().limiterDomainHasChanged()) {
+  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
     updateLimiterDomain(repository);
   }
 
