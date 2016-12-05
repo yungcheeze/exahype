@@ -444,6 +444,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     updateLimiterDomain(repository);
   }
 
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext(); // !!! Keep before switchToPlot
+
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
@@ -463,7 +465,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
   repository.switchToPredictionAndFusedTimeSteppingInitialisation();
   repository.iterate();
 
@@ -793,6 +794,9 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 
   printTimeStepInfo(1);
 
+
+  repository.getState().switchToPredictionContext(); // !!! Call before switchToPlot
+
   if (plot) {
     #if DIMENSIONS==2
     repository.switchToPlot2d();  // Cell onto faces
@@ -809,7 +813,6 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // ADER-DG solution similar to the finite volumes solver. This is the reason
   // why we currently only offer the limiting for
   // the non-fused time stepping variant.
-  repository.getState().switchToPredictionContext(); // Which time stamp do we want to plot?
   repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
 }

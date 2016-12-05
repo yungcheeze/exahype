@@ -223,6 +223,7 @@ adapter:
 adapter:
   name: Plot
   merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: PostProcessing
 
