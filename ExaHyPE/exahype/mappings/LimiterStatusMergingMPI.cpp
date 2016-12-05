@@ -139,10 +139,10 @@ void exahype::mappings::LimiterStatusMergingMPI::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  // TODO(Dominic): Remove
-  if (tarch::parallel::Node::getInstance().getRank()==12 && fromRank==13) {
-    logInfo("mergeWithNeighbour(...)","mergeWithNeighbour");
-  }
+//  // TODO(Dominic): Remove
+//  if (tarch::parallel::Node::getInstance().getRank()==12 && fromRank==13) {
+//    logInfo("mergeWithNeighbour(...)","mergeWithNeighbour");
+//  }
 
 
   dfor2(myDest)
