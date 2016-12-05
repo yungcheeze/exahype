@@ -181,8 +181,8 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: SolutionRecomputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
+  merge-with-user-defined-mapping: Sending // Send time step data
+  merge-with-user-defined-mapping: PostProcessing 
  
 // Additional adapters for 4 phase time stepping
 adapter: 
@@ -214,8 +214,8 @@ adapter:
 
 adapter:
   name: Prediction
-  merge-with-user-defined-mapping: PreProcessing // Merging does only merge time step data
-  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
   merge-with-user-defined-mapping: Sending
@@ -230,6 +230,7 @@ adapter:
 adapter:
   name: Plot2d
   merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
   merge-with-user-defined-mapping: PostProcessing  

@@ -441,10 +441,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   // TODO(Dominic):
   if (!exahype::State::fuseADERDGPhases() &&
       repository.getState().limiterDomainHasChanged()) {
+    initSolverTimeStepData();
+
     updateLimiterDomain(repository);
   }
 
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext(); // !!! Keep before switchToPlot
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext(); // !!! Call before switchToPlot
 
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
@@ -623,6 +625,7 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   repository.switchToLimiterStatusSpreading();
   repository.iterate();
 
+  repository.getState().switchToReinitialisationContext();
   #ifdef Parallel
   logDebug("updateLimiterDomain(...)","merge limiter status of remote neighbours");
   repository.switchToLimiterStatusMergingMPI();

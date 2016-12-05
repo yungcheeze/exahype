@@ -132,6 +132,9 @@ class exahype::runners::Runner {
   /**
    * Run the three adapters necessary for updating the
    * limiter domain.
+   *
+   * \param[in] reinitialiseTimeStepData This flag must be set when we initialise the limiter domain.
+   *
    */
   void updateLimiterDomain(exahype::repositories::Repository& repository);
 

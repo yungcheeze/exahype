@@ -19,6 +19,7 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/PostProcessing.h"
@@ -42,14 +43,16 @@ namespace exahype {
 class exahype::adapters::Plot2d {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::Plot Mapping1;
-    typedef mappings::AugmentedAMRTreePlot2d Mapping2;
-    typedef mappings::PostProcessing Mapping3;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::Plot Mapping2;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping3;
+    typedef mappings::PostProcessing Mapping4;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2Plot;
-     Mapping2  _map2AugmentedAMRTreePlot2d;
-     Mapping3  _map2PostProcessing;
+     Mapping1  _map2Merging;
+     Mapping2  _map2Plot;
+     Mapping3  _map2AugmentedAMRTreePlot2d;
+     Mapping4  _map2PostProcessing;
 
 
   public:
