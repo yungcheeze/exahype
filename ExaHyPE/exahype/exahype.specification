@@ -55,7 +55,7 @@ event-mapping:
   name: LimiterStatusSpreading
 
 event-mapping:
-  name: InitialLimiterDomain
+  name: LimiterStatusMergingMPI
 
 event-mapping:
   name: Reinitialisation
@@ -165,6 +165,10 @@ adapter:
   name: LimiterStatusSpreading
   merge-with-user-defined-mapping: Merging // merge time step data
   merge-with-user-defined-mapping: LimiterStatusSpreading
+
+adapter: 
+  name: LimiterStatusMergingMPI
+  merge-with-user-defined-mapping: LimiterStatusMergingMPI
 
 adapter:  
   name: Reinitialisation
