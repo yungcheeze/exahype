@@ -73,6 +73,8 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
     virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation() = 0;    
+    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot() = 0;    
+    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToPlotAndADERDGTimeStep() = 0;    
@@ -86,13 +88,15 @@ class exahype::repositories::Repository {
     virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPrediction() = 0;    
-    virtual void switchToPlot() = 0;    
-    virtual void switchToPlot2d() = 0;    
+    virtual void switchToPredictionAndPlot() = 0;    
+    virtual void switchToPredictionAndPlot2d() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const = 0;
+    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot() const = 0;
+    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
@@ -106,8 +110,8 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
-    virtual bool isActiveAdapterPlot() const = 0;
-    virtual bool isActiveAdapterPlot2d() const = 0;
+    virtual bool isActiveAdapterPredictionAndPlot() const = 0;
+    virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
 
 
     /**

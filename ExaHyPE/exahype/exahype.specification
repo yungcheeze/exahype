@@ -114,8 +114,29 @@ adapter:
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
+  merge-with-user-defined-mapping: PostProcessing
   merge-with-user-defined-mapping: Sending
+
+adapter:
+  name: PredictionAndFusedTimeSteppingInitialisationAndPlot
+  merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
+  
+adapter:
+  name: PredictionAndFusedTimeSteppingInitialisationAndPlot2d
+  merge-with-user-defined-mapping: PreProcessing 
+  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+  merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
 
 // Adapters for clean up (to be extended)
 adapter:
@@ -163,7 +184,7 @@ adapter:
 // Additional adapters for limiter status spreading and recomputation
 adapter: 
   name: LimiterStatusSpreading
-  merge-with-user-defined-mapping: Merging // merge time step data
+  merge-with-user-defined-mapping: Merging // merge time step data and limiter domain has changed attribute of solvers
   merge-with-user-defined-mapping: LimiterStatusSpreading
 
 adapter: 
@@ -217,21 +238,24 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Merging // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
   merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
 
 adapter:
-  name: Plot
+  name: PredictionAndPlot
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: PostProcessing
+  merge-with-user-defined-mapping: Sending
+  merge-with-user-defined-mapping: PostProcessing // Sending does send face data
 
 adapter:
-  name: Plot2d
+  name: PredictionAndPlot2d
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: PostProcessing  
-  
+  merge-with-user-defined-mapping: Sending    // Sending does send face data
+  merge-with-user-defined-mapping: PostProcessing

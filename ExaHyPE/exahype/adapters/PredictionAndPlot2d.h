@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Plot2d_H_
-#define EXAHYPE_ADAPTERS_Plot2d_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlot2d_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlot2d_H_
 
 
 #include "tarch/logging/Log.h"
@@ -20,15 +20,17 @@
 
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
+ #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Plot2d;
+        class PredictionAndPlot2d;
       } 
 }
 
@@ -40,19 +42,23 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Plot2d {
+class exahype::adapters::PredictionAndPlot2d {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
-    typedef mappings::Plot Mapping2;
-    typedef mappings::AugmentedAMRTreePlot2d Mapping3;
-    typedef mappings::PostProcessing Mapping4;
+    typedef mappings::Prediction Mapping2;
+    typedef mappings::Plot Mapping3;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping4;
+    typedef mappings::Sending Mapping5;
+    typedef mappings::PostProcessing Mapping6;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
-     Mapping2  _map2Plot;
-     Mapping3  _map2AugmentedAMRTreePlot2d;
-     Mapping4  _map2PostProcessing;
+     Mapping2  _map2Prediction;
+     Mapping3  _map2Plot;
+     Mapping4  _map2AugmentedAMRTreePlot2d;
+     Mapping5  _map2Sending;
+     Mapping6  _map2PostProcessing;
 
 
   public:
@@ -64,16 +70,16 @@ class exahype::adapters::Plot2d {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Plot2d();
+    PredictionAndPlot2d();
 
     #if defined(SharedMemoryParallelisation)
-    Plot2d(const Plot2d& masterThread);
+    PredictionAndPlot2d(const PredictionAndPlot2d& masterThread);
     #endif
 
-    virtual ~Plot2d();
+    virtual ~PredictionAndPlot2d();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Plot2d& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlot2d& workerThread);
     #endif
 
     void createInnerVertex(

@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Plot_H_
-#define EXAHYPE_ADAPTERS_Plot_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlot_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlot_H_
 
 
 #include "tarch/logging/Log.h"
@@ -20,14 +20,16 @@
 
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Plot;
+        class PredictionAndPlot;
       } 
 }
 
@@ -39,17 +41,21 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Plot {
+class exahype::adapters::PredictionAndPlot {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
-    typedef mappings::Plot Mapping2;
-    typedef mappings::PostProcessing Mapping3;
+    typedef mappings::Prediction Mapping2;
+    typedef mappings::Plot Mapping3;
+    typedef mappings::Sending Mapping4;
+    typedef mappings::PostProcessing Mapping5;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
-     Mapping2  _map2Plot;
-     Mapping3  _map2PostProcessing;
+     Mapping2  _map2Prediction;
+     Mapping3  _map2Plot;
+     Mapping4  _map2Sending;
+     Mapping5  _map2PostProcessing;
 
 
   public:
@@ -61,16 +67,16 @@ class exahype::adapters::Plot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Plot();
+    PredictionAndPlot();
 
     #if defined(SharedMemoryParallelisation)
-    Plot(const Plot& masterThread);
+    PredictionAndPlot(const PredictionAndPlot& masterThread);
     #endif
 
-    virtual ~Plot();
+    virtual ~PredictionAndPlot();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Plot& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlot& workerThread);
     #endif
 
     void createInnerVertex(

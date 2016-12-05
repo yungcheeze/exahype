@@ -446,31 +446,25 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     updateLimiterDomain(repository);
   }
 
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext(); // !!! Call before switchToPlot
-
-  bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-  if (plot) {
-    logInfo("runAsMaster(...)","start to plot initial solution");
-    #if DIMENSIONS==2
-    repository.switchToPlot2d();  // Cell onto faces
-    #else
-    repository.switchToPlot();  // Cell onto faces
-    #endif
-    repository.iterate();
-
-    logInfo("runAsMaster(...)","finished to plot initial solution");
-  }
-
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
-  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+  bool plot = exahype::plotters::isAPlotterActive(
+      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+  if (plot) {
+    #if DIMENSIONS==2
+    repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
+    #else
+    repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
+    #endif
+  } else {
+    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+  }
   repository.iterate();
-
-  logInfo("runAsMaster(...)","finished to compute first prediction");
+  logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
   /*
    * Finally print the initial time step info.
@@ -627,21 +621,21 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
 
   repository.getState().switchToReinitialisationContext();
   #ifdef Parallel
-  logDebug("updateLimiterDomain(...)","merge limiter status of remote neighbours");
+  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
   repository.switchToLimiterStatusMergingMPI();
   repository.iterate();
   #endif
 
-  logDebug("updateLimiterDomain(...)","reinitialise cells");
+  logInfo("updateLimiterDomain(...)","reinitialise cells");
   repository.switchToReinitialisation();
   repository.iterate();
 
-  logDebug("updateLimiterDomain(...)","recompute solution in troubled cells");
+  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
   repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
 
-  logDebug("updateLimiterDomain(...)","finished to update limiter domain");
+  logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall) {
@@ -772,6 +766,8 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
 void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
+  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
+
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
@@ -782,7 +778,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
-  logInfo("updateLimiterDomain(...)","compute new time step size");
+  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
@@ -797,26 +793,29 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 
   printTimeStepInfo(1);
 
-
-  repository.getState().switchToPredictionContext(); // !!! Call before switchToPlot
-
+  /*
+   * Compute current first predictor based on current time step size.
+   * Set current time step size as old time step size of next iteration.
+   * Compute the current time step size of the next iteration.
+   *
+   * TODO(Dominic): Limiting: There is an issue with the prediction in
+   * the limiting context. Since we overwrite the update here again.
+   * A rollback is thus not possible anymore.
+   * The only way out of here would be to store an old and new
+   * ADER-DG solution similar to the finite volumes solver. This is the reason
+   * why we currently only offer the limiting for
+   * the non-fused time stepping variant.
+   */
+  repository.getState().switchToPredictionContext();
   if (plot) {
     #if DIMENSIONS==2
-    repository.switchToPlot2d();  // Cell onto faces
+    repository.switchToPredictionAndPlot2d();
     #else
-    repository.switchToPlot();  // Cell onto faces
+    repository.switchToPredictionAndPlot();
     #endif
-    repository.iterate();
+  } else {
+    repository.switchToPrediction();   // Cell onto faces
   }
-
-  // TODO(Dominic): Limiting: There is an issue with the prediction in
-  // the limiting context. Since we overwrite the update here again.
-  // A rollback is thus not possible anymore.
-  // The only way out of here would be to store an old and new
-  // ADER-DG solution similar to the finite volumes solver. This is the reason
-  // why we currently only offer the limiting for
-  // the non-fused time stepping variant.
-  repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
 }
 
