@@ -434,13 +434,13 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getTimeStamp(),
+        cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize())) {
       solutionAdjustment(
           solution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getTimeStamp(),
+          cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
           cellDescription.getTimeStepSize());
     }
 
@@ -479,7 +479,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   if (hasToAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
       cellDescription.getSize(),
-      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),cellDescription.getTimeStepSize())) {
+      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
+      cellDescription.getTimeStepSize())) {
     solutionAdjustment(
         newSolution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
