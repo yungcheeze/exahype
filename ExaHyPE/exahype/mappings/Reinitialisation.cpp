@@ -135,12 +135,9 @@ void exahype::mappings::Reinitialisation::enterCell(
         if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
-          limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
 
           limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element); // Loads back the old corrector time step size.
-
           if (!exahype::State::fuseADERDGPhases()) {
             limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(
                 fineGridCell.getCellDescriptionsIndex(),element);
@@ -173,11 +170,6 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
                              fineGridX, fineGridH,
                              coarseGridVerticesEnumerator.toString(),
                              coarseGridCell, fineGridPositionOfVertex);
-
-  // TODO(Dominic): Remove
-  if (tarch::parallel::Node::getInstance().getRank()==12) {
-    logInfo("touchVertexFirstTime(...)","touchVertexFirstTime");
-  }
 
   dfor2(pos1)
     dfor2(pos2)
