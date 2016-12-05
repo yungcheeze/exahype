@@ -38,16 +38,16 @@ void Euler::sodShockTube(const double* const x,double* Q) {
 
 
 void Euler::explosionProblem(const double* const x,double* Q) {
-  // Velocities are set to zero (initially).
-  Q[0] = 1.0;
-  
+  // Velocities are set to zero (initially). 
   Q[1] = 0.0;
   Q[2] = 0.0;
   Q[3] = 0.0;
   // Circular shaped pressure jump at centre of domain.
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
+    Q[0] = 1.0;
     Q[4] = 1.0;
   } else {
+    Q[0] = 0.125;
     Q[4] = 0.1;
   }
 }
@@ -90,15 +90,15 @@ void Euler::sodShockTube(const double* const x,double* Q) {
 
 void Euler::explosionProblem(const double* const x,double* Q) {
   // Density and velocities are set to zero (initially).
-  Q[0] = 1.0;
-  
   Q[1] = 0.0;
   Q[2] = 0.0;
   Q[3] = 0.0;
   // Spherically shaped pressure jump at centre of domain.
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) + (x[2] -0.5) *(x[2] -0.5) < 0.1) {
-    Q[4] = 1.0;
+   Q[0] = 1.0;
+   Q[4] = 1.0;
   } else {
+    Q[0] = 0.125;
     Q[4] = 0.1;
   }
 }
