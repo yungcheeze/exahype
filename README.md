@@ -5,13 +5,13 @@
 Copy and paste these commands to start with a working ExaHyPE application:
 
     git clone git@gitlab.lrz.de:exahype/ExaHyPE-Engine.git
-    cd ExaHyPE-Engine/Code
+    cd ExaHyPE-Engine/Peano
     ./checkout-update-peano.sh
     cd ../Toolkit/
     ./build.sh
     cd ../
     ln -s Toolkit/dist/ExaHyPE.jar
-
+    
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
 
     java -jar ExaHyPE.jar ApplicationExamples/EulerFlow.exahype
