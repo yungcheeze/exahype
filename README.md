@@ -34,8 +34,8 @@ Quick installation:
     git clone https://github.com/hfp/libxsmm.git
     cd libxsmm/
     make generator
-    cd ../Code/
-    ln -s ../libxsmm/ Libxsmm
+    cd ..
+    ln -s libxsmm/ Libxsmm
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
