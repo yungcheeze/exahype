@@ -35,7 +35,7 @@ Quick installation:
     cd libxsmm/
     make generator
     cd ..
-    ln -s ../libxsmm/ Libxsmm
+    ln -s libxsmm/ Libxsmm
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
