@@ -40,7 +40,7 @@ exahype::mappings::LimiterStatusMergingMPI::communicationSpecification() {
 peano::MappingSpecification
 exahype::mappings::LimiterStatusMergingMPI::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
@@ -48,7 +48,7 @@ peano::MappingSpecification
 exahype::mappings::LimiterStatusMergingMPI::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
@@ -142,12 +142,6 @@ void exahype::mappings::LimiterStatusMergingMPI::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-//  // TODO(Dominic): Remove
-//  if (tarch::parallel::Node::getInstance().getRank()==12 && fromRank==13) {
-//    logInfo("mergeWithNeighbour(...)","mergeWithNeighbour");
-//  }
-
-
   dfor2(myDest)
     dfor2(mySrc)
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
@@ -238,7 +232,6 @@ void exahype::mappings::LimiterStatusMergingMPI::mergeNeighourMergedLimiterStatu
           && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->mergeWithNeighbourMergedLimiterStatus(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
-        limitingADERDGSolver->updateMergedLimiterStatus(destCellDescriptionIndex,element); // !!! Directly update the solver patches merged limiter status
       } else {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->dropNeighbourMergedLimiterStatus(fromRank,src,dest,x,level);
@@ -302,7 +295,7 @@ void exahype::mappings::LimiterStatusMergingMPI::sendDataToNeighbour(
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  // do nothig.
+  // do nothing.
 }
 
 void exahype::mappings::LimiterStatusMergingMPI::prepareCopyToRemoteNode(
