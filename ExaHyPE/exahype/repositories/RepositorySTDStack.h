@@ -27,6 +27,7 @@
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
+ #include "exahype/adapters/LimiterStatusMergingAndSpreadingMPI.h" 
  #include "exahype/adapters/LimiterStatusMergingMPI.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
@@ -73,6 +74,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndADERDGTimeStep> _gridWithPlotAndADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionRerun> _gridWithPredictionRerun;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusMergingAndSpreadingMPI> _gridWithLimiterStatusMergingAndSpreadingMPI;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusMergingMPI> _gridWithLimiterStatusMergingMPI;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation> _gridWithSolutionRecomputationAndTimeStepSizeComputation;
@@ -98,6 +100,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measurePredictionRerunCPUTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingAndSpreadingMPICPUTime;
     tarch::timing::Measurement _measureLimiterStatusMergingMPICPUTime;
     tarch::timing::Measurement _measureReinitialisationCPUTime;
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime;
@@ -120,6 +123,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measurePredictionRerunCalendarTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingAndSpreadingMPICalendarTime;
     tarch::timing::Measurement _measureLimiterStatusMergingMPICalendarTime;
     tarch::timing::Measurement _measureReinitialisationCalendarTime;
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime;
@@ -180,6 +184,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPlotAndADERDGTimeStep();    
     virtual void switchToPredictionRerun();    
     virtual void switchToLimiterStatusSpreading();    
+    virtual void switchToLimiterStatusMergingAndSpreadingMPI();    
     virtual void switchToLimiterStatusMergingMPI();    
     virtual void switchToReinitialisation();    
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation();    
@@ -202,6 +207,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const;
     virtual bool isActiveAdapterPredictionRerun() const;
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
+    virtual bool isActiveAdapterLimiterStatusMergingAndSpreadingMPI() const;
     virtual bool isActiveAdapterLimiterStatusMergingMPI() const;
     virtual bool isActiveAdapterReinitialisation() const;
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const;

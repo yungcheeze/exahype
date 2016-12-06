@@ -619,13 +619,23 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   repository.switchToLimiterStatusSpreading();
   repository.iterate();
 
-  repository.getState().switchToReinitialisationContext();
+  /**
+   * We need to gather information from all neighbours
+   * of a cell before we can determine the unified
+   * limiter status value of the cell.
+   *
+   * We thus need two extra iterations to send and receive
+   * the limiter status of remote neighbours.
+   */
   #ifdef Parallel
   logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
+  repository.switchToLimiterStatusMergingAndSpreadingMPI();
+  repository.iterate();
   repository.switchToLimiterStatusMergingMPI();
   repository.iterate();
   #endif
 
+  repository.getState().switchToReinitialisationContext();
   logInfo("updateLimiterDomain(...)","reinitialise cells");
   repository.switchToReinitialisation();
   repository.iterate();

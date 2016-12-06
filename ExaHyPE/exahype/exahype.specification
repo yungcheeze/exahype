@@ -55,6 +55,9 @@ event-mapping:
   name: LimiterStatusSpreading
 
 event-mapping:
+  name: LimiterStatusMergingAndSpreadingMPI
+
+event-mapping:
   name: LimiterStatusMergingMPI
 
 event-mapping:
@@ -186,6 +189,10 @@ adapter:
   name: LimiterStatusSpreading
   merge-with-user-defined-mapping: Merging // merge time step data and limiter domain has changed attribute of solvers
   merge-with-user-defined-mapping: LimiterStatusSpreading
+
+adapter: 
+  name: LimiterStatusMergingAndSpreadingMPI
+  merge-with-user-defined-mapping: LimiterStatusMergingAndSpreadingMPI
 
 adapter: 
   name: LimiterStatusMergingMPI

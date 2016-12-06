@@ -1529,25 +1529,35 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
   SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
   if (isRecomputation) {
     limiterStatus = solverPatch.getMergedLimiterStatus(0);
+
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
+      assertionEquals(limiterStatus,solverPatch.getMergedLimiterStatus(0));
+    } // Dead code elimination will get rid of this loop if Asserts flag is not set.
   }
 
   switch (limiterStatus) {
-    case SolverPatch::LimiterStatus::Ok:
+    case SolverPatch::LimiterStatus::Ok: {
       _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
       _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
-      break;
-    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      } break;
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      break;
-    case SolverPatch::LimiterStatus::Troubled:
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
+      } break;
+    case SolverPatch::LimiterStatus::Troubled: {
+      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
-      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      break;
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
+      } break;
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
+      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
-      break;
+      _limiter->sendDataToNeighbour(toRank,cellDescriptionsIndex,limiterElement,src,dest,x,level);
+      } break;
   }
 }
 
@@ -1604,6 +1614,10 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
   SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
   if (isRecomputation) {
     limiterStatus = solverPatch.getMergedLimiterStatus(0);
+
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
+      assertionEquals(limiterStatus,solverPatch.getMergedLimiterStatus(0));
+    } // Dead code elimination will get rid of this loop if Asserts flag is not set.
   }
 
   switch (limiterStatus) {
@@ -1619,11 +1633,14 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
       }
       break;
     case SolverPatch::LimiterStatus::Troubled:
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
+      const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       _limiter->mergeWithNeighbourData(
-          fromRank,neighbourTypeAsInt,cellDescriptionsIndex,element,
+          fromRank,neighbourTypeAsInt,cellDescriptionsIndex,limiterElement,
           src,dest,tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,x,level);
       _solver->dropNeighbourData(fromRank,src,dest,x,level);
+      }
       break;
   }
 }
@@ -1642,7 +1659,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMinAndMax(
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
-  const int receivedMinMaxIndex = DataHeap::getInstance().createData(0, 2*getNumberOfVariables());
+  const int receivedMinMaxIndex = DataHeap::getInstance().createData(0, 2*_numberOfVariables);
   assertion(DataHeap::getInstance().getData(receivedMinMaxIndex).empty());
 
   DataHeap::getInstance().receiveData(receivedMinMaxIndex,  fromRank, x, level,
@@ -1863,7 +1880,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToMaster(...)","Sending data to master:" <<
+    logDebug("sendDataToMaster(...)","Sending data to master:" <<
              " data[0]=" << dataToSend[0]);
   }
   DataHeap::getInstance().sendData(
@@ -1892,9 +1909,9 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithWorkerData(...)","Received data from worker:" <<
+    logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logInfo("mergeWithWorkerData(...)","_nextLimiterDomainHasChanged=" << _nextLimiterDomainHasChanged);
+    logDebug("mergeWithWorkerData(...)","_nextLimiterDomainHasChanged=" << _nextLimiterDomainHasChanged);
   }
 }
 
