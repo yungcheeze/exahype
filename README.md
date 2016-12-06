@@ -28,6 +28,8 @@ The optimised kernels are optional and can be replaced by the generic ones, thus
 
 Libxsmm's sources can be found on github: https://github.com/hfp/libxsmm
 
+Python 3 is required to compile libxsmm and run the code generator.
+
 Quick installation:
 
     cd ExaHyPE-Engine/
