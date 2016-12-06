@@ -508,7 +508,7 @@ bool exahype::mappings::Merging::prepareSendToWorker(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-    logInfo("prepareSendToWorker(...)","sendDataToWorker");
+//    logInfo("prepareSendToWorker(...)","sendDataToWorker");
 
     for (auto& p : exahype::solvers::RegisteredSolvers) {
       p->sendDataToWorker(
