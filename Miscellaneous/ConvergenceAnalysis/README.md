@@ -46,16 +46,12 @@ here this is always `log(3)`, which should not make any difference, thought.
 Usage of the scripts
 ====================
 
-Each script can be used for itself, but this is the overall idea:
+See https://gitlab.lrz.de/exahype/ExaHyPE-Engine/wikis/Convergence%20Studies
+for an introduction
 
-* Start with `start-convergence.py` by adopting the parameters to your needs.
-  When executing, it will start all exahype instances at the same time.
-* Adapt `run-convergence.sh` to your needs, it is just a wrapper for the
-  ExaHyPE binary and configuration handling.
-* Use `finish-convergence-table.py` to collect the results and
-  compute the convergence table in a similar fashion as done by Michael Dumbser
-  in Excel.
 
+OLD FROM HERE
+=============
 
 Example of starting the code
 ===========================
