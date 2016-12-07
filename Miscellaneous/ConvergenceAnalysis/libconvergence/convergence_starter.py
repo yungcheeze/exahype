@@ -18,14 +18,13 @@ from numpy import arange, array
 import subprocess, os, sys, time, logging, inspect # batteries
 logger = logging.getLogger("convergence_starter")
 
-# same directory helpers
+# libconvergence, same directory:
 from convergence_arghelpers import ExaFrontend
-#import convergence_table
+from convergence_table import ConvergenceReporter, exitConvergenceStatus
 
 # helpers:
 shell = lambda cmd: subprocess.check_output(cmd, shell=True).strip()
 getenv = lambda key, default=None: os.environ[key] if key in os.environ else default
-#me = os.path.basename(__file__)
 pidlist = lambda processes: " ".join([str(proc.pid) for proc in processes])
 
 def runBinary(binary, envUpdate):
@@ -223,6 +222,8 @@ class PolyorderTest(ConvergenceTest):
 		group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
 		group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
 		group.add_argument('-a', '--all', action='store_true', help='Start all sensible simulations')
+		group.add_argument('-n', '--nostart', action='store_true', help="Don't start any simulation. "+
+			"Can be used to directly invoke the reporting instead")
 
 	def startFromArgs(self, args, parser):
 		if args.polyorder or args.meshsize:
@@ -236,12 +237,15 @@ class PolyorderTest(ConvergenceTest):
 			self.logger.info("%d processes have been started with PIDS: " % len(processes))
 			self.logger.info(pidlist(processes))
 			return processes
+		elif args.nostart:
+			self.logger.info("Skipping all ExaHyPE process starting.")
+			return []
 		else:
-			self.logger.error("Choose either --all or -p/-m combination for run")
+			self.logger.error("Choose either --all, --nostart or -p/-m combination for run")
 			parser.print_help()
 			sys.exit(2)
 
-class ConvergenceStarterReportingAdapter:
+class ConvergenceReporterAdapter:
 	"""
 	This class allows direct invocation of the reporting by waiting
 	for the convergence studies to be finished.
@@ -251,11 +255,15 @@ class ConvergenceStarterReportingAdapter:
 
 	def __init__(self):
 		self.logger = logging.getLogger("ConvergenceStarterReportingAdapter")
+		self.reporter = ConvergenceReporter()
 
 	def add_group(self, parser):
-		group = parser.add_argument_group(title="Reporting", description=inspect.cleandoc(self.__doc__))
+		group = parser.add_argument_group(title="ReportingAdapter", description=inspect.cleandoc(self.__doc__))
 		group.add_argument('-w', '--wait', action='store_true', help="Wait until ExaHyPE processes have finished")
 		group.add_argument('-r', '--reporting', action='store_true', help="Do the reporting. Will trigger -w.")
+
+		reportergroup = self.reporter.add_group(parser)
+		reportergroup.description = "If Reporting is enabled, these arguments are considered:"
 
 	def apply_args(self, args, argparser):
 		self.reporting = args.reporting
@@ -264,6 +272,9 @@ class ConvergenceStarterReportingAdapter:
 		if args.reporting and not args.wait:
 			self.logger.info("Switching on --wait")
 			self.wait = True
+
+		if args.reporting:
+			self.reporter.apply_args(args, argparser)
 
 	def dispatchProcesses(self, processes):
 		if self.wait:
@@ -293,6 +304,7 @@ class ConvergenceStarterReportingAdapter:
 
 	def startConvergenceTable(self):
 		self.logger.error("Not yet implemented. do something!")
+		return self.reporter.start()
 
 def convergenceFrontend(convergencetest, description=__doc__):
 	"""
@@ -302,7 +314,7 @@ def convergenceFrontend(convergencetest, description=__doc__):
 	logger = logging.getLogger("convergenceFrontend")
 
 	frontend = ExaFrontend(program_description=description)
-	reportAdapter = ConvergenceStarterReportingAdapter()
+	reportAdapter = ConvergenceReporterAdapter()
 
 	frontend.add_module(convergencetest)
 	frontend.add_module(reportAdapter)
@@ -313,8 +325,7 @@ def convergenceFrontend(convergencetest, description=__doc__):
 
 	if reportAdapter.reporting:
 		logger.info("Finishing with convergencePassed=%s" % str(reportAdapter.convergencePassed))
-		# todo: let this the convergence_table do.
-		sys.exit(0 if reportAdapter.convergencePassed else -3)
+		exitConvergenceStatus(reportAdapter.convergencePassed)
 	else:
 		logger.info("All done.")
 
