@@ -150,6 +150,11 @@ def generateCommonHeader():
     l_sourceFile.write('#include "tarch/la/Vector.h"\n'                   \
                        '#include "peano/utils/Globals.h"\n\n'
                        )
+                       
+    l_sourceFile.write('#ifndef __INTEL_COMPILER\n'                       \
+                       '#include <mm_malloc.h>\n'                         \
+                       '#endif\n\n'
+                      )  
 
     # disable libxsmm counter
     l_sourceFile.write('#define NDEBUG\n')
