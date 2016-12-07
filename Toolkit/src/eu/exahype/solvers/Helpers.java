@@ -194,7 +194,7 @@ public class Helpers {
         + currentDirectory + "/"  + pathToLibxsmm + " " 
         + "--precision=DP"; // double precision
 
-    String bashCommand = "python " + pathToCodeGenerator + args;
+    String bashCommand = "env python3 " + pathToCodeGenerator + args;
 
     Runtime runtime = Runtime.getRuntime();
 	System.out.println("Codegenerator command line: "+bashCommand);
