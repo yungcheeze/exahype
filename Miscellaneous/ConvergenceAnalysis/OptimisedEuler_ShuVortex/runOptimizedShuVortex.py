@@ -9,24 +9,17 @@
 #
 
 """
-Run convergence tests: The EulerFlow ShuVortex.
-Will setup environment variables to execute a templated specification file.
-If called without arguments, it will run a series of runs in parallel.
-
-Sample usages from the command line:
-
-$ ./runShuVortex.py -p 2 -m 0.1
-$ ./runShuVortex.py --all --wait
-$ for p in 2 3 4; do ./runShuVortex.py -p $p -m 0.1 & done
+Run convergence tests: The Optimized EulerFlow ShuVortex
+See the regular ShuVortex for comparison.
 """
 
 import sys, logging
-logger = logging.getLogger("runShuVortex")
+logger = logging.getLogger("runOptimizedShuVortex")
 sys.path.append("../libconvergence")
 
 from convergence_starter import PolyorderTest, convergenceFrontend
 
-test = PolyorderTest("EulerShuVortex")
+test = PolyorderTest("OptimizedEulerShuVortex")
 
 # default values for ShuVortex simulations,
 # cf. the paper of Michael Dumbser
@@ -43,11 +36,11 @@ test.adaptiveRunRange = {
 	8: until(27), 9: until(27)
 }
 
-test.settings['ExaBinary'] = "../../../ApplicationExamples/EulerFlow/ExaHyPE-Euler"
+test.settings['ExaBinary'] = "../../../ApplicationExamples/OptimisedKernel_Euler/ExaHyPE-Euler"
 
-test.settings['ExaSpecfile'] = "ShuVortexConvergenceTpl.exahype"
+test.settings['ExaSpecfile'] = "OptimizedShuVortexConvTpl.exahype"
 # template to set up a queueing system
-test.settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ShuVortex"
+test.settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-OptimizedShuVortex"
 
 # set initial data to use.
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"

@@ -19,7 +19,7 @@ import itertools, operator, sys, logging, inspect
 # a module in this directory
 from convergence_helpers import read_simulation_params, is_empty_file, simfile, gensvg, \
 	Template, shortenPathsInTable, stripConstantColumns, keepColumnsIf, time_parser, \
-	RemoveStringInColumns, is_headless
+	RemoveStringInColumns, is_headless, shell, StringIO
 from convergence_arghelpers import ExaFrontend
 
 def pdsort(df, by, ascending=True):
@@ -45,6 +45,7 @@ def exitConvergenceStatus(convergencePassed):
 	# other programs can use exit value to determine outcome of test
 	sys.exit(0 if convergencePassed else -3)
 
+
 class ConvergenceReporter:
 	"""
 	Does the actual convergence computation. Reads simulations from a list
@@ -62,7 +63,7 @@ class ConvergenceReporter:
 		# run simulation statistics program before with
 		# ./showSimulationProgress.sh  | grep FINISHED > simulations.txt
 		# or so. Make sure it is a CSV table with column names, not only simulation name!
-		self.simulationListFilename='./simulations.txt'
+		self.simulationListFilename = False
 
 		# add a path before the simulations names, if neccessary.
 		self.simulationPathPrefix = getenv('SIMBASE', '')
@@ -70,10 +71,23 @@ class ConvergenceReporter:
 		# which quantity shall we look at, in the moment?
 		self.quantity = 'error-bx.asc' # was error-rho.asc
 
+	def readSimulationProgress(self):
+		"""
+		Calls the shell script to read off the progress
+		"""
+		self.logger.info("Calling showSimulationProgress.sh to see progress")
+		libconvergence_dir = path.dirname(__file__)
+		script = path.join(libconvergence_dir, "showSimulationProgress.sh")
+		csv = shell(script)
+		self.logger.info("Simulation status:\n" + csv)
+		return csv
+
 	def add_group(self, argparser):
 		group = argparser.add_argument_group('ConvergenceReporter', description=inspect.cleandoc(self.__doc__))
 		group.add_argument('-o', '--porder', type=int, help="Do reporting only for one polynomial order. Default is all.")
 		group.add_argument('-Q', '--quantity', type=str, default=self.quantity, help="Which quantity to look at")
+		group.add_argument('-s', '--simulations', type=str, default=self.simulationListFilename, help="Path to CSV file "+
+			"holding the simulations to consider. If not given, generates list by ./showSimulationProgress.sh on the fly")
 		return group
 
 	def apply_args(self, args, argparser):
@@ -86,6 +100,12 @@ class ConvergenceReporter:
 			self.logger.info("Using all p orders")
 			self.simulations = None
 			self.report_outputfile = "simulations/generated-report.html"
+
+		if args.simulations:
+			self.logger.info("Reading off simulations from file %s" % args.simulations)
+			self.simulationListFilename = args.simulations
+		else:
+			self.simulationListFilename = StringIO(self.readSimulationProgress())
 
 		self.quantity = args.quantity
 
@@ -118,9 +138,9 @@ class ConvergenceReporter:
 		statisticstable[idxSimName] = statisticstable[idxSimName].map(str.strip)
 
 		# allow to join a path before if simnames are somewhat broken or so.
-		if simulationPathPrefix:
-		    self.logger.info("Applying prefix '%s' on each simulation name" % simulationPathPrefix)
-		    prefixer = lambda simname: path.join(simulationPathPrefix, simname)
+		if self.simulationPathPrefix:
+		    self.logger.info("Applying prefix '%s' on each simulation name" % self.simulationPathPrefix)
+		    prefixer = lambda simname: path.join(self.simulationPathPrefix, simname)
 		    # if working with pandas:
 		    statisticstable[idxSimName] = statisticstable[idxSimName].apply(prefixer)
 		    # if working with the list, interchange with if not simulations: ... but doesn't work.

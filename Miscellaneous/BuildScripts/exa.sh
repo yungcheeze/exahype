@@ -94,11 +94,21 @@ case $CMD in
 		set -- "${@:2}" # pop parameter
 		cdapp; $SCRIPTDIR/compile-for-polyorder.sh $@
 		;;
+	"polycompile-all") # Compile for polynomial orders 2,3,4,5,6,7,8,9.
+		cdroot; getappname
+		# do NOT parallelize the loop as the build system does not allow
+		set -e
+		for p in 2 3 4 5 6 6 7 8 9; do subreq polycompile $APPNAME $p; done
+		;;	
 	"make") # compiel without invoking the toolkit
 		cdapp
 		export SKIP_TOOLKIT="Yes"
 		export CLEAN="${CLEAN:=Lightweight}" # do no heavy cleaning
 		$SCRIPTDIR/compile.sh
+		;;
+	"cheat") # show the environment variables available for driving the build
+		cdroot; cd $SCRIPTDIR;
+		cat cheat-sheet.txt
 		;;
 	"git") # passes commands to git
 		cdroot; info "ExaHyPE Git Repository at $GITROOT"

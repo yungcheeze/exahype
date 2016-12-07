@@ -34,7 +34,7 @@ exahype-project  Euler
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
-    order             = 3
+    order             = 9
     maximum-mesh-size = 0.05
     time-stepping     = globalfixed
     kernel            = optimised::fluxes::nonlinear

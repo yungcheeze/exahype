@@ -5,10 +5,38 @@
 #
 # SK, 2016
 
-import os
+import os, subprocess, sys
 from os import path, stat
 from functools import partial
 
+# provide StringIO consistently
+if sys.version_info[0] < 3: 
+    from StringIO import StringIO
+else:
+    from io import StringIO
+
+shell = lambda cmd: subprocess.check_output(cmd, shell=True).strip()
+getenv = lambda key, default=None: os.environ[key] if key in os.environ else default
+pidlist = lambda processes: " ".join([str(proc.pid) for proc in processes])
+
+def runBinary(binary, envUpdate):
+	"""
+	Runs the command "binary", this may be only one program without parameters,
+	with the environment which is composed of the environmental variables and
+	the envUpdate dictionary.
+	Example usage:
+	> runBinary("ExaHyPE-FooBar", { 'EXAHYPE_SKIP_TEST': 'True' })
+
+	You can replace subprocess.Popen with other alternatives, but make sure
+	they return some kind of process handle which is subsequently used
+	"""
+	env = os.environ.copy()
+	env.update(envUpdate)
+	
+	if not os.path.exists(binary):
+		raise IOError("Failure: '%s' does not exist" % binary)
+
+	return subprocess.Popen([binary], env=env)
 
 def read_simulation_params(envfile):
 	"""

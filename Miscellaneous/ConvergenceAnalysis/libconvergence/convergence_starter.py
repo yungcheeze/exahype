@@ -21,30 +21,7 @@ logger = logging.getLogger("convergence_starter")
 # libconvergence, same directory:
 from convergence_arghelpers import ExaFrontend
 from convergence_table import ConvergenceReporter, exitConvergenceStatus
-
-# helpers:
-shell = lambda cmd: subprocess.check_output(cmd, shell=True).strip()
-getenv = lambda key, default=None: os.environ[key] if key in os.environ else default
-pidlist = lambda processes: " ".join([str(proc.pid) for proc in processes])
-
-def runBinary(binary, envUpdate):
-	"""
-	Runs the command "binary", this may be only one program without parameters,
-	with the environment which is composed of the environmental variables and
-	the envUpdate dictionary.
-	Example usage:
-	> runBinary("ExaHyPE-FooBar", { 'EXAHYPE_SKIP_TEST': 'True' })
-
-	You can replace subprocess.Popen with other alternatives, but make sure
-	they return some kind of process handle which is subsequently used
-	"""
-	env = os.environ.copy()
-	env.update(envUpdate)
-	
-	if not os.path.exists(binary):
-		raise IOError("Failure: '%s' does not exist" % binary)
-
-	return subprocess.Popen([binary], env=env)
+from convergence_helpers import shell, getenv, pidlist, runBinary
 
 class ConvergenceTest:
 	"""
@@ -157,7 +134,7 @@ class PolyorderTest(ConvergenceTest):
 		# adapt the number of runs/ maximum cells for the polynomial degree
 		# adaptrunrange[<polyorder>] -> [<subset of maxmeshsizes>]
 		# numcells is array([   3.,    9.,   27.,   81.,  243.])
-		self.runrange = { 2: until(243), 3: until(243), 4: until(243), 5: until(243),
+		self.adaptiveRunRange = { 2: until(243), 3: until(243), 4: until(243), 5: until(243),
 				6: until(81), 7: until(81),
 				8: until(27), 9: until(27) }
 
@@ -196,18 +173,18 @@ class PolyorderTest(ConvergenceTest):
 		If you have not set self.runrange by yourself, it defaults to a reasonable set
 		of simulations.
 		"""
-		logger.info("ExaHyPE Polynomial Convergence Analysis")
-		logger.info("=======================================")
+		self.logger.info("ExaHyPE Polynomial Convergence Analysis")
+		self.logger.info("=======================================")
 
-		logger.info("Can do convergence analysis on %fx%f sized domain with the following grid props: " % (self.width,self.width))
-		logger.info(self.res)
-		logger.info("Will do all these tests for these orders of the polynomial order:")
-		logger.info(self.polyorders)
-		logger.info("However, now reducing the runs at big resolutions")
+		self.logger.info("Can do convergence analysis on %fx%f sized domain with the following grid props: " % (self.width,self.width))
+		self.logger.info("\n" + str(self.res))
+		self.logger.info("Will do all these tests for these orders of the polynomial order:")
+		self.logger.info(self.polyorders)
+		self.logger.info("However, now reducing the runs at big resolutions")
 	
 		processes = []
 		if not adaptrunrange:
-			adaptrunrange = self.adaptrunrange
+			adaptrunrange = self.adaptiveRunRange
 		for p, rows in adaptrunrange.iteritems():
 			for i, row in rows.iterrows():
 				# for testing:
@@ -233,7 +210,7 @@ class PolyorderTest(ConvergenceTest):
 			self.logger.info("ExaHyPE runner has been started, PID = %d" % p.pid)
 			return [p]
 		elif args.all:
-			processes = runRange()
+			processes = self.startRange()
 			self.logger.info("%d processes have been started with PIDS: " % len(processes))
 			self.logger.info(pidlist(processes))
 			return processes

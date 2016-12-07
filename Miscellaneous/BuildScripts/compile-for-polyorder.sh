@@ -67,11 +67,17 @@ cd "$APPNAME"
 echo "Expect the project solver $SOLVERNAME to be at $SOLVERNAME.h, I delete it for recreation"
 rm "${SOLVERNAME}.h"
 
-export CLEAN="Lightweight"
-$COMPILE
+# if no preference for $CLEAN has been set, make sure it is at least Lightweight
+# which is needed in order to delete header files etc.
+export CLEAN="${CLEAN:=Lightweight}"
+
+$COMPILE || { echo "Failure while compiling p=${ORDER}."; exit -1; }
 
 # Move the binary to some safe place
 echo -e "Copy Binary to safe place"
 mv "$BINARYNAME" "$FINALBINARYNAME"
+
+# the same with the make log to determine the problem in case of errors
+mv make.log make-p${ORDER}.log
 
 echo -e "$0 finished with $FINALBINARYNAME"
