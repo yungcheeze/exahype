@@ -32,42 +32,47 @@ getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $AP
 cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
 
 case $CMD in
-	"update-peano") # Unpacks Peano from tarball
+	"update-peano") # Updates the Peano subversion repository
 		cdroot; info "Updating Peano"
-		cd Code/Peano
-		tar xvfz peano.tar.gz
-		git checkout .gitignore
+		cd Peano
+		exec ./checkout-update-peano.sh
 		info "Finished updating Peano"
 		;;
-	"create-toolkit") # Compiles the toolkit with ant and javac
+	"update-toolkit") # Compiles the toolkit with ant and javac
 		cdroot; info "Creating Toolkit"
-		cd Code/Toolkit
+		cd Toolkit
 		exec ./build.sh
+		;;
+	"update-libxsmm") # Checkout or recompile libxsmm
+		cdroot; info "Cloning or updating Libxsmm"
+		[[ -e Libxsmm ]] || git clone https://github.com/hfp/libxsmm.git Libxsmm
+		# libxsmm is a large repository, instead of cloning, downloading
+		# https://github.com/hfp/libxsmm/archive/master.zip
+		# would be an option
+		cd Libxsmm
+		git pull
+		make clean
+		exec make generator -j4
 		;;
 	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
 		cdroot; info "Listing available Applications:"
-		# we merge directories "Applications" and "ApplicationExamples" in the output
-		find Code/Application{,Example}s/* -type d -exec basename {} \;
+		find ApplicationExamples/* -type d -exec basename {} \;
 		;;
 	"find-app") # Gives the full path from ExaHyPE root to an application
+		# this is trivial since we have no more {Applications, ApplicationExamples} directories
 		cdroot; getappname
-		ls -d Code/Applications/$APPNAME 2>/dev/null; f1=$?
-		ls -d Code/ApplicationExamples/$APPNAME 2>/dev/null; f2=$?
-		[[ (( $f1 == 0 )) && (( $f2 == 0 )) ]] && fail "Clash of Application Names"
-		[[ (( $f1 != 0 )) && (( $f2 != 0 )) ]] && fail "Application '$APPNAME' not found"
+		ls -d ApplicationExamples/$APPNAME || fail "Application '$APPNAME' not found"
 		;;
 	"find-specfile") # Gives the full path from ExaHyPE root to an application specfile
+		# this is trivial since we have no more {Applications, ApplicationExamples} directories
 		cdroot; getappname
-		ls -f Code/Applications/$APPNAME.exahype 2>/dev/null; f1=$?
-		ls -f Code/ApplicationExamples/$APPNAME.exahype 2>/dev/null; f2=$?
-		[[ (( $f1 == 0 )) && (( $f2 == 0 )) ]] && fail "Clash of Application Names";
-		[[ (( $f1 != 0 )) && (( $f2 != 0 )) ]] && fail "Application '$APPNAME' not found";
+		ls -f ApplicationExamples/$APPNAME.exahype || fail "Application '$APPNAME' not found";
 		exit 0
 		;;
 	"find-appdir") # Gives directory where app lives inside
 		cdroot; getappname
-		ls -d Code/Applications/$APPNAME &>/dev/null && finish "Code/Applications/"
-		ls -d Code/ApplicationExamples/$APPNAME &>/dev/null && finish "Code/ApplicationExamples/"
+		ls -d Applications/$APPNAME &>/dev/null && finish "Applications/"
+		ls -d ApplicationExamples/$APPNAME &>/dev/null && finish "ApplicationExamples/"
 		fail "Could not find Application '$APPNAME' somewhere"
 		;;
 	"find-binary") # Gives path to the executable, even if not present
@@ -80,8 +85,7 @@ case $CMD in
 		cdroot; getappname
 		SPECFILE="$(subreq find-specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"
 		info "Running ExaHyPE.jar on $SPECFILE"
-		cd Code
-		java -jar Toolkit/dist/ExaHyPE.jar --not-interactive ../$SPECFILE
+		java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $SPECFILE
 		;;
 	"compile") # Invokes the toolkit and compilation of an application
 		cdapp; $SCRIPTDIR/compile.sh
@@ -106,10 +110,10 @@ case $CMD in
 		fail "Calculation not yet implemented"
 		;;
 	"player") # passes commands to the plotting toolkit exaplot. Use "--help" for help.
-		exec $GITROOT/Code/Miscellaneous/Postprocessing/exaplayer.py $@
+		exec $GITROOT/Miscellaneous/Postprocessing/exaplayer.py $@
 		;;
 	"reader") # passes commands to the exahype python conversion toolkit. Use "--help" for help.
-		exec $GITROOT/Code/Miscellaneous/Postprocessing/exareader.py $@
+		exec $GITROOT/Miscellaneous/Postprocessing/exareader.py $@
 		;;
 	"run") # quickly start an application inside it's directory. Cleans VTK files before.
 		cdapp
@@ -125,7 +129,7 @@ case $CMD in
 		$reducedbuf $ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | $reducedbuf tee -a run.log
 		;;
 	"sim") # lightweight simulation managament
-		exec $GITROOT/Code/Miscellaneous/BuildScripts/sim.sh $@
+		exec $GITROOT/Miscellaneous/BuildScripts/sim.sh $@
 		;;
 	""|"help") # prints out help about the exa toolkit
 		me=$(basename "$0")

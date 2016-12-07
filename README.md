@@ -33,11 +33,9 @@ Python 3 is required to compile libxsmm and run the code generator.
 Quick installation:
 
     cd ExaHyPE-Engine/
-    git clone https://github.com/hfp/libxsmm.git
-    cd libxsmm/
+    git clone https://github.com/hfp/libxsmm.git Libxsmm
+    cd Libxsmm/
     make generator
-    cd ..
-    ln -s libxsmm/ Libxsmm
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
