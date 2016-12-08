@@ -334,7 +334,8 @@ void exahype::mappings::SolutionRecomputation::enterCell(
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before recomputation
+          limitingADERSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update face-wise
+                                                                                              // limiter status before recomputation
 
           limitingADERSolver->recomputeSolution(
               fineGridCell.getCellDescriptionsIndex(),
@@ -344,12 +345,11 @@ void exahype::mappings::SolutionRecomputation::enterCell(
               fineGridVertices,
               fineGridVerticesEnumerator);
 
-          // It is important that we update the limiter status only after the recomputation since we use
+          // It is important that we update the cell-wise limiter status only after the recomputation since we use
           // the previous and current limiter status in the recomputation.
           limitingADERSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
 
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                        determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          limitingADERSolver->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
 
         solver->prepareNextNeighbourMerging(
@@ -385,17 +385,10 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
               const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
               const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
               if (element2>=0 && element1>=0) {
-                auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                    getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
-                auto& solverPatch2 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                    getSolver()->getCellDescription(cellDescriptionsIndex2,element2);
-
                 static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
                     mergeNeighboursBasedOnLimiterStatus(
                     cellDescriptionsIndex1,element1,
                     cellDescriptionsIndex2,element2,
-                    solverPatch1.getMergedLimiterStatus(0),
-                    solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the face-wise limiter status values
                     pos1,pos2,
                     true, /* isRecomputation */
                     _tempFaceUnknowns[solverNumber],
