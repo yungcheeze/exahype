@@ -66,7 +66,7 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
      lFhiFortran[i] = lFhi[i]; } //-123.45;
 
    double* dtTemp = new double[1];
-   dtTemp[0] =  predictorTimeStepSize;
+   dtTemp[0] =  dt;
 
   double* dxTemp = new double[3];
   dxTemp[0] = dx[0];
