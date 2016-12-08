@@ -53,42 +53,6 @@ class exahype::mappings::LimiterStatusMergingMPI {
   int _boundaryFaceMerges;
   #endif
 
-#ifdef Parallel
-  /**
-   * We only send empty data for LimitingADERDGSolvers
-   * where we have detected a change of the limiter domain.
-   * This information should be available on all ranks.
-   * We ignore other solver types.
-   *
-   * TODO(Dominic): Add more docu.
-   */
-  static void sendEmptyDataToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-
-  /*
-   * We only send solver and empty data for LimitingADERDGSolvers
-   * where we have detected a change of the limiter domain.
-   * This information should be available on all ranks.
-   * We ignore other solver types.
-   *
-   * TODO(Dominic): Add more docu.
-   */
-  static void sendDataToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&     src,
-      const tarch::la::Vector<DIMENSIONS,int>&     dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-#endif
-
  public:
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
