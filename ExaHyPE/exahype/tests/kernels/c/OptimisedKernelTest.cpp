@@ -40,7 +40,7 @@ int OptimisedKernelTest::_dim;
 bool OptimisedKernelTest::_isLinear;
  
 const double OptimisedKernelTest::eps  = 1.0e-14;
-const double OptimisedKernelTest::eps2 = 1.0e-12; //for known reordered operations
+const double OptimisedKernelTest::eps2 = 1.0e-11; //for known reordered operations
 const double OptimisedKernelTest::eps3 = 1.0e-5;  //for known unprecise operations (to fix)
 #ifdef Dim2
 const std::string OptimisedKernelTest::dim = "2";
