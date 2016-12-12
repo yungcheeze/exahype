@@ -288,7 +288,7 @@ double solutionUpdate(
   // x edges 
   double* Fn = tempStateSizedVectors[0];
   for (int j = patchBegin; j < patchEnd+1; j++) {
-    for (int k = patchBegin-1; k < patchEnd+1; k++) {
+    for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
       double s_max_x = 
           riemannSolver<PDEEigenvalues, PDEFlux>(
               Fn, 
@@ -319,8 +319,8 @@ double solutionUpdate(
           dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
-        luh_new[idx(j+1, k, l)] += dt / cellSize[0] * Fn[l];
+        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * Fn[l];  
+        luh_new[idx(j+1, k, l)] += dt / cellSize[1] * Fn[l];
       }
     }
   }
@@ -334,7 +334,7 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd+1; k++) {
       PDESource(&luh[idx(j, k, 0)], source);      
       for (int l = 0; l < numberOfVariables; l++) {
-        luh_new[idx(j, k, l)] += dt * source[l]; // TODO(Dominic): Potential bug
+        luh_new[idx(j, k, l)] += dt * source[l];
       }
     }
   }
@@ -387,7 +387,7 @@ void solutionAdjustment(
     double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
     const double dt, const int numberOfVariables, const int basisSize) {
-  double x[2];
+  double x[DIMENSIONS];
   
   constexpr int patchBegin=1;
   const int     patchEnd=basisSize;
@@ -423,7 +423,6 @@ void boundaryConditions(SolverType& solver,
 
   idx2 idx(basisSize,numberOfVariables);
   // Determine the free direction from the non-zero normal entry.
-  // @todo(Dominic,31/07/16) I might have confused these directions. Please start here with the debugging.
   int d1=0;
   switch(normalNonZero) {
     case 0:
