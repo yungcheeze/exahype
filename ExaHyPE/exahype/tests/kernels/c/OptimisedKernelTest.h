@@ -24,6 +24,7 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 #include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/converter.h"
 #include "kernels/KernelUtils.h"
 
 namespace exahype {
@@ -83,10 +84,8 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   double _dt;  //initialized by testStableTimeStepSize
   double* _luh; //goes to the call with generic kernel
   double* _lduh;
-  double* _lFhi_gen; // == tempFluxUnknowns 
-  double* _lFhi_opt; // == tempFluxUnknowns
-  double* _lQhi_gen; // == tempUnknowns 
-  double* _lQhi_opt; // == tempUnknowns
+  double* _lFhi; // == tempFluxUnknowns 
+  double* _lQhi; // == tempUnknowns 
   
   static const double _dx[];
   static const double _center[];

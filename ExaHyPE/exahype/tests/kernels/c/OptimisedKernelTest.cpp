@@ -259,10 +259,8 @@ void OptimisedKernelTest::run() {
 #endif
   _luh  = new double[_luhSize]();
   _lduh = new double[_luhSize]();
-  _lFhi_gen = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
-  _lFhi_opt = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
-  _lQhi_gen = new double[basisSizePowDim*_numberOfVariables]();
-  _lQhi_opt = new double[basisSizePowDim*_numberOfVariables]();
+  _lFhi = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
+  _lQhi = new double[basisSizePowDim*_numberOfVariables]();
 
   testMethod(testSolutionAdjustment); //initialize _luh
   testMethod(testStableTimeStep); //initialize dt
@@ -272,13 +270,10 @@ void OptimisedKernelTest::run() {
   testMethod(testVolumeIntegral);
   testMethod(testSolutionUpdate);
 
-
   delete[] _luh;
   delete[] _lduh;
-  delete[] _lFhi_gen;
-  delete[] _lFhi_opt;
-  delete[] _lQhi_gen;
-  delete[] _lQhi_opt;
+  delete[] _lFhi;
+  delete[] _lQhi;
 }
 
 
@@ -351,13 +346,16 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   double* lQhbnd_optimised = new double[sizeFhbnd]();
   double* lFhbnd_optimised = new double[sizeFhbnd]();
   
+  double* lQhi_opt = new double[kernels::aderdg::optimised::converter::getQhiOptArraySize()];
+  double* lFhi_opt = new double[kernels::aderdg::optimised::converter::getFhiOptArraySize()];
+  
   
   //compute
   kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], _luh, _dx[0], _dt );
-  kernels::aderdg::optimised::predictor( _lQhi_opt, _lFhi_opt, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
-  kernels::aderdg::optimised::extrapolator( lQhbnd_optimised, lFhbnd_optimised, _lQhi_opt, _lFhi_opt );
+  kernels::aderdg::optimised::predictor( lQhi_opt, lFhi_opt, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
+  kernels::aderdg::optimised::extrapolator( lQhbnd_optimised, lFhbnd_optimised, lQhi_opt, lFhi_opt );
   
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, lQhbnd_generic, lFhbnd_generic, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi_gen, _lFhi_gen, tempStateSizedVectors, _luh, _dx[0], _dt );
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, lQhbnd_generic, lFhbnd_generic, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi, _lFhi, tempStateSizedVectors, _luh, _dx[0], _dt );
   
   //compare
 #ifdef Dim2  
@@ -378,9 +376,9 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   for(int i=0; i<_basisSize; i++) {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_numberOfVariables; k++) {
-        validateNumericalEqualsWithEps(_lQhi_opt[idx_lQhi(i,j,k)], _lQhi_gen[idx_lQhi(i,j,k)], eps3);
-        validateNumericalEqualsWithEps(_lFhi_opt[idx_lFhi(i,j,k)           ], _lFhi_gen[idx_lFhi(i,j,k)           ], eps3); //lFhi_x
-        validateNumericalEqualsWithEps(_lFhi_opt[idx_lFhi(i,j,k)+lFhi_shift], _lFhi_gen[idx_lFhi(i,j,k)+lFhi_shift], eps3); //lFhi_y
+        validateNumericalEqualsWithEps(lQhi_opt[idx_lQhi(i,j,k)], _lQhi[idx_lQhi(i,j,k)], eps3);
+        validateNumericalEqualsWithEps(lFhi_opt[idx_lFhi(i,j,k)           ], _lFhi[idx_lFhi(i,j,k)           ], eps3); //lFhi_x
+        validateNumericalEqualsWithEps(lFhi_opt[idx_lFhi(i,j,k)+lFhi_shift], _lFhi[idx_lFhi(i,j,k)+lFhi_shift], eps3); //lFhi_y
       }
     }    
   }
@@ -406,10 +404,10 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_basisSize; k++) {
         for(int l=0; l<_numberOfVariables; l++) {
-          validateNumericalEqualsWithEps(_lQhi_opt[idx_lQhi(i,j,k,l)], _lQhi_gen[idx_lQhi(i,j,k,l)], eps3);
-          validateNumericalEqualsWithEps(_lFhi_opt[idx_lFhi(i,j,k,l)+0*lFhi_shift], _lFhi_gen[idx_lFhi(i,j,k,l)+0*lFhi_shift], eps3); //lFhi_x
-          validateNumericalEqualsWithEps(_lFhi_opt[idx_lFhi(i,j,k,l)+1*lFhi_shift], _lFhi_gen[idx_lFhi(i,j,k,l)+1*lFhi_shift], eps3); //lFhi_y
-          validateNumericalEqualsWithEps(_lFhi_opt[idx_lFhi(i,j,k,l)+2*lFhi_shift], _lFhi_gen[idx_lFhi(i,j,k,l)+2*lFhi_shift], eps3); //lFhi_z
+          validateNumericalEqualsWithEps(lQhi_opt[idx_lQhi(i,j,k,l)], _lQhi[idx_lQhi(i,j,k,l)], eps3);
+          validateNumericalEqualsWithEps(lFhi_opt[idx_lFhi(i,j,k,l)+0*lFhi_shift], _lFhi[idx_lFhi(i,j,k,l)+0*lFhi_shift], eps3); //lFhi_x
+          validateNumericalEqualsWithEps(lFhi_opt[idx_lFhi(i,j,k,l)+1*lFhi_shift], _lFhi[idx_lFhi(i,j,k,l)+1*lFhi_shift], eps3); //lFhi_y
+          validateNumericalEqualsWithEps(lFhi_opt[idx_lFhi(i,j,k,l)+2*lFhi_shift], _lFhi[idx_lFhi(i,j,k,l)+2*lFhi_shift], eps3); //lFhi_z
         }
       }
     }    
@@ -431,6 +429,9 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   delete[] lFhbnd_generic;
   delete[] lQhbnd_optimised;
   delete[] lFhbnd_optimised;
+  
+  delete[] lQhi_opt;
+  delete[] lFhi_opt;
 }
 
 
@@ -440,15 +441,18 @@ void OptimisedKernelTest::testVolumeIntegral() {
   logInfo("OptimisedKernelTest::testVolumeIntegral()", out.str());
 
   double* lduh_opt = new double[_luhSize];
+  double* lFhi_opt = new double[kernels::aderdg::optimised::converter::getFhiOptArraySize()];  
+  kernels::aderdg::optimised::converter::Fhi_generic2optimised(_lFhi, lFhi_opt);
   
-  kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi_gen, _dx[0], _numberOfVariables, 0, _basisSize );
-  kernels::aderdg::optimised::volumeIntegral( lduh_opt, _lFhi_gen, _dx[0] );
+  kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi, _dx[0], _numberOfVariables, 0, _basisSize );
+  kernels::aderdg::optimised::volumeIntegral( lduh_opt, lFhi_opt, _dx[0] );
   
   for(int i=0; i<_luhSize; i++) {
     validateNumericalEqualsWithEps(lduh_opt[i], _lduh[i], eps2);
   }
   
   delete[] lduh_opt;
+  delete[] lFhi_opt;
 }
 
 

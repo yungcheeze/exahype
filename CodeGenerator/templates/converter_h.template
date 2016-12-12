@@ -14,6 +14,7 @@
 #ifndef EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
 #define EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
 
+#include <cstring>
 #include "kernels/KernelUtils.h"
 
 namespace kernels {
@@ -22,19 +23,37 @@ namespace optimised {
 namespace converter {
 
 inline int getBndGenArraySize() {
-{% if nDim ==2 %}  
-  return {{2 * nDim * nDof * nVar}};
-{% else %}
-  return {{2 * nDim * nDof * nDof * nVar}};
-{% endif%}
+  return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};
 }
 
 inline int getBndOptArraySize() {
   return {{2 * nDim * bndBlockSize * nVar}};
 }
 
+inline int getFhiGenArraySize() {
+  return {{(nDof ** nDim) * nVar * (nDim+1)}};
+}
+
+inline int getFhiOptArraySize() {
+  return {{(nDof ** nDim) * nVarPad * (nDim+1)}};
+}
+
+inline int getQhiGenArraySize() {
+  return {{(nDof ** nDim) * nVar}};
+}
+
+inline int getQhiOptArraySize() {
+  return {{(nDof ** nDim) * nVarPad}};
+}
+
 void Bnd_optimised2generic(const double* const opt, double* gen);
 void Bnd_generic2optimised(const double* const gen, double* opt);
+
+void Fhi_optimised2generic(const double* const opt, double* gen);
+void Fhi_generic2optimised(const double* const gen, double* opt);
+
+void Qhi_optimised2generic(const double* const opt, double* gen);
+void Qhi_generic2optimised(const double* const gen, double* opt);
 
 }
 }
