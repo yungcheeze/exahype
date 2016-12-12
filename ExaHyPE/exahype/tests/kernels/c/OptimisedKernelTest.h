@@ -80,15 +80,17 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static bool _isLinear;
   static const std::string dim; // for log
   
-  int _luhSize;
   double _dt;  //initialized by testStableTimeStepSize
   double* _luh; //goes to the call with generic kernel
   double* _lduh;
   double* _lFhi; // == tempFluxUnknowns 
   double* _lQhi; // == tempUnknowns 
+  double* _lQhbnd;
+  double* _lFhbnd;
   
-  static const double _dx[];
+  static const double _dx[];      // cell size, by default 1.0 in all direction
   static const double _center[];
+  static const double _center2[]; // second cell for Riemann on the right in the x direction (1.5 instead of 0.5 by default)
 
 };
 

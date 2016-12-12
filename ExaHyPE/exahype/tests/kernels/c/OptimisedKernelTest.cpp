@@ -51,10 +51,12 @@ const std::string OptimisedKernelTest::dim = "3";
 
 #ifdef Dim2    
 const double OptimisedKernelTest::_dx[] = {1.0, 1.0};
-const double OptimisedKernelTest::_center[] = {0.5, 0.5};
+const double OptimisedKernelTest::_center[]  = {0.5, 0.5};
+const double OptimisedKernelTest::_center2[] = {1.5, 0.5};
 #else
 const double OptimisedKernelTest::_dx[] = {1.0, 1.0, 1.0};
-const double OptimisedKernelTest::_center[] = {0.5, 0.5, 0.5};
+const double OptimisedKernelTest::_center[] =  {0.5, 0.5, 0.5};
+const double OptimisedKernelTest::_center2[] = {1.5, 0.5, 0.5};
 #endif 
 
 OptimisedKernelTest::OptimisedKernelTest()
@@ -249,19 +251,13 @@ void OptimisedKernelTest::run() {
   _log.info("OptimisedKernelTest::run()", "OptimisedKernelTest is active");
 
   _dt = 0.01;
+  _luh  = new double[kernels::aderdg::optimised::converter::getLuhArraySize()]();
+  _lduh = new double[kernels::aderdg::optimised::converter::getLuhArraySize()]();
+  _lFhi = new double[kernels::aderdg::optimised::converter::getFhiGenArraySize()]();
+  _lQhi = new double[kernels::aderdg::optimised::converter::getQhiGenArraySize()]();
+  _lFhbnd = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()]();
+  _lQhbnd = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()]();
   
-#ifdef Dim2    
-  _luhSize = _numberOfVariables*_basisSize*_basisSize;
-  const int basisSizePowDim = _basisSize * _basisSize;
-#else
-  _luhSize = _numberOfVariables*_basisSize*_basisSize*_basisSize;
-  const int basisSizePowDim = _basisSize * _basisSize * _basisSize;
-#endif
-  _luh  = new double[_luhSize]();
-  _lduh = new double[_luhSize]();
-  _lFhi = new double[basisSizePowDim*_numberOfVariables*(_dim+1)]();
-  _lQhi = new double[basisSizePowDim*_numberOfVariables]();
-
   testMethod(testSolutionAdjustment); //initialize _luh
   testMethod(testStableTimeStep); //initialize dt
   if(!_isLinear) {
@@ -274,6 +270,8 @@ void OptimisedKernelTest::run() {
   delete[] _lduh;
   delete[] _lFhi;
   delete[] _lQhi;
+  delete[] _lFhbnd;
+  delete[] _lQhbnd;
 }
 
 
@@ -282,7 +280,7 @@ void OptimisedKernelTest::testSolutionAdjustment() {
   out << "Test solutionAdjustment with gaussian pulse on Q[0], ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testSolutionAdjustment()", out.str());
   
-  double* luh_optimised = new double[_luhSize]();
+  double* luh_optimised = new double[kernels::aderdg::optimised::converter::getLuhArraySize()]();
 
   double t = 0.0;
   double dt = 0.0;
@@ -290,7 +288,7 @@ void OptimisedKernelTest::testSolutionAdjustment() {
   kernels::aderdg::generic::c::solutionAdjustment<OptimisedKernelTest>( *this, _luh, _center[0], _dx[0], t, dt );
   kernels::aderdg::optimised::solutionAdjustment<OptimisedKernelTest::adjustedSolutionValues>( luh_optimised, _center[0], _dx[0], t, dt );
    
-  for(int i=0; i<_luhSize; i++) {
+  for(int i=0; i<kernels::aderdg::optimised::converter::getLuhArraySize(); i++) {
     validateNumericalEqualsWithEps(luh_optimised[i], _luh[i], eps);
   }
   
@@ -341,10 +339,8 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   double* tempStateSizedVectors = new double[_numberOfVariables]();
   
   //out
-  double* lQhbnd_generic = new double[sizeFhbnd]();
-  double* lFhbnd_generic = new double[sizeFhbnd]();
-  double* lQhbnd_optimised = new double[sizeFhbnd]();
-  double* lFhbnd_optimised = new double[sizeFhbnd]();
+  double* lQhbnd_opt = new double[kernels::aderdg::optimised::converter::getBndOptArraySize()]();
+  double* lFhbnd_opt = new double[kernels::aderdg::optimised::converter::getBndOptArraySize()]();
   
   double* lQhi_opt = new double[kernels::aderdg::optimised::converter::getQhiOptArraySize()];
   double* lFhi_opt = new double[kernels::aderdg::optimised::converter::getFhiOptArraySize()];
@@ -353,9 +349,9 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   //compute
   kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], _luh, _dx[0], _dt );
   kernels::aderdg::optimised::predictor( lQhi_opt, lFhi_opt, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
-  kernels::aderdg::optimised::extrapolator( lQhbnd_optimised, lFhbnd_optimised, lQhi_opt, lFhi_opt );
+  kernels::aderdg::optimised::extrapolator( lQhbnd_opt, lFhbnd_opt, lQhi_opt, lFhi_opt );
   
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, lQhbnd_generic, lFhbnd_generic, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi, _lFhi, tempStateSizedVectors, _luh, _dx[0], _dt );
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, _lQhbnd, _lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi, _lFhi, tempStateSizedVectors, _luh, _dx[0], _dt );
   
   //compare
 #ifdef Dim2  
@@ -364,8 +360,8 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   for(int i=0; i<2*_dim; i++) {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_numberOfVariables; k++) {
-        validateNumericalEqualsWithEps(lQhbnd_optimised[idx_bnd_opt(i,k,j)], lQhbnd_generic[idx_bnd_gen(i,j,k)], eps3);
-        validateNumericalEqualsWithEps(lFhbnd_optimised[idx_bnd_opt(i,k,j)], lFhbnd_generic[idx_bnd_gen(i,j,k)], eps3);
+        validateNumericalEqualsWithEps(lQhbnd_opt[idx_bnd_opt(i,k,j)], _lQhbnd[idx_bnd_gen(i,j,k)], eps3);
+        validateNumericalEqualsWithEps(lFhbnd_opt[idx_bnd_opt(i,k,j)], _lFhbnd[idx_bnd_gen(i,j,k)], eps3);
       }
     }    
   }
@@ -390,8 +386,8 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
     for(int j=0; j<_basisSize; j++) {
       for(int k=0; k<_basisSize; k++) {
         for(int l=0; l<_numberOfVariables; l++) {
-          validateNumericalEqualsWithEps(lQhbnd_optimised[idx_bnd_opt(i,l,j,k)], lQhbnd_generic[idx_bnd_gen(i,j,k,l)], eps3);
-          validateNumericalEqualsWithEps(lFhbnd_optimised[idx_bnd_opt(i,l,j,k)], lFhbnd_generic[idx_bnd_gen(i,j,k,l)], eps3);
+          validateNumericalEqualsWithEps(lQhbnd_opt[idx_bnd_opt(i,l,j,k)], _lQhbnd[idx_bnd_gen(i,j,k,l)], eps3);
+          validateNumericalEqualsWithEps(lFhbnd_opt[idx_bnd_opt(i,l,j,k)], _lFhbnd[idx_bnd_gen(i,j,k,l)], eps3);
         }
       }
     }    
@@ -425,11 +421,8 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   }
   delete[] tempSpaceTimeFluxUnknowns;
   delete[] tempStateSizedVectors;
-  delete[] lQhbnd_generic;
-  delete[] lFhbnd_generic;
-  delete[] lQhbnd_optimised;
-  delete[] lFhbnd_optimised;
-  
+  delete[] lQhbnd_opt;
+  delete[] lFhbnd_opt;
   delete[] lQhi_opt;
   delete[] lFhi_opt;
 }
@@ -440,14 +433,14 @@ void OptimisedKernelTest::testVolumeIntegral() {
   out << "Test testVolumeIntegral with random values, ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testVolumeIntegral()", out.str());
 
-  double* lduh_opt = new double[_luhSize];
+  double* lduh_opt = new double[kernels::aderdg::optimised::converter::getLuhArraySize()];
   double* lFhi_opt = new double[kernels::aderdg::optimised::converter::getFhiOptArraySize()];  
   kernels::aderdg::optimised::converter::Fhi_generic2optimised(_lFhi, lFhi_opt);
   
   kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi, _dx[0], _numberOfVariables, 0, _basisSize );
   kernels::aderdg::optimised::volumeIntegral( lduh_opt, lFhi_opt, _dx[0] );
   
-  for(int i=0; i<_luhSize; i++) {
+  for(int i=0; i<kernels::aderdg::optimised::converter::getLuhArraySize(); i++) {
     validateNumericalEqualsWithEps(lduh_opt[i], _lduh[i], eps2);
   }
   
@@ -462,27 +455,27 @@ void OptimisedKernelTest::testSolutionUpdate() {
   logInfo("OptimisedKernelTest::testSolutionUpdate()", out.str());
 
   const double dt = 0.05;
-  double* luh_generic = new double[_luhSize];
-  double* luh_optimised = new double[_luhSize];
-  double* lduh_generic = new double[_luhSize];
-  double* lduh_optimised = new double[_luhSize];
+  double* luh_generic =    new double[kernels::aderdg::optimised::converter::getLuhArraySize()];
+  double* luh_optimised =  new double[kernels::aderdg::optimised::converter::getLuhArraySize()];
+  double* lduh_generic =   new double[kernels::aderdg::optimised::converter::getLuhArraySize()];
+  double* lduh_optimised = new double[kernels::aderdg::optimised::converter::getLuhArraySize()];
   
   std::random_device rd; //to generate a randome seed
   std::mt19937 mt(rd()); //mersenne twister random number generator with random seed
   std::uniform_real_distribution<double> dist(-1.0, 1.0); // [-1.0,1.0)
   
-  for(int i=0; i<_luhSize; i++) {
+  for(int i=0; i<kernels::aderdg::optimised::converter::getLuhArraySize(); i++) {
     luh_generic[i] = dist(mt);
     lduh_generic[i] = dist(mt);
   }
 
-  std::memcpy(luh_optimised, luh_generic, _luhSize*sizeof(double));
-  std::memcpy(lduh_optimised, lduh_generic, _luhSize*sizeof(double));
+  std::memcpy(luh_optimised, luh_generic, kernels::aderdg::optimised::converter::getLuhArraySize()*sizeof(double));
+  std::memcpy(lduh_optimised, lduh_generic, kernels::aderdg::optimised::converter::getLuhArraySize()*sizeof(double));
 
   kernels::aderdg::generic::c::solutionUpdate( luh_generic, lduh_generic, dt, _numberOfVariables, 0, _basisSize );
   kernels::aderdg::optimised::solutionUpdate( luh_optimised, lduh_optimised, dt );
   
-  for(int i=0; i<_luhSize; i++) {
+  for(int i=0; i<kernels::aderdg::optimised::converter::getLuhArraySize(); i++) {
     validateNumericalEqualsWithEps(luh_optimised[i], luh_generic[i], eps2);
   }
   
@@ -492,7 +485,6 @@ void OptimisedKernelTest::testSolutionUpdate() {
   delete[] lduh_optimised;
 
 }
-
 
 
 

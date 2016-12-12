@@ -22,29 +22,19 @@ namespace aderdg {
 namespace optimised {
 namespace converter {
 
-inline int getBndGenArraySize() {
-  return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};
-}
+inline int getLuhArraySize()    { return {{(nDof**nDim)*nVar}};}
 
-inline int getBndOptArraySize() {
-  return {{2 * nDim * bndBlockSize * nVar}};
-}
+inline int getBndGenArraySize() { return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};}
 
-inline int getFhiGenArraySize() {
-  return {{(nDof ** nDim) * nVar * (nDim+1)}};
-}
+inline int getBndOptArraySize() { return {{2 * nDim * bndBlockSize * nVar}};}
 
-inline int getFhiOptArraySize() {
-  return {{(nDof ** nDim) * nVarPad * (nDim+1)}};
-}
+inline int getFhiGenArraySize() { return {{(nDof ** nDim) * nVar * (nDim+1)}};}
 
-inline int getQhiGenArraySize() {
-  return {{(nDof ** nDim) * nVar}};
-}
+inline int getFhiOptArraySize() { return {{(nDof ** nDim) * nVarPad * (nDim+1)}};}
 
-inline int getQhiOptArraySize() {
-  return {{(nDof ** nDim) * nVarPad}};
-}
+inline int getQhiGenArraySize() { return {{(nDof ** nDim) * nVar}};}
+
+inline int getQhiOptArraySize() { return {{(nDof ** nDim) * nVarPad}};}
 
 void Bnd_optimised2generic(const double* const opt, double* gen);
 void Bnd_generic2optimised(const double* const gen, double* opt);
