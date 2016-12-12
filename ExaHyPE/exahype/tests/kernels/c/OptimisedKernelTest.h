@@ -87,6 +87,9 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   double* _lFhi_opt; // == tempFluxUnknowns
   double* _lQhi_gen; // == tempUnknowns 
   double* _lQhi_opt; // == tempUnknowns
+  
+  static const double _dx[];
+  static const double _center[];
 
 };
 

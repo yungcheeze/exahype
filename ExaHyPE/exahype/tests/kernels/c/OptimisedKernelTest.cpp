@@ -49,6 +49,14 @@ const std::string OptimisedKernelTest::dim = "2";
 const std::string OptimisedKernelTest::dim = "3";
 #endif
 
+#ifdef Dim2    
+const double OptimisedKernelTest::_dx[] = {1.0, 1.0};
+const double OptimisedKernelTest::_center[] = {0.5, 0.5};
+#else
+const double OptimisedKernelTest::_dx[] = {1.0, 1.0, 1.0};
+const double OptimisedKernelTest::_center[] = {0.5, 0.5, 0.5};
+#endif 
+
 OptimisedKernelTest::OptimisedKernelTest()
     : tarch::tests::TestCase("exahype::tests::c::OptimisedKernelTest") {
       
@@ -226,6 +234,7 @@ void OptimisedKernelTest::source_Euler(const double* const Q, double* S) {
   S[4] = 0.0;
 }
 
+
 int OptimisedKernelTest::getNumberOfVariables() {
   return _numberOfVariables;
 }
@@ -278,21 +287,13 @@ void OptimisedKernelTest::testSolutionAdjustment() {
   out << "Test solutionAdjustment with gaussian pulse on Q[0], ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testSolutionAdjustment()", out.str());
   
-#ifdef Dim2    
-  const double dx[2] = {1.0, 1.0};
-  const double center[2] = {0.5, 0.5};
-#else
-  const double dx[3] = {1.0, 1.0, 1.0};
-  const double center[3] = {0.5, 0.5, 0.5};
-#endif 
-  
   double* luh_optimised = new double[_luhSize]();
 
   double t = 0.0;
   double dt = 0.0;
   
-  kernels::aderdg::generic::c::solutionAdjustment<OptimisedKernelTest>( *this, _luh, center[0], dx[0], t, dt );
-  kernels::aderdg::optimised::solutionAdjustment<OptimisedKernelTest::adjustedSolutionValues>( luh_optimised, center[0], dx[0], t, dt );
+  kernels::aderdg::generic::c::solutionAdjustment<OptimisedKernelTest>( *this, _luh, _center[0], _dx[0], t, dt );
+  kernels::aderdg::optimised::solutionAdjustment<OptimisedKernelTest::adjustedSolutionValues>( luh_optimised, _center[0], _dx[0], t, dt );
    
   for(int i=0; i<_luhSize; i++) {
     validateNumericalEqualsWithEps(luh_optimised[i], _luh[i], eps);
@@ -304,15 +305,11 @@ void OptimisedKernelTest::testSolutionAdjustment() {
 
 void OptimisedKernelTest::testStableTimeStep() {
   logInfo("OptimisedKernelTest::testStableTimeStep()", "Test stableTimeStep");
-#ifdef Dim2    
-  const double dx[2] = {1.0, 1.0};
-#else
-  const double dx[3] = {1.0, 1.0, 1.0};
-#endif   
+
   double* tempEigenvalues = new double[_numberOfVariables];
   
-  double dt_opt = kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( _luh, dx[0] );
-  _dt = kernels::aderdg::generic::c::stableTimeStepSize<OptimisedKernelTest>( *this, _luh, tempEigenvalues, dx[0] );
+  double dt_opt = kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( _luh, _dx[0] );
+  _dt = kernels::aderdg::generic::c::stableTimeStepSize<OptimisedKernelTest>( *this, _luh, tempEigenvalues, _dx[0] );
   
   validateNumericalEqualsWithEps(dt_opt, _dt, eps);
   
@@ -326,14 +323,10 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   logInfo("OptimisedKernelTest::testSpaceTimePredictorNonLinear()", out.str());
 
 #ifdef Dim2    
-  const double dx[2] = {1.0, 1.0};
-  const double center[2] = {0.5, 0.5};
   const int basisSizePowDim = _basisSize * _basisSize;
   const int sizeLFi = basisSizePowDim * _basisSize * (_dim+1) * _numberOfVariables; // idx_lFi(t, y, x, nDim + 1 for Source, nVar)
   const int sizeFhbnd = 2 * 2 * _basisSize * _numberOfVariables;
 #else
-  const double dx[3] = {1.0, 1.0, 1.0};
-  const double center[3] = {0.5, 0.5, 0.5};
   const int basisSizePowDim = _basisSize * _basisSize * _basisSize;
   const int sizeLFi = basisSizePowDim * _basisSize * (_dim+1) * _numberOfVariables; // idx_lFi(t, z, y, x, nDim + 1 for Source, nVar)
   const int sizeFhbnd = 2 * 3 * _basisSize * _basisSize * _numberOfVariables;
@@ -360,11 +353,11 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   
   
   //compute
-  kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], _luh, dx[0], _dt );
+  kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], _luh, _dx[0], _dt );
   kernels::aderdg::optimised::predictor( _lQhi_opt, _lFhi_opt, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
   kernels::aderdg::optimised::extrapolator( lQhbnd_optimised, lFhbnd_optimised, _lQhi_opt, _lFhi_opt );
   
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, lQhbnd_generic, lFhbnd_generic, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi_gen, _lFhi_gen, tempStateSizedVectors, _luh, dx[0], _dt );
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, lQhbnd_generic, lFhbnd_generic, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi_gen, _lFhi_gen, tempStateSizedVectors, _luh, _dx[0], _dt );
   
   //compare
 #ifdef Dim2  
@@ -445,17 +438,11 @@ void OptimisedKernelTest::testVolumeIntegral() {
   std::ostringstream out;
   out << "Test testVolumeIntegral with random values, ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testVolumeIntegral()", out.str());
-  
-#ifdef Dim2    
-  const double dx[2] = {1.0, 1.0};
-#else
-  const double dx[3] = {1.0, 1.0, 1.0};
-#endif
 
   double* lduh_opt = new double[_luhSize];
   
-  kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi_gen, dx[0], _numberOfVariables, 0, _basisSize );
-  kernels::aderdg::optimised::volumeIntegral( lduh_opt, _lFhi_gen, dx[0] );
+  kernels::aderdg::generic::c::volumeIntegralNonlinear( _lduh, _lFhi_gen, _dx[0], _numberOfVariables, 0, _basisSize );
+  kernels::aderdg::optimised::volumeIntegral( lduh_opt, _lFhi_gen, _dx[0] );
   
   for(int i=0; i<_luhSize; i++) {
     validateNumericalEqualsWithEps(lduh_opt[i], _lduh[i], eps2);
