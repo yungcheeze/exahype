@@ -13,8 +13,8 @@
 
 #ifndef EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
 #define EXAHYPE_KERNELS_OPTIMISED_CONVERTER_H_
-
 #include <cstring>
+
 #include "kernels/KernelUtils.h"
 
 namespace kernels {
