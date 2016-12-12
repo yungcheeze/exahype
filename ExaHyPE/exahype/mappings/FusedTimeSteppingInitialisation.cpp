@@ -149,7 +149,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::enterCell(
     // ADER-DG
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     // please use a different UserDefined per mapping/event
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined1);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined0);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[solverNumber];

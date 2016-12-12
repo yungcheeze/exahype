@@ -304,6 +304,10 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
             if (element2>=0 && element1>=0) {
+              if (tarch::la::equals(fineGridX[1],0.833333,1e-5)) {
+                logInfo("touchVertexFirstTime(...)","fineGridX="<<fineGridX);
+              }
+
               solver->mergeNeighbours(
                   cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
                   _tempFaceUnknowns[solverNumber],
