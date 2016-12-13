@@ -1,5 +1,7 @@
 #include "MyEulerSolver.h"
 
+#include "InitialData.h"
+
 // TODO(Dominic): Assess
 //void EulerFVM::MyEulerSolver::init() {
 //  // empty
@@ -22,20 +24,7 @@ void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
                                                   const double t,
                                                   const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
-    const double GAMMA = 1.4;
-    Q[0] = 1.;
-    Q[1] = 0.;
-    Q[2] = 0.;
-    Q[3] = 0.;
-    Q[4] =
-        1. / (GAMMA -1) +
-        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) 
-        #ifdef Dim3
-        + (x[2] -0.5) *(x[2] -0.5)
-        #endif
-        ) /
-        (0.05 *0.05)) *
-        1.0e-1;
+    initialData(x,Q);
   } 
 }
 
