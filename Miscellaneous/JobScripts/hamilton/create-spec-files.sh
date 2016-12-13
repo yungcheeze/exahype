@@ -1,4 +1,4 @@
-if [ "${1##*.}" != ".exahype" ]
+if [ "${1##*.}" != "exahype" ]
 then
  echo "usage: ./create-spec-files.sh <file.exahype>"
  exit
