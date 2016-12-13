@@ -10,13 +10,17 @@ void Euler::LimitingADERDG_ADERDG::init(std::vector<std::string>& cmdlineargs) {
 }
 
 void Euler::LimitingADERDG_ADERDG::flux(const double* const Q, double** F) {
-  // Dimensions             = 2
+  // Dimensions             = 2/3
   // Number of variables    = 5 (#unknowns + #parameters)
+
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
-  const double p =
-      (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
+  #ifdef Dim2
+  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
+  #else
+  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+  #endif
 
   double* f = F[0];
   double* g = F[1];
@@ -36,6 +40,16 @@ void Euler::LimitingADERDG_ADERDG::flux(const double* const Q, double** F) {
   g[3] = irho * Q[2] * Q[3];
   g[4] = irho * Q[2] * (Q[4] + p);
 
+  #ifdef Dim3
+  double* h = F[2];
+  // h
+  // @todo Please implement
+  h[0] = Q[3];
+  h[1] = irho * Q[3] * Q[1];
+  h[2] = irho * Q[3] * Q[2];
+  h[3] = irho * Q[3] * Q[3] + p;
+  h[4] = irho * Q[3] * (Q[4] + p);
+  #endif
 }
 
 
@@ -51,12 +65,17 @@ void Euler::LimitingADERDG_ADERDG::source(const double* const Q, double* S) {
 
 
 void Euler::LimitingADERDG_ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
-  // Dimensions             = 2
+  // Dimensions             = 2/3
   // Number of variables    = 5 (#unknowns + #parameters)
   const double GAMMA = 1.4;
 
   double irho = 1.0 / Q[0];
+  #ifdef Dim2
   double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
+  #else
+  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] *
+  Q[3]) * irho);
+  #endif
 
   double u_n = Q[normalNonZeroIndex + 1] * irho;
   double c = std::sqrt(GAMMA * p * irho);
