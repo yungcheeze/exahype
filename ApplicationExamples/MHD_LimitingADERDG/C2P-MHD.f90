@@ -39,7 +39,7 @@ SUBROUTINE PDEPrim2Cons(Q,V)
   e2     = ex**2 + ey**2 + ez**2
   !
   IF (v2 > 1.0) THEN
-     WRITE(*,*)'Superluminal velocity in PDEPrim2Cons!!'
+     WRITE(*,*)'Superluminal velocity in PDEPrim2Cons!!', v2,vx, vy, vz
      STOP
   ENDIF
   lf     = 1.0 / sqrt(1.0 - v2)

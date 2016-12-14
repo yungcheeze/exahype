@@ -1,5 +1,7 @@
 #include "MHDSolver_Plotter0.h"
 
+#include "C2P-MHD.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 MHD::MHDSolver_Plotter0::MHDSolver_Plotter0(exahype::solvers::LimitingADERDGSolver&  solver) {
@@ -33,7 +35,8 @@ void MHD::MHDSolver_Plotter0::mapQuantities(
 ) {
   for (int i=0; i<9; i++){
     // Conserved variables plotter
-    outputQuantities[i] = Q[i];
+    int ierr;
+    pdecons2prim_(outputQuantities,Q,&ierr);
   }
 }
 
