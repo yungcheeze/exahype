@@ -586,7 +586,7 @@ public:
    * Similar to ::determineMergedLimiterStatusAfterSolutionUpdate(const int,const int)
    * but does not evaluate the discrete maximum principle.
    */
-  bool updateMergedLimiterStatusAfterSetInitialConditions(
+  bool updateMergedLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,
       const int element);
 
