@@ -14,14 +14,15 @@
     ! computational-domain / dimension       ->  goes to ->  nDim
     !
 
-    INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate  
+    INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate
     INTEGER, PARAMETER             :: nVar = 9                            ! The number of variables of the PDE system  
     
     
     ! And even more parameters
     
     ! 4/3 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
-    REAL, PARAMETER                :: gamma = 4.0/3.0
+    ! 5/3 used in http://adsabs.harvard.edu/abs/2004MSAIS...4...36D for rel. MHD rotor
+    REAL, PARAMETER                :: gamma = 5.0/3.0
       
     ! Divergence cleaning.
     ! Vasco: 0.5

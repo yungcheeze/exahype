@@ -106,11 +106,24 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 
 //  std::cout << "boundary=" << faceIndex <<  ", t=" << t <<  ", x2D={"<< x[0] << "," << x[1] << "}" << std::endl;
 
-  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
+//  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
 
-  // outflow bc
-//  for (int i=0; i<nVar; ++i) {
-//    stateOut[i] = stateIn[i];
+  //   outflow bc
+  constexpr int nVar = 9;
+
+  for (int i=0; i<nVar; ++i) {
+    stateOut[i] = stateIn[i];
+  }
+
+//  const double* normalVelocity = stateIn+1+normalNonZero;
+//  const double sign = (faceIndex-2*normalNonZero)==0 ? -1.0 : 1.0;
+//  const double outwardDirectedVelocity = sign * (*normalVelocity);
+//
+//  if (outwardDirectedVelocity>0) { // outflow; take inside value
+//    // do nothing
+//  } else { // inflow; take outside values
+//    stateOut[0] = 1.0; // density for InitialBlast
+//    stateOut[4] = 0.1; // pressure for InitialBlast
 //  }
 
   // debugging stuff:
