@@ -106,6 +106,6 @@ void EulerFVM::explosionProblem(const double* const x,double* Q) {
 
 void EulerFVM::initialData(const double* const x,double* Q) {
   //rarefactionWave(x,Q);
-  sodShockTube(x,Q);
-  //explosionProblem(x,Q);
+  //sodShockTube(x,Q);
+  explosionProblem(x,Q);
 }
