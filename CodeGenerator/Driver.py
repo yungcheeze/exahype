@@ -28,7 +28,7 @@
 #                 NoOtherOption nVar Order 2/3d NoOtherOption Architecture 
 #
 # for Jenkins this is
-# python Driver.py Euler 5 3 2 nonlinear hsw ../../libxsmm --precision=DP
+# python Driver.py Euler 5 3 2 nonlinear hsw ../../libxsmm
 #
 # 
 
@@ -77,10 +77,10 @@ l_parser.add_argument('architecture',
 l_parser.add_argument('pathToLibxsmm',
                       type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
                       help='where to find your local copy of code generator back end "https://github.com/hfp/libxsmm"')
-l_parser.add_argument('--precision',
-                      type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
-                      default='DP',
-                      help='SP or DP')
+# l_parser.add_argument('--precision',
+                      # type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
+                      # default='DP',
+                      # help='SP or DP')
 
 
 l_commandLineArguments = l_parser.parse_args()
@@ -92,7 +92,7 @@ dimensions             = l_commandLineArguments.dimension
 numerics               = l_commandLineArguments.numerics
 architecture           = l_commandLineArguments.architecture
 pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
-precision              = l_commandLineArguments.precision
+precision              = 'DP' #l_commandLineArguments.precision
 
 config = { 
            "nVar"              : numberOfVariables,
@@ -120,7 +120,7 @@ prepareOutputDirectory(pathToOutputDirectory)
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
-Backend.generateCommonHeader()
+#Backend.generateCommonHeader()
 Backend.generateComputeKernels()
 
 # --------------------------------------------------------

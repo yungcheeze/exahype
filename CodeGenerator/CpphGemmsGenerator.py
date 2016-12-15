@@ -23,21 +23,16 @@ import TemplatingUtils
 class CpphGemmsGenerator:
     m_context = {}
 
-    # linear/nonlinear
-    m_type   = ""
-
     # name of generated output file
-    m_filenameRoot = "CpphGemms"
+    m_filenameRoot = 'CpphGemms'
 
 
-    def __init__(self, i_config, i_numerics):
-        self.m_context = i_config
-        self.m_type    = i_numerics
+    def __init__(self, i_context):
+        self.m_context = i_context
         
 
     def generateCode(self):
         self.m_context['gemm_a_b_c']  = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
-        self.m_context['isLinear'] = (self.m_type == 'linear')
         
         TemplatingUtils.renderAsFile('cpphGemms_h.template',   self.m_filenameRoot+'.h',   self.m_context)
         TemplatingUtils.renderAsFile('cpphGemms_cpp.template', self.m_filenameRoot+'.cpp', self.m_context)
