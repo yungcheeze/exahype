@@ -88,6 +88,10 @@ void OptimisedKernelTest::eigenvalues(const double* const Q, const int normalNon
   eigenvalues_Euler(Q, normalNonZeroIndex, lambda);
 }
 
+void OptimisedKernelTest::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+  boundaryValues_Euler(x, t, dt, faceIndex, normalNonZero, fluxIn, stateIn, fluxOut, stateOut);
+}
+
 void OptimisedKernelTest::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
 	std::memset(BgradQ, 0, _numberOfVariables * sizeof(double));
 }
@@ -236,6 +240,29 @@ void OptimisedKernelTest::source_Euler(const double* const Q, double* S) {
   S[4] = 0.0;
 }
 
+void OptimisedKernelTest::boundaryValues_Euler(const double* const x, const double t,
+					  const double dt,
+            const int faceIndex,
+            const int normalNonZero,
+            const double* const fluxIn,
+            const double* const stateIn,
+            double* fluxOut, double* stateOut) {
+
+  adjustedSolutionValues_Euler(x, 0, 0, 0,stateOut);
+
+  double f[5];
+  double g[5];
+  double* F[DIMENSIONS];
+  F[0] = f;
+  F[1] = g; 
+#if DIMENSIONS == 3
+  double h[5];
+  F[2] = h;
+#endif
+  F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
+  flux_Euler(stateOut, F);
+}
+
 
 int OptimisedKernelTest::getNumberOfVariables() {
   return _numberOfVariables;
@@ -258,13 +285,17 @@ void OptimisedKernelTest::run() {
   _lFhbnd = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()]();
   _lQhbnd = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()]();
   
-  testMethod(testSolutionAdjustment); //initialize _luh
-  testMethod(testStableTimeStep); //initialize dt
-  if(!_isLinear) {
-    testMethod(testSpaceTimePredictorNonLinear);
+  if(_numberOfVariables == 5) { //TODO JMG adapt test for nVar >=5
+    testMethod(testSolutionAdjustment); //initialize _luh
+    testMethod(testStableTimeStep); //initialize dt
+    if(!_isLinear) {
+      testMethod(testSpaceTimePredictorNonLinear);
+    }
+    testMethod(testVolumeIntegral);
+    //TODO JMG Riemann
+    //TODO JMG Surface
+    testMethod(testSolutionUpdate);
   }
-  testMethod(testVolumeIntegral);
-  testMethod(testSolutionUpdate);
 
   delete[] _luh;
   delete[] _lduh;

@@ -46,6 +46,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source(const double* const Q, double* S);
   void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
+  void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);
   void matrixb(const double* const Q, const int normalNonZero, double* Bn);
    
 #ifdef Dim3  
@@ -59,6 +60,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static void flux_Euler(const double* const Q, double** F);
   static void eigenvalues_Euler(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source_Euler(const double* const Q, double* S);
+  void boundaryValues_Euler(const double* const x, const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const fluxIn, const double* const stateIn, double* fluxOut, double* stateOut);
   
   //tests
   void run() override;
