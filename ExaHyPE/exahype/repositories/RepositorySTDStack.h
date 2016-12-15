@@ -20,11 +20,15 @@
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
+ #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot.h" 
+ #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
+ #include "exahype/adapters/LimiterStatusMergingAndSpreadingMPI.h" 
+ #include "exahype/adapters/LimiterStatusMergingMPI.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
@@ -32,8 +36,8 @@
  #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/Plot.h" 
- #include "exahype/adapters/Plot2d.h" 
+ #include "exahype/adapters/PredictionAndPlot.h" 
+ #include "exahype/adapters/PredictionAndPlot2d.h" 
 
 
 
@@ -63,11 +67,15 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisation> _gridWithPredictionAndFusedTimeSteppingInitialisation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndADERDGTimeStep> _gridWithPlotAndADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionRerun> _gridWithPredictionRerun;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusSpreading> _gridWithLimiterStatusSpreading;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusMergingAndSpreadingMPI> _gridWithLimiterStatusMergingAndSpreadingMPI;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::LimiterStatusMergingMPI> _gridWithLimiterStatusMergingMPI;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Reinitialisation> _gridWithReinitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation> _gridWithSolutionRecomputationAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
@@ -75,8 +83,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot2d> _gridWithPlot2d;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot2d> _gridWithPredictionAndPlot2d;
 
      
    exahype::records::RepositoryState               _repositoryState;
@@ -85,11 +93,15 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCPUTime;
+    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCPUTime;
+    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measurePredictionRerunCPUTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCPUTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingAndSpreadingMPICPUTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingMPICPUTime;
     tarch::timing::Measurement _measureReinitialisationCPUTime;
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
@@ -97,18 +109,22 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
-    tarch::timing::Measurement _measurePlotCPUTime;
-    tarch::timing::Measurement _measurePlot2dCPUTime;
+    tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
+    tarch::timing::Measurement _measurePredictionAndPlot2dCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measurePlotAndADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measurePredictionRerunCalendarTime;
     tarch::timing::Measurement _measureLimiterStatusSpreadingCalendarTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingAndSpreadingMPICalendarTime;
+    tarch::timing::Measurement _measureLimiterStatusMergingMPICalendarTime;
     tarch::timing::Measurement _measureReinitialisationCalendarTime;
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
@@ -116,8 +132,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
-    tarch::timing::Measurement _measurePlotCalendarTime;
-    tarch::timing::Measurement _measurePlot2dCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndPlot2dCalendarTime;
 
    
   public:
@@ -161,11 +177,15 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToInitialConditionAndTimeStepSizeComputation();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation();    
+    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();    
+    virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();    
     virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
     virtual void switchToPlotAndADERDGTimeStep();    
     virtual void switchToPredictionRerun();    
     virtual void switchToLimiterStatusSpreading();    
+    virtual void switchToLimiterStatusMergingAndSpreadingMPI();    
+    virtual void switchToLimiterStatusMergingMPI();    
     virtual void switchToReinitialisation();    
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation();    
     virtual void switchToNeighbourDataMerging();    
@@ -173,18 +193,22 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();    
     virtual void switchToTimeStepSizeComputation();    
     virtual void switchToPrediction();    
-    virtual void switchToPlot();    
-    virtual void switchToPlot2d();    
+    virtual void switchToPredictionAndPlot();    
+    virtual void switchToPredictionAndPlot2d();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const;
+    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot() const;
+    virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const;
     virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const;
     virtual bool isActiveAdapterPredictionRerun() const;
     virtual bool isActiveAdapterLimiterStatusSpreading() const;
+    virtual bool isActiveAdapterLimiterStatusMergingAndSpreadingMPI() const;
+    virtual bool isActiveAdapterLimiterStatusMergingMPI() const;
     virtual bool isActiveAdapterReinitialisation() const;
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
@@ -192,8 +216,8 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPrediction() const;
-    virtual bool isActiveAdapterPlot() const;
-    virtual bool isActiveAdapterPlot2d() const;
+    virtual bool isActiveAdapterPredictionAndPlot() const;
+    virtual bool isActiveAdapterPredictionAndPlot2d() const;
 
    
     #ifdef Parallel

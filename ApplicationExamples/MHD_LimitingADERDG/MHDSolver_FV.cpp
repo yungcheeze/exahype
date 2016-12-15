@@ -49,9 +49,22 @@ void MHD::MHDSolver_FV::boundaryValues(const double* const x,const double t,cons
 const double* const stateIn,double* stateOut) {
   constexpr int nVar = 9;
   
-  for(int i=0; i < nVar; i++) {
-      stateOut[i] = stateIn[i];
+  for (int i=0; i<nVar; ++i) {
+    stateOut[i] = stateIn[i];
   }
+
+//  const double* normalVelocity = stateIn+1+normalNonZero;
+//  const double sign = (faceIndex-2*normalNonZero)==0 ? -1.0 : 1.0;
+//  const double outwardDirectedVelocity = sign * (*normalVelocity);
+//
+//  std::cout << "normalVelocity="<<normalVelocity<<",faceIndex="<<faceIndex<<",outwardDirectedVelocity="<<outwardDirectedVelocity << std::endl;
+//
+//  if (outwardDirectedVelocity>0) { // outflow; take inside value
+//    // do nothing
+//  } else { // inflow; take outside values
+//    stateOut[0] = 1.0e-4; // density for InitialBlast
+//    stateOut[4] = 5.0e-4; // pressure for InitialBlast
+//  }
 }
 
 

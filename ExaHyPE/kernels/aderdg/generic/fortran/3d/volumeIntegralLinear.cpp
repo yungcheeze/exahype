@@ -40,9 +40,10 @@ void kernels::aderdg::generic::fortran::volumeIntegralLinear(
   // // a compile time variable anymore
 
  
-  // double* lFhiFortran = new double[numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize];
-  // for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
-    // lFhiFortran[i] = -123.45;
+  double* lFhiFortran = new double[numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize];
+  for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++){
+    lFhiFortran[i] = lFhi[i];
+  }
 
   // for (int ii=0; ii<basisSize; ii++) {  // loop over dof
     // for (int jj=0; jj<basisSize; jj++) {
@@ -72,7 +73,7 @@ void kernels::aderdg::generic::fortran::volumeIntegralLinear(
 
   // // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
   // // cout << lFhi[0] << "\n";
-  // // cout << lFhi[1]<< "\n";
+  // // cout << lFhi[1] << "\n";
   // // cout << lFhi[2] << "\n";
   // // cout << lFhi[3] << "\n";
   // // cout << lFhi[4] << "\n";
@@ -80,14 +81,14 @@ void kernels::aderdg::generic::fortran::volumeIntegralLinear(
   // // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
   
   
-  // double* dxTemp = new double[3];
-  // dxTemp[0]= dx[0];
-  // dxTemp[1]= dx[1];
-  // dxTemp[2]= dx[2];
+  double* dxTemp = new double[3];
+  dxTemp[0]= dx[0];
+  dxTemp[1]= dx[1];
+  dxTemp[2]= dx[2];
   
-  // adervolumeintegrallinear_(lduh, lFhiFortran, dxTemp);
+  adervolumeintegrallinear_(lduh, lFhiFortran, dxTemp);
 
-  // delete[] lFhiFortran;
-  // delete[] dxTemp;
+  delete[] lFhiFortran;
+  delete[] dxTemp;
 }
 

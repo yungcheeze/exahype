@@ -131,12 +131,6 @@ public class GenericADERDG implements Solver {
 	  }
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value?
-		  /* AW(Sven): Because ParserView may not be handed by reference:
-In file included from /home/sven/numrel/exahype/master/Code/./ApplicationExamples/MHD/KernelCalls.cpp:24:0:
-/home/sven/numrel/exahype/master/Code/./ApplicationExamples/MHD/MHDSolver.h:30:5: note:   initializing argument 4 of ‘MHDSolver::MHDSolver::MHDSolver(double, exahype::solvers::Solver::TimeStepping, std::vector<std::__cxx11::basic_string<char> >&, exahype::Parser::ParserView&)’
-     MHDSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView& constants);
-	^
-		  */
 		   SolverInitCallExtension = ", constants";
 		  
 	  }

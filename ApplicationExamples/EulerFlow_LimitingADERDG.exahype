@@ -22,7 +22,7 @@ exahype-project  Euler
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/EulerFlow_ADERDGvsFVM
+  output-directory           = ./ApplicationExamples/EulerFlow_LimitingADERDG
   architecture               = noarch
 
   computational-domain
@@ -31,13 +31,20 @@ exahype-project  Euler
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
-
+  
   shared-memory
     identifier               = dummy
     cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory  
-
+  
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:4}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
+  
   optimisation
     fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99
@@ -59,6 +66,8 @@ exahype-project  Euler
     language          = C
     limiter-kernel    = generic::Godunov 
     limiter-language  = C
+    dmp-relaxation-parameter = 0.0001
+    dmp-difference-scaling = 0.001
 
     plot vtk::Cartesian::vertices::ascii
       variables = 5

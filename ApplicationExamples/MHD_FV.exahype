@@ -20,10 +20,8 @@ exahype-project  MHDSolver
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 3.0
+    end-time                 = 0.45
   end computational-domain
-
-
 
   shared-memory
     identifier               = dummy
@@ -54,7 +52,7 @@ exahype-project  MHDSolver
     parameters         = 0
     patch-size         = 14
     /* 27 grid points: 0.2327 */
-    maximum-mesh-size  = 0.24
+    maximum-mesh-size  = 0.05
     time-stepping      = global
     kernel             = generic::Godunov
     /* we are using the new Fortran interface */

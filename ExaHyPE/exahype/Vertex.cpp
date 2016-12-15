@@ -22,6 +22,7 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+tarch::logging::Log exahype::Vertex::_log("exahype::Vertex::Vertex");
 
 exahype::Vertex::Vertex() : Base() {
   _vertexData._persistentRecords._CellDescriptionsIndex =

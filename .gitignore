@@ -68,7 +68,11 @@ Peano/tarch
 Peano/files.mk
 Peano/.svn
 Peano/.cvsignore
+Peano/.gitignore
 Peano/peano.doxygen-configuration
 Peano/src.doxys
 Peano/sharedmemoryoracles.tar.gz
 
+# libXSMM
+libxsmm
+Libxsmm

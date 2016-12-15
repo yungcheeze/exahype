@@ -13,13 +13,13 @@
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
 # *********************************************************************************************
-PEANO_KERNEL_PEANO_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/peano
-PEANO_KERNEL_TARCH_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/tarch
-PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/multiscalelinkedcell
-PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/sharedmemoryoracles
-PEANO_TOOLBOX_MPI_BLANCING_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./Peano/mpibalancing
-EXAHYPE_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./ExaHyPE
-PROJECT_PATH=/home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./ApplicationExamples/MHD_LimitingADERDG
+PEANO_KERNEL_PEANO_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/peano
+PEANO_KERNEL_TARCH_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/tarch
+PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/multiscalelinkedcell
+PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/sharedmemoryoracles
+PEANO_TOOLBOX_MPI_BLANCING_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/mpibalancing
+EXAHYPE_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ExaHyPE
+PROJECT_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ApplicationExamples/MHD_LimitingADERDG
 EXECUTABLE=ExaHyPE-MHD 
 
 
@@ -30,12 +30,17 @@ PROJECT_CFLAGS+=-DALIGNMENT=16
 # this flag. 
 PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls
 PROJECT_CFLAGS+=-DDim2
-#SHAREDMEM=TBB
+ifeq ($(SHAREDMEM),)
+  SHAREDMEM=TBB
+endif
+ifeq ($(DISTRIBUTEDMEM),)
+  DISTRIBUTEDMEM=MPI
+endif
 
 
 
 
--include /home/dominic/dev/codes/c/ExaHyPE/Code/Toolkit/./ExaHyPE/Makefile
+-include /home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ExaHyPE/Makefile
 
 
 

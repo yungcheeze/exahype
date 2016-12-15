@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   30/11/2016 18:26
+ * @date   06/12/2016 01:58
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndFusedTimeSteppingInitialisation = 7, UseAdapterGridErasing = 8, UseAdapterADERDGTimeStep = 9, UseAdapterPlotAndADERDGTimeStep = 10, UseAdapterPredictionRerun = 11, UseAdapterLimiterStatusSpreading = 12, UseAdapterReinitialisation = 13, UseAdapterSolutionRecomputationAndTimeStepSizeComputation = 14, UseAdapterNeighbourDataMerging = 15, UseAdapterSolutionUpdate = 16, UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation = 17, UseAdapterTimeStepSizeComputation = 18, UseAdapterPrediction = 19, UseAdapterPlot = 20, UseAdapterPlot2d = 21, NumberOfAdapters = 22
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndFusedTimeSteppingInitialisation = 7, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot = 8, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterPlotAndADERDGTimeStep = 12, UseAdapterPredictionRerun = 13, UseAdapterLimiterStatusSpreading = 14, UseAdapterLimiterStatusMergingAndSpreadingMPI = 15, UseAdapterLimiterStatusMergingMPI = 16, UseAdapterReinitialisation = 17, UseAdapterSolutionRecomputationAndTimeStepSizeComputation = 18, UseAdapterNeighbourDataMerging = 19, UseAdapterSolutionUpdate = 20, UseAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation = 21, UseAdapterTimeStepSizeComputation = 22, UseAdapterPrediction = 23, UseAdapterPredictionAndPlot = 24, UseAdapterPredictionAndPlot2d = 25, NumberOfAdapters = 26
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   30/11/2016 18:26
+    * @date   06/12/2016 01:58
     */
    class exahype::records::RepositoryStatePacked { 
       

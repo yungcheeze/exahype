@@ -434,13 +434,13 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getTimeStamp(),
+        cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize())) {
       solutionAdjustment(
           solution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getTimeStamp(),
+          cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
           cellDescription.getTimeStepSize());
     }
 
@@ -479,7 +479,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   if (hasToAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
       cellDescription.getSize(),
-      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),cellDescription.getTimeStepSize())) {
+      cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
+      cellDescription.getTimeStepSize())) {
     solutionAdjustment(
         newSolution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -488,7 +489,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution"); // TODO(Dominic): Comment back in
 }
 
 
@@ -1563,6 +1564,21 @@ void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesSolution(
     }
   }
   std::cout <<  "}" << std::endl;
+  #else
+  double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+    std::cout <<  "unknown=" << unknown << std::endl;
+    dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
+      int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
+      std::cout << solution[iScalar] << ",";
+      if (i(0)==_nodesPerCoordinateAxis+2*_ghostLayerWidth-1 &&
+          i(1)==_nodesPerCoordinateAxis+2*_ghostLayerWidth-1) {
+        std::cout << std::endl;
+      }
+    }
+  }
+  std::cout <<  "}" << std::endl;
   #endif
 }
 
@@ -1579,6 +1595,21 @@ void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesBoundaryLayer(cons
     }
   }
   std::cout <<  "}" << std::endl;
+  #else
+  for (int unknown=0; unknown < _numberOfVariables; unknown++) {
+      std::cout <<  "unknown=" << unknown << std::endl;
+      for(int j=0; j<_nodesPerCoordinateAxis; ++j) {
+      for(int i=0; i<_nodesPerCoordinateAxis; ++i) {
+        int iScalar = (j*_nodesPerCoordinateAxis+i)*_numberOfVariables+unknown;
+        std::cout << luhbnd[iScalar] << ",";
+        if (j==_nodesPerCoordinateAxis-1 &&
+            i==_nodesPerCoordinateAxis-1) {
+          std::cout << std::endl;
+        }
+      }
+      }
+    }
+    std::cout <<  "}" << std::endl;
   #endif
 }
 

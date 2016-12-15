@@ -109,8 +109,8 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver->getUnknownsPerFace(),
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiter->getUnknownsPerFace() );
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
@@ -304,6 +304,10 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
             if (element2>=0 && element1>=0) {
+              if (tarch::la::equals(fineGridX[1],0.833333,1e-5)) {
+                logInfo("touchVertexFirstTime(...)","fineGridX="<<fineGridX);
+              }
+
               solver->mergeNeighbours(
                   cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
                   _tempFaceUnknowns[solverNumber],
@@ -380,7 +384,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
-//    logInfo("mergeWithNeighbour(...)","hasToMerge");  // TODO(Dominic): Remove
+    // logInfo("mergeWithNeighbour(...)","hasToMerge");
 
     dfor2(myDest)
       dfor2(mySrc)
@@ -391,7 +395,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-//          logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");  // TODO(Dominic): Remove
+          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
           int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -403,7 +407,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-//            logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData"); // TODO(Dominic): Remove
+            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
 
             mergeWithNeighbourData(
                 fromRank,
@@ -432,7 +436,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
   }
 }
 
-void exahype::mappings::Merging::mergeWithNeighbourData(
+void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug for multi-solvers. Invert the order of recev.
         const int fromRank,
         const int srcCellDescriptionIndex,
         const int destCellDescriptionIndex,
@@ -508,6 +512,8 @@ bool exahype::mappings::Merging::prepareSendToWorker(
 
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+//    logInfo("prepareSendToWorker(...)","sendDataToWorker");
+
     for (auto& p : exahype::solvers::RegisteredSolvers) {
       p->sendDataToWorker(
           worker,

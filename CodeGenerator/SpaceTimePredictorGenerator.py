@@ -74,7 +74,7 @@ class SpaceTimePredictorGenerator:
                         '// computed as \n'                                                               \
                         '// \\hat{q}^{n+1} = K_{1}^{-1}[F_0 \\cdot \\hat{u} - K_{\\xi} \\cdot \\hat{F}^{n}] \n'
 
-        l_includeStatement = '#include <cstring>\n'                                           \
+        l_includeStatement = '#include <cstring>\n'                                            \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
                              '#include "kernels/aderdg/optimised/DGMatrices.h"\n'              \
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
@@ -92,7 +92,8 @@ class SpaceTimePredictorGenerator:
     def __writeHeaderForPredictor(self, i_pathToFile):
         l_description = '// Compute the time-averaged space-time polynomials (integration in time) \n\n'
 
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
+        l_includeStatement = '#include <algorithm>\n'                                            \
+                             '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
                              '#include "kernels/aderdg/optimised/asm_predictor.c"\n\n'
 
@@ -563,6 +564,9 @@ class SpaceTimePredictorGenerator:
         l_sourceFile.write('  _mm_free(rhs0);\n')
         l_sourceFile.write('  _mm_free(rhs);\n')
 
+        # Handle source term (TODO JMG)
+        l_sourceFile.write("  std::fill_n(&lFh["+str(fluxOffset*self.m_config['nDim'])+"], "+str(fluxOffset)+", 0.0); //TODO JMG remove when source terms implemented\n\n")
+        
         # write missing closing bracket
         l_sourceFile.write('}')
 
@@ -661,14 +665,18 @@ class SpaceTimePredictorGenerator:
         # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
         # (3) lFhi_y(:,j,i,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
         # (4) lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
-        # The function signature specifies lFhi = [lFhi_x | lFhi_y | lFhi_z].
+        # The function signature specifies lFhi = [lFhi_x | lFhi_y | [lFhi_z] | lFhi_S] (lFh_z only in 3D)
         l_fluxDofSize = Backend.getSizeWithPadding(self.m_config['nVar']) \
                          * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
         l_baseAddr_lFhi_x = 0
         l_baseAddr_lFhi_y = 1*l_fluxDofSize
         l_baseAddr_lFhi_z = 2*l_fluxDofSize
+        l_baseAddr_lFhi_S = self.m_config['nDim']*l_fluxDofSize
+        
+        # Handle source term (TODO JMG)
+        l_sourceFile.write("  std::fill_n(&lFhi["+str(l_baseAddr_lFhi_S)+"], "+str(l_fluxDofSize)+", 0.0); //TODO JMG remove when source terms implemented\n\n")
 
-        # lFh = [lFh_x | lFh_y | lFh_z]
+        # lFh = [lFh_x | lFh_y | lFh_z].
         lFh_y_startAddr = 1*Backend.getSizeWithPadding(self.m_config['nVar']) \
                            *(self.m_config['nDof']**(self.m_config['nDim']+1))
         lFh_z_startAddr = 2*Backend.getSizeWithPadding(self.m_config['nVar']) \
@@ -742,8 +750,8 @@ class SpaceTimePredictorGenerator:
 
 
         # (4) lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
-        l_sourceFile.write("  // lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)\n")
         if(self.m_config['nDim'] >= 3):
+            l_sourceFile.write("  // lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)\n")
             for k in range(0,self.m_config['nDof']):
                 for j in range(0, self.m_config['nDof']):
                     for i in range(0, self.m_config['nDof']):

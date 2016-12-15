@@ -21,7 +21,8 @@
     ! And even more parameters
     
     ! 4/3 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
-    REAL, PARAMETER                :: gamma = 4.0/3.0
+    ! 5/3 used in 10.1006/jcph.2000.6519 for second rotor
+    REAL, PARAMETER                :: gamma = 5.0/3.0
       
     ! Divergence cleaning.
     ! Vasco: 0.5

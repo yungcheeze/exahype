@@ -30,16 +30,12 @@ import TemplatingUtils
 class SurfaceIntegralGenerator:
     m_context = {}
 
-    # linear/nonlinear
-    m_type   = ""
-
     # name of generated output file
-    m_filename = "surfaceIntegral.cpp"
+    m_filename = 'surfaceIntegral.cpp'
 
 
-    def __init__(self, i_context, i_numerics):
+    def __init__(self, i_context):
         self.m_context = i_context
-        self.m_type    = i_numerics
 
 
     def generateCode(self):
@@ -47,7 +43,7 @@ class SurfaceIntegralGenerator:
         self.m_context['bndFaceSize'] = self.m_context['nVar'] * self.m_context['bndBlockSize']
         self.m_context['nDofPowDimMinOne'] = self.m_context['nDof'] if self.m_context['nDim'] == 2 else (self.m_context['nDof'] * self.m_context['nDof'])
     
-        if(self.m_type == 'linear'):
+        if(self.m_context['isLinear']):
            pass
         else:
             TemplatingUtils.renderAsFile('surfaceIntegralNonLinear_cpp.template', self.m_filename, self.m_context)

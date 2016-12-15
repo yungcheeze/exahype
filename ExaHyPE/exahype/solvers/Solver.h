@@ -224,16 +224,16 @@ class exahype::solvers::Solver {
    *
    * This value needs to be updated every time the grid has been changed.
    */
-  double _minCellSize;
-  double _nextMinCellSize;
+  double _minCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
+  double _nextMinCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
 
   /**
    * The maximum extent in each coordinate direction at least one cell in the grid has.
    *
    * * This value needs to be updated every time the grid has been changed.
    */
-  double _maxCellSize;
-  double _nextMaxCellSize;
+  double _maxCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
+  double _nextMaxCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
 
   /**
    * The time stepping mode of this solver.
@@ -281,27 +281,27 @@ class exahype::solvers::Solver {
    */
   double getMaximumMeshSize() const;
 
-  void updateNextMinCellSize(double minCellSize) {
+  virtual void updateNextMinCellSize(double minCellSize) {
     _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
   }
 
-  void updateNextMaxCellSize(double maxCellSize) {
+  virtual void updateNextMaxCellSize(double maxCellSize) {
     _nextMaxCellSize = std::max( _nextMaxCellSize, maxCellSize );
   }
 
-  double getNextMinCellSize() const {
+  virtual double getNextMinCellSize() const {
     return _nextMinCellSize;
   }
 
-  double getNextMaxCellSize() const {
+  virtual double getNextMaxCellSize() const {
     return _nextMaxCellSize;
   }
 
-  double getMinCellSize() const {
+  virtual double getMinCellSize() const {
     return _minCellSize;
   }
 
-  double getMaxCellSize() const {
+  virtual double getMaxCellSize() const {
     return _maxCellSize;
   }
 

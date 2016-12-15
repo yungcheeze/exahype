@@ -13,9 +13,7 @@
  
 /**
 
- Euler Flow
-
- A simple project. (well, it was simple, in the beginning).
+ Euler Flow: Hydrodynamics with the optimised kernels.
 
  */
 exahype-project  Euler
@@ -23,7 +21,7 @@ exahype-project  Euler
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   libxsmm-path               = ./Libxsmm
-  output-directory           = ./Applications/OptimisedKernel_Euler
+  output-directory           = ./ApplicationExamples/OptimisedKernel_Euler
   architecture               = noarch
 
   computational-domain
@@ -36,7 +34,7 @@ exahype-project  Euler
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
-    order             = 3
+    order             = 9
     maximum-mesh-size = 0.05
     time-stepping     = globalfixed
     kernel            = optimised::fluxes::nonlinear
@@ -50,5 +48,15 @@ exahype-project  Euler
       output    = ./conserved
       select = {}
     end plot
+
+    /* Global Integrals */
+    plot vtk::Cartesian::vertices::ascii
+      variables = 0
+      time = 0.0
+      repeat = 0.01
+      output = ./output/these-files-should-not-be-there
+      select = {}
+    end plot
+
   end solver
 end exahype-project

@@ -12,9 +12,6 @@
 
 #include "kernels/aderdg/optimised/Kernels.h"
 
-//TODO JMG remove when not used anymore
-#include "kernels/aderdg/generic/Kernels.h"
-#include "kernels/aderdg/optimised/converter.h"
 
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",nVar /* numberOfUnknowns */,nParams /* numberOfParameters */,order + 1  /* nodesPerCoordinateAxis */,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
@@ -33,25 +30,9 @@ void {{Project}}::{{Solver}}::fluxSplitted(const double* const Q, double* f, dou
 
 void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
 {{BeforeSpaceTimePredictor}}
-  //TODO JMG, use optimised kernel when fixed
-
-  //kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );
-  //kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
-  //kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );
-  
-  double* lQhbnd_gen = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()];
-  double* lFhbnd_gen = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()];
-  
-  kernels::aderdg::optimised::converter::Bnd_optimised2generic(lQhbnd,lQhbnd_gen);
-  kernels::aderdg::optimised::converter::Bnd_optimised2generic(lFhbnd,lFhbnd_gen);
-    
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{Solver}}>( *this, lQhbnd_gen, lFhbnd_gen, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, tempUnknowns, tempFluxUnknowns,tempStateSizedVectors, luh, dx, dt );
-  
-  kernels::aderdg::optimised::converter::Bnd_generic2optimised(lQhbnd_gen,lQhbnd);
-  kernels::aderdg::optimised::converter::Bnd_generic2optimised(lFhbnd_gen,lFhbnd);
-  
-  delete[] lQhbnd_gen;
-  delete[] lFhbnd_gen;
+  kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );
+  kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
+  kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );
 {{AfterSpaceTimePredictor}}
 }
 
@@ -93,7 +74,7 @@ void {{Project}}::{{Solver}}::riemannSolver(double* FL,double* FR,const double* 
 
 void {{Project}}::{{Solver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
 {{BeforeBoundaryConditions}}
-  kernels::aderdg::optimised::boundaryConditions( *this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
+  kernels::aderdg::optimised::boundaryConditions<boundaryValues>(fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
 {{AfterBoundaryConditions}}
 }
 

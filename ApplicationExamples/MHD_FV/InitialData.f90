@@ -28,50 +28,50 @@ END SUBROUTINE HasToAdjustSolution
 
 
 SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
-	USE, INTRINSIC :: ISO_C_BINDING
-	USE Parameters, ONLY : nVar, nDim
-	IMPLICIT NONE 
-	! Argument list 
-	REAL, INTENT(IN)               :: x(nDim)        ! 
-	REAL, INTENT(IN)               :: w           ! 
-	REAL, INTENT(IN)               :: t           ! 
-	REAL, INTENT(IN)               :: dt          ! 
+  USE, INTRINSIC :: ISO_C_BINDING
+  USE Parameters, ONLY : nVar, nDim
+  IMPLICIT NONE 
+  ! Argument list 
+  REAL, INTENT(IN)               :: x(nDim)        ! 
+  REAL, INTENT(IN)               :: w           ! 
+  REAL, INTENT(IN)               :: t           ! 
+  REAL, INTENT(IN)               :: dt          ! 
 
-	REAL, INTENT(OUT)              :: Q(nVar)        ! 
-	
-	IF ( t < 1e-15 ) THEN
-		CALL InitialData(x, Q)
-	ENDIF
+  REAL, INTENT(OUT)              :: Q(nVar)        ! 
+  
+  IF ( t < 1e-15 ) THEN
+    CALL InitialData(x, Q)
+  ENDIF
 END SUBROUTINE AdjustedSolutionValues
 
 SUBROUTINE InitialData(x, Q)
-	USE, INTRINSIC :: ISO_C_BINDING
-	USE Parameters, ONLY : nVar, nDim
-	IMPLICIT NONE 
-	! Argument list 
-	REAL, INTENT(IN)               :: x(nDim)        ! 
-	REAL, INTENT(OUT)              :: Q(nVar)        ! 
+  USE, INTRINSIC :: ISO_C_BINDING
+  USE Parameters, ONLY : nVar, nDim
+  IMPLICIT NONE 
+  ! Argument list 
+  REAL, INTENT(IN)               :: x(nDim)        ! 
+  REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
-	! We call a C++ function which helps us to get access to the
-	! exahype specification file constants
-	INTERFACE
-		SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
-			USE, INTRINSIC :: ISO_C_BINDING
-			USE Parameters, ONLY : nVar, nDim
-			IMPLICIT NONE
-			REAL, INTENT(IN)               :: x(nDim)
-			REAL, INTENT(OUT)              :: Q(nVar)
-		END SUBROUTINE InitialDataByExaHyPESpecFile
-	END INTERFACE
-	
-	! Call here one of
-	! CALL InitialBlast(x, Q)
-	Call InitialAlfenWave(x, Q)
-	! Call InitialRotor(x,Q)
-	! Call InitialBlast(x, Q)
-	! Call InitialOrsagTang(x, Q)
+  ! We call a C++ function which helps us to get access to the
+  ! exahype specification file constants
+  INTERFACE
+    SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
+      USE, INTRINSIC :: ISO_C_BINDING
+      USE Parameters, ONLY : nVar, nDim
+      IMPLICIT NONE
+      REAL, INTENT(IN)               :: x(nDim)
+      REAL, INTENT(OUT)              :: Q(nVar)
+    END SUBROUTINE InitialDataByExaHyPESpecFile
+  END INTERFACE
+  
+  ! Call here one of
+  ! CALL InitialBlast(x, Q)
+        ! Call InitialAlfenWave(x, Q)
+        Call InitialRotor(x,Q)
+  ! Call InitialBlast(x, Q)
+  ! Call InitialOrsagTang(x, Q)
 
-	! CALL InitialDataByExaHyPESpecFile(x,Q)
+  ! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
 
 SUBROUTINE InitialAlfenWave(x, Q)
@@ -130,8 +130,8 @@ SUBROUTINE AlfenWave(x, Q, t)
 END SUBROUTINE AlfenWave
 
 SUBROUTINE InitialBlast(x, Q)
-    ! Blast wave:
-    ! Simulation domain:  -6 .. +6
+    ! Blast wave: See 10.1137/0915019 or 10.1016/j.cpc.2014.03.018
+    ! Simulation domain: 0.0 .. 1.0 (squared)
 
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim
@@ -140,39 +140,44 @@ SUBROUTINE InitialBlast(x, Q)
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
-    REAL :: rho0, p0, p1, rho1, r, r0, r1, taper
+    REAL :: xR(nDim), rho0, p0, p1, rho1, r, r0, r1, taper
     REAL :: V(nVAR)
 
-
-    p0   = 5.0e-4
-    p1   = 1.0
-    rho0 = 1.0e-4 
-    rho1 = 1.0e-2
     ! Here, we set the primitive variables 
     V(1) = 0.0   ! rho
     V(2) = 0.0   ! vx
     V(3) = 0.0   ! vy
     V(4) = 0.0   ! vz
     V(5) = 0.0   ! p
-    V(6) = 0.1   ! bx
-    V(7) = 0.0   
+    V(6) = 1/sqrt(2.0)   ! bx
+    V(7) = 1/sqrt(2.0)   ! by
     V(8) = 0.0   
     V(9) = 0.0   ! preserving
-    r = SQRT(x(1)**2 + x(2)**2)
-    r0 = 0.8
+
+    xR(1) = x(1) - 0.5
+    xR(2) = x(2) - 0.5
+
+    p0   = 10
+    p1   = 0.1
+    rho0 = 1.0
+    rho1 = 1.0
+
+    r = SQRT(xR(1)**2 + xR(2)**2)
+    r0 = 0.1
     r1 = 1.0
+
     !
-    IF(r .LE. 0.8) THEN
-        V(1) = rho1
-        V(5) = p1  
-    ELSEIF ( r.GT.0.8 .AND. r.LE.1.0) THEN
-        taper = (1.-(r-r0)/(r1-r0))
-        V(1) = rho0 + taper*(rho1-rho0)
-        taper = (1.-(r-r0)/(r1-r0))
-        V(5) = p0 + taper*(p1-p0)
-    ELSE  
+    IF(r .LE. r0) THEN
         V(1) = rho0
-        V(5) = p0 
+        V(5) = p0
+!    ELSEIF ( r.GT.r0 .AND. r.LE.1) THEN
+!        taper = (1.-(r-r0)/(r1-r0))
+!        V(1) = rho0 + taper*(rho1-rho0)
+!        taper = (1.-(r-r0)/(r1-r0))
+!        V(5) = p0 + taper*(p1-p0)
+    ELSE  
+        V(1) = rho1
+        V(5) = p1
     ENDIF
 
     CALL PDEPrim2Cons(Q,V)
@@ -211,7 +216,9 @@ SUBROUTINE InitialOrsagTang(x, Q)
 END SUBROUTINE InitialOrsagTang
 
 SUBROUTINE InitialRotor(x,Q)
-    ! Domain: -0.5 .. 0.5  (square domain)
+    ! see http://adsabs.harvard.edu/abs/2004MSAIS...4...36D
+    ! Domain: 0...1.0  (square domain)
+    ! gamma: 5/3
 
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim
@@ -220,36 +227,46 @@ SUBROUTINE InitialRotor(x,Q)
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
-    REAL ::  rho, p, r
-    REAL :: rho0, p0, rvel0, rho1, p1, B0, v0
+    REAL :: rho, p, r
+    REAL :: v0, rho0, rho1, p0, p1
     REAL :: V(nVAR), VV(3), BV(3)
     
-    REAL, PARAMETER :: MHDRotomega = 0.05
-    REAL :: EPCenter(2), EPRadius
+    REAL :: x0(2), r0, r1, f
     
-    EPCenter = (/ 0.5, 0.5 /)
-    EPRadius = 0.3
+    x0 = (/ 0.5, 0.5 /)
+    r0 = 0.1
+    r1 = 0.115
     
-    rho0 = 1.0
-    p0   = 1.0
-    rho1 = 10.0
-    p1   = 1.0
-    B0   = 1.0
-    v0   = MHDRotomega  ! this is omega
-    r = sqrt ( (x(1)-EPCenter(1))**2 + (x(2)-EPCenter(2))**2)   ! cylindrical
-    IF  (r < EPRadius) THEN
-        rho   =  rho1                   
-        VV(1) = -v0 * x(2)
-        VV(2) =  v0 * x(1) 
+    rho0 = 10.0
+    rho1 = 1.0 
+
+    p0 = 0.5
+    p1 = 0.5
+ 
+    v0 = 0.995 ! 1.0 corresponds to the speed of light
+    r = sqrt ( (x(1)-x0(1))**2 + (x(2)-x0(2))**2 )   ! cylindrical
+
+    IF  (r < r0) THEN
+        rho   =  rho0                   
+        VV(1) = -v0 * (x(2)-x0(2))/r0 ! angular velocity v_phi = w * r * e_phi , with e_phi = (-y/r, x/r )^T
+        VV(2) =  v0 * (x(1)-x0(1))/r0
         VV(3) =  0.
         p     =  p1
+!    ELSE IF (r.GE.r0.AND.r.LT.r1) THEN
+!        f = (r1 - r) / (r1-r0) ! linear interpolant;
+!
+!        rho   = rho1 + (rho0-rho1) * f
+!        VV(1) = -v0 * f * (x(2)-x0(2))/r
+!        VV(2) =  v0 * f * (x(1)-x0(1))/r
+!        VV(3) =  0.
+!        p     =  p1
     ELSE
-        rho   = rho0
+        rho   = rho1
         VV    = 0.
         p     = p0
     ENDIF
     !
-    BV(1) = B0
+    BV(1) = 1.0
     BV(2) = 0.
     BV(3) = 0.
     !

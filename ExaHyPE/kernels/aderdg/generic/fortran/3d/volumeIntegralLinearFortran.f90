@@ -28,7 +28,7 @@ SUBROUTINE ADERVolumeIntegralLinear(lduh,lFhi,dx)
         DO j = 1, nDOF(2) 
             DO i = 1, nDOF(1) 
                 aux = (/ wGPN(i), wGPN(j), wGPN(k) /) 
-                lduh(:,i,j,k) = -SUM( lFhi(:,1:nDim,i,j,k), dim = 2 ) * PRODUCT(aux(1:nDim)) 
+                lduh(:,i,j,k) = -SUM( lFhi(:,1:nDim,i,j,k), dim = 2 ) * PRODUCT(aux(1:nDim))
             ENDDO
         ENDDO
     ENDDO 

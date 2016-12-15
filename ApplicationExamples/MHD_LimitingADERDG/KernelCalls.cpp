@@ -21,6 +21,7 @@
 #include "kernels/DGMatrices.h"
 #include "kernels/DGBasisFunctions.h"
 
+#include "exahype/solvers/LimitingADERDGSolver.h"
 #include "MHDSolver_ADERDG.h"
 #include "MHDSolver_FV.h"
 #include "MHDSolver_Plotter0.h"
@@ -43,7 +44,7 @@ void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmd
   std::unique_ptr<exahype::solvers::FiniteVolumesSolver> finiteVolumesSolver(static_cast<exahype::solvers::FiniteVolumesSolver*>(solver));
   
   exahype::solvers::RegisteredSolvers.push_back(
-    new exahype::solvers::LimitingADERDGSolver(std::string("MHDSolver"),std::move(aderdgSolver),std::move(finiteVolumesSolver)) );
+    new exahype::solvers::LimitingADERDGSolver("MHDSolver",std::move(aderdgSolver),std::move(finiteVolumesSolver)) );
   parser.checkSolverConsistency(0);
   }
 

@@ -29,12 +29,19 @@ exahype-project MHD
     offset                   = -0.6, -0.6
     end-time                 = 0.8
   end computational-domain
-
+  
   shared-memory
     identifier               = dummy
     cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory  
+  
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:4}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
 
   optimisation
     fuse-algorithmic-steps          = off

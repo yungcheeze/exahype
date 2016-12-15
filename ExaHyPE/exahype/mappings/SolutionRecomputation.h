@@ -34,26 +34,32 @@ class SolutionRecomputation;
 }
 
 /**
- * Update the solution
+ * This mapping is one of three mappings (+adapters) which together perform the limiter
+ * status spreading and the recomputation of troubled cells (and their direct) neighbours.
  *
- * <h2>ADER-DG</h2>
- * We run over all cells of the local spacetree
+ * |Mapping                 | Event                  | Action                                            |
+ * -------------------------------------------------------------------------------------------------------
+ * | LimiterStatusSpreading | touchVertexFirstTime   | Merge the face-wise limiter status between local neighbours.|
+ * |                        | enterCell              | Determine a unified value of the merged face-wise limiter status values and write it to every face. (Do not update the cell-wise limiter status.)|
+ * |                        | prepareSendToNeighbour | Send the unified ace-wise limiter status to neighbouring ranks.|
+ * -------------------------------------------------------------------------------------------------------
+ * | Reinitialisation       | mergeWithNeighbour     | Receive the neighbour ranks' cells' merged limiter status. Directly update the unified merged limiter status value of cells at the remote boundary |
+ * |                        | touchVertexFirstTime   | Merge the limiter status between local neighbours (again).
+ * |                        | enterCell              | Determine a unified value of the merged face-wise limiter status values and write it to every face. |
+ * |                        |                        | (Do not update the cell-wise limiter status.)                                                       |
+ * |                        |                        | Rollback the solution in troubled cells and their next two neighbours.
+ * |                        | prepareSendToNeighbour | Based on the unified face-wise limiter status send interface values to the neighbours. |
+ * ------------------------------------------------------------------------------------------------------
+ * |SolutionRecomputation   | mergeWithNeighbour     | Based on the unified face-wise limiter status receive or drop the interface values send by the neighbours.
+ * |                        | touchVertexFirstTIme   | Based on the unified face-wise limiter status merge local direct neighbours.
+ * |                        | enterCell              | Recompute the solution in the troubled cells (and their direct neighbours).
+ * |                        |                        | Set the cell-wise limiter status to the unified face-wise limiter status.
+ * |                        |                        | (The normal time marching does only consider the cell-wise limiter status from now on
+ * |                        |                        | and overwrites the face-wise values uniformly with Ok or Troubled after
+ * |                        |                        | evaluating the discrete maximum principle (DMP) and the physical admissibility detection (PAD).)
+ * ------------------------------------------------------------------------
  *
- * - take the predicted data within each cell
- * - add the contribution from the Riemann solve to the predicted data
- * - mark the cell with the new time stamp
- *
- * All this is done in enterCell().
- *
- * <h2>Finite Volumes</h2>
- * This is where we do the actual time stepping with the finite volume scheme.
- *
- * @developers:
- * TODO(Dominic): I think we should extract the Riemann solve from the finite
- * volume kernels and move it into the RiemannSolver mapping
- * since I will exchange metadata and face data here between MPI ranks.
- *
- * @author Dominic Charrier Tobias Weinzierl
+ * @author Dominic Charrier
  */
 class exahype::mappings::SolutionRecomputation {
  private:
@@ -140,6 +146,32 @@ class exahype::mappings::SolutionRecomputation {
    * are not copied for every thread.
    */
   void deleteTemporaryVariables();
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static void dropNeighbourData(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level,
+      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeNeighourData(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level,
+      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
 
  public:
   /**

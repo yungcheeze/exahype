@@ -213,15 +213,13 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     exahype::State& state) {
   logTraceInWith1Argument("endIteration(State)", state);
 
-  state.setStabilityConditionOfOneSolverWasViolated(false);
-
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
     assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
     logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
-             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber])
+             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
 
     solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
     solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
@@ -239,6 +237,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         #endif
         && !VetoFusedTimeSteppingTimeStepSizeReinitialisation
     ) {
+      state.setStabilityConditionOfOneSolverWasViolated(false);
       reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
     }
 

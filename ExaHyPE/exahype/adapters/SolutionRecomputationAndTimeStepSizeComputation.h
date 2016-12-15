@@ -18,8 +18,11 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/SolutionRecomputation.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Sending.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -39,11 +42,17 @@ namespace exahype {
  */
 class exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation {
   private:
-    typedef mappings::SolutionRecomputation Mapping0;
-    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::SolutionRecomputation Mapping1;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Sending Mapping3;
+    typedef mappings::PostProcessing Mapping4;
 
-     Mapping0  _map2SolutionRecomputation;
-     Mapping1  _map2TimeStepSizeComputation;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2SolutionRecomputation;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Sending;
+     Mapping4  _map2PostProcessing;
 
 
   public:

@@ -23,7 +23,7 @@ namespace kernels {
       
       inline int getDimension()               {return  {{nDim}};}
 	  
-      inline bool isLinear()                  {return {{isLinear}};}
+      inline bool isLinear()                  {return {{isLinearCText}};}
 
     }
   }

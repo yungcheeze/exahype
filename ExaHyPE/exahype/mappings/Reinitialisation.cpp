@@ -24,6 +24,8 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "exahype/mappings/LimiterStatusSpreading.h"
+
 peano::CommunicationSpecification
 exahype::mappings::Reinitialisation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -95,7 +97,7 @@ void exahype::mappings::Reinitialisation::endIteration(
 
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->rollbackToPreviousTimeStep();
 
@@ -130,19 +132,13 @@ void exahype::mappings::Reinitialisation::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
-
         if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-           && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+           && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERDGSolver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
 
           limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element); // Loads back the old corrector time step size.
-
           if (!exahype::State::fuseADERDGPhases()) {
             limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(
                 fineGridCell.getCellDescriptionsIndex(),element);
@@ -151,6 +147,11 @@ void exahype::mappings::Reinitialisation::enterCell(
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
         }
+
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done after reinitialisation since we might add new finite volumes patches here.
+                                                          // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -170,6 +171,7 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
                              fineGridX, fineGridH,
                              coarseGridVerticesEnumerator.toString(),
                              coarseGridCell, fineGridPositionOfVertex);
+
   dfor2(pos1)
     dfor2(pos2)
       if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices // TODO(Dominic): Probably have to consider Voronoi neighbours later on when we use high order schemes
@@ -179,7 +181,7 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-              && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+              && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -206,68 +208,119 @@ void exahype::mappings::Reinitialisation::touchVertexFirstTime(
 }
 
 #ifdef Parallel
-void exahype::mappings::Reinitialisation::mergeWithNeighbour(
-    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-// TODO(Dominic): Merge my limiter status with the neighbour's
-//  dfor2(myDest)
-//    dfor2(mySrc)
-//      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-//      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
-//
-//      int destScalar = TWO_POWER_D - myDestScalar - 1;
-//      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
-//
-//      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-//        int receivedMetadataIndex = MetadataHeap::getInstance().
-//            createData(0,exahype::solvers::RegisteredSolvers.size());
-//        MetadataHeap::getInstance().receiveData(
-//            receivedMetadataIndex,
-//            fromRank, fineGridX, level,
-//            peano::heap::MessageType::NeighbourCommunication);
-//        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-//        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
-//
-//        if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-//          //
-//
-//          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
-//          vertex.setMergePerformed(src,dest,true);
-//        }
-//      }
-//    enddforx
-//  enddforx
-}
-
 void exahype::mappings::Reinitialisation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // TODO(Dominic): Send my limiter status to neighbour
-  // TODO(Dominic): Discussion: Send status always or use counters?
-//  dfor2(dest)
-//    dfor2(src)
-//    if (vertex.hasToSendMetadata(src,dest,toRank)) {
-//      vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-//      if (vertex.hasToSendDataToNeighbour(src,dest)) {
-//        sendSolverDataToNeighbour(
-//            toRank,src,dest,
-//            vertex.getCellDescriptionsIndex()[srcScalar],
-//            vertex.getCellDescriptionsIndex()[destScalar],
-//            x,level);
-//      } else {
-//        sendEmptySolverDataToNeighbour(toRank,src,dest,x,level);
-//      }
-//    }
-//    enddforx
-//  enddforx
+  dfor2(dest)
+    dfor2(src)
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+        vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+        if (vertex.hasToSendDataToNeighbour(src,dest)) { // Only comm. data once per face
+          sendDataToNeighbour(
+              toRank,src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              x,level);
+        } else {
+          sendEmptyDataToNeighbour(
+              toRank,src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              x,level);
+        }
+      }
+    enddforx
+  enddforx
 }
+
+/*
+ * We only send empty data for LimitingADERDGSolvers
+ * where we have detected a change of the limiter domain.
+ * This information should be available on all ranks.
+ * We ignore other solver types.
+ */
+void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(toRank,src,dest,x,level);
+    }
+    ++solverNumber;
+  }
+
+  auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+/*
+ * We only send empty data for LimitingADERDGSolvers
+ * where we have detected a change of the limiter domain.
+ * This information should be available on all ranks.
+ * We ignore other solver types.
+ */
+void exahype::mappings::Reinitialisation::sendDataToNeighbour(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) { // Check if a patch exists on the cell
+        limitingADERDGSolver->sendDataToNeighbourBasedOnLimiterStatus(
+            toRank,srcCellDescriptionIndex,element,src,dest,
+            true, /* isRecomputation */
+            x,level);
+      } else {
+        limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(
+            toRank,src,dest,x,level);
+      }
+      ++solverNumber;
+    }
+  }
+
+  auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+
 
 //
 // Below all methods are nop.
 //
 //===================================
+
+
+
+void exahype::mappings::Reinitialisation::mergeWithNeighbour(
+    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+  // do nothing
+}
 
 void exahype::mappings::Reinitialisation::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
@@ -362,7 +415,13 @@ void exahype::mappings::Reinitialisation::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::Reinitialisation::Reinitialisation() {
+exahype::mappings::Reinitialisation::Reinitialisation()
+  #ifdef Debug
+  :
+  _interiorFaceMerges(0),
+  _boundaryFaceMerges(0)
+  #endif
+{
   // do nothing
 }
 
@@ -372,7 +431,13 @@ exahype::mappings::Reinitialisation::~Reinitialisation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Reinitialisation::Reinitialisation(
-    const Reinitialisation& masterThread) {
+    const Reinitialisation& masterThread)
+#ifdef Debug
+  :
+  _interiorFaceMerges(0),
+  _boundaryFaceMerges(0)
+  #endif
+{
   // do nothing
 }
 void exahype::mappings::Reinitialisation::mergeWithWorkerThread(

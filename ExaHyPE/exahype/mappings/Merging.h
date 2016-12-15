@@ -269,13 +269,13 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   * Nop.
+   * TODO(Dominic): Add docu.
    */
   Merging();
 
 #if defined(SharedMemoryParallelisation)
   /**
-   * Nop.
+   * TODO(Dominic): Add docu.
    */
   Merging(const Merging& masterThread);
 #endif

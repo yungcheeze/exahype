@@ -184,7 +184,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
@@ -263,6 +263,16 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     #endif
     _stateData.setReinitTimeStepData(false);
     // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
+  void switchToReinitialisationContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
@@ -273,7 +283,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     #endif
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
   //
@@ -310,10 +320,21 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
 
-  void setLimiterDomainHasChanged(bool state) {
-    _stateData.setLimiterDomainHasChanged(state);
+  /**
+   * Updates the limiterDomainHasChanged value.
+   * The reset of this value to false is performed in
+   *
+   * switchToSolutionUpdateContext
+   * switchToInitialConditionAndTimeStepSizeComputationContext
+   *
+   */
+  void updateLimiterDomainHasChanged(bool state) {
+    _stateData.setLimiterDomainHasChanged(_stateData.getLimiterDomainHasChanged() | state);
   }
 
+  /**
+   * @deprecated
+   */
   bool limiterDomainHasChanged() const {
       return _stateData.getLimiterDomainHasChanged();
   }

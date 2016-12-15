@@ -30,8 +30,21 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   xdata         = runtimeParser.readColumnFromTable(table,0)
 
   for adap in args.adapter:
-    totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
-    count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
+    sub_adapters = adap.split('+')
+    
+    totalTime    = []
+    count        = 0
+    i = 0
+    for sub_adap in sub_adapters:
+      sub_adap_time  = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,sub_adap) )
+      count          = max(count ,runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,sub_adap) ));
+      
+      if (len(totalTime)==0):
+        totalTime = sub_adap_time
+      else:
+        for i in range(0,len(sub_adap_time)):
+          totalTime[i] += sub_adap_time[i]
+    
     ydata = []
     for i in range(0,len(totalTime)):
       if count[i]==0:
@@ -52,7 +65,7 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
       if xdata[-1]>xDataMax:
         xDataMax = xdata[-1]
       if (plotLabels):
-        pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,label=adap,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
+        pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,label=adap[:20],color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
       else:
         pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
     symbolCounter = symbolCounter + 1
@@ -167,7 +180,7 @@ experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
   maxLevel = runtimeParser.readColumnFromTable(table,1)   
-  addData(table,1.0,table==args.table[-1],experimentSetCounter,label)
+  addData(table,1.0,True,experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
 
 plotLinearSpeedupCurves()

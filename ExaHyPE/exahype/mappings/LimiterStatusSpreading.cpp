@@ -99,16 +99,16 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
-
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
         }
+
+        solver->prepareNextNeighbourMerging(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -138,7 +138,7 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -166,6 +166,10 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
 
 void exahype::mappings::LimiterStatusSpreading::beginIteration(
     exahype::State& solverState) {
+  #ifdef Parallel
+  DataHeap::getInstance().startToSendSynchronousData();
+  #endif
+
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;
@@ -231,7 +235,7 @@ void exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimi
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
           toRank,src,dest,x,level);
@@ -265,7 +269,7 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
   int solverNumber=0;
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
@@ -383,7 +387,13 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading() {
+exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading()
+#ifdef Debug
+:
+_interiorFaceMerges(0),
+_boundaryFaceMerges(0)
+#endif
+{
   // do nothing
 }
 
@@ -393,7 +403,13 @@ exahype::mappings::LimiterStatusSpreading::~LimiterStatusSpreading() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading(
-    const LimiterStatusSpreading& masterThread) {
+    const LimiterStatusSpreading& masterThread)
+  #ifdef Debug
+  :
+  _interiorFaceMerges(0),
+  _boundaryFaceMerges(0)
+  #endif
+{
   // do nothing
 }
 void exahype::mappings::LimiterStatusSpreading::mergeWithWorkerThread(

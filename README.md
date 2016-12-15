@@ -5,13 +5,13 @@
 Copy and paste these commands to start with a working ExaHyPE application:
 
     git clone git@gitlab.lrz.de:exahype/ExaHyPE-Engine.git
-    cd ExaHyPE-Engine/Code
+    cd ExaHyPE-Engine/Peano
     ./checkout-update-peano.sh
     cd ../Toolkit/
     ./build.sh
     cd ../
     ln -s Toolkit/dist/ExaHyPE.jar
-
+    
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
 
     java -jar ExaHyPE.jar ApplicationExamples/EulerFlow.exahype
@@ -28,14 +28,14 @@ The optimised kernels are optional and can be replaced by the generic ones, thus
 
 Libxsmm's sources can be found on github: https://github.com/hfp/libxsmm
 
+Python 3 is required to compile libxsmm and run the code generator.
+
 Quick installation:
 
     cd ExaHyPE-Engine/
-    git clone https://github.com/hfp/libxsmm.git
-    cd libxsmm/
+    git clone https://github.com/hfp/libxsmm.git Libxsmm
+    cd Libxsmm/
     make generator
-	cd ../Code/
-	ln -s ../libxsmm/ Libxsmm
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 

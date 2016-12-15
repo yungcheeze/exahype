@@ -23,20 +23,16 @@ import TemplatingUtils
 class ConfigurationParametersGenerator:
     m_context = {}
 
-    # linear/nonlinear
-    m_type   = ""
-
     # name of generated output file
-    m_filename = "ConfigurationParameters.cpph"
+    m_filename = 'ConfigurationParameters.cpph'
 
     
-    def __init__(self, i_config, i_numerics):
+    def __init__(self, i_config):
         self.m_context = i_config
-        self.m_type    = i_numerics
 
 
     def generateCode(self):
-        self.m_context["isLinear"] = "true" if (self.m_type == "linear") else "false" #c++ true/false instead of True/False
+        self.m_context['isLinearCText'] = 'true' if self.m_context['isLinear'] else 'false' #c++ true/false instead of True/False
 
         TemplatingUtils.renderAsFile('configurationParameters_cpph.template', self.m_filename, self.m_context)
 

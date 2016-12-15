@@ -40,6 +40,13 @@ exahype::mappings::SolutionRecomputation::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
+peano::MappingSpecification
+exahype::mappings::SolutionRecomputation::enterCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
 // Below specs are all nop
 
 peano::MappingSpecification
@@ -48,14 +55,6 @@ exahype::mappings::SolutionRecomputation::touchVertexLastTimeSpecification() {
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-
-peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::enterCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
 
 peano::MappingSpecification
 exahype::mappings::SolutionRecomputation::leaveCellSpecification() {
@@ -117,12 +116,12 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme
         // plus the ones for the Finite Volume scheme.
-        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
+        numberOfStateSizedVectors  = std::max(2*DIMENSIONS+1, 6); // See kernels:finitevolumes::godunov::2d/3d::solutionUpdate or riemannSolverNonlinear
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_solver->getUnknownsPerFace(),
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiter->getUnknownsPerFace() );
+                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
         numberOfUnknowns     = 0; // TODO(Dominic): We do not consider high-order FV methods yet; numberOfUnknowns is thus set to zero.
         lengthOfUnknowns     = 0;
         break;
@@ -132,7 +131,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
         lengthOfFaceUnknowns =
             static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
-        numberOfStateSizedVectors = 5;
+        numberOfStateSizedVectors = 2*DIMENSIONS+1; // see kernels:finitevolumes::godunov::2d/3d::solutionUpdate
         break;
     }
 
@@ -183,47 +182,26 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
   if (_tempStateSizedVectors!=nullptr) {
     assertion(_tempStateSizedSquareMatrices!=nullptr);
 
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      int numberOfStateSizedVectors  = 0;
-      int numberOfStateSizedMatrices = 0;
-      int numberOfFaceUnknowns       = 0;
-      int numberOfUnknowns           = 0;
-      switch (solver->getType()) {
-        case exahype::solvers::Solver::Type::ADERDG:
-        case exahype::solvers::Solver::Type::LimitingADERDG:
-          numberOfStateSizedVectors  = 6; // See riemannSolverLinear
-          numberOfStateSizedMatrices = 3; // See riemannSolverLinear
-          numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
-          break;
-        case exahype::solvers::Solver::Type::FiniteVolumes:
-          // TODO(Dominic): We do not consider high-order FV methods yet;
-          // numberOfUnknowns is thus set to zero.
-          numberOfUnknowns = 0;
-          numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
-          numberOfStateSizedVectors = 5;
-          break;
-      }
-
-      if (numberOfStateSizedVectors>0) {
+    for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      if (_tempStateSizedVectors[solverNumber]!=nullptr) {
         delete[] _tempStateSizedVectors[solverNumber][0];
         delete[] _tempStateSizedVectors[solverNumber];
         _tempStateSizedVectors[solverNumber] = nullptr;
       }
       //
-      if (numberOfStateSizedMatrices>0) {
+      if (_tempStateSizedSquareMatrices[solverNumber]!=nullptr) {
         delete[] _tempStateSizedSquareMatrices[solverNumber][0];
         delete[] _tempStateSizedSquareMatrices[solverNumber];
         _tempStateSizedSquareMatrices[solverNumber] = nullptr;
       }
       //
-      if (numberOfFaceUnknowns>0) {
+      if (_tempFaceUnknowns[solverNumber]!=nullptr) {
         delete[] _tempFaceUnknowns[solverNumber][0];
         delete[] _tempFaceUnknowns[solverNumber];
         _tempFaceUnknowns[solverNumber] = nullptr;
       }
       //
-      if (numberOfUnknowns>0) {
+      if (_tempUnknowns[solverNumber]!=nullptr) {
         delete[] _tempUnknowns[solverNumber][0];
         delete[] _tempUnknowns[solverNumber];
         _tempUnknowns[solverNumber] = nullptr;
@@ -332,10 +310,11 @@ void exahype::mappings::SolutionRecomputation::enterCell(
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->limiterDomainHasChanged()) {
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before recomputation
+          limitingADERSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update face-wise
+                                                                                              // limiter status before recomputation
 
           limitingADERSolver->recomputeSolution(
               fineGridCell.getCellDescriptionsIndex(),
@@ -345,12 +324,11 @@ void exahype::mappings::SolutionRecomputation::enterCell(
               fineGridVertices,
               fineGridVerticesEnumerator);
 
-          // It is important that we update the limiter status only after the recomputation since we use
+          // It is important that we update the cell-wise limiter status only after the recomputation since we use
           // the previous and current limiter status in the recomputation.
           limitingADERSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
 
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                        determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          limitingADERSolver->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
 
         solver->prepareNextNeighbourMerging(
@@ -380,25 +358,18 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
             auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
               const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
               const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
               const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
               const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
               if (element2>=0 && element1>=0) {
-                auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                    getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
-                auto& solverPatch2 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                    getSolver()->getCellDescription(cellDescriptionsIndex2,element2);
-
                 static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
                     mergeNeighboursBasedOnLimiterStatus(
                     cellDescriptionsIndex1,element1,
                     cellDescriptionsIndex2,element2,
-                    solverPatch1.getMergedLimiterStatus(0),
-                    solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
                     pos1,pos2,
-                    true,
+                    true, /* isRecomputation */
                     _tempFaceUnknowns[solverNumber],
                     _tempStateSizedVectors[solverNumber],
                     _tempStateSizedSquareMatrices[solverNumber]);
@@ -426,10 +397,10 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                         element2==exahype::solvers::Solver::NotFound)
                        || (element1 >= 0 && element2==exahype::solvers::Solver::NotFound)
                        || (element2 >= 0 && element1==exahype::solvers::Solver::NotFound),
-                       cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2);
+                       cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2); // TODO(Dominic): Move down
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->_limiterDomainHasChanged) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
               if (element1 >= 0) {
                 auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
                     getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
@@ -476,94 +447,125 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
 }
 
 
-//
-// Below all methods are nop.
-//
-//=====================================
-
-
-void exahype::mappings::SolutionRecomputation::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::destroyHangingVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::destroyVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::createCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionRecomputation::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
 #ifdef Parallel
+///////////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////////
 void exahype::mappings::SolutionRecomputation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  // do nothing
+  dfor2(myDest)
+    dfor2(mySrc)
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+      int destScalar = TWO_POWER_D - myDestScalar - 1;
+      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
+
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+        int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::solvers::RegisteredSolvers.size());
+        MetadataHeap::getInstance().receiveData(
+            receivedMetadataIndex,
+            fromRank, fineGridX, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+        if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
+          mergeNeighourData(
+              fromRank,
+              src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              fineGridX,level,
+              receivedMetadata);
+
+          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
+          vertex.setMergePerformed(src,dest,true);
+        } else {
+          dropNeighbourData(
+              fromRank,
+              src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              fineGridX,level,
+              receivedMetadata);
+        }
+        // Clean up
+        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+      }
+    enddforx
+  enddforx
 }
+
+void exahype::mappings::SolutionRecomputation::dropNeighbourData(
+    const int                                    fromRank,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level,
+    const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
+    }
+    //
+    ++solverNumber;
+  }
+}
+
+void exahype::mappings::SolutionRecomputation::mergeNeighourData(
+    const int                                    fromRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level,
+    const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
+
+  int solverNumber=0;
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound
+          && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        limitingADERDGSolver->mergeWithNeighbourDataBasedOnLimiterStatus(
+            fromRank,receivedMetadata[solverNumber].getU(),
+            destCellDescriptionIndex,element,src,dest,
+            true, /* isRecomputation */
+            _tempFaceUnknowns[solverNumber],
+            _tempStateSizedVectors[solverNumber],
+            _tempStateSizedSquareMatrices[solverNumber],
+            x,level);
+      } else {
+        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
+      }
+    }
+    //
+    ++solverNumber;
+  }
+}
+
+
+//
+// Below all methods are nop.
+//
+//=====================================
 
 void exahype::mappings::SolutionRecomputation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
@@ -664,6 +666,81 @@ void exahype::mappings::SolutionRecomputation::mergeWithWorker(
   // do nothing
 }
 #endif
+
+void exahype::mappings::SolutionRecomputation::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionRecomputation::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
 
 void exahype::mappings::SolutionRecomputation::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,

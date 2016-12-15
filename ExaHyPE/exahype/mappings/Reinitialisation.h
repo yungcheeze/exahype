@@ -34,12 +34,12 @@ class Reinitialisation;
 }
 
 /**
- * Update the solution
+ * This mapping is part of three mappings (+adapters) which together perform the limiter
+ * status spreading the recomputation of troubled cells (and their direct) neighbours.
  *
- * We run over all cells of the local spacetree and ask the solver whether there
- * is prescribed data in this point (replace values by user-defined values).
+ * \see exahype::mappings::SolutionRecomputation for more details.
  *
- * @author Dominic Charrier Tobias Weinzierl
+ * @author Dominic Charrier
  */
 class exahype::mappings::Reinitialisation {
  private:
@@ -53,20 +53,63 @@ class exahype::mappings::Reinitialisation {
   int _boundaryFaceMerges;
   #endif
 
+#ifdef Parallel
+  /**
+   * We only send empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendEmptyDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /*
+   * We only send solver and empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+#endif
+
  public:
+  /**
+   * Mask out data exchange between master and worker.
+   * Further let Peano handle heap data exchange internally.
+   */
+  static peano::CommunicationSpecification communicationSpecification();
+
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */
   static peano::MappingSpecification enterCellSpecification();
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+
 
   /**
    * Nop.
    */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
   /**
    * Nop.
    */
@@ -79,12 +122,6 @@ class exahype::mappings::Reinitialisation {
    * Nop.
    */
   static peano::MappingSpecification descendSpecification();
-
-  /**
-   * Mask out data exchange between master and worker.
-   * Further let Peano handle heap data exchange internally.
-   */
-  static peano::CommunicationSpecification communicationSpecification();
 
   /**
      * Initialise debug counters.
@@ -110,7 +147,7 @@ class exahype::mappings::Reinitialisation {
         const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
     /**
-     * Nop.
+     * TODO(Dominic): Add docu.
      */
     void touchVertexFirstTime(
         exahype::Vertex& fineGridVertex,
@@ -123,7 +160,22 @@ class exahype::mappings::Reinitialisation {
 
   #ifdef Parallel
     /**
-     * TODO(Dominic): Not implemented yet.
+     * TODO(Dominic): Add docu.
+     */
+    void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
+                                const tarch::la::Vector<DIMENSIONS, double>& x,
+                                const tarch::la::Vector<DIMENSIONS, double>& h,
+                                int level);
+
+
+
+    //
+    // Below all methods are nop.
+    //
+    //===================================
+
+    /**
+     * Nop.
      */
     void mergeWithNeighbour(exahype::Vertex& vertex,
                             const exahype::Vertex& neighbour, int fromRank,
@@ -131,18 +183,6 @@ class exahype::mappings::Reinitialisation {
                             const tarch::la::Vector<DIMENSIONS, double>& h,
                             int level);
 
-    /**
-     * TODO(Dominic): Not implemented yet.
-     */
-    void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
-                                const tarch::la::Vector<DIMENSIONS, double>& x,
-                                const tarch::la::Vector<DIMENSIONS, double>& h,
-                                int level);
-
-    //
-    // Below all methods are nop.
-    //
-    //===================================
 
     /**
      * Nop.
