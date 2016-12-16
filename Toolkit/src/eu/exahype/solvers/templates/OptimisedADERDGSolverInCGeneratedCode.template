@@ -74,7 +74,7 @@ void {{Project}}::{{Solver}}::riemannSolver(double* FL,double* FR,const double* 
 
 void {{Project}}::{{Solver}}::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
 {{BeforeBoundaryConditions}}
-  kernels::aderdg::optimised::boundaryConditions( *this, fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
+  kernels::aderdg::optimised::boundaryConditions<boundaryValues>(fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero );
 {{AfterBoundaryConditions}}
 }
 

@@ -115,7 +115,7 @@ void exahype::mappings::LimiterStatusMergingMPI::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined10);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined4);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
@@ -242,60 +242,17 @@ void exahype::mappings::LimiterStatusMergingMPI::mergeNeighourMergedLimiterStatu
   }
 }
 
-void exahype::mappings::LimiterStatusMergingMPI::prepareSendToNeighbour(
-    exahype::Vertex& vertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  dfor2(dest)
-    dfor2(src)
-      if (vertex.hasToSendMetadata(src,dest,toRank)) {
-        vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-        if (vertex.hasToSendDataToNeighbour(src,dest)) { // Only comm. data once per face
-          sendDataToNeighbour(
-              toRank,src,dest,
-              vertex.getCellDescriptionsIndex()[srcScalar],
-              vertex.getCellDescriptionsIndex()[destScalar],
-              x,level);
-        } else {
-          sendEmptyDataToNeighbour(
-              toRank,src,dest,
-              vertex.getCellDescriptionsIndex()[srcScalar],
-              vertex.getCellDescriptionsIndex()[destScalar],
-              x,level);
-        }
-      }
-    enddforx
-  enddforx
-}
-
-
 //
 // Below all methods are nop.
 //
 //===================================
 
 
-void exahype::mappings::LimiterStatusMergingMPI::sendEmptyDataToNeighbour(
-    const int                                    toRank,
-    const tarch::la::Vector<DIMENSIONS, int>&    src,
-    const tarch::la::Vector<DIMENSIONS, int>&    dest,
-    const int                                    srcCellDescriptionIndex,
-    const int                                    destCellDescriptionIndex,
+void exahype::mappings::LimiterStatusMergingMPI::prepareSendToNeighbour(
+    exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
-}
-
-
-void exahype::mappings::LimiterStatusMergingMPI::sendDataToNeighbour(
-    const int                                    toRank,
-    const tarch::la::Vector<DIMENSIONS,int>&     src,
-    const tarch::la::Vector<DIMENSIONS,int>&     dest,
-    const int                                    srcCellDescriptionIndex,
-    const int                                    destCellDescriptionIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
-  // do nothing.
 }
 
 void exahype::mappings::LimiterStatusMergingMPI::prepareCopyToRemoteNode(

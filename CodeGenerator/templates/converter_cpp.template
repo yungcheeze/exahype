@@ -63,3 +63,23 @@ void kernels::aderdg::optimised::converter::Bnd_generic2optimised(const double* 
 {% endif%}
 }
 
+//TODO JMG padding for optimized Qhi/Fhi
+void kernels::aderdg::optimised::converter::Fhi_optimised2generic(const double* const opt, double* gen) {
+  const int size = getFhiOptArraySize();
+  std::memcpy(gen, opt, size*sizeof(double));
+}
+
+void kernels::aderdg::optimised::converter::Fhi_generic2optimised(const double* const gen, double* opt) {
+  const int size = getFhiOptArraySize();
+  std::memcpy(opt, gen, size*sizeof(double));
+}
+
+void kernels::aderdg::optimised::converter::Qhi_optimised2generic(const double* const opt, double* gen) {
+  const int size = getQhiOptArraySize();
+  std::memcpy(gen, opt, size*sizeof(double));
+}
+
+void kernels::aderdg::optimised::converter::Qhi_generic2optimised(const double* const gen, double* opt) {
+  const int size = getQhiOptArraySize();
+  std::memcpy(opt, gen, size*sizeof(double));
+}

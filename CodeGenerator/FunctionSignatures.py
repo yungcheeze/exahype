@@ -284,9 +284,8 @@ def getStableTimeStepSizeSignature():
 
 def getBoundaryConditionsSignature():
     # function signature prototype:
-    l_functionSignature =  "template <typename SolverType>\n"                         \
+    l_functionSignature =  "template <void PDEboundaryValues(const double* const x, const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const fluxIn, const double* const stateIn, double* fluxOut, double* stateOut)>\n"                         \
                            "void kernels::aderdg::optimised::boundaryConditions(\n"                               \
-                           "  SolverType& solver, \n"                                       \
                            "  DATATYPE* fluxOut, \n"                                          \
                            "  DATATYPE* stateOut, \n"                                         \
                            "  const DATATYPE* const fluxIn, \n"                               \

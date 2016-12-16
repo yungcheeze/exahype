@@ -5,7 +5,7 @@
 #
 # (c) 2016 ExaHyPE, Sven K
 
-#cd $(dirname "$0")
+buildscripts="$(dirname "$0")"
 
 # path names for our script
 DEFAULT_APPNAME="${PWD##*/}"
@@ -125,7 +125,11 @@ done
 
 set -o pipefail # fail if make fails
 
-make -j $(nproc) 2>&1 | tee make.log || { echo -e "Make failed, see make.log for full log"; exit -1; }
+make -j $(nproc) 2>&1 | tee make.log || {
+	echo -e "Make failed!";
+	$buildscripts/whoopsie-paster.sh
+	exit -1;
+}
 
 echo -e "Making $APPNAME finished successfully"
 

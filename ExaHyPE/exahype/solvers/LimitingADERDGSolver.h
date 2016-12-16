@@ -586,7 +586,7 @@ public:
    * Similar to ::determineMergedLimiterStatusAfterSolutionUpdate(const int,const int)
    * but does not evaluate the discrete maximum principle.
    */
-  bool updateMergedLimiterStatusAfterSetInitialConditions(
+  bool updateMergedLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,
       const int element);
 
@@ -789,8 +789,6 @@ public:
       const int                                 element1,
       const int                                 cellDescriptionsIndex2,
       const int                                 element2,
-      const SolverPatch::LimiterStatus&         limiterStatus1,
-      const SolverPatch::LimiterStatus&         limiterStatus2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2,
       const bool                                isRecomputation,

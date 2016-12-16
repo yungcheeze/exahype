@@ -191,8 +191,7 @@ public class Helpers {
     // set up the command to execute the code generator
     String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " " 
-        + "--precision=DP"; // double precision
+        + currentDirectory + "/"  + pathToLibxsmm + " "; 
 
     String bashCommand = "env python3 " + pathToCodeGenerator + args;
 
