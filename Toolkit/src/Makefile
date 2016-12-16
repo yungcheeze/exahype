@@ -35,7 +35,7 @@ compile: files.mk $(OBJECTS)
 
 
 dist:
-	jar cmf ../Manifest.txt ExaHyPE.jar .
+	jar cmf ../Manifest.txt ../dist/ExaHyPE.jar .
 
 
 all: clean createParser clean compile dist
