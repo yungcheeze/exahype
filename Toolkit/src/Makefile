@@ -24,6 +24,7 @@ default:
 clean:
 	rm -f $(OBJECTS)
 	rm -f files.mk
+	rm -f ../dist/ExaHyPE.jar
 
 
 createParser:
