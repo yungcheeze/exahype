@@ -67,9 +67,15 @@ class ConvergenceReporter:
 
 		# add a path before the simulations names, if neccessary.
 		self.simulationPathPrefix = getenv('SIMBASE', '')
+		self.logger.info("Working with SIMBASE='%s'" % self.simulationPathPrefix)
+		self.simulationPrefixer = lambda subpath: path.join(self.simulationPathPrefix, subpath)
+
+		# do the same to determine where the templates are.
+		templatedir = path.dirname(path.realpath(__file__))
+		self.templatePathPrefixer = lambda templatefname: path.join(templatedir, templatefname)
 
 		# which quantity shall we look at, in the moment?
-		self.quantity = 'error-bx.asc' # was error-rho.asc
+		self.quantity = 'error-rho.asc' # rho should always be there, good default.
 
 	def readSimulationProgress(self):
 		"""
@@ -88,18 +94,19 @@ class ConvergenceReporter:
 		group.add_argument('-Q', '--quantity', type=str, default=self.quantity, help="Which quantity to look at")
 		group.add_argument('-s', '--simulations', type=str, default=self.simulationListFilename, help="Path to CSV file "+
 			"holding the simulations to consider. If not given, generates list by ./showSimulationProgress.sh on the fly")
+		group.add_argument('-y', '--minimal-reduction-length', type=str, default=120, help="Minimal number of lines in reductions to include")
 		return group
 
 	def apply_args(self, args, argparser):
 		if args.porder:
 			p = args.porder
 			self.logger.info("Creating convergence table only for p=%d" % p)
-			self.simulations = glob('simulations/p%d*/'%p) # mind the trailing slash to glob only directories
-			self.report_outputfile = "simulations/generated-report-p%d.html"%p
+			self.simulations = glob(self.simulationPrefixer('simulations/p%d*/'%p)) # mind the trailing slash to glob only directories
+			self.report_outputfile = self.simulationPrefixer("generated-report-p%d.html"%p)
 		else:
 			self.logger.info("Using all p orders")
 			self.simulations = None
-			self.report_outputfile = "simulations/generated-report.html"
+			self.report_outputfile = self.simulationPrefixer("generated-report.html")
 
 		if args.simulations:
 			self.logger.info("Reading off simulations from file %s" % args.simulations)
@@ -108,6 +115,7 @@ class ConvergenceReporter:
 			self.simulationListFilename = StringIO(self.readSimulationProgress())
 
 		self.quantity = args.quantity
+		self.minimal_reduction_length = args.minimal_reduction_length
 
 	def start(self):
 		# copy variables in local namespace for ... yeah.
@@ -123,10 +131,10 @@ class ConvergenceReporter:
 		idxQuantityFileName = 'QuantityFileName'
 
 		# What criterion do make to filter out bad simulations? These are examples:
-		minimalReductionsLengths = lambda SimRow: SimRow['EachRedLength'] > 120
-		emptyDirectoryCheck = lambda SimRow: not is_empty_file(SimRow['SimulationName'])
+		minimalReductionsLengths = lambda SimRow: SimRow['EachRedLength'] > self.minimal_reduction_length
+		emptyDirectoryCheck = lambda SimRow: not is_empty_file(SimRow[idxSimName])
 		# now choose:
-		goodSimulations = minimalReductionsLengths
+		goodSimulations = emptyDirectoryCheck
 
 		# Load table of simulations
 		# The shellscript takes around ~ 10-60 Seconds to generate the data, therefore
@@ -149,8 +157,12 @@ class ConvergenceReporter:
 		if not simulations:
 			simulations = list(statisticstable[idxSimName])
 
-		overview = Template("reporting/template-overview.html", self.report_outputfile).addStatistics()
-		evolution = Template("reporting/template-evolution.html", "simulations/evolution.html").addStatistics()
+		overview = Template(
+			self.templatePathPrefixer("template-overview.html"),
+			self.report_outputfile).addStatistics()
+		evolution = Template(
+			self.templatePathPrefixer("template-evolution.html"), 
+			self.simulationPrefixer("evolution.html")).addStatistics()
 		overview.set('LINK_DETAILED_REPORT', path.basename(evolution.outputfile)) # link them together
 		tpl = { 'QUANTITY': self.quantity } # common template variables
 
@@ -161,7 +173,7 @@ class ConvergenceReporter:
 		## =====================================================
 
 		paramfiles = map(simfile('parameters.env'), simulations)
-		quantityfiles = map(simfile(quantityfile), simulations)
+		quantityfiles = map(simfile(self.quantityfile), simulations)
 
 		# 1A) In the first step, simtable will hold information about simulation paths
 		simtable = pd.DataFrame()
@@ -205,13 +217,17 @@ class ConvergenceReporter:
 		paramtable = keepColumnsIf(paramtable, lambda c: 'PWD' not in c)
 
 		# beautify the parameter table: shorten the paths
-		shortenPathsInTable(paramtable, map(ci_paramtable, ['EXABINARY', 'EXASPECFILE']))
+		shortenPathsInTable(paramtable, map(ci_paramtable, ['EXABINARY', 'ExaSpecFile']))
 		linkifyFormatter = { idxSimName: lambda l: u"<a href='%s'>%s</a>"%(l,l) }
 		defaultFormatter = { col: None for col in paramtable.columns.values }
 		# store number of cells back into paramtable for dumping
 		idxNcells = 'nCells'
 		paramtable[idxNcells] = ncells
-		tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html(formatters=merge_dicts(defaultFormatter, linkifyFormatter))
+
+		# trying in another way to set the link to the simulation:
+		#paramtable[idxSimName] = map(lambda l: '<a href="{0}">{0}</a>'.format(l), list(paramtable[idxSimName]))
+
+		tpl['SIMULATION_PARAMETERS_TABLE'] = paramtable.to_html(formatters=merge_dicts(defaultFormatter, linkifyFormatter), escape=False)
 		tpl['SIMULATION_STATISTICS_TABLE'] = statisticstable.to_html()
 
 		# todo: Extract the "meaning" columns which hold documentation about the exa-columns.
@@ -258,6 +274,15 @@ class ConvergenceReporter:
 
 		# 2A) Filter out all bad entries which are no further interesting for automatic
 		#     processing
+		if not len(paramtable[includedSimulations]):
+			self.logger.error("We filtered out all applications as being noninteresting.")
+			self.logger.error("This may be because all simulations are tainted or files where missing.")
+			self.logger.error("You might exemplarily want to look into these two first simulation set files:")
+			self.logger.error(paramfiles[0])
+			self.logger.error(quantityfiles[0])
+			self.logger.error("This is what I learnt so far about the simulations:\n" + str(reducedsimtable))
+			self.logger.error("With constants:\n" + str(constant_parameters))
+
 		paramtable = paramtable[includedSimulations]
 		quantityfiles = simtable[includedSimulations][idxQuantityFileName]
 
@@ -402,10 +427,8 @@ class ConvergenceReporter:
 		# full tables which do *not* go to the overview
 
 		# print out a subset of the table
-		self.logger.info("Comptuted this convergence table for the individual reductions")
-		self.logger.info("(as l1norm, infnorm=max, etc.)")
 		convergence_table = ce[[idxporder,idxcells,idxprev,idxplotindex,idxtime] + errorColumns + rateColumns + ([idxcomparisoncolumn] if giveComparisonColumn else [])]
-		self.logger.info( str(convergence_table) )
+		self.logger.info("Comptuted this convergence table for the individual reductions: " + str(convergence_table) )
 		convergence_table = pdsort(convergence_table, by=[idxporder, idxcells, idxplotindex])
 		final_time_convergence_table = convergence_table.groupby(by=[idxporder, idxcells]).last()
 
@@ -435,17 +458,118 @@ class ConvergenceReporter:
 		# we can generate plots, create strings holding the SVG file and embed
 		# the figures as inline SVG to the HTML file.
 
-		do_plots=True
-		if do_plots:
+		def do_plots():
+			import matplotlib
+			if self.be_headless or is_headless():
+				matplotlib.use('Agg')
+			import matplotlib.pyplot as plt
+			plt.ion(); plt.clf()
+
+			uniquelist = lambda k: list(np.unique(k))
+			uniqueintlist = lambda k: map(int, uniquelist(k))
+			lookupdict = lambda k,v: dict(zip(k,v))
+			window = lambda l: itertools.izip(l, l[1:])
+			iround = lambda f: int(round(f))
+			# repeat tile until it fits to target. or reduce tile down to target.
+			repeatfit = lambda tile, target: (max(1,int(len(target)/len(tile)))*tile)[:len(target)]
+			lookupfitdict = lambda k,v: dict(itertools.izip(k, itertools.cycle(v))) # lookupdict(k, repeatfit(v, k))
+
+			allporders, allncells = uniqueintlist(porders), uniqueintlist(ncells)
+			self.logger.info("Plots are for porders=%s and ncells=%s" % (allporders,allncells))
+
+			# this never gave good colors:
+			#possiblecolors = plt.cm.jet(np.linspace(0,0.9,len(allporders)))
+			# use instead:
+			possiblecolors = "r g k b m y r c m".split(" ")
+			#possiblestyles = ['-', '--', '-.', ':']
+			possiblemarkers = ['o', '>', 's', 'D','H', '*','<',]
+			# commented out because currently unused, but code works.
+			#assert len(possiblemarkers) == len(uniquelist(ncells))
+			#styles = lookupdict(allncells, possiblestyles)
+			markerdict = lookupfitdict(allporders, possiblemarkers)
+			colordict = lookupfitdict(allncells, possiblecolors)
+			#self.logger.info("markers for %s: %s" % (str(allporders), str(markerdict)))
+			markers = lambda p, nc: markerdict[int(p)]
+			colors = lambda p, nc: colordict[int(nc)]
+
+			##### SIMPLE ERROR EVOLUTION PLOTS
+			errorPlot = plt.figure(figsize=(18,8))
+			ycolumn = 'max' # l2norm, l1norm
+
+			num_markers = 10
+			dt_markers = max(errors[idxtime]) / num_markers
+			for groupidx,rows in errors.groupby(by=[idxporder,idxcells]):
+				# groupidx = (p,nc)
+				plt.plot(rows[idxtime], rows[ycolumn], label="P=%d,Nc=%d"%groupidx, color=colors(*groupidx), marker=markers(*groupidx), markevery=0.03)
+
+			plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
+			plt.subplots_adjust(right=0.8)
+			plt.title("Error evolution: %s of quantity %s" % (ycolumn, self.quantity))
+			plt.xlabel("Simulation time")
+			plt.ylabel("Error")
+			ax = plt.gca()
+			ax.set_yscale('log')
+			plt.ylim(1e-10, 1e0)
+
+			##### CONVERGENCE EVOLUTION PLOTS
+
+			ycolumn = 'ol2norm'
+			reprID = get_ci_paramtable('EXAHYPE_INITIALDATA').iloc[0]
+			reprSpecFile = get_ci_paramtable('ExaSpecfile').iloc[0]
+
+			convergencePlot = plt.figure(figsize=(18,8)) # plt.gcf()
+			convergencePlot.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
+
+			# this is an ugly bug, we are dealing with ints but storing floats
+			# and then making comparisons float(9) == float(9.000000...) which never hold true.
+			allporders, allncells = uniquelist(porders), uniquelist(ncells)
+
+			# do plots for all neighbouring (Nprev, Ncur)
+			for Ni, (Nprev, Ncur) in enumerate(window(allncells)):
+				plt.subplot(1, len(allncells)-1, Ni+1)
+
+				plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
+				for groupidx,rows in pdsort(convergence_table[convergence_table[idxcells]==Ncur], by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
+					treshholdToShowPoints = 40
+					style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
+					(p,nc) = groupidx
+					plt.plot(rows[idxtime], rows[ycolumn], style, label="P=%d" % int(p))#, color=colors(*groupidx))#, marker=markers[nc], markersize=25)
+
+				plt.xlabel("Simulation time")
+				plt.ylabel("Convergence order")
+				plt.legend()#.draggable()
+				plt.ylim(0,10)
+
+
+			tpl = {}
+			try:
+				tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
+				tpl['ERROR_SVG_FIGURE'] = gensvg(errorPlot)
+			except Exception as e:
+				self.logger.error("Could not create plots, reason: %s" % str(e))
+				self.logger.exception(e)
+				tpl['CONVERGENCE_SVG_FIGURE'] = "<em>Creation crashed!</em>"
+				tpl['ERROR_SVG_FIGURE'] = "<em>Creation crashed!</em>"
+			return tpl
+
+		shall_i_do_plots=True
+		if shall_i_do_plots:
 			self.logger.info("Doing plots")
-			tpl.update(self.do_plots())
+	
+			# copy some of the sharedly used variables
+			self.porders = porders
+			self.ncells = ncells
+			self.errors = errors
+			self.idxtime = idxtime
+
+			tpl.update(do_plots())
 		else:
 			self.logger.info("Skipped plot creation")
 			tpl['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 			tpl['ERROR_SVG_FIGURE'] = "<em>skipped plot generation</em>"
 
-		overview.execute(tpl, verbose=True)
-		evolution.execute(tpl, verbose=True)
+		overview.execute(tpl)
+		evolution.execute(tpl)
 
 		self.logger.info("Convergence test results:")
 		self.logger.info("Convergence factor is %.2f" % convergenceQualityIndicator)
@@ -453,98 +577,7 @@ class ConvergenceReporter:
 
 		return convergencePassed
 
-	def do_plots(self):
-		import matplotlib
-		if self.be_headless or is_headless():
-			matplotlib.use('Agg')
-		import matplotlib.pyplot as plt
-		plt.ion(); plt.clf()
 
-		uniquelist = lambda k: list(np.unique(k))
-		uniqueintlist = lambda k: map(int, uniquelist(k))
-		lookupdict = lambda k,v: dict(zip(k,v))
-		window = lambda l: itertools.izip(l, l[1:])
-		iround = lambda f: int(round(f))
-		# repeat tile until it fits to target. or reduce tile down to target.
-		repeatfit = lambda tile, target: (max(1,int(len(target)/len(tile)))*tile)[:len(target)]
-		# apply repeatfit to the lookup values of lookupdict
-		lookupfitdict = lambda k,v: lookupdict(k, repeatfit(v, k))
-
-		allporders, allncells = uniqueintlist(porders), uniqueintlist(ncells)
-		self.logger.info("Plots are for porders=%s and ncells=%s" % (allporders,allncells))
-
-		# this never gave good colors:
-		#possiblecolors = plt.cm.jet(np.linspace(0,0.9,len(allporders)))
-		# use instead:
-		possiblecolors = "r g k b m y r c m".split(" ")
-		#possiblestyles = ['-', '--', '-.', ':']
-		possiblemarkers = ['o', '>', 's', 'D','H', '*','<',]
-		# commented out because currently unused, but code works.
-		#assert len(possiblemarkers) == len(uniquelist(ncells))
-		#styles = lookupdict(allncells, possiblestyles)
-		markerdict = lookupfitdict(allporders, possiblemarkers)
-		colordict = lookupfitdict(allncells, possiblecolors)
-		markers = lambda p, nc: markerdict[int(p)]
-		colors = lambda p, nc: colordict[int(nc)]
-
-		##### SIMPLE ERROR EVOLUTION PLOTS
-		errorPlot = plt.figure(figsize=(18,8))
-		ycolumn = 'max' # l2norm, l1norm
-
-		num_markers = 10
-		dt_markers = max(errors[idxtime]) / num_markers
-		for groupidx,rows in errors.groupby(by=[idxporder,idxcells]):
-			# groupidx = (p,nc)
-			plt.plot(rows[idxtime], rows[ycolumn], label="P=%d,Nc=%d"%groupidx, color=colors(*groupidx), marker=markers(*groupidx), markevery=0.03)
-
-		plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
-		plt.subplots_adjust(right=0.8)
-		plt.title("Error evolution: %s of quantity %s" % (ycolumn, self.quantity))
-		plt.xlabel("Simulation time")
-		plt.ylabel("Error")
-		ax = plt.gca()
-		ax.set_yscale('log')
-		plt.ylim(1e-10, 1e0)
-
-		##### CONVERGENCE EVOLUTION PLOTS
-
-		ycolumn = 'ol2norm'
-		reprID = get_ci_paramtable('EXAHYPE_INITIALDATA').iloc[0]
-		reprSpecFile = get_ci_paramtable('EXASPECFILE').iloc[0]
-
-		convergencePlot = plt.figure(figsize=(18,8)) # plt.gcf()
-		convergencePlot.suptitle("ExaHyPE convergence of %s for %s with %s" % (ycolumn, reprID, reprSpecFile), fontsize=18)
-
-		# this is an ugly bug, we are dealing with ints but storing floats
-		# and then making comparisons float(9) == float(9.000000...) which never hold true.
-		allporders, allncells = uniquelist(porders), uniquelist(ncells)
-
-		# do plots for all neighbouring (Nprev, Ncur)
-		for Ni, (Nprev, Ncur) in enumerate(window(allncells)):
-			plt.subplot(1, len(allncells)-1, Ni+1)
-
-			plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
-			for groupidx,rows in pdsort(convergence_table[convergence_table[idxcells]==Ncur], by=[idxporder,idxcells], ascending=False).groupby(by=[idxporder,idxcells]):
-				treshholdToShowPoints = 40
-				style = "o-" if len(rows[ycolumn]) < treshholdToShowPoints else "-"				
-				(p,nc) = groupidx
-				plt.plot(rows[idxtime], rows[ycolumn], style, label="P=%d" % int(p))#, color=colors(*groupidx))#, marker=markers[nc], markersize=25)
-
-			plt.xlabel("Simulation time")
-			plt.ylabel("Convergence order")
-			plt.legend()#.draggable()
-			plt.ylim(0,10)
-
-
-		tpl = {}
-		try:
-			tpl['CONVERGENCE_SVG_FIGURE'] = gensvg(convergencePlot)
-			tpl['ERROR_SVG_FIGURE'] = gensvg(errorPlot)
-		except Exception as e:
-			self.logger.error("Could not create plots, due to exception: %s" % str(e))
-			tpl['CONVERGENCE_SVG_FIGURE'] = "<em>Creation crashed!</em>"
-			tpl['ERROR_SVG_FIGURE'] = "<em>Creation crashed!</em>"
-		return tpl
 
 def main():
 	"A main function for the convergence table computation."

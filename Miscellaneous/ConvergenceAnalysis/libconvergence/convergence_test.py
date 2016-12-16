@@ -14,14 +14,12 @@ All those classes are abstract and supposed to be used with a concrete frontend
 python program.
 """
 
-from numpy import arange, array
-import subprocess, os, sys, time, logging, inspect # batteries
-logger = logging.getLogger("convergence_starter")
+from numpy import array
+import os, sys, logging # batteries
 
 # libconvergence, same directory:
-from convergence_arghelpers import ExaFrontend
 from convergence_table import ConvergenceReporter, exitConvergenceStatus
-from convergence_helpers import shell, getenv, pidlist, runBinary
+from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc
 
 class ConvergenceTest:
 	"""
@@ -195,12 +193,13 @@ class PolyorderTest(ConvergenceTest):
 		return processes
 
 	def add_group(self, parser):
-		group = parser.add_argument_group(title=repr(self), description=inspect.cleandoc(self.__doc__))
+		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
 		group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
 		group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
 		group.add_argument('-a', '--all', action='store_true', help='Start all sensible simulations')
-		group.add_argument('-n', '--nostart', action='store_true', help="Don't start any simulation. "+
-			"Can be used to directly invoke the reporting instead")
+		# moved argument to frontend
+		#group.add_argument('-n', '--nostart', action='store_true', help="Don't start any simulation. "+
+		#	"Can be used to directly invoke the reporting instead")
 
 	def startFromArgs(self, args, parser):
 		if args.polyorder or args.meshsize:
@@ -214,96 +213,13 @@ class PolyorderTest(ConvergenceTest):
 			self.logger.info("%d processes have been started with PIDS: " % len(processes))
 			self.logger.info(pidlist(processes))
 			return processes
-		elif args.nostart:
-			self.logger.info("Skipping all ExaHyPE process starting.")
-			return []
+		#elif args.nostart:
+		#	self.logger.info("Skipping all ExaHyPE process starting.")
+		#	return []
 		else:
-			self.logger.error("Choose either --all, --nostart or -p/-m combination for run")
+			self.logger.error("Choose either --all, or -p/-m combination for run")
 			parser.print_help()
 			sys.exit(2)
 
-class ConvergenceReporterAdapter:
-	"""
-	This class allows direct invocation of the reporting by waiting
-	for the convergence studies to be finished.
-	The reporting can always also be called manually by invoking the
-	CLI program.
-	"""
-
-	def __init__(self):
-		self.logger = logging.getLogger("ConvergenceStarterReportingAdapter")
-		self.reporter = ConvergenceReporter()
-
-	def add_group(self, parser):
-		group = parser.add_argument_group(title="ReportingAdapter", description=inspect.cleandoc(self.__doc__))
-		group.add_argument('-w', '--wait', action='store_true', help="Wait until ExaHyPE processes have finished")
-		group.add_argument('-r', '--reporting', action='store_true', help="Do the reporting. Will trigger -w.")
-
-		reportergroup = self.reporter.add_group(parser)
-		reportergroup.description = "If Reporting is enabled, these arguments are considered:"
-
-	def apply_args(self, args, argparser):
-		self.reporting = args.reporting
-		self.wait = args.wait
-
-		if args.reporting and not args.wait:
-			self.logger.info("Switching on --wait")
-			self.wait = True
-
-		if args.reporting:
-			self.reporter.apply_args(args, argparser)
-
-	def dispatchProcesses(self, processes):
-		if self.wait:
-			livingprocs = processes[:] # copy
-			while True:
-				# filter out finished processes
-				livingprocs = [proc for proc in livingprocs if proc.poll() == None]
-				self.logger.info("Waiting for %d processes (%s) to finish..." % (len(livingprocs),pidlist(livingprocs)))
-				if not len(livingprocs):
-					break
-				time.sleep(1)
-			
-				# Todo: Should kill processes when this script is killed inside this loop.
-				# or tell processes to quit when args.wait is on and parent is killed.
-			
-				# do this to access values
-				#proc.communicate()
-
-			exitcodes = [proc.returncode for proc in processes]
-			exitcode = sum(exitcodes)
-			self.logger.info("All processes finished with summed %d. Exit codes are: %s" % (exitcode, str(exitcodes)))
-
-			if self.reporting:
-				self.convergencePassed = self.startConvergenceTable()
-		else:
-			self.logger.info("Convergence tests running in background, immediately finishing.")
-
-	def startConvergenceTable(self):
-		self.logger.error("Not yet implemented. do something!")
-		return self.reporter.start()
-
-def convergenceFrontend(convergencetest, description=__doc__):
-	"""
-	Use this as your main function and pass an instance of the convergence test
-	which shall be run after argument dispatching.
-	"""
-	logger = logging.getLogger("convergenceFrontend")
-
-	frontend = ExaFrontend(program_description=description)
-	reportAdapter = ConvergenceReporterAdapter()
-
-	frontend.add_module(convergencetest)
-	frontend.add_module(reportAdapter)
-
-	args = frontend.parse_args()
-	processes = convergencetest.startFromArgs(frontend.args, frontend.parser)
-	reportAdapter.dispatchProcesses(processes)
-
-	if reportAdapter.reporting:
-		logger.info("Finishing with convergencePassed=%s" % str(reportAdapter.convergencePassed))
-		exitConvergenceStatus(reportAdapter.convergencePassed)
-	else:
-		logger.info("All done.")
 
 
