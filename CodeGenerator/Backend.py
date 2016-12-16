@@ -32,6 +32,7 @@ import subprocess
 import errno
 from glob import iglob
 from shutil import move
+import KernelsHeaderGenerator
 import FunctionSignatures
 import SpaceTimePredictorGenerator
 import VolumeIntegralGenerator
@@ -127,7 +128,6 @@ def prepareOutputDirectory(i_outputDirectory):
             os.remove(i_outputDirectory + "/" + l_fileName)
 
 
-
 def executeBashCommand(i_command, i_commandLineParameters):
     # usage: executeBashCommand("ls", "-l -a")
     l_bashCommand = i_command + " " + i_commandLineParameters
@@ -135,95 +135,23 @@ def executeBashCommand(i_command, i_commandLineParameters):
     return l_commandOutput
 
 
-
-def generateCommonHeader():
-    # name of generated output file
-    l_filename = "Kernels.h"
-    l_sourceFile = open(l_filename, 'a')
-
-    # include guard
-    l_sourceFile.write('#ifndef EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_\n'   \
-                       '#define EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_\n\n'
-                       )
-
-    # global includes
-    l_sourceFile.write('#include "tarch/la/Vector.h"\n'                   \
-                       '#include "peano/utils/Globals.h"\n\n'
-                       )
-                       
-    l_sourceFile.write('#ifndef __INTEL_COMPILER\n'                       \
-                       '#include <mm_malloc.h>\n'                         \
-                       '#endif\n\n'
-                      )  
-
-    # disable libxsmm counter
-    l_sourceFile.write('#define NDEBUG\n')
-
-    # nested namespaces
-    l_sourceFile.write('namespace kernels {\n'        )
-    l_sourceFile.write('  namespace aderdg {\n'       )
-    l_sourceFile.write('    namespace optimised {\n\n')
-
-    # we are inside of a nested namespace and add extra spaces to our function signatures
-    l_indentation = 6
-
-    # fetch function signatures
-    l_functionList = []
-    l_functionList.append(FunctionSignatures.getPicardLoopSignature(m_config['nDim']))
-    l_functionList.append(FunctionSignatures.getPredictorSignature())
-    l_functionList.append(FunctionSignatures.getExtrapolatorSignature())
-    l_functionList.append(FunctionSignatures.getSolutionUpdateSignature())
-    l_functionList.append(FunctionSignatures.getVolumeIntegralSignature())
-    l_functionList.append(FunctionSignatures.getSurfaceIntegralSignature())
-    l_functionList.append(FunctionSignatures.getInitialConditionSignature())
-    l_functionList.append(FunctionSignatures.getSolutionAdjustmentSignature())
-    l_functionList.append(FunctionSignatures.getRiemannSolverSignature())
-    l_functionList.append(FunctionSignatures.getStableTimeStepSizeSignature())
-    l_functionList.append(FunctionSignatures.getBoundaryConditionsSignature())
-
-    # declare c++ functions in header file
-    for l_functionSignature in l_functionList:
-        # we are already inside the namespace, so we cut off the namespace substring
-        l_functionSignature = re.sub('kernels::aderdg::optimised::','',l_functionSignature)
-        # fix indentation
-        l_functionSignature = reindentBlock(l_functionSignature, l_indentation)
-        # write function declarations one after another
-        l_sourceFile.write(l_functionSignature+";\n\n")
-
-
-    # closing brackets of namespace
-    l_sourceFile.write('    }\n')
-    l_sourceFile.write('  }\n'  )
-    l_sourceFile.write('}\n\n'  )
-
-    # include template functions
-    l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
-    l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
-    if(m_numerics == 'nonlinear'):
-        l_sourceFile.write('#include "kernels/aderdg/optimised/picard.cpph"\n\n')
-    else:
-        l_sourceFile.write('#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"\n\n')
-    l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
-    l_sourceFile.write('#include "kernels/aderdg/optimised/ConfigurationParameters.cpph"\n\n')
-    l_sourceFile.write('#include "kernels/aderdg/optimised/boundaryConditions.cpph"\n\n')
-    
-    # close include guard
-    l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
-
-    l_sourceFile.close()
-
 def generateContext(i_config):
     context = copy.copy(i_config)
     context['nVarPad'] = getSizeWithPadding(i_config['nVar'])
     context['nDofPad'] = getSizeWithPadding(i_config['nDof'])
+    context['isLinear'] = m_numerics == "linear"
+    #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
     return context
 
+    
 def generateComputeKernels():
+    kernelsHeaderGenerator = KernelsHeaderGenerator.KernelsHeaderGenerator(generateContext(m_config))
+    kernelsHeaderGenerator.generateCode()
     spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(m_config, m_numerics)
     spaceTimePredictorGenerator.generateCode()
-    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config), m_numerics)
+    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config))
     volumeIntegralGenerator.generateCode()
-    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(generateContext(m_config), m_numerics)
+    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(generateContext(m_config))
     surfaceIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
@@ -237,9 +165,9 @@ def generateComputeKernels():
     weightsGenerator.generateCode()
     dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
-    cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config), m_numerics)
+    cpphGemmsGenerator = CpphGemmsGenerator.CpphGemmsGenerator(generateContext(m_config))
     cpphGemmsGenerator.generateCode()
-    configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config), m_numerics)
+    configurationParametersGenerator = ConfigurationParametersGenerator.ConfigurationParametersGenerator(generateContext(m_config))
     configurationParametersGenerator.generateCode()
     boundaryConditionsGenerator = BoundaryConditionsGenerator.BoundaryConditionsGenerator(generateContext(m_config))
     boundaryConditionsGenerator.generateCode()
@@ -295,3 +223,81 @@ def reindentBlock(i_string, i_nSpaces):
     l_stringList = list(map(lambda line, ns=i_nSpaces: reindentLine(line, ns), l_stringList))
     l_string = "\n".join(l_stringList)
     return l_string
+ 
+# Legacy code for reference (TODO JMG remove when not needed anymore)
+ 
+# def generateCommonHeader():
+    # # name of generated output file
+    # l_filename = "Kernels.h"
+    # l_sourceFile = open(l_filename, 'a')
+
+    # # include guard
+    # l_sourceFile.write('#ifndef EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_\n'   \
+                       # '#define EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_\n\n'
+                       # )
+
+    # # global includes
+    # l_sourceFile.write('#include "tarch/la/Vector.h"\n'                   \
+                       # '#include "peano/utils/Globals.h"\n\n'
+                       # )
+                       
+    # l_sourceFile.write('#ifndef __INTEL_COMPILER\n'                       \
+                       # '#include <mm_malloc.h>\n'                         \
+                       # '#endif\n\n'
+                      # )  
+
+    # # disable libxsmm counter
+    # l_sourceFile.write('#define NDEBUG\n')
+
+    # # nested namespaces
+    # l_sourceFile.write('namespace kernels {\n'        )
+    # l_sourceFile.write('  namespace aderdg {\n'       )
+    # l_sourceFile.write('    namespace optimised {\n\n')
+
+    # # we are inside of a nested namespace and add extra spaces to our function signatures
+    # l_indentation = 6
+
+    # # fetch function signatures
+    # l_functionList = []
+    # l_functionList.append(FunctionSignatures.getPicardLoopSignature(m_config['nDim']))
+    # l_functionList.append(FunctionSignatures.getPredictorSignature())
+    # l_functionList.append(FunctionSignatures.getExtrapolatorSignature())
+    # l_functionList.append(FunctionSignatures.getSolutionUpdateSignature())
+    # l_functionList.append(FunctionSignatures.getVolumeIntegralSignature())
+    # l_functionList.append(FunctionSignatures.getSurfaceIntegralSignature())
+    # l_functionList.append(FunctionSignatures.getInitialConditionSignature())
+    # l_functionList.append(FunctionSignatures.getSolutionAdjustmentSignature())
+    # l_functionList.append(FunctionSignatures.getRiemannSolverSignature())
+    # l_functionList.append(FunctionSignatures.getStableTimeStepSizeSignature())
+    # l_functionList.append(FunctionSignatures.getBoundaryConditionsSignature())
+
+    # # declare c++ functions in header file
+    # for l_functionSignature in l_functionList:
+        # # we are already inside the namespace, so we cut off the namespace substring
+        # l_functionSignature = re.sub('kernels::aderdg::optimised::','',l_functionSignature)
+        # # fix indentation
+        # l_functionSignature = reindentBlock(l_functionSignature, l_indentation)
+        # # write function declarations one after another
+        # l_sourceFile.write(l_functionSignature+";\n\n")
+
+
+    # # closing brackets of namespace
+    # l_sourceFile.write('    }\n')
+    # l_sourceFile.write('  }\n'  )
+    # l_sourceFile.write('}\n\n'  )
+
+    # # include template functions
+    # l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
+    # l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
+    # if(m_numerics == 'nonlinear'):
+        # l_sourceFile.write('#include "kernels/aderdg/optimised/picard.cpph"\n\n')
+    # else:
+        # l_sourceFile.write('#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"\n\n')
+    # l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
+    # l_sourceFile.write('#include "kernels/aderdg/optimised/ConfigurationParameters.cpph"\n\n')
+    # l_sourceFile.write('#include "kernels/aderdg/optimised/boundaryConditions.cpph"\n\n')
+    
+    # # close include guard
+    # l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
+
+    # l_sourceFile.close()

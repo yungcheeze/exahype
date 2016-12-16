@@ -171,17 +171,6 @@ class exahype::plotters::Plotter {
         const int cellDescriptionsIndex,
         const int element) = 0;
 
-    /**
-     * Hand a patch over to the plotter. Feel free to ignore the passed data if
-     * you don't want to plot it.
-     *
-     * \deprecated
-     */
-    virtual void plotPatch(
-        const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-        const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-        double timeStamp) = 0;
-
     virtual void startPlotting( double time ) = 0;
     virtual void finishPlotting() = 0;
   };

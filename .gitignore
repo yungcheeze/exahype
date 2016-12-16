@@ -58,6 +58,7 @@ buildinfo.h
 
 #Toolkit binaries
 Toolkit/dist
+ExaHyPE.jar
 
 # Peano directories:
 # As Peano ships it own .gitignore, this must be stated

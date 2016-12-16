@@ -1,3 +1,7 @@
-
-ant clean && ant createParser && ant compile && ant dist
+cd src
+make clean
+make createParser
+make clean
+make compile
+make dist
 

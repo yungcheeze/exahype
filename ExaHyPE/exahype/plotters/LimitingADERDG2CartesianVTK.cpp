@@ -99,7 +99,9 @@ exahype::plotters::LimitingADERDG2CartesianVTK::LimitingADERDG2CartesianVTK(
   _vertexDataWriter(nullptr),
   _cellDataWriter(nullptr),
   _timeStampVertexDataWriter(nullptr),
-  _timeStampCellDataWriter(nullptr) {
+  _timeStampCellDataWriter(nullptr),
+  _cellLimiterStatusWriter(nullptr),
+  _vertexLimiterStatusWriter(nullptr){
 }
 
 
@@ -156,22 +158,28 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::startPlotting( double time 
           new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
     }
 
-    _gridWriter                = _patchWriter->createSinglePatchWriter();
+    _gridWriter                  = _patchWriter->createSinglePatchWriter();
     if (_plotCells) {
-      _cellDataWriter          = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
-      _vertexDataWriter        = nullptr;
+      _cellDataWriter            = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
+      _vertexDataWriter          = nullptr;
+
+      _cellLimiterStatusWriter   = _patchWriter->createCellDataWriter("Limiter-Status(0-O,1-NNT,2-NT,3-T)", 1);
+      _vertexLimiterStatusWriter = nullptr;
     }
     else {
-      _cellDataWriter          = nullptr;
-      _vertexDataWriter        = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+      _cellDataWriter            = nullptr;
+      _vertexDataWriter          = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+
+      _cellLimiterStatusWriter   = nullptr;
+      _vertexLimiterStatusWriter = _patchWriter->createVertexDataWriter("Limiter-Status(0-O,1-NNT,2-NT,3-T)", 1);
     }
     _timeStampVertexDataWriter = _patchWriter->createVertexDataWriter("time", 1);
-    _timeStampCellDataWriter   = _patchWriter->createCellDataWriter("time", 1);
+//    _timeStampCellDataWriter   = _patchWriter->createCellDataWriter("time", 1);
 
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampVertexDataWriter!=nullptr );
-    assertion( _timeStampCellDataWriter!=nullptr );
+//    assertion( _timeStampCellDataWriter!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
@@ -188,9 +196,11 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
 
     _gridWriter->close();
     _timeStampVertexDataWriter->close();
-    _timeStampCellDataWriter->close();
-    if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
-    if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
+//    if (_timeStampCellDataWriter!=nullptr) _timeStampCellDataWriter->close();
+    if (_vertexDataWriter!=nullptr)        _vertexDataWriter->close();
+    if (_cellDataWriter!=nullptr)          _cellDataWriter->close();
+    if (_cellLimiterStatusWriter!=nullptr) _cellLimiterStatusWriter->close();
+    if (_vertexLimiterStatusWriter!=nullptr) _vertexLimiterStatusWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
@@ -209,6 +219,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
   if (_cellDataWriter!=nullptr)            delete _cellDataWriter;
   if (_timeStampVertexDataWriter!=nullptr) delete _timeStampVertexDataWriter;
   if (_timeStampCellDataWriter!=nullptr)   delete _timeStampCellDataWriter;
+  if (_cellLimiterStatusWriter!=nullptr)   delete _cellLimiterStatusWriter;
+  if (_vertexLimiterStatusWriter!=nullptr) delete _vertexLimiterStatusWriter;
   if (_gridWriter!=nullptr)                delete _gridWriter;
   if (_patchWriter!=nullptr)               delete _patchWriter;
 
@@ -217,6 +229,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
   _patchWriter               = nullptr;
   _timeStampVertexDataWriter = nullptr;
   _timeStampCellDataWriter   = nullptr;
+  _cellLimiterStatusWriter   = nullptr;
+  _vertexLimiterStatusWriter = nullptr;
   _gridWriter                = nullptr;
 }
 
@@ -241,7 +255,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotVertexData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
   double* u,
-  double timeStamp
+  double timeStamp,
+  const int limiterStatusAsInt
 ) {
   assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
 
@@ -278,6 +293,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotVertexData(
       _vertexDataWriter->plotVertex(firstVertexIndex, value, _writtenUnknowns );
     }
 
+    _vertexLimiterStatusWriter->plotVertex(firstVertexIndex, static_cast<double>(limiterStatusAsInt));
+
     firstVertexIndex++;
   }
 
@@ -291,7 +308,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotCellData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
   double* u,
-  double timeStamp
+  double timeStamp,
+  const int limiterStatusAsInt
 ) {
   assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
 
@@ -326,6 +344,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotCellData(
       _cellDataWriter->plotCell(firstCellIndex, value, _writtenUnknowns );
     }
 
+    _cellLimiterStatusWriter->plotCell(firstCellIndex, static_cast<double>(limiterStatusAsInt));
+
     firstCellIndex++;
   }
 
@@ -338,6 +358,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
     switch(solverPatch.getLimiterStatus()) {
+      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: // TODO(Dominic): Plot FVM solution instead
       case exahype::records::ADERDGCellDescription::LimiterStatus::Ok:
       case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
         double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
@@ -345,26 +367,27 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
         plotADERDGPatch(
             solverPatch.getOffset(),
             solverPatch.getSize(), solverSolution,
-            solverPatch.getCorrectorTimeStamp());
+            solverPatch.getCorrectorTimeStamp(),
+            static_cast<int>(solverPatch.getLimiterStatus()));
       } break;
-      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {
-        auto* limitingADERDGSolver =
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(
-                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
-
-        const int limiterElement =
-            limitingADERDGSolver->tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-        auto& limiterPatch =
-            exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
-
-        double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
-
-        plotFiniteVolumesPatch(
-            limiterPatch.getOffset(),
-            limiterPatch.getSize(), limiterSolution,
-            limiterPatch.getTimeStamp());
-      } break;
+//      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
+//      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {
+//        auto* limitingADERDGSolver =
+//            static_cast<exahype::solvers::LimitingADERDGSolver*>(
+//                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);
+//
+//        const int limiterElement =
+//            limitingADERDGSolver->tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+//        auto& limiterPatch =
+//            exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,limiterElement);
+//
+//        double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
+//
+//        plotFiniteVolumesPatch(
+//            limiterPatch.getOffset(),
+//            limiterPatch.getSize(), limiterSolution,
+//            limiterPatch.getTimeStamp());
+//      } break;
     }
   }
 }
@@ -374,7 +397,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotADERDGPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double* u,
-    double timeStamp) {
+    double timeStamp,
+    const int limiterStatusAsInt) {
   if (
     tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
     &&
@@ -392,10 +416,10 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotADERDGPatch(
     writeTimeStampDataToADERDGPatch( timeStamp, vertexAndCellIndex.first );
 
     if (_plotCells) {
-      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp, limiterStatusAsInt );
     }
     else {
-      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp, limiterStatusAsInt );
     }
   }
 }

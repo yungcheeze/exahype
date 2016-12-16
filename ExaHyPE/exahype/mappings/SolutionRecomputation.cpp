@@ -116,7 +116,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme
         // plus the ones for the Finite Volume scheme.
-        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
+        numberOfStateSizedVectors  = std::max(2*DIMENSIONS+1, 6); // See kernels:finitevolumes::godunov::2d/3d::solutionUpdate or riemannSolverNonlinear
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
@@ -131,7 +131,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
         lengthOfFaceUnknowns =
             static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
-        numberOfStateSizedVectors = 5;
+        numberOfStateSizedVectors = 2*DIMENSIONS+1; // see kernels:finitevolumes::godunov::2d/3d::solutionUpdate
         break;
     }
 
@@ -182,47 +182,26 @@ void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
   if (_tempStateSizedVectors!=nullptr) {
     assertion(_tempStateSizedSquareMatrices!=nullptr);
 
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      int numberOfStateSizedVectors  = 0;
-      int numberOfStateSizedMatrices = 0;
-      int numberOfFaceUnknowns       = 0;
-      int numberOfUnknowns           = 0;
-      switch (solver->getType()) {
-        case exahype::solvers::Solver::Type::ADERDG:
-        case exahype::solvers::Solver::Type::LimitingADERDG:
-          numberOfStateSizedVectors  = 6; // See riemannSolverLinear
-          numberOfStateSizedMatrices = 3; // See riemannSolverLinear
-          numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
-          break;
-        case exahype::solvers::Solver::Type::FiniteVolumes:
-          // TODO(Dominic): We do not consider high-order FV methods yet;
-          // numberOfUnknowns is thus set to zero.
-          numberOfUnknowns = 0;
-          numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
-          numberOfStateSizedVectors = 5;
-          break;
-      }
-
-      if (numberOfStateSizedVectors>0) {
+    for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      if (_tempStateSizedVectors[solverNumber]!=nullptr) {
         delete[] _tempStateSizedVectors[solverNumber][0];
         delete[] _tempStateSizedVectors[solverNumber];
         _tempStateSizedVectors[solverNumber] = nullptr;
       }
       //
-      if (numberOfStateSizedMatrices>0) {
+      if (_tempStateSizedSquareMatrices[solverNumber]!=nullptr) {
         delete[] _tempStateSizedSquareMatrices[solverNumber][0];
         delete[] _tempStateSizedSquareMatrices[solverNumber];
         _tempStateSizedSquareMatrices[solverNumber] = nullptr;
       }
       //
-      if (numberOfFaceUnknowns>0) {
+      if (_tempFaceUnknowns[solverNumber]!=nullptr) {
         delete[] _tempFaceUnknowns[solverNumber][0];
         delete[] _tempFaceUnknowns[solverNumber];
         _tempFaceUnknowns[solverNumber] = nullptr;
       }
       //
-      if (numberOfUnknowns>0) {
+      if (_tempUnknowns[solverNumber]!=nullptr) {
         delete[] _tempUnknowns[solverNumber][0];
         delete[] _tempUnknowns[solverNumber];
         _tempUnknowns[solverNumber] = nullptr;

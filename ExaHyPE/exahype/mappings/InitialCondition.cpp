@@ -109,7 +109,7 @@ void exahype::mappings::InitialCondition::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined2);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined1);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
@@ -128,11 +128,8 @@ void exahype::mappings::InitialCondition::enterCell(
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              updateMergedLimiterStatusAfterSetInitialConditions(fineGridCell.getCellDescriptionsIndex(),element);
+              updateMergedLimiterStatusAndMinAndMaxAfterSetInitialConditions(fineGridCell.getCellDescriptionsIndex(),element);
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
-
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element); // TODO(Dominic): Before or after?
         }
       }
     endpfor

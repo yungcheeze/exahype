@@ -100,7 +100,7 @@ SUBROUTINE PDEFlux(F,Q)
   v2     = vx**2 + vy**2 + vz**2
   b2     = bx**2 + by**2 + bz**2
   e2     = ex**2 + ey**2 + ez**2
-  lf     = 1.0/sqrt(1.0 - v2)
+  lf     = 1.0/sqrt(1.0 - v2) ! Lorentz factor
   w      = rho + gamma1*p
   ww     = w*lf**2
   uem    = 0.5*(b2 + e2)

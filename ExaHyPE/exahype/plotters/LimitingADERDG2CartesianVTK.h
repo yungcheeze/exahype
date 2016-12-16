@@ -58,6 +58,8 @@ private:
   tarch::plotter::griddata::Writer::CellDataWriter*                          _cellDataWriter;
   tarch::plotter::griddata::Writer::VertexDataWriter*                        _timeStampVertexDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*                          _timeStampCellDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*                          _cellLimiterStatusWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*                        _vertexLimiterStatusWriter;
 
   void writeTimeStampDataToADERDGPatch( double timeStamp, int vertexIndex );
 
@@ -66,7 +68,8 @@ private:
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
       double* u,
-      double timeStamp
+      double timeStamp,
+      const int limiterStatus
   );
 
   void plotCellData(
@@ -74,7 +77,8 @@ private:
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
       double* u,
-      double timeStamp
+      double timeStamp,
+      const int limiterStatusAsInt
   );
 public:
   LimitingADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
@@ -85,19 +89,14 @@ public:
 
   void plotPatch(const int cellDescriptionsIndex, const int element) override;
 
-  void plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-            const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-            double timeStamp) override {
-    // We use the plotADERDGPatch and plotFiniteVolumesPatch methods instead.
-  }
-
   /**
    * Plot an ADER-DG solution.
    */
   void plotADERDGPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-      double timeStamp);
+      double timeStamp,
+      const int limiterStatusAsInt);
 
   /**
    * Plot a finite volumes solution.

@@ -30,24 +30,20 @@ from MatmulConfig import MatmulConfig
 
 class VolumeIntegralGenerator:
     m_context = {}
-
-    # linear/nonlinear
-    m_type   = ""
-
+    
     # name of generated output file
     m_filename = "volumeIntegral.cpp"
 
 
-    def __init__(self, i_config, i_numerics):
-        self.m_context = i_config
-        self.m_type    = i_numerics
+    def __init__(self, i_context):
+        self.m_context = i_context
 
 
     def generateCode(self):
-        if(self.m_type == 'linear'):
+        if(self.m_context['isLinear']):
             pass
         else:
-            self.__generateNonlinearGemms() # generates gemms
+            self.generateNonlinearGemms() # generates gemms
             
             # initialize context
             gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
@@ -65,7 +61,7 @@ class VolumeIntegralGenerator:
             TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
 
 
-    def __generateNonlinearGemms(self):
+    def generateNonlinearGemms(self):
         # Compute
         # (1) lduh(:,:,j,k) = lduh(:,:,j,k) + MATMUL( lFhi_x(:,:,j,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(1)
         # (2) lduh(:,i,:,k) = lduh(:,i,:,k) + MATMUL( lFhi_y(:,:,i,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(2)

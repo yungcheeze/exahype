@@ -24,6 +24,7 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 #include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/converter.h"
 #include "kernels/KernelUtils.h"
 
 namespace exahype {
@@ -45,6 +46,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source(const double* const Q, double* S);
   void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
+  void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);
   void matrixb(const double* const Q, const int normalNonZero, double* Bn);
    
 #ifdef Dim3  
@@ -58,6 +60,7 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static void flux_Euler(const double* const Q, double** F);
   static void eigenvalues_Euler(const double* const Q, const int normalNonZeroIndex, double* lambda);
   void source_Euler(const double* const Q, double* S);
+  void boundaryValues_Euler(const double* const x, const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const fluxIn, const double* const stateIn, double* fluxOut, double* stateOut);
   
   //tests
   void run() override;
@@ -79,14 +82,17 @@ class OptimisedKernelTest : public tarch::tests::TestCase {
   static bool _isLinear;
   static const std::string dim; // for log
   
-  int _luhSize;
   double _dt;  //initialized by testStableTimeStepSize
   double* _luh; //goes to the call with generic kernel
   double* _lduh;
-  double* _lFhi_gen; // == tempFluxUnknowns 
-  double* _lFhi_opt; // == tempFluxUnknowns
-  double* _lQhi_gen; // == tempUnknowns 
-  double* _lQhi_opt; // == tempUnknowns
+  double* _lFhi; // == tempFluxUnknowns 
+  double* _lQhi; // == tempUnknowns 
+  double* _lQhbnd;
+  double* _lFhbnd;
+  
+  static const double _dx[];      // cell size, by default 1.0 in all direction
+  static const double _center[];
+  static const double _center2[]; // second cell for Riemann on the right in the x direction (1.5 instead of 0.5 by default)
 
 };
 

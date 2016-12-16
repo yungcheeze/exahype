@@ -5,9 +5,9 @@
 #
 # SK, 2016
 
-import os, subprocess, sys
+import os, subprocess, sys, inspect, logging
 from os import path, stat
-from functools import partial
+from functools import partial, wraps
 
 # provide StringIO consistently
 if sys.version_info[0] < 3: 
@@ -180,16 +180,16 @@ class Template:
 	> tpl.execute({ 'template': 'vars', 'go': 'here' }) # or at runtime
 	"""
 	def __init__(self, inputfile, outputfile):
+		self.logger = logging.getLogger("Template")
 		self.inputfile = inputfile
 		self.outputfile = outputfile
 		self.prepared_args = {}
 	def set(self, key, value):
 		self.prepared_args[key] = value
-	def execute(self, tmplvars=dict(), verbose=False):
+	def execute(self, tmplvars=dict()):
 		self.prepared_args.update(tmplvars)
 		executeTemplate(self.inputfile, self.prepared_args, self.outputfile)
-		if verbose:
-			print "Wrote report to %s." % self.outputfile
+		self.logger.info("Wrote report to %s." % self.outputfile)
 	def addStatistics(self):
 		from datetime import datetime
 		from socket import gethostname
@@ -199,3 +199,49 @@ class Template:
 		self.set('HOST', gethostname())
 		self.set('WHOAMI', getuser())
 		return self # chainable
+
+# a shorthand. Usage:
+#   cleandoc(self)
+#   cleandoc(function)
+cleandoc = lambda obj: inspect.cleandoc(obj.__doc__)
+
+class MethodActions:
+	"""
+	A class around a decorator (add). Allows to collect methods in a dictionary.
+	Also stores the documentation of the methods. Can be trivially changed to
+	store functions instead of methods.
+s
+	Usage like:
+	> class A:
+	>   my = MethodActions() 
+	>   @my.add("foo")
+	>   def doFoo(self, xyz):
+	>      pass
+	>   @my.add("bar")
+	>   def doBar(self, xyz):
+	>      pass
+	>   def __init__():
+	>      print("Do have", self.my.list())
+	>      self.my.call("foo", self, 123)
+	"""
+	def __init__(self):
+		self.actions = {}
+		self.docs = {}
+
+	def add(self, action_key):
+		def method_decorator(method):
+			self.actions[action_key] = method
+			self.docs[action_key] = cleandoc(method)
+
+			@wraps(method)
+			def _impl(self, *method_args, **method_kwargs):
+				method(self, *method_args, **method_kwargs)
+			return _impl
+		return method_decorator
+
+	def call(self, action_key, *args, **kwargs):
+		return self.actions[action_key](*args, **kwargs)
+
+	def list(self):
+		return self.actions.keys()
+
