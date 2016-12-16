@@ -26,10 +26,10 @@
 // #include <fstream>
 
 // using std::endl;
-// using std::cout;
+ using std::cout;
 
 extern "C" {
-void aderspacetimepredictorlinear_(double* lqhi, double* lFhi, double* lQbnd,
+void aderspacetimepredictorlinear_(double* lQhi, double* lFhi, double* lQbnd,
                                    double* lFbnd, double* luh, double* dt,
                                    double* dx);
 }
@@ -49,14 +49,19 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
 
     // There are tons of undeclared variables in here
     // Thank you compiler for telling us about it
-    
+
+    const int numberOfVariables = solver.getNumberOfVariables();
+  const int basisSize         = solver.getNodesPerCoordinateAxis();
+  const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
+  //cout << numberOfVariables;
+  
     // /* TODO: Don't really understand luhTemp. Should ask !! */
-    // double* luhTemp =
-     // new double[numberOfVariables * basisSize * basisSize * basisSize];
-      // for (int i = 0;
-        // i < numberOfVariables * basisSize * basisSize * basisSize;
-        // i++){
-      // luhTemp[i] =  luh[i]; }
+    double* luhTemp =
+      new double[numberOfVariables * basisSize * basisSize * basisSize];
+       for (int i = 0;
+         i < numberOfVariables * basisSize * basisSize * basisSize;
+         i++){
+       luhTemp[i] =  luh[i]; }
      
    // //memcpy(luhTemp, luh, numberOfVariables * basisSize * basisSize * basisSize *
    // //                         sizeof(double));
@@ -68,13 +73,26 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
         // i++){
      // lFhiFortran[i] = lFhi[i]; } //-123.45;
 
-   // double* dtTemp = new double[1];
-   // dtTemp[0] =  dt;
+     double dtTemp[1];
+     dtTemp[0] = dt;
 
-  // double* dxTemp = new double[3];
-  // dxTemp[0] = dx[0];
-  // dxTemp[1] = dx[1];
-  // dxTemp[2] = dx[2];
+     double dxTemp[3];
+     dxTemp[0] = dx[0];
+     dxTemp[1] = dx[1];
+     dxTemp[2] = dx[2];
+     
+    //double* dtTemp = new double[1];
+    //dtTemp[0] =  dt;
+
+   //double* dxTemp = new double[3];
+   //dxTemp[0] = dx[0];
+   //dxTemp[1] = dx[1];
+   //dxTemp[2] = dx[2];
+
+   double* lQhi =  tempUnknowns;
+   double* lFhi = tempFluxUnknowns;
+   
+    //double* lQhi = tempSpaceTimeUnknowns[0];	
 
    // double* lFbndFortran =
        // new double[numberOfVariables * 6 * basisSize * basisSize];
@@ -88,11 +106,10 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
      // lQbndFortran[i] =  lQbnd[i]; //-123.45;
    // }
 
-   // //aderspacetimepredictorlinear_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran,
-   // //                             luhTemp, dtTemp, dxTemp);
+   //aderspacetimepredictorlinear_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran,
+   //                             luhTemp, dtTemp, dxTemp);
 
-  // aderspacetimepredictorlinear_(lQhi, lFhi, lQbnd, lFbnd,
-                                // luh, dtTemp, dxTemp);			
+   aderspacetimepredictorlinear_(lQhi, lFhi, lQbnd, lFbnd, luhTemp, dtTemp, dxTemp);			
 
   // // // Permutation of lFhi
   // // for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
@@ -142,12 +159,12 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     // // }
   // // }
 
-   // delete[] luhTemp;
+    //delete[] luhTemp;
    // delete[] lFhiFortran;
    // delete[] lFbndFortran;
    // delete[] lQbndFortran;
-   // delete[] dxTemp;
-   // delete dtTemp;
+    //delete[] dxTemp;
+    //delete dtTemp;
 
   // // // std::ofstream ofs;
   // // // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);
