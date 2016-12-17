@@ -16,6 +16,8 @@ echo -en "FinishedStatus${SEP}"
 echo -ne "LastTimeStep${SEP}"
 echo -e  "Walltime"
 
+set -o pipefail # important for chained expressions
+
 for sim in $(find $SIMBASE -maxdepth 1 -type d | sort); do
 	[[ $sim == "$SIMBASE" ]] && continue
 	shortsimname="$(basename "$sim")"
@@ -44,10 +46,15 @@ for sim in $(find $SIMBASE -maxdepth 1 -type d | sort); do
 		fi
 		echo -ne "$SEP $BLACKBOX"
 
-		#if T=$(tail $sim/*.log | grep user | awk '{ print $4 }'); then
-		if T=$(grep -E "user\s+[0-9]" $sim/*.log | awk '{ print $4 }'); then
+		# `time` from bash normally outputs a line "user	0m0.004s"
+		if T=$(grep -E "^user\s+[0-9]" $sim/*.log | awk '{ print $4 }'); then
 			echo -ne "$SEP $T"
-		else	echo -ne "$SEP noWalltime"
+		# sometimes, we also have something like "321.27user 0.28system 5:23.36elapsed" which is in SECONDS
+		elif T=$(grep -Eo "[0-9.]+user\s+" $sim/*.log | tr -d 'user'); then
+			T=$(bc <<< "$T / 60" ) # convert seconds to minutes, result is an integer
+			echo -ne "$SEP ${T}m" # similarize format
+		else
+			echo -ne "$SEP noWalltime"
 		fi
 	else
 		echo -n "noResults"
