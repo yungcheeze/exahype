@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+
 if exaloc=$(which exa 2>&1); then
 	echo "You already have 'exa' installed at $exaloc"
 	ls -l $exaloc
