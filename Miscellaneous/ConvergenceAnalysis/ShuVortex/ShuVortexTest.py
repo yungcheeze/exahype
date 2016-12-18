@@ -32,7 +32,7 @@ test = PolyorderTest("EulerShuVortex")
 # default values for ShuVortex simulations,
 # cf. the paper of Michael Dumbser
 test.polyorders = range(2,10)
-test.width = 2.
+test.width = 15.
 test.depths = range(1,6)
 
 test.computeCombinations()
@@ -48,18 +48,18 @@ test.settings['ExaBinary'] = "../../../ApplicationExamples/EulerFlow/ExaHyPE-Eul
 
 test.settings['ExaSpecfile'] = "ShuVortexConvergenceTpl.exahype"
 # template to set up a queueing system
-test.settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ShuVortex"
+test.settings['QRUNTPL'] = "" #"srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ShuVortex"
 
 # set initial data to use.
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
 test.settings['EXAHYPE_INITIALDATA']="ShuVortex"
 # parameters for setting up the specfile
 test.settings['ExaWidth'] = test.width
-test.settings['ExaEndTime'] = 2.0
+test.settings['ExaEndTime'] = 6.0
 # parameters deciding how frequently output is made. As a first criterion,
 # 1 output dump with the highest resolution is 250MB.
 test.settings['ExaConvOutputRepeat'] = 0.1
-test.settings['ExaVtkOutputRepeat'] = 0.5
+test.settings['ExaVtkOutputRepeat'] = 0.2
 # single threaded in the moment.
 test.settings['ExaTbbCores'] = 1
 
