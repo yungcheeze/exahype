@@ -1,10 +1,22 @@
-# unpack the grid generation framework Peano
-cd Code/Peano
-tar xvfz peano.tar.gz
-git checkout .gitignore
-cd ..
+#!/bin/sh
 
-# run toolkit for the generation of user applications
+# stop on error
+set -e
+
+# download the grid generation framework Peano
+./Peano/checkout-update-peano.sh
+
+# compile the Java toolkit
+./Toolkit/build.sh
+
+# Optional: Install libxsmm
+
+# git clone https://github.com/hfp/libxsmm.git Libxsmm
+# cd Libxsmm/
+# make generator
+
+# Now you are ready to follow compile and run an ExaHyPE application
+# according to the guidebook:
 java -jar Toolkit/dist/ExaHyPE.jar --not-interactive ApplicationExamples/eulerflow2d.exahype
 
 # set build parameters

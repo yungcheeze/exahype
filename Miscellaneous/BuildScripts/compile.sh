@@ -3,9 +3,17 @@
 # A compiler script to make the compilation of ExaHyPE applications
 # more decent.
 #
+# This is basically a wrapper around just typing "make" inside an
+# ExHyPE application directory.
+#
+# Therefore, we except this script to be called from the
+# ExaHyPE application directory!
+#
 # (c) 2016 ExaHyPE, Sven K
 
 buildscripts="$(dirname "$0")"
+
+verbose() { echo -e $@; $@; }
 
 # path names for our script
 DEFAULT_APPNAME="${PWD##*/}"
@@ -35,22 +43,26 @@ ABSCODEDIR=${ABSCODEDIR:=$DEFAULT_ABSCODEDIR}
 CLEAN=${CLEAN:=$DEFAULT_CLEAN}
 SKIP_TOOLKIT=${SKIP_TOOLKIT:=$DEFAULT_SKIP_TOOLKIT}
 
+# go to ExaHyPE-Engine root directory (used to be Code/ in former days)
+verbose cd "$ABSCODEDIR" || { echo -e "Cannot compile $APPNAME as there is no ABSCODEDIR=$ABSCODEDIR"; exit -1; }
+
+# Logging all further invocations of the toolkit, etc. to make.log
+unbuf="stdbuf -i0 -o0 -e0" # turn off buffering in pipe
+exec &> >($unbuf tee "$ABSAPPDIR/$APPNAME/make.log")
+
 echo -e "$0 running with"
 echo -e " APPNAME = $APPNAME"
 echo -e " SPECFILE = $SPECFILE"
 echo -e " ABSAPPDIR = $ABSAPPDIR"
+echo -e " ABSCODEDIR = $ABSCODEDIR"
 echo -e " APPDIRNAME = $APPDIRNAME"
 echo -e " CLEAN = $CLEAN"
-
-cd "$ABSCODEDIR"
 
 [[ -e "$APPDIRNAME/$SPECFILE" ]] || { echo -e "Cannot find specfile $APPDIRNAME/$SPECFILE in $PWD"; exit -1; }
 PROJECTNAME=$(grep '^exahype-project' "$APPDIRNAME/$SPECFILE" | awk '{ print $2; }')
 
 echo -e " PROJECTNAME = $PROJECTNAME"
 echo -e " SKIP_TOOLKIT = $SKIP_TOOLKIT"
-echo -e "at $(date) on $(hostname) as $(whoami)"
-echo -e
 
 export COMPILER=${COMPILER:=$DEFAULT_COMPILER}
 export SHAREDMEM=${SHAREDMEM:=$DEFAULT_SHAREDMEM}
@@ -61,6 +73,14 @@ export MODE=${MODE:=$DEFAULT_MODE}
 export TBB_INC=/usr/include/tbb
 MPI_LDFLAGS="$(mpicc -showme:link)"
 export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
+
+#echo -e " COMPILER=$COMPILER"
+#echo -e " SHAREDMEM=$SHAREDMEM"
+#echo -e " DISTRIBUTEDMEM=$DISTRIBUTEDMEM"
+#echo -e " MODE=$MODE"
+
+echo -e "at $(date) on $(hostname) as $(whoami)"
+echo -e
 
 set -e
 
@@ -75,22 +95,25 @@ else
 	#rm $APPDIRNAME/$APPNAME/Makefile
 	#could also delete KernelCalls.cpp, $APPNAME_generated.cpp, etc.
 
-	java -jar Toolkit/dist/ExaHyPE.jar  --not-interactive $APPDIRNAME/$APPNAME.exahype
+	verbose java -jar Toolkit/dist/ExaHyPE.jar  --not-interactive $APPDIRNAME/$APPNAME.exahype
 fi
 
 cd -
 
+# plausability check
+[[ -e Makefile ]] || { echo -e "Could not find Makefile in $PWD. Probably the toolkit failed."; exit -1; }
+
 case $CLEAN in
 	"None") echo -e "No cleaning before building."
 		;;
-	"Clean") echo -e "Make clean"
-		make clean
+	"Clean") 
+		verbose make clean
 		;;
 	"Lightweight") echo -e "Lightweight clean"
 		# find also object files in subdirectories
-		find . -iname '*.o' -exec rm {} \;
+		verbose find . -iname '*.o' -exec rm {} \;
 		# and also cleanup Fortran modules
-		find . -iname '*.mod' -exec rm {} \;
+		verbose find . -iname '*.mod' -exec rm {} \;
 		;;
 esac
 
@@ -119,13 +142,13 @@ for fmodule in Parameters.f90 typesDef.f90; do
 	if [ -e $fmodule ]; then
 		echo -e "Precompiling $fmodule as otherwise build fails"
 		FORTFLAGS="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
-		gfortran $FORTFLAGS -c $fmodule
+		verbose gfortran $FORTFLAGS -c $fmodule
 	fi
 done
 
 set -o pipefail # fail if make fails
 
-make -j $(nproc) 2>&1 | tee make.log || {
+verbose make -j $(nproc) || {
 	echo -e "Make failed!";
 	$buildscripts/whoopsie-paster.sh
 	exit -1;

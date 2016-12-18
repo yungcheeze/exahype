@@ -21,6 +21,7 @@ CMD="$1" # the actual command
 PAR="$2" # some parameter (for passing to bash functions)
 set -- "${@:2}" # pop first parameter
 
+verbose() { info $@; $@; } # only used for debugging
 info () { echo -e $ME: $@; } # print error/info message with name of script
 fail () { info $@; exit -1; } # exit after errormessage with name of script
 abort () { echo -e $@; exit -1; } # fail without name of script
@@ -54,6 +55,13 @@ case $CMD in
 		make clean
 		exec make generator -j4
 		;;
+	"bootstrap") # Install/compile/update all dependencies (Peano, Toolkit, Libxsmm) in one go
+		cdroot; info "Bootstrapping"
+		set -e
+		subreq update-peano
+		subreq update-toolkit
+		subreq update-libxsmm
+		info "Sucessfully boostrapped ExaHyPE installation at $PWD"
 	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
 		cdroot; info "Listing available Applications:"
 		find ApplicationExamples/* -type d -exec basename {} \;
