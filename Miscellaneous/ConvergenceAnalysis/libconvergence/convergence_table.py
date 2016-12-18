@@ -115,7 +115,7 @@ class ConvergenceReporter:
 		group.add_argument('--quantity', type=str, default=self.quantity, help="Which quantity to look at")
 		group.add_argument('--simulations', type=str, default=self.simulationListFilename, help="Path to CSV file "+
 			"holding the simulations to consider. If not given, generates list by ./showSimulationProgress.sh on the fly")
-		group.add_argument('--minimal-reduction-length', type=str, default=120, help="Minimal number of lines in reductions to include")
+		group.add_argument('--minimal-reduction-length', type=str, default=20, help="Minimal number of lines in reductions to include")
 		group.add_argument('--skip-plots', action='store_true', default=False, help="Skip the generation of inlined SVG plots")
 		return group
 
@@ -323,7 +323,7 @@ class ConvergenceReporter:
 		minimalReductionsLengths = lambda SimRow: SimRow['EachRedLength'] > self.minimal_reduction_length
 		emptyDirectoryCheck = lambda SimRow: not is_empty_file(SimRow[idx.SimName])
 		# now choose:
-		goodSimulationCriterion = emptyDirectoryCheck
+		goodSimulationCriterion = minimalReductionsLengths
 
 		# Compute the filter of entries which will be processed in the further steps
 		includedSimulations = self.fullsimtable.apply(goodSimulationCriterion, axis=1) # row-wise
