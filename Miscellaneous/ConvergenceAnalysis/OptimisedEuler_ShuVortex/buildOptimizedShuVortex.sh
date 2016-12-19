@@ -7,7 +7,7 @@ export CLEAN="Clean"
 # as it distributes code in the exahype/kernels directory.
 
 
-exa=../../BuildScripts/exa.sh
+exa="../../BuildScripts/exa.sh"
 
 $exa polycompile-all OptimisedKernel_Euler
 

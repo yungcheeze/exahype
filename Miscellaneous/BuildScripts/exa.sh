@@ -26,7 +26,7 @@ info () { echo -e $ME: $@; } # print error/info message with name of script
 fail () { info $@; exit -1; } # exit after errormessage with name of script
 abort () { echo -e $@; exit -1; } # fail without name of script
 finish () { echo $@; exit 0; } # finish with message happily
-subreq() { $0 $@; } # subrequest: Query another command for output
+subreq() { $SCRIPT $@; } # subrequest: Query another command for output
 cdroot() { cd "$GITROOT"; } # the crucial change to the repository root directory
 getappname() { APPNAME="$PAR"; [ -z "$APPNAME" ] && abort "Usage: $0 $CMD <AppName>"; } # set $APPNAME or die
 getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"; } # set APPPATH or die
@@ -62,6 +62,7 @@ case $CMD in
 		subreq update-toolkit
 		subreq update-libxsmm
 		info "Sucessfully boostrapped ExaHyPE installation at $PWD"
+		;;
 	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
 		cdroot; info "Listing available Applications:"
 		find ApplicationExamples/* -type d -exec basename {} \;
