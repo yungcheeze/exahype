@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
   // =========================
   //
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-#ifdef Parallel
+  #ifdef Parallel
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
       true,   // logTimeStamp
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
       true,   // logMessageType
       true,   // logTrace
       "exahype.log-file");
-#else
+  #elif defined(Asserts) || defined(Debug)
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
       true,   // logTimeStamp
@@ -110,7 +110,16 @@ int main(int argc, char** argv) {
       true,   // logMessageType
       true,   // logTrace
       "exahype.log-file");
-#endif
+  #else
+  tarch::logging::CommandLineLogger::getInstance().setLogFormat(
+      " ",    // columnSeparator
+      true,   // logTimeStamp
+      false,  // logTimeStampHumanReadable
+      false,  // logMachineName
+      true,   // logMessageType
+      false,   // logTrace
+      "");
+  #endif
 
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
   if (!tarch::logging::LogFilterFileReader::parsePlainTextFile(
