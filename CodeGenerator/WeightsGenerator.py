@@ -80,7 +80,7 @@ class WeightsGenerator:
         # weight := [wGPN + Pad]
         l_sizeWithoutPadding = np.size(self.m_wGPN)
         l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-        l_weightsVector      = np.pad(self.m_wGPN, (0.0, l_padWidth), mode='constant')
+        l_weightsVector      = np.pad(self.m_wGPN, (0, l_padWidth), mode='constant')
         self.m_vectors['weights1'] = l_weightsVector
 
 
@@ -90,7 +90,7 @@ class WeightsGenerator:
             # pad weights vector with zeros
             l_sizeWithoutPadding = np.size(self.m_wGPN) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightsVector      = np.pad(self.m_wGPN, (0.0, l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(self.m_wGPN, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
 
@@ -101,7 +101,7 @@ class WeightsGenerator:
             # pad this vector with zeros
             l_sizeWithoutPadding = np.size(l_weightsVector)
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
 
@@ -113,7 +113,7 @@ class WeightsGenerator:
             # pad this vector with zeros
             l_sizeWithoutPadding = np.size(l_weightsVector) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
 
@@ -124,7 +124,7 @@ class WeightsGenerator:
             # pad this vector with zeros
             l_sizeWithoutPadding = np.size(l_weightsVector)
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(l_weightsVector, (0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
 
