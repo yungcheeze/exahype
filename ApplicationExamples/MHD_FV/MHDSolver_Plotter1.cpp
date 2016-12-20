@@ -86,11 +86,11 @@ void MHDSolver::MHDSolver_Plotter1::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	const double NumberOfLagrangePointsPerAxis = MHDSolver::MHDSolver::order + 1;
+	// const double NumberOfLagrangePointsPerAxis = MHDSolver::MHDSolver::order + 1;
 	//const double NumberOfUnknownsPerGridPoint = nVar;
 
-	// volume form for integration
-	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
+	// volume form for integration for Goudonov scheme
+	double scaling = tarch::la::volume(sizeOfPatch); //* (1.0/NumberOfLagrangePointsPerAxis));
 	statistics->addValue(scaling, 1);
 
 	// reduce the conserved quantities
