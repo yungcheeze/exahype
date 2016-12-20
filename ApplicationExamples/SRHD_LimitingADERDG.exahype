@@ -1,0 +1,79 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon 
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+ 
+/**
+
+ SRHD IBVP solved with limiting ADER-DG solver.
+
+ */
+exahype-project SRHD
+
+  peano-kernel-path          = ./Peano
+  exahype-path               = ./ExaHyPE
+  output-directory           = ./ApplicationExamples/SRHD_LimitingADERDG
+  architecture               = noarch
+
+  computational-domain
+    dimension                = 2
+    width                    = 1.0, 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.4
+  end computational-domain
+  
+  shared-memory
+    identifier               = dummy
+    cores                    = 1
+    properties-file          = sharedmemory.properties
+  end shared-memory  
+  
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {hotspot,fair,ranks_per_node:4}
+    buffer-size              = 64
+    timeout                  = 60
+  end distributed-memory
+
+  optimisation
+    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps-factor   = 0.99
+    /* 0.0 und 0.8 sind schon mal zwei Faktoren */
+    timestep-batch-factor           = 0.0
+    skip-reduction-in-batched-time-steps = on
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
+  end optimisation
+
+  solver Limiting-ADER-DG SRHDSolver
+    variables                = 5
+    parameters               = 0
+    order                    = 3
+    maximum-mesh-size        = 0.05
+    time-stepping            = global
+    kernel                   = generic::fluxes::nonlinear
+    language                 = C
+    limiter-kernel           = generic::Godunov 
+    limiter-language         = C
+    dmp-relaxation-parameter = 0.0001
+    dmp-difference-scaling   = 0.001
+
+    plot vtk::Cartesian::vertices::ascii
+      variables = 5
+      time      = 0.0
+      repeat    = 0.01
+      output    = ./conserved
+      select = {}
+    end plot
+  end solver
+
+end exahype-project
