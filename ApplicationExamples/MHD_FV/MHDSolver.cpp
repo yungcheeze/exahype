@@ -57,56 +57,12 @@ exahype::solvers::Solver::RefinementControl MHDSolver::MHDSolver::refinementCrit
 }
 
 void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const stateIn, double* stateOut) {
-/*	
-  // These are the no-boundary conditions:
-  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
-      fluxOut[i] = fluxIn[i];
-      stateOut[i] = stateIn[i];
-  }
-  return;
-  */
-
-  /*
-  // previous solution without integration
-  double f[nVar], g[nVar], h[nVar];
-  double* F[3];
-  F[0] = f; F[1] = g; F[2] = h;
-  alfenwave_(x, stateOut, &t);
-  flux(stateOut, F);
-  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
-    fluxOut[i] = F[normalNonZero][i];
-  }
-  */
-
-  // ADER-DG time integration. TODO(Dominic): This is not needed for the FVM scheme.
-//  const int basisSize = order + 1;
-//
-//  double Qgp[nVar];
-//  std::memset(stateOut, 0.0, nVar * sizeof(double));
-//  std::memset(fluxOut, 0.0, nVar * sizeof(double));
-//
-//  double F[nDim * nVar]; // Fortran needs continous storage!
-//  kernels::idx2 F_idx(nDim, nVar);
-//
-  // Integrate solution in gauss points (Qgp) in time
-//  for(int i=0; i < basisSize; i++)  { // i == time
-//    const double weight = kernels::gaussLegendreWeights[order][i];
-//    const double xi = kernels::gaussLegendreNodes[order][i];
-//    double ti = t + xi * dt;
-//
-//    alfenwave_(x, Qgp, &ti);
-//    pdeflux_(F, Qgp);
-//    for(int m=0; m < nVar; m++) {
-//      //if(m==checkm) printf("fluxOut[%d] += %.20e\n", m, weight * F[normalNonZero][m]);
-//      stateOut[m] += weight * Qgp[m];
-//      fluxOut[m] += weight * F[F_idx(normalNonZero, m)];
-//    }
-//  }
-
 
 //  std::cout << "boundary=" << faceIndex <<  ", t=" << t <<  ", x2D={"<< x[0] << "," << x[1] << "}" << std::endl;
 
-//  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
+ // FV Goudonov scheme exact BC: No integration neccessary, no fluxes neccessary!
+  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
+  return;
 
   //   outflow bc
   constexpr int nVar = 9;

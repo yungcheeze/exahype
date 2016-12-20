@@ -5,9 +5,9 @@
 #
 # SK, 2016
 
-import os, subprocess, sys
+import os, subprocess, sys, inspect, logging
 from os import path, stat
-from functools import partial
+from functools import partial, wraps
 
 # provide StringIO consistently
 if sys.version_info[0] < 3: 
@@ -180,16 +180,16 @@ class Template:
 	> tpl.execute({ 'template': 'vars', 'go': 'here' }) # or at runtime
 	"""
 	def __init__(self, inputfile, outputfile):
+		self.logger = logging.getLogger("Template")
 		self.inputfile = inputfile
 		self.outputfile = outputfile
 		self.prepared_args = {}
 	def set(self, key, value):
 		self.prepared_args[key] = value
-	def execute(self, tmplvars=dict(), verbose=False):
+	def execute(self, tmplvars=dict()):
 		self.prepared_args.update(tmplvars)
 		executeTemplate(self.inputfile, self.prepared_args, self.outputfile)
-		if verbose:
-			print "Wrote report to %s." % self.outputfile
+		self.logger.info("Wrote report to %s." % self.outputfile)
 	def addStatistics(self):
 		from datetime import datetime
 		from socket import gethostname
@@ -199,3 +199,114 @@ class Template:
 		self.set('HOST', gethostname())
 		self.set('WHOAMI', getuser())
 		return self # chainable
+
+
+def pdsort(df, by, ascending=True):
+    "a pandas sort workaround which also works with pandas < 0.17"
+    try:
+        # pandas >= 0.17
+        return df.sort_values(by=by, ascending=ascending)
+    except:
+        # pandas < 0.17
+        return df.sort(by, ascending=ascending)
+
+def df_case_insensitive(df, colname):
+    "find a column name by case-insensitive matching"
+    col_list = list(df)
+    try:
+	# this uses a generator to find the index if it matches, will raise an exception if not found
+	return col_list[next(i for i,v in enumerate(col_list) if v.lower() == colname.lower())]
+    except:
+	raise KeyError("Could not find column '%s' in list of columns '%s'" % (colname, str(col_list)) )
+
+def merge_dicts(*dict_args):
+    '''
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    '''
+    result = {}
+    for dictionary in dict_args:
+        result.update(dictionary)
+    return result
+
+# a shorthand. Usage:
+#   cleandoc(self)
+#   cleandoc(function)
+cleandoc = lambda obj: inspect.cleandoc(obj.__doc__) if obj.__doc__ else None
+
+class MethodActions:
+	"""
+	A class around a decorator (add). Allows to collect methods in a dictionary.
+	Also stores the documentation of the methods. Can be trivially changed to
+	store functions instead of methods.
+
+	Usage like:
+	> class A:
+	>   my = MethodActions() 
+	>   @my.add("foo")
+	>   def doFoo(self, xyz):
+	>      pass
+	>   @my.add("bar")
+	>   def doBar(self, xyz):
+	>      pass
+	>   def __init__():
+	>      print("Do have", self.my.list())
+	>      self.my.call("foo", self, 123)
+	"""
+	def __init__(self):
+		self.actions = {}
+		self.docs = {}
+		self.storage = {}
+
+	def add(self, action_key, *storage):
+		"""
+		Gives the actual decorator. You can add any other stuff you like to access lateron.
+		"""
+		def method_decorator(method):
+			self.actions[action_key] = method
+			self.docs[action_key] = cleandoc(method)
+			# if only one argument was given, don't store that as (argument,) in a tuple
+			self.storage[action_key] = (storage[0] if len(storage) == 1 else storage)
+
+			@wraps(method)
+			def _impl(self, *method_args, **method_kwargs):
+				method(self, *method_args, **method_kwargs)
+			return _impl
+		return method_decorator
+
+	def call(self, action_key, selfRef, *args, **kwargs):
+		return self.actions[action_key](selfRef, *args, **kwargs)
+
+	def sortedcall(self, selfRef, pre_each=None):
+		"""
+		Allows to call all actions stored. Can be used for chaining methods.
+		Example:
+
+		> class B:
+		>    chain = MethodActions()
+		> 
+		>    @chain.add(1, "The infamous foo")
+		>    def doFoo(self):
+		>       pass
+		>   @chain.add(2, "The bar")
+		>   def doBar(self):
+		>      pass
+		>   def __init__(self,):
+		>      def information(i,key):
+		>          print("Number %d: Calling %s" % (i, self.chain.storage[key]))
+		>      self.chain.sortedcall(self, information)
+
+		Output is:
+
+		> Number 0: Calling The infamous foo
+		> Number 1: Calling The bar
+		"""
+		order = sorted(self.list())
+		for i, key in enumerate(order):
+			if pre_each:
+				pre_each(i,key)
+			self.call(key, selfRef)
+
+	def list(self):
+		return self.actions.keys()
+

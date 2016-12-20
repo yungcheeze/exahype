@@ -39,6 +39,13 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
 	  }
+
+
+	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+	  content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
+	  //content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
+
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  

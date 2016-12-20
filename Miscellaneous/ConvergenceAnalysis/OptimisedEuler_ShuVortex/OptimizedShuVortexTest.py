@@ -17,7 +17,8 @@ import sys, logging
 logger = logging.getLogger("runOptimizedShuVortex")
 sys.path.append("../libconvergence")
 
-from convergence_starter import PolyorderTest, convergenceFrontend
+from convergence_starter import PolyorderTest
+from convergence_frontend import ConvergenceFrontend
 
 test = PolyorderTest("OptimizedEulerShuVortex")
 
@@ -60,5 +61,5 @@ test.settings['EXAHYPE_SKIP_TESTS'] = True
 
 
 if __name__ == "__main__":
-	convergenceFrontend(test, description=__doc__)
+	ConvergenceFrontend(test, description=__doc__)
 
