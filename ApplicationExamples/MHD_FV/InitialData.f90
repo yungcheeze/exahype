@@ -65,11 +65,13 @@ SUBROUTINE InitialData(x, Q)
   END INTERFACE
   
   ! Call here one of
-  ! CALL InitialBlast(x, Q)
-        Call InitialAlfenWave(x, Q)
-        ! Call InitialRotor(x,Q)
+  ! Call InitialBlast(x, Q)
+  ! Call InitialAlfenWave(x, Q)
+  ! Call InitialRotor(x,Q)
   ! Call InitialBlast(x, Q)
   ! Call InitialOrsagTang(x, Q)
+
+  Call InitialShockTube(x, Q)
 
   ! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
@@ -274,5 +276,25 @@ SUBROUTINE InitialRotor(x,Q)
     CALL PDEPrim2Cons(Q, V)
 END SUBROUTINE InitialRotor
 
+SUBROUTINE InitialShockTube(x,Q)
+    ! see Zanotti, O., Dumbser, M., 2015. A high order special relativistic hydrodynamic and magnetohydrodynamic code with space–time adaptive mesh refinement. Computer Physics Communications 188, 110–127.
+    ! Domain: 0...1.0  (square domain)
+    ! gamma: 5/3
 
-
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE Parameters, ONLY : nVar, nDim
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+    
+    REAL :: V(nVAR)
+    
+    IF  (x(1).LT.0.5) THEN
+!       V = (rho (vx,vy,vz) p (bx,by,bz), div_cleaning)
+       V = (/ 1.08, 0.4,0.3,0.2, 0.95, 2.0,0.3,0.3, 0.0 /)
+    ELSE
+       V = (/ 1.0, -0.45,0.2,0.2, 1.0, 2.0,-0.7,0.5, 0.0 /)
+    ENDIF
+    CALL PDEPrim2Cons(Q, V)
+END SUBROUTINE InitialShockTube
