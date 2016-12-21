@@ -49,6 +49,7 @@ Tokens
   token_libxsmm_path                = 'libxsmm-path';
   token_output_directory            = 'output-directory';
   token_architecture                = 'architecture';
+  token_logfile                     = 'log-file';
 
 
   token_computational_domain        = 'computational-domain';
@@ -147,6 +148,7 @@ Ignored Tokens
 Productions
 
   project {->project} =
+      {without_logfile}
       [begin_token]:token_project [name]:identifier
         paths
         token_architecture token_equals [architecture]:identifier
@@ -157,7 +159,21 @@ Productions
         profiling?
         solver_list?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+        { -> New project( name, paths.paths, architecture, Null, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+      |
+      {with_logfile}
+      [begin_token]:token_project [name]:identifier
+        paths
+        token_architecture [architecture_equals]:token_equals [architecture]:identifier
+        token_logfile      [logfile_equals]:token_equals      [logfile]:filename
+        computational_domain
+        shared_memory?
+        distributed_memory?
+        optimisation?
+        profiling?
+        solver_list?
+      token_end [end_token]:token_project
+        { -> New project( name, paths.paths, architecture, logfile, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
     ;
 
   paths {->paths} =
@@ -382,6 +398,7 @@ Abstract Syntax Tree
      [name]:identifier
      paths
      [architecture]:identifier
+     [log_file]:filename?
      computational_domain
      shared_memory?
      distributed_memory?

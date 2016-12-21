@@ -201,7 +201,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
     try {
-      String plotterName = _solverName + "_Plotter" + Integer.toString(_plotterNumber);
+      String plotterName = node.getName().getText().trim();
 
       _writer.write("#include \"" + plotterName + ".h\"\n");
 
