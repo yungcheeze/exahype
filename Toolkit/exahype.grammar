@@ -83,9 +83,6 @@ Tokens
   token_output                      = 'output';
   token_select                      = 'select';
   
-  token_couple_solvers              = 'couple-solvers';
-  token_type                        = 'type';
-
   token_shared_memory               = 'shared-memory';
   token_cores                       = 'cores';
   token_properties_file             = 'properties-file';
@@ -159,9 +156,8 @@ Productions
         optimisation?
         profiling?
         solver_list?
-        couple_solvers?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, couple_solvers.couple_solvers, [solver_list.solver] ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
     ;
 
   paths {->paths} =
@@ -273,17 +269,8 @@ Productions
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
 
-   couple_solvers {->couple_solvers} = 
-     [begin_token]:token_couple_solvers
-       identifier
-       token_type      [type_equals]:token_equals     [type]:identifier
-       token_time      [time_equals]:token_equals     [time]:float_number
-       token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-     token_end [end_token]:token_couple_solvers
-     { -> New couple_solvers(identifier,type,time,repeat)};
-   
    plot_solution_list {->plot_solution*} =
-     [begin_token]:token_plot [plotter_type]:typename
+     [begin_token]:token_plot [plotter_type]:typename [name]:identifier 
        token_variables [variables_equals]:token_equals [variables]:int_number
        token_time      [time_equals]:token_equals      [time]:float_number
        token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
@@ -291,7 +278,7 @@ Productions
        token_select    [select_equals]:token_equals    [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,name,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
@@ -400,7 +387,6 @@ Abstract Syntax Tree
      distributed_memory?
      optimisation?
      profiling?
-     couple_solvers?
      solver*
      ;
 
@@ -438,8 +424,5 @@ Abstract Syntax Tree
      | {finite_volumes} [name]:identifier [variables]:int_number [parameters]:int_number [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:parameter_list? plot_solution*;
 
    plot_solution =
-     [plotter_type]:typename [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
-
-   couple_solvers =
-     [identifier]:identifier [type]:identifier [time]:float_number [repeat]:float_number;
+     [plotter_type]:typename [name]:identifier [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
      

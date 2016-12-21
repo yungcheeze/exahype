@@ -1,14 +1,8 @@
 package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.node.AAderdgSolver;
-import eu.exahype.node.AProject;
-import eu.exahype.node.ACoupleSolvers;
-import eu.exahype.node.ASharedMemory;
-import eu.exahype.node.AComputationalDomain;
-import eu.exahype.node.ADistributedMemory;
-import eu.exahype.node.AOptimisation;
-import eu.exahype.node.AProfiling;
+import eu.exahype.node.*;
+
 
 public class SetupBuildEnvironment extends DepthFirstAdapter {
   public Boolean valid = true;

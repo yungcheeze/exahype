@@ -25,6 +25,7 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f files.mk
 	rm -f ../dist/ExaHyPE.jar
+	rm -f eu/exahype/nodes
 
 
 createParser:

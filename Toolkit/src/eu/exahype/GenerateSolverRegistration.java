@@ -3,12 +3,7 @@ package eu.exahype;
 import java.util.*;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.node.ALimitingAderdgSolver;
-import eu.exahype.node.AProfiling;
-import eu.exahype.node.AProject;
-import eu.exahype.node.PSolver;
-import eu.exahype.node.ACoupleSolvers;
-import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.*;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -98,20 +93,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     }
   }
   
-
-  public void inACoupleSolvers(ACoupleSolvers node) {
-    try {
-      _writer.write("#include \"" + node.getIdentifier().getText().trim() + ".h\"\n");
-
-      _methodBodyWriter.write(  "  exahype::solvers::RegisteredSolverCouplings.push_back( new " + _projectName +  
-         "::" + node.getIdentifier().getText().trim() + "(parser.getCouplingTime("+_couplingNumber+"), parser.getCouplingRepeat("+_couplingNumber+") ));\n");
-      
-      _couplingNumber++;
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
-    }
-  }
 
   private void writeProfilerCreation() {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
