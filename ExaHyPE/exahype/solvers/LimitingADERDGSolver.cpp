@@ -254,10 +254,10 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
     }
     case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
     case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
-      admissibleTimeStepSize =
-          _limiter->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
       int limiterElement =
           _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+      admissibleTimeStepSize =
+          _limiter->startNewTimeStep(cellDescriptionsIndex,limiterElement,tempEigenvalues);
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
       LimiterPatch& limiterPatch =
           _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
@@ -454,7 +454,7 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   case SolverPatch::LimiterStatus::Troubled:
   case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: {
     _limiter->updateSolution(
-        cellDescriptionsIndex,element,
+        cellDescriptionsIndex,limiterElement,
         tempStateSizedVectors,
         tempUnknowns,
         fineGridVertices,fineGridVerticesEnumerator);
