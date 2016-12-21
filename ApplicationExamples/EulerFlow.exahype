@@ -66,7 +66,7 @@ exahype-project  Euler
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -76,7 +76,7 @@ exahype-project  Euler
 
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
       variables = 0
       time = 0.0
       repeat = 0.05
@@ -84,7 +84,7 @@ exahype-project  Euler
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -92,7 +92,7 @@ exahype-project  Euler
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -101,7 +101,7 @@ exahype-project  Euler
     end plot
 
     /* Do not need the time series for a point in the moment
-    plot probe::ascii
+    plot probe::ascii ProbeWriter
       variables = 5
       time      = 0.0
       repeat    = 0.05
