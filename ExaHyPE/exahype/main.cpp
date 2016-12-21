@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
       true,   // logMachineName
       true,   // logMessageType
       true,   // logTrace
-      "exahype.log-file");
+      parser.getLogFileName() );
   #elif defined(Asserts) || defined(Debug)
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
       false,  // logMachineName
       true,   // logMessageType
       true,   // logTrace
-      "exahype.log-file");
+      parser.getLogFileName() );
   #else
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
       false,  // logMachineName
       true,   // logMessageType
       false,   // logTrace
-      "");
+      parser.getLogFileName() );
   #endif
 
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();

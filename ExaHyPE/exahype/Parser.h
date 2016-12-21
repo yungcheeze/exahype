@@ -299,8 +299,10 @@ class exahype::Parser {
 
   ParserView getParserView(int solverNumber);
 
-  double getCouplingTime( int couplingNumber ) const;
-  double getCouplingRepeat( int couplingNumber ) const;
+  /**
+   * Returns an empty string if no log file is specified in the file.
+   */
+  std::string getLogFileName() const;
 };
 
 #endif
