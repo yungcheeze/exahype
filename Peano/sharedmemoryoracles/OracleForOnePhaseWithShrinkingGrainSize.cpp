@@ -283,7 +283,8 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
      std::string rightString = str;
      std::string methodTrace;
 
-     try {
+/*     try {*/
+     {
       leftToken   = rightString.substr( 0, rightString.find("=") );
       rightString = rightString.substr( leftToken.size()+1 );
       methodTrace = leftToken;
@@ -336,9 +337,11 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
 
       logDebug( "loadStatistics(...)", "added " << toString(methodTrace) << ": "<< _measurements[methodTrace].toString() );
      }
+    /*
      catch (std::out_of_range& exception) {
       logWarning( "loadStatistics(...)", "failed to parse shared memory configuration file " << filename << " with error " << exception.what() << " for " << methodTrace << " in adapter " << oracleNumber);
      }
+*/
     }
 
     // Older GCC versions require an explicit cast here
