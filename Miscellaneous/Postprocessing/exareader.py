@@ -50,13 +50,6 @@ Example invocations of the command line utility:
     ./exareader.py -o solution-0.txt.gz -c solution-0.vtk
     ./exareader.py solution-*.vtk | gzip > foobar.csv.gz
 
-If you have files solution-1.vtk ... solution-15.vtk ... then you probably
-want to ensure you glob with natural sorting, eg. with
-
-    ./exareader.py -o data.csv.gz -c $(ls *vtk | sort -V)
-
-ExaReader will never change the order of the input data. The output array is
-basically just a vertical stacking of the data contained in the VTK files.
 """
 
 from __future__ import print_function # Py3 compilance
@@ -71,7 +64,7 @@ import sys, logging, gzip
 from collections import namedtuple
 
 # our package
-from exahelpers import fileformat, vectorize_concatenate, ExaFrontend
+from exahelpers import fileformat, vectorize_concatenate, cleandoc, is_list, ExaFrontend, openTextFile
 
 logger = logging.getLogger("exareader")
 
@@ -132,7 +125,7 @@ def read_exahype_cartesian_vertices(fname):
 	ret.dtype = structured_array_dtype
 	return ret
 
-@grid_formats.register('cells', desc='vtk::Cartesian::cells format')
+@grid_formats.register('cells', desc='vtk::Cartesian::cells format', default=True)
 @vectorize_concatenate
 def read_exahype_cartesian_cells(fname):
 	"""
@@ -164,7 +157,7 @@ def read_exahype_cartesian_cells(fname):
 	# the new file format has no more point data, so this holds:
 	pointdata = dataset.GetPointData()
 	num_pointdata = pointdata.GetNumberOfArrays()
-	assert num_pointdata == 0
+	##assert num_pointdata == 0 # no more holds :(
 
 	# access the fields stored in the cells
 	celldata = dataset.GetCellData()
@@ -251,6 +244,56 @@ def output_ascii(npdata, outputfname, **args):
 		comments=''
 	)
 
+@write_formats.register('info', desc='Informative textual output')
+def output_info(npdata, outputfname, **args):
+	# by construction, this cannot print anything about the VTK data but only
+	# about the NumPy grid.
+	printer = openTextFile(outputfname)
+	println = lambda txt: printer(txt+"\n")
+	newline = lambda: printer("\n")
+	printls = lambda lst, sep="\t", fmt="%s", prep="", lnd="": printer(prep+sep.join([fmt % s for s in lst])+lnd)
+	nonzero = lambda lst: lst[np.where(lst != 0)]
+
+	println("ExaReader report about %s shaped data with %d columns:" % (str(npdata.shape), len(npdata.dtype.names)))
+	printls(npdata.dtype.names, "\t", "%s")
+	newline()
+	def coord_statistics(name, data):
+		# we round for better unique finding
+		uniqui = lambda d: np.unique(d.round(decimals=6))
+		uniquedata = uniqui(data)
+		uniquediff = uniqui(np.diff(data))
+		println("Coordinate %s statistics:" % name)
+		if len(uniquedata):
+			min,max,range= np.min(uniquedata), np.max(uniquedata), np.max(uniquedata) - np.min(uniquedata)
+			println("  %s min, max, range: %f, %f, %f" % (name, min,max,range))
+			println("  Number of different %s coordinates: %d" % (name, len(uniquedata)))
+			println("  Number of different %s grid spacings: %d" % (name, len(uniquediff)))
+			println("  Step sizes d%s, Number of elements N%s, Peano grid deepness d%s=(P%s)^(-3.)"%(name,name,name,name))
+			printls(prep="  d%s\t"%name, lst=uniquediff, lnd="\n")
+			printls(prep="  N%s\t"%name, lst=range/nonzero(uniquediff), lnd="\n")
+			printls(prep="  P%s\t"%name, lst=np.log(np.abs(range/nonzero(uniquediff)))/np.log(3), lnd="\n")
+		else:
+			println("  No data")
+
+	for c in "xyz":
+		coord_statistics(c, npdata[c])
+
+@write_formats.register('coords', desc='Unique coordinate lists')
+def output_coordinates(npdata, outputfname, **args):
+	"""
+	Write three independent lists of unique coordinates.
+	This format is suitable for grepping as well as for looking for a specific coordinate,
+	ie. for slicing.
+	"""
+	printer = openTextFile(outputfname)
+	fmtNumOfChars = lambda num: str(len(str(num))) # ie. fmtNumOfChars(1)='1', 42='2', 127='3'
+	from exaslicer import allcoords
+	# allcoords = ["time", "x", "y", "z"]
+	for c in allcoords:
+		uniquecoords = list(np.unique(npdata[c]))
+		for i,d in enumerate(uniquecoords):
+			printer(("%s[%0"+fmtNumOfChars(len(uniquecoords))+"i] = %f\n") % (c,i,d))
+
 @read_formats.register('vtk', desc='Vizualisation Toolkit file')
 def input_vtk(filenames, gridtype='cells', **args):
 	logger.info("Invoking VTK interface with %d filenames" % len(filenames))
@@ -263,7 +306,7 @@ def input_numpy(filename, **args):
 	logger.info("Loading numpy file %s" % filename)
 	return np.load(filename)
 
-@read_formats.register('auto', desc='Auto detect')
+@read_formats.register('auto', desc='Auto detect', default=True)
 def input_autodetect(filenames, **args):
 	"Detect the format of inputfiles based on the filenames"
 	
@@ -285,26 +328,46 @@ def input_autodetect(filenames, **args):
 
 class ExaReader:
 	"""
-	The reader class for managing read access to files
+	The Reader is capable of reading several input formats such as VTK files or
+	NumPy binary files. It can autodetect file formats. For VTK, there are several
+	grid format readers for the ExaHyPE VTK file format.
+
+	ExaReader will never change the order of the input data, unless you tell it to
+	do so. This enables you to catch situations where you glob for files
+        solution-1.vtk ... solution-15.vtk ...
 	"""
-	def __init__(self, files_as_main=True, inputfiles_required=True):
+	def __init__(self, files_as_main=True):
 		self.files_as_main = files_as_main
-		self.inputfiles_required = inputfiles_required
-		
 		self.default_inputformat = 'auto'
 
 	def add_group(self, argparser):
-		group = argparser.add_argument_group('input')
+		group = argparser.add_argument_group('input', description=cleandoc(self))
 
-		files_help = 'The file(s) to read in. Multiple VTK input files are simply attached in output. Also numpy files supported'
+		files_help = 'The file(s) to read in. Multiple files are simply attached in output.'
 		if self.files_as_main:
 			group.add_argument('inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help)
 		else:
-			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', nargs='+', required=self.inputfiles_required, help=files_help) # action='append',
-		group.add_argument('-i', '--inform', dest='inform', choices=read_formats.choices(), type=str, default=self.default_inputformat,
-		               help='File format of the input files, VTK takes long, numpy is rather quick.')
-		group.add_argument('-g', '--gridtype', dest='gridtype', choices=grid_formats.choices(), type=str, default='cells',
-		               help='Plotter format used during ExaHyPE run (staggered grid?)')
+			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help) # action='append',
+
+		group.add_argument('-i', '--inform', dest='inform', type=str,
+		               choices=read_formats.choices(), default=read_formats.default(),
+		               help='File format of the input files (default: %(default)s)')
+		group.add_argument('--gridtype', dest='gridtype', type=str,
+		               choices=grid_formats.choices(), default=grid_formats.default(),
+		               help='Plotter format used during ExaHyPE run (default: %(default)s)')
+		group.add_argument('--sort-files', action='store_true', help="Sort the list of input files")
+
+		#grid_formats.add_help_argument(group, '--help-grid')
+		#read_formats.add_help_argument(group, '--help-inform')
+
+	def apply_args(self, args, argparser):
+		#grid_formats.apply_args()
+		#read_formats.apply_args()
+
+		# check for at least one input file.
+		# this is only interesting if not self.files_as_main.
+		if not args.inputfiles:
+			argparser.error("Please provide at least one input file.")
 
 	def remove_prog_in_inputfiles_list(self, argparser, args):
 		"""
@@ -322,12 +385,15 @@ class ExaReader:
 		"""
 		return self.read_files(**vars(args))
 
-	def read_files(self, inform="np", inputfiles=[], **readerkwargs):
+	def read_files(self, inform="np", inputfiles=[], sort_files=False, **readerkwargs):
 		"""
 		Return the numpy array which is constructed according to arguments.
 		"""
 		if not inputfiles or not len(inputfiles):
 			raise ValueError("Please provide at least one input file.")
+		if sort_files:
+			logger.info("Sorting input files")
+			inputfiles.sort()
 		reader = read_formats.get(inform)
 		logger.info("Reading input as %s from the following files:" % read_formats.desc(inform))
 		for i,f in enumerate(inputfiles): logger.info(" %d. %s" % (i+1,f))
@@ -346,10 +412,11 @@ def exareader(fnames, quiet=False):
 
 class ExaWriter:
 	"""
-	The writer class doing the same as reader just for writing.
+	The Writer allows the conversion of data to a variety of output formats,
+	also supporting simple slicing of data for dimensional reduction.
 	"""
 	def add_group(self, argparser):
-		group = argparser.add_argument_group('output')
+		group = argparser.add_argument_group('output', description=cleandoc(self))
 		group.add_argument('-c', '--compress', dest='compress', action='store_true', default=False,
 			           help='Compress the output, creates a gzip file. Applies only if output is not stdout.')
 		group.add_argument('-f', '--outfile', dest='outfile', default=False,

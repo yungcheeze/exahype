@@ -133,11 +133,14 @@ case $CMD in
 		echo "ExaHyPE root dir: $GITROOT"
 		fail "Calculation not yet implemented"
 		;;
-	"player") # passes commands to the plotting toolkit exaplot. Use "--help" for help.
+	"player") # Calls the 'exaplayer' plotting toolkit. Use "--help" for help.
 		exec $GITROOT/Miscellaneous/Postprocessing/exaplayer.py $@
 		;;
-	"reader") # passes commands to the exahype python conversion toolkit. Use "--help" for help.
+	"reader") # Calls the 'exareader' data conversion toolkit. Use "--help" for help.
 		exec $GITROOT/Miscellaneous/Postprocessing/exareader.py $@
+		;;
+	"slicer") # Calls the 'exaslicer' VTK slicing toolkit. Use "--help" for help.
+		exec $GITROOT/Miscellaneous/Postprocessing/exaslicer.py $@
 		;;
 	"run") # quickly start an application inside it's directory. Cleans VTK files before.
 		cdapp

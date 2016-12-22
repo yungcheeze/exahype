@@ -21,7 +21,7 @@ and the exaplayer.py scripts.
 """
 
 from __future__ import print_function # Py3 compilance
-import sys, argparse, logging, os
+import sys, argparse, logging, os, inspect
 import numpy as  np # for vectorize_concatenate
 
 logger = logging.getLogger("exahelpers")
@@ -32,6 +32,11 @@ unzip = lambda z: zip(*z) # inverse zip
 middle = lambda a: a[int(len(a)/2)]
 first = lambda l: l[0]
 last = lambda l: l[-1]
+
+# a shorthand. Usage:
+#   cleandoc(self)
+#   cleandoc(function)
+cleandoc = lambda obj: inspect.cleandoc(obj.__doc__) if obj.__doc__ else None
 
 def is_headless():
 	return not 'DISPLAY' in os.environ
@@ -49,12 +54,22 @@ class fileformat:
 		self.name=name
 		self.formats={}
 		self.description={}
-	def register(self, command_name, desc=""):
+		self.docs={}
+		self.default_entry=None
+	def register(self, command_name, desc="", default=False):
 		def decorator(func):
 			self.formats[command_name] = func
 			self.description[command_name] = desc
+			self.docs[command_name] = cleandoc(func)
+			if default:
+				assert self.default_entry == None, "We expect only one default."
+				self.default_entry = command_name
 			return func
 		return decorator
+	def default(self):
+		if not self.default_entry:
+			raise ValueError("Default not set")
+		return self.default_entry
 	def choices(self):
 		return self.formats.keys()
 	def get(self, chosenformat, further_log_info=''):
@@ -69,6 +84,23 @@ class fileformat:
 		return 'Format choser class (%s) with %d formats registered: '+ \
 			", ".join(["%s (%s)"%nameDesc for nameDesc in self.description.iteritems() ])
 
+	def add_help_argument(self, argparser, argname):
+		storeaction = argparser.add_argument(argname, action='store_true', help="Help for all %s choices" % self.name)
+		self.destination = storeaction.dest
+		return storeaction
+
+	def apply_args(self, args):
+		if args[self.destination]:
+			logger.info("Printing information about format choser class %s" % self.name)
+			for choice in self.choices():
+				print("%s: %s" % (choice, self.description[choice]))
+				print(self.docs[choice])
+				print("\n")
+			sys.exit(-1)
+
+# distinguish [a, list] from "a string".
+# the usual story with python. This is more Python 2.
+is_list = lambda list_or_string: not isinstance(list_or_string ,basestring)
 
 # convenient numpy method
 def vectorize_concatenate(func):
@@ -78,7 +110,7 @@ def vectorize_concatenate(func):
 	def func_wrapper(*args, **kwargs):
 		args_without_fname = list(args)
 		fnames = args_without_fname.pop(0)
-		if not isinstance(fnames ,basestring):
+		if is_list(fnames):
 			# progress bar: works but not nice output
 			#genlogwrap = lambda i: lambda text,*a,**kw: log("[%02d/%02d] "% (i,len(fname))+text,*a,**kw)
 			
@@ -113,7 +145,7 @@ class ExaVerbosity:
 		group.add_argument('-v', '--verbose', action='store_const', dest='loglevel', const=logging.DEBUG,
 			           help='Be verbose, give more debugging output')
 
-	def apply_args(self, args):
+	def apply_args(self, args, parser):
 		logging.basicConfig(stream=sys.stderr, level=args.loglevel)
 
 class ExaFrontend:
@@ -144,9 +176,23 @@ class ExaFrontend:
 		# allow each module to do work after parsing
 		for mod in self.modules:
 			try:
-				mod.apply_args(self.args)
+				mod.apply_args(self.args, self.parser)
 			except AttributeError:
 				pass
 
 		return self.args
+
+def openTextFile(outputfname):
+	"""
+	This crazily bad written function shall give a function
+	to write to outputfname.
+	"""
+	# outputfname can be a filename
+	# or an already open file handle
+	try:
+		file = open(outputfname, 'w')
+	except TypeError:
+		# try to write directly
+		file = outputfname
+	return file.write
 
