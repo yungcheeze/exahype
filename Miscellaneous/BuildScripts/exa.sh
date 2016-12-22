@@ -99,6 +99,11 @@ case $CMD in
 	"compile") # Invokes the toolkit and compilation of an application
 		cdapp; $SCRIPTDIR/compile.sh
 		;;
+	"compile-run") # A shorthand for compiling and running an application
+		getappname
+		subreq compile "$APPNAME"
+		subreq run "$APPNAME"
+		;;
 	"polycompile") # Compile for different polynomial orders (as basis for convergence studies).
 		set -- "${@:2}" # pop parameter
 		cdapp; $SCRIPTDIR/compile-for-polyorder.sh $@

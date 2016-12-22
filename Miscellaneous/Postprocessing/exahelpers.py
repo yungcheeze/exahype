@@ -57,11 +57,11 @@ class fileformat:
 		return decorator
 	def choices(self):
 		return self.formats.keys()
-	def get(self, chosenformat):
+	def get(self, chosenformat, further_log_info=''):
 		"get() returns a function"
 		if not chosenformat in self.formats:
 			raise ValueError("Could not find format '%s' in %s" % (chosenformat, str(self)))
-		logger.info("%s selection: %s" % (self.name, chosenformat))
+		logger.info("%s selection%s: %s" % (self.name, " (%s)"%further_log_info if further_log_info else '', chosenformat))
 		return self.formats[chosenformat]
 	def desc(self, chosenformat):
 		return self.description[chosenformat]
@@ -91,7 +91,7 @@ def vectorize_concatenate(func):
 			# recarrays.
 			whateverworks = 1
 			if whateverworks == 1:
-				return np.vstack(tuple(outputs))
+				return np.vstack(tuple(outputs)).flatten()
 
 			# instead, this does: (no more now... they probably changed the file format again)
 			if whateverworks == 2:

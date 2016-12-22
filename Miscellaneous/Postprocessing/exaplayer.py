@@ -123,7 +123,6 @@ class Player:
 
 		logger.info("Welcome to vtkplayer, your friendly data plotter for ExaHyPE")
 		#args = reader.remove_prog_in_inputfiles_list(frontend.parser, args)
-		logger.info(str(args))
 		sol = reader.read_files_as_requested(args)
 		registry = { 1: Play1D, 2: Play2D }
 		PlayerClass = registry[args.dimensions]

@@ -243,7 +243,6 @@ def output_npy(npdata, outputfname, **args):
 @write_formats.register('csv', desc='Comma-Seperated-Values')
 def output_ascii(npdata, outputfname, **args):
 	logger.info("This may take a while. Have a coffee. Or watch your output growing.")
-	# TODO: I inserted a bug here. Doesn't work any more with ASCII here. Dunno why.
 	np.savetxt(
 		fname=outputfname,
 		X=npdata,
@@ -264,13 +263,35 @@ def input_numpy(filename, **args):
 	logger.info("Loading numpy file %s" % filename)
 	return np.load(filename)
 
+@read_formats.register('auto', desc='Auto detect')
+def input_autodetect(filenames, **args):
+	"Detect the format of inputfiles based on the filenames"
+	
+	# I know os.path.splitext would be cleaner, but this approach works, too
+	detectors = {
+		"vtk": lambda fname: ".vtk" in fname,
+		"np":  lambda fname: ".np" in fname
+	}
+	for fileformat, detector in detectors.iteritems():
+		detectormap = map(detector, filenames)
+		if all(detectormap):
+			fundamentalreader = read_formats.get(fileformat, 'autodetected')
+			return fundamentalreader(filenames, **args)
+		if any(detectormap):
+			logger.info("Detected %d files of %s format" % (sum(detectormap), fileformat))
+			
+	raise LookupError("Could not determine file format inputfiles based on their filenames. Please specify.")
+
 
 class ExaReader:
 	"""
 	The reader class for managing read access to files
 	"""
-	def __init__(self, files_as_main=True):
+	def __init__(self, files_as_main=True, inputfiles_required=True):
 		self.files_as_main = files_as_main
+		self.inputfiles_required = inputfiles_required
+		
+		self.default_inputformat = 'auto'
 
 	def add_group(self, argparser):
 		group = argparser.add_argument_group('input')
@@ -279,8 +300,8 @@ class ExaReader:
 		if self.files_as_main:
 			group.add_argument('inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help)
 		else:
-			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', nargs='+', help=files_help) # action='append',
-		group.add_argument('-i', '--inform', dest='inform', choices=read_formats.choices(), type=str, default='vtk',
+			group.add_argument('-r', '--inputfiles', metavar='solution-0.vtk', nargs='+', required=self.inputfiles_required, help=files_help) # action='append',
+		group.add_argument('-i', '--inform', dest='inform', choices=read_formats.choices(), type=str, default=self.default_inputformat,
 		               help='File format of the input files, VTK takes long, numpy is rather quick.')
 		group.add_argument('-g', '--gridtype', dest='gridtype', choices=grid_formats.choices(), type=str, default='cells',
 		               help='Plotter format used during ExaHyPE run (staggered grid?)')
@@ -296,13 +317,17 @@ class ExaReader:
 		return argparser
 
 	def read_files_as_requested(self, args):
-		"""Convenience call to convert argparse.Namespace objects to method call parameters"""
+		"""
+		Convenience call to convert argparse.Namespace objects to method call parameters.
+		"""
 		return self.read_files(**vars(args))
 
 	def read_files(self, inform="np", inputfiles=[], **readerkwargs):
 		"""
 		Return the numpy array which is constructed according to arguments.
 		"""
+		if not inputfiles or not len(inputfiles):
+			raise ValueError("Please provide at least one input file.")
 		reader = read_formats.get(inform)
 		logger.info("Reading input as %s from the following files:" % read_formats.desc(inform))
 		for i,f in enumerate(inputfiles): logger.info(" %d. %s" % (i+1,f))
@@ -359,7 +384,7 @@ class ExaWriter:
 			raise AttributeError("Gzip output for stdout currently not supported. Just use pipes: %s ... | gzip" % programname)
 		outputfh = sys.stdout if not outfile else opener(outfile, 'w')
 
-		logger.info("Printing output to %s" % str(outputfh))
+		logger.info("Printing output to %s" % str(outputfh.name))
 		try:
 			writer = write_formats.get(outform)
 			writer(data, outputfh, **writerargs)

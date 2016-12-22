@@ -111,9 +111,9 @@ case $CLEAN in
 		;;
 	"Lightweight") echo -e "Lightweight clean"
 		# find also object files in subdirectories
-		verbose find . -iname '*.o' -exec rm {} \;
+		verbose find . -iname '.o' -exec rm {} \;
 		# and also cleanup Fortran modules
-		verbose find . -iname '*.mod' -exec rm {} \;
+		verbose find . -iname '.mod' -exec rm {} \;
 		;;
 esac
 
