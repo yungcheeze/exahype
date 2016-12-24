@@ -509,15 +509,14 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level,
     const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
+
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
     }
-    //
-    ++solverNumber;
   }
 }
 
@@ -533,8 +532,8 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
 
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
@@ -556,8 +555,6 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
         limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
       }
     }
-    //
-    ++solverNumber;
   }
 }
 

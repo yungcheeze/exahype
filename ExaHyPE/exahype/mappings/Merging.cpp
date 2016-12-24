@@ -436,7 +436,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
   }
 }
 
-void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug for multi-solvers. Invert the order of recev.
+void exahype::mappings::Merging::mergeWithNeighbourData(
         const int fromRank,
         const int srcCellDescriptionIndex,
         const int destCellDescriptionIndex,
@@ -445,8 +445,9 @@ void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug f
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int level,
         const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-  int solverNumber = 0;
-  for(auto solver : solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
+
     if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       assertion1(element>=0,element);
@@ -487,7 +488,8 @@ void exahype::mappings::Merging::dropNeighbourData(
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-  for(auto solver : solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+      auto* solver = solvers::RegisteredSolvers[solverNumber];
     logDebug(
         "dropNeighbourData(...)", "drop data from " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
