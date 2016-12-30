@@ -32,7 +32,14 @@ class Parser;
 /**
  * ExaHyPE command line parser
  *
- * @author Tobias Weinzierl
+ * A simple parser that creates a linear token stream
+ * from a given ExaHyPE specification file.
+ *
+ * The parser can deal with C and doxygen style comments as
+ * long as not two multi-line comment blocks are opened/closed
+ * in the same line.
+ *
+ * @author Tobias Weinzierl, Dominic Etienne Charrier
  */
 class exahype::Parser {
  public:
@@ -172,6 +179,14 @@ class exahype::Parser {
 
   enum class MPILoadBalancingType { Static };
 
+  /**
+   * <h2>Limitations</h2>
+   * Requires a proper implementation of the
+   * C++11 regex routines (GCC>=4.9.0).
+   *
+   * Cannot deal with multiple openings/closings of comments
+   * in the same line.
+   */
   void readFile(const std::string& filename);
 
   bool isValid() const;
