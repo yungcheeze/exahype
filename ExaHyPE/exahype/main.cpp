@@ -154,7 +154,7 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
   }
 } else {
   logInfo("main()", "Skipping tests as EXAHYPE_SKIP_TESTS is set."
-     "We do so because tests are broken in the moment and nobody repairs them.");
+     "We do so because tests are broken in the moment and nobody repairs them."); //  TODO(Sven,Dominic,JM): Fix tests.
 } // end if getenv(EXAHYPE_SKIP_TESTS)
 #endif
 

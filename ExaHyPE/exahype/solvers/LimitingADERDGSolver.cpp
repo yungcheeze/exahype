@@ -51,8 +51,8 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           _limiter(std::move(limiter)),
           _limiterDomainHasChanged(false),
           _nextLimiterDomainHasChanged(false),
-          _DMPMaximumRelaxationParameter(1.0e-2),
-          _DMPDifferenceScaling(1.0e-5)
+          _DMPMaximumRelaxationParameter(1.0e-2), // TODO externalise
+          _DMPDifferenceScaling(1.0e-5)           // TODO externalise
 {
   assertion(_solver->getNumberOfParameters() == 0);
 
@@ -521,7 +521,7 @@ bool exahype::solvers::LimitingADERDGSolver::updateMergedLimiterStatusAndMinAndM
       break;
   }
 
-  return determinMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
+  return determineMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateMergedLimiterStatusAndMinAndMaxAfterSetInitialConditions(
@@ -533,10 +533,10 @@ bool exahype::solvers::LimitingADERDGSolver::updateMergedLimiterStatusAndMinAndM
 
   bool solutionIsValid = evaluatePhysicalAdmissibilityCriterion(solverPatch); // Only evaluate the PAD
 
-  return determinMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
+  return determineMergedLimiterStatusAfterSolutionUpdate(solverPatch,!solutionIsValid);
 }
 
-bool exahype::solvers::LimitingADERDGSolver::determinMergedLimiterStatusAfterSolutionUpdate(
+bool exahype::solvers::LimitingADERDGSolver::determineMergedLimiterStatusAfterSolutionUpdate(
     SolverPatch& solverPatch,const bool isTroubled) const {
   bool limiterDomainHasChanged=false;
 
@@ -942,7 +942,9 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       switch (previousLimiterStatus) {
         case SolverPatch::LimiterStatus::Ok:
         case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-          _solver->addUpdateToSolution(solverPatch,fineGridVertices,fineGridVerticesEnumerator); // It must always be addUpdateToSolution here since we do not want to use compute the surface integral again
+          // TODO(Dominic): Old code. Keep a while for reference.
+          //          _solver->addUpdateToSolution(solverPatch,fineGridVertices,fineGridVerticesEnumerator); // It must always be addUpdateToSolution here since we do not want to use compute the surface integral again
+          _solver->swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
 
           assertion(limiterElement!=exahype::solvers::Solver::NotFound);
           limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);

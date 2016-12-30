@@ -601,7 +601,7 @@ public:
    * changes its status to Troubled. Or, if a patch with status Troubled changes its
    * status to Ok.
    */
-  bool determinMergedLimiterStatusAfterSolutionUpdate(
+  bool determineMergedLimiterStatusAfterSolutionUpdate(
       SolverPatch& solverPatch,const bool isTroubled) const;
 
   /**

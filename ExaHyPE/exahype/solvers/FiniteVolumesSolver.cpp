@@ -506,7 +506,7 @@ void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
     const int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-  // Simply swap the array pointers.
+  // Simply swap the heap indices
   const int previousSolution = cellDescription.getPreviousSolution();
   cellDescription.setPreviousSolution(cellDescription.getSolution());
   cellDescription.setSolution(previousSolution);
