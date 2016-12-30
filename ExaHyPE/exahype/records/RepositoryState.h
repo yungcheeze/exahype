@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   06/12/2016 01:58
+ * @date   27/12/2016 14:54
  */
 class exahype::records::RepositoryState { 
    
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   06/12/2016 01:58
+    * @date   27/12/2016 14:54
     */
    class exahype::records::RepositoryStatePacked { 
       

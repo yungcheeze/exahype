@@ -23,7 +23,7 @@ class exahype::records::ADERDGCellDescription {
 
   /**
    * These flags indicate on which face a Riemann solve has already been
-   * performed.
+   * performed during the current traversal.
    */
   parallelise persistent packed bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   
@@ -325,11 +325,28 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solution;
   parallelise persistent int solutionAverages;
   parallelise persistent int solutionCompressed;
+  
+  /**
+   *  Heap index pointing to the DoF of the previous solution associated with this cell
+   *  description.
+   *  Symbol: \f$ u_h \f$.
+   *  
+   *  <h2>Limiting ADER-DG solver</h2>
+   *  These DoF only need to be stored for the subcell-limiting
+   *  ADER-DG solver since here NaNs can appear here in the solution update
+   *  DoF. We can then not use the solution Update DoF anymore for
+   *  performing a rollback to the previous solution.
+   */
+  parallelise persistent int previousSolution;
+  parallelise persistent int previousSolutionAverages;
+  parallelise persistent int previousSolutionCompressed;
 
   /**
    * Index pointing to the update DoF belonging to this cell. All volume updates
    * and face fluctuations contribute to this Symbol. Symbol:
    * \f$ \Delta u_h \f$.
+   * 
+   * @deprecated
    */
   parallelise persistent int update;
   parallelise persistent int updateAverages;
@@ -372,7 +389,8 @@ class exahype::records::ADERDGCellDescription {
   
   enum LimiterStatus {
     /**
-     * A cell holds a physically correct ADER-DG solution. 
+     * A cell holds a physically admissible ADER-DG solution
+     * that satisfies a discrete maximum principle.
      */
     Ok,
     /**
@@ -416,6 +434,7 @@ class exahype::records::ADERDGCellDescription {
    * which returns not the bytes actually used but the bytes spent on the 
    * mantissa. Less than two byes is not supported by ExaHyPE actually.
    */
+  parallelise persistent packed int bytesPerDoFInPreviousSolution      from 1 to 7;
   parallelise persistent packed int bytesPerDoFInSolution              from 1 to 7;
   parallelise persistent packed int bytesPerDoFInUpdate                from 1 to 7;
   parallelise persistent packed int bytesPerDoFInExtrapolatedPredictor from 1 to 7;
