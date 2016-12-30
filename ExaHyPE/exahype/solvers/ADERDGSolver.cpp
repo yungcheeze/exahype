@@ -92,6 +92,7 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -118,13 +119,17 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
 
         DataHeap::getInstance().deleteData(cellDescription.getUpdateAverages());
         DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
+        DataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionAverages());
 
+        cellDescription.setPreviousSolution(-1);
         cellDescription.setSolution(-1);
         cellDescription.setUpdate(-1);
 
+        cellDescription.setPreviousSolutionAverages(-1);
         cellDescription.setSolutionAverages(-1);
         cellDescription.setUpdateAverages(-1);
 
+        cellDescription.setPreviousSolutionCompressed(-1);
         cellDescription.setSolutionCompressed(-1);
         cellDescription.setUpdateCompressed(-1);
         }
@@ -197,24 +202,32 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
         const int unknownsPerCell = getUnknownsPerCell();
-        cellDescription.setUpdate(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setPreviousSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
         cellDescription.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setUpdate(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
+        assertionEquals(DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).size(),static_cast<unsigned int>(unknownsPerCell));
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).capacity(),static_cast<unsigned int>(unknownsPerCell));
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).size(),static_cast<unsigned int>(unknownsPerCell));
         assertionEquals(DataHeap::getInstance().getData(cellDescription.getSolution()).capacity(),static_cast<unsigned int>(unknownsPerCell));
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getSolution()).size(),static_cast<unsigned int>(unknownsPerCell));
 
         cellDescription.setUpdateCompressed(-1);
         cellDescription.setSolutionCompressed(-1);
+        cellDescription.setPreviousSolutionCompressed(-1);
 
         if (CompressionAccuracy>0.0) {
           CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
         }
 
-        cellDescription.setUpdateAverages(   DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-        cellDescription.setSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+        cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
+        assertionEquals3(
+            DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
+            DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
+            getNumberOfVariables()
+        );
         assertionEquals3(
           DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
           DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
@@ -303,6 +316,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
                                     (DIMENSIONS + 1)),  // +1 for sources
       _dataPerCell(numberOfVariables *
                    power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _previousMinCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
@@ -1503,12 +1517,15 @@ void exahype::solvers::ADERDGSolver::updateSolution(
 
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
+    double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    std::copy(newSolution,newSolution+_unknownsPerCell,solution); // Copy (current solution) in old solution field.
+
     double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
     double* lFhbnd = exahype::DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
 
     for (int i=0; i<getUnknownsPerCell(); i++) { // cellDescription.getCorrectorTimeStepSize()==0.0 is an initial condition
-      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(luh[i]),cellDescription.toString(),"updateSolution(...)",i);
+      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(solution[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
@@ -1525,7 +1542,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-    solutionUpdate(luh,lduh,cellDescription.getCorrectorTimeStepSize());
+    solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
 
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -1533,7 +1550,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
         cellDescription.getCorrectorTimeStamp(),
         cellDescription.getCorrectorTimeStepSize())) {
       solutionAdjustment(
-          luh,
+          newSolution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
           cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
@@ -1541,7 +1558,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     }
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion4(std::isfinite(luh[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);
+      assertion4(std::isfinite(newSolution[i]),cellDescriptionsIndex,cellDescription.toString(),"updateSolution(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
@@ -1557,14 +1574,29 @@ void exahype::solvers::ADERDGSolver::rollbackSolution(
 
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
+// TODO(Dominic): Old code. Keep a while for reference.
+ //    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+//    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
+//
+//    solutionUpdate(luh,lduh,-cellDescription.getCorrectorTimeStepSize()); // Be aware of the "-".
 
-    solutionUpdate(luh,lduh,-cellDescription.getCorrectorTimeStepSize()); // Be aware of the "-".
+    swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
+void exahype::solvers::ADERDGSolver::swapSolutionAndPreviousSolution(
+    const int cellDescriptionsIndex,
+    const int element) const {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  assertion(cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell);
+  assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
+
+  // Simply swap the heap indices
+  const int previousSolution = cellDescription.getPreviousSolution();
+  cellDescription.setPreviousSolution(cellDescription.getSolution());
+  cellDescription.setSolution(previousSolution);
+}
 
 void exahype::solvers::ADERDGSolver::preProcess(
     const int cellDescriptionsIndex,
@@ -2428,20 +2460,20 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     );
 
     const int numberOfFaceDof = getUnknownsPerFace();
-    int receivedlQhbndIndex   = DataHeap::getInstance().createData(0, numberOfFaceDof);
-    int receivedlFhbndIndex   = DataHeap::getInstance().createData(0, numberOfFaceDof);
-
-    assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
-    assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
+    int receivedlQhbndIndex   = DataHeap::getInstance().createData(numberOfFaceDof, numberOfFaceDof);
+    int receivedlFhbndIndex   = DataHeap::getInstance().createData(numberOfFaceDof, numberOfFaceDof);
+    assertion(!DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
+    assertion(!DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
 
 
     // Send order: lQhbnd,lFhbnd
-    // Receive order: lFhbnd,lQhbnd
-    DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
-    DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
-
+    // Receive order: lFhbnd,lQhbnd // TODO change to double variant
+    DataHeap::getInstance().receiveData(
+        DataHeap::getInstance().getData(receivedlFhbndIndex).data(),numberOfFaceDof,
+        fromRank, x, level,peano::heap::MessageType::NeighbourCommunication);
+    DataHeap::getInstance().receiveData(
+        DataHeap::getInstance().getData(receivedlQhbndIndex).data(),numberOfFaceDof,
+        fromRank, x, level,peano::heap::MessageType::NeighbourCommunication);
     logDebug(
         "mergeWithNeighbourData(...)", "[pre] solve Riemann problem with received data." <<
         " cellDescription=" << cellDescription.toString() <<
@@ -3136,15 +3168,19 @@ void exahype::solvers::ADERDGSolver::determineUnknownAverages(
   exahype::records::ADERDGCellDescription& cellDescription
 ) {
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {
-    double solutionAverage = 0.0;
-    double updateAverage   = 0.0;
+    double solutionAverage         = 0.0;
+    double previousSolutionAverage = 0.0;
+    double updateAverage           = 0.0;
+
     int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
     for (int i=0; i<numberOfDoFsPerVariable; i++) {
-      solutionAverage += DataHeap::getInstance().getData( cellDescription.getSolution() )[i + variableNumber * numberOfDoFsPerVariable];
-      updateAverage   += DataHeap::getInstance().getData( cellDescription.getUpdate()   )[i + variableNumber * numberOfDoFsPerVariable];
+      solutionAverage         += DataHeap::getInstance().getData( cellDescription.getSolution()         )[i + variableNumber * numberOfDoFsPerVariable];
+      previousSolutionAverage += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[i + variableNumber * numberOfDoFsPerVariable];
+      updateAverage           += DataHeap::getInstance().getData( cellDescription.getUpdate()           )[i + variableNumber * numberOfDoFsPerVariable];
     }
-    DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber] = solutionAverage / numberOfDoFsPerVariable;
-    DataHeap::getInstance().getData( cellDescription.getUpdateAverages()   )[variableNumber] = updateAverage   / numberOfDoFsPerVariable;
+    DataHeap::getInstance().getData( cellDescription.getSolutionAverages()         )[variableNumber] = solutionAverage         / numberOfDoFsPerVariable;
+    DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber] = previousSolutionAverage / numberOfDoFsPerVariable;
+    DataHeap::getInstance().getData( cellDescription.getUpdateAverages()           )[variableNumber] = updateAverage           / numberOfDoFsPerVariable;
 
     for (int face=0; face<2*DIMENSIONS; face++) {
       double extrapolatedPredictorAverage = 0.0;
@@ -3165,8 +3201,9 @@ void exahype::solvers::ADERDGSolver::computeHierarchicalTransform(exahype::recor
   for (int variableNumber=0; variableNumber<getNumberOfVariables(); variableNumber++) {
     int    numberOfDoFsPerVariable  = power(getNodesPerCoordinateAxis(), DIMENSIONS);
     for (int i=0; i<numberOfDoFsPerVariable; i++) {
-      DataHeap::getInstance().getData( cellDescription.getSolution() )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
-      DataHeap::getInstance().getData( cellDescription.getUpdate()   )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages()   )[variableNumber];
+      DataHeap::getInstance().getData( cellDescription.getSolution()         )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getSolutionAverages() )[variableNumber];
+      DataHeap::getInstance().getData( cellDescription.getPreviousSolution() )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getPreviousSolutionAverages() )[variableNumber];
+      DataHeap::getInstance().getData( cellDescription.getUpdate()           )[i + variableNumber * numberOfDoFsPerVariable] += sign * DataHeap::getInstance().getData( cellDescription.getUpdateAverages()   )[variableNumber];
     }
 
     for (int face=0; face<2*DIMENSIONS; face++) {
@@ -3256,22 +3293,30 @@ void exahype::solvers::ADERDGSolver::glueTogether(int numberOfEntries, int norma
 void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records::ADERDGCellDescription& cellDescription) {
   assertion(CompressionAccuracy>0.0);
 
+  assertion( cellDescription.getPreviousSolutionCompressed()==-1 );
   assertion( cellDescription.getSolutionCompressed()==-1 );
   assertion( cellDescription.getUpdateCompressed()==-1 );
   assertion( cellDescription.getExtrapolatedPredictorCompressed()==-1 );
   assertion( cellDescription.getFluctuationCompressed()==-1 );
 
+  int compressionOfPreviousSolution;
   int compressionOfSolution;
   int compressionOfUpdate;
   int compressionOfExtrapolatedPredictor;
   int compressionOfFluctuation;
 
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolution() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
 
   peano::datatraversal::TaskSet compressionFactorIdentification(
+    [&]() -> void  { compressionOfPreviousSolution = peano::heap::findMostAgressiveCompression(
+      DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).data(),
+      getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
+      CompressionAccuracy
+      );},
     [&] () -> void  { compressionOfSolution = peano::heap::findMostAgressiveCompression(
       DataHeap::getInstance().getData( cellDescription.getSolution() ).data(),
       getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS),
@@ -3295,17 +3340,51 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       true
   );
 
+  assertion(1<=compressionOfPreviousSolution);
   assertion(1<=compressionOfSolution);
   assertion(1<=compressionOfUpdate);
   assertion(1<=compressionOfExtrapolatedPredictor);
   assertion(1<=compressionOfFluctuation);
 
+  assertion(compressionOfPreviousSolution<=7);
   assertion(compressionOfSolution<=7);
   assertion(compressionOfUpdate<=7);
   assertion(compressionOfExtrapolatedPredictor<=7);
   assertion(compressionOfFluctuation<=7);
 
   peano::datatraversal::TaskSet runParallelTasks(
+    [&]() -> void {
+      cellDescription.setBytesPerDoFInPreviousSolution(compressionOfPreviousSolution);
+      if (compressionOfPreviousSolution<7) {
+        tarch::multicore::Lock lock(_heapSemaphore);
+        cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
+        assertion( cellDescription.getPreviousSolutionCompressed()>=0 );
+        lock.free();
+
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        tearApart(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), compressionOfPreviousSolution);
+
+        #if defined(Asserts)
+        lock.lock();
+        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
+        PipedCompressedBytes   += CompressedDataHeap::getInstance().getData( cellDescription.getPreviousSolutionCompressed() ).size();
+        lock.free();
+        #endif
+
+        #if !defined(ValidateCompressedVsUncompressedData)
+        lock.lock();
+        DataHeap::getInstance().deleteData( cellDescription.getPreviousSolution(), true );
+        cellDescription.setPreviousSolution( -1 );
+        #endif
+      }
+      else {
+        #if defined(Asserts)
+        tarch::multicore::Lock lock(_heapSemaphore);
+        PipedUncompressedBytes += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
+        PipedCompressedBytes   += DataHeap::getInstance().getData( cellDescription.getPreviousSolution() ).size() * 8.0;
+        #endif
+      }
+    },
     [&]() -> void {
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
@@ -3449,12 +3528,20 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
 
   {
     tarch::multicore::Lock lock(_heapSemaphore);
-    cellDescription.setSolution( DataHeap::getInstance().createData(              unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
-    cellDescription.setUpdate( DataHeap::getInstance().createData(                unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setPreviousSolution( DataHeap::getInstance().createData( unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setSolution( DataHeap::getInstance().createData(         unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+    cellDescription.setUpdate( DataHeap::getInstance().createData(           unknownsPerCell,         unknownsPerCell,         DataHeap::Allocation::UseOnlyRecycledEntries) );
+
     cellDescription.setExtrapolatedPredictor( DataHeap::getInstance().createData( unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
     cellDescription.setFluctuation( DataHeap::getInstance().createData(           unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseOnlyRecycledEntries) );
     lock.free();
 
+    if (cellDescription.getPreviousSolution()==-1) {
+      waitUntilAllBackgroundTasksHaveTerminated();
+      lock.lock();
+      cellDescription.setPreviousSolution( DataHeap::getInstance().createData( unknownsPerCell, unknownsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired) );
+      lock.free();
+    }
     if (cellDescription.getSolution()==-1) {
       waitUntilAllBackgroundTasksHaveTerminated();
       lock.lock();
@@ -3481,12 +3568,17 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     }
   }
   #else
+  assertion( DataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolution() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getUpdate() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getExtrapolatedPredictor() ));
   assertion( DataHeap::getInstance().isValidIndex( cellDescription.getFluctuation() ));
   #endif
 
+  assertion1(
+      CompressedDataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolutionCompressed() ),
+      cellDescription.getPreviousSolutionCompressed()
+    );
   assertion1(
     CompressedDataHeap::getInstance().isValidIndex( cellDescription.getSolutionCompressed() ),
     cellDescription.getSolutionCompressed()
@@ -3505,6 +3597,17 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   );
 
   peano::datatraversal::TaskSet glueTasks(
+    [&]() -> void {
+      if (cellDescription.getBytesPerDoFInPreviousSolution()<7) {
+        assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolution() ), cellDescription.getPreviousSolution());
+        assertion( CompressedDataHeap::getInstance().isValidIndex( cellDescription.getPreviousSolutionCompressed() ));
+        const int numberOfEntries = getNumberOfVariables() * power(getNodesPerCoordinateAxis(), DIMENSIONS);
+        glueTogether(numberOfEntries, cellDescription.getPreviousSolution(), cellDescription.getPreviousSolutionCompressed(), cellDescription.getBytesPerDoFInPreviousSolution());
+        tarch::multicore::Lock lock(_heapSemaphore);
+        CompressedDataHeap::getInstance().deleteData( cellDescription.getPreviousSolutionCompressed(), true );
+        cellDescription.setPreviousSolutionCompressed( -1 );
+      }
+    },
     [&]() -> void {
       if (cellDescription.getBytesPerDoFInSolution()<7) {
         assertion1( DataHeap::getInstance().isValidIndex( cellDescription.getSolution() ), cellDescription.getSolution() );

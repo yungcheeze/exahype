@@ -1226,6 +1226,9 @@ public:
    * Simply adds the update degrees of freedom
    * to the solution degrees of freedom.
    * Does not compute the surface integral.
+   *
+   * \deprecated We will not store the update field anymore
+   * but a previous solution.
    */
   void addUpdateToSolution(
       CellDescription& cellDescription,
@@ -1243,6 +1246,10 @@ public:
    * The value cellDescription.getCorrectorTimeStepSize()
    * handed to the solution adjustment function is the one
    * used to update the solution.
+   *
+   * \todo We will not store the update field anymore
+   * but a previous solution. We will thus only perform
+   * a solution adjustment and adding of source term contributions here.
    */
   void updateSolution(
       const int cellDescriptionsIndex,
@@ -1278,6 +1285,10 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  void swapSolutionAndPreviousSolution(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   void preProcess(
       const int cellDescriptionsIndex,
