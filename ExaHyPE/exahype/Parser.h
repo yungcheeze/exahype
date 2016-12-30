@@ -299,6 +299,22 @@ class exahype::Parser {
   exahype::solvers::Solver::TimeStepping getTimeStepping(
       int solverNumber) const;
 
+  /**
+   * \return The relaxation parameter used for the discrete maximum principle (DMP).
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  int getDMPRelaxationParameter(int solverNumber) const;
+
+  /**
+   * \return The maximum-minimum difference scaling used for the discrete maximum principle (DMP).
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  int getDMPDifferenceScaling(int solverNumber) const;
+
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
   int getUnknownsForPlotter(int solverNumber, int plotterNumber) const;

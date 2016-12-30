@@ -42,7 +42,9 @@ exahype::solvers::Solver::SubcellPosition exahype::solvers::LimitingADERDGSolver
 exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
     const std::string& identifier,
     std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
-    std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter)
+    std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
+    const double DMPRelaxationParameter,
+    const double DMPDifferenceScaling)
     :
     exahype::solvers::Solver(identifier, Solver::Type::LimitingADERDG, solver->getNumberOfVariables(),
         solver->getNumberOfParameters(), solver->getNodesPerCoordinateAxis(), solver->getMaximumMeshSize(),
@@ -51,8 +53,8 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           _limiter(std::move(limiter)),
           _limiterDomainHasChanged(false),
           _nextLimiterDomainHasChanged(false),
-          _DMPMaximumRelaxationParameter(1.0e-2), // TODO externalise
-          _DMPDifferenceScaling(1.0e-5)           // TODO externalise
+          _DMPMaximumRelaxationParameter(DMPRelaxationParameter), // TODO externalise
+          _DMPDifferenceScaling(DMPDifferenceScaling)           // TODO externalise
 {
   assertion(_solver->getNumberOfParameters() == 0);
 

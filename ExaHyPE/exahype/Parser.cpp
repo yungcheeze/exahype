@@ -619,6 +619,40 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(
   return exahype::solvers::Solver::TimeStepping::Global;
 }
 
+int exahype::Parser::getDMPRelaxationParameter(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-relaxation-parameter", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getDMPRelaxationParameter()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-relaxation-parameter': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getParameters()", "found parameters " << result);
+  return result;
+}
+
+int exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-difference-scaling", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getParameters()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-difference-scaling': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getDMPDifferenceScaling()", "found parameters " << result);
+  return result;
+}
+
 std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
                                                      int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
