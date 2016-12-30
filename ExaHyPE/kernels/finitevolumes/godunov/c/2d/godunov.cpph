@@ -23,25 +23,6 @@
 
 #if DIMENSIONS == 2
 
-namespace {
-
-double minmod(double a, double b) {
-  assert(std::isfinite(a));
-  assert(std::isfinite(b));
-
-  if (a * b < 0.0) {  // sign is different (alternative: std::signbit and xor)
-    return 0.0;
-  } else {
-    if (std::abs(a) < std::abs(b)) {
-      return a;
-    } else {
-      return b;
-    }
-  }
-}
-
-}  // namespace
-
 namespace kernels {
 namespace finitevolumes {
 namespace godunov {
