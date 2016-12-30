@@ -29,13 +29,14 @@ tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter
 
 exahype::plotters::Plotter::Plotter(
   int solver, int plotterCount,
-  const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
+  const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing,
+  const char* suffix)
     : _solver(solver),
       _identifier(parser.getIdentifierForPlotter(solver, plotterCount)),
       _writtenUnknowns(parser.getUnknownsForPlotter(solver, plotterCount)),
       _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
       _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
-      _filename(parser.getFilenameForPlotter(solver, plotterCount)),
+      _filename(parser.getFilenameForPlotter(solver, plotterCount)+suffix),
       _select(parser.getSelectorForPlotter(solver, plotterCount)),
       _isActive(false),
       _device(nullptr) {
@@ -52,6 +53,11 @@ exahype::plotters::Plotter::Plotter(
     << _filename << " every " << _repeat
     << " time units with first snapshot at " << _time
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
+
+  if (  _writtenUnknowns <= 0) {
+      logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
+        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
 
@@ -205,6 +211,7 @@ exahype::plotters::Plotter::Plotter(
     break;
   }
 
+  assertion(_writtenUnknowns>0); // TODO(Dominic): Remove
 
   if (_device!=nullptr) {
     _device->init(

@@ -200,7 +200,7 @@ class exahype::plotters::Plotter {
    * @param plotterCount Same story: Required to tell the parser which tag in
    *               the file is to be read.
    */
-  Plotter(int solver, int plotterCount, const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing);
+  Plotter(int solver,int plotterCount,const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing,const char* suffix="");
   ~Plotter();
 
   // Disallow copy and assignment
