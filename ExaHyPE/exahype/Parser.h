@@ -315,14 +315,28 @@ class exahype::Parser {
    */
   int getDMPDifferenceScaling(int solverNumber) const;
 
+  /**
+   * In the ExaHyPE specification file, a plotter configuration has
+   * the following signature:
+   *
+   * plot <identifier> <name>
+   *  variables = <variables>
+   *  time      = <first-snapshot-time>
+   *  repeat    = <repeat-time>
+   *  output    = <filename>
+   *  select    = <selector>
+   * end plot
+   */
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
+  std::string getNameForPlotter(int solverNumber,
+                                int plotterNumber) const;
   int getUnknownsForPlotter(int solverNumber, int plotterNumber) const;
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;
   double getRepeatTimeForPlotter(int solverNumber, int plotterNumber) const;
-  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
   std::string getFilenameForPlotter(int solverNumber, int plotterNumber) const;
+  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
 
   std::string getProfilerIdentifier() const;
   std::string getMetricsIdentifierList() const;

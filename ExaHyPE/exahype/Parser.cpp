@@ -148,10 +148,10 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
 // For debugging purposes
-//  std::cout << "_tokenStream=" << std::endl;
-//  for (std::string str : _tokenStream) {
-//    std::cout << str << std::endl;
-//  }
+  std::cout << "_tokenStream=" << std::endl;
+  for (std::string str : _tokenStream) {
+    std::cout << "["<<str<<"]" << std::endl;
+  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -665,12 +665,24 @@ std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
   return token;
 }
 
+std::string exahype::Parser::getNameForPlotter(int solverNumber,
+                                               int plotterNumber) const {
+  // We have to multiply with two as the token solver occurs twice (to open and
+  // close the section)
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 1);
+  logDebug("getIdentifierForPlotter()", "found token " << token);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
+  return token;
+}
+
 int exahype::Parser::getUnknownsForPlotter(int solverNumber,
                                            int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
-                                    plotterNumber + 1, 2);
+                                    plotterNumber + 1, 3);
   logDebug("getUnknownsForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -682,7 +694,7 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
-                                    plotterNumber + 1, 4);
+                                    plotterNumber + 1, 5);
   logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -694,7 +706,7 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
-                                    plotterNumber + 1, 6);
+                                    plotterNumber + 1, 7);
   logDebug("getRepeatTimeForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -706,7 +718,7 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
-                                    plotterNumber + 1, 8);
+                                    plotterNumber + 1, 9);
   logDebug("getFilenameForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -718,7 +730,7 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
-                                    plotterNumber + 1, 10);
+                                    plotterNumber + 1, 11);
   logDebug("getSelectorForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
