@@ -509,7 +509,7 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level,
     const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
-  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
@@ -532,7 +532,7 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
 
-  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG

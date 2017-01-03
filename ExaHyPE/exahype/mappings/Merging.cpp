@@ -441,7 +441,7 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int level,
         const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
@@ -469,7 +469,6 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
       solver->dropNeighbourData(
           fromRank,src,dest,x,level);
     }
-    ++solverNumber;
   }
 }
 
@@ -484,13 +483,13 @@ void exahype::mappings::Merging::dropNeighbourData(
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-  for(unsigned int solverNumber = solvers::RegisteredSolvers.size()-1; solverNumber >= 0; --solverNumber) {
-      auto* solver = solvers::RegisteredSolvers[solverNumber];
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     logDebug(
         "dropNeighbourData(...)", "drop data from " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
-        ", src=" << src << ", dest=" << dest);
+        ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber);
 
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
     solver->dropNeighbourData(fromRank,src,dest,x,level);
   }
 }
