@@ -148,10 +148,10 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
 // For debugging purposes
-  std::cout << "_tokenStream=" << std::endl;
-  for (std::string str : _tokenStream) {
-    std::cout << "["<<str<<"]" << std::endl;
-  }
+//  std::cout << "_tokenStream=" << std::endl;
+//  for (std::string str : _tokenStream) {
+//    std::cout << "["<<str<<"]" << std::endl;
+//  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -606,7 +606,7 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(
   if (_identifier2TimeStepping.find(token) != _identifier2TimeStepping.end()) {
     result = _identifier2TimeStepping.at(token);
     // logDebug("getTimeStepping()", "found TimeStepping " << result);
-    logDebug("getTimeStepping()", "found TimeStepping ");
+    logDebug("getTimeStepping()", "found TimeStepping "<< token);
     return result;
   } else {
     logError(
@@ -619,9 +619,9 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(
   return exahype::solvers::Solver::TimeStepping::Global;
 }
 
-int exahype::Parser::getDMPRelaxationParameter(int solverNumber) const {
+double exahype::Parser::getDMPRelaxationParameter(int solverNumber) const {
   std::string token;
-  int result;
+  double result;
   token = getTokenAfter("solver", solverNumber + 1, "dmp-relaxation-parameter", 1);
   result = atof(token.c_str());
 
@@ -632,13 +632,13 @@ int exahype::Parser::getDMPRelaxationParameter(int solverNumber) const {
     _interpretationErrorOccured = true;
   }
 
-  logDebug("getParameters()", "found parameters " << result);
+  logInfo("getParameters()", "found dmp-relaxation-parameter " << result);
   return result;
 }
 
-int exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
+double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   std::string token;
-  int result;
+  double result;
   token = getTokenAfter("solver", solverNumber + 1, "dmp-difference-scaling", 1);
   result = atof(token.c_str());
 
@@ -649,7 +649,7 @@ int exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
     _interpretationErrorOccured = true;
   }
 
-  logDebug("getDMPDifferenceScaling()", "found parameters " << result);
+  logInfo("getDMPDifferenceScaling()", "found dmp-difference-scaling " << result);
   return result;
 }
 

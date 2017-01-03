@@ -305,7 +305,7 @@ class exahype::Parser {
    * \note This value can only be read in if the solver \p solverNumber is
    * a limiting ADER-DG solver.
    */
-  int getDMPRelaxationParameter(int solverNumber) const;
+  double getDMPRelaxationParameter(int solverNumber) const;
 
   /**
    * \return The maximum-minimum difference scaling used for the discrete maximum principle (DMP).
@@ -313,7 +313,7 @@ class exahype::Parser {
    * \note This value can only be read in if the solver \p solverNumber is
    * a limiting ADER-DG solver.
    */
-  int getDMPDifferenceScaling(int solverNumber) const;
+  double getDMPDifferenceScaling(int solverNumber) const;
 
   /**
    * In the ExaHyPE specification file, a plotter configuration has
