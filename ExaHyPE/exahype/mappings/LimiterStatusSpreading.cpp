@@ -232,15 +232,15 @@ void exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimi
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
           toRank,src,dest,x,level);
     }
-    ++solverNumber;
   }
 
   auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
@@ -266,11 +266,13 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
       int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
         limitingADERDGSolver->sendMergedLimiterStatusToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
@@ -278,7 +280,6 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
         limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
             toRank,src,dest,x,level);
       }
-      ++solverNumber;
     }
   }
 

@@ -355,7 +355,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
           auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
               parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
                 && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
@@ -388,7 +388,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
           auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
               parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined16);
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
-            auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
+            auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
             const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
             const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
             int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -515,6 +515,11 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
+      logDebug("dropNeighbourData(...)", "drop data for solver " << solverNumber << " from rank " <<
+              fromRank << " at vertex x=" << x << ", level=" << level <<
+              ", src=" << src << ", dest=" << dest);
+
       limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
     }
   }
@@ -542,6 +547,11 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
       if (element!=exahype::solvers::Solver::NotFound
           && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+
+        logDebug("mergeWithNeighbourData(...)", "receive data for solver " << solverNumber << " from rank " <<
+                      fromRank << " at vertex x=" << x << ", level=" << level <<
+                      ", src=" << src << ", dest=" << dest);
+
         limitingADERDGSolver->mergeWithNeighbourDataBasedOnLimiterStatus(
             fromRank,receivedMetadata[solverNumber].getU(),
             destCellDescriptionIndex,element,src,dest,
@@ -551,6 +561,11 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
             _tempStateSizedSquareMatrices[solverNumber],
             x,level);
       } else {
+
+        logDebug("mergeWithNeighbourData(...)", "drop data for solver " << solverNumber << " from rank " <<
+                      fromRank << " at vertex x=" << x << ", level=" << level <<
+                      ", src=" << src << ", dest=" << dest);
+
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->dropNeighbourSolverAndLimiterData(fromRank,src,dest,x,level);
       }
