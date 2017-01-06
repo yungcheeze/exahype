@@ -10,7 +10,7 @@ Copy and paste these commands to start with a working ExaHyPE application and co
 
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
 
-    java -jar ExaHyPE.jar ExaHyPE-Engine/ApplicationExamples/EulerFlow.exahype
+    java -jar ExaHyPE-Engine/Toolkit/dist/ExaHyPE.jar ExaHyPE-Engine/ApplicationExamples/EulerFlow.exahype
     cd ExaHyPE-Engine/ApplicationExamples/EulerFlow
     
     export COMPILER=gnu
