@@ -22,5 +22,6 @@ done
 set -e
 
 cd src
+make clean
 make all
 
