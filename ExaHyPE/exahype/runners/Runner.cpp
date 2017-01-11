@@ -730,7 +730,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
     << "/" << repository.getState().getNumberOfInnerLeafCells() );
   logInfo(
     "startNewTimeStep(...)",
-    "\tinner max/min mesh width/max level=" << repository.getState().getMaximumMeshWidth()
+    "\tinner max/min mesh width=" << repository.getState().getMaximumMeshWidth()
     << "/" << repository.getState().getMinimumMeshWidth()
     );
   logInfo(
