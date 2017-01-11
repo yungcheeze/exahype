@@ -26,6 +26,8 @@
 using std::endl;
 using std::cout;
 
+
+
 extern "C" 
 {
   void adervolumeintegrallinear_(double *lduh, double *lFhi, double *dx);
@@ -45,41 +47,6 @@ void kernels::aderdg::generic::fortran::volumeIntegralLinear(
     lFhiFortran[i] = lFhi[i];
   }
 
-  // for (int ii=0; ii<basisSize; ii++) {  // loop over dof
-    // for (int jj=0; jj<basisSize; jj++) {
-      // for (int kk=0; kk<basisSize; kk++) {
-        // for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          // for(int dim=0; dim < DIMENSIONS; dim++) {
-            // lFhiFortran[f2p5(ivar, dim, ii, jj, kk)] = lFhi[p2f5(ivar, dim, ii, jj, kk)];
-          // }
-        // }
-      // }
-    // }
-  // }
-
-  
-  // // std::ofstream ofs;
-  // // ofs.open ("boutput_lFhi.txt", std::ofstream::out);
-  // // for (int ii=0; ii<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; ii++) {
-    // // ofs << lFhi[ii] << "\n";
-  // // }
-  // // ofs.close();
-
-  // // ofs.open ("boutput_lFhiFortran.txt", std::ofstream::out);
-  // // for (int ii=0; ii<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; ii++) {
-    // // ofs << lFhiFortran[ii] << "\n";
-  // // }
-  // // ofs.close();
-
-  // // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
-  // // cout << lFhi[0] << "\n";
-  // // cout << lFhi[1] << "\n";
-  // // cout << lFhi[2] << "\n";
-  // // cout << lFhi[3] << "\n";
-  // // cout << lFhi[4] << "\n";
-  // // cout << lFhi[5] << "\n";
-  // // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
-  
   
   double* dxTemp = new double[3];
   dxTemp[0]= dx[0];
@@ -87,6 +54,8 @@ void kernels::aderdg::generic::fortran::volumeIntegralLinear(
   dxTemp[2]= dx[2];
   
   adervolumeintegrallinear_(lduh, lFhiFortran, dxTemp);
+
+  
 
   delete[] lFhiFortran;
   delete[] dxTemp;

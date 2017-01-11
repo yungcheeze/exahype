@@ -16,8 +16,8 @@ SUBROUTINE ADERSurfaceIntegralLinear(lduh,lFbnd,dx)
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE
     ! Argument list
-    REAL, INTENT(IN)    :: lFbnd(nVar,nDOF(2),nDOF(3),6)            ! nonlinear flux tensor in each space-time DOF
-    REAL, INTENT(INOUT) :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))       ! spatial degrees of freedom
+    REAL, INTENT(IN)    :: lFbnd(nVar,nDOF(2),nDOF(3), 6)            ! nonlinear flux tensor in each space-time DOF
+    REAL, INTENT(INOUT) :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))        ! spatial degrees of freedom
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          !
     ! Local variables
     INTEGER           :: i,j,k,l,iVar

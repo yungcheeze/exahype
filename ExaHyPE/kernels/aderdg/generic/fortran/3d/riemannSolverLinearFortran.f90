@@ -11,7 +11,7 @@
  ! For the full license text, see LICENSE.txt
  !  
  
-SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
+SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR, lFbndR,nv)
     USE typesDef
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -72,19 +72,34 @@ SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     CALL PDEEigenvalues(LR,QavR,nv)
 
     smax = MAX( MAXVAL(ABS(LL)), MAXVAL(ABS(LR)) )
+    
+    !print *, smax
+    !stop
     !
     ! We now compute the numerical flux. Note that the scheme is at the moment written in
     ! CONSERVATION FORM => no fluctuations, but real fluxes.
     ! Later, this will be converted into the left and right fluctuations.
     !
     CALL PDEMatrixB(Bn,0.5*(QavL+QavR),nv) ! evaluate the system matrix just once in the averaged state
+
+    
+    
     DO k = 1, nDOF(3)
-      DO j = 1, nDOF(2)
-            !CALL PDEMatrixB(Bn,0.5*(lQbndL(:,j,k)+lQbndR(:,j,k)),nv,0.5*(lparbndL(:,j,k)+lparbndR(:,j,k))) ! evaluate the system matrix in each Gaussian point again (slow)
-            lFbndL(:,j,k) = 0.5*MATMUL( Bn - Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) )
-            lFbndR(:,j,k) = 0.5*MATMUL( Bn + Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) )
+       DO j = 1, nDOF(2)
+          !CALL PDEMatrixB(Bn,0.5*(QavL+QavR),nv)
+          !CALL PDEMatrixB(Bn,0.5*(lQbndL(:,j,k)+lQbndR(:,j,k)),nv,0.5*(lparbndL(:,j,k)+lparbndR(:,j,k))) ! evaluate the system matrix in each Gaussian point again (slow)
+
+          lFbndL(:,j,k) = 0.5*MATMUL(Bn - Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) )
+          lFbndR(:,j,k) = 0.5*MATMUL(Bn + Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) )
+
+          !lFbndL(:,j,k) = 0.5*( lFbndR(:,j,k) + lFbndL(:,j,k) ) - 0.5*smax*( lQbndR(:,j,k) - lQbndL(:,j,k) ) 
+          !lFbndR(:,j,k) = lFbndL(:,j,k) 
+
+          
         ENDDO
-    ENDDO
+     ENDDO
+
+    !
     !
     !PRINT *, ' --------lFbndL-ADERRiemannSolver-------------------------------- '
     !PRINT *, lFbndL

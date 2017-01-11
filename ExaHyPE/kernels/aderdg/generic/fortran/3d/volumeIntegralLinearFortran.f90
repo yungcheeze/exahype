@@ -8,15 +8,16 @@
  ! No 671698. For copyrights and licensing, please consult the webpage.
  !
  ! Released under the BSD 3 Open Source License.
- ! For the full license text, see LICENSE.txt
- !  
+ ! For the full license text, see LICENSE.tx
+ !
+
  
 SUBROUTINE ADERVolumeIntegralLinear(lduh,lFhi,dx)
     USE typesDef
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)              :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))    ! nonlinear flux tensor in each space-time DOF 
+    REAL, INTENT(IN)              :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)    ! nonlinear flux tensor in each space-time DOF 
     REAL, INTENT(OUT)             :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))      ! spatial degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                   ! mesh spacing
     ! Local variables 
@@ -27,18 +28,19 @@ SUBROUTINE ADERVolumeIntegralLinear(lduh,lFhi,dx)
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2) 
             DO i = 1, nDOF(1) 
-                aux = (/ wGPN(i), wGPN(j), wGPN(k) /) 
-                lduh(:,i,j,k) = -SUM( lFhi(:,1:nDim,i,j,k), dim = 2 ) * PRODUCT(aux(1:nDim))
+               aux = (/ wGPN(i), wGPN(j), wGPN(k) /)
+               
+                lduh(:,i,j,k) = -SUM( lFhi(:,i,j,k,1:nDim), dim = 2 ) * PRODUCT(aux(1:nDim))
             ENDDO
         ENDDO
     ENDDO 
     !
     CONTINUE
     !
-    !OPEN(UNIT=12, FILE="aoutput.txt", ACTION="write", STATUS="replace")
-    !WRITE(12, '(ES24.16,1x)') , lduh
-    !CALL EXIT    
-    !
+!!$    OPEN(UNIT=12, FILE="aoutput.txt", ACTION="write", STATUS="replace")
+!!$    WRITE(12, '(ES24.16,1x)') , lduh
+!!$    !CALL EXIT    
+!!$    !
 END SUBROUTINE ADERVolumeIntegralLinear 
     
     
