@@ -1,29 +1,29 @@
-#include "MyEulerSolver_Plotter3.h"
-#include "InitialData.h"
+#include "ExactPrimitivesWriter.h"
 #include "Primitives.h"
+#include "InitialData.h"
 
 
-Euler::MyEulerSolver_Plotter3::MyEulerSolver_Plotter3(MyEulerSolver& solver) {
+Euler::ExactPrimitivesWriter::ExactPrimitivesWriter(MyEulerSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-Euler::MyEulerSolver_Plotter3::~MyEulerSolver_Plotter3() {
+Euler::ExactPrimitivesWriter::~ExactPrimitivesWriter() {
   // @todo Please insert your code here
 }
 
 
-void Euler::MyEulerSolver_Plotter3::startPlotting(double time) {
+void Euler::ExactPrimitivesWriter::startPlotting(double time) {
   this->time = time;
 }
 
 
-void Euler::MyEulerSolver_Plotter3::finishPlotting() {
+void Euler::ExactPrimitivesWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void Euler::MyEulerSolver_Plotter3::mapQuantities(
+void Euler::ExactPrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

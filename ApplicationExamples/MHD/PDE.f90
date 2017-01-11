@@ -37,15 +37,10 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   ez     = - (vx*by - vy*bx)
   gamma1 = gamma/(gamma-1.0)
   b2     = bx*bx + by*by + bz*bz
-  !v2     = vx*vx + vy*vy + vz*vz
+  v2     = vx*vx + vy*vy + vz*vz
   e2     = ex*ex + ey*ey + ez*ez
   w      = rho + gamma1*p
-  !vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
-
-  ! the velocity vector is dimension agnostic
-  vel    = V(2:2+nDim-1)
-  v2     = SUM(vel**2)
-  vn     = SUM(vel * nv)
+  vn     = vx*n(1) + vy*n(2) + vz*n(3)
 
   cs2    = gamma * p / w
   ca2    = (b2 - e2) / ( w + b2 - e2)
@@ -53,6 +48,29 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   den    = 1.0/( 1.0 - v2 * a2)
   vf1    = den * ( 1.0 - a2) * vn
   vf2    = den * sqrt(a2 * ( 1.0 - v2) * ((1.0 - v2 * a2) - (1.0 - a2) * vn**2))
+
+! Svens version:
+!  ex     = - (vy*bz - vz*by)
+!  ey     = - (vz*bx - vx*bz)
+!  ez     = - (vx*by - vy*bx)
+!  gamma1 = gamma/(gamma-1.0)
+!  b2     = bx*bx + by*by + bz*bz
+!  !v2     = vx*vx + vy*vy + vz*vz
+!  e2     = ex*ex + ey*ey + ez*ez
+!  w      = rho + gamma1*p
+!  !vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
+!
+!  ! the velocity vector is dimension agnostic
+!  vel    = V(2:2+nDim-1)
+!  v2     = SUM(vel**2)
+!  vn     = SUM(vel * nv)
+!
+!  cs2    = gamma * p / w
+!  ca2    = (b2 - e2) / ( w + b2 - e2)
+!  a2     = cs2 + ca2 - cs2 * ca2
+!  den    = 1.0/( 1.0 - v2 * a2)
+!  vf1    = den * ( 1.0 - a2) * vn
+!  vf2    = den * sqrt(a2 * ( 1.0 - v2) * ((1.0 - v2 * a2) - (1.0 - a2) * vn**2))
 
   Lambda(1) = vf1 + vf2
   Lambda(2) = vf1 - vf2

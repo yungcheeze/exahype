@@ -115,6 +115,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
       double                       _previousMeasuredTime;
       int                          _searchDelta;
       tarch::timing::Measurement   _currentMeasurement;
+      double                       _serialMeasurement;
+      double                       _totalSerialTime;
 
       std::string toString() const;
     };
@@ -127,9 +129,20 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      */
     std::map<peano::datatraversal::autotuning::MethodTrace,DatabaseEntry>               _measurements;
 
+    tarch::timing::Measurement   _totalRuntimeMeasurement;
+    tarch::timing::Watch         _totalRuntimeWatch;
+
+    /**
+     * If we have a problem of size N, we set the initial search direction to
+     * N/2. If this initial search is successful, we continue with this search
+     * size and thus bump into 0. In this case, we need an emergency halving of
+     * the search step size.
+     */
     void makeAttributesLearn();
 
     void changeMeasuredMethodTrace();
+
+    bool holdsSearchingOracle() const;
   public:
     /**
      * Oracle Constructor
@@ -138,6 +151,13 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
 
     virtual ~OracleForOnePhaseWithShrinkingGrainSize();
 
+    /**
+     * When we insert a new entry we either set the search size such that the
+     * next size is half the problem i.e. we could exploit two cores. If the
+     * problem however is large, it does make sense to split it up more
+     * aggressively right from the start. If this is not a good idea, the
+     * code will reduce the search step size anyway.
+     */
     peano::datatraversal::autotuning::GrainSize parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) override;
     void parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
     void plotStatistics(std::ostream& out, int oracleNumber) const override;

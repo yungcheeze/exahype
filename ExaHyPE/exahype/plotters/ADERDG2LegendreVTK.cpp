@@ -75,19 +75,10 @@ exahype::plotters::ADERDG2LegendreVTK::ADERDG2LegendreVTK(exahype::plotters::Plo
   _fileCounter(-1),
   _isBinary(isBinary),
   _plotCells(plotCells),
-/*
-  _filename( "" ),
-  _order(-1),
-  _solverUnknowns(-1),
-  _writtenUnknowns(-1),
-  _select(""),
-  _regionOfInterestLeftBottomFront(0.0),
-  _regionOfInterestRightTopBack(0.0),
-*/
   _gridWriter(nullptr),
   _vertexWriter(nullptr),
   _cellWriter(nullptr),
-  _timeStampDataWriter(nullptr),
+  _vertexTimeStampDataWriter(nullptr),
   _cellTimeStampDataWriter(nullptr),
   _vertexDataWriter(nullptr),
   _cellDataWriter(nullptr) {
@@ -146,16 +137,16 @@ void exahype::plotters::ADERDG2LegendreVTK::startPlotting( double time ) {
     if (_plotCells) {
       _cellDataWriter          = _gridWriter->createCellDataWriter("Q", _writtenUnknowns);
       _vertexDataWriter        = nullptr;
+      _cellTimeStampDataWriter = _gridWriter->createCellDataWriter("time", 1);
     }
     else {
       _cellDataWriter          = nullptr;
       _vertexDataWriter        = _gridWriter->createVertexDataWriter("Q", _writtenUnknowns);
+      _vertexTimeStampDataWriter = _gridWriter->createVertexDataWriter("time", 1);
     }
 
-    _timeStampDataWriter = _gridWriter->createVertexDataWriter("time", 1);
 
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
     assertion( _vertexWriter!=nullptr );
     assertion( _cellWriter!=nullptr );
   }
@@ -169,11 +160,11 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
 
   if ( _writtenUnknowns>0 ) {
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
 
     _vertexWriter->close();
     _cellWriter->close();
-    _timeStampDataWriter->close();
+    if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
+    if (_cellTimeStampDataWriter!=nullptr)   _cellTimeStampDataWriter->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
 
@@ -194,14 +185,16 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
   if (_cellDataWriter!=nullptr)      delete _cellDataWriter;
   if (_vertexWriter!=nullptr)        delete _vertexWriter;
   if (_cellWriter!=nullptr)          delete _cellWriter;
-  if (_timeStampDataWriter!=nullptr) delete _timeStampDataWriter;
+  if (_vertexTimeStampDataWriter!=nullptr) delete _vertexTimeStampDataWriter;
+  if (_cellTimeStampDataWriter!=nullptr)   delete _cellTimeStampDataWriter;
   if (_gridWriter!=nullptr)          delete _gridWriter;
 
   _vertexDataWriter     = nullptr;
   _cellDataWriter       = nullptr;
   _vertexWriter         = nullptr;
   _cellWriter           = nullptr;
-  _timeStampDataWriter  = nullptr;
+  _vertexTimeStampDataWriter  = nullptr;
+  _cellTimeStampDataWriter    = nullptr;
   _gridWriter           = nullptr;
 }
 
@@ -210,11 +203,18 @@ exahype::plotters::ADERDG2LegendreVTK::~ADERDG2LegendreVTK() {
 }
 
 
-void exahype::plotters::ADERDG2LegendreVTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex ) {
-  if (_writtenUnknowns>0) {
+void exahype::plotters::ADERDG2LegendreVTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex, int cellIndex ) {
+  if (_writtenUnknowns>0 && _vertexTimeStampDataWriter!=nullptr) {
     dfor(i,_order+1) {
-      _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+      _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
       vertexIndex++;
+    }
+  }
+
+  if (_writtenUnknowns>0 && _cellTimeStampDataWriter!=nullptr) {
+    dfor(i,_order) {
+      _cellTimeStampDataWriter->plotCell(cellIndex, timeStamp);
+      cellIndex++;
     }
   }
 }
@@ -235,7 +235,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
       //p = offsetOfPatch + tarch::la::multiplyComponents( i.convertScalar<double>(), sizeOfPatch) * (1.0/_order);
 
       for (int d=0; d<DIMENSIONS; d++) {
-	p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
+        p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
       }
 
       const int newVertexNumber = _vertexWriter->plotVertex(p);
@@ -408,7 +408,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
 
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
-    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
+    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first, vertexAndCellIndex.second );
 
     if (_plotCells) {
       plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );

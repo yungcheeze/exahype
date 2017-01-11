@@ -3,12 +3,7 @@ package eu.exahype;
 import java.util.*;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.node.ALimitingAderdgSolver;
-import eu.exahype.node.AProfiling;
-import eu.exahype.node.AProject;
-import eu.exahype.node.PSolver;
-import eu.exahype.node.ACoupleSolvers;
-import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.*;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -98,20 +93,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     }
   }
   
-
-  public void inACoupleSolvers(ACoupleSolvers node) {
-    try {
-      _writer.write("#include \"" + node.getIdentifier().getText().trim() + ".h\"\n");
-
-      _methodBodyWriter.write(  "  exahype::solvers::RegisteredSolverCouplings.push_back( new " + _projectName +  
-         "::" + node.getIdentifier().getText().trim() + "(parser.getCouplingTime("+_couplingNumber+"), parser.getCouplingRepeat("+_couplingNumber+") ));\n");
-      
-      _couplingNumber++;
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
-    }
-  }
 
   private void writeProfilerCreation() {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
@@ -220,7 +201,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
     try {
-      String plotterName = _solverName + "_Plotter" + Integer.toString(_plotterNumber);
+      String plotterName = node.getName().getText().trim();
 
       _writer.write("#include \"" + plotterName + ".h\"\n");
 
@@ -361,7 +342,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       // Limiting ADER-DG
       _methodBodyWriter.write("  \n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back(\n"
-          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver)) );\n");
+          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0)) );\n");
       
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n");
       _methodBodyWriter.write("  }\n\n");

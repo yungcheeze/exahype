@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
   // =========================
   //
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-#ifdef Parallel
+  #ifdef Parallel
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
       true,   // logTimeStamp
@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
       true,   // logMachineName
       true,   // logMessageType
       true,   // logTrace
-      "exahype.log-file");
-#else
+      parser.getLogFileName() );
+  #elif defined(Asserts) || defined(Debug)
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
       " ",    // columnSeparator
       true,   // logTimeStamp
@@ -109,8 +109,17 @@ int main(int argc, char** argv) {
       false,  // logMachineName
       true,   // logMessageType
       true,   // logTrace
-      "exahype.log-file");
-#endif
+      parser.getLogFileName() );
+  #else
+  tarch::logging::CommandLineLogger::getInstance().setLogFormat(
+      " ",    // columnSeparator
+      true,   // logTimeStamp
+      false,  // logTimeStampHumanReadable
+      false,  // logMachineName
+      true,   // logMessageType
+      false,   // logTrace
+      parser.getLogFileName() );
+  #endif
 
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
   if (!tarch::logging::LogFilterFileReader::parsePlainTextFile(
@@ -145,7 +154,7 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
   }
 } else {
   logInfo("main()", "Skipping tests as EXAHYPE_SKIP_TESTS is set."
-     "We do so because tests are broken in the moment and nobody repairs them.");
+     "We do so because tests are broken in the moment and nobody repairs them."); //  TODO(Sven,Dominic,JM): Fix tests.
 } // end if getenv(EXAHYPE_SKIP_TESTS)
 #endif
 

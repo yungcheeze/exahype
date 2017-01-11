@@ -1,28 +1,28 @@
-#include "MyEulerSolver_Plotter2.h"
+#include "PrimitivesWriter.h"
 #include "Primitives.h"
 
 
-Euler::MyEulerSolver_Plotter2::MyEulerSolver_Plotter2(MyEulerSolver& solver) {
+Euler::PrimitivesWriter::PrimitivesWriter(MyEulerSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-Euler::MyEulerSolver_Plotter2::~MyEulerSolver_Plotter2() {
+Euler::PrimitivesWriter::~PrimitivesWriter() {
   // @todo Please insert your code here
 }
 
 
-void Euler::MyEulerSolver_Plotter2::startPlotting(double time) {
+void Euler::PrimitivesWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void Euler::MyEulerSolver_Plotter2::finishPlotting() {
+void Euler::PrimitivesWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void Euler::MyEulerSolver_Plotter2::mapQuantities(
+void Euler::PrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

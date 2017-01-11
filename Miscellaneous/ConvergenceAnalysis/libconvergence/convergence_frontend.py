@@ -99,7 +99,7 @@ class ConvergenceFrontend:
 	@actions.add("run-wait")
 	def startConvergenceTestAndWait(self):
 		"Convergence test and wait until finished."
-		self.startConvergenceTest()
+		processes = self.startConvergenceTest()
 		exitcode = self.waitForProcesses(processes)
 		return exitcode
 

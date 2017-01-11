@@ -149,27 +149,6 @@ public class Main {
       return;
     }
 
-    // Create the coupling layer
-    try {
-      CreateCouplingRoutines createCouplingRoutines =
-          new CreateCouplingRoutines(directoryAndPathChecker);
-
-      document.apply(createCouplingRoutines);
-
-      System.out.println("\n\n\n\n");
-      if (!createCouplingRoutines.valid) {
-        System.err.println("ERROR: Could not create ExaHyPE's coupling routines");
-        System.err.println("ExaHyPE script failed ");
-        return;
-      }
-      System.out.println("generate coupling routines ... ok");
-      waitForInteraction(interactive);
-    } catch (Exception e) {
-      System.out.println("ERROR: " + e.toString());
-      System.err.println("ExaHyPE script failed ");
-      return;
-    }
-
     // Create the kernel calls
     try {
       GenerateSolverRegistration generateKernelCalls =

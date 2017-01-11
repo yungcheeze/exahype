@@ -25,6 +25,7 @@ clean:
 	rm -f $(OBJECTS)
 	rm -f files.mk
 	rm -f ../dist/ExaHyPE.jar
+	rm -rf eu/exahype/node
 
 
 createParser:
@@ -39,7 +40,7 @@ dist:
 	jar cmf ../Manifest.txt ../dist/ExaHyPE.jar .
 
 
-all: clean createParser clean compile dist
+all: clean createParser compile dist
 
 
 files.mk:

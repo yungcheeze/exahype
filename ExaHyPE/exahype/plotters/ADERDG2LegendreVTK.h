@@ -53,12 +53,12 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
   tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*              _vertexWriter;
   tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*                _cellWriter;
 
-  tarch::plotter::griddata::Writer::VertexDataWriter*  _timeStampDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexTimeStampDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
 
-  void writeTimeStampDataToPatch( double timeStamp, int vertexIndex );
+  void writeTimeStampDataToPatch( double timeStamp, int vertexIndex, int cellIndex );
 
   void plotVertexData(
     int firstVertexIndex,

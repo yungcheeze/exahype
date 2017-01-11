@@ -158,14 +158,14 @@ class exahype::plotters::Plotter {
     virtual ~Device() {}
 
     /**
-     * Configure the plotter. Is invoked directly after the constructor is
+     * Configure the plotter device. Is invoked directly after the constructor is
      * called.
      */
     virtual void init(const std::string& filename, int order, int unknowns, int writtenUnknowns, const std::string& select) = 0;
 
 
     /**
-     * Hand a patch over to the plotter.
+     * Hand a patch over to the plotter device.
      */
     virtual void plotPatch(
         const int cellDescriptionsIndex,
@@ -178,15 +178,15 @@ class exahype::plotters::Plotter {
  private:
   static tarch::logging::Log _log;
 
-  const int              _solver;
-  const std::string      _identifier;
-  int                    _writtenUnknowns;
+  int              _solver;
+  std::string      _identifier;
+  int              _writtenUnknowns;
   /**
    * Time of the next snapshot to be written
    */
   double                 _time;
   const double           _repeat;
-  const std::string      _filename;
+  std::string            _filename;
   const std::string      _select;
   bool                   _isActive;
 
@@ -194,13 +194,33 @@ class exahype::plotters::Plotter {
 
  public:
   /**
-   * @param solver Number of the underlying solver. This number is important to
-   *               parse the file: the constructor asks parser for the solverth
+   * @param solverConfig Number of the underlying solver. This number is important to
+   *               parse the file: the constructor asks parser for the \p solverNumber-th
    *               solver section.
-   * @param plotterCount Same story: Required to tell the parser which tag in
-   *               the file is to be read.
+   * @param plotterConfig Same story: Required to tell the parser which tag in
+   *                      the file is to be read in.
    */
-  Plotter(int solver, int plotterCount, const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing);
+  Plotter(const int solverConfig,const int plotterConfig,
+          const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing);
+
+  /**
+   * Plotter constructor for scenarios where we want to use a plotter configuration
+   * given in the specification file for another solver than the one
+   * it is specified for.
+   *
+   * @param solverConfig Number of the underlying solver. This number is important to
+   *               parse the file: the constructor asks parser for the \p solverNumber-th
+   *               solver section.
+   * @param plotterConfig Same story: Required to tell the parser which tag in
+   *                      the file is to be read in.
+   *
+   * @param solverDataSource Number of the solver this plotter gets its data from.
+   *               For parameter studies we usually want to use the same
+   *               plotter configuration for multiple solvers.
+   */
+  Plotter(const int solverConfig,const int plotterConfig,
+          const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing,
+          const int solverDataSource);
   ~Plotter();
 
   // Disallow copy and assignment

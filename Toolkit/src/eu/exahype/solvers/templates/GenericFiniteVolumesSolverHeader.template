@@ -18,6 +18,11 @@ namespace {{Project}}{
 
 class {{Project}}::{{Solver}} : public exahype::solvers::FiniteVolumesSolver {
   public:
+    // allow static context access to the solver constants.
+    static constexpr int nVar      = {{NumberOfVariables}};
+    static constexpr int nParams   = {{NumberOfParameters}};
+    static constexpr int nDim      = {{Dimensions}};
+
     {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
     
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;

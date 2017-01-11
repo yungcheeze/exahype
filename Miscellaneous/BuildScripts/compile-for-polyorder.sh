@@ -65,10 +65,14 @@ cd "$APPNAME"
 # doesn't do the full job.
 # MyBlaSolver.h contains the polynomial order
 echo "Expect the project solver $SOLVERNAME to be at $SOLVERNAME.h, I delete it for recreation"
-rm "${SOLVERNAME}.h"
+rm -f "${SOLVERNAME}.h"
 
 # if no preference for $CLEAN has been set, make sure it is at least Lightweight
 # which is needed in order to delete header files etc.
+#
+# Note: Depending on the Kernels used you might really need a proper CLEAN. Lightweight
+# cleaning saves you a lot of compiling time as you don't have to recompile everything
+# over and over.
 export CLEAN="${CLEAN:=Lightweight}"
 
 $COMPILE || { echo "Failure while compiling p=${ORDER}."; exit -1; }

@@ -76,9 +76,12 @@ exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::P
   _fileCounter(-1),
   _isBinary(isBinary),
   _plotCells(plotCells),
+  _order(-1),
+  _solverUnknowns(-1),
+  _writtenUnknowns(-1),
   _vertexDataWriter(nullptr),
   _cellDataWriter(nullptr),
-  _timeStampDataWriter(nullptr),
+  _vertexTimeStampDataWriter(nullptr),
   _cellTimeStampDataWriter(nullptr),
   _gridWriter(nullptr),
   _patchWriter(nullptr) {
@@ -142,16 +145,16 @@ void exahype::plotters::ADERDG2CartesianVTK::startPlotting( double time ) {
     if (_plotCells) {
       _cellDataWriter          = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
       _vertexDataWriter        = nullptr;
+      _cellTimeStampDataWriter = _patchWriter->createCellDataWriter("time", 1);
     }
     else {
-      _cellDataWriter          = nullptr;
-      _vertexDataWriter        = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+      _cellDataWriter            = nullptr;
+      _vertexDataWriter          = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+      _vertexTimeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
     }
-    _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
 
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
@@ -164,10 +167,10 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
   if (_writtenUnknowns>0) {
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
 
     _gridWriter->close();
-    _timeStampDataWriter->close();
+    if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
+    if (_cellTimeStampDataWriter!=nullptr)   _cellTimeStampDataWriter->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
 
@@ -186,14 +189,16 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
 
   if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
   if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
-  if (_timeStampDataWriter!=nullptr)  delete _timeStampDataWriter;
+  if (_vertexTimeStampDataWriter!=nullptr)  delete _vertexTimeStampDataWriter;
+  if (_cellTimeStampDataWriter!=nullptr)    delete _cellTimeStampDataWriter;
   if (_gridWriter!=nullptr)           delete _gridWriter;
   if (_patchWriter!=nullptr)          delete _patchWriter;
 
   _vertexDataWriter    = nullptr;
   _cellDataWriter      = nullptr;
   _patchWriter         = nullptr;
-  _timeStampDataWriter = nullptr;
+  _vertexTimeStampDataWriter = nullptr;
+  _cellTimeStampDataWriter   = nullptr;
   _gridWriter          = nullptr;
 }
 
@@ -203,11 +208,18 @@ exahype::plotters::ADERDG2CartesianVTK::~ADERDG2CartesianVTK() {
 }
 
 
-void exahype::plotters::ADERDG2CartesianVTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex ) {
-  if (_writtenUnknowns>0) {
+void exahype::plotters::ADERDG2CartesianVTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex, int cellIndex ) {
+  if (_writtenUnknowns>0 && _vertexTimeStampDataWriter!=nullptr) {
     dfor(i,_order+1) {
-      _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+      _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
       vertexIndex++;
+    }
+  }
+
+  if (_writtenUnknowns>0 && _cellTimeStampDataWriter!=nullptr) {
+    dfor(i,_order) {
+      _cellTimeStampDataWriter->plotCell(cellIndex, timeStamp);
+      cellIndex++;
     }
   }
 }
@@ -342,7 +354,7 @@ void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
       vertexAndCellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order);
     }
 
-    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
+    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first, vertexAndCellIndex.second );
 
     if (_plotCells) {
       plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );

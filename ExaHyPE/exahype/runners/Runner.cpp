@@ -469,7 +469,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   /*
    * Finally print the initial time step info.
    */
-  printTimeStepInfo(-1);
+  printTimeStepInfo(-1,repository);
 
   validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
 
@@ -510,7 +510,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
       );
       recomputePredictorIfNecessary(repository);
-      printTimeStepInfo(numberOfStepsToRun);
+      printTimeStepInfo(numberOfStepsToRun,repository);
     } else {
       runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
     }
@@ -534,6 +534,7 @@ void exahype::runners::Runner::initSolverTimeStepData() {
 }
 
 void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const {
+  #ifdef Asserts
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     assertionEquals(solver->getMinTimeStamp(),0.0);
     assertion1(std::isfinite(solver->getMinTimeStepSize()),solver->getMinTimeStepSize());
@@ -565,8 +566,8 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
           case exahype::solvers::Solver::TimeStepping::GlobalFixed:
             break;
         }
-
-      }  break;
+      }
+      break;
       case exahype::solvers::Solver::Type::LimitingADERDG: {
         // ADER-DG
         auto* aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
@@ -611,6 +612,7 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
         break;
     }
   }
+  #endif
 }
 
 void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Repository& repository) {
@@ -648,7 +650,7 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
-void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall) {
+void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository) {
   double currentMinTimeStamp    = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
   double nextMinTimeStepSize    = std::numeric_limits<double>::max();
@@ -719,6 +721,22 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
       << "\tcompression-rate=" << (exahype::solvers::ADERDGSolver::PipedCompressedBytes/exahype::solvers::ADERDGSolver::PipedUncompressedBytes)
     );
   }
+  #endif
+
+  #if defined(TrackGridStatistics)
+  logInfo(
+    "startNewTimeStep(...)",
+    "\tinner cells/inner unrefined cells=" << repository.getState().getNumberOfInnerCells()
+    << "/" << repository.getState().getNumberOfInnerLeafCells() );
+  logInfo(
+    "startNewTimeStep(...)",
+    "\tinner max/min mesh width=" << repository.getState().getMaximumMeshWidth()
+    << "/" << repository.getState().getMinimumMeshWidth()
+    );
+  logInfo(
+    "startNewTimeStep(...)",
+    "\tmax level=" << repository.getState().getMaxLevel()
+    );
   #endif
 
   #endif
@@ -801,7 +819,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     updateLimiterDomain(repository);
   }
 
-  printTimeStepInfo(1);
+  printTimeStepInfo(1,repository);
 
   /*
    * Compute current first predictor based on current time step size.
@@ -830,6 +848,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
 }
 
 void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const {
+  #ifdef Asserts
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     assertionEquals(solver->getMinTimeStamp(),0.0);
     assertion1(std::isfinite(solver->getMinTimeStepSize()),solver->getMinTimeStepSize());
@@ -898,4 +917,5 @@ void exahype::runners::Runner::validateSolverTimeStepDataForThreeAlgorithmicPhas
         break;
     }
   }
+  #endif
 }

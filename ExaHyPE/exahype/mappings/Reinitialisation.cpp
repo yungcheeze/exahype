@@ -248,14 +248,19 @@ void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned   int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+
+      logDebug("sendEmptyDataToNeighbour(...)", "send empty data for solver " << solverNumber << " to rank " <<
+              toRank << " at vertex x=" << x << ", level=" << level <<
+              ", src=" << src << ", dest=" << dest);
+
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(toRank,src,dest,x,level);
     }
-    ++solverNumber;
   }
 
   auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
@@ -281,22 +286,33 @@ void exahype::mappings::Reinitialisation::sendDataToNeighbour(
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+  for (unsigned   int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
+      const int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
+
       if (element!=exahype::solvers::Solver::NotFound) { // Check if a patch exists on the cell
+
+        logDebug("sendDataToNeighbour(...)", "send data for solver " << solverNumber << " to rank " <<
+                toRank << " at vertex x=" << x << ", level=" << level <<
+                ", src=" << src << ", dest=" << dest);
+
         limitingADERDGSolver->sendDataToNeighbourBasedOnLimiterStatus(
             toRank,srcCellDescriptionIndex,element,src,dest,
             true, /* isRecomputation */
             x,level);
       } else {
+
+        logDebug("sendDataToNeighbour(...)", "send empty data for solver " << solverNumber << " to rank " <<
+                 toRank << " at vertex x=" << x << ", level=" << level <<
+                 ", src=" << src << ", dest=" << dest);
+
         limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(
             toRank,src,dest,x,level);
       }
-      ++solverNumber;
     }
   }
 

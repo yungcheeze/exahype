@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <regex>
 
 #include "tarch/la/ScalarOperations.h"
 
@@ -73,47 +74,84 @@ exahype::Parser::Parser() {
 
 void exahype::Parser::readFile(const std::string& filename) {
   const int MAX_CHARS_PER_LINE = 65536;
-  const char* const DELIMITER = " =\t";
+
+  std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
+  std::regex COMMENT_END(R"((\*\/))"); //
+  std::regex GROUP_BEGIN_OR_END(R"(^(\s|\t)*([a-zA-Z][^\=]+)+)");
+  std::regex PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
+  std::regex NO_SPLITTING(R"(\}|\{)");
+  std::regex COMMA_SEPARATED(R"((\w|[^a-zA-Z\,\s\t])+)");
+  std::regex WHITESPACE_SEPARATED(R"(([^\s\t]+))");
+  std::smatch match;
 
   _tokenStream.clear();
 
   std::ifstream inputFile;
   inputFile.open(filename.c_str());
   if (!inputFile.good()) {
-    logError("readFile(String)", "can not open file " << filename);
+    logError("readFile(String)", "cannot open file " << filename);
     _tokenStream.clear();
     _interpretationErrorOccured = true;
     return;
   }
 
-  bool currentlyReadsComment = false;
+  int currentlyReadsComment = 0;
 
   while (!inputFile.eof() && inputFile) {
     char lineBuffer[MAX_CHARS_PER_LINE];
     inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
+    std::string line(lineBuffer);
 
-    if ( std::string(lineBuffer)!="" ) {
-      char* token;
+    // parse the line
+    if (std::regex_search(line, match, COMMENT_BEGIN) && match.size() > 1) {
+      currentlyReadsComment += 1;
+    }
+    if (std::regex_search(line, match, COMMENT_END) && match.size() > 1) {
+      currentlyReadsComment -= 1;
+    }
 
-      // parse the line
-      token = strtok(lineBuffer, DELIMITER);
-      int currentTokenInLine = 0;
-      while (token) {
-        std::string newToken = token;
-        if (currentlyReadsComment && newToken.find("*/") != std::string::npos) {
-          currentlyReadsComment = false;
-        } else if (!currentlyReadsComment &&
-                   newToken.find("/*") != std::string::npos) {
-          currentlyReadsComment = true;
-        } else if (!currentlyReadsComment) {
-          logDebug("readFile(String)", "got token " << newToken);
-          _tokenStream.push_back(newToken);
+    if (currentlyReadsComment==0 && std::regex_search(line, match, PARAMETER) && match.size() > 1) {
+      _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
+      std::string rightHandSide = match.str(6);
+
+      if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
+        std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
+        std::regex_iterator<std::string::iterator> rend;
+        while(regex_it!=rend) {
+          _tokenStream.push_back(regex_it->str());
+          ++regex_it;
         }
-        token = strtok(NULL, DELIMITER);  // subsequent tokens
-        currentTokenInLine++;
+      } else {
+        _tokenStream.push_back(rightHandSide);
       }
+
+    } else if (currentlyReadsComment==0 && std::regex_search(line, match, GROUP_BEGIN_OR_END) && match.size() > 1) {
+      std::regex_iterator<std::string::iterator> regex_it ( line.begin(), line.end(), WHITESPACE_SEPARATED );
+      std::regex_iterator<std::string::iterator> rend;
+      if (regex_it->str().compare("end")!=0) { // first token should not be end
+        while(regex_it!=rend) {
+          _tokenStream.push_back(regex_it->str());
+          ++regex_it;
+        }
+      } // else do nothing
+    } else if (currentlyReadsComment<0) {
+      logError("readFile(String)",
+           "Please remove additional multi-line comment end(s) in line '" << line << "'.");
+       _interpretationErrorOccured = true;
     }
   }
+
+  if (currentlyReadsComment>0) {
+    logError("readFile(String)",
+             "A multi-line comment was not closed.");
+    _interpretationErrorOccured = true;
+  }
+
+// For debugging purposes
+//  std::cout << "_tokenStream=" << std::endl;
+//  for (std::string str : _tokenStream) {
+//    std::cout << "["<<str<<"]" << std::endl;
+//  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -470,7 +508,7 @@ exahype::solvers::Solver::Type exahype::Parser::getType(
   std::string token;
   exahype::solvers::Solver::Type result =
       exahype::solvers::Solver::Type::ADERDG;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
+  token = getTokenAfter("solver", solverNumber + 1, 0);
   if (_identifier2Type.find(token) != _identifier2Type.end()) {
     result = _identifier2Type.at(token);
     // logDebug("getType()", "found type " << result);
@@ -487,7 +525,7 @@ exahype::solvers::Solver::Type exahype::Parser::getType(
 
 std::string exahype::Parser::getIdentifier(int solverNumber) const {
   std::string token;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, 1);
+  token = getTokenAfter("solver", solverNumber + 1, 1);
   logDebug("getIdentifier()", "found identifier " << token);
   return token;
 }
@@ -495,7 +533,7 @@ std::string exahype::Parser::getIdentifier(int solverNumber) const {
 int exahype::Parser::getVariables(int solverNumber) const {
   std::string token;
   int result;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "variables", 1);
+  token = getTokenAfter("solver", solverNumber + 1, "variables", 1);
   result = atoi(token.c_str());
 
   if (result < 1) {
@@ -512,7 +550,7 @@ int exahype::Parser::getVariables(int solverNumber) const {
 int exahype::Parser::getParameters(int solverNumber) const {
   std::string token;
   int result;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "parameters", 1);
+  token = getTokenAfter("solver", solverNumber + 1, "parameters", 1);
   result = atoi(token.c_str());
 
   if (result < 0) {
@@ -529,7 +567,7 @@ int exahype::Parser::getParameters(int solverNumber) const {
 int exahype::Parser::getOrder(int solverNumber) const {
   std::string token;
   int result;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "order", 1);
+  token = getTokenAfter("solver", solverNumber + 1, "order", 1);
   result = atoi(token.c_str());
 
   if (result < 0) {
@@ -543,43 +581,11 @@ int exahype::Parser::getOrder(int solverNumber) const {
 }
 
 
-double exahype::Parser::getCouplingTime( int couplingNumber ) const {
-  std::string token;
-  int result;
-  token = getTokenAfter("couple-solvers", couplingNumber * 2 + 1, "time", 1);
-  result = atof(token.c_str());
-
-  if (result < 0) {
-    logError("getCouplingTime()", "coupling time must not be negative.");
-    _interpretationErrorOccured = true;
-  }
-
-  logDebug("getCouplingTime()", "found time " << result);
-  return result;
-}
-
-
-double exahype::Parser::getCouplingRepeat( int couplingNumber ) const {
-  std::string token;
-  int result;
-  token = getTokenAfter("couple-solvers", couplingNumber * 2 + 1, "repeat", 1);
-  result = atof(token.c_str());
-
-  if (result < 0) {
-    logError("getCouplingRepeat()", "repeat time must not be negative.");
-    _interpretationErrorOccured = true;
-  }
-
-  logDebug("getCouplingRepeat()", "found time " << result);
-  return result;
-}
-
-
 double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
   std::string token;
   double result;
   token =
-      getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 0);
+      getTokenAfter("solver", solverNumber + 1, "maximum-mesh-size", 1, 0);
   result = atof(token.c_str());
   if (tarch::la::smallerEquals(result, 0.0)) {
     logError("getMaximumMeshSize()",
@@ -596,11 +602,11 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(
     int solverNumber) const {
   std::string token;
   exahype::solvers::Solver::TimeStepping result;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1);
+  token = getTokenAfter("solver", solverNumber + 1, "time-stepping", 1);
   if (_identifier2TimeStepping.find(token) != _identifier2TimeStepping.end()) {
     result = _identifier2TimeStepping.at(token);
     // logDebug("getTimeStepping()", "found TimeStepping " << result);
-    logDebug("getTimeStepping()", "found TimeStepping ");
+    logDebug("getTimeStepping()", "found TimeStepping "<< token);
     return result;
   } else {
     logError(
@@ -613,13 +619,71 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(
   return exahype::solvers::Solver::TimeStepping::Global;
 }
 
+double exahype::Parser::getDMPRelaxationParameter(int solverNumber) const {
+  std::string token;
+  double result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-relaxation-parameter", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getDMPRelaxationParameter()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-relaxation-parameter': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getParameters()", "found dmp-relaxation-parameter " << result);
+  return result;
+}
+
+double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
+  std::string token;
+  double result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-difference-scaling", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getParameters()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-difference-scaling': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getDMPDifferenceScaling()", "found dmp-difference-scaling " << result);
+  return result;
+}
+
+std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
+                                                     int plotterNumber) const {
+  // We have to multiply with two as the token solver occurs twice (to open and
+  // close the section)
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1);
+  logDebug("getIdentifierForPlotter()", "found token " << token);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
+  return token;
+}
+
+std::string exahype::Parser::getNameForPlotter(int solverNumber,
+                                               int plotterNumber) const {
+  // We have to multiply with two as the token solver occurs twice (to open and
+  // close the section)
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 1);
+  logDebug("getIdentifierForPlotter()", "found token " << token);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
+  return token;
+}
+
 int exahype::Parser::getUnknownsForPlotter(int solverNumber,
                                            int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 2);
-  logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 3);
+  logDebug("getUnknownsForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
   return atoi(token.c_str());
@@ -629,8 +693,8 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
     int solverNumber, int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 4);
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 5);
   logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -641,32 +705,20 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
                                                 int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 6);
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 7);
   logDebug("getRepeatTimeForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
   return atof(token.c_str());
 }
 
-std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
-                                                     int plotterNumber) const {
-  // We have to multiply with two as the token solver occurs twice (to open and
-  // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1);
-  logDebug("getIdentifierForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
-             plotterNumber);
-  return token;
-}
-
 std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
                                                    int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 8);
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 9);
   logDebug("getFilenameForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
@@ -677,17 +729,23 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
                                                    int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 10);
+  std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
+                                    plotterNumber + 1, 11);
   logDebug("getSelectorForPlotter()", "found token " << token);
   assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
              plotterNumber);
   return (token != _noTokenFound) ? token : "{}";
 }
 
+std::string exahype::Parser::getLogFileName() const {
+  std::string token = getTokenAfter("log-file");
+  logDebug("getLogFileName()", "found token " << token);
+  return (token != _noTokenFound) ? token : "";
+}
+
 std::string exahype::Parser::getProfilerIdentifier() const {
   std::string token = getTokenAfter("profiling", "profiler");
-  logDebug("getProfilerIdentifier()", "found token" << token);
+  logDebug("getProfilerIdentifier()", "found token " << token);
   return (token != _noTokenFound) ? token : "NoOpProfiler";
 }
 
@@ -705,7 +763,7 @@ std::string exahype::Parser::getProfilingOutputFilename() const {
 
 void exahype::Parser::logSolverDetails(int solverNumber) const {
   logInfo("logSolverDetails()",
-          "Solver " << getTokenAfter("solver", solverNumber * 2 + 1, 0) << " "
+          "Solver " << getTokenAfter("solver", solverNumber + 1, 0) << " "
                     << getIdentifier(solverNumber) << ":");
   logInfo("logSolverDetails()", "variables:\t\t" << getVariables(solverNumber));
   logInfo("logSolverDetails()", "parameters:\t" << getParameters(solverNumber));
@@ -713,7 +771,7 @@ void exahype::Parser::logSolverDetails(int solverNumber) const {
   logInfo("logSolverDetails()", "maximum-mesh-size:\t"
                                     << getMaximumMeshSize(solverNumber));
   logInfo("logSolverDetails()",
-          "time-stepping:\t" << getTokenAfter("solver", solverNumber * 2 + 1,
+          "time-stepping:\t" << getTokenAfter("solver", solverNumber + 1,
                                               "time-stepping", 1));
 }
 
@@ -842,7 +900,7 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   assertion(_parser.isValid());
 
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
 
   if (inputString.substr(0, 1) != "{") return false;
   std::size_t currentIndex = 1;
@@ -873,7 +931,7 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
 
 int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   int result;
@@ -891,7 +949,7 @@ int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
 
 bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   bool result;
@@ -910,7 +968,7 @@ bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
 double exahype::Parser::ParserView::getValueAsDouble(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   double result;
@@ -929,14 +987,14 @@ double exahype::Parser::ParserView::getValueAsDouble(
 std::string exahype::Parser::ParserView::getValueAsString(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   return getValue(inputString, key);
 }
 
 bool exahype::Parser::ParserView::isValueValidInt(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   int result;
@@ -953,7 +1011,7 @@ bool exahype::Parser::ParserView::isValueValidInt(
 bool exahype::Parser::ParserView::isValueValidDouble(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   double result;
@@ -967,10 +1025,11 @@ bool exahype::Parser::ParserView::isValueValidDouble(
   }
 }
 
+
 bool exahype::Parser::ParserView::isValueValidBool(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   std::string value = getValue(inputString, key);
 
   bool result;
@@ -987,6 +1046,6 @@ bool exahype::Parser::ParserView::isValueValidBool(
 bool exahype::Parser::ParserView::isValueValidString(
     const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
-      "solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1);
+      "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
   return getValue(inputString, key) != "";
 }

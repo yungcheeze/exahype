@@ -324,7 +324,7 @@ public:
    *
    *
    * <h2>Discrete maximum principle</h2>
-   * This constructor initialises the maximum relaxation
+   * By default this constructor initialises the maximum relaxation
    * parameter to the value to \f$ \delta_0 = 1\cdot 10^{-4} \f$
    * and the difference scaling parameter to \f$ \epsilon = 1\cdot 10^{-3} \f$.
    * See Dumbser et al., 2014. doi:10.1016/j.jcp.2014.08.009 for more details on
@@ -333,7 +333,10 @@ public:
   LimitingADERDGSolver(
       const std::string& identifier,
       std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
-      std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter);
+      std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
+      const double DMPRelaxationParameter=1e-4,
+      const double DMPDifferenceScaling=1e-3
+      );
 
   virtual ~LimitingADERDGSolver() {
     _solver.reset();
@@ -601,7 +604,7 @@ public:
    * changes its status to Troubled. Or, if a patch with status Troubled changes its
    * status to Ok.
    */
-  bool determinMergedLimiterStatusAfterSolutionUpdate(
+  bool determineMergedLimiterStatusAfterSolutionUpdate(
       SolverPatch& solverPatch,const bool isTroubled) const;
 
   /**

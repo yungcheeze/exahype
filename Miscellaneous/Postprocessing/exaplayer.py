@@ -63,7 +63,7 @@ import matplotlib.pyplot as plt
 	#matplotlib.use('Agg') # if headless
 	#import matplotlib.pyplot as plt
 
-from exahelpers import find_nearest, unzip, middle, first, last
+from exahelpers import find_nearest, unzip, middle, first, last, cleandoc
 from exahelpers import ExaFrontend
 from exareader import ExaReader
 
@@ -76,6 +76,11 @@ default_quantities_readable = ["d", "sx", "e"]
 logger = logging.getLogger("exaplayer")
 
 class Player:
+	"""
+	The Player comes in two versions: A 2D plot or a 3D plot with color
+	encoding. In any case, the output is a movie for the whole simulation
+	time.
+	"""
 	def __init__(self, sol, quantities, names=None, zslice=None):
 		self.sol = sol
 		self.quantities = quantities
@@ -94,7 +99,7 @@ class Player:
 
 	@staticmethod
 	def add_group(argparser):
-		group = argparser.add_argument_group('plotting')
+		group = argparser.add_argument_group('plotting', description=cleandoc(self))
 
 		group.add_argument('-d', '--dimensions', choices=[1,2], type=int, default=2,
 			           help="Whether to create movies of 1D or 2D plots")
@@ -118,12 +123,12 @@ class Player:
 		frontend.add_module(reader)
 		frontend.add_module(Player)
 		# TODO: slicer io_group could be used here to specify how to slice.
+		# Actually this is now written at exaslicer.py.
 
 		args = frontend.parse_args(args)
 
 		logger.info("Welcome to vtkplayer, your friendly data plotter for ExaHyPE")
 		#args = reader.remove_prog_in_inputfiles_list(frontend.parser, args)
-		logger.info(str(args))
 		sol = reader.read_files_as_requested(args)
 		registry = { 1: Play1D, 2: Play2D }
 		PlayerClass = registry[args.dimensions]

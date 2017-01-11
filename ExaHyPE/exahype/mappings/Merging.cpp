@@ -304,10 +304,6 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
             const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
             if (element2>=0 && element1>=0) {
-              if (tarch::la::equals(fineGridX[1],0.833333,1e-5)) {
-                logInfo("touchVertexFirstTime(...)","fineGridX="<<fineGridX);
-              }
-
               solver->mergeNeighbours(
                   cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
                   _tempFaceUnknowns[solverNumber],
@@ -436,7 +432,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
   }
 }
 
-void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug for multi-solvers. Invert the order of recev.
+void exahype::mappings::Merging::mergeWithNeighbourData(
         const int fromRank,
         const int srcCellDescriptionIndex,
         const int destCellDescriptionIndex,
@@ -445,8 +441,9 @@ void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug f
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int level,
         const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-  int solverNumber = 0;
-  for(auto solver : solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
+
     if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       assertion1(element>=0,element);
@@ -472,7 +469,6 @@ void exahype::mappings::Merging::mergeWithNeighbourData( // TODO(Dominic): Bug f
       solver->dropNeighbourData(
           fromRank,src,dest,x,level);
     }
-    ++solverNumber;
   }
 }
 
@@ -487,12 +483,13 @@ void exahype::mappings::Merging::dropNeighbourData(
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-  for(auto solver : solvers::RegisteredSolvers) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     logDebug(
         "dropNeighbourData(...)", "drop data from " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
-        ", src=" << src << ", dest=" << dest);
+        ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber);
 
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
     solver->dropNeighbourData(fromRank,src,dest,x,level);
   }
 }

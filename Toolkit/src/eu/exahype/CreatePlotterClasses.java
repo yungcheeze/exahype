@@ -21,10 +21,9 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
   
   private int                     _plotterCounter;
 
-  private boolean                 _enableProfiler;
+  private boolean                 _isForLimitingADERDGSolver;
 
-  private boolean _isForLimitingADERDGSolver;
-
+  
   public CreatePlotterClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
   }
@@ -144,7 +143,8 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
   public void inAPlotSolution(APlotSolution node) {
     _plotterCounter++;
     try {
-      String plotterName = _solverName + "_Plotter" + Integer.toString(_plotterCounter);
+//      String plotterName = _solverName + "_Plotter" + Integer.toString(_plotterCounter);
+      String plotterName = node.getName().getText().trim();
      	
       java.io.File header         = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".h");
       java.io.File implementation = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".cpp");

@@ -7,7 +7,7 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 namespace Euler{
-  class MyEulerSolver_Plotter2;
+  class ExactPrimitivesWriter;
 
   /**
    * Forward declaration
@@ -18,10 +18,12 @@ namespace Euler{
 
 
 
-class Euler::MyEulerSolver_Plotter2: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class Euler::ExactPrimitivesWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+  private:
+    double time;
   public:
-  MyEulerSolver_Plotter2(MyEulerSolver&  solver);
-  virtual ~MyEulerSolver_Plotter2();
+  ExactPrimitivesWriter(MyEulerSolver&  solver);
+  virtual ~ExactPrimitivesWriter();
   void startPlotting(double time) override;
   void finishPlotting() override;
   void mapQuantities(

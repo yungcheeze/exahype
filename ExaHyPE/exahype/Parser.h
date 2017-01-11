@@ -32,7 +32,14 @@ class Parser;
 /**
  * ExaHyPE command line parser
  *
- * @author Tobias Weinzierl
+ * A simple parser that creates a linear token stream
+ * from a given ExaHyPE specification file.
+ *
+ * The parser can deal with C and doxygen style comments as
+ * long as not two multi-line comment blocks are opened/closed
+ * in the same line.
+ *
+ * @author Tobias Weinzierl, Dominic Etienne Charrier
  */
 class exahype::Parser {
  public:
@@ -172,6 +179,14 @@ class exahype::Parser {
 
   enum class MPILoadBalancingType { Static };
 
+  /**
+   * <h2>Limitations</h2>
+   * Requires a proper implementation of the
+   * C++11 regex routines (GCC>=4.9.0).
+   *
+   * Cannot deal with multiple openings/closings of comments
+   * in the same line.
+   */
   void readFile(const std::string& filename);
 
   bool isValid() const;
@@ -284,14 +299,44 @@ class exahype::Parser {
   exahype::solvers::Solver::TimeStepping getTimeStepping(
       int solverNumber) const;
 
+  /**
+   * \return The relaxation parameter used for the discrete maximum principle (DMP).
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  double getDMPRelaxationParameter(int solverNumber) const;
+
+  /**
+   * \return The maximum-minimum difference scaling used for the discrete maximum principle (DMP).
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  double getDMPDifferenceScaling(int solverNumber) const;
+
+  /**
+   * In the ExaHyPE specification file, a plotter configuration has
+   * the following signature:
+   *
+   * plot <identifier> <name>
+   *  variables = <variables>
+   *  time      = <first-snapshot-time>
+   *  repeat    = <repeat-time>
+   *  output    = <filename>
+   *  select    = <selector>
+   * end plot
+   */
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
+  std::string getNameForPlotter(int solverNumber,
+                                int plotterNumber) const;
   int getUnknownsForPlotter(int solverNumber, int plotterNumber) const;
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;
   double getRepeatTimeForPlotter(int solverNumber, int plotterNumber) const;
-  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
   std::string getFilenameForPlotter(int solverNumber, int plotterNumber) const;
+  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
 
   std::string getProfilerIdentifier() const;
   std::string getMetricsIdentifierList() const;
@@ -299,8 +344,10 @@ class exahype::Parser {
 
   ParserView getParserView(int solverNumber);
 
-  double getCouplingTime( int couplingNumber ) const;
-  double getCouplingRepeat( int couplingNumber ) const;
+  /**
+   * Returns an empty string if no log file is specified in the file.
+   */
+  std::string getLogFileName() const;
 };
 
 #endif

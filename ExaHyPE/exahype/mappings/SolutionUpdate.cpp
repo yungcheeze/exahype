@@ -242,7 +242,7 @@ void exahype::mappings::SolutionUpdate::endIteration(
           static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber]);
       limitingADERDGSolver->updateNextLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
 
-      logDebug("endIteration(State)", "_limiterDomainHasChanged[solverNumber]="<<_limiterDomainHasChanged[solverNumber]);
+      logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainHasChanged());
     }
   }
 

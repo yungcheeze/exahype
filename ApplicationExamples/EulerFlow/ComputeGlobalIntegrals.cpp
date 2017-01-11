@@ -1,19 +1,9 @@
-#include "MyEulerSolver_Plotter1.h"
-
-/**
- * This is the plotter abused to compute global spacetime integrals.
- * This is actually used to compare with the exact solution for
- * convergence tests.
- * 
- * 
- **/
-
-#include "TimeSeriesReductions.h"
+#include "ComputeGlobalIntegrals.h"
 #include "Primitives.h"
 #include "InitialData.h"
-#include "MyEulerSolver.h"
 
-Euler::MyEulerSolver_Plotter1::MyEulerSolver_Plotter1(MyEulerSolver& solver) {
+
+Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver) {
 	// open all the reductions
 	assert( 5 == nVar );
 	
@@ -39,12 +29,13 @@ Euler::MyEulerSolver_Plotter1::MyEulerSolver_Plotter1(MyEulerSolver& solver) {
 }
 
 
-Euler::MyEulerSolver_Plotter1::~MyEulerSolver_Plotter1() {
+Euler::ComputeGlobalIntegrals::~ComputeGlobalIntegrals() {
 	// delete all reductions.
+	// @todo  the deletes are missing here
 }
 
 
-void Euler::MyEulerSolver_Plotter1::startPlotting(double time) {
+void Euler::ComputeGlobalIntegrals::startPlotting(double time) {
 	this->time = time;
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->initRow(time);
@@ -55,7 +46,7 @@ void Euler::MyEulerSolver_Plotter1::startPlotting(double time) {
 }
 
 
-void Euler::MyEulerSolver_Plotter1::finishPlotting() {
+void Euler::ComputeGlobalIntegrals::finishPlotting() {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
@@ -64,7 +55,8 @@ void Euler::MyEulerSolver_Plotter1::finishPlotting() {
 	statistics->writeRow();
 }
 
-void Euler::MyEulerSolver_Plotter1::mapQuantities(
+
+void Euler::ComputeGlobalIntegrals::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -107,7 +99,6 @@ void Euler::MyEulerSolver_Plotter1::mapQuantities(
 		localError[i] = abs(V[i] - Exact[i]);
 		errors[i]->addValue( localError[i], scaling );
 	}
-	
 }
 
 

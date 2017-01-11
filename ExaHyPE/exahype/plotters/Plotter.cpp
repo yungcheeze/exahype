@@ -26,17 +26,16 @@ std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
 tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter" );
 
-
 exahype::plotters::Plotter::Plotter(
-  int solver, int plotterCount,
-  const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
-    : _solver(solver),
-      _identifier(parser.getIdentifierForPlotter(solver, plotterCount)),
-      _writtenUnknowns(parser.getUnknownsForPlotter(solver, plotterCount)),
-      _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
-      _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
-      _filename(parser.getFilenameForPlotter(solver, plotterCount)),
-      _select(parser.getSelectorForPlotter(solver, plotterCount)),
+        const int solverConfig,const int plotterConfig,
+        const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
+    : _solver(solverConfig),
+      _identifier(parser.getIdentifierForPlotter(solverConfig, plotterConfig)),
+      _writtenUnknowns(parser.getUnknownsForPlotter(solverConfig, plotterConfig)),
+      _time(parser.getFirstSnapshotTimeForPlotter(solverConfig, plotterConfig)),
+      _repeat(parser.getRepeatTimeForPlotter(solverConfig, plotterConfig)),
+      _filename(parser.getFilenameForPlotter(solverConfig, plotterConfig)),
+      _select(parser.getSelectorForPlotter(solverConfig, plotterConfig)),
       _isActive(false),
       _device(nullptr) {
   if (_time < 0.0) {
@@ -52,6 +51,11 @@ exahype::plotters::Plotter::Plotter(
     << _filename << " every " << _repeat
     << " time units with first snapshot at " << _time
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
+
+  if (  _writtenUnknowns <= 0) {
+      logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
+        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
 
@@ -205,7 +209,6 @@ exahype::plotters::Plotter::Plotter(
     break;
   }
 
-
   if (_device!=nullptr) {
     _device->init(
         _filename,
@@ -218,8 +221,8 @@ exahype::plotters::Plotter::Plotter(
   else if (_identifier=="notoken") {
     logError(
       "Plotter(...)",
-      "unable to set up " << (plotterCount+1) << "th plotter for the "
-      << (_solver+1) << "th solver. Ensure number of plot sections "
+      "unable to set up " << (plotterConfig+1) << "th plotter for the "
+      << (_solver+1) << "th solverNumber. Ensure number of plot sections "
       << "equals number of plotters originally passed to toolkit and "
       << "validate that plot syntax is correct"
     );
@@ -235,6 +238,26 @@ exahype::plotters::Plotter::Plotter(
   }
 }
 
+exahype::plotters::Plotter::Plotter(
+    const int solverConfig,const int plotterConfig,
+    const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing,
+    const int solverDataSource)
+: exahype::plotters::Plotter::Plotter(solverConfig,plotterConfig,parser,postProcessing) {
+  _solver   = solverDataSource;
+  _filename = _filename + "_" + std::to_string(solverDataSource);
+
+  // TODO(Dominic): Looks like a hack. Clean.
+
+  if (_device!=nullptr) {
+    _device->init(
+        _filename,
+        solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        _writtenUnknowns,
+        _select
+    );
+  }
+}
 
 std::string exahype::plotters::Plotter::toString() const {
   std::ostringstream msg;

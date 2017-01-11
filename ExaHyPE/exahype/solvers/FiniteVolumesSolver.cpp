@@ -506,7 +506,7 @@ void exahype::solvers::FiniteVolumesSolver::swapSolutionAndPreviousSolution(
     const int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-  // Simply swap the array pointers.
+  // Simply swap the heap indices
   const int previousSolution = cellDescription.getPreviousSolution();
   cellDescription.setPreviousSolution(cellDescription.getSolution());
   cellDescription.setSolution(previousSolution);
@@ -1542,7 +1542,10 @@ void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolutio
         #if defined(Asserts)
         int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
         #endif // cellDescription.getTimeStepSize()==0.0 is an initial condition
-        assertion5(tarch::la::equals(cellDescription.getTimeStepSize(),0.0)  || std::isfinite(solution[iScalar]),cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString(),methodTrace);
+        assertion7(tarch::la::equals(cellDescription.getTimeStepSize(),0.0)  || std::isfinite(solution[iScalar]),
+                   cellDescription.toString(),cellDescriptionsIndex,solution[iScalar],i.toString(),
+                   _nodesPerCoordinateAxis,_ghostLayerWidth,
+                   methodTrace);
       }
     }
   }

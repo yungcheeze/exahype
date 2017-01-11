@@ -1,5 +1,5 @@
 # The simulations directory below this directory
-simulations/
-simulations-*/
+simulations
+simulations-*
 # generated report
 generated-report.html

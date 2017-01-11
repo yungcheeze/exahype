@@ -75,7 +75,7 @@ uploadWith() {
 }
 
 if have curl; then
-	uploadWith 'curl -F sprunge=<- http://sprunge.us'
+	uploadWith 'curl -s -F sprunge=<- http://sprunge.us'
 elif have nc; then
 	uploadWith 'nc termbin.com 9999'
 else
