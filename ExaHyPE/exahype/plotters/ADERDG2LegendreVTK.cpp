@@ -404,7 +404,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     assertion( _writtenUnknowns==0 || _vertexWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _cellWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
 
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
