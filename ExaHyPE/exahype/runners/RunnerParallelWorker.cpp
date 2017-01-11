@@ -42,7 +42,11 @@ int exahype::runners::Runner::runAsWorker(
       while (continueToIterate) {
         switch (repository.continueToIterate()) {
           case exahype::repositories::Repository::Continue:
-            repository.iterate();
+            {
+              repository.iterate();
+              logInfo("startNewTimeStep(...)",
+                "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+            }
             break;
           case exahype::repositories::Repository::Terminate:
             continueToIterate = false;

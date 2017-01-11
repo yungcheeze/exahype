@@ -108,7 +108,8 @@ class exahype::runners::Runner {
    * \note A value \p numberOfStepsRanSinceLastCall greater than 1 is only interesting
    *       for fixed time stepping runs.
    */
-  void printTimeStepInfo(int numberOfStepsRanSinceLastCall);
+  void printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository);
+
 
   /**
    * Do one time step where all phases are actually fused into one traversal
