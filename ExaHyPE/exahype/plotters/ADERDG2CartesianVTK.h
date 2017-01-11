@@ -49,13 +49,13 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
 
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
-  tarch::plotter::griddata::Writer::VertexDataWriter*  _timeStampDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexTimeStampDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
 
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter* _gridWriter;
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;
 
-  void writeTimeStampDataToPatch( double timeStamp, int vertexIndex );
+  void writeTimeStampDataToPatch( double timeStamp, int vertexIndex, int cellIndex );
 
   void plotVertexData(
     int firstVertexIndex,
