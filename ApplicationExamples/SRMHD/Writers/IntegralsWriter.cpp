@@ -1,18 +1,15 @@
-#include "MHDSolver_Plotter1.h"
-
 /**
  * This is the plotter abused to compute global spacetime integrals.
  * This is actually used to compare with the exact solution for
  * convergence tests.
- * 
- * Copied from MyEulerSolver_Plotter1.cpp.
  **/
 
-#include "TimeSeriesReductions.h"
+#include "Writers/IntegralsWriter.h"
+#include "Writers/TimeSeriesReductions.h"
 #include "C2P-MHD.h"
 #include "InitialDataAdapter.h"
 
-MHDSolver::MHDSolver_Plotter1::MHDSolver_Plotter1(MHDSolver& solver) {
+MHDSolver::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
 	// open all the reductions
 	assert( 9 == nVar );
 	
@@ -50,12 +47,13 @@ MHDSolver::MHDSolver_Plotter1::MHDSolver_Plotter1(MHDSolver& solver) {
 }
 
 
-MHDSolver::MHDSolver_Plotter1::~MHDSolver_Plotter1() {
-	// delete all reductions.
+MHDSolver::IntegralsWriter::~IntegralsWriter() {
+	// delete all the TimeSeriesReductions. Not that important
+	// as this is a kind of a Singleton object.
 }
 
 
-void MHDSolver::MHDSolver_Plotter1::startPlotting(double time) {
+void MHDSolver::IntegralsWriter::startPlotting(double time) {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
@@ -65,7 +63,7 @@ void MHDSolver::MHDSolver_Plotter1::startPlotting(double time) {
 }
 
 
-void MHDSolver::MHDSolver_Plotter1::finishPlotting() {
+void MHDSolver::IntegralsWriter::finishPlotting() {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
@@ -74,7 +72,8 @@ void MHDSolver::MHDSolver_Plotter1::finishPlotting() {
 	statistics->writeRow();
 }
 
-void MHDSolver::MHDSolver_Plotter1::mapQuantities(
+
+void MHDSolver::IntegralsWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -119,8 +118,6 @@ void MHDSolver::MHDSolver_Plotter1::mapQuantities(
 		localError[i] = abs(V[i] - Exact[i]);
 		errors[i]->addValue( localError[i], scaling );
 	}
-	
 }
-
 
 

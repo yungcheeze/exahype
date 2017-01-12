@@ -7,7 +7,7 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 namespace MHDSolver{
-  class MHDSolver_Plotter2;
+  class IntegralsWriter;
 
   /**
    * Forward declaration
@@ -15,13 +15,19 @@ namespace MHDSolver{
   class MHDSolver;
 }
 
+#include "Writers/TimeSeriesReductions.h"
+#include "MHDSolver.h"
 
-
-
-class MHDSolver::MHDSolver_Plotter2: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class MHDSolver::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  MHDSolver_Plotter2(MHDSolver&  solver);
-  virtual ~MHDSolver_Plotter2();
+  static const int nVar = MHDSolver::MHDSolver::nVar; // shortcut
+  TimeSeriesReductions* conserved[nVar];
+  TimeSeriesReductions* primitives[nVar];
+  TimeSeriesReductions* errors[nVar];
+  TimeSeriesReductions* statistics;
+
+  IntegralsWriter(MHDSolver&  solver);
+  virtual ~IntegralsWriter();
   void startPlotting(double time) override;
   void finishPlotting() override;
   void mapQuantities(

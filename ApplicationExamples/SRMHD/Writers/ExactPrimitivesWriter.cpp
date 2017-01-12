@@ -1,28 +1,13 @@
-#include "MHDSolver_Plotter3.h"
+#include "Writers/ExactPrimitivesWriter.h"
 #include "InitialDataAdapter.h"
 #include "C2P-MHD.h"
 
-MHDSolver::MHDSolver_Plotter3::MHDSolver_Plotter3(MHDSolver&  solver) {
-  // @todo Please insert your code here
-}
+MHDSolver::ExactPrimitivesWriter::ExactPrimitivesWriter(MHDSolver&  solver) {}
+MHDSolver::ExactPrimitivesWriter::~ExactPrimitivesWriter() {}
+void MHDSolver::ExactPrimitivesWriter::startPlotting(double time) {}
+void MHDSolver::ExactPrimitivesWriter::finishPlotting() {}
 
-
-MHDSolver::MHDSolver_Plotter3::~MHDSolver_Plotter3() {
-  // @todo Please insert your code here
-}
-
-
-void MHDSolver::MHDSolver_Plotter3::startPlotting(double time) {
-  // @todo Please insert your code here
-}
-
-
-void MHDSolver::MHDSolver_Plotter3::finishPlotting() {
-  // @todo Please insert your code here
-}
-
-
-void MHDSolver::MHDSolver_Plotter3::mapQuantities(
+void MHDSolver::ExactPrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

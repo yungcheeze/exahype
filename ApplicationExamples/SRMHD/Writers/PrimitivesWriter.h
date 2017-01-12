@@ -7,7 +7,7 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 namespace MHDSolver{
-  class MHDSolver_Plotter5;
+  class PrimitivesWriter;
 
   /**
    * Forward declaration
@@ -18,10 +18,10 @@ namespace MHDSolver{
 
 
 
-class MHDSolver::MHDSolver_Plotter5: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class MHDSolver::PrimitivesWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  MHDSolver_Plotter5(MHDSolver&  solver);
-  virtual ~MHDSolver_Plotter5();
+  PrimitivesWriter(MHDSolver&  solver);
+  virtual ~PrimitivesWriter();
   void startPlotting(double time) override;
   void finishPlotting() override;
   void mapQuantities(

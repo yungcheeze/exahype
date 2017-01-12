@@ -1,28 +1,27 @@
-#include "MHDSolver_Plotter2.h"
-#include "C2P-MHD.h"
+#include "ErrorWriter.h"
 
 
-MHDSolver::MHDSolver_Plotter2::MHDSolver_Plotter2(MHDSolver&  solver) {
+MHDSolver::ErrorWriter::ErrorWriter(MHDSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-MHDSolver::MHDSolver_Plotter2::~MHDSolver_Plotter2() {
+MHDSolver::ErrorWriter::~ErrorWriter() {
   // @todo Please insert your code here
 }
 
 
-void MHDSolver::MHDSolver_Plotter2::startPlotting(double time) {
+void MHDSolver::ErrorWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void MHDSolver::MHDSolver_Plotter2::finishPlotting() {
+void MHDSolver::ErrorWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void MHDSolver::MHDSolver_Plotter2::mapQuantities(
+void MHDSolver::ErrorWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -31,9 +30,9 @@ void MHDSolver::MHDSolver_Plotter2::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  // MHD primitive variable plotter
-  int i;
-  pdecons2prim_(outputQuantities, Q, &i);
+  for (int i=0; i<9; i++){ 
+    outputQuantities[i] = Q[i];
+  }
 }
 
 
