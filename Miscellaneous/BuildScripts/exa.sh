@@ -33,6 +33,11 @@ getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $AP
 cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
 
 case $CMD in
+	"standard-update") # Does git pull, update-peano and update-toolkit
+		cdroot; info "Performing standard update"
+		git pull && subreq update-peano && subreq update-toolkit && info "Done successfully" \
+			|| fail "Error during updating"
+		;;
 	"update-peano") # Updates the Peano subversion repository
 		cdroot; info "Updating Peano"
 		cd Peano
