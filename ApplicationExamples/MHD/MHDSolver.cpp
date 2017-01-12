@@ -91,6 +91,14 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
   kernels::idx2 F_idx(nDim, nVar);
 
   // Integrate solution in gauss points (Qgp) in time
+  if (faceIndex==2 || faceIndex==3) {     
+     for(int m=0; m < nVar; m++) {
+        stateOut[m] = stateIn[m];
+        fluxOut[m]  = fluxIn[m];
+     }
+     return;
+  }
+
   for(int i=0; i < basisSize; i++)  { // i == time
      const double weight = kernels::gaussLegendreWeights[order][i];
      const double xi = kernels::gaussLegendreNodes[order][i];

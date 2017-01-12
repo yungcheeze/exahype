@@ -59,16 +59,19 @@ exahype::solvers::Solver::RefinementControl MHDSolver::MHDSolver::refinementCrit
 void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const stateIn, double* stateOut) {
 
 //  std::cout << "boundary=" << faceIndex <<  ", t=" << t <<  ", x2D={"<< x[0] << "," << x[1] << "}" << std::endl;
+    
+  // faceIndex: LEFT=0, RIGHT=1, BOT=2, TOP=3
+  if(faceIndex == 0 || faceIndex == 1) {
 
- // FV Goudonov scheme exact BC: No integration neccessary, no fluxes neccessary!
-  alfenwave_(x, stateOut, &t); // TODO(Dominic): This doesn't seem to work at the moment. Have to to check if the boundary conditions of the Godunov method are imposed correctly
-  return;
-
-  //   outflow bc
-  constexpr int nVar = 9;
-
-  for (int i=0; i<nVar; ++i) {
-    stateOut[i] = stateIn[i];
+    // FV Goudonov scheme exact BC: No integration neccessary, no fluxes neccessary!
+    alfenwave_(x, stateOut, &t);
+    return;
+  } else {
+    // outflow bc
+    for (int i=0; i<nVar; ++i) {
+       stateOut[i] = stateIn[i];
+    }
+    return;
   }
 
 //  const double* normalVelocity = stateIn+1+normalNonZero;

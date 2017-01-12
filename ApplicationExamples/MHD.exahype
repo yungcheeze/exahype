@@ -17,10 +17,10 @@ exahype-project  MHDSolver
   architecture               = noarch
 
   computational-domain
-    dimension                = 3
-    width                    = 1.0, 1.0, 1.0
-    offset                   = 0.0, 0.0, 0.0
-    end-time                 = 3.0
+    dimension                = 2
+    width                    = 1.0, 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 10.0
   end computational-domain
 
 
@@ -39,7 +39,7 @@ exahype-project  MHDSolver
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps        = off
     fuse-algorithmic-steps-factor = 0.99
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
@@ -54,13 +54,13 @@ exahype-project  MHDSolver
     parameters         = 0
     order              = 3
     /* 27 grid points: 0.2327 */
-    maximum-mesh-size  = 0.24
+    maximum-mesh-size  = 0.12
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
     language           = C
     /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:orsagtang}
+    constants = {initialdata:alfven}
 
 
     /* do not trust vtk::Cartesian::vertices::ascii as it probably contains bugs */
