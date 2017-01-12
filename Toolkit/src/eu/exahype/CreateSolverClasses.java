@@ -12,6 +12,7 @@ import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 import eu.exahype.solvers.Solver;
 import eu.exahype.solvers.SolverFactory;
+import eu.exahype.FileSearch;
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -120,8 +121,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     } else if (node.getLanguage().getText().trim().equals("Fortran")) {
       isFortran = true;
       userPDEFile =
-          new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = new java.io.File(
+          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+      userTypesDefFile = FileSearch.relocatableFile(
           _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
     } else {
       System.err.println("ERROR: unknown language for solver " + node.getName().getText()
@@ -195,8 +196,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     } else if (node.getLanguage().getText().trim().equals("Fortran")) {
       isFortran = true;
       userPDEFile =
-          new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = new java.io.File(
+          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+      userTypesDefFile = FileSearch.relocatableFile(
           _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
     } else {
       System.err.println("ERROR: unknown language for solver " + node.getName().getText()
@@ -267,8 +268,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     } else if (node.getLanguage().getText().trim().equals("Fortran")) {
       isFortran = true;
       userPDEFile =
-          new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = new java.io.File(
+          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+      userTypesDefFile = FileSearch.relocatableFile(
           _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
     } else {
       System.err.println("ERROR: unknown language for solver " + node.getName().getText()
@@ -325,7 +326,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   }
   
   private void tryWriteSolverHeader(Solver solver,String solverName) throws IOException {
-    java.io.File solverHeaderFile = new java.io.File(
+    java.io.File solverHeaderFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
     
     if (solverHeaderFile.exists()) {
@@ -342,7 +343,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   }
   
   private void tryWriteSolverUserImplementation(Solver solver, String solverName) throws IOException {
-    java.io.File solverUserImplementationFile = new java.io.File(
+    java.io.File solverUserImplementationFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
     
     if (solverUserImplementationFile.exists()) {
@@ -359,7 +360,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   }
   
   private void tryWriteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
-    java.io.File solverGeneratedImplementationFile = new java.io.File(
+    java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
     
     if (solverGeneratedImplementationFile.exists()) {

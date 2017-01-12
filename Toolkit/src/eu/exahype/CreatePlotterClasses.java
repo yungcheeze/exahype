@@ -6,6 +6,7 @@ import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProject;
 import eu.exahype.node.APlotSolution;
+import eu.exahype.FileSearch;
 
 
 public class CreatePlotterClasses extends DepthFirstAdapter {
@@ -148,6 +149,9 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
      	
       java.io.File header         = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".h");
       java.io.File implementation = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".cpp");
+      
+      header = FileSearch.relocate(header);
+      implementation = FileSearch.relocate(implementation);
 
       java.io.BufferedWriter headerWriter         = null;
       java.io.BufferedWriter implementationWriter = null;
