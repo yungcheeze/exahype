@@ -214,5 +214,18 @@ public class Helpers {
     while ((line = stderrReader.readLine()) != null) {
       System.out.println("CodeGenerator: " + line);
     }
-  }
+
+    // in order to stop further toolkit execution if the code generator fails,
+    // explicitly wait for the process
+    try {
+        int exitValue = codeGenerator.waitFor();
+        if(exitValue != 0) {
+            System.err.println("ERROR: Code Generator failed with exit value " + exitValue);
+            throw new IOException(); // <- also done in line 186. This is abusing the exception system.
+        }
+    } catch(InterruptedException e) {
+        System.err.println("This is very bad. I don't know what's going on.");
+        throw new IOException();
+    }
+  } // invokeCodeGenerator
 }
