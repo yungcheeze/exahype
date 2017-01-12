@@ -40,7 +40,7 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   v2     = vx*vx + vy*vy + vz*vz
   e2     = ex*ex + ey*ey + ez*ez
   w      = rho + gamma1*p
-  vn     = vx*n(1) + vy*n(2) + vz*n(3)
+  vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
 
   cs2    = gamma * p / w
   ca2    = (b2 - e2) / ( w + b2 - e2)
