@@ -13,7 +13,7 @@ exahype-project  MHDSolver
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD/
+  output-directory           = ./ApplicationExamples/SRMHD/
   architecture               = noarch
 
   computational-domain
@@ -22,8 +22,6 @@ exahype-project  MHDSolver
     offset                   = 0.0, 0.0
     end-time                 = 10.0
   end computational-domain
-
-
 
   shared-memory
     identifier               = dummy
@@ -66,7 +64,7 @@ exahype-project  MHDSolver
     /* do not trust vtk::Cartesian::vertices::ascii as it probably contains bugs */
     /* use vtk::Legendre::vertices::ascii instead */
     /* however, Legendre does not work in 3D */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables= 9
       time     = 0.0
       repeat   = 0.05
@@ -74,7 +72,7 @@ exahype-project  MHDSolver
       select   = {}
     end plot
     
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii IntegralsWriter
       variables = 0
       time = 0.0
       repeat = 0.05
@@ -82,7 +80,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -90,7 +88,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -98,7 +96,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ErrorWriter
       variables = 9
       time      = 0.0
       repeat    = 0.05
@@ -106,7 +104,7 @@ exahype-project  MHDSolver
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii RelativeErrorWriter
       variables = 9
       time      = 0.0
       repeat    = 0.05
