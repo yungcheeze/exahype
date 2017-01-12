@@ -26,6 +26,8 @@ import java.util.Iterator;
  *
  **/
 public class FileSearch {
+	public static boolean verbose = false;
+
 	/**
 	 * Returns true if there is another candidate for file `original`.
 	 **/
@@ -44,13 +46,17 @@ public class FileSearch {
 		String filename = original.getName();
 		
 		// basedir does not exist, so no place to look in.
-		if(!basedir.isDirectory())
+		if(!basedir.isDirectory()) {
+			if(verbose) System.out.println(basedir + " is not a directory, so cannot find anything");
 			return original;
+		}
 		
 		List<String> results = new FileSearch(basedir.getAbsolutePath(), filename).getResult();
 		
-		if(results.size()==0)
+		if(results.size()==0) {
+			if(verbose) System.out.println("Have not found any "+filename+" below "+basedir);
 			return original;
+		}
 
 		// filter out equal items
 		Iterator<String> it = results.iterator();
@@ -60,8 +66,10 @@ public class FileSearch {
 				it.remove();
 		}
 		
-		if(results.size()==0)
+		if(results.size()==0) {
+			if(verbose) System.out.println("After filtering, have not found any other "+filename+" below "+basedir);
 			return original;
+		}
 
 		if(results.size()==1) {
 			System.out.println("Found candidate for "+filename+" at "+results.get(0));
@@ -91,7 +99,54 @@ public class FileSearch {
 	public static File relocatableFile(String original) {
 		return relocate(new File(original));
 	}
+	
+	/** And the same with strings **/
+	public static String relocate(String original) {
+		return relocate(new File(original)).getAbsolutePath();
+	}
 
+	/**
+	 * A relative version of the relocate function.
+	 * Will search filename in basedir but return filename without the basedir.
+	 *
+	 * Note that filename really must be a filename. This may not be a part
+	 * of the directory, so 
+	 *   relocateRelative("c/foo.txt", "a/b/")
+	 * does *not* work.
+	 **/
+	public static String relocateRelative(String filename, String basedir) {
+		// we want to keep java6 compatbility, therefore we don't use any 
+		// path joining but this ugly thing:
+		if(!basedir.endsWith("/"))
+			basedir += "/";
+		String absReplacement = relocate(basedir + filename);
+		if(verbose)
+			System.out.println("Absolute Replacement: "+absReplacement);
+		String relReplacement = absReplacement.substring( basedir.length() );
+		return relReplacement;
+	}
+
+	
+	/**
+	 * PraeProcessor includes.
+	 *
+	 * A typical use case of relocateRelative and generalization of stuff like
+	 *   foo.write("#include \"" + someName + ".h\"\n")
+	 * to
+	 *   foo.write(FileSearch.PPincludeH(someName, basedir))
+	 * which allows someName+".h" to be stored anywhere.
+	 *
+	 * We cannot guarantee any consistency between files located at different
+	 * places, so the whole idea here is somewhat experimental. Users should
+	 * have meaningful, unique filenames which guarantee no false positives
+	 * at file finding.
+	 **/
+	public static String PPinclude(String filename, String basedir) {
+		String targetfile = relocateRelative(filename + ".h", basedir);
+		return "#include \"" + targetfile + "\"\n";
+	}
+	
+	
 	/* Java resursive file finding. Ugly as hell. */
 	
 	private String fileNameToSearch;
@@ -150,17 +205,34 @@ public class FileSearch {
 	 *     End: /tmp/testroot/Demo.txt
 	 *
 	 * So it apparently works.
+	 *
+	 * For relative paths testing, do this for testing:
+	 *
+	 *     touch /tmp/testroot/a/b/Foo.txt
+	 *     java eu.exahype.FileSearch Foo.txt  /tmp/testroot/
+	 *
 	 */
 	public static void main(String[] args) {
-		if(args.length != 1 || args[0] == "--help") {
+		FileSearch.verbose = true;
+	
+		if(args.length == 0 || args[0].endsWith("-help")) {
 			System.out.println("Usage: java FileSearch your/file/name.c");
+			System.out.println("or for the same as relative search: java FileSearch file/name.c your/");
 			System.exit(1);
+		} else if(args.length == 1) {		
+			String start = args[0];
+			String end = relocate(start);
+			
+			System.out.println("Start: "+start);
+			System.out.println("End: "+end);
+		} else if(args.length == 2) {
+			String start = args[0];
+			String basedir = args[1];
+			String end = relocateRelative(start, basedir);
+			
+			System.out.println("Start: "+start);
+			System.out.println("Relative to: "+basedir);
+			System.out.println("End: "+end);
 		}
-		
-		File start = new File(args[0]);
-		File end = relocate(start);
-		
-		System.out.println("Start: "+start.getAbsolutePath());
-		System.out.println("End: "+end.getAbsolutePath());
 	}
 }

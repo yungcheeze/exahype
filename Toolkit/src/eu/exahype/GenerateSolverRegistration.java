@@ -4,6 +4,7 @@ import java.util.*;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.*;
+import eu.exahype.FileSearch;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -203,7 +204,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     try {
       String plotterName = node.getName().getText().trim();
 
-      _writer.write("#include \"" + plotterName + ".h\"\n");
+      _writer.write(FileSearch.PPinclude(plotterName, _directoryAndPathChecker.outputDirectory.getAbsolutePath()));
 
       if (_inALimitingADERDGSolver) {
         _methodBodyWriter.write(
