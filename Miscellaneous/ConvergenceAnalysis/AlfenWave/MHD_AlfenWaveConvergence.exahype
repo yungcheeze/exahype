@@ -1,5 +1,5 @@
 /**
- * MHD AlfenWave specfile for convergence analysis.
+ * SRMHD AlfenWave specfile for convergence analysis.
  *
  *@comment@ This file is a TEMPLATE, it has variables denoted
  *@comment@ like "@VARNAME@" and replaced by a script before
@@ -10,27 +10,28 @@
  *@comment@ following:
  *
  * This convergence test is using ideal Special Relativistic
- * Magnetohydrodynamics using a Fortran kernel, in 2D.
+ * Magnetohydrodynamics [using a Fortran kernel]?, in 2D.
+ * 
+ * Spec file generated at @DATE@ on machine @HOST@.
  *
  */
 exahype-project  MHDSolver
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD/
+  output-directory           = ./ApplicationExamples/SRMHD/
   architecture               = noarch
 
   computational-domain
     dimension                = 2
-    /* this is the grid for the MHD AlfenWave test */
-    width                    = 1.0, 1.0
+    width                    = @ExaWidth@, @ExaWidth@
     offset                   = 0.0, 0.0
-    end-time                 = 6.0
+    end-time                 = @ExaEndTime@
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = @ExaTbbCores@
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -54,50 +55,58 @@ exahype-project  MHDSolver
   solver ADER-DG MHDSolver
     variables          = 9
     parameters         = 0
-    order              = @ORDER@
-    maximum-mesh-size  = @MESHSIZE@
+    order              = @ExapOrder@
+    maximum-mesh-size  = @ExaMeshSize@
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
     constants          = {initialdata:alfenwave}
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables= 9
       time     = 0.0
-      repeat   = @VTKOUTPUTREPEAT@
+      repeat   = @ExaVtkOutputRepeat@
       output   = ./conserved
       select   = {}
     end plot
     
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii IntegralsWriter
       variables = 0
       time = 0.0
-      repeat = @CONVOUTPUTREPEAT@
+      repeat = @ExaConvOutputRepeat@
       output = ./global-integrals
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables = 9
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./primitive
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables = 9
       time      = 0.0
-      repeat    = @VTKOUTPUTREPEAT@
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./exact-primitive
       select = {}
     end plot
 
-    plot vtk::Legendre::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ErrorWriter
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./errors-conserved
+      select = {}
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii RelativeErrorWriter
+      variables = 9
+      time      = 0.0
+      repeat    = @ExaVtkOutputRepeat@
+      output    = ./relative-errors-conserved
       select = {}
     end plot
 
