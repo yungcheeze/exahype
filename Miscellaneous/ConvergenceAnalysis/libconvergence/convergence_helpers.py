@@ -267,11 +267,7 @@ class MethodActions:
 			self.docs[action_key] = cleandoc(method)
 			# if only one argument was given, don't store that as (argument,) in a tuple
 			self.storage[action_key] = (storage[0] if len(storage) == 1 else storage)
-
-			@wraps(method)
-			def _impl(self, *method_args, **method_kwargs):
-				method(self, *method_args, **method_kwargs)
-			return _impl
+			return method
 		return method_decorator
 
 	def call(self, action_key, selfRef, *args, **kwargs):
