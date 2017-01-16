@@ -21,13 +21,13 @@ $ for p in 2 3 4; do ./runAlfenWave.py -p $p -m 0.1 & done
 """
 
 import sys, logging
-logger = logging.getLogger("runAlfenWave")
+logger = logging.getLogger("runSRMHDTest")
 sys.path.append("../libconvergence")
 
 from convergence_test import PolyorderTest
 from convergence_frontend import ConvergenceFrontend
 
-test = PolyorderTest("SRMHDAlfenWave")
+test = PolyorderTest("SRMHDTest")
 
 # default values for AlfenWave simulations,
 # cf. the paper of Michael Dumbser
@@ -48,11 +48,17 @@ test.settings['ExaBinary'] = "../../../ApplicationExamples/SRMHD/ExaHyPE-MHDSolv
 
 test.settings['ExaSpecfile'] = "MHD_AlfenWaveConvergence.exahype"
 # template to set up a queueing system
-test.settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-AlfenWave"
+test.settings['QRUNTPL'] = "" #"srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-AlfenWave"
 
 # set initial data to use.
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
-test.settings['EXAHYPE_INITIALDATA']="AlfenWave"
+#test.settings['EXAHYPE_INITIALDATA']="AlfenWave"
+
+srmhdid = {"alfenwave", "blast", "orsagtang", "rotor"}
+test.settings['EXAHYPE_INITIALDATA'] = self.commandline('-i', '--initialdata', choices=srmhdid, help="Initial Data for SRMHD")
+
+### TODO, unfortunately untested so far: options may change other stuff, too.
+
 # parameters for setting up the specfile
 test.settings['ExaWidth'] = test.width
 test.settings['ExaEndTime'] = 10.0

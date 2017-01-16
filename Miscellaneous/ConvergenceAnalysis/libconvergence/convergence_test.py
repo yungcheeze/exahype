@@ -19,7 +19,7 @@ import os, sys, logging # batteries
 
 # libconvergence, same directory:
 from convergence_table import ConvergenceReporter, exitConvergenceStatus
-from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc
+from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc, Future
 
 class ConvergenceTest:
 	"""
@@ -34,6 +34,7 @@ class ConvergenceTest:
 	def __init__(self, name="UnnamedTest"):
 		self.name = name
 		self.logger = logging.getLogger(repr(self))
+		self.boundsettings = {}
 
 		settings = {}
 
@@ -88,8 +89,42 @@ class ConvergenceTest:
 		
 		self.logger.info("Generic ConvergenceTest starts {ExaRunner}".format(**env))
 		return runBinary(env['ExaRunner'], env)
+	
+	def startFromArgs(self, args, parser):
+		raise NotImplementedError("Overwrite this function to start the test from ConvergenceFrontend.")
 
-class PolyorderTest(ConvergenceTest):
+class ParametricTest(ConvergenceTest):
+	"""
+	Allows to link command line options to settings in the ConvergenceTest.
+	"""
+	futureclass = Future
+	
+	def __init__(self, name="UnnamedParametricTest"):
+		ConvergenceTest.__init__(self, name)
+	
+	def commandline(self, *args, **kwargs):
+		"""
+		Neat syntactic sugar to return an instance of Future. Usage is like:
+		
+		test.settings['Foo'] = test.commandline('-f', '--foo', type=int, ...)
+		"""
+		return futureclass(*args, **kwargs)
+
+	def add_group(self, parser):
+		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
+		for key,entry in settings.iteritems():
+			if isinstance(entry, futureclass):
+				entry.apply(group.add_argument)
+		return group
+
+	def apply_args(self, args, argparser):
+		argns = vars(argparser) # namespace->dict
+		for key,entry in settings.iteritems():
+			if isinstance(entry, futureclass):
+				# extract from the argparser namespace
+				settings[key] = argns[entry.value().dest]
+
+class PolyorderTest(ParametricTest):
 	"""
 	The PolyorderTest is a convergence test on a uniform grid where both
 	the grid spacing as well as the polynomial order in ADERDG is changed
@@ -115,6 +150,10 @@ class PolyorderTest(ConvergenceTest):
 		# defaults paths
 		self.settings['ExaBinaryTpl'] = '{ExaBinary}-p{ExapOrder}'
 		self.settings['SIMDIRTpl'] = "{SIMBASE}/p{ExapOrder}-meshsize{ExaMeshSize}/"
+		
+		# futures
+		self.settings["ExaRealMeshSize"] = self.commandline('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
+		self.settings['ExapOrder'] = self.commandline('-p', '--polyorder', type=int, help="Polynomial order")
 
 	def until(self, maxcells):
 		"Small utility function" 
@@ -193,13 +232,11 @@ class PolyorderTest(ConvergenceTest):
 		return processes
 
 	def add_group(self, parser):
-		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
-		group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
-		group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
+		group = ParametricTest.add_group(parser)
+		# now implemented as futures:
+		#group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
+		#group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
 		group.add_argument('-a', '--all', action='store_true', help='Start all sensible simulations')
-		# moved argument to frontend
-		#group.add_argument('-n', '--nostart', action='store_true', help="Don't start any simulation. "+
-		#	"Can be used to directly invoke the reporting instead")
 
 	def startFromArgs(self, args, parser):
 		if args.polyorder or args.meshsize:
