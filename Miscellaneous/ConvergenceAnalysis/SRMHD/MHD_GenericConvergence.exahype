@@ -24,7 +24,7 @@ exahype-project  MHDSolver
 
   computational-domain
     dimension                = 2
-    width                    = @ExaWidth@, @ExaWidth@
+    width                    = @ExaWidth@, @ExaHeight@
     offset                   = 0.0, 0.0
     end-time                 = @ExaEndTime@
   end computational-domain
