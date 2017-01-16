@@ -95,7 +95,23 @@ class ConvergenceTest:
 
 class ParametricTest(ConvergenceTest):
 	"""
-	Allows to link command line options to settings in the ConvergenceTest.
+	Allows to pass command line options to settings in the ConvergenceTest.
+	
+	Example usage:
+	
+	> test = ParametricTest("DemoTest")
+	> test.settings['ExaStaticFoo'] = 3.141
+	> test.settings['ExaFrequentlyChangingBar'] = test.commandline('-b', '--bar', choices={ 1,2,3 }, help="Typical Bar values")
+	> test.settings['ExaAlsoChangingBaz'] = test.commandline('-z', '--baz', type=str, help="Just another argument")
+	
+	This mechanism breaks with direct starting from ConvergenceTest:
+	> test.start()
+	
+	However, it goes nicely with the Frontend and command line parsing:
+	
+	> ConvergenceFrontend(test, description="My Demonstrator")
+	
+	Side notice: Somehow this is really overengineered.
 	"""
 	futureclass = Future
 	
@@ -104,25 +120,26 @@ class ParametricTest(ConvergenceTest):
 	
 	def commandline(self, *args, **kwargs):
 		"""
-		Neat syntactic sugar to return an instance of Future. Usage is like:
-		
-		test.settings['Foo'] = test.commandline('-f', '--foo', type=int, ...)
+		Neat syntactic sugar to return an instance of Future which is later used
+		to call the bound method of argparser.ArgumentParser.add_argument.
 		"""
-		return futureclass(*args, **kwargs)
+		return self.futureclass(*args, **kwargs)
 
 	def add_group(self, parser):
+		"Hook the future settings into the parser"
 		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
-		for key,entry in settings.iteritems():
-			if isinstance(entry, futureclass):
-				entry.apply(group.add_argument)
+		for key,future in self.settings.iteritems():
+			if isinstance(future, self.futureclass):
+				future.apply(group.add_argument)
 		return group
 
 	def apply_args(self, args, argparser):
-		argns = vars(argparser) # namespace->dict
-		for key,entry in settings.iteritems():
-			if isinstance(entry, futureclass):
+		"Reads out the argument line values for the future settings and pass them"
+		argns = vars(args) # namespace->dict
+		for key,future in self.settings.iteritems():
+			if isinstance(future, self.futureclass):
 				# extract from the argparser namespace
-				settings[key] = argns[entry.value().dest]
+				self.settings[key] = argns[future.value().dest]
 
 class PolyorderTest(ParametricTest):
 	"""
@@ -151,9 +168,11 @@ class PolyorderTest(ParametricTest):
 		self.settings['ExaBinaryTpl'] = '{ExaBinary}-p{ExapOrder}'
 		self.settings['SIMDIRTpl'] = "{SIMBASE}/p{ExapOrder}-meshsize{ExaMeshSize}/"
 		
-		# futures
+		# future data binding.
+		# "meshsize" and "polyorder" as argsNS members are also directly used in startFromArgs
 		self.settings["ExaRealMeshSize"] = self.commandline('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
 		self.settings['ExapOrder'] = self.commandline('-p', '--polyorder', type=int, help="Polynomial order")
+		# Since I created this ParametricTest, now I have to deal with it...
 
 	def until(self, maxcells):
 		"Small utility function" 
@@ -232,7 +251,7 @@ class PolyorderTest(ParametricTest):
 		return processes
 
 	def add_group(self, parser):
-		group = ParametricTest.add_group(parser)
+		group = ParametricTest.add_group(self, parser)
 		# now implemented as futures:
 		#group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
 		#group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")

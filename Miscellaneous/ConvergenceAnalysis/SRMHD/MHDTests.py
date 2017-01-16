@@ -46,7 +46,7 @@ test.adaptiveRunRange = {
 
 test.settings['ExaBinary'] = "../../../ApplicationExamples/SRMHD/ExaHyPE-MHDSolver"
 
-test.settings['ExaSpecfile'] = "MHD_AlfenWaveConvergence.exahype"
+test.settings['ExaSpecfile'] = "MHD_GenericConvergence.exahype"
 # template to set up a queueing system
 test.settings['QRUNTPL'] = "" #"srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-AlfenWave"
 
@@ -54,8 +54,9 @@ test.settings['QRUNTPL'] = "" #"srun -n1 --partition=x-men --time=29:00:00 --mem
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
 #test.settings['EXAHYPE_INITIALDATA']="AlfenWave"
 
+# just as a demo, such easy things are possible:
 srmhdid = {"alfenwave", "blast", "orsagtang", "rotor"}
-test.settings['EXAHYPE_INITIALDATA'] = self.commandline('-i', '--initialdata', choices=srmhdid, help="Initial Data for SRMHD")
+test.settings['EXAHYPE_INITIALDATA'] = test.commandline('-i', '--initialdata', choices=srmhdid, help="Initial Data for SRMHD")
 
 ### TODO, unfortunately untested so far: options may change other stuff, too.
 
