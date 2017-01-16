@@ -70,10 +70,9 @@ SUBROUTINE InitialData(x, Q)
   ! Call InitialRotor(x,Q)
   ! Call InitialBlast(x, Q)
   ! Call InitialOrsagTang(x, Q)
+  ! Call InitialShockTube(x, Q)
 
-  Call InitialShockTube(x, Q)
-
-  ! CALL InitialDataByExaHyPESpecFile(x,Q)
+  CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
 
 SUBROUTINE InitialAlfenWave(x, Q)

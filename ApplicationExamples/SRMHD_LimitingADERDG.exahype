@@ -20,13 +20,13 @@ exahype-project MHD
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD_LimitingADERDG
+  output-directory           = ./ApplicationExamples/SRMHD_LimitingADERDG
   architecture               = noarch
 
   computational-domain
     dimension                = 2
-    width                    = 1.2, 1.2
-    offset                   = -0.6, -0.6
+    width                    = 1.0, 0.2
+    offset                   = 0.0, 0.0
     end-time                 = 0.8
   end computational-domain
   
@@ -58,7 +58,7 @@ exahype-project MHD
     variables                = 9
     parameters               = 0
     order                    = 7
-    maximum-mesh-size        = 0.05
+    maximum-mesh-size        = 0.12
     time-stepping            = global
     kernel                   = generic::fluxes::nonlinear
     language                 = C
@@ -67,7 +67,7 @@ exahype-project MHD
     dmp-relaxation-parameter = 0.0001
     dmp-difference-scaling   = 0.001
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables = 9
       time      = 0.0
       repeat    = 0.01

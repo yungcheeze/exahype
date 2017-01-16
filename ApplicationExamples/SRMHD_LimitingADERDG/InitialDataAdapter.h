@@ -16,6 +16,7 @@ void initialalfenwave_(double* x, double* Q);
 void initialblast_(double* x, double* Q);
 void initialorsagtang_(double* x, double* Q);
 void initialrotor_(double* x, double* Q);
+void initialshocktube_(double* x, double* Q);
 
 // Exact solutions in FORTRAN
 void alfenwave_(const double* x, double* Q, const double* /* scalar */ t);
