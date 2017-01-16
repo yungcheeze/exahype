@@ -1,5 +1,5 @@
 /**
- * SRMHD AlfenWave specfile for convergence analysis.
+ * SRMHD generic specfile for convergence analysis.
  *
  *@comment@ This file is a TEMPLATE, it has variables denoted
  *@comment@ like "@VARNAME@" and replaced by a script before
@@ -60,7 +60,7 @@ exahype-project  MHDSolver
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
-    constants          = {initialdata:alfenwave}
+    constants          = {initialdata:@ExaInitialData@}
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables= 9

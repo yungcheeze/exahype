@@ -33,40 +33,8 @@ getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $AP
 cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
 
 case $CMD in
-	"standard-update") # Does git pull, update-peano and update-toolkit
-		cdroot; info "Performing standard update"
-		git pull && subreq update-peano && subreq update-toolkit && info "Done successfully" \
-			|| fail "Error during updating"
-		;;
-	"update-peano") # Updates the Peano subversion repository
-		cdroot; info "Updating Peano"
-		cd Peano
-		exec ./checkout-update-peano.sh
-		info "Finished updating Peano"
-		;;
-	"update-toolkit") # Compiles the toolkit with ant and javac
-		cdroot; info "Creating Toolkit"
-		cd Toolkit
-		exec ./build.sh
-		;;
-	"update-libxsmm") # Checkout or recompile libxsmm
-		cdroot; info "Cloning or updating Libxsmm"
-		[[ -e Libxsmm ]] || git clone https://github.com/hfp/libxsmm.git Libxsmm
-		# libxsmm is a large repository, instead of cloning, downloading
-		# https://github.com/hfp/libxsmm/archive/master.zip
-		# would be an option
-		cd Libxsmm
-		git pull
-		make clean
-		exec make generator -j4
-		;;
-	"bootstrap") # Install/compile/update all dependencies (Peano, Toolkit, Libxsmm) in one go
-		cdroot; info "Bootstrapping"
-		set -e
-		subreq update-peano
-		subreq update-toolkit
-		subreq update-libxsmm
-		info "Sucessfully boostrapped ExaHyPE installation at $PWD"
+	"update") # Update the repository or dependencies. Use "--help" for help.
+		exec $SCRIPTDIR/update-installation.sh $@
 		;;
 	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
 		cdroot; info "Listing available Applications:"
