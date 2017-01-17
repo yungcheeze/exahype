@@ -47,7 +47,7 @@ exahype-project  SRHD
     language           = C
 
     /* Apparently, MUSCL doesnt support vtk::Cartesian::vertices */
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
       variables= 5
       time     = 0.0
       repeat   = 0.05
@@ -55,7 +55,7 @@ exahype-project  SRHD
       select   = {}
     end plot
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii PrimitivesWriter
       variables= 5
       time     = 0.0
       repeat   = 0.05
