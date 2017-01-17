@@ -13,7 +13,7 @@ exahype-project  MHDSolver
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD_TwoKernels/
+  output-directory           = ./ApplicationExamples/SRMHD_TwoKernels/
   architecture               = noarch
 
   computational-domain

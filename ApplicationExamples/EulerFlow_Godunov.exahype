@@ -25,7 +25,7 @@ exahype-project  EulerFVM
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/EulerFlowFVM
+  output-directory           = ./ApplicationExamples/EulerFlowGodunov
   architecture               = noarch
 
   computational-domain
