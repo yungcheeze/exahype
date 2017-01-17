@@ -87,11 +87,15 @@ case $CMD in
 		set -e
 		for p in 2 3 4 5 6 6 7 8 9; do subreq polycompile $APPNAME $p; done
 		;;	
-	"make") # compiel without invoking the toolkit
+	"make") # compile without invoking the toolkit
 		cdapp
 		export SKIP_TOOLKIT="Yes"
 		export CLEAN="${CLEAN:=Lightweight}" # do no heavy cleaning
 		$SCRIPTDIR/compile.sh
+		;;
+	"make-clean") # clean an application
+		cdapp
+		make clean || fail "Cannot clean since toolkit did not run."
 		;;
 	"cheat") # show the environment variables available for driving the build
 		cdroot; cd $SCRIPTDIR;
