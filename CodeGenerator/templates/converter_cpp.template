@@ -14,53 +14,23 @@
 #include "kernels/aderdg/optimised/converter.h"
 
 void kernels::aderdg::optimised::converter::Bnd_optimised2generic(const double* const opt, double* gen) {
-{% if nDim == 2 %}
-  idx3 idx_bnd_gen({{2 * nDim}}, {{nDof}}, {{nVar}});
-  idx3 idx_bnd_opt({{2 * nDim}}, {{nVar}}, {{nDofPad}});
   for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof}}; j++) {
-      for(int k=0; k<{{nVar}}; k++) {
-        gen[idx_bnd_gen(i,j,k)] = opt[idx_bnd_opt(i,k,j)]; 
+    for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
+      for(int l=0; l<{{nVar}}; l++) {
+        gen[l+{{nVar}}*(j+{{nDof**(nDim-1)}}*i)] = opt[j+{{bndBlockSize}}*(l+{{nVar}}*i)];
       }
     }    
   }
-{% else %}
-  idx4 idx_bnd_gen({{2 * nDim}}, {{nDof}}, {{nDof}}, {{nVar}});
-  for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof}}; j++) {
-      for(int k=0; k<{{nDof}}; k++) {
-        for(int l=0; l<{{nVar}}; l++) {
-          gen[idx_bnd_gen(i,j,k,l)] = opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof}}+k];
-        }
-      }
-    }    
-  }
-{% endif%}
 }
 
 void kernels::aderdg::optimised::converter::Bnd_generic2optimised(const double* const gen, double* opt) {
-{% if nDim == 2 %}
-  idx3 idx_bnd_gen({{2 * nDim}}, {{nDof}}, {{nVar}});
-  idx3 idx_bnd_opt({{2 * nDim}}, {{nVar}}, {{nDofPad}});
   for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof}}; j++) {
-      for(int k=0; k<{{nVar}}; k++) {
-        opt[idx_bnd_opt(i,k,j)] = gen[idx_bnd_gen(i,j,k)]; 
+    for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
+      for(int l=0; l<{{nVar}}; l++) {
+        opt[j+{{bndBlockSize}}*(l+{{nVar}}*i)] = gen[l+{{nVar}}*(j+{{nDof**(nDim-1)}}*i)];
       }
     }    
   }
-{% else %}
-  idx4 idx_bnd_gen({{2 * nDim}}, {{nDof}}, {{nDof}}, {{nVar}});
-  for(int i=0; i<{{2 * nDim}}; i++) {
-    for(int j=0; j<{{nDof}}; j++) {
-      for(int k=0; k<{{nDof}}; k++) {
-        for(int l=0; l<{{nVar}}; l++) {
-          opt[i*{{nVar*bndBlockSize}}+l*{{bndBlockSize}}+j*{{nDof}}+k] = gen[idx_bnd_gen(i,j,k,l)];
-        }
-      }
-    }    
-  }
-{% endif%}
 }
 
 {% if noVarPadding %}
