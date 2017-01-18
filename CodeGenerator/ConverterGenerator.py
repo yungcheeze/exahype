@@ -34,7 +34,8 @@ class ConverterGenerator:
 
     def generateCode(self):
         self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
-    
+        self.m_context['noVarPadding'] = self.m_context['nVarPad'] == self.m_context['nVar']
+        
         TemplatingUtils.renderAsFile('converter_h.template',   self.m_filenameRoot+'.h',   self.m_context)
         TemplatingUtils.renderAsFile('converter_cpp.template', self.m_filenameRoot+'.cpp', self.m_context)
 
