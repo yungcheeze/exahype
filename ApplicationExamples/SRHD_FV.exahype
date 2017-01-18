@@ -20,7 +20,7 @@ exahype-project  SRHD
     end-time                 = 1.0
   end computational-domain
 
-/*  
+
   shared-memory
     identifier               = dummy
     cores                    = 2
@@ -35,8 +35,9 @@ exahype-project  SRHD
     skip-reduction-in-batched-time-steps = off
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
+    spawn-double-compression-as-background-thread=off
   end optimisation
-*/
+
   solver Finite-Volumes SRHDSolverFV
     variables          = 5
     parameters         = 0
