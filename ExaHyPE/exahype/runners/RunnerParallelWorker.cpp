@@ -17,6 +17,7 @@
 #include "exahype/repositories/Repository.h"
 #include "peano/parallel/messages/ForkMessage.h"
 #include "peano/utils/Globals.h"
+#include "peano/utils/UserInterface.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/parallel/NodePool.h"
 
