@@ -284,12 +284,15 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))  
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
-  
+ifneq (,$(findstring Yes, $(COMPILE_OPT_KERNEL) )) 
+	find -H $(EXAHYPE_PATH)'/kernels/aderdg/optimised' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+endif
+
 doFortran:
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90

@@ -204,6 +204,10 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");
         _writer.write(" PROJECT_CFLAGS += -DTEST_OPT_KERNEL\n");
         _writer.write("endif\n");
+        _writer.write("\n\n");
+        _writer.write("ifeq ($(COMPILE_OPT_KERNEL),)\n");
+        _writer.write("  COMPILE_OPT_KERNEL=Yes\n");
+        _writer.write("endif\n");
       }
       if (_likwidInc != null) {
         _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
