@@ -78,18 +78,22 @@ void spaceTimePredictorLinear(SolverType& solver,
   for (int i = 0; i < basisSize; i++) {  // time DOFs
     // Compute the derivatives in x direction (independent from the y and z
     // derivatives)
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
+    for (int j = 0; j < basisSize; j++) { // y-loop
+      for (int k = 0; k < basisSize; k++) { // z-loop
         // Fortran: gradQ(:,1,:,k,j,i) = 1.0/dx(1) * lqh(:,:,k,j,i) *
         // dudx(:,:)^T
-        for (int l = 0; l < basisSize; l++) {
+        for (int l = 0; l < basisSize; l++) {  // x-loop
           // Skip parameters
           for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+	      double sum = 0.0;
             for (int n = 0; n < basisSize; n++) {
-              gradQ[idx_gradQ(i, j, k, l, 0, m)] +=
-                  1.0 / dx[0] * lQi[idx_lQi(i, j, k, n, m)] *
+	      sum = sum + lQi[idx_lQi(i, j, k, n, m)] *
                   kernels::dudx[order][l][n];
+              //gradQ[idx_gradQ(i, j, k, l, 0, m)] +=
+              //    1.0 / dx[0] * lQi[idx_lQi(i, j, k, n, m)] *
+              //    kernels::dudx[order][l][n];
             }
+	   gradQ[idx_gradQ(i, j, k, l, 0, m)] =    1.0 / dx[0] *sum;
           }
         }
       }
@@ -103,11 +107,15 @@ void spaceTimePredictorLinear(SolverType& solver,
         for (int l = 0; l < basisSize; l++) {
           // Skip parameters
           for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+	    double sum = 0.0;
             for (int n = 0; n < basisSize; n++) {
-              gradQ[idx_gradQ(i, j, l, k, 1, m)] +=
-                  1.0 / dx[1] * lQi[idx_lQi(i, j, n, k, m)] *
+	    sum = sum + lQi[idx_lQi(i, j, n, k, m)] *
                   kernels::dudx[order][l][n];
+              //gradQ[idx_gradQ(i, j, l, k, 1, m)] +=
+              //    1.0 / dx[1] * lQi[idx_lQi(i, j, n, k, m)] *
+              //    kernels::dudx[order][l][n];
             }
+	     gradQ[idx_gradQ(i, j, l, k, 1, m)] = 1.0 / dx[1] * sum;
           }
         }
       }
@@ -121,11 +129,16 @@ void spaceTimePredictorLinear(SolverType& solver,
         for (int l = 0; l < basisSize; l++) {
           // Skip parameters
           for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+	  double sum = 0.0;
             for (int n = 0; n < basisSize; n++) {
-              gradQ[idx_gradQ(i, l, j, k, 2, m)] +=
-                  1.0 / dx[2] * lQi[idx_lQi(i, n, j, k, m)] *
+	    sum = sum + lQi[idx_lQi(i, n, j, k, m)] *
                   kernels::dudx[order][l][n];
+		  
+              //gradQ[idx_gradQ(i, l, j, k, 2, m)] +=
+              //    1.0 / dx[2] * lQi[idx_lQi(i, n, j, k, m)] *
+              //    kernels::dudx[order][l][n];
             }
+	   gradQ[idx_gradQ(i, l, j, k, 2, m)] = 1.0 / dx[2] * sum;
           }
         }
       }
