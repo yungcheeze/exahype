@@ -61,6 +61,7 @@ void initialdatabyexahypespecfile(double* x, double* Q) {
 		     if(id_name == "alfenwave") initialalfenwave_(x,Q);
 		else if(id_name == "blast")     initialblast_(x,Q);
 		else if(id_name == "orsagtang") initialorsagtang_(x,Q);
+		else if(id_name == "shocktube") initialshocktube_(x,Q);
 		else if(id_name == "rotor")     initialrotor_(x,Q);
 		else {
 			logError("InitialDatabyExahyPESpecFile()", "Unknown Initial Data value '"<< id_name <<"'");

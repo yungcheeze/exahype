@@ -306,3 +306,40 @@ class MethodActions:
 	def list(self):
 		return self.actions.keys()
 
+class Future:
+	"""
+	A simple class which allows future application and even later
+	collection of return values.
+	
+	I think there should also be something like this in python.
+	
+	Example usage with functions:
+	
+	> a = Future(5, foo="bar")
+	> def test(a, foo):
+	> 	return a * foo
+	> a.apply(test)
+	> # do something
+	> print a.value()
+	
+	Example usage with classes:
+	
+	> f = Future(5, foo="bar")
+	> class I:
+	>    def test(self, b, foo):
+	>        return self.a * self.a * foo
+	> i = I()
+	> i.a = 10
+	> print f.apply(i.test)
+	> # do something
+	> print f.value()
+	
+	"""
+	def __init__(self, *args, **kwargs):
+		self.opt_args = args
+		self.opt_kwargs = kwargs
+	def apply(self, function):
+		self.retval = function(*self.opt_args, **self.opt_kwargs)
+		return self.retval
+	def value(self):
+		return self.retval

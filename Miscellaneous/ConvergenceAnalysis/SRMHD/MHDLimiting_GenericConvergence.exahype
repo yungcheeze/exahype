@@ -1,20 +1,19 @@
 /**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
+ * SRMHD+Limiting generic specfile for convergence analysis.
  *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
+ *@comment@ This file is a TEMPLATE, it has variables denoted
+ *@comment@ like "@VARNAME@" and replaced by a script before
+ *@comment@ handing over to ExaHyPE. Furthermore, these lines
+ *@comment@ starting with "@comment@" are removed from the
+ *@comment@ generated spec file. Instead, there will be a
+ *@comment@ description about the generated file in the
+ *@comment@ following:
  *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
-/**
-
- MHD IBVP solved with limiting ADER-DG solver.
-
+ * This convergence test is using ideal Special Relativistic
+ * Magnetohydrodynamics, in 2D.
+ * 
+ * Spec file generated at @DATE@ on machine @HOST@.
+ *
  */
 exahype-project MHD
 
@@ -25,14 +24,14 @@ exahype-project MHD
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 0.2
+    width                    = @ExaWidth@, @ExaHeight@
     offset                   = 0.0, 0.0
-    end-time                 = 0.8
+    end-time                 = @ExaEndTime@
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = @ExaTbbCores@
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -57,8 +56,8 @@ exahype-project MHD
   solver Limiting-ADER-DG MHDSolver
     variables                = 9
     parameters               = 0
-    order                    = 7
-    maximum-mesh-size        = 0.12
+    order                    = @ExapOrder@
+    maximum-mesh-size        = @ExaMeshSize@
     time-stepping            = global
     kernel                   = generic::fluxes::nonlinear
     language                 = C
@@ -66,11 +65,12 @@ exahype-project MHD
     limiter-language         = C
     dmp-relaxation-parameter = 0.0001
     dmp-difference-scaling   = 0.001
+    constants                = {initialdata:@ExaInitialData@}
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables = 9
       time      = 0.0
-      repeat    = 0.01
+      repeat    = @ExaVtkOutputRepeat@
       output    = ./conserved
       select = {}
     end plot

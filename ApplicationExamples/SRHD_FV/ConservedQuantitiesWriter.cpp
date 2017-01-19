@@ -1,27 +1,27 @@
-#include "SRHDSolverFV_Plotter0.h"
+#include "ConservedQuantitiesWriter.h"
 
 
-SRHD::SRHDSolverFV_Plotter0::SRHDSolverFV_Plotter0(SRHDSolverFV&  solver) {
+SRHD::ConservedQuantitiesWriter::ConservedQuantitiesWriter(SRHDSolverFV&  solver) {
   // @todo Please insert your code here
 }
 
 
-SRHD::SRHDSolverFV_Plotter0::~SRHDSolverFV_Plotter0() {
+SRHD::ConservedQuantitiesWriter::~ConservedQuantitiesWriter() {
   // @todo Please insert your code here
 }
 
 
-void SRHD::SRHDSolverFV_Plotter0::startPlotting(double time) {
+void SRHD::ConservedQuantitiesWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void SRHD::SRHDSolverFV_Plotter0::finishPlotting() {
+void SRHD::ConservedQuantitiesWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void SRHD::SRHDSolverFV_Plotter0::mapQuantities(
+void SRHD::ConservedQuantitiesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -30,8 +30,7 @@ void SRHD::SRHDSolverFV_Plotter0::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  for (int i=0; i<5; i++){
-    // Conservative Quantities for SRHD_FV
+  for (int i=0; i<5; i++){ 
     outputQuantities[i] = Q[i];
   }
 }

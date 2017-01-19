@@ -19,7 +19,7 @@ import os, sys, logging # batteries
 
 # libconvergence, same directory:
 from convergence_table import ConvergenceReporter, exitConvergenceStatus
-from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc
+from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc, Future
 
 class ConvergenceTest:
 	"""
@@ -34,6 +34,7 @@ class ConvergenceTest:
 	def __init__(self, name="UnnamedTest"):
 		self.name = name
 		self.logger = logging.getLogger(repr(self))
+		self.boundsettings = {}
 
 		settings = {}
 
@@ -88,8 +89,59 @@ class ConvergenceTest:
 		
 		self.logger.info("Generic ConvergenceTest starts {ExaRunner}".format(**env))
 		return runBinary(env['ExaRunner'], env)
+	
+	def startFromArgs(self, args, parser):
+		raise NotImplementedError("Overwrite this function to start the test from ConvergenceFrontend.")
 
-class PolyorderTest(ConvergenceTest):
+class ParametricTest(ConvergenceTest):
+	"""
+	Allows to pass command line options to settings in the ConvergenceTest.
+	
+	Example usage:
+	
+	> test = ParametricTest("DemoTest")
+	> test.settings['ExaStaticFoo'] = 3.141
+	> test.settings['ExaFrequentlyChangingBar'] = test.commandline('-b', '--bar', choices={ 1,2,3 }, help="Typical Bar values")
+	> test.settings['ExaAlsoChangingBaz'] = test.commandline('-z', '--baz', type=str, help="Just another argument")
+	
+	This mechanism breaks with direct starting from ConvergenceTest:
+	> test.start()
+	
+	However, it goes nicely with the Frontend and command line parsing:
+	
+	> ConvergenceFrontend(test, description="My Demonstrator")
+	
+	Side notice: Somehow this is really overengineered.
+	"""
+	futureclass = Future
+	
+	def __init__(self, name="UnnamedParametricTest"):
+		ConvergenceTest.__init__(self, name)
+	
+	def commandline(self, *args, **kwargs):
+		"""
+		Neat syntactic sugar to return an instance of Future which is later used
+		to call the bound method of argparser.ArgumentParser.add_argument.
+		"""
+		return self.futureclass(*args, **kwargs)
+
+	def add_group(self, parser):
+		"Hook the future settings into the parser"
+		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
+		for key,future in self.settings.iteritems():
+			if isinstance(future, self.futureclass):
+				future.apply(group.add_argument)
+		return group
+
+	def apply_args(self, args, argparser):
+		"Reads out the argument line values for the future settings and pass them"
+		argns = vars(args) # namespace->dict
+		for key,future in self.settings.iteritems():
+			if isinstance(future, self.futureclass):
+				# extract from the argparser namespace
+				self.settings[key] = argns[future.value().dest]
+
+class PolyorderTest(ParametricTest):
 	"""
 	The PolyorderTest is a convergence test on a uniform grid where both
 	the grid spacing as well as the polynomial order in ADERDG is changed
@@ -115,6 +167,12 @@ class PolyorderTest(ConvergenceTest):
 		# defaults paths
 		self.settings['ExaBinaryTpl'] = '{ExaBinary}-p{ExapOrder}'
 		self.settings['SIMDIRTpl'] = "{SIMBASE}/p{ExapOrder}-meshsize{ExaMeshSize}/"
+		
+		# future data binding.
+		# "meshsize" and "polyorder" as argsNS members are also directly used in startFromArgs
+		self.settings["ExaRealMeshSize"] = self.commandline('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
+		self.settings['ExapOrder'] = self.commandline('-p', '--polyorder', type=int, help="Polynomial order")
+		# Since I created this ParametricTest, now I have to deal with it...
 
 	def until(self, maxcells):
 		"Small utility function" 
@@ -193,13 +251,11 @@ class PolyorderTest(ConvergenceTest):
 		return processes
 
 	def add_group(self, parser):
-		group = parser.add_argument_group(title=repr(self), description=cleandoc(self))
-		group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
-		group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
+		group = ParametricTest.add_group(self, parser)
+		# now implemented as futures:
+		#group.add_argument('-p', '--polyorder', type=int, help="Polynomial order")
+		#group.add_argument('-m', '--meshsize', type=float, help="Maximum mesh size (dx)")
 		group.add_argument('-a', '--all', action='store_true', help='Start all sensible simulations')
-		# moved argument to frontend
-		#group.add_argument('-n', '--nostart', action='store_true', help="Don't start any simulation. "+
-		#	"Can be used to directly invoke the reporting instead")
 
 	def startFromArgs(self, args, parser):
 		if args.polyorder or args.meshsize:
