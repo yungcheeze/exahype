@@ -21,10 +21,9 @@ $ ./AlfenWaveTest.py run-report --all
 
 import sys, logging
 logger = logging.getLogger("runSRMHDTest")
-sys.path.append("../libconvergence")
+sys.path.append("../")
 
-from convergence_test import PolyorderTest
-from convergence_frontend import ConvergenceFrontend
+from libconvergence import PolyorderTest, ConvergenceApplication
 
 class SRMHDTest(PolyorderTest):
 	"""
