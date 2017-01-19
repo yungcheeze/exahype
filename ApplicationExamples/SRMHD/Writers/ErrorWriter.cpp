@@ -1,23 +1,22 @@
 #include "ErrorWriter.h"
 
+#include "MHDSolver.h"
+#include "InitialDataAdapter.h"
+
 
 MHDSolver::ErrorWriter::ErrorWriter(MHDSolver&  solver) {
-  // @todo Please insert your code here
 }
 
 
 MHDSolver::ErrorWriter::~ErrorWriter() {
-  // @todo Please insert your code here
 }
 
 
 void MHDSolver::ErrorWriter::startPlotting(double time) {
-  // @todo Please insert your code here
 }
 
 
 void MHDSolver::ErrorWriter::finishPlotting() {
-  // @todo Please insert your code here
 }
 
 
@@ -30,9 +29,14 @@ void MHDSolver::ErrorWriter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  for (int i=0; i<9; i++){ 
-    outputQuantities[i] = Q[i];
-  }
+  const int nDim = MHDSolver::MHDSolver::nDim;
+  const int nVar = MHDSolver::MHDSolver::nVar;
+
+  // convert tarch::la::Vector to double*  
+  double xpos[nDim];
+  for(int i=0; i<nDim; i++) xpos[i] = x[i];
+
+  alfenwave_(xpos, outputQuantities, &timeStamp);
 }
 
 
