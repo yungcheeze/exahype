@@ -122,7 +122,7 @@ class ConvergenceReporter:
 		group.add_argument('--quantity', type=str, default=self.quantity, help="Which quantity to look at")
 		group.add_argument('--simulations', type=str, default=self.simulationListFilename, help="Path to CSV file "+
 			"holding the simulations to consider. If not given, generates list by ./showSimulationProgress.sh on the fly")
-		group.add_argument('--minimal-reduction-length', type=str, default=20, help="Minimal number of lines in reductions to include")
+		group.add_argument('--minimal-reduction-length', type=int, default=20, help="Minimal number of lines in reductions to include")
 		group.add_argument('--skip-plots', action='store_true', default=False, help="Skip the generation of inlined SVG plots")
 		return group
 
@@ -317,8 +317,8 @@ class ConvergenceReporter:
 		correctlyparsed = filter(wellparsedCriterion, timedeltas)
 		errnousentries = len(timedeltas) - len(correctlyparsed) # find not correctly parsed entries
 		timedeltas = correctlyparsed
-		totaltime = reduce(operator.add, timedeltas)
 		try:
+		    totaltime = reduce(operator.add, timedeltas)
 		    totalhours = totaltime.total_seconds() / (60*60)
 		    self.tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours) + (" (ignoring %i errnous entries)"%errnousentries if errnousentries else "")
 		except:
@@ -348,13 +348,14 @@ class ConvergenceReporter:
 		self.fullsimtable[idx.IgnoredSims] = includedSimulations.map(IgnoredKeyworder)
 
 		if not len(self.paramtable[includedSimulations]):
-			self.logger.error("We filtered out all applications as being noninteresting.")
+			self.logger.error("We filtered out all simulations as being noninteresting.")
 			self.logger.error("This may be because all simulations are tainted or files where missing.")
 			self.logger.error("You might exemplarily want to look into these two first simulation set files:")
 			self.logger.error(self.paramfiles[0])
 			self.logger.error(self.quantityfiles[0])
 			self.logger.error("This is what I learned so far about the simulations:\n" + str(self.reducedsimtable))
 			self.logger.error("With constants:\n" + str(self.constant_parameters))
+			raise LookupError("Cannot continue: All simulations were filtered as noninteresting.")
 
 		# apply filter
 		self.paramtable = self.paramtable[includedSimulations]
