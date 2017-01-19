@@ -21,11 +21,11 @@
 
 
  */
-exahype-project  EulerFVM
+exahype-project EulerFVM
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/EulerFlowGodunov
+  output-directory           = ./ApplicationExamples/EulerFlow_Godunov
   architecture               = noarch
 
   computational-domain
@@ -43,7 +43,7 @@ exahype-project  EulerFVM
     time-stepping     = global
     kernel            = generic::Godunov
     language          = C
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii ConservedWriter
       variables = 5
       time      = 0.0
       repeat    = 0.05
