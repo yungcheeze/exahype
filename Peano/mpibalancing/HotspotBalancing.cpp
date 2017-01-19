@@ -263,10 +263,10 @@ void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
   double localWeight
 ) {
   _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
+  #ifdef Parallel
 
   double ranksWeight = getMaximumWeightOfWorkers();
 
-  #ifdef Parallel
   logDebug( "HotspotBalancing(bool,int)", "send load balancing information on tag " << _loadBalancingTag << " to master " << tarch::parallel::NodePool::getInstance().getMasterRank() );
   if (UseBlockingSendAndReceive) {
     MPI_Send( &ranksWeight, 1, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), _loadBalancingTag, tarch::parallel::Node::getInstance().getCommunicator() );
