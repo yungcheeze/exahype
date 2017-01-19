@@ -7,14 +7,19 @@
 # ExaHYPE 2016, SvenK
 
 """
-The Convergence frontend package contains classes to manage a convergence test
-with a single frontend. The usage is quite simple:
+The Convergence application package contains a main class to manage a
+convergence test with a single frontend. The usage is quite simple:
 
 > test = MyConvergenceTest("ShuVortexWhatever")
 > test....()
+> app = ConvergenceApplication(test, description="The program description")
 > 
 > if __name__ == "__main__":
-> 	ConvergenceFrontend(test, description="The program description")
+> 	app.parse_args()
+
+or alternatively, also from command line, like:
+
+> app.parse_args(["report", "-a"])
 """
 
 from numpy import arange, array
@@ -25,7 +30,7 @@ from convergence_arghelpers import ExaFrontend
 from convergence_table import ConvergenceReporter, exitConvergenceStatus
 from convergence_helpers import shell, getenv, pidlist, runBinary, cleandoc, MethodActions
 
-class ConvergenceFrontend:
+class ConvergenceApplication:
 	"""
 	The frontend allows to link together the ConvergenceTest with the
 	ConvergenceReporter. You can choose what the application should do by	
@@ -48,8 +53,14 @@ class ConvergenceFrontend:
 		self.frontend.add_module(self.convergencetest)
 		self.frontend.add_module(self)
 		self.frontend.add_module(self.reporter)
-		
-		args = self.frontend.parse_args()
+
+	def parse_args(self, args=None):
+		"""
+		This is the main method to start parsing and running.
+		It basically passes the argument dispatching to ExaFrontend
+		and then calls the appropriate action (run, report, ...).
+		"""
+		args = self.frontend.parse_args(args)
 		self.actions.call(args.action, self)
 
 	def add_group(self, parser):

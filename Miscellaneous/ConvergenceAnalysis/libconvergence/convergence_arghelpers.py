@@ -33,17 +33,26 @@ class ExaFrontend:
 			formatter_class=argparse.RawDescriptionHelpFormatter)
 		self.modules = []
 
-	def add_module(self, argumentable):
+	def add_module(self, argumentable, push_front=False):
+		"""
+		Allow argumentable to create a group or add arguments to the parser
+		and then add it to our list of modules where to apply_args later on
+		either at the beginning or end.
+		"""
 		argumentable.add_group(self.parser)
-		self.modules.append(argumentable)
+		if push_front:
+			self.modules.insert(0, argumentable)
+		else:
+			self.modules.append(argumentable)
 
 	def parse_args(self, args=None):
 		"""
 		Calls argparser.parse_args. You can pass the `args` instead of `sys.argv`
 		"""
-		# add the logging stuff as the last group
+		# add the logging stuff as the last group displayed
+		# but the first one being called apply_args on.
 		self.verbosity = ExaVerbosity()
-		self.add_module(self.verbosity)
+		self.add_module(self.verbosity, push_front=True)
 
 		self.args = self.parser.parse_args(args)
 	

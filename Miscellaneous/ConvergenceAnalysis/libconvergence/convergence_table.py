@@ -18,12 +18,20 @@ When running interactively, you can use make of the individual methods to
 partially run the program and inspect the pandas tables which are stored
 as class properties.
 
-Example Python session:
+Example Python session
+======================
 
 # useful to start like this to enable python loggers:
 $ ipython -i ./convergence_table.py -- --skip-plots
 > reporter = ConvergenceReporter()
 > reporter.reasonable_defaults()
+
+
+Dependencies
+============
+
+Note that we have weird effects with pandas versions < 0.17.
+Therefore, using pandas >= 0.17 is highly recommended.
 """
 
 import numpy as np
@@ -77,7 +85,6 @@ class ConvergenceReporter:
 
 		# add a path before the simulations names, if neccessary.
 		self.simulationPathPrefix = getenv('SIMBASE', 'simulations/')
-		self.logger.info("Working with SIMBASE='%s'" % self.simulationPathPrefix)
 		self.simulationPrefixer = lambda subpath: path.join(self.simulationPathPrefix, subpath)
 
 		# do the same to determine where the templates are.
@@ -126,7 +133,7 @@ class ConvergenceReporter:
 			self.simulations = glob(self.simulationPrefixer('simulations/p%d*/'%p)) # mind the trailing slash to glob only directories
 			self.report_outputfile = self.simulationPrefixer("generated-report-p%d.html"%p)
 		else:
-			self.logger.info("Using all p orders")
+			self.logger.info("Using all polynomial orders for reporting")
 			self.simulations = None
 			self.report_outputfile = self.simulationPrefixer("generated-report.html")
 
@@ -139,6 +146,15 @@ class ConvergenceReporter:
 		self.quantity = args.quantity
 		self.minimal_reduction_length = args.minimal_reduction_length
 		self.skip_plots = args.skip_plots
+
+		# first time we can do debug output which is not suppressed
+		self.logger.info("Working with SIMBASE='%s'" % self.simulationPathPrefix)
+		# Print out some information about the versions used,
+		# as we experience version dependent stuff quite frequently
+		firstline = lambda possibly_multiline_string:  possibly_multiline_string.split("\n")[0]
+		self.logger.debug("Python version: %s" % firstline(sys.version))
+		self.logger.debug("Numpy version: %s" % np.version.version)
+		self.logger.debug("Pandas version: %s" % pd.version.version)
 
 	def reasonable_defaults(self):
 		"Might be used from command line as an alternative to apply_args"
@@ -337,7 +353,7 @@ class ConvergenceReporter:
 			self.logger.error("You might exemplarily want to look into these two first simulation set files:")
 			self.logger.error(self.paramfiles[0])
 			self.logger.error(self.quantityfiles[0])
-			self.logger.error("This is what I learnt so far about the simulations:\n" + str(self.reducedsimtable))
+			self.logger.error("This is what I learned so far about the simulations:\n" + str(self.reducedsimtable))
 			self.logger.error("With constants:\n" + str(self.constant_parameters))
 
 		# apply filter

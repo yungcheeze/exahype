@@ -22,10 +22,9 @@ $ for p in 2 3 4; do ./runAlfenWave.py -p $p -m 0.1 & done
 
 import sys, logging
 logger = logging.getLogger("runAlfenWave")
-sys.path.append("../libconvergence")
+sys.path.append("../")
 
-from convergence_test import PolyorderTest
-from convergence_frontend import ConvergenceFrontend
+from libconvergence import PolyorderTest, ConvergenceApplication
 
 test = PolyorderTest("SRMHDAlfenWave")
 
@@ -48,7 +47,7 @@ test.settings['ExaBinary'] = "../../../ApplicationExamples/SRMHD/ExaHyPE-MHDSolv
 
 test.settings['ExaSpecfile'] = "MHD_AlfenWaveConvergence.exahype"
 # template to set up a queueing system
-test.settings['QRUNTPL'] = "srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-AlfenWave"
+test.settings['QRUNTPL'] = "" #"srun -n1 --partition=itp --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-AlfenWave"
 
 # set initial data to use.
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
@@ -66,7 +65,9 @@ test.settings['ExaTbbCores'] = 1
 # this is useful if you compiled with assertions
 test.settings['EXAHYPE_SKIP_TESTS'] = True
 
+app = ConvergenceApplication(test, description=__doc__)
 
 if __name__ == "__main__":
-	ConvergenceFrontend(test, description=__doc__)
+	app.parse_args()
+
 
