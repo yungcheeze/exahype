@@ -9,6 +9,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/solvers/ADERDGSolver.h"
+#include "kernels/aderdg/optimised/Kernels.h"
 
 {{ProfilerInclude}}
 
@@ -52,6 +53,11 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     static void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);
     void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
     void matrixb(const double* const Q, const int normalNonZero, double* Bn);
+	
+	int getTempSpaceTimeUnknownsSize()     const {return kernels::aderdg::optimised::getTempSpaceTimeUnknownsSize();    }
+    int getTempSpaceTimeFluxUnknownsSize() const {return kernels::aderdg::optimised::getTempSpaceTimeFluxUnknownsSize();}
+    int getTempUnknownsSize()              const {return kernels::aderdg::optimised::getTempUnknownsSize();             }
+    int getTempFluxUnknownsSize()          const {return kernels::aderdg::optimised::getTempFluxUnknownsSize();         }
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

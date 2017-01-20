@@ -91,11 +91,11 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
   assertion(_tempStateSizedVectors    ==nullptr);
 
   int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
-  _tempSpaceTimeUnknowns     = new double**[numberOfSolvers];
-  _tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers];
-  _tempUnknowns              = new double* [numberOfSolvers];
-  _tempFluxUnknowns          = new double* [numberOfSolvers];
-  _tempStateSizedVectors     = new double* [numberOfSolvers];
+  _tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, lQi_old, rhs, rhs_0 (unchanged by optimisation)
+  _tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers]; // == lFi, gradQ
+  _tempUnknowns              = new double* [numberOfSolvers]; // == lQhi
+  _tempFluxUnknowns          = new double* [numberOfSolvers]; // == lFhi
+  _tempStateSizedVectors     = new double* [numberOfSolvers]; // == BGradQ
 
   exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
 
@@ -117,21 +117,20 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
       _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
       for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
         _tempSpaceTimeUnknowns[solverNumber][i] =
-            new double[aderdgSolver->getSpaceTimeUnknownsPerCell()+
-                       aderdgSolver->getUnknownsPerCell()];
+            new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
       }
       //
       _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
       for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
         _tempSpaceTimeFluxUnknowns[solverNumber][i] =
-            new double[aderdgSolver->getSpaceTimeFluxUnknownsPerCell()];
+            new double[aderdgSolver->getTempSpaceTimeFluxUnknownsSize()];
       }
       //
-      _tempUnknowns    [solverNumber]      = new double[aderdgSolver->getUnknownsPerCell()];
+      _tempUnknowns    [solverNumber]      = new double[aderdgSolver->getTempUnknownsSize()]; 
       //
-      _tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getFluxUnknownsPerCell()];
+      _tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getTempFluxUnknownsSize()]; 
        //
-      _tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getNumberOfVariables()];
+      _tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getNumberOfVariables()]; 
     } else {
       _tempSpaceTimeUnknowns    [solverNumber] = nullptr;
       _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;

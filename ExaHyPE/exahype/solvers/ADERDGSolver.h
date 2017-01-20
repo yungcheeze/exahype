@@ -714,6 +714,11 @@ public:
    * to store cell volume based unknowns and associated parameters.
    */
   int getDataPerCell() const;
+  
+  virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeUnknownsPerCell()+getUnknownsPerCell();}
+  virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
+  virtual int getTempUnknownsSize()              const {return getUnknownsPerCell();}
+  virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
 
   /**
    * @brief Adds the solution update to the solution.
