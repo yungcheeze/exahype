@@ -33,6 +33,8 @@ namespace kernels {
 {% endif %}
       inline int getTempUnknownsSize()              {return {{nVarPad*(nDof**nDim)}};}  // == lQhi size
       inline int getTempFluxUnknownsSize()          {return {{nVarPad*(nDof**nDim)*(nDim+1)}};} // == lFhi size
+      inline int getBndFaceSize()                   {return {{nVar*bndBlockSize}};} // == FR/FL, QR/QL size
+      inline int getBndTotalSize()                  {return {{2*nDim*nVar*bndBlockSize}};} // == lFbnd/lQbnd size
     }
   }
 }

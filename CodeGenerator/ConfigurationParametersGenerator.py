@@ -32,6 +32,7 @@ class ConfigurationParametersGenerator:
 
 
     def generateCode(self):
+        self.m_context['bndBlockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
         self.m_context['isLinearCText'] = 'true' if self.m_context['isLinear'] else 'false' #c++ true/false instead of True/False
 
         TemplatingUtils.renderAsFile('configurationParameters_cpph.template', self.m_filename, self.m_context)

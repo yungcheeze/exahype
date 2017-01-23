@@ -103,7 +103,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("#"                                                                                                    + "\n");
       _writer.write("# export variable  |  default-value  |  further values         |  description"                        + "\n");
       _writer.write("#--------------------------------------------------------------------------------------------------"  + "\n");
-      _writer.write("# ARCHITECTURE        CPU               Phi                       Hardware-plattfrom"                 + "\n");
+      _writer.write("# ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-platform"                 + "\n");
       _writer.write("# COMPILER            Intel             GNU                       Used compiler (and linker)"         + "\n");
       _writer.write("# MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level"          + "\n");
       _writer.write("# SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation"      + "\n");
@@ -208,6 +208,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("ifeq ($(COMPILE_OPT_KERNEL),)\n");
         _writer.write("  COMPILE_OPT_KERNEL=Yes\n");
         _writer.write("endif\n");
+        String architecture = node.getArchitecture().toString().trim().toLowerCase();
+        if(!architecture.equals("noarch")) _writer.write("ARCHITECTURE="+architecture+"\n");
       }
       if (_likwidInc != null) {
         _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
