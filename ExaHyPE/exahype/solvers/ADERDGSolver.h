@@ -719,6 +719,8 @@ public:
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getTempUnknownsSize()              const {return getUnknownsPerCell();}
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
+  virtual int getBndFaceSize()                   const {return getUnknownsPerFace();}
+  virtual int getBndTotalSize()                  const {return getUnknownsPerCellBoundary();}
 
   /**
    * @brief Adds the solution update to the solution.
