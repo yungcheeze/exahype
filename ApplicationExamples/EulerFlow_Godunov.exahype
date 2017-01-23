@@ -39,16 +39,16 @@ exahype-project EulerFVM
     variables         = 5
     parameters        = 0
     patch-size        = 10
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 5e-2
     time-stepping     = global
     kernel            = generic::Godunov
     language          = C
     plot vtk::Cartesian::cells::ascii ConservedWriter
       variables = 5
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.5E-1
       output    = ./conserved
-      select = {}
+      select    = {}
     end plot
   end solver
 end exahype-project
