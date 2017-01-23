@@ -22,10 +22,9 @@ $ for p in 2 3 4; do ./runShuVortex.py -p $p -m 0.1 & done
 
 import sys, logging
 logger = logging.getLogger("runShuVortex")
-sys.path.append("../libconvergence")
+sys.path.append("../")
 
-from convergence_test import PolyorderTest
-from convergence_frontend import ConvergenceFrontend
+from libconvergence import PolyorderTest, ConvergenceApplication
 
 test = PolyorderTest("EulerShuVortex")
 
@@ -38,11 +37,17 @@ test.depths = range(1,6)
 test.computeCombinations()
 until = test.until # shorthand
 
-test.adaptiveRunRange = {
-	2: until(243), 3: until(243), 4: until(243),
-	5: until(243), 6: until(81), 7: until(81),
-	8: until(27), 9: until(27)
-}
+# bigger test:
+#test.adaptiveRunRange = {
+#	2: until(243), 3: until(243), 4: until(243),
+#	5: until(243), 6: until(81), 7: until(81),
+#	8: until(27), 9: until(27)
+#}
+
+
+# smaller test, for analaysis of mistakes:
+test.adaptiveRunRange = { k: until(0) for k in range(2,10) }
+test.adaptiveRunRange[2] = until(81)
 
 test.settings['ExaBinary'] = "../../../ApplicationExamples/EulerFlow/ExaHyPE-Euler"
 
@@ -60,13 +65,14 @@ test.settings['ExaEndTime'] = 6.0
 # 1 output dump with the highest resolution is 250MB.
 test.settings['ExaConvOutputRepeat'] = 0.1
 test.settings['ExaVtkOutputRepeat'] = 0.2
-# single threaded in the moment.
-test.settings['ExaTbbCores'] = 1
+# multi threads for the win
+test.settings['ExaTbbCores'] = 4
 
 # this is useful if you compiled with assertions
 test.settings['EXAHYPE_SKIP_TESTS'] = True
 
+app = ConvergenceApplication(test, description=__doc__)
 
 if __name__ == "__main__":
-	ConvergenceFrontend(test, description=__doc__)
+	app.parse_args()
 
