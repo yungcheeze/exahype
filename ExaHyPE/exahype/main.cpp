@@ -205,7 +205,12 @@ void version() {
   std::cout << "It contains the generated toolkit code:\n";
   kernels::to_string(std::cout);
   std::cout << "\n";
+  #ifdef EXAHYPE_BUILDINFO_AVAILABLE
   std::cout << "Further build information:\n";
+  std::cout << "Built at: " << EXAHYPE_BUILD_DATE << "\n";
+  std::cout << "Built at: " << EXAHYPE_BUILD_HOST << "\n";
+  std::cout << "Makefile options:\n" << EXAHYPE_BUILD_INFO << "\n";
+  #endif /* EXAHYPE_BUILDINFO_AVAILABLE */
   // show information from buildinfo.h
 }
 

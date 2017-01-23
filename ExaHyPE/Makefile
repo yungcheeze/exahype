@@ -279,9 +279,20 @@ FOBJECTS=$(FSOURCES:.f90=.o)
 
 all: header build
 
-buildinfo:
-	$(EXAHYPE_PATH)/generate-buildinfo.sh $(PROJECT_PATH)
+# add any variables which you want to be able to see
+# in the binary when calling with --version:
 
+buildinfo:
+	@$(EXAHYPE_PATH)/generate-buildinfo.sh \
+		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
+		"PROJECT_PATH = $(PROJECT_PATH)" \
+		"ARCHITECTURE = $(ARCHITECTURE)" \
+		"COMPILER = $(COMPILER)" \
+		"MODE = $(MODE)" \
+		"SHAREDMEM = $(SHAREDMEM)" \
+		"DISTRIBUTEDMEM = $(DISTRIBUTEDMEM)" \
+		"BOUNDARYCONDITIONS = $(BOUNDARYCONDITIONS)" \
+		"CC = $(CC)"
 cfiles.mk:
 	touch cfiles.mk
 	echo -n CSOURCES= > cfiles.mk
@@ -344,7 +355,7 @@ header:
 	@echo environment variable MPICC to mpiCC.
 
 
-build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
+build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful
