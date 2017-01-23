@@ -1,13 +1,22 @@
 #!/bin/bash
 #
-# A compiler script to make the compilation of ExaHyPE applications
-# more decent.
+# A wrapper around typing "make"  inside an ExaHyPE application
+# directory, featuring
 #
-# This is basically a wrapper around just typing "make" inside an
-# ExHyPE application directory.
+# 1. environment parameter driven behaviour (just like ExaHyPE's Makefile)
+# 2. Invocation of the toolkit
+# 3. Patching of faulty files where the toolkit is broken
+# 4. Cleaning (also partially) before make
+# 5. Logging the output of make, also passing to whoopsie in case of failure
+# 6. Invoking auto parallelized make.
 #
-# Therefore, we except this script to be called from the
-# ExaHyPE application directory!
+# To use, go to the ExaHyPE app you want to compile, and instead of typing
+#   > make -j4 2&>1 | tee make.log
+# Just type
+#   > ../path/to/buildScripts/compile.sh
+# Or just use exa:
+#   > exa compile YourApp
+# from anywhere.
 #
 # (c) 2016 ExaHyPE, Sven K
 

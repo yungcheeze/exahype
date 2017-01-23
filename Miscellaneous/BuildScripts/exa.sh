@@ -12,6 +12,21 @@
 #
 # (c) 2016 ExaHyPE - by SvenK
 
+
+# Compile vs build
+# ================
+#
+# A note about the "compile" vs "build" idiom: All compile-* commands are
+# shiny wrappers around compile.sh and thus around make, using ExaHyPE's
+# Makefile.
+#
+# In contrast, all "build-*" commands are wrappers around the out of tree
+# system which allows to build basically in copies of the repository and
+# transfering the executables back. Thus, we adopt there the language of
+# "builds" as configurations of files which can be setup, synced, compiled
+# or otherwise manipulated after an initial setup.
+#
+
 SCRIPT="$(readlink -f $0)" # absolute path to exa.sh
 ME="$(basename "$SCRIPT")" # just my name (exa.sh)
 SCRIPTDIR="$(dirname $SCRIPT)"
@@ -19,7 +34,11 @@ GITROOT="$(cd $SCRIPTDIR && git rev-parse --show-toplevel)" # absolute path to E
 
 CMD="$1" # the actual command
 PAR="$2" # some parameter (for passing to bash functions)
-set -- "${@:2}" # pop first parameter
+
+shopt -s expand_aliases
+alias pop='set -- "${@:2}"'
+
+pop # pop first parameter
 
 verbose() { info $@; $@; } # only used for debugging
 info () { echo -e $ME: $@; } # print error/info message with name of script
@@ -77,13 +96,14 @@ case $CMD in
 		subreq compile "$APPNAME"
 		subreq run "$APPNAME"
 		;;
-	"polycompile") # Compile for different polynomial orders (as basis for convergence studies).
-		set -- "${@:2}" # pop parameter
+	"compile-poly") # Compile for different polynomial orders (as basis for convergence studies).
+		pop
 		cdapp; $SCRIPTDIR/compile-for-polyorder.sh $@
 		;;
-	"polycompile-all") # Compile for polynomial orders 2,3,4,5,6,7,8,9.
+	"compile-poly-all") # Compile for polynomial orders 2,3,4,5,6,7,8,9, serially
 		cdroot; getappname
 		# do NOT parallelize the loop as the build system does not allow
+		# Use build-poly-all for a parallel version
 		set -e
 		for p in 2 3 4 5 6 6 7 8 9; do subreq polycompile $APPNAME $p; done
 		;;	
@@ -92,6 +112,39 @@ case $CMD in
 		export SKIP_TOOLKIT="Yes"
 		export CLEAN="${CLEAN:=Lightweight}" # do no heavy cleaning
 		$SCRIPTDIR/compile.sh
+		;;
+	"build-setup") # Setup an out of tree build (ie. copy files). Parameters: <AppName> <BuildName>
+		cdroot; getappname
+		SPECFILE="$(subreq find-specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
+		buildName=$2
+		exec $SCRIPTDIR/setup-out-of-tree.sh $SPECFILE $buildName
+		;;
+	"build-compile") # Setup and compile an out of tree build. Parameters: <AppName> <BuildName>
+		cdroot; getappname
+		set -e
+		# this is very similar to the toolkit invocation
+		SPECFILE="$(subreq find-specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
+		info "Running the out-of-tree compiler on $SPECFILE"
+		buildName=$2
+		ootvars=$($SCRIPTDIR/setup-out-of-tree.sh $SPECFILE $buildName)
+		eval $ootvars
+		cd $oot_outdir
+		exec ./make.sh
+		;;
+	"build-poly") # Setup an oot build and compile for a given polynomial order. This is parallelizable.
+		cdroot; getappname
+		set -e
+		pOrder=$2
+		[[ x$pOrder != "x" ]] || abort "Usage: <AppName> <pOrder>"
+		buildName="p$pOrder"
+		ootvars="$(subreq build-setup $APPNAME $buildName)" || abort "Could not setup build for $buildName"
+		eval $ootvars
+		cd $oot_builddir/$oot_appdir
+		info "Compiling for p=$pOrder in $PWD"
+		export CLEAN="Clean" # to avoid any side effects
+		$SCRIPTDIR/compile-for-polyorder.sh $pOrder
+		cdroot
+		cp $oot_buildir/$oot_appdir/${oot_binary}-p$pOrder $oot_appdir/
 		;;
 	"make-clean") # clean an application
 		cdapp
