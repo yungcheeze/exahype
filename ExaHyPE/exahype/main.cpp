@@ -21,6 +21,7 @@
 
 #include "exahype/Parser.h"
 #include "exahype/runners/Runner.h"
+#include "buildinfo.h"
 
 #include "kernels/KernelCalls.h"
 
@@ -30,8 +31,13 @@
 #include <vector>
 #include <string>
 #include <cstdlib> // getenv
+#include <iostream>
+#include <cstdio>
 
 tarch::logging::Log _log("");
+
+void version(); // version dumping, see below
+void help(const char* programname);  // A help message
 
 int main(int argc, char** argv) {
   peano::fillLookupTables();
@@ -67,6 +73,16 @@ int main(int argc, char** argv) {
   //
   if (argc < 2) {
     logError("main()", "Usage: ./ExaHyPE config-file [additional args passed to Solver...]");
+    return -1;
+  }
+  
+  if(std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help") {
+    help(argv[0]);
+    return -1;
+  }
+
+  if(std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v") {
+    version();
     return -1;
   }
 
@@ -180,4 +196,29 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
   kernels::finalise();
 
   return programExitCode;
+}
+
+
+void version() {
+  std::cout << "This is an ExaHyPE executable (http://exahype.eu)\n";
+  std::cout << "\n";
+  std::cout << "It contains the generated toolkit code:\n";
+  kernels::to_string(std::cout);
+  std::cout << "\n";
+  std::cout << "Further build information:\n";
+  // show information from buildinfo.h
+}
+
+void help(const char* programname) {
+  std::cout << "Usage: " << programname << " <YourApplication.exahype>\n";
+  std::cout << "\n";
+  std::cout << "   where YourApplication.exahype is an ExaHyPE specification file.\n";
+  std::cout << "   Note that you should have compiled ExaHyPE with this file as there\n";
+  std::cout << "   are some compile time constants.\n";
+  std::cout << "\n";
+  std::cout << "   Other possible parameters:\n";
+  std::cout << "\n";
+  std::cout << "    --help     Show this help message\n";
+  std::cout << "    --version  Show version and other hard coded information\n";
+  std::cout << "\n";
 }
