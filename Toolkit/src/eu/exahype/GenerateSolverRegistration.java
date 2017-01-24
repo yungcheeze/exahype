@@ -139,8 +139,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write(
           "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
           "    profiler_identifier, metrics_vector, profiling_output);\n\n");
-          
-      _versionBodyWriter.write("printf(\"Profiler support built in\");\n");
   }
 
   @Override
@@ -176,6 +174,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       writeVersionInfo("Kernel["+_kernelNumber+"].type", "AderDGSolver");
       writeVersionInfo("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName);
       writeVersionInfo("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
+      writeVersionInfo("Kernel["+_kernelNumber+"].enableProfiler", _enableProfiler);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
     } catch (Exception exc) {
@@ -235,7 +234,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       writeVersionInfo("Plotter["+_plotterNumber+"].name", _projectName + "::" + plotterName);
       writeVersionInfo("Plotter["+_plotterNumber+"].plotterNumber", _plotterNumber);
-      writeVersionInfo("Plotter["+_plotterNumber+"].associatedKernel", _kernelNumber -1);
+      writeVersionInfo("Plotter["+_plotterNumber+"].kernelNumber", _kernelNumber -1);
 
       if (_inALimitingADERDGSolver) {
         _methodBodyWriter.write(
@@ -346,8 +345,11 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  exahype::solvers::Solver* solver = nullptr;\n\n");
 
-      writeVersionInfo("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName);
       writeVersionInfo("Kernel["+_kernelNumber+"].type", "LimitingAderdgSolver");
+      writeVersionInfo("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName + "{_ADERDG, _FV}");
+      writeVersionInfo("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
+      writeVersionInfo("Kernel["+_kernelNumber+"].enableProfiler", _enableProfiler);
+      
       // ADER-DG
       _methodBodyWriter.write("  {\n");
       

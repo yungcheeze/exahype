@@ -16,7 +16,9 @@ info "#define EXAHYPE_BUILD_HOST          "\"$(hostname)\"
 info
 info "/* Strings passed by the Makefile */"
 info "#define EXAHYPE_BUILD_INFO \\"
-for assignment in "$@"; do info "    \"$assignment\\n\" \\"; done
+for assignment in "$@";
+	do info "    \"$assignment\\n\" \\";
+done
 info "    \"\""
 info
 

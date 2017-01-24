@@ -201,17 +201,52 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
 
 void version() {
   std::cout << "This is an ExaHyPE executable (http://exahype.eu)\n";
+  std::cout << "Compiled at " << EXAHYPE_BUILD_DATE << "\n";
+  std::cout << "on host " << EXAHYPE_BUILD_HOST << "\n";
   std::cout << "\n";
-  std::cout << "It contains the generated toolkit code:\n";
+
+  std::cout << "Compile time options\n";
+  std::cout << "====================\n";
+#ifdef DIMENSIONS
+  std::cout << "Dimensions:   "<< DIMENSIONS << "\n";
+#else
+  std::cout << "Dimensions:    not determinable!\n";
+#endif
+
+#ifdef Debug
+  std::cout << "Debug symbols: included\n";
+#else
+  std::cout << "Debug symbols: excluded\n";
+#endif
+  
+#ifdef Asserts
+  std::cout << "Assertions:    checked\n";
+#else
+  std::cout << "Assertions:    skipped\n";
+#endif
+
+#ifdef Parallel
+  std::cout << "MPI Support:   included\n";
+#else
+  std::cout << "MPI Support:   skipped\n";
+#endif
+
+  std::cout << "\n";
+#ifdef EXAHYPE_BUILDINFO_AVAILABLE
+  std::cout << "Makesystem build options\n";
+  std::cout << "========================\n";
+  std::cout << EXAHYPE_BUILD_INFO << "\n";
+#endif
+
+  std::cout << "\n";
+  std::cout << "Toolkit build options\n";
+  std::cout << "=====================\n";
   kernels::to_string(std::cout);
   std::cout << "\n";
-  #ifdef EXAHYPE_BUILDINFO_AVAILABLE
-  std::cout << "Further build information:\n";
-  std::cout << "Built at: " << EXAHYPE_BUILD_DATE << "\n";
-  std::cout << "Built at: " << EXAHYPE_BUILD_HOST << "\n";
-  std::cout << "Makefile options:\n" << EXAHYPE_BUILD_INFO << "\n";
-  #endif /* EXAHYPE_BUILDINFO_AVAILABLE */
-  // show information from buildinfo.h
+  
+  // TODO: We should really report the compile time constants
+  //       of the Solvers, ie. the POLYNOMIAL ORDER,
+  //       Number of Variables, etc!
 }
 
 void help(const char* programname) {
