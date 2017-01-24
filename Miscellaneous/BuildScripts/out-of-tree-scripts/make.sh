@@ -6,14 +6,15 @@ set -e
 cd "$(dirname "$0")"
 source "oot.env"
 
-cd $oot_codedir
-cd $oot_appdir
-
 export SKIP_TOOLKIT="${SKIP_TOOLKIT:=No}"
 export CLEAN="${CLEAN:=Clean}"
 
-time $oot_compile
+( cd $oot_codedir/$oot_appdir && time $oot_compile; )
 
 # collect compilation result
-verbose cp $oot_binarypath .
+cp $oot_binarypath .
 
+# also collect a build log, if present
+for log in "$oot_codedir/$oot_appdir/*.log"; do
+	[[ -e $log ]] && cp $log .
+done
