@@ -347,7 +347,6 @@ void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
   ) {
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
 
     std::pair<int,int> vertexAndCellIndex(0,0);
     if (_writtenUnknowns>0) {
