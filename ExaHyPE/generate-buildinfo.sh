@@ -1,5 +1,11 @@
 #!/bin/bash
 # a 2017 version of the ExaHyPE build infos
+#
+# This script is called by the Makefile with tons of parameters, all of the form K=V.
+# That is, a call looks like
+#  ./generate-buildinfos.sh COMPILER=gcc MODE=Release "PEANO_PATH=/my/freaking path/"
+# This script then goes and dumps these parameters as well as extracting
+# something from them.
 
 cd "$(dirname "$0")"
 buildinfo="./buildinfo.h"
@@ -16,31 +22,45 @@ info "#define EXAHYPE_BUILD_HOST          "\"$(hostname)\"
 info
 info "/* Strings passed by the Makefile */"
 info "#define EXAHYPE_BUILD_INFO \\"
-for assignment in "$@";
-	do info "    \"$assignment\\n\" \\";
+for assignment in "$@"; do
+info "    \"$assignment\\n\" \\";
 done
 info "    \"\""
 info
 
-# I don't think these git information is that useful
-if false; then
-	if which git &>/dev/null; then
-		info "/* Information collected with git */"
-		git=$(which git)
+# This tells about the state of the ExaHyPE repository
+# If Git is installed and we are inside the git repository
+if which git &>/dev/null && git rev-parse --git-dir >/dev/null 2>&1; then
+	info "/* Information collected with git */"
 
-		GIT_COMMIT_REV=`$git log | head -1`
-		GIT_COMMIT_REV=${GIT_COMMIT_REV#commit }
-		GIT_COMMIT_DATE=`$git log | head -3 | tail -1`
-		GIT_COMMIT_DATE=`echo ${GIT_COMMIT_DATE#Date\: } | xargs`
-
-		info "#define EXAHYPE_GIT_BRANCH          "\"`$git rev-parse --abbrev-ref HEAD`\"
-		info "#define EXAHYPE_GIT_COMMIT_REVISION "\"${GIT_COMMIT_REV}\"
-		info "#define EXAHYPE_GIT_COMMIT_DATE     "\"${GIT_COMMIT_DATE}\"
-	else
-		info "/* No git found */"
-		info "#define EXAHYPE_GIT_INFO \"No git available\""
-	fi
+	BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+	SHORTREF="$(git rev-parse --short HEAD)"
+	DATE="$(git log -1 --format=%cd --date=local)"
+	
+	info "#define EXAHYPE_GIT_INFO \"$BRANCH  $SHORTREF $DATE\""
+else
+	info "/* No git repository found */"
+	info "#define EXAHYPE_GIT_INFO \"No git/repository available\""
 fi
+
+# Tell about the state of art of the Peano repository
+peano_path=$(for as in "$@"; do echo $as | grep "PEANO_KERNEL_PEANO_PATH" | sed 's/.*=\s*//'; done)
+if which svn &>/dev/null && svn info "$peano_path" >/dev/null 2>&1; then
+	info "/* Information collected with svn */"
+	
+	COMMIT="$(svn info --show-item revision $peano_path)"
+	# this is probably a remote action, so probably a bad idea
+	DATE="$(svn info --show-item last-changed-date $peano_path)"
+	
+	info "#define PEANO_SVN_INFO \"Rev $COMMIT, $DATE\""
+else
+	info "/* No peano repository found */"
+	info "#define PEANO_SVN_INFO \"No svn/repository available\""
+fi
+
+#svn info --show-item  revision
+
+echo $peano_path
 
 
 info
