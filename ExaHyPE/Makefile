@@ -175,8 +175,8 @@ ifneq ($(call tolower,$(MODE)),debug)
   else ifeq ($(call tolower,$(COMPILER)),gnu)
     # Settings for the GNU compiler
     # --------------------------------------------
-    #COMPILER_CFLAGS += -O3 -fno-rtti -march=native ###TODO JMG enable -fno-rtti after TBB bug fixed (05/01/17)
-    COMPILER_CFLAGS += -O3 -march=native
+	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
+    COMPILER_CFLAGS += -O3 -fno-rtti -march=native
     COMPILER_LFLAGS +=
   endif
 endif
