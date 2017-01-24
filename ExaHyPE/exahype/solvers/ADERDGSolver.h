@@ -715,6 +715,11 @@ public:
    */
   int getDataPerCell() const;
   
+  /**
+   * Getter for the size of the array allocated that can be overriden
+   * to change the allocated size independently of the solver parameters.
+   * For example to add padding forthe optimised kernel
+   */
   virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeUnknownsPerCell()+getUnknownsPerCell();}
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
   virtual int getTempUnknownsSize()              const {return getUnknownsPerCell();}
