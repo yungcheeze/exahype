@@ -128,17 +128,17 @@ Tokens
 //                                      (  digit+ | ( (identifier) (',' (identifier)) * ) )
 //                                      '}' ) ; // not allowed to be empty
   
-  identifier_list                   = '{'
-                                        (
-                                        (identifier)
-                                        ( ',' (identifier) ) * 
-                                        )?  
-                                      '}';
+//  identifier_list                   = '{'
+//                                        (
+//                                        (identifier)
+//                                        ( ',' (identifier) ) * 
+//                                        )?  
+//                                      '}';
   
   parameter_list                    = '{'
-                                        (  (identifier ( ':' ( decimal_number ( ( 'e' | 'E' ) sign? digit+ ) ? | identifier ) ) )
+                                        (  (identifier ( ':' ( decimal_number ( ( 'e' | 'E' ) sign? digit+ ) ? | identifier ) ) ? )
                                       (','
-                                           (identifier ( ':' ( decimal_number ( ( 'e' | 'E' ) sign? digit+ ) ? | identifier ) ) )
+                                           (identifier ( ':' ( decimal_number ( ( 'e' | 'E' ) sign? digit+ ) ? | identifier ) ) ? )
                                       )*)?
                                       '}';
 
@@ -273,7 +273,7 @@ Productions
       {with_likwid}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
          token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
@@ -283,7 +283,7 @@ Productions
       {with_ipcm}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
          token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
@@ -293,7 +293,7 @@ Productions
       {default}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
        token_end [end_token]:token_profiling
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
@@ -305,7 +305,7 @@ Productions
        token_time      [time_equals]:token_equals      [time]:float_number
        token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
        token_output    [output_equals]:token_equals    [output]:filename
-       token_select    [select_equals]:token_equals    [select]:identifier_list
+       token_select    [select_equals]:token_equals    [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
        { -> [New plot_solution(plotter_type,name,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
@@ -447,7 +447,7 @@ Abstract Syntax Tree
      ;
 
    profiling =
-     [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
+     [profiler]:identifier [metrics]:parameter_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
 
    solver =
        {aderdg}         [name]:identifier [variables]:int_number [parameters]:int_number [order]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:parameter_list? plot_solution*
@@ -455,5 +455,5 @@ Abstract Syntax Tree
      | {finite_volumes} [name]:identifier [variables]:int_number [parameters]:int_number [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:parameter_list? plot_solution*;
 
    plot_solution =
-     [plotter_type]:typename [name]:identifier [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:identifier_list;
+     [plotter_type]:typename [name]:identifier [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
      
