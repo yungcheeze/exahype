@@ -284,15 +284,22 @@ all: header build
 
 buildinfo:
 	@$(EXAHYPE_PATH)/generate-buildinfo.sh \
-		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
-		"PROJECT_PATH = $(PROJECT_PATH)" \
-		"ARCHITECTURE = $(ARCHITECTURE)" \
 		"COMPILER = $(COMPILER)" \
 		"MODE = $(MODE)" \
 		"SHAREDMEM = $(SHAREDMEM)" \
 		"DISTRIBUTEDMEM = $(DISTRIBUTEDMEM)" \
+		"------" \
+		"ARCHITECTURE = $(ARCHITECTURE)" \
+		"CC = $(CC)" \
 		"BOUNDARYCONDITIONS = $(BOUNDARYCONDITIONS)" \
-		"CC = $(CC)"
+		"------" \
+		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
+		"PROJECT_PATH = $(PROJECT_PATH)" \
+		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
+		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)"
+		
+# omit the last backslash in the last line of the previous call!
+		
 cfiles.mk:
 	touch cfiles.mk
 	echo -n CSOURCES= > cfiles.mk
