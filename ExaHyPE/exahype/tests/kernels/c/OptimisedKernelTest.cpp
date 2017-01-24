@@ -275,7 +275,7 @@ int OptimisedKernelTest::getNodesPerCoordinateAxis() {
 
 
 void OptimisedKernelTest::run() {
-  _log.info("OptimisedKernelTest::run()", "OptimisedKernelTest is active");
+/*  _log.info("OptimisedKernelTest::run()", "OptimisedKernelTest is active");
 
   _dt = 0.01;
   _luh  = new double[kernels::aderdg::optimised::converter::getLuhArraySize()]();
@@ -302,7 +302,7 @@ void OptimisedKernelTest::run() {
   delete[] _lFhi;
   delete[] _lQhi;
   delete[] _lFhbnd;
-  delete[] _lQhbnd;
+  delete[] _lQhbnd;*/
 }
 
 

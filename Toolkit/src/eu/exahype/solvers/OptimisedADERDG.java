@@ -72,7 +72,7 @@ public class OptimisedADERDG implements Solver {
         _microarchitecture, _pathToLibxsmm);
         
     String content = IOUtils.convertRessourceContentToString(
-        "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode.template");
+        "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode_withConverter.template"); //TODO JMG remove withConverter when debug over
     
 	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
 	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
