@@ -159,10 +159,10 @@ ifneq ($(call tolower,$(MODE)),debug)
     # Settings for the Intel compiler
     # ----------------------------------------------
     ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-    COMPILER_CFLAGS += -O3 -fno-rtti -no-ipo -ip
+    COMPILER_CFLAGS += -O3 -no-ipo -ip
     COMPILER_LFLAGS +=
     else
-    COMPILER_CFLAGS += -fast -fno-rtti -no-ipo -ip
+    COMPILER_CFLAGS += -fast -no-ipo -ip
     COMPILER_LFLAGS +=
     endif
 
@@ -176,7 +176,7 @@ ifneq ($(call tolower,$(MODE)),debug)
     # Settings for the GNU compiler
     # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-    COMPILER_CFLAGS += -O3 -fno-rtti -march=native
+    COMPILER_CFLAGS += -O3 -march=native
     COMPILER_LFLAGS +=
   endif
 endif
@@ -233,6 +233,7 @@ else ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	COMPILER_CFLAGS += -DSharedTBB
 else
 	SYSTEM_LFLAGS   += -lrt
+	SYSTEM_CFLAGS   += -fno-rtti 
 	# disabled the -lrt for plain serial compilations. No system
 	# I tested needed it.
 
