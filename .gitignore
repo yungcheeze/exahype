@@ -78,5 +78,8 @@ Peano/sharedmemoryoracles.tar.gz
 libxsmm
 Libxsmm
 
+# Out-of-Tree builds
+Builds/
+
 # Optimised Kernels. They are stored in the wrong place for my feeling.
 ExaHyPE/kernels/aderdg/optimised/

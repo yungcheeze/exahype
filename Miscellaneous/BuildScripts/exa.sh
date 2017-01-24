@@ -113,32 +113,41 @@ case $CMD in
 		export CLEAN="${CLEAN:=Lightweight}" # do no heavy cleaning
 		$SCRIPTDIR/compile.sh
 		;;
-	"build-setup") # Setup an out of tree build (ie. copy files). Parameters: <AppName> <BuildName>
-		cdroot; getappname
+	"build-init") # Initialize an out of tree build, ie. dont sync. Parameters: <AppName> <BuildName>
+		cdroot; getappname; buildName=$2
 		SPECFILE="$(subreq find-specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
-		buildName=$2
 		exec $SCRIPTDIR/setup-out-of-tree.sh $SPECFILE $buildName
 		;;
-	"build-compile") # Setup and compile an out of tree build. Parameters: <AppName> <BuildName>
+	"build-setup") # Setup an out of tree build, ie. init and sync. Parameters: <AppName> <BuildName>
 		cdroot; getappname
-		set -e
-		# this is very similar to the toolkit invocation
-		SPECFILE="$(subreq find-specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
-		info "Running the out-of-tree compiler on $SPECFILE"
-		buildName=$2
-		ootvars=$($SCRIPTDIR/setup-out-of-tree.sh $SPECFILE $buildName)
-		eval $ootvars
-		cd $oot_outdir
-		exec ./make.sh
+		eval $(subreq build-init $@) || abort "Could not init out of tree build."
+		$oot_outdir/sync.sh
+		;;
+	"build-find") # Find the location of a build from parameter <BuildName>
+		cdroot; buildName=$1
+		[[ -e "Builds/build-$buildName" ]] || abort "Could not find build '$buildName'. List of builds: $(ls Builds/)"
+		echo Builds/build-$buildName
+		;;
+	"build-sync") # Sync an out of tree build. Parameters: <BuildName>
+		cdroot; buildName=$1
+		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
+		exec $buildloc/sync.sh
+		;;
+	"build-compile") # Setup and compile an out of tree build. Parameters: [AppName] <BuildName>
+		cdroot; getappname; buildName=$2
+		set -e;
+		subreq build-setup $APPNAME $buildName || abort "Could not setup build."
+		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
+		cd $buildloc && ./make.sh
 		;;
 	"build-poly") # Setup an oot build and compile for a given polynomial order. This is parallelizable.
-		cdroot; getappname
+		cdroot; getappname; pOrder=$2
 		set -e
-		pOrder=$2
 		[[ x$pOrder != "x" ]] || abort "Usage: <AppName> <pOrder>"
 		buildName="p$pOrder"
-		ootvars="$(subreq build-setup $APPNAME $buildName)" || abort "Could not setup build for $buildName"
-		eval $ootvars
+		subreq build-setup $APPNAME $buildName || abort "Could not setup build for $buildName"
+		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
+		source $buildloc/oot.env
 		cd $oot_builddir/$oot_appdir
 		info "Compiling for p=$pOrder in $PWD"
 		export CLEAN="Clean" # to avoid any side effects
