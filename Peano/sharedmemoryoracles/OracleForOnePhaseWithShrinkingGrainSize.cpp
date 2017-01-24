@@ -153,7 +153,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
         isStableDatabaseEntrySet(_activeMethodTrace)
       ) {
         remainingTriesToFindSearchingTrace--;
-        logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) << " for measurement " << _measurements[_activeMethodTrace].toString() );
+        logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) );
         _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
       }
     }
