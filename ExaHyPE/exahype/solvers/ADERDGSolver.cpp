@@ -2425,7 +2425,8 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   }
 
   waitUntilAllBackgroundTasksHaveTerminated();
-  tarch::multicore::Lock lock(_heapSemaphore);
+  // @todo Das kommt mir sehr seltsam vor, weil unten ja nochmal ein Lock kommt.
+  //tarch::multicore::Lock lock(_heapSemaphore);
 
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
