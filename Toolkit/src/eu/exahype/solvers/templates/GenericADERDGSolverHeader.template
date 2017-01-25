@@ -33,7 +33,7 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     
     static void staticToString(std::ostream& os) {
         // There is also toString (overwritten from solver::Solver, ADERDGSolver) but in method context.
-        os << "{{Project}}::{{Solver}}(order="<<order<<", nDim="<<nDim<<", basisSize="<<basisSize<<",nVar="<<nVar<<", nParams="<<nParams<<")";
+        os << "{{Project}}::{{Solver}}(order="<<order<<", nDim="<<nDim<<", basisSize="<<basisSize<<", nVar="<<nVar<<", nParams="<<nParams<<")";
     }
 
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) override; 

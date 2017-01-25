@@ -201,17 +201,16 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
 
 void version() {
   std::cout << "This is an ExaHyPE executable (http://exahype.eu)\n";
-  std::cout << "Compiled at " << EXAHYPE_BUILD_DATE << "\n";
-  std::cout << "on host " << EXAHYPE_BUILD_HOST << "\n";
+  std::cout << "Compiled on host " << EXAHYPE_BUILD_HOST << " at " << EXAHYPE_BUILD_DATE << "\n";
 #ifdef EXAHYPE_GIT_INFO
-  std::cout << "ExaHyPE git version:" << EXAHYPE_GIT_INFO << "\n";
+  std::cout << "ExaHyPE git version: " << EXAHYPE_GIT_INFO << "\n";
 #else
   std::cout << "ExaHyPE git version: n/a\n";
 #endif
 #ifdef PEANO_SVN_INFO
-  std::cout << "Peano svn version:" << PEANO_SVN_INFO << "\n";
+  std::cout << "Peano svn version:   " << PEANO_SVN_INFO << "\n";
 #else
-  std::cout << "Peano svn version: n/a\n";
+  std::cout << "Peano svn version:   n/a\n";
 #endif
   std::cout << "\n";
 
