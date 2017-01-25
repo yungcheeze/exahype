@@ -65,7 +65,8 @@ export oot_toolkit="${oot_toolkit=./Toolkit/dist/ExaHyPE.jar}"
 export oot_abs_exahype="$(readlink -f .)"
 
 # other directories (or only subdirectories) we need to copy
-export oot_dependencies="CodeGenerator Libxsmm/lib Peano ExaHyPE"
+export oot_dependencies="CodeGenerator Peano ExaHyPE"
+optional_dependencies="Libxsmm/lib"
 
 # an assumption: This is called from the base codedir of ExaHyPE,
 # ie. the root directory where there are all the dependencies.
@@ -73,6 +74,12 @@ export oot_dependencies="CodeGenerator Libxsmm/lib Peano ExaHyPE"
 for dep in $oot_dependencies; do
 	[[ -e $dep ]] || die "Cannot find dependency $dep in pwd $PWD. This maybe because "\
 		"you are not in the root directory of ExaHyPE. Please call this script from there."
+done
+
+# add optional dependencies if found. This is useful if you don't need Libxsmm.
+# however, if you need Libxsmm you have to compile that well before.
+for dep in $optional_dependencies; do
+	[[ -e $dep ]] && export oot_dependencies="$oot_dependencies $dep"
 done
 
 

@@ -278,12 +278,22 @@ LL=$(CC)
 COBJECTS=$(CSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 
-all: header build
+
+all: wellsortedbuild
+
+# try this for serial making. Parallel make of header, buildinfo and build
+# results in all text over each other and a race condition when buildinfo
+# has not finished yet but the main.cpp code is already compiling.
+
+wellsortedbuild: header buildinfo
+	$(MAKE) build
+
 
 # add any variables which you want to be able to see
 # in the binary when calling with --version:
 
 buildinfo:
+	@echo "generate-buildinfo.sh > buildinfo.h"
 	@$(EXAHYPE_PATH)/generate-buildinfo.sh \
 		"COMPILER = $(COMPILER)" \
 		"MODE = $(MODE)" \
@@ -297,7 +307,8 @@ buildinfo:
 		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
 		"PROJECT_PATH = $(PROJECT_PATH)" \
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
-		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)"
+		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)" \
+		> $(EXAHYPE_PATH)/buildinfo.h
 		
 # omit the last backslash in the last line of the previous call!
 		
@@ -363,7 +374,7 @@ header:
 	@echo environment variable MPICC to mpiCC.
 
 
-build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
+build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful

@@ -203,50 +203,58 @@ void version() {
   std::cout << "This is an ExaHyPE executable (http://exahype.eu)\n";
   std::cout << "Compiled at " << EXAHYPE_BUILD_DATE << "\n";
   std::cout << "on host " << EXAHYPE_BUILD_HOST << "\n";
+#ifdef EXAHYPE_GIT_INFO
+  std::cout << "ExaHyPE git version:" << EXAHYPE_GIT_INFO << "\n";
+#else
+  std::cout << "ExaHyPE git version: n/a\n";
+#endif
+#ifdef PEANO_SVN_INFO
+  std::cout << "Peano svn version:" << PEANO_SVN_INFO << "\n";
+#else
+  std::cout << "Peano svn version: n/a\n";
+#endif
   std::cout << "\n";
 
   std::cout << "Compile time options\n";
   std::cout << "====================\n";
 #ifdef DIMENSIONS
-  std::cout << "Dimensions:   "<< DIMENSIONS << "\n";
+  std::cout << "Dimensions:    "<< DIMENSIONS << "\n";
 #else
   std::cout << "Dimensions:    not determinable!\n";
 #endif
 
 #ifdef Debug
-  std::cout << "Debug symbols: included\n";
+  std::cout << "Debug:         YES\n";
 #else
-  std::cout << "Debug symbols: excluded\n";
+  std::cout << "Debug:         no\n";
 #endif
   
 #ifdef Asserts
-  std::cout << "Assertions:    checked\n";
+  std::cout << "Assertions:    YES\n";
 #else
-  std::cout << "Assertions:    skipped\n";
+  std::cout << "Assertions:    no\n";
 #endif
 
 #ifdef Parallel
-  std::cout << "MPI Support:   included\n";
+  std::cout << "MPI Support:   YES\n";
 #else
-  std::cout << "MPI Support:   skipped\n";
+  std::cout << "MPI Support:   no\n";
 #endif
 
   std::cout << "\n";
-#ifdef EXAHYPE_BUILDINFO_AVAILABLE
   std::cout << "Makesystem build options\n";
   std::cout << "========================\n";
+#ifdef EXAHYPE_BUILDINFO_AVAILABLE
   std::cout << EXAHYPE_BUILD_INFO << "\n";
+#else
+  std::cout << "Symbols n/a" << "\n";
 #endif
 
   std::cout << "\n";
-  std::cout << "Toolkit build options\n";
-  std::cout << "=====================\n";
+  std::cout << "Toolkit static registry info\n";
+  std::cout << "============================\n";
   kernels::to_string(std::cout);
   std::cout << "\n";
-  
-  // TODO: We should really report the compile time constants
-  //       of the Solvers, ie. the POLYNOMIAL ORDER,
-  //       Number of Variables, etc!
 }
 
 void help(const char* programname) {

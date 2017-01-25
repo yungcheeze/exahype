@@ -28,5 +28,20 @@ $rsync $rsync_app_excludelist $oot_appdir $oot_codedir/
 $rsync $oot_specfile $oot_codedir/
 $rsync $oot_dependencies $oot_codedir/
 
+# Collect Repository information for in-build --version information
+buildinfo_script="./ExaHyPE/generate-buildinfo.sh"
+
+# extract the filename line aka static_repo_info="static-repo-info.txt"
+eval $(grep -E "^static_repo_info=" $buildinfo_script)
+[[ x${static_repo_info} == x ]] && { echo "Failure: Somebody removed the static_repo_info definition."; }
+
+# execute the buildinfo extraction
+EXAHYPE_PATH="./ExaHyPE"
+PEANO_KERNEL_PEANO_PATH="./Peano/peano"
+$buildinfo_script "EXAHYPE_PATH=$EXAHYPE_PATH" "PEANO_KERNEL_PEANO_PATH=$PEANO_KERNEL_PEANO_PATH" "SYNC_OOT_FAKECALL=YES" \
+	| tee $oot_codedir/$EXAHYPE_PATH/$static_repo_info \
+	| tee $oot_codedir/$PEANO_KERNEL_PEANO_PATH/$static_repo_info \
+	> /dev/null
+
 echo "Finished, oot_builddir size is $(du -hs $oot_builddir | head -n1 | awk '{print $1}') in $(find $oot_builddir | wc -l) files"
 
