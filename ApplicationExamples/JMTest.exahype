@@ -44,7 +44,7 @@ exahype-project  Euler
     plot vtk::Cartesian::cells::ascii Plotter0
       variables = 5
       time      = 0.0
-      repeat    = 0.01
+      repeat    = 0.00001
       output    = ./conserved
       select = {}
     end plot
