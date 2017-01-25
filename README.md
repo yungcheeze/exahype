@@ -44,6 +44,8 @@ Quick installation:
 
 When using the optimised kernels, the path to libxsmm has to be specified in the application's specification file.
 
+Note that the code generator code requires the python3 module jinja2.
+
 ## General remarks ##
 
 * Run tests before you commit
