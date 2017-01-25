@@ -257,13 +257,13 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
         // Allocate face DoF
-        const int unknownsPerCellBoundary = getUnknownsPerCellBoundary();
+        const int faceStorageSize = getBndTotalSize();
 
-        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-        cellDescription.setFluctuation(          DataHeap::getInstance().createData(unknownsPerCellBoundary, unknownsPerCellBoundary, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(faceStorageSize, faceStorageSize, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        cellDescription.setFluctuation(          DataHeap::getInstance().createData(faceStorageSize, faceStorageSize, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(unknownsPerCellBoundary));
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getFluctuation()).size(),static_cast<unsigned int>(unknownsPerCellBoundary));
+        assertionEquals(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(faceStorageSize));
+        assertionEquals(DataHeap::getInstance().getData(cellDescription.getFluctuation()).size(),static_cast<unsigned int>(faceStorageSize));
 
         cellDescription.setExtrapolatedPredictorCompressed(-1);
         cellDescription.setFluctuationCompressed(-1);
@@ -272,6 +272,7 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
           CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
         }
 
+        //TODO JMG / Dominic adapt for padding with optimized kernels
         int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
         cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
@@ -1343,14 +1344,21 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   for (int i=0; i<getSpaceTimeFluxUnknownsPerCell(); i++) {
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
+    (tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeFluxUnknowns[0][i]), cellDescription.toString(),"performPredictionAndVolumeIntegral",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-  for (int i=0; i<getUnknownsPerCell(); i++) {
+
+  #if defined(Debug) || defined(Asserts)
+  if(usePaddedData_nVar()) {
+    //TODO JMG add assert ignoring padding
+  } else {
+    for (int i=0; i<getUnknownsPerCell(); i++) {
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-  for (int i=0; i<getFluxUnknownsPerCell(); i++) {
-    assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+    for (int i=0; i<getFluxUnknownsPerCell(); i++) {
+      assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempFluxUnknowns[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+  }
+  #endif
 }
 
 double exahype::solvers::ADERDGSolver::startNewTimeStep(
@@ -1636,16 +1644,16 @@ void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& 
 
   assertion1(cellDescription.getType()==CellDescription::Ancestor,cellDescription.toString());
   std::fill_n(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).begin(),
-              getUnknownsPerCellBoundary(), 0.0);
+              getBndTotalSize(), 0.0);
   std::fill_n(DataHeap::getInstance().getData(cellDescription.getFluctuation()).begin(),
-              getUnknownsPerCellBoundary(), 0.0);
+              getBndTotalSize(), 0.0);
 
   #if defined(Debug) || defined(Asserts)
   double* Q = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
   double* F = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
   #endif
 
-  for(int i=0; i<getUnknownsPerCellBoundary(); ++i) {
+  for(int i=0; i<getBndTotalSize(); ++i) {
     assertion2(tarch::la::equals(Q[i],0.0),i,Q[i]);
     assertion2(tarch::la::equals(F[i],0.0),i,F[i]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
@@ -1676,7 +1684,7 @@ void exahype::solvers::ADERDGSolver::prolongateFaceDataToDescendant(
         subcellPosition.subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
       const int faceIndex = 2*d + ((subcellPosition.subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
 
-      const int numberOfFaceDof = getUnknownsPerFace();
+      const int numberOfFaceDof = getBndFaceSize();
 
       double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
@@ -1755,7 +1763,7 @@ void exahype::solvers::ADERDGSolver::restrictData(
                ",forMasterWorkerComm="<<cellDescription.getHasToHoldDataForMasterWorkerCommunication());
       #endif
 
-      const int numberOfFaceDof = getUnknownsPerFace();
+      const int numberOfFaceDof = getBndFaceSize();
 
       const double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
@@ -1849,7 +1857,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     assertionEquals4(pLeft.getRiemannSolvePerformed(faceIndexLeft),pRight.getRiemannSolvePerformed(faceIndexRight),faceIndexLeft,faceIndexRight,pLeft.toString(),pRight.toString());
     assertion4(std::abs(faceIndexLeft-faceIndexRight)==1,faceIndexLeft,faceIndexRight,pLeft.toString(),pRight.toString());
 
-    const int numberOfFaceDof = getUnknownsPerFace();
+    const int numberOfFaceDof = getBndFaceSize();
 
     double* QL = DataHeap::getInstance() .getData(pLeft.getExtrapolatedPredictor()).data() +
         (faceIndexLeft * numberOfFaceDof);
@@ -1945,7 +1953,7 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
-  const int numberOfFaceDof = getUnknownsPerFace();
+  const int numberOfFaceDof = getBndFaceSize();
 
   double* stateIn = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data() +
       (faceIndex * numberOfFaceDof);
@@ -1953,6 +1961,8 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
       (faceIndex * numberOfFaceDof);
 
   const int normalDirection = (faceIndex - faceIndex % 2)/2;
+  assertion2(normalDirection<DIMENSIONS,faceIndex,normalDirection);
+  
   for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(stateIn[ii]), p.toString(),
         faceIndex, normalDirection, ii, stateIn[ii]);
@@ -2345,7 +2355,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
-    const int numberOfFaceDof = getUnknownsPerFace();
+    const int numberOfFaceDof = getBndFaceSize();
     const double* lQhbnd = DataHeap::getInstance().getData(
         cellDescription.getExtrapolatedPredictor()).data() +
         (faceIndex * numberOfFaceDof);
@@ -2460,7 +2470,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
 
-    const int numberOfFaceDof = getUnknownsPerFace();
+    const int numberOfFaceDof = getBndFaceSize();
     int receivedlQhbndIndex   = DataHeap::getInstance().createData(numberOfFaceDof, numberOfFaceDof);
     int receivedlFhbndIndex   = DataHeap::getInstance().createData(numberOfFaceDof, numberOfFaceDof);
     assertion(!DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
@@ -2523,7 +2533,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     double**  tempStateSizedSquareMatrices) {
   cellDescription.setRiemannSolvePerformed(faceIndex, true);
 
-  const int numberOfFaceDof = getUnknownsPerFace();
+  const int numberOfFaceDof = getBndFaceSize();
 
   logDebug("solveRiemannProblemAtInterface(...)",
       "cell-description=" << cellDescription.toString());
@@ -2559,6 +2569,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
   synchroniseTimeStepping(cellDescription);
 
   const int normalDirection = (faceIndex - faceIndex%2)/2; // faceIndex=2*normalNonZero+f, f=0,1
+  assertion2(normalDirection<DIMENSIONS,faceIndex,normalDirection);
   riemannSolver(FL, FR, QL, QR,
       tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
       cellDescription.getCorrectorTimeStepSize(),
@@ -2723,10 +2734,10 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     // No inverted message order since we do synchronous data exchange.
     // Order: extrapolatedPredictor,fluctuations.
     DataHeap::getInstance().sendData(
-        extrapolatedPredictor, getUnknownsPerCellBoundary(), masterRank, x, level,
+        extrapolatedPredictor, getBndTotalSize(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
     DataHeap::getInstance().sendData(
-        fluctuations, getUnknownsPerCellBoundary(), masterRank, x, level,
+        fluctuations, getBndTotalSize(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
   } else {
     sendEmptyDataToMaster(masterRank,x,level);
@@ -2952,10 +2963,10 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
     // No inverted message order since we do synchronous data exchange.
     // Order: extraplolatedPredictor,fluctuations.
     DataHeap::getInstance().sendData(
-        extrapolatedPredictor, getUnknownsPerCellBoundary(), workerRank, x, level,
+        extrapolatedPredictor, getBndTotalSize(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
     DataHeap::getInstance().sendData(
-        fluctuations, getUnknownsPerCellBoundary(), workerRank, x, level,
+        fluctuations, getBndTotalSize(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 
     logDebug("sendDataToWorker(...)","Sent face data of solver " <<

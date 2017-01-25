@@ -728,6 +728,13 @@ public:
   virtual int getBndTotalSize()                  const {return getUnknownsPerCellBoundary();}
 
   /**
+   * False for generic solver, may be true for optimized one
+   * Used only for debug assertions
+   */
+  virtual bool usePaddedData_nVar() const {return false;}
+  virtual bool usePaddedData_nDoF() const {return false;}
+  
+  /**
    * @brief Adds the solution update to the solution.
    *
    * @param[inout] luh  Cell-local solution DoF.
