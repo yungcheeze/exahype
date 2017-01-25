@@ -55,6 +55,7 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
 exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
@@ -156,7 +157,7 @@ void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
 }
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-#ifdef SharedMemoryParallelisation
+  #ifdef SharedMemoryParallelisation
   const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
@@ -172,7 +173,9 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     logInfo("initSharedMemoryConfiguration()",
         "use autotuning shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(true));
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(
+          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
+        ));
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
     logInfo("initSharedMemoryConfiguration()",
@@ -191,7 +194,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         _parser.getMulticorePropertiesFile());
   }
   f.close();
-#endif
+  #endif
 }
 
 
@@ -221,7 +224,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     break;
   case Parser::MulticoreOracleType::Autotuning:
   case Parser::MulticoreOracleType::GrainSizeSampling:
-#ifdef Parallel
+  #ifdef Parallel
     if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1) {
       logInfo("shutdownSharedMemoryConfiguration()",
           "wrote statistics into file " << _parser.getMulticorePropertiesFile()
@@ -230,13 +233,13 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
       peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
           _parser.getMulticorePropertiesFile());
     }
-#else
+  #else
     logInfo("shutdownSharedMemoryConfiguration()",
         "wrote statistics into file "
         << _parser.getMulticorePropertiesFile());
     peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
         _parser.getMulticorePropertiesFile());
-#endif
+  #endif
     break;
   }
 #endif
