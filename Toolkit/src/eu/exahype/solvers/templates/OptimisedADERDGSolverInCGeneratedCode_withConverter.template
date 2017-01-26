@@ -77,16 +77,42 @@ void {{Project}}::{{Solver}}::solutionUpdate(double* luh,const double* const ldu
 
 
 void {{Project}}::{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+
+  const bool useOptimised = true;
+
 {{BeforeVolumeIntegral}}
-  kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, dx );
+  
+  if(useOptimised) {
+    kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, dx );
+  } else {
+    double* lFhi_g = new double[kernels::aderdg::optimised::converter::getFhiGenArraySize()];
+    kernels::aderdg::optimised::converter::Fhi_optimised2generic(lFhi, lFhi_g);
+    
+    kernels::aderdg::generic::c::volumeIntegralNonlinear(lduh,lFhi_g,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+    
+    delete[] lFhi_g;
+  }
 {{AfterVolumeIntegral}}
 }
 
 
 
 void {{Project}}::{{Solver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+
+ const bool useOptimised = false; //TODO JMG set to true when kernel fixed
+ 
 {{BeforeSurfaceIntegral}}
-  kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );
+   
+  if(useOptimised) {
+    kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );
+  } else {
+    double* lFhbnd_g = new double[kernels::aderdg::optimised::converter::getBndGenArraySize()];
+    kernels::aderdg::optimised::converter::Bnd_optimised2generic(lFhbnd, lFhbnd_g);
+    
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear(lduh,lFhbnd_g,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
+    
+    delete[] lFhbnd_g;
+  }
 {{AfterSurfaceIntegral}}
 }
 
