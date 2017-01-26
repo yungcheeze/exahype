@@ -26,6 +26,9 @@
 
 using namespace std;
 
+// Storage for idfunc
+InitialDataHandler idfunc;
+
 /**
  * This function gives us vacuum values for Euler equations, ie. the trivial
  * solution. It fulfills the same signature as initial data functions, so it
@@ -51,7 +54,7 @@ void Vacuum(const double* x, double* Q, double t = 0.0) {
  * ANSWER(Sven):  SQ is an inline cpp function. Anything wrong about that?
  *
  **/
-void ShuVortex2D(const double* const x, double* V, double t = 0.0) {
+void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
   static const double epsilon = 5.0;
   static const double pi = acos(-1.0);
 
@@ -63,11 +66,13 @@ void ShuVortex2D(const double* const x, double* V, double t = 0.0) {
   double drho = pow(1. + dTemp, 1. / (eos_gamma - 1.)) - 1.;
   double dp = pow(1. + dTemp, eos_gamma / (eos_gamma - 1.)) - 1.;
 
+  double V[Euler::MyEulerSolver::nVar];
   V[0] = 1. + drho;
   V[1] = 1. + du;
   V[2] = 1. + dv;
   V[3] = 0.0;
   V[4] = 1. + dp;
+  prim2con(Q, V);
 }
 
 /**
@@ -80,13 +85,14 @@ void ShuVortex2D(const double* const x, double* V, double t = 0.0) {
  * This is not pure advection, we add new physics in Euler
  * (momentum and energy balance).
  **/
-void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
+void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
   Pasta::vec2 xvec(x);
   Pasta::vec2 v0({0.5, 0});
   // Pasta::vec2 v0({ 0.0, 0 });
   Pasta::vec2 x0({0.5, 0.5});
   double width = 0.20;
 
+  double V[Euler::MyEulerSolver::nVar];
   V[0] = 0.5 +
          0.3 * exp(-(xvec - x0 - v0 * t).norm() /
                    pow(width, Euler::MyEulerSolver::nDim));  // rho
@@ -94,6 +100,7 @@ void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
   V[2] = v0(1);
   V[3] = 0.;
   V[4] = 1.;  // pressure
+  prim2con(Q, V);
 }
 
 /**
@@ -115,7 +122,7 @@ void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
  * surpresses this solution and rho=1, p=1, E=p/(gamma-1) is the resolut on the
  * whole grid. I am not sure why this happens, it seems to be an error.
  **/
-void DiffusingGauss(const double* const x, double* Q) {
+void DiffusingGauss(const double* const x, double* Q, double /*t*/) {
 #if DIMENSIONS == 2
   Pasta::vec2 xvec(x);
   Pasta::vec2 x0({0.5, 0.5});
@@ -135,50 +142,4 @@ void DiffusingGauss(const double* const x, double* Q) {
   Q[3] = 0.;
   Q[4] = 1. / (eos_gamma - 1) +
          exp(-(xvec - x0).norm() / pow(width, Euler::MyEulerSolver::nDim)) * 2;
-}
-
-void InitialData(const double* const x, double* Q, double t) {
-  static tarch::logging::Log _log("");
-  static bool wroteAboutInitialData(false);
-
-  const char* id = std::getenv("EXAHYPE_INITIALDATA");
-
-  // logInitialData("Have read '%s'\n", id);
-  std::string sid;
-
-  if (id == nullptr) {
-    sid = std::string("DiffusingGauss");
-    if (!wroteAboutInitialData) {
-      logInfo("InitialData(double*,double,double)", "Using default ID");
-    }
-  } else {
-    sid = std::string(id);
-  }
-
-  if (sid == "ShuVortex") {
-    if (!wroteAboutInitialData)
-      logInfo("InitialData(double*,double,double)",
-              "Loading ShuVortex Initial Data");
-    // ShuVortex gives us primitive data
-    double V[Euler::MyEulerSolver::nVar];
-    ShuVortex2D(x, V, t);
-    prim2con(Q, V);
-  } else if (sid == "MovingGauss2D") {
-    if (!wroteAboutInitialData)
-      logInfo("InitialData(double*,double,double)", "Loading moving Gauss");
-    double V[Euler::MyEulerSolver::nVar];
-    MovingGauss2D(x, V, t);
-    prim2con(Q, V);
-  } else if (sid == "DiffusingGauss") {
-    if (!wroteAboutInitialData)
-      logInfo("InitialData(double*,double,double)",
-              "Loading diffusing Gauss Initial Data");
-    // default:
-    DiffusingGauss(x, Q);
-  } else {
-    logError("InitialData(double*,double,double)",
-             "Do not understand requested Initial Data key");
-    exit(-42);
-  }
-  wroteAboutInitialData = true;
 }

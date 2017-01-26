@@ -16,6 +16,11 @@
 
 #include <memory>
 #include <cstring> // memset
+#include <string>
+#include <stdlib.h> // getenv
+
+// global Parameters for Euler::MyEulerSolver.
+
 
 void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the generated constructor.
@@ -25,6 +30,29 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   printf("EulerFlow was called with these parameters:\n");
   for(size_t i=0; i<cmdlineargs.size(); i++)
     printf("%i. %s\n", (int)i, cmdlineargs[i].c_str());
+
+  static tarch::logging::Log _log("MyEulerSolver::init");
+  // Until Parameter access works, we use ENVIRONMENT variables
+  const char* _id = std::getenv("EXAHYPE_INITIALDATA");
+  const char* _bc = std::getenv("EXAHYPE_BOUNDC");
+
+  std::string id("DiffusingGauss"), bc("outflow");
+
+  if(_id) id=_id; else logInfo("ID", "Loading default Initial Data");
+  if(_bc) id=_bc; else logInfo("BC", "Loading default Boundary Conditions");
+  
+  logInfo("ID", std::string("Loading Initial data: '")+id+std::string("'"));
+  if(id == "ShuVortex") idfunc = ShuVortex2D;
+  if(id == "MovingGauss2D") idfunc = MovingGauss2D;
+  if(id == "DiffusingGauss") idfunc = DiffusingGauss;
+  if(!idfunc) {
+      logError("ID", "Cannot understand requested ID.");
+      exit(-1);
+  }
+
+  logInfo("BC", std::string("Applying Boundary Conditions: '")+id+std::string("'"));
+  if(id == "outflow") {
+  }
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -128,7 +156,7 @@ void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     // pass the time for exact initial data as t is not exactly 0.
-    InitialData(x, Q, t);
+    idfunc(x, Q, t);
   }
 }
 
@@ -149,7 +177,7 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   // Number of variables    = 5 (#unknowns + #parameters)
 
     // Compute boundary state.
-    InitialData(x, stateOut, t);
+    idfunc(x, stateOut, t);
 
     // Compute flux and
     // extract normal flux in a lazy fashion.

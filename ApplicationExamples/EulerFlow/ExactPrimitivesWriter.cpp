@@ -41,7 +41,7 @@ void Euler::ExactPrimitivesWriter::mapQuantities(
   double xpos[DIMENSIONS];
   for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 
-  InitialData(xpos, outputQuantities, this->time);
+  idfunc(xpos, outputQuantities, this->time);
   cons2prim(outputQuantities, Q);
 
   /*
