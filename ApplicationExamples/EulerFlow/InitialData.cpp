@@ -85,10 +85,10 @@ void MovingGauss2D(const double* const x, double* V, double t = 0.0) {
   Pasta::vec2 v0({0.5, 0});
   // Pasta::vec2 v0({ 0.0, 0 });
   Pasta::vec2 x0({0.5, 0.5});
-  double width = 0.25;
+  double width = 0.20;
 
   V[0] = 0.5 +
-         0.2 * exp(-(xvec - x0 - v0 * t).norm() /
+         0.3 * exp(-(xvec - x0 - v0 * t).norm() /
                    pow(width, Euler::MyEulerSolver::nDim));  // rho
   V[1] = v0(0);
   V[2] = v0(1);
