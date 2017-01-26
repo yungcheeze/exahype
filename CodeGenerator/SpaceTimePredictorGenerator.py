@@ -112,7 +112,7 @@ class SpaceTimePredictorGenerator:
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                  \
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n'  \
                              '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"\n'\
-                             '#include "kernels/aderdg/optimised/asm_scatter.c"\n\n'
+                             '//#include "kernels/aderdg/optimised/asm_scatter.c"\n\n' #TODO JMG uncomment if fixed
 
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
 
@@ -866,14 +866,14 @@ class SpaceTimePredictorGenerator:
                                +'(&lqhi[jk*'+str(l_matrixSize)+'],'+  \
                                 ' &FLCoeff[0],'+\
                                 ' &tmp_bnd[jk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face1)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face1)+"]);\n\n") #TODO JMG uncomment if fixed
 
         l_sourceFile.write("  for(int jk=0;jk<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";jk++)\n")
         l_sourceFile.write("  "+l_matmul.baseroutinename\
                                +'(&lqhi[jk*'+str(l_matrixSize)+'],'+  \
                                 ' &FRCoeff[0],'+\
                                 ' &tmp_bnd[jk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face2)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face2)+"]);\n\n") #TODO JMG uncomment if fixed
 
         # (3),(4) lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k), FLCoeff )
         l_matmul = MatmulConfig(# M
@@ -916,7 +916,7 @@ class SpaceTimePredictorGenerator:
                       ' &FLCoeff[0],'+\
                       ' &tmp_bnd['+str(l_startAddr_bnd)+']);\n')
 
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face3)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face3)+"]);\n\n") #TODO JMG uncomment if fixed
 
         for k in range(0, kmax):
             for i in range(0, self.m_config['nDof']):
@@ -929,7 +929,7 @@ class SpaceTimePredictorGenerator:
                       ' &FRCoeff[0],'+\
                       ' &tmp_bnd['+str(l_startAddr_bnd)+']);\n')
 
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face4)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face4)+"]);\n\n") #TODO JMG uncomment if fixed
 
         # (5),(6) lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:), FLCoeff )
         l_matmul = MatmulConfig(# M
@@ -967,14 +967,14 @@ class SpaceTimePredictorGenerator:
                                    +'(&lqhi[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
                                     ' &FLCoeff[0],'+\
                                     ' &tmp_bnd[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-            l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face5)+"]);\n\n")
+            l_sourceFile.write("  //scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face5)+"]);\n\n") #TODO JMG uncomment if fixed
 
             l_sourceFile.write("  for(int ij=0;ij<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";ij++)\n")
             l_sourceFile.write("  "+l_matmul.baseroutinename\
                                 +'(&lqhi[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
                                     ' &FRCoeff[0],'+\
                                     ' &tmp_bnd[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-            l_sourceFile.write("  scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face6)+"]);\n\n")
+            l_sourceFile.write(" // scatter(&tmp_bnd[0], &lQbnd["+str(l_startAddr_face6)+"]);\n\n") #TODO JMG uncomment if fixed
 
 
         #------------------------------------------
@@ -1025,14 +1025,14 @@ class SpaceTimePredictorGenerator:
                                  +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
                                   " &FLCoeff[0],"\
                                   " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face1)+"]);\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face1)+"]);\n") #TODO JMG uncomment if fixed
 
         l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
                                   " &FRCoeff[0],"\
                                   " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face2)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face2)+"]);\n\n") #TODO JMG uncomment if fixed
 
         l_sourceFile.write("  // y-direction\n")
         l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
@@ -1040,14 +1040,14 @@ class SpaceTimePredictorGenerator:
                                  +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
                                   " &FLCoeff[0],"\
                                   " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face3)+"]);\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face3)+"]);\n") #TODO JMG uncomment if fixed
 
         l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
                                   " &FRCoeff[0],"\
                                   " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face4)+"]);\n\n")
+        l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face4)+"]);\n\n") #TODO JMG uncomment if fixed
 
         if(self.m_config['nDim'] >= 3):
             l_sourceFile.write("  // z-direction\n")
@@ -1056,14 +1056,14 @@ class SpaceTimePredictorGenerator:
                                     +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
                                     " &FLCoeff[0],"\
                                     " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-            l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face5)+"]);\n")
+            l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face5)+"]);\n") #TODO JMG uncomment if fixed
 
             l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
             l_sourceFile.write("    "+l_matmul.baseroutinename\
                                     +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
                                     " &FRCoeff[0],"\
                                     " &tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-            l_sourceFile.write("  scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face6)+"]);\n\n")
+            l_sourceFile.write("  //scatter(&tmp_bnd[0], &lFbnd["+str(l_startAddr_face6)+"]);\n\n") #TODO JMG uncomment if fixed
 
 
         # all matmuls have been collected, now launch code generator backend

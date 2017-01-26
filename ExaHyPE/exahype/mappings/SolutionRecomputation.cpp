@@ -111,7 +111,7 @@ void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
-            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerFace();
+            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getUnknownsPerFace() + eventual padding
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme
