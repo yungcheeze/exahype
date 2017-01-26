@@ -1251,7 +1251,7 @@ void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
   double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
 
   unknownsPerCell         = getUnknownsPerCell();
-  unknownsPerCellBoundary = getUnknownsPerCellBoundary();
+  unknownsPerCellBoundary = getBndTotalSize();
   #endif
 
   assertion1(getType()==exahype::solvers::Solver::Type::ADERDG,cellDescription.toString());
@@ -1540,7 +1540,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-    for (int i=0; i<getUnknownsPerCellBoundary(); i++) {
+    for (int i=0; i<getBndTotalSize(); i++) {
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(lFhbnd[i]),cellDescription.toString(),"updateSolution",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 

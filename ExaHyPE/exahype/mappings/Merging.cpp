@@ -143,7 +143,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     _tempFaceUnknowns[solverNumber] = nullptr;
     if (numberOfFaceUnknowns>0) {
       _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
-      _tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns];
+      _tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns](); //initialized to 0 to ensure padding is initialized if existing
       for (int i=1; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
         _tempFaceUnknowns[solverNumber][i] = _tempFaceUnknowns[solverNumber][i-1] + lengthOfFaceUnknowns;
       }
