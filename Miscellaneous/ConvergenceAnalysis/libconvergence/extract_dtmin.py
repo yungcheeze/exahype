@@ -13,13 +13,12 @@ step	t_min		dt_min
 14	0.158573	0.0113432
 
 
-To invoke, call it on a logfile of an ExaHyPE run.
+To invoke, call it on a logfile of an ExaHyPE run,
+or use as library
 
 """
 
-
 import sys, re, csv
-import pandas
 
 keys = ["step", "t_min", "dt_min"]
 
@@ -56,11 +55,25 @@ def timesteps(exahype_logfile, writer):
 				dt_min = re.match(r".*dt_min\s+=(?P<dt_min>[\d\.]+)\s*", line)
 				if dt_min:
 					outrow['dt_min'] = dt_min.group('dt_min')
-	
+
+# convenient functions:
+
+def timesteps2csv(logfile, outfile=sys.stdout):
+	"Reads logfile -> csv"
+	c = csvwriter(outfile)
+	timesteps(logfile, c.writer)
+
+def timesteps2dataframe(logfile):
+	"Reads logfile -> dataframe"
+	import pandas as pd
+	m = memorywriter()
+	timesteps(logfile, m.writer)
+	return pd.DataFrame(m.storage, dtype=float)
+
 if __name__ == "__main__":
 	if not len(sys.argv) == 2:
 		print "Usage: %s <exahype-log-file>" % sys.argv[0]
 		sys.exit(-1)
-	file = sys.argv[1]
-	timesteps(file,	csvwriter().writer)
+	fname = sys.argv[1]
+	timesteps2csv(fname)
 

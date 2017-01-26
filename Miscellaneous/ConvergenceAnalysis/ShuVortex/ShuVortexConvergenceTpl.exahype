@@ -35,7 +35,7 @@ exahype-project  Euler
 
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:4}
+    configure                = {hotspot,fair,ranks_per_node:4444}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -58,7 +58,7 @@ exahype-project  Euler
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
       variables = 5
       time      = 0.0
       repeat    = @ExaVtkOutputRepeat@
@@ -68,7 +68,7 @@ exahype-project  Euler
 
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
       variables = 0
       time = 0.0
       repeat = @ExaConvOutputRepeat@
@@ -76,7 +76,7 @@ exahype-project  Euler
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables = 5
       time      = 0.0
       repeat    = @ExaVtkOutputRepeat@
@@ -84,7 +84,7 @@ exahype-project  Euler
       select = {}
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables = 5
       time      = 0.0
       repeat    = @ExaVtkOutputRepeat@

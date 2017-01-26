@@ -47,13 +47,16 @@ until = test.until # shorthand
 
 # smaller test, for analaysis of mistakes:
 test.adaptiveRunRange = { k: until(0) for k in range(2,10) }
-test.adaptiveRunRange[2] = until(81)
+test.adaptiveRunRange[4] = until(81)
 
-test.settings['ExaBinary'] = "../../../ApplicationExamples/EulerFlow/ExaHyPE-Euler"
+test.settings['ExaBinary'] = "/home/sven/numrel/exahype/ExaHyPE-Engine/Builds/build-euler-mpi-asserts/ExaHyPE-Euler"
+
+# ONLY POLYORDER == 4
+test.settings['ExaBinaryTpl'] = test.settings['ExaBinary']
 
 test.settings['ExaSpecfile'] = "ShuVortexConvergenceTpl.exahype"
 # template to set up a queueing system
-test.settings['QRUNTPL'] = "" #"srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ShuVortex"
+test.settings['QRUNTPL'] = "mpirun -np 4" #"srun -n1 --partition=x-men --time=29:00:00 --mem=0 --job-name=p{ExapOrder}-m{ExaMeshSize}-ShuVortex"
 
 # set initial data to use.
 #settings['EXAHYPE_INITIALDATA']="MovingGauss2D"
@@ -66,7 +69,7 @@ test.settings['ExaEndTime'] = 6.0
 test.settings['ExaConvOutputRepeat'] = 0.1
 test.settings['ExaVtkOutputRepeat'] = 0.2
 # multi threads for the win
-test.settings['ExaTbbCores'] = 4
+test.settings['ExaTbbCores'] = 0
 
 # this is useful if you compiled with assertions
 test.settings['EXAHYPE_SKIP_TESTS'] = True

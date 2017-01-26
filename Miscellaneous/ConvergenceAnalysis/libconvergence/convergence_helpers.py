@@ -89,12 +89,14 @@ def gensvg(figure):
 	#import matplotlib
 	#matplotlib.use('Agg') # if headless
 	#import matplotlib.pyplot as plt
-	import StringIO
+	from io import BytesIO
 
-	imgdata = StringIO.StringIO()
-	figure.savefig(imgdata, format='svg')
-	imgdata.seek(0)
-	return imgdata.buf
+	imgfile = BytesIO()
+	figure.savefig(imgfile, format='svg')
+	imgfile.seek(0)
+	imgdata = '<svg' + imgfile.getvalue().split('<svg')[1]
+	imgdata = unicode(imgdata, 'utf-8')
+	return imgdata
 
 def shortenPathsInTable(dftable, possiblecolumns):
 	for col in possiblecolumns:
@@ -165,11 +167,14 @@ def executeTemplate(inputfilename, tmplvars, outputfilename):
 	And your tmplvars be a dictionary
 		{ 'DATE': 'today', 'HOST': 'me', 'WHOAMI': 'notyou' }
 	Then the resulting string which goes to outputfile is obvious, isn't it?
+	
+	Expects all to be unicode.
 	"""
+	import io
 	import string
-	tmpl=open(inputfilename, 'r').read().strip()
+	tmpl=io.open(inputfilename, 'r', encoding="utf-8").read().strip()
 	html = string.Template(tmpl).substitute(tmplvars)
-	with open(outputfilename, 'w') as out:
+	with io.open(outputfilename, 'w', encoding="utf-8") as out:
 		out.write(html)
 
 class Template:
@@ -178,6 +183,8 @@ class Template:
 	> tpl = Template('./my-template.html', './my-output.html')
 	> tpl.set('something_global', 'foo') # can be done before
 	> tpl.execute({ 'template': 'vars', 'go': 'here' }) # or at runtime
+	
+	Expects all to be unicode.
 	"""
 	def __init__(self, inputfile, outputfile):
 		self.logger = logging.getLogger("Template")
@@ -199,6 +206,14 @@ class Template:
 		self.set('HOST', gethostname())
 		self.set('WHOAMI', getuser())
 		return self # chainable
+	def __str__(self):
+		"Compact string representation showing all template variables"
+		maxStr=50
+		return 'Template(infile=%s,outfile=%s,prepared_args=%s)' % (
+			self.inputfile, self.outputfile, str({
+				k: (v[:maxStr] if len(v)>maxStr else v) for k,v in self.prepared_args.iteritems()
+			})
+		)
 
 
 def pdsort(df, by, ascending=True):

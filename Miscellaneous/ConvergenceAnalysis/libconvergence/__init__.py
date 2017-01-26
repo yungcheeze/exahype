@@ -15,7 +15,7 @@ It heavily uses pandas.
 # Shorthands for quicker use
 
 from convergence_application import ConvergenceApplication
-from convergence_table import ConvergenceReporter
+from convergence_table import ConvergenceReporter, idx
 from convergence_test import ConvergenceTest, PolyorderTest
 
 # there is automatically present:

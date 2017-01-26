@@ -55,8 +55,19 @@ def exitConvergenceStatus(convergencePassed):
 	sys.exit(0 if convergencePassed else -3)
 
 class Namespace:
-	"Just collecting stuff"
-	pass
+	""""
+	A namespace for collecting stuff, usage like
+	> a = Namespace()
+	> a.foo = "bar"
+	> print a.asDict()
+	>> { 'foo': 'bar' }
+	This is used in the convergence_table for collecting index names.
+	"""
+	def asDict(self):
+		"Get a dict of the values hold by this namespace"
+		return vars(self)
+	def __str__(self):
+		return 'Namespace(%s)' % self.asDict()
 
 # a global variable to hold various index names we just define in time
 idx = Namespace()
@@ -92,8 +103,13 @@ class ConvergenceReporter:
 
 		# which quantity shall we look at, in the moment?
 		self.quantity = 'error-rho.asc' # rho should always be there, good default.
+		
+		# at which CSV file do we expect the timestep sizes?
+		self.timestep_file = 'timesteps.csv'
 
 		self.tpl = {} # common template variables
+		
+		self.plt = False # yeah.
 
 	def libconvergence_dir(self):
 		try:
@@ -101,6 +117,18 @@ class ConvergenceReporter:
 		except Exception as e:
 			self.logger.warn("Could not reliably determine libconvergence directory.")
 			return '.'
+		
+	def prepare_matplotlib(self):
+		# we can generate plots, create strings holding the SVG file and embed
+		# the figures as inline SVG to the HTML file.
+		if not self.plt:
+			import matplotlib
+			if self.be_headless or is_headless():
+				matplotlib.use('Agg')
+			import matplotlib.pyplot as plt
+			plt.ion(); plt.clf()
+			self.plt = plt
+		return self.plt
 
 	def readSimulationProgress(self):
 		"""
@@ -124,6 +152,7 @@ class ConvergenceReporter:
 			"holding the simulations to consider. If not given, generates list by ./showSimulationProgress.sh on the fly")
 		group.add_argument('--minimal-reduction-length', type=int, default=20, help="Minimal number of lines in reductions to include")
 		group.add_argument('--skip-plots', action='store_true', default=False, help="Skip the generation of inlined SVG plots")
+		group.add_argument('--show-timesteps', action='store_true', default=False, help="Read timestep sizes from "+self.timestep_file)
 		return group
 
 	def apply_args(self, args, argparser):
@@ -146,6 +175,7 @@ class ConvergenceReporter:
 		self.quantity = args.quantity
 		self.minimal_reduction_length = args.minimal_reduction_length
 		self.skip_plots = args.skip_plots
+		self.show_timesteps = args.show_timesteps
 
 		# first time we can do debug output which is not suppressed
 		self.logger.info("Working with SIMBASE='%s'" % self.simulationPathPrefix)
@@ -192,6 +222,7 @@ class ConvergenceReporter:
 		idx.SimName = 'SimulationName' # also used in showSimulationProgress.sh
 		idx.ParamFileName = 'ParamFileName'
 		idx.QuantityFileName = 'QuantityFileName'
+		idx.TimestepFileName = 'TimestepFileName'
 
 		# Load table of simulations
 		# The shellscript takes around ~ 10-60 Seconds to generate the data, therefore
@@ -224,7 +255,7 @@ class ConvergenceReporter:
 			self.templatePathPrefixer("template-evolution.html"), 
 			self.simulationPrefixer("evolution.html")).addStatistics()
 		self.overview.set('LINK_DETAILED_REPORT', path.basename(self.evolution.outputfile)) # link them together
-		self.tpl['QUANTITY'] = self.quantity
+		self.tpl['QUANTITY'] = unicode(self.quantity, 'utf-8') # ...
 
 		self.logger.info("Collected %d simulations suitable for proceeding. " % len(self.simulations))
 		for t in enumerate(self.simulations): self.logger.debug(" Simulation %2i. %s" % t)
@@ -241,12 +272,14 @@ class ConvergenceReporter:
 		# store as class parameters for debugging purposes
 		self.paramfiles = map(simfile('parameters.env'), self.simulations)
 		self.quantityfiles = map(simfile(self.quantityfile), self.simulations)
+		self.timestepfiles = map(simfile(self.timestep_file), self.simulations)
 
 		# 2A) In the first step, simtable will hold information about simulation paths
 		self.simtable = pd.DataFrame()
 		self.simtable[idx.SimName] = self.simulations
 		self.simtable[idx.ParamFileName] = self.paramfiles
 		self.simtable[idx.QuantityFileName] = self.quantityfiles
+		self.simtable[idx.TimestepFileName] = self.timestepfiles
 
 		# 2B) read parameter files of each simulation
 		paramdicts = map(read_simulation_params, self.paramfiles) # list of dicts
@@ -259,13 +292,15 @@ class ConvergenceReporter:
 		self.ci_paramtable = lambda colname: df_case_insensitive(self.paramtable, colname)
 		self.get_ci_paramtable = lambda colname: self.paramtable[self.ci_paramtable(colname)]
 
-		self.porders = self.get_ci_paramtable('EXAPORDER')
+		self.porders = self.get_ci_paramtable('EXAPORDER').astype(int)
 		meshsizes = self.get_ci_paramtable('EXAREALMESHSIZE') # if not available, use 'EXAMESHSIZE'
 		widths = self.get_ci_paramtable('ExaWidth') # used to be calles EXASPEC_WIDTH
 		# shall be all equal, of course.
 		if not np.all(widths == widths[0]):
 			self.logger.warning("Not all simulation domains are equal! Sizes are: ", widths)
-		self.ncells = widths / meshsizes
+		ncells_float = widths / meshsizes
+		self.ncells = np.rint(ncells_float).astype(int)
+		assert np.all( np.abs(ncells_float - self.ncells) < 1e-10), "Nonintegral number of cells: "+str(ncells_float)
 
 		# 2D) Beautifying of paramtable
 		# the following beautifying is only done for printing the paramtable
@@ -320,9 +355,9 @@ class ConvergenceReporter:
 		try:
 		    totaltime = reduce(operator.add, timedeltas)
 		    totalhours = totaltime.total_seconds() / (60*60)
-		    self.tpl['TOTAL_CPU_HOURS'] = ("%.1f" % totalhours) + (" (ignoring %i errnous entries)"%errnousentries if errnousentries else "")
+		    self.tpl['TOTAL_CPU_HOURS'] = (u"%.1f" % totalhours) + (u" (ignoring %i errnous entries)"%errnousentries if errnousentries else u"")
 		except:
-		    self.tpl['TOTAL_CPU_HOURS'] = 'Not determinable'
+		    self.tpl['TOTAL_CPU_HOURS'] = u"Not determinable"
 
 		return self.fullsimtable
 
@@ -359,7 +394,10 @@ class ConvergenceReporter:
 
 		# apply filter
 		self.paramtable = self.paramtable[includedSimulations]
-		self.quantityfiles = self.simtable[includedSimulations][idx.QuantityFileName]
+		self.simtable = self.simtable[includedSimulations]
+		self.quantityfiles = self.simtable[idx.QuantityFileName]
+		self.ncells = self.ncells[includedSimulations]
+		self.porders = self.porders[includedSimulations]
 
 		# 2B) Load the error table CSV files
 
@@ -381,6 +419,9 @@ class ConvergenceReporter:
 		# assign the index to each error table
 		idx.cells = 'nCells' # name of 'number of cells' column
 		idx.porder = 'pOrder' # name of 'polynomial order' column
+
+		assert len(self.ncells) == len(self.porders)
+		assert len(self.porders) == len(self.errortables)
 		for simncells,simporder,errortable in zip(self.ncells,self.porders,self.errortables):
 			errortable[idx.cells] = simncells
 			errortable[idx.porder] = simporder
@@ -512,23 +553,69 @@ class ConvergenceReporter:
 		self.tpl['COMBINED_FINAL_CONVERGENCE_ERRROR_TABLE'] = self.final_time_convergence_table.to_html()
 
 		return self.convergence_table
+	
+	@steps.add(3.5, "Timestep plotting")
+	def analyze_timesteps(self):
+		if not self.show_timesteps:
+			self.logger.info("Skipping timestep plots");
+			self.tpl['TIMESTEP_SVG_FIGURE'] = u"<em>skipped</em>";
+			return
+		
+		plt = self.prepare_matplotlib()
+		timestepPlot = plt.figure(figsize=(18,8))
+
+		timestep_statistics = []
+		for simncells,simporder,tstfname in zip(self.ncells,self.porders,self.simtable[idx.TimestepFileName]):
+			try:
+				timesteps = pd.read_csv(tstfname, delim_whitespace=True)
+				# The columns
+				idx.tstep = 'step'
+				idx.t_min = 't_min'
+				idx.dt_min = 'dt_min'
+				
+				# just go on and make a plot
+				plt.plot(timesteps[idx.t_min], timesteps[idx.dt_min], "o-", label="P=%d,Nc=%d"%(simporder,simncells))
+
+				# poor mans "append row to pandas"				
+				dt = timesteps[idx.dt_min]
+				idx.dtmean = 'dt_mean'
+				idx.dtstd = 'dt_std'
+				timestep_statistics.append({
+					idx.cells: simncells, idx.porder: simporder,
+					idx.dtmean: dt.mean(), idx.dtstd: dt.std()
+				})
+			except IOError as e:
+				self.logger.warn("Could not read in timestep table '%s', reason: '%s'. Proabbly you have to run the timestep parser before." % (tstfname, str(e)))
+			except Exception as e:
+				self.logger.error("Error when dispatching the timestep table for '%s" % tstfname)
+				self.logger.exception(e)
+
+		plt.grid()
+		plt.legend(loc='center left', bbox_to_anchor=(1,0.5))
+		plt.subplots_adjust(right=0.8)
+		plt.title("Timestep sizes")
+		plt.xlabel("Simulation time (t_min)")
+		plt.ylabel("Timestep size (dt_min)")
+		ax = plt.gca()
+		#ax.set_yscale('log')
+
+		self.tpl['TIMESTEP_SVG_FIGURE'] = gensvg(timestepPlot)
+
+		if len(timestep_statistics):
+			self.timestep_statistics = pd.DataFrame.from_dict(timestep_statistics)
+			self.tpl['TIMESTEP_STATISTICS_TABLE'] = self.timestep_statistics.to_html()
+		else:
+			self.tpl['TIMESTEP_STATISTICS_TABLE'] = u"<em>Was not computed.</em>"
 
 	@steps.add(4, "Convergence evolution and order plots")
 	def do_plots(self):
 		if self.skip_plots:
 			self.logger.info("Skipping plot creation")
-			self.tpl['CONVERGENCE_SVG_FIGURE'] = "<em>skipped plot generation</em>"
-			self.tpl['ERROR_SVG_FIGURE'] = "<em>skipped plot generation</em>"
+			self.tpl['CONVERGENCE_SVG_FIGURE'] = u"<em>skipped plot generation</em>"
+			self.tpl['ERROR_SVG_FIGURE'] = u"<em>skipped plot generation</em>"
 			return
 
-		# we can generate plots, create strings holding the SVG file and embed
-		# the figures as inline SVG to the HTML file.
-
-		import matplotlib
-		if self.be_headless or is_headless():
-			matplotlib.use('Agg')
-		import matplotlib.pyplot as plt
-		plt.ion(); plt.clf()
+		plt = self.prepare_matplotlib()
 
 		uniquelist = lambda k: list(np.unique(k))
 		uniqueintlist = lambda k: map(int, uniquelist(k))
@@ -560,6 +647,7 @@ class ConvergenceReporter:
 		##### SIMPLE ERROR EVOLUTION PLOTS
 		self.logger.debug("Simple Error Evolution Plots")
 		errorPlot = plt.figure(figsize=(18,8))
+		plt.grid()
 		ycolumn = 'max' # l2norm, l1norm
 
 		num_markers = 10
@@ -594,6 +682,7 @@ class ConvergenceReporter:
 		for Ni, (Nprev, Ncur) in enumerate(window(allncells)):
 			self.logger.debug("Neighbouring plot between (%d, %d)" % (Nprev, Ncur))
 			plt.subplot(1, len(allncells)-1, Ni+1)
+			plt.grid()
 
 			plt.title("Convergence from %d to %d cells" % (iround(Nprev), iround(Ncur)))
 			for groupidx,rows in pdsort(self.convergence_table[self.convergence_table[idx.cells]==Ncur], by=[idx.porder,idx.cells], ascending=False).groupby(by=[idx.porder,idx.cells]):
@@ -616,8 +705,8 @@ class ConvergenceReporter:
 		except Exception as e:
 			self.logger.error("Could not create plots, reason: %s" % str(e))
 			self.logger.exception(e)
-			self.tpl['CONVERGENCE_SVG_FIGURE'] = "<em>Creation crashed!</em>"
-			self.tpl['ERROR_SVG_FIGURE'] = "<em>Creation crashed!</em>"
+			self.tpl['CONVERGENCE_SVG_FIGURE'] = u"<em>Creation crashed!</em>"
+			self.tpl['ERROR_SVG_FIGURE'] = u"<em>Creation crashed!</em>"
 
 
 	@steps.add(5, "Determine whether convergence was observed")
@@ -636,8 +725,8 @@ class ConvergenceReporter:
 		convergenceQualityBelowNames = { 1: 'excellent', 5: 'passes', 10: 'failed' }
 		self.convergencePassed = ( convergenceQualityIndicator < 5.0 )
 
-		self.tpl['CONVERGENCE_QUALITY_INDICATOR'] = "%.2f" % convergenceQualityIndicator
-		self.tpl['CONVERGENCE_PASSED'] = ('PASSED' if self.convergencePassed else 'FAILED')
+		self.tpl['CONVERGENCE_QUALITY_INDICATOR'] = u"%.2f" % convergenceQualityIndicator
+		self.tpl['CONVERGENCE_PASSED'] = (u'PASSED' if self.convergencePassed else u'FAILED')
 
 		self.logger.info("Convergence test results:")
 		self.logger.info("Convergence factor is " + self.tpl['CONVERGENCE_QUALITY_INDICATOR'])

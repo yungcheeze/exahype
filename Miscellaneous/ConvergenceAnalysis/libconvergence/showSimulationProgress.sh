@@ -26,38 +26,51 @@ for sim in $(find $SIMBASE -maxdepth 1 -type d | sort); do
 		echo -ne "$SEP" $(ls $(<$h) | wc -l) # number of files
 		echo -ne "$SEP" $(wc -l $(<$h) | head -n-1 | awk '{ print $1 }' | uniq) # entries in each file
 		echo -ne "$SEP" $(wc -l $sim/*log | head -n1 | awk '{ print $1 }') # number of lines in logfile
-
-		if T=$(grep -oh "Finished ExaHyPE successfully" $sim/*.log); then
-			echo -ne "$SEP FINISHED"
-		elif T=$(grep -oh "ExaHyPE binary failed" $sim/*.log); then
-			echo -ne "$SEP FAILED"
+		
+		# determine logfile
+		simlog="$(ls $sim/*.log)"
+		if (( "$(ls -1 $sim/*.log | wc -l)" > 1 )); then
+			echo -ne "$SEP 'Error, multiple logfiles'"
+			>&2 echo "Multiple logfiles for $sim: $simlog"
 		else
-			echo -ne "$SEP RUNNING"
-		fi
+			if T="$(grep -oh "Finished ExaHyPE successfully" $simlog)"; then
+				echo -ne "$SEP FINISHED"
+			elif T="$(grep -oh "ExaHyPE binary failed" $simlog)"; then
+				echo -ne "$SEP FAILED"
+			elif T="$(grep -oh "Peano terminates successfully" $simlog)"; then
+				# this can occur when manually run the simulation
+				echo -ne "$SEP PEANOFINISHED"
+			elif T="$(grep -iE "Signal: Aborted|Asertion .* failed" $simlog)"; then
+				# crash due to asserts, memory violations, etc.
+				echo -ne "$SEP CRASHED"
+			else
+				echo -ne "$SEP RUNNING?"
+			fi
 
-		# filter lines like
-		# ... exahype::runners::Runner::startNewTimeStep(...)         step 499 t_min          =0.511616 ...
-		if LASTSTEP=$(grep -h startNewTimeStep $sim/*.log | grep step); then
-			# red black box, thats why we log for, isnt it?
-			BLACKBOX="$(echo "$LASTSTEP" | tail -n1 | awk '{print $6" "$7" "$8" "$9 }')"
-		else
-			# apparently not even onetime step started.
-			BLACKBOX="None started"
-		fi
-		echo -ne "$SEP $BLACKBOX"
+			# filter lines like
+			# ... exahype::runners::Runner::startNewTimeStep(...)         step 499 t_min          =0.511616 ...
+			if LASTSTEP="$(grep -h startNewTimeStep $simlog | grep step)"; then
+				# red black box, thats why we log for, isnt it?
+				BLACKBOX="$(echo "$LASTSTEP" | tail -n1 | awk '{print $6" "$7" "$8" "$9 }')"
+			else
+				# apparently not even onetime step started.
+				BLACKBOX="None started"
+			fi
+			echo -ne "$SEP $BLACKBOX"
 
-		# `time` from bash normally outputs a line "user	0m0.004s"
-		if T=$(grep -E "^user\s+[0-9]" $sim/*.log | awk '{ print $4 }'); then
-			echo -ne "$SEP $T"
-		# sometimes, we also have something like "321.27user 0.28system 5:23.36elapsed" which is in SECONDS
-		elif T=$(grep -Eo "[0-9.]+user\s+" $sim/*.log | tr -d 'user'); then
-			T=$(bc <<< "$T / 60" ) # convert seconds to minutes, result is an integer
-			echo -ne "$SEP ${T}m" # similarize format
-		else
-			echo -ne "$SEP noWalltime"
-		fi
+			# `time` from bash normally outputs a line "user	0m0.004s"
+			if T="$(grep -E "^user\s+[0-9]" $simlog | awk '{ print $4 }')"; then
+				echo -ne "$SEP $T"
+			# sometimes, we also have something like "321.27user 0.28system 5:23.36elapsed" which is in SECONDS
+			elif T="$(grep -Eo "[0-9.]+user\s+" $simlog | tr -d 'user')"; then
+				T="$(bc <<< "$T / 60" )" # convert seconds to minutes, result is an integer
+				echo -ne "$SEP ${T}m" # similarize format
+			else
+				echo -ne "$SEP noWalltime"
+			fi
+		fi # multiple logfiles
 	else
 		echo -n "noResults"
-	fi
+	fi # ascii reductions available
 	echo # newline 
 done 

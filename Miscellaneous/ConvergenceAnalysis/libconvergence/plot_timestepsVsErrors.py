@@ -11,7 +11,7 @@
 
 
 import matplotlib.pyplot as plt
-import extract_dtmin
+from extract_dtmin import timesteps2dataframe
 from os import path
 import pandas as pd
 from glob import glob
@@ -20,12 +20,7 @@ import sys
 plt.ion()
 possiblecolors = "r g k b m y r c m".split(" ")
 
-def timesteps(logfile):
-	"Reads logfile (-> csv) -> dataframe"
-	print "Extracting timesteps from %s..." % logfile
-	m = extract_dtmin.memorywriter()
-	extract_dtmin.timesteps(logfile, m.writer)
-	return pd.DataFrame(m.storage, dtype=float)
+
 
 def errorplots(simulationsdirs):
 	#errorPlot = plt.figure(figsize=(18,8))
@@ -53,7 +48,8 @@ def errorplots(simulationsdirs):
 def dtplots(simulationdirs):
 	for i, simulationdir in enumerate(simulationdirs):
 		logfile = glob(path.join(simulationdir, '*.log'))[0]
-		data = timesteps(logfile)
+		print "Reading logfile "+logfile
+		data = timesteps2dataframe(logfile)
 		plt.plot(data['t_min'], data['dt_min'], label=simulationdir, color=possiblecolors[i])
 	plt.xlabel("Simulation time")
 	plt.ylabel("Time step")
