@@ -559,6 +559,7 @@ class ConvergenceReporter:
 		if not self.show_timesteps:
 			self.logger.info("Skipping timestep plots");
 			self.tpl['TIMESTEP_SVG_FIGURE'] = u"<em>skipped</em>";
+			self.tpl['TIMESTEP_STATISTICS_TABLE'] = u"<em>skipped</em>";
 			return
 		
 		plt = self.prepare_matplotlib()

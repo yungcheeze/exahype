@@ -47,9 +47,9 @@ until = test.until # shorthand
 
 # smaller test, for analaysis of mistakes:
 test.adaptiveRunRange = { k: until(0) for k in range(2,10) }
-test.adaptiveRunRange[4] = until(81)
+test.adaptiveRunRange[3] = until(81)
 
-test.settings['ExaBinary'] = "../../../Builds/build-euler-asserts/ExaHyPE-Euler"
+test.settings['ExaBinary'] = "../../../Builds/build-tbb-release/ExaHyPE-Euler"
 
 # ONLY POLYORDER == 4
 test.settings['ExaBinaryTpl'] = test.settings['ExaBinary']
