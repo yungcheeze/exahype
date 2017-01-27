@@ -58,7 +58,9 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt){
+    const double dt,
+    double* tempPointForceSources //Not used, should be nullptr
+    ){
   // circumvent 'const double'
   // double *luhTemp =
       // new double[numberOfVariables * basisSize * basisSize * basisSize];

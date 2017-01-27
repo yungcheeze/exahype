@@ -849,7 +849,10 @@ public:
       double*  tempFluxUnknowns,
       double*  tempStateSizedVector,
       const double* const luh,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, const double dt) = 0;
+      const tarch::la::Vector<DIMENSIONS, 
+      double>& cellSize, 
+      const double dt,
+      double* pointForceSources) = 0;
 
   /**
    * \brief Returns a stable time step size.
@@ -977,12 +980,11 @@ public:
   
   //TODO KD
   virtual void dummyK_GeneratedCall(
-    double* luh, 
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
     const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempForceVector);
+    double* tempPointForceSources);
 
 
   /**
@@ -1197,7 +1199,8 @@ public:
       double** tempSpaceTimeFluxUnknowns,
       double*  tempUnknowns,
       double*  tempFluxUnknowns,
-      double*  tempStateSizedVector);
+      double*  tempStateSizedVector,
+      double*  tempPointForceSources);
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,

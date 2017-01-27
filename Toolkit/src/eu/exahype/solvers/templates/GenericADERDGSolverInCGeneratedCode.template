@@ -19,9 +19,9 @@
 
 
 
-void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
+void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  kernels::aderdg::generic::{{Language}}::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
+  kernels::aderdg::generic::{{Language}}::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
 {{AfterSpaceTimePredictor}}
 }
 
@@ -117,8 +117,8 @@ void {{Project}}::{{Solver}}::volumeUnknownsRestriction(double* luhCoarse,const 
 }
 
 // TODO KD
-void {{Project}}::{{Solver}}::dummyK_GeneratedCall(double* luh, const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) {
+void {{Project}}::{{Solver}}::dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
 {{BeforeDummyK}}
-  kernels::aderdg::generic::c::dummyK_Kernel<{{Solver}}>(*this,luh, t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempForceVector);
+  kernels::aderdg::generic::c::dummyK_Kernel<{{Solver}}>(*this, t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
 {{AfterDummyK}}
 }

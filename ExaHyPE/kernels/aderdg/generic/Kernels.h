@@ -92,7 +92,8 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt);
+    const double dt,
+    double* tempPointForceSources);
 
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int numberOfParameters,
@@ -197,7 +198,6 @@ void volumeUnknownsRestriction(
 template <typename SolverType>
 void dummyK_Kernel(
     SolverType& solver,
-    double* luh, 
     const double t,
     const double dt,
     const tarch::la::Vector<DIMENSIONS, double>& center,
@@ -205,7 +205,7 @@ void dummyK_Kernel(
     const int numberOfVariables, 
     const int numberOfParameters, 
     const int basisSize,
-    double* tempForceVector //memory space for forceVector
+    double* tempPointForceSources //memory space for forceVector
     );
 }  // namespace c
 }  // namespace generic
@@ -255,7 +255,8 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt);
+    const double dt,
+    double* tempPointForceSources);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
@@ -271,7 +272,8 @@ void spaceTimePredictorLinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt);
+    const double dt,
+    double* tempPointForceSources);
 
 /**
  * (At the moment, we always evaluate the time averaged space-time

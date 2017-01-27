@@ -31,7 +31,8 @@ void spaceTimePredictorLinear(SolverType& solver,
                               double*  tempStateSizedVector,
                               const double* const luh,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double dt) {
+                              const double dt,
+                              double* tempPointForceSources) {
   const int numberOfVariables = solver.getNumberOfVariables();
   const int numberOfParameters = solver.getNumberOfParameters();
   const int basisSize = solver.getNodesPerCoordinateAxis();

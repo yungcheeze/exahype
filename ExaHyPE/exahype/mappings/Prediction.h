@@ -131,6 +131,9 @@ class exahype::mappings::Prediction {
    * i.e. the state, eigenvalues etc.
    */
   double** _tempStateSizedVectors = nullptr;
+  
+  //TODO KD describe what it is
+  double** _tempPointForceSources = nullptr;
 
   /**
    * Initialises the temporary variables.

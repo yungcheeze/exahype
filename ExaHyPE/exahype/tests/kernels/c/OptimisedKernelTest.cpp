@@ -382,7 +382,7 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   kernels::aderdg::optimised::predictor( lQhi_opt, lFhi_opt, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
   kernels::aderdg::optimised::extrapolator( lQhbnd_opt, lFhbnd_opt, lQhi_opt, lFhi_opt );
   
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, _lQhbnd, _lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi, _lFhi, tempStateSizedVectors, _luh, _dx[0], _dt );
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<OptimisedKernelTest>( *this, _lQhbnd, _lFhbnd, tempSpaceTimeUnknowns, tempSpaceTimeFluxUnknowns, _lQhi, _lFhi, tempStateSizedVectors, _luh, _dx[0], _dt, nullptr);
   
   //compare
 #ifdef Dim2  

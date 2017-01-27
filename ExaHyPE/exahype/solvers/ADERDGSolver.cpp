@@ -1283,7 +1283,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     double** tempSpaceTimeFluxUnknowns,
     double*  tempUnknowns,
     double*  tempFluxUnknowns,
-    double*  tempStateSizedVector) {
+    double*  tempStateSizedVector,
+    double*  tempPointForceSources) {
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),cellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()),cellDescription.toString());
@@ -1319,7 +1320,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   if(isDummyKRequired()) { //disable kernel if not needed
-      dummyK_GeneratedCall(luh, cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempStateSizedVector); //TODO KD
+      dummyK_GeneratedCall(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }
   
@@ -1333,7 +1334,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       tempStateSizedVector,
       luh,
       cellDescription.getSize(),
-      cellDescription.getPredictorTimeStepSize());
+      cellDescription.getPredictorTimeStepSize(), 
+      tempPointForceSources);
 
   // TODO(Future Opt.)
   // Volume integral should be performed using the space time
@@ -3675,9 +3677,8 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
 }
 
 void exahype::solvers::ADERDGSolver::dummyK_GeneratedCall(
-    double* luh, 
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
     const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempForceVector) {}
+    double* tempPointForceSources) {}

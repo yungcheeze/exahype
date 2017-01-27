@@ -30,7 +30,7 @@ void {{Project}}::{{Solver}}::fluxSplitted(const double* const Q, double* f, dou
    flux(Q,F);
 }
 
-void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
+void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 
   const bool useOptimised = false; //TODO JMG set to true when kernel fixed
 
@@ -51,7 +51,7 @@ void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,d
     kernels::aderdg::optimised::converter::Bnd_optimised2generic(lQhbnd, Qbnd);
     kernels::aderdg::optimised::converter::Bnd_optimised2generic(lFhbnd, Fbnd);
     
-    kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MyEulerSolver>(*this,Qbnd,Fbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,lQhi,lFhi,tempStateSizedVectors,luh,dx,dt);
+    kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MyEulerSolver>(*this,Qbnd,Fbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,lQhi,lFhi,tempStateSizedVectors,luh,dx,dt,pointForceSources);
     
     kernels::aderdg::optimised::converter::Qhi_generic2optimised(lQhi, tempUnknowns);
     kernels::aderdg::optimised::converter::Fhi_generic2optimised(lFhi, tempFluxUnknowns);

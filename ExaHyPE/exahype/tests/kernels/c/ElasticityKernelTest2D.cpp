@@ -373,7 +373,7 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
       tempStateSizedVector,
-      luh, dx, dt);
+      luh, dx, dt, nullptr);
 
   // Check result
   kernels::idx3 idx_lQhi_OUT(kBasisSize, kBasisSize,

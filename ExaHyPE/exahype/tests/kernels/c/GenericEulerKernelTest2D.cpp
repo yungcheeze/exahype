@@ -799,7 +799,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorLinear::luh,
-      dx, dt);
+      dx, dt, nullptr);
 
   _setNcpAndMatrixBToZero = false;
 
@@ -881,7 +881,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorNonlinear::luh,
-      dx, dt);
+      dx, dt, nullptr);
 
   _setNcpAndMatrixBToZero = false;
 

@@ -426,7 +426,10 @@ void spaceTimePredictorNonlinear(
     double*  tempFluxUnknowns,
     double*  tempStateSizedVector,
     const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, 
+    double dt,
+    double* tempPointForceSources //not used should be nullptr
+    ) {
   const int numberOfVariables = solver.getNumberOfVariables();
   const int basisSize = solver.getNodesPerCoordinateAxis();
   const int basisSize2 = basisSize * basisSize;

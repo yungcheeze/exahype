@@ -46,7 +46,9 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt){
+    const double dt,
+    double* tempPointForceSources 
+    ){
 
 
   const int numberOfVariables = solver.getNumberOfVariables();
