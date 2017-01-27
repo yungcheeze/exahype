@@ -1318,6 +1318,11 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
+  if(isDummyKRequired()) { //disable kernel if not needed
+      dummyK_GeneratedCall(luh, cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempStateSizedVector); //TODO KD
+      // luh, t, dt, cell cell center, cell size, data allocation for forceVect
+    }
+  
   spaceTimePredictor(
       lQhbnd,
       lFhbnd,
@@ -1552,10 +1557,6 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
-    if(isDummyKRequired()) { //disable kernel if not needed
-      dummyK_GeneratedCall(newSolution, cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempStateSizedArrays[0]); //TODO KD
-      // luh, t, dt, cell cell center, cell size
-    }
     
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -3679,4 +3680,4 @@ void exahype::solvers::ADERDGSolver::dummyK_GeneratedCall(
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
     const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempForceVector) {printf("shouldn't be here");}
+    double* tempForceVector) {}
