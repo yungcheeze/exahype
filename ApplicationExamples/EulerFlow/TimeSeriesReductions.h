@@ -25,6 +25,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "tarch/parallel/Node.h"
+
 using namespace std;
 
 class TimeSeriesReductions {
@@ -37,6 +39,8 @@ class TimeSeriesReductions {
 
 public:
     TimeSeriesReductions(const char* filename) {
+	if(!shallIRun()) return;
+	    
 	asc = fopen(filename, "w");
 	if(asc == NULL) {
 		fprintf(stderr, "ASCII writer: Could not open output file '%s'\n", filename);//, strerror(errno));
@@ -46,9 +50,9 @@ public:
 	// print the file header line
 	// fprintf(asc, "# ");
 	for(int i=0; i<LEN; i++) {
-	    fputs(colnames[i], asc);
-        }
-        fprintf(asc, "\n");
+	fputs(colnames[i], asc);
+	}
+	fprintf(asc, "\n");
 
         // zero everything
         for(int i=0; i<LEN; i++)
@@ -56,6 +60,7 @@ public:
     }
 
     void initRow(double current_time) {
+	if(!shallIRun()) return;
         data[time] = current_time;
         data[l1] = data[l2] = 0;
         data[max] = 0;
@@ -65,7 +70,8 @@ public:
     }
 
     void addValue(double val, double dx) {
-        // dx is the scaling (volume form) as computed by peano::la::volume,
+        if(!shallIRun()) return;
+	// dx is the scaling (volume form) as computed by peano::la::volume,
         // compare the calculation in MyEulerSolver_Plotter1.cpp 
         data[l1] += abs(val) * dx;
         data[l2] += val * val * dx;
@@ -76,12 +82,14 @@ public:
     }
 
     void finishRow() {
+        if(!shallIRun()) return;
         data[tidx]++;
         data[l2] = sqrt(data[l2]);
         data[avg] = data[avg] / avgcnt;
     }
 
     void writeRow() {
+        if(!shallIRun()) return;
         finishRow();
 
 	for(int i=0; i<LEN; i++) {
@@ -89,6 +97,14 @@ public:
         }
         fprintf(asc, "\n");
 	fflush(asc); // write out this line immediately
+    }
+    
+    inline bool shallIRun() {
+#ifdef Parallel
+	return tarch::parallel::Node::getInstance().isGlobalMaster();
+#else
+	return true;
+#endif
     }
 };
 

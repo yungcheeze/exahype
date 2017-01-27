@@ -91,7 +91,6 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 	double xpos[DIMENSIONS];
 	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 	
-//	ShuVortex2D(xpos, Exact, time); // TODO(Dominic): Bug: Here, you used the Shu-Vortex as reference solution for every problem. You compared your (Euler) lin. adv. against it.
 	idfunc(xpos, Exact, time);
 
 	double localError[nVar];
