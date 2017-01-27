@@ -21,7 +21,11 @@
 // #include "kernels/GaussLegendreQuadrature.h"
 // #include "kernels/DGMatrices.h"
 
+#ifndef EXAHYPE_CFL_FACTOR
+// Sven, addressing issue #100:
+// Set CFL factor with compiler option like -DEXAHYPE_CFL_FACTOR=0.3
 #define EXAHYPE_CFL_FACTOR 0.9
+#endif
 
 // #include <fstream>
 

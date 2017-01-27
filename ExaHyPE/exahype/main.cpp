@@ -239,6 +239,12 @@ void version() {
 #else
   std::cout << "MPI Support:   no\n";
 #endif
+  
+#ifdef EXAHYPE_CFL_FACTOR // issue #100
+  std::cout << "CFL Factor:    "<< EXAHYPE_CFL_FACTOR << "\n";
+#else
+  std::cout << "CFL Factor:    Default (0.9 or so)\n";
+#endif
 
   std::cout << "\n";
   std::cout << "Makesystem build options\n";

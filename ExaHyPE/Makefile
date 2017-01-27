@@ -266,6 +266,12 @@ ifeq ($(call tolower,$(BOUNDARYCONDITIONS)),periodic)
 	COMPILER_CFLAGS += -DPeriodicBC
 endif
 
+# CFL Condition for ADERDG 2D C, issue #100
+# pass Environment variable to build constant
+ifdef EXAHYPE_CFL_FACTOR
+	COMPILER_CFLAGS += -DEXAHYPE_CFL_FACTOR=$(EXAHYPE_CFL_FACTOR)
+endif
+
 
 
 #
