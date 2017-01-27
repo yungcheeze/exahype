@@ -278,7 +278,7 @@ double solutionUpdate(double** luhCellwise,
   idx3 idx_Fy(basisSize + 1, basisSize, numberOfVariables);
 
   double dt_max_allowed = std::numeric_limits<double>::max();
-  static const double EXAHYPE_CFL_FACTOR = 0.9;
+  static const double cflFactor = 0.9;
 
   // x edges
   for (int j = 0; j < basisSize; j++) {
@@ -289,7 +289,7 @@ double solutionUpdate(double** luhCellwise,
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula.
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[0] / s_max_x);
+          dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x);
     }
   }
 
@@ -300,7 +300,7 @@ double solutionUpdate(double** luhCellwise,
           Fy + idx_Fy(j, k, 0), wRy + idx_extended(j, k + 1, 0),
           wLy + idx_extended(j + 1, k + 1, 0), numberOfVariables, 1);
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
+          dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
     }
   }
 

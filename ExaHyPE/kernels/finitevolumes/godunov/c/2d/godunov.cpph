@@ -264,7 +264,7 @@ double solutionUpdate(
   
   // 4. Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
-  static const double EXAHYPE_CFL_FACTOR = 0.9; // TODO(Dominic): Move this out.
+  static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
   
   // x edges 
   double* Fn = tempStateSizedVectors[0];
@@ -279,7 +279,7 @@ double solutionUpdate(
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
+          dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
       
       for (int l=0; l<numberOfVariables; ++l) {
         luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
@@ -297,7 +297,7 @@ double solutionUpdate(
           luh + idx(j+1, k, 0), 
           numberOfVariables, 1, tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
-          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * cellSize[1] / s_max_y);
+          dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
         luh_new[idx(j, k, l)]   -= dt / cellSize[1] * Fn[l];  
@@ -330,7 +330,7 @@ double stableTimeStepSize(const double* const luh,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           int numberOfVariables, int basisSize) {  
   double dt_max_stable = std::numeric_limits<double>::max();
-  static const double EXAHYPE_CFL_FACTOR = 0.9; // TODO externalize
+  static const double cflFactor = 0.9; // TODO externalize
   
   double* lambda = tempEigenvalues;
   
@@ -346,7 +346,7 @@ double stableTimeStepSize(const double* const luh,
                      std::abs<double>);
       double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
       dt_max_stable = std::min(
-          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
+          dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
 
       // y
       PDEEigenvalues(luh + idx_luh(j, k, 0), 1, lambda);
@@ -354,7 +354,7 @@ double stableTimeStepSize(const double* const luh,
                      std::abs<double>);
       double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
       dt_max_stable = std::min(
-          dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
+          dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
     }
   }
 
