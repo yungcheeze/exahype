@@ -103,6 +103,8 @@ public class GenericADERDG implements Solver {
       content = content.replaceAll("\\{\\{AfterVolumeUnknownsProlongation\\}\\}", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
       content = content.replaceAll("\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
       content = content.replaceAll("\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "  _profiler->stop(\"volumeUnknownsRestriction\");");
+      content = content.replaceAll("\\{\\{BeforeDummyK\\}\\}", "  _profiler->start(\"DummyK_Kernel\");"); //TODO KD adapt name
+      content = content.replaceAll("\\{\\{AfterDummyK\\}\\}", "  _profiler->stop(\"DummyK_Kernel\");");
 	  } else {
       content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSpaceTimePredictor\\}\\}", "");  
       content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSpaceTimePredictor\\}\\}", ""); 
@@ -128,6 +130,8 @@ public class GenericADERDG implements Solver {
       content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsProlongation\\}\\}", ""); 
       content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", ""); 
       content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "");
+      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeDummyK\\}\\}", ""); //TODO KD adapt name
+      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterDummyK\\}\\}", "");
 	  }
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value?

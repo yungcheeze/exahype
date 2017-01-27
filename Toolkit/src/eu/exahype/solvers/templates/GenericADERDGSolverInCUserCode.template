@@ -76,3 +76,14 @@ void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int normalNonZ
   // @todo Please implement/augment if required
 {{MatrixB}}
 }
+
+//TODO KD
+// tell the user what it is
+bool {{Project}}::{{Solver}}::isDummyKRequired() const { 
+  return false;
+}
+
+//TODO KD
+void {{Project}}::{{Solver}}::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+  //TODO KD // @todo Please implement/augment if required and set bool function
+}

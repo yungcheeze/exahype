@@ -42,7 +42,8 @@ namespace {
                              "faceUnknownsRestriction",
                              "volumeUnknownsProlongation",
                              "volumeUnknownsRestriction",
-                             "boundaryConditions"};
+                             "boundaryConditions",
+                             "dummyK_GeneratedCall"}; //TODO KD
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
 
@@ -1551,7 +1552,11 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
-
+    if(isDummyKRequired()) { //disable kernel if not needed
+      dummyK_GeneratedCall(newSolution, cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempStateSizedArrays[0]); //TODO KD
+      // luh, t, dt, cell cell center, cell size
+    }
+    
     if (hasToAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
@@ -3667,3 +3672,11 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
     true
   );
 }
+
+void exahype::solvers::ADERDGSolver::dummyK_GeneratedCall(
+    double* luh, 
+    const double t,
+    const double dt, 
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx, 
+    double* tempForceVector) {printf("shouldn't be here");}

@@ -192,6 +192,21 @@ void volumeUnknownsRestriction(
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
     const int numberOfVariables, const int basisSize);
+    
+//TODO KD    
+template <typename SolverType>
+void dummyK_Kernel(
+    SolverType& solver,
+    double* luh, 
+    const double t,
+    const double dt,
+    const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    const int numberOfVariables, 
+    const int numberOfParameters, 
+    const int basisSize,
+    double* tempForceVector //memory space for forceVector
+    );
 }  // namespace c
 }  // namespace generic
 }  // namespace aderdg
@@ -205,6 +220,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/2d/dummyK_Kernel.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
@@ -213,6 +229,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/3d/dummyK_Kernel.cpph"
 #endif
 
 // Todo: Recasting the code from function templates to class templates

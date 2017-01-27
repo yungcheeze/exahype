@@ -108,7 +108,19 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
       //
       // TODO(Dominic): This will change if we use a different method than a 1st order Godunov method:
       _tempUnknowns[solverNumber] = nullptr;
-    } else {
+    } else if(solver->getType()==exahype::solvers::Solver::Type::ADERDG) {
+      //TODO KD adapt comment
+      //only one array of size nVar is required for ADERDG if DummyK is used
+      exahype::solvers::ADERDGSolver* aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+      if(aderdgSolver->isDummyKRequired()) {//TODO KD
+        _tempStateSizedVectors[solverNumber] = new double*[1];
+        _tempStateSizedVectors[solverNumber][0] = new double[solver->getNumberOfVariables()]; 
+      } else {
+        _tempStateSizedVectors[solverNumber] = nullptr;
+      }
+      _tempUnknowns     [solverNumber] = nullptr;
+    } 
+    else {
       _tempStateSizedVectors[solverNumber] = nullptr;
       _tempUnknowns     [solverNumber] = nullptr;
     }

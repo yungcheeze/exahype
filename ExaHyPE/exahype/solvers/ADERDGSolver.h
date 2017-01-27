@@ -734,6 +734,9 @@ public:
   virtual bool usePaddedData_nVar() const {return false;}
   virtual bool usePaddedData_nDoF() const {return false;}
   
+  //TODO KD
+  virtual bool isDummyKRequired() const {return false;}
+  
   /**
    * @brief Adds the solution update to the solution.
    *
@@ -971,6 +974,15 @@ public:
       const int fineGridLevel,
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
   ///@}
+  
+  //TODO KD
+  virtual void dummyK_GeneratedCall(
+    double* luh, 
+    const double t,
+    const double dt, 
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx, 
+    double* tempForceVector);
 
 
   /**
