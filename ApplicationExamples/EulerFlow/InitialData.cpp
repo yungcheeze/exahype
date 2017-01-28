@@ -78,12 +78,6 @@ void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
 /**
  * MovingGauss2D is a moving gaussian matter distribution where it is simple
  * to give an analytic result.
- *
- * TODO(Dominic): This is unfortunately not true, the density perturbation
- * does influence the velocity field over time which will change the
- * density distribution to something else than the initial one.
- * This is not pure advection, we add new physics in Euler
- * (momentum and energy balance).
  **/
 void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
   Pasta::vec2 xvec(x);
