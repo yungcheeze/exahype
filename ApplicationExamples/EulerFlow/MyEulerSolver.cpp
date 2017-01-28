@@ -234,3 +234,7 @@ void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZer
   std::memset(Bn, 0, nVar * sizeof(double));
 }
 
+bool Euler::MyEulerSolver::isDummyKRequired() const {
+  return false;
+}
+
