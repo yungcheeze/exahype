@@ -539,7 +539,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       tempStateSizedVector,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictor::luh, // TODO(Dominic): Rename namespace to testSpaceTimePredictorLinear?
-      dx, dt
+      dx, dt, nullptr
       );
 
   for (int i = 0; i < 320; i++) {
@@ -628,7 +628,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       tempStateSizedVector,
       exahype::tests::testdata::generic_euler::testSpaceTimePredictorNonlinear::
           luh,
-      dx, timeStepSize
+      dx, timeStepSize, nullptr
       );
 
   for (int i = 0; i < 1280; i++) {
