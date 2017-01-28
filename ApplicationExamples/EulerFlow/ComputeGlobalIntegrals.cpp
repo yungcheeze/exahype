@@ -2,8 +2,8 @@
 #include "Primitives.h"
 #include "InitialData.h"
 
-
-Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver) {
+Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver)
+{
 	// open all the reductions
 	assert( 5 == nVar );
 	
@@ -86,16 +86,18 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 		primitives[i]->addValue( V[i], scaling );
 
 	// now do the convergence test, as we have exact initial data
-	double Exact[nVar];
+	double ExactCons[nVar];
+	double ExactPrim[nVar];
 	// TODO: Need a way to access _data in tarch::la::Vector.
 	double xpos[DIMENSIONS];
 	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 	
-	idfunc(xpos, Exact, time);
+	idfunc(xpos, ExactCons, time); // Sven, this returns the conserved quantities
+  cons2prim(ExactPrim, ExactCons);
 
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {
-		localError[i] = abs(V[i] - Exact[i]);
+		localError[i] = abs(V[i] - ExactPrim[i]);
 		errors[i]->addValue( localError[i], scaling );
 	}
 }

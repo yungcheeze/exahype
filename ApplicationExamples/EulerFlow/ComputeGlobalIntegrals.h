@@ -5,6 +5,9 @@
 // ========================
 //   www.exahype.eu
 // ========================
+#ifndef __ComputeGlobalIntegrals_CLASS_HEADER__
+#define __ComputeGlobalIntegrals_CLASS_HEADER__
+
 #include "exahype/plotters/Plotter.h"
 namespace Euler{
   class ComputeGlobalIntegrals;
@@ -18,8 +21,11 @@ namespace Euler{
 /* I hope these modifications are not overwritten... */
 #include "TimeSeriesReductions.h"
 #include "MyEulerSolver.h"
-static const int nVar = Euler::MyEulerSolver::nVar; // shortcut
 
+#ifndef __NVAR__
+static const int nVar = Euler::MyEulerSolver::nVar; // shortcut
+#define __NVAR__
+#endif
 
 class Euler::ComputeGlobalIntegrals: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   private:
@@ -42,3 +48,5 @@ class Euler::ComputeGlobalIntegrals: public exahype::plotters::Plotter::UserOnTh
     double* outputQuantities,
     double timeStamp) override;
 };
+
+#endif
