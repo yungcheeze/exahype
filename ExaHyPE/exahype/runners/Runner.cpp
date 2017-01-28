@@ -483,6 +483,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
       tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+    // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
+    // see issue #103
     bool plot = exahype::plotters::isAPlotterActive(
         solvers::Solver::getMinNextSolverTimeStampOfAllSolvers());
 
