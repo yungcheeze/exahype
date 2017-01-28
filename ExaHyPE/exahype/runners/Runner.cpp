@@ -484,7 +484,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
       tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
     bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+        solvers::Solver::getMinNextSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
       repository.getState().setTimeStepSizeWeightForPredictionRerun(

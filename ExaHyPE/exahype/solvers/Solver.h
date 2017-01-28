@@ -393,6 +393,15 @@ class exahype::solvers::Solver {
   static double getMinSolverTimeStampOfAllSolvers();
 
   /**
+   * Run over all solvers and identify the minimal sum of minimal time stamp
+   * plus the minimal time step size.
+   *
+   * The result is a lower bound of the minimum time stamp
+   * that will be obtained in the following time step.
+   */
+  static double getMinNextSolverTimeStampOfAllSolvers();
+
+  /**
    * Run over all solvers and identify the minimal time step size.
    */
   static double getMinSolverTimeStepSizeOfAllSolvers();
