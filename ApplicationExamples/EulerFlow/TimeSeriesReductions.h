@@ -75,8 +75,8 @@ public:
         // compare the calculation in MyEulerSolver_Plotter1.cpp 
         data[l1] += abs(val) * dx;
         data[l2] += val * val * dx;
-        data[max] = std::max( data[max], val*dx);
-        data[min] = std::min( data[min], val*dx );
+        data[max] = std::max( data[max], val);
+        data[min] = std::min( data[min], val);
         data[avg] += val;
         avgcnt++;
     }
