@@ -3,6 +3,8 @@
 #include "MHDSolver.h"
 #include "InitialDataAdapter.h"
 
+#include "C2P-MHD.h"
+
 #include <limits> // double max
 #include <cmath> // C++11: std::signbit
 
@@ -33,14 +35,14 @@ void MHDSolver::RelativeErrorWriter::mapQuantities(
   
   // convert tarch::la::Vector to double*  
   double xpos[nDim];
-  double exact[nVar];
+  double exactCons[nVar];
   for(int i=0; i<nDim; i++) xpos[i] = x[i];
 
-  alfenwave_(xpos, exact, &timeStamp);
-  
+  alfenwave_(xpos, exactCons, &timeStamp);
+
   // compute the difference
   for (int i=0; i<nVar; i++) {
-    outputQuantities[i] = ( Q[i] - exact[i] ) / exact[i];
+    outputQuantities[i] = ( Q[i] - exactCons[i] ) / exactCons[i];
     // Make NaN to finite value. Basically works like numpy.nan_to_num.
     if(outputQuantities[i] != outputQuantities[i] || outputQuantities[i] == std::numeric_limits<double>::infinity()) {
         outputQuantities[i] = sign(outputQuantities[i]) * std::numeric_limits<double>::max();
