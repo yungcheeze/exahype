@@ -89,7 +89,7 @@ SUBROUTINE InitialAlfenWave(x, Q)
 END SUBROUTINE InitialAlfenWave
 
 SUBROUTINE AlfenWave(x, Q, t)
-    ! Computes the AlfenWave at a given time t.
+    ! Computes the AlfenWave conserved variables (Q) at a given time t.
     ! Use it ie. with t=0 for initial data
     ! Use it for any other time ie. for comparison
 
@@ -130,7 +130,7 @@ SUBROUTINE AlfenWave(x, Q, t)
 END SUBROUTINE AlfenWave
 
 SUBROUTINE InitialBlast(x, Q)
-    ! Blast wave:
+    ! Blast wave initial data in conserved variables (Q):
     ! Simulation domain:  -6 .. +6
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -179,6 +179,7 @@ SUBROUTINE InitialBlast(x, Q)
 END SUBROUTINE
 
 SUBROUTINE InitialOrsagTang(x, Q)
+    ! Orsang-Tang initial data in conserved variables (Q)
     ! Simulation Domain: 0 .. 2*pi = 6.283185307179586
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -211,6 +212,7 @@ SUBROUTINE InitialOrsagTang(x, Q)
 END SUBROUTINE InitialOrsagTang
 
 SUBROUTINE InitialRotor(x,Q)
+    ! MHD Rotor initial data in conserved variables (Q)
     ! Domain: -0.5 .. 0.5  (square domain)
 
     USE, INTRINSIC :: ISO_C_BINDING
