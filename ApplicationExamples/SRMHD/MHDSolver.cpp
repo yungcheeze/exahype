@@ -127,4 +127,6 @@ void MHDSolver::MHDSolver::matrixb(const double* const Q, const int normalNonZer
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
-
+bool MHDSolver::MHDSolver::isDummyKRequired() const {
+  return false;
+}
