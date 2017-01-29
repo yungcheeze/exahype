@@ -111,8 +111,8 @@ void Euler::ComputeGlobalIntegralsLegendre::mapQuantities(
 		errors[i]->addValue( localError[i], scaling*wx*wy*wz );
 
 		// Uncomment for debugging reasons
-//	  std::cout << "V_ana["<<i<<"]="<<Exact[i]<<",V_h["<<i<<"]="<<V[i]<< std::endl;
-//	  std::cout << "Q_ana["<<i<<"]="<<ExactPrim[i]<<",Q_h["<<i<<"]="<<Q[i] <<std::endl;
+//		std::cout << "V_ana["<<i<<"]="<<ExactPrim[i]<<",V_h["<<i<<"]="<<V[i]<< std::endl;
+//		std::cout << "Q_ana["<<i<<"]="<<Exact[i]<<",Q_h["<<i<<"]="<<Q[i] <<std::endl;
 	}
 }
 
