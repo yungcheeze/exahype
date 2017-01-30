@@ -36,7 +36,7 @@ exahype-project EulerFVM
   end computational-domain
  
   solver Finite-Volumes MyEulerSolver
-    variables         = 5
+    variables         =     rho:1,   v:3,      E:1
     parameters        = 0
     patch-size        = 10
     maximum-mesh-size = 5e-2
