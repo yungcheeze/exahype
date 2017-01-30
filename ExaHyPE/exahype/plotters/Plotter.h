@@ -238,6 +238,18 @@ class exahype::plotters::Plotter {
   bool checkWetherPlotterBecomesActive(double currentTimeStamp);
   bool isActive() const;
   bool plotDataFromSolver(int solver) const;
+
+  /**
+   * <h2>Large solver time steps</h2>
+   * In case of large solver time step sizes, it can
+   * happen that two or more plotting times fall into the
+   * interval between the current solver time stamp
+   * and the previous one.
+   *
+   * In these scenarios, we have to increment the
+   * plotting time multiple times by the
+   * repeat time.
+   */
   void finishedPlotting();
 
   void plotPatch(
