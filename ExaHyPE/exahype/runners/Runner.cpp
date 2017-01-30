@@ -486,7 +486,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
     // see issue #103
     bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::getMinNextSolverTimeStampOfAllSolvers());
+        solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
       repository.getState().setTimeStepSizeWeightForPredictionRerun(
