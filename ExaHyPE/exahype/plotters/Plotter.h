@@ -29,7 +29,7 @@ namespace exahype {
 
     extern std::vector<Plotter*> RegisteredPlotters;
 
-    bool isAPlotterActive(double currentTimeStep);
+    bool isAPlotterActive(double currentTimeStamp);
     void finishedPlotting();
     double getTimeOfNextPlot();
   }
@@ -185,6 +185,10 @@ class exahype::plotters::Plotter {
    * Time of the next snapshot to be written
    */
   double                 _time;
+  /**
+   * Most recent time stamp communicated by the solver.
+   */
+  double                 _solverTimeStamp;
   const double           _repeat;
   std::string            _filename;
   const std::string      _select;
@@ -231,7 +235,7 @@ class exahype::plotters::Plotter {
    * Checks whether there should be a plotter according to this class.
    * If it should become open, it is opened
    */
-  bool checkWetherSolverBecomesActive(double currentTimeStamp);
+  bool checkWetherPlotterBecomesActive(double currentTimeStamp);
   bool isActive() const;
   bool plotDataFromSolver(int solver) const;
   void finishedPlotting();
