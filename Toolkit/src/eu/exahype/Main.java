@@ -72,7 +72,7 @@ public class Main {
     try {
       System.out.print("read input file " + inputFileName + " .");
       parser = new eu.exahype.parser.Parser(new eu.exahype.lexer.Lexer(
-          new java.io.PushbackReader(new java.io.FileReader(inputFileName),999999))); //TODO Dominic fix the PushbackReader buffer size
+          new java.io.PushbackReader(new java.io.FileReader(inputFileName)))); //TODO Dominic fix the PushbackReader buffer size
       document = parser.parse();
       System.out.println(".. ok");
       System.out.println("\n\n\n\n");

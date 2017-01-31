@@ -123,7 +123,7 @@ Tokens
   identifier                        = identifier;
   typename                          = nondigit ( digit | nondigit | '::' ) *;
   
-  variables_list                    = (identifier (blank)* ':' (blank)* digit+) ((blank)* ',' (blank)* (identifier (blank)* ':' (blank)* digit+) ) *;
+  variables_list                    = (identifier ':' digit+) (',' (identifier ':' digit+) ) *;
   
   parameter_list                    = '{'
                                         (  (identifier ( ':' ( decimal_number ( ( 'e' | 'E' ) sign? digit+ ) ? | identifier ) ) ? )
