@@ -11,12 +11,12 @@
 #include "exahype/Parser.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+// @todo Has to be included by generator
+#include "MyEulerSolver_Variables.h"
+
 
 namespace EulerFVM{
   class MyEulerSolver;
-
-  class State;
-  class Flux;
 }
 
 class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
@@ -40,56 +40,6 @@ class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
     static void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
     static void flux(const double* const Q,double** F);
     static void source(const double* const Q,double* S);
-};
-
-class EulerFVM::State {
-private:
-  double _rho;
-  tarch::la::Vector<3,double> _u; // u has dim 3 for 2.5D Euler formulation
-  double _E;
-public:
-  double rho() {
-    return _rho;
-  }
-  const tarch::la::Vector<3,double>& u() {
-    return _u;
-  }
-  double E() {
-    return _E;
-  }
-
-  State(const double* const Q) {
-    _rho  = Q[0];
-    for (int i=0; i<3; ++i) {
-      _u[i] = Q[i+1];
-    }
-    _E = Q[1+3];
-  }
-};
-
-class EulerFVM::Flux {
-private:
-  double** _F;
-  static constexpr int _variables = 5;
-public:
-  Flux(double** F) : _F(F) {}
-
-  void writeRow(int index, const tarch::la::Vector<2,double>& rowVector) { // We need this method for 2D applications
-    assertion2(index>-1,index,_variables);
-    assertion1(index<_variables,_variables);
-    _F[0][index] = rowVector[0];
-    _F[1][index] = rowVector[1];
-  }
-
-  void writeRow(int index, const tarch::la::Vector<3,double>& rowVector) { // We need this method for 2.5D applications
-    assertion2(index>-1,index,_variables);
-    assertion1(index<_variables,_variables);
-    _F[0][index] = rowVector[0];
-    _F[1][index] = rowVector[1];
-#if DIMENSIONS==3
-    _F[2][index] = rowVector[2];
-#endif
-  }
 };
 
 #endif // __MyEulerSolver_CLASS_HEADER__
