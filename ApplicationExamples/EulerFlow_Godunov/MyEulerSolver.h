@@ -11,9 +11,6 @@
 #include "exahype/Parser.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
-// @todo Has to be included by generator
-#include "MyEulerSolver_Variables.h"
-
 
 namespace EulerFVM{
   class MyEulerSolver;
@@ -21,6 +18,12 @@ namespace EulerFVM{
 
 class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
   public:
+    /**
+     * @todo Has to be generated
+     */
+    class Variables;
+    class Fluxes;
+
     MyEulerSolver(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping);
     
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -41,5 +44,6 @@ class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
     static void flux(const double* const Q,double** F);
     static void source(const double* const Q,double* S);
 };
+
 
 #endif // __MyEulerSolver_CLASS_HEADER__
