@@ -1,7 +1,6 @@
 #include "MHDSolver_ADERDG.h"
 //#include "fortran.h" _ltob
 
-#include "InitialDataAdapter.h"
 #include "PDE.h"
 
 #include <memory>
