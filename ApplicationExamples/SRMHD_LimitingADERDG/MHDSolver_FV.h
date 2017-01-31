@@ -18,7 +18,7 @@ namespace MHD{
 
 class MHD::MHDSolver_FV : public exahype::solvers::FiniteVolumesSolver {
   public:
-    MHDSolver_FV(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping);
+    MHDSolver_FV(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,exahype::Parser::ParserView constants);
     
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;

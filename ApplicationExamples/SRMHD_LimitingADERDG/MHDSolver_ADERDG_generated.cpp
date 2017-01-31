@@ -12,9 +12,9 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 
-MHD::MHDSolver_ADERDG::MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs):
+MHD::MHDSolver_ADERDG::MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants):
   exahype::solvers::ADERDGSolver("MHDSolver_ADERDG",nVar /* numberOfUnknowns */,nParams /* numberOfParameters */,order + 1  /* nodesPerCoordinateAxis */,maximumMeshSize,timeStepping) {
-  init(cmdlineargs);
+  init(cmdlineargs, constants);
 }
 
 

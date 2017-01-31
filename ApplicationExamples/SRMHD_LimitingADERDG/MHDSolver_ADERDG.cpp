@@ -13,7 +13,7 @@
 /* This is the MHDSolver_ADERDG.cpp binding to Fortran functions, as done in SRHD. */
 
 
-void MHD::MHDSolver_ADERDG::init(std::vector<std::string>& cmdargs) {
+void MHD::MHDSolver_ADERDG::init(std::vector<std::string>& cmdargs, exahype::Parser::ParserView constants) {
   // do nothing
 }
 

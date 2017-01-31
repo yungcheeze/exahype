@@ -66,6 +66,7 @@ exahype-project MHD
     limiter-language         = C
     dmp-relaxation-parameter = 0.0001
     dmp-difference-scaling   = 0.001
+    constants                = {initialdata:alfven}
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables = 9

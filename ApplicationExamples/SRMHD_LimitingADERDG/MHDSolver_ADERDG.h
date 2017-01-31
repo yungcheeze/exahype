@@ -9,7 +9,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/solvers/ADERDGSolver.h"
-
+#include "exahype/Parser.h"
 
 namespace MHD{
   class MHDSolver_ADERDG;
@@ -25,7 +25,7 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     static constexpr int nDim    = 2;
     static constexpr int order   = 9;
   
-    MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override;
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -42,7 +42,7 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; //TODO KD
 
-    void init(std::vector<std::string>& cmdlineargs);
+    void init(std::vector<std::string>& cmdlineargs, exahype::Parser::ParserView constants);
     void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
     void flux(const double* const Q,double** F);
     void source(const double* const Q,double* S);
