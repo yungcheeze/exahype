@@ -26,8 +26,7 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     static constexpr int order   = 9;
   
     MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
-
-    void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) override; 
+    void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override;
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -41,6 +40,7 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     void faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
+    void dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; //TODO KD
 
     void init(std::vector<std::string>& cmdlineargs);
     void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
@@ -50,6 +50,8 @@ class MHD::MHDSolver_ADERDG: public exahype::solvers::ADERDGSolver {
     void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
     void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
     void matrixb(const double* const Q,const int normalNonZero,double* Bn);
+    bool isDummyKRequired() const override;
+    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
 
     bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
 };

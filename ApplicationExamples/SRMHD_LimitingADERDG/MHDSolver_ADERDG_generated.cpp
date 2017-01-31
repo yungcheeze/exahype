@@ -19,8 +19,8 @@ MHD::MHDSolver_ADERDG::MHDSolver_ADERDG(double maximumMeshSize,exahype::solvers:
 
 
 
-void MHD::MHDSolver_ADERDG::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) {
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MHDSolver_ADERDG>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
+void MHD::MHDSolver_ADERDG::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<MHDSolver_ADERDG>(*this,lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
 }
 
 
@@ -90,4 +90,9 @@ void MHD::MHDSolver_ADERDG::volumeUnknownsProlongation(double* luhFine,const dou
 
 void MHD::MHDSolver_ADERDG::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
   kernels::aderdg::generic::c::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+}
+
+// TODO KD
+void MHD::MHDSolver_ADERDG::dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
+  kernels::aderdg::generic::c::dummyK_Kernel<MHDSolver_ADERDG>(*this, t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
 }
