@@ -1,0 +1,41 @@
+#ifndef __{{Solver}}_Variables_CLASS_HEADER__
+#define __{{Solver}}_Variables_CLASS_HEADER__
+
+#include "{{Solver}}.h"
+
+#include "tarch/la/Matrix.h"
+
+class {{Project}}::{{Solver}}::Variables {
+  private:
+    double* _Q;
+  public:
+    Variables(double* Q) : _Q(Q) {}
+
+{{VariablesGetters}}
+
+{{VariablesSetters}}
+};
+
+
+class {{Project}}::{{Solver}}::ReadOnlyVariables {
+  private:
+    const double* const _Q;
+  public:
+    ReadOnlyVariables(const double* const Q) : _Q(Q) {}
+
+{{VariablesGetters}}
+};
+
+
+class {{Project}}::{{Solver}}::Fluxes {
+  private:
+    double** _F;
+  public:
+    Fluxes(double** F) : _F(F) {}
+
+{{FluxesGetters}}
+
+{{FluxesSetters}}
+};
+
+#endif
