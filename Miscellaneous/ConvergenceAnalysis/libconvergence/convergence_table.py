@@ -300,7 +300,7 @@ class ConvergenceReporter:
 			self.logger.warning("Not all simulation domains are equal! Sizes are: ", widths)
 		ncells_float = widths / meshsizes
 		self.ncells = np.rint(ncells_float).astype(int)
-		assert np.all( np.abs(ncells_float - self.ncells) < 1e-10), "Nonintegral number of cells: "+str(ncells_float)
+		assert np.all( np.abs(ncells_float - self.ncells) < 1e-8), "Nonintegral number of cells: "+str(ncells_float)
 
 		# 2D) Beautifying of paramtable
 		# the following beautifying is only done for printing the paramtable
