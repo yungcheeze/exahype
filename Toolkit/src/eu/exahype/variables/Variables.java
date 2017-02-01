@@ -17,19 +17,19 @@ public class Variables {
   Map<String,Integer> _parametersMap;
   int                 _numberOfParameters;
   
-  public Map<String, Integer> get_variablesMap() {
+  public Map<String, Integer> getVariablesMap() {
     return _variablesMap;
   }
 
-  public int get_numberOfVariables() {
+  public int getNumberOfVariables() {
     return _numberOfVariables;
   }
 
-  public Map<String, Integer> get_parametersMap() {
+  public Map<String, Integer> getParametersMap() {
     return _parametersMap;
   }
 
-  public int get_numberOfParameters() {
+  public int getNumberOfParameters() {
     return _numberOfParameters;
   }
 
@@ -276,13 +276,14 @@ public class Variables {
     } else {
       // ex: double v(int row, int column) const;  
       getters += indent + "double "+identifier+"(int row, int column) const {\n"
-              +  indent + "  assertion(column >= 0 && column<DIMENSIONS);\n"
               +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n"
+              +  indent + "  assertion(column >= 0 && column<DIMENSIONS);\n"
               +  indent + "  return _F[column]["+offset+"+row];\n"
               +  indent + "}\n\n";
       
       // tarch::la::Vector<3,double> v(int row) const;
       getters += indent + "tarch::la::Vector<DIMENSIONS,double> "+identifier+"(int row) const {\n"
+              +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n"
               +  indent + "  tarch::la::Vector<DIMENSIONS,double> values(";
       for (int i=0; i<_dimensions; i++) {
         getters += "_F["+i+"]["+offset+"+row]" + ( i<_dimensions-1 ? "," : ");\n" );
@@ -358,14 +359,16 @@ public class Variables {
               +  indent + "}\n\n";
 
       // ex: void v(int row, const tarch::la::Vector<3,double>& values);
-      setters += indent +"void "+identifier+"(int row, const tarch::la::Vector<DIMENSIONS,double>& values) {\n";
+      setters += indent +"void "+identifier+"(int row, const tarch::la::Vector<DIMENSIONS,double>& values) {\n"
+              +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
       for (int j=0; j<_dimensions; j++) {
-        setters += indent +"  "+"_F["+j+"]["+offset+"+row]=values["+j+"];\n";
+        setters += indent +"  _F["+j+"]["+offset+"+row]=values["+j+"];\n";
       }
       setters += indent +"}\n\n";
       
       // ex: void v(const tarch::la::Matrix<3,DIMENSIONS,double>& values);
-      setters += indent +"void "+identifier+"(int row, const tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double>& values) {\n";
+      setters += indent +"void "+identifier+"(int row, const tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double>& values) {\n"
+              +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
       for (int i=0; i<multiplicity; i++) {
         for (int j=0; j<_dimensions; j++) {
           setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=values["+i+"]["+j+"];\n";
@@ -378,6 +381,7 @@ public class Variables {
       for (int j=0; j<_dimensions; j++) {
         setters += "int v"+j+( j<_dimensions-1 ? "," : ") {\n" );
       }
+      setters += indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
       for (int j=0; j<_dimensions; j++) {
         setters += indent +"  "+"_F["+j+"]["+offset+"+row]=v"+j+";\n";
       }
@@ -433,6 +437,5 @@ public class Variables {
     content = content.replaceAll("\\{\\{FluxesSetters\\}\\}", fluxesSetters);
 
     writer.write(content);
-    writer.flush();
   }
 }

@@ -29,6 +29,7 @@ public class TestVariables {
     try {
       System.out.println("Content of header file: ");
       variables.writeHeader(bufferedWriter, "MySolver", "MyProject");
+      bufferedWriter.flush();
     } catch (IOException e) {
       e.printStackTrace();
     }
