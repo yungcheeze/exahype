@@ -9,6 +9,10 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/solvers/ADERDGSolver.h"
+#include <ostream>
+
+
+
 
 namespace Euler{
   class LimitingADERDG_ADERDG;
@@ -16,17 +20,20 @@ namespace Euler{
 
 class Euler::LimitingADERDG_ADERDG: public exahype::solvers::ADERDGSolver {
   public:
-  	// Sorry for being inconsistent here: While AderDGSolver offers the methods getNumberOfVariables() etc.,
-    // in static context they cannot be accessed. Thus the toolkit offers you access to the variables here.
-    // Thank you,Toolkit!
-    static constexpr int nVar    = 5;
-    static constexpr int nParams = 0;
-    static constexpr int nDim    = 2;
-    static constexpr int order   = 3;
+    static constexpr int nVar      = 5;  // TODO: Not required anymore
+    static constexpr int nParams   = 0; // TODO: Not required anymore
+    static constexpr int nDim      = 2;         // TODO: Was never required (->DIMENSIONS)
+    static constexpr int order     = 3;
+    static constexpr int basisSize = 3 + 1;
+  
+    class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+    class Primitives;
   
     LimitingADERDG_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
-    void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt) override; 
+    void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -40,8 +47,7 @@ class Euler::LimitingADERDG_ADERDG: public exahype::solvers::ADERDGSolver {
     void faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
-
-    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+    void dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; //TODO KD
 
     void init(std::vector<std::string>& cmdlineargs);
     void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
@@ -51,6 +57,11 @@ class Euler::LimitingADERDG_ADERDG: public exahype::solvers::ADERDGSolver {
     void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
     void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
     void matrixb(const double* const Q,const int normalNonZero,double* Bn);
+	bool isDummyKRequired() const override;
+    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    
+    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+
 };
 
 #endif // __LimitingADERDG_ADERDG_CLASS_HEADER__
