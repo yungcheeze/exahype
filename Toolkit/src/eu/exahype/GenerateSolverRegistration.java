@@ -188,7 +188,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _plotterNumber = 0;
 
       writeVersionString("Kernel["+_kernelNumber+"].registration", "AderdgSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "f;");
+      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
