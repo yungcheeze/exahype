@@ -41,39 +41,39 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   /// Write a single line to the toolkit registration information
   /// Example: writeVersionString("foo bar baz");
   public void writeVersionString(String singleline) {
-      _versionBodyWriter.write("\n  ss << \""+singleline+"\\n\";");
+      _versionBodyWriter.write("\n  ostream << \""+singleline+"\\n\";");
   }
   
   /// Write a key:value pair to the toolkit registration information
   /// Example: writeVersionString("foo", false);
   public void writeVersionString(String key, Object value) {
-      _versionBodyWriter.write("\n  ss << \""+key+": "+String.valueOf(value)+"\\n\";");
+      _versionBodyWriter.write("\n  ostream << \""+key+": "+String.valueOf(value)+"\\n\";");
   }
   
   /// Write any C++ code in the key:value scheme at the value side.
   /// Example: writeVersionCode("foo", "baz::bar();");
   public void writeVersionCode(String key, String code) {
-      _versionBodyWriter.write("\n  ss << \""+key+": \";");
-      _versionBodyWriter.write("\n         "+code);
-      _versionBodyWriter.write("\n  ss << \"\\n\";");
+      _versionBodyWriter.write("\n  ostream << \""+key+": \";");
+      _versionBodyWriter.write("\n  "+code);
+      _versionBodyWriter.write("\n  ostream << \"\\n\";");
   }
   
   @Override
   public void inAProfiling(AProfiling node) {
-    _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
+    _enableProfiler = !node.getProfiler().getText().equals("NoOpProfiler");
     writeVersionString("enableProfiler", _enableProfiler);
   }
   
   @Override
   public void inAProject(AProject node) {
-    _projectName = node.getName().toString().trim();
+    _projectName = node.getName().getText();
     LinkedList<PSolver> solvers = node.getSolver();
     for(PSolver psolver : solvers) {
       if(psolver instanceof AAderdgSolver) {
         AAderdgSolver asolver = (AAderdgSolver) psolver;
         _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().trim().equals("C") 
-                                  && (asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
-                                      ||  asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
+                                  && (asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
+                                      ||  asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
       }
     }
 
@@ -143,8 +143,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Split \"{metric1,metric2...}\" into {\"metric1\", \"metric2\", ...}\n");
       _methodBodyWriter.write("  std::vector<std::string> metrics_vector;\n");
-      _methodBodyWriter.write("  std::stringstream ss;\n");
-      _methodBodyWriter.write("  ss << metrics_identifier_list.substr(1, metrics_identifier_list.size() - 2);\n");
+      _methodBodyWriter.write("  std::stringstream sstream;\n");
+      _methodBodyWriter.write("  sstream << metrics_identifier_list.substr(1, metrics_identifier_list.size() - 2);\n");
       _methodBodyWriter.write("  std::string metric;\n");
       _methodBodyWriter.write(
           "  while (std::getline(ss, metric, ',')) {\n"+
@@ -162,7 +162,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     try {
       _inALimitingADERDGSolver = false;
       
-      _solverName = node.getName().toString().trim();
+      _solverName = node.getName().getText();
 
       _writer.write("#include \"" + _solverName + ".h\"\n");
 
@@ -188,7 +188,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _plotterNumber = 0;
 
       writeVersionString("Kernel["+_kernelNumber+"].registration", "AderdgSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", _projectName + "::" + _solverName + "::staticToString(ss);");
+      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "f;");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
@@ -203,7 +203,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     try {
       _inALimitingADERDGSolver = false;
       
-      _solverName = node.getName().toString().trim();
+      _solverName = node.getName().getText();
       int patchSize     = Integer.parseInt(node.getPatchSize().getText());
       
       _writer.write("#include \"" + _solverName + ".h\"\n");
@@ -229,7 +229,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _plotterNumber = 0;
       
       writeVersionString("Kernel["+_kernelNumber+"].registration", "FiniteVolumesSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", _projectName + "::" + _solverName + "::staticToString(ss);");
+      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants());
       writeVersionString("Kernel["+_kernelNumber+"].patchSize", patchSize);
 
@@ -240,6 +240,80 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     }
   }
 
+  @Override
+  public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
+    try {
+      _inALimitingADERDGSolver = true;
+      
+      _solverName  = node.getName().getText();
+
+      _writer.write("#include \"exahype/solvers/LimitingADERDGSolver.h\"\n");
+      _writer.write("#include \"" + _solverName + "_ADERDG.h\"\n");
+      _writer.write("#include \"" + _solverName + "_FV.h\"\n");
+
+      _methodBodyWriter.write("  {\n\n");
+      _methodBodyWriter.write("  // Create and register solver\n");
+      
+      _methodBodyWriter.write("  exahype::solvers::Solver* solver = nullptr;\n\n");
+
+      writeVersionString("Kernel["+_kernelNumber+"].registration", "LimitingAderdgSolver");
+      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
+      writeVersionString("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName + "{_ADERDG, _FV}");
+      writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
+      
+      // ADER-DG
+      _methodBodyWriter.write("  {\n");
+      
+      if (_enableProfiler) { writeProfilerCreation(); }
+      
+      _methodBodyWriter.write("  solver = new " + _projectName +
+                          "::" + _solverName+"_ADERDG(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                           (_enableProfiler ? ", std::move(profiler)": "")+
+                           ", cmdlineargs");
+      if (node.getConstants()!=null) {
+          _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
+        }
+      _methodBodyWriter.write( ");\n");
+  
+      _methodBodyWriter.write("  }\n");
+      
+      _methodBodyWriter.write("  std::unique_ptr<exahype::solvers::ADERDGSolver> aderdgSolver(static_cast<exahype::solvers::ADERDGSolver*>(solver));\n");
+      
+      // FV
+      _methodBodyWriter.write("  {\n");
+      
+      if (_enableProfiler) { writeProfilerCreation(); }
+
+      _methodBodyWriter.write("  solver = new " + _projectName +
+                          "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          (_enableProfiler ? ", std::move(profiler)": ""));
+      if (node.getConstants()!=null) {
+        _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
+      }
+      _methodBodyWriter.write( ");\n");
+      _methodBodyWriter.write("  }\n");
+      
+      _methodBodyWriter.write("  std::unique_ptr<exahype::solvers::FiniteVolumesSolver> finiteVolumesSolver(static_cast<exahype::solvers::FiniteVolumesSolver*>(solver));\n");
+      
+      // Limiting ADER-DG
+      _methodBodyWriter.write("  \n");
+      _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back(\n"
+          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0)) );\n");
+      
+      _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n");
+      _methodBodyWriter.write("  }\n\n");
+      _methodBodyWriter.write("  \n");
+      
+      _kernelNumber++;
+      _plotterNumber = 0;
+      
+      System.out.println("added creation of solver " + _solverName + " ... ok");
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  }
+  
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
     try {
@@ -324,7 +398,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("\n");
       _writer.write("\n");
       _writer.write("\n");
-      _writer.write("void kernels::to_string(std::ostream& ss) {\n");
+      _writer.write("void kernels::toString(std::ostream& ostream) {\n");
       _writer.write("/* Generated SolverRegistration code by the toolkit */\n");
       _writer.write(_versionBodyWriter.toString());
       _writer.write("\n}");
@@ -334,79 +408,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("\n\n");
       _writer.close();
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
-    }
-  }
-  
-  @Override
-	public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
-    try {
-      _inALimitingADERDGSolver = true;
-      
-      _solverName  = node.getName().toString().trim();
-
-      _writer.write("#include \"exahype/solvers/LimitingADERDGSolver.h\"\n");
-      _writer.write("#include \"" + _solverName + "_ADERDG.h\"\n");
-      _writer.write("#include \"" + _solverName + "_FV.h\"\n");
-
-      _methodBodyWriter.write("  {\n\n");
-      _methodBodyWriter.write("  // Create and register solver\n");
-      
-      _methodBodyWriter.write("  exahype::solvers::Solver* solver = nullptr;\n\n");
-
-      writeVersionString("Kernel["+_kernelNumber+"].registration", "LimitingAderdgSolver");
-      writeVersionString("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName + "{_ADERDG, _FV}");
-      writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
-      
-      // ADER-DG
-      _methodBodyWriter.write("  {\n");
-      
-      if (_enableProfiler) { writeProfilerCreation(); }
-      
-      _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_ADERDG(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
-                           (_enableProfiler ? ", std::move(profiler)": "")+
-                           ", cmdlineargs");
-      if (node.getConstants()!=null) {
-          _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
-        }
-      _methodBodyWriter.write( ");\n");
-  
-      _methodBodyWriter.write("  }\n");
-      
-      _methodBodyWriter.write("  std::unique_ptr<exahype::solvers::ADERDGSolver> aderdgSolver(static_cast<exahype::solvers::ADERDGSolver*>(solver));\n");
-      
-      // FV
-      _methodBodyWriter.write("  {\n");
-      
-      if (_enableProfiler) { writeProfilerCreation(); }
-
-      _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
-                          (_enableProfiler ? ", std::move(profiler)": ""));
-      if (node.getConstants()!=null) {
-        _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
-      }
-      _methodBodyWriter.write( ");\n");
-      _methodBodyWriter.write("  }\n");
-      
-      _methodBodyWriter.write("  std::unique_ptr<exahype::solvers::FiniteVolumesSolver> finiteVolumesSolver(static_cast<exahype::solvers::FiniteVolumesSolver*>(solver));\n");
-      
-      // Limiting ADER-DG
-      _methodBodyWriter.write("  \n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back(\n"
-          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0)) );\n");
-      
-      _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n");
-      _methodBodyWriter.write("  }\n\n");
-      _methodBodyWriter.write("  \n");
-      
-      _kernelNumber++;
-      _plotterNumber = 0;
-      
-      System.out.println("added creation of solver " + _solverName + " ... ok");
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;

@@ -2157,3 +2157,16 @@ void exahype::solvers::LimitingADERDGSolver::dropMasterData(
   _limiter->dropMasterData(masterRank,x,level);
 }
 #endif
+
+std::string exahype::solvers::LimitingADERDGSolver::toString() const {
+  std::ostringstream stringstr;
+  toString(stringstr);
+  return stringstr.str();
+}
+
+void exahype::solvers::LimitingADERDGSolver::toString (std::ostream& out) const {
+  out << getIdentifier() << "{_ADERDG: ";
+  out << _solver->toString() << "}\n";
+  out << getIdentifier() << "{_FV: ";
+  out << _limiter->toString() << "}";
+}

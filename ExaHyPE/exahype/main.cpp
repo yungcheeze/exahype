@@ -75,19 +75,17 @@ int main(int argc, char** argv) {
     logError("main()", "Usage: ./ExaHyPE config-file [additional args passed to Solver...]");
     return -1;
   }
-  
+
   if(std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help") {
     help(argv[0]);
     return -1;
   }
 
-  if(std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v") {
-    version();
-    return -1;
-  }
+  // TODO(Dominic): This is not a reboust way to parse in the command line arguments; use the vector below instead.
+  bool onlyShowVersion=std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v";
 
   exahype::Parser parser;
-  parser.readFile(argv[1]);
+  parser.readFile(argv[onlyShowVersion ? 2 : 1]);
 
   if (!parser.isValid()) {
     logError("main()", "invalid config file. Quit");
@@ -102,6 +100,12 @@ int main(int argc, char** argv) {
   // =====================================
   //
   kernels::initSolvers(parser, cmdlineargs);
+
+  if (onlyShowVersion) {
+    version();
+    kernels::finalise();
+    return 0;
+  }
 
   //
   //   Configure the logging
@@ -258,7 +262,7 @@ void version() {
   std::cout << "\n";
   std::cout << "Toolkit static registry info\n";
   std::cout << "============================\n";
-  kernels::to_string(std::cout);
+  kernels::toString(std::cout);
   std::cout << "\n";
 }
 

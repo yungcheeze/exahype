@@ -1188,14 +1188,9 @@ public:
       const int                                     level) override;
 #endif
 
-  std::string toString() const override {
-    assertionMsg(false, "Please implement!");
-    return _solver->toString();
-  }
+  std::string toString() const override;
 
-  void toString (std::ostream& out) const override {
-    assertionMsg(false, "Please implement!");
-  }
+  void toString (std::ostream& out) const override;
 
   const std::unique_ptr<exahype::solvers::FiniteVolumesSolver>&
   getLimiter () const {
