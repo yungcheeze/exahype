@@ -126,11 +126,9 @@ class {{Project}}::{{Solver}}::Fluxes {
 
 class {{Project}}::{{Solver}}::Primitives {
   private:
-    double _V[{{NumberOfVariables}}+{{NumberOfParameters}}];
+    double _V[{{NumberOfVariables}}];
   public:
-    static constexpr int SizeVariables  = {{NumberOfVariables}};
-    static constexpr int SizeParameters = {{NumberOfParameters}};
-    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
+    static constexpr int SizeVariables = {{NumberOfVariables}};
     
     Primitives() {}
   
@@ -148,16 +146,8 @@ class {{Project}}::{{Solver}}::Primitives {
       return _V;
     }
     
-    int size() const {
-      return Size;
-    }
-    
     int variables() const {
       return SizeVariables;
-    }
-    
-    int parameters() const {
-      return SizeParameters;
     }
     
 
