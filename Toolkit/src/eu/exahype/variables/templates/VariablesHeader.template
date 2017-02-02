@@ -133,12 +133,12 @@ class {{Project}}::{{Solver}}::Primitives {
     Primitives() {}
   
     double& operator [] (int index) {
-      assertion(index>=0 && index < Size);
+      assertion(index>=0 && index < SizeVariables);
       return _V[index];
     }
     
     double& operator () (int index) {
-      assertion(index>=0 && index < Size);
+      assertion(index>=0 && index < SizeVariables);
       return _V[index];
     }
     
