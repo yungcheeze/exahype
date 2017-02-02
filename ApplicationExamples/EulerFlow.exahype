@@ -58,8 +58,8 @@ exahype-project  Euler
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables         = rho:1,u:3,E:1
-    primitives        = 0
+    variables         = rho:1,j:3,E:1
+    primitives        = rho:1,u:3,E:1
     parameters        = 0
     order             = 3
     /* 27 points: 0.05, 9 points: 0.15 */

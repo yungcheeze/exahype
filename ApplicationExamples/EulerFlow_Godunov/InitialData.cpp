@@ -42,14 +42,14 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
  *  Circular shaped pressure jump at centre of domain.
  */
 void EulerFVM::explosionProblem(const double* const x,double* Q) {
-  MyEulerSolver::Variables var(Q);
-  var.u(0.0,0.0,0.0);
+  MyEulerSolver::Variables vars(Q);
+  vars.j(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
-    var.rho() = 1.0;
-    var.E()   = 1.0;
+    vars.rho() = 1.0;
+    vars.E()   = 1.0;
   } else {
-    var.rho() = 0.125;
-    var.E()   = 0.1;
+    vars.rho() = 0.125;
+    vars.E()   = 0.1;
   }
 }
 #endif

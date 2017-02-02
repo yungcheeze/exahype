@@ -21,6 +21,7 @@ class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
+    class Primitives;
 
     MyEulerSolver(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping);
     
