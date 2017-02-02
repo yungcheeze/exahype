@@ -147,7 +147,7 @@ def generateContext(i_config):
 def generateComputeKernels():
     kernelsHeaderGenerator = KernelsHeaderGenerator.KernelsHeaderGenerator(generateContext(m_config))
     kernelsHeaderGenerator.generateCode()
-    spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(m_config, m_numerics)
+    spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(generateContext(m_config))
     spaceTimePredictorGenerator.generateCode()
     volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(generateContext(m_config))
     volumeIntegralGenerator.generateCode()

@@ -72,7 +72,7 @@ public class OptimisedADERDG implements Solver {
         _microarchitecture, _pathToLibxsmm);
         
     String content = IOUtils.convertRessourceContentToString(
-        "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode_withConverter.template"); //TODO JMG remove withConverter when debug over
+        "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
     
 	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
 	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
@@ -80,17 +80,7 @@ public class OptimisedADERDG implements Solver {
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
-    // fluxSplitted
-    //TODO JMG remove when fluxSplitted not needed anymore
-    if(_dimensions == 2) {
-      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", "");  
-      content = content.replaceAll("\\{\\{fluxSplitted_dim\\}\\}", "2"); 
-      content = content.replaceAll("\\{\\{fluxSplitted_F_h\\}\\}", ""); 
-    } else { // == 3
-      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", ", double* h");  
-      content = content.replaceAll("\\{\\{fluxSplitted_dim\\}\\}", "3"); 
-      content = content.replaceAll("\\{\\{fluxSplitted_F_h\\}\\}", "F[2] = h;\n"); 
-    }
+    
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";

@@ -19,20 +19,11 @@
   // PS: If you miss access to user constants here,enable them in the toolkit
 }
 
-//TODO JMG remove when not needed anymore
-void {{Project}}::{{Solver}}::fluxSplitted(const double* const Q, double* f, double* g{{fluxSplitted_h_signature}}) {
-   double* F[{{fluxSplitted_dim}}];
-   F[0] = f;
-   F[1] = g;
-   {{fluxSplitted_F_h}}
-   flux(Q,F);
-}
-
 void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );
-  kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
-  kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );
+  kernels::aderdg::optimised::picardLoopNonlinear<flux>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //S, gradQ, BGradQ
+  kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], tempUnknowns, tempFluxUnknowns);
+  kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
 {{AfterSpaceTimePredictor}}
 }
 
