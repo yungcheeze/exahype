@@ -21,6 +21,8 @@ public class Variables {
   int                 _numberOfVariables;
   Map<String,Integer> _parametersMap;
   int                 _numberOfParameters;
+  Map<String,Integer> _primitivesMap;
+  int                 _numberOfPrimitives;
   
   public Map<String, Integer> getVariablesMap() {
     return _variablesMap;
@@ -38,6 +40,18 @@ public class Variables {
     return _numberOfParameters;
   }
 
+  private static List<PVariable> getVariablesAsList(PSolver node) {
+    List<PVariable> variablesAsList = null;
+    if (node instanceof AAderdgSolver) {
+      variablesAsList = ((AVariables)((AAderdgSolver) node).getVariables()).getVariable();
+    } else if (node instanceof ALimitingAderdgSolver) {
+      variablesAsList = ((AVariables)((ALimitingAderdgSolver) node).getVariables()).getVariable();
+    } else if (node instanceof AFiniteVolumesSolver) {
+      variablesAsList = ((AVariables)((AFiniteVolumesSolver) node).getVariables()).getVariable();
+    } 
+    return variablesAsList;
+  }
+  
   private static List<PVariable> getParametersAsList(PSolver node) {
     List<PVariable> parametersAsList = null;
     if (node instanceof AAderdgSolver) {
@@ -50,16 +64,16 @@ public class Variables {
     return parametersAsList;
   }
   
-  private static List<PVariable> getVariablesAsList(PSolver node) {
-    List<PVariable> variablesAsList = null;
+  private static List<PVariable> getPrimitivesAsList(PSolver node) {
+    List<PVariable> primivitesAsList = null;
     if (node instanceof AAderdgSolver) {
-      variablesAsList = ((AVariables)((AAderdgSolver) node).getVariables()).getVariable();
+      primivitesAsList = ((AVariables)((AAderdgSolver) node).getPrimitives()).getVariable();
     } else if (node instanceof ALimitingAderdgSolver) {
-      variablesAsList = ((AVariables)((ALimitingAderdgSolver) node).getVariables()).getVariable();
+      primivitesAsList = ((AVariables)((ALimitingAderdgSolver) node).getPrimitives()).getVariable();
     } else if (node instanceof AFiniteVolumesSolver) {
-      variablesAsList = ((AVariables)((AFiniteVolumesSolver) node).getVariables()).getVariable();
+      primivitesAsList = ((AVariables)((AFiniteVolumesSolver) node).getPrimitives()).getVariable();
     } 
-    return variablesAsList;
+    return primivitesAsList;
   }
   
   private static Map<String,Integer> parseVariables(List<PVariable> variablesAsList) {
@@ -118,6 +132,20 @@ public class Variables {
     }
   }
   
+  /**
+   * @note We rely on a linked hash map here that does not change the order of the parameters.
+   */
+  public static Map<String, Integer> readPrimitives(PSolver node) {
+    List<PVariable> parametersAsList = getPrimitivesAsList(node);
+    if (parametersAsList!=null) {
+      return parseVariables(parametersAsList); 
+    } else {
+      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
+      System.exit(1);
+      return null;
+    }
+  }
+  
   public static int sumMultiplicities(Map<String,Integer> variables) {
     int sumOfMultiplicities = 0;
     for (String key : variables.keySet()) {
@@ -130,17 +158,25 @@ public class Variables {
   public Variables(PSolver node, int dimensions) {
     _variablesMap       = readVariables(node);
     _parametersMap      = readParameters(node);
+    _primitivesMap      = readPrimitives(node);
     _numberOfVariables  = sumMultiplicities(_variablesMap);
     _numberOfParameters = sumMultiplicities(_parametersMap);
+    _numberOfPrimitives = sumMultiplicities(_primitivesMap);
     _dimensions         = dimensions;
+    
+    assert _numberOfPrimitives==_numberOfVariables;
   }
   
-  public Variables(Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, int dimensions) {
+  public Variables(Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, Map<String, Integer> primitivesMap, int dimensions) {
     _variablesMap       = variablesMap;
     _parametersMap      = parametersMap;
+    _primitivesMap      = primitivesMap;
     _numberOfVariables  = sumMultiplicities(variablesMap);
     _numberOfParameters = sumMultiplicities(parametersMap);
+    _numberOfPrimitives = sumMultiplicities(primitivesMap);
     _dimensions         = dimensions;
+    
+    assert _numberOfPrimitives==_numberOfVariables;
   }
   
   private String appendVariableGetters(String getters, String identifier, int multiplicity, int offset) {
@@ -168,6 +204,9 @@ public class Variables {
     return getters;
   }
   
+  /**
+   * Generate the getters for the variables (and parameters).
+   */
   private String createVariablesGetters() {
     String getters = "";
     
@@ -216,6 +255,9 @@ public class Variables {
     return setters;
   }
   
+  /**
+   * Generate the setters for the variables (and parameters).
+   */
   private String createVariablesSetters() {
     String setters = "";
     
@@ -227,6 +269,38 @@ public class Variables {
     }
     for (String identifier : _parametersMap.keySet()) {
       int multiplicity = _parametersMap.get(identifier);
+      setters = appendVariableSetters(setters, identifier, multiplicity, offset);
+      offset += multiplicity;
+    }
+    
+    return setters;
+  }
+  
+  /**
+   * Generate the getters for the primitives.
+   */
+  private String createPrimitivesGetters() {
+    String getters = "";
+    
+    int offset = 0;
+    for (String identifier : _primitivesMap.keySet()) {
+      int multiplicity = _primitivesMap.get(identifier);
+      getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
+      offset  += multiplicity;
+    }
+    
+    return getters;
+  }
+  
+  /**
+   * Generate the setters for the primitives.
+   */
+  private String createPrimitivesSetters() {
+    String setters = "";
+    
+    int offset = 0;
+    for (String identifier : _primitivesMap.keySet()) {
+      int multiplicity = _primitivesMap.get(identifier);
       setters = appendVariableSetters(setters, identifier, multiplicity, offset);
       offset += multiplicity;
     }
@@ -501,8 +575,11 @@ public class Variables {
         "eu/exahype/variables/templates/VariablesHeader.template");
     
     content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-
+    content = content.replaceAll("\\{\\{Solver\\}\\}",  solverName);
+    
+    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}",  String.valueOf(_numberOfVariables));
+    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}", String.valueOf(_numberOfParameters));
+    
     String variablesGetters = createVariablesGetters();
     String variablesSetters = createVariablesSetters();
     content = content.replaceAll("\\{\\{VariablesGetters\\}\\}", variablesGetters);
@@ -512,6 +589,11 @@ public class Variables {
     String fluxesSetters = createFluxesSetters();
     content = content.replaceAll("\\{\\{FluxesGetters\\}\\}", fluxesGetters);
     content = content.replaceAll("\\{\\{FluxesSetters\\}\\}", fluxesSetters);
+    
+    String primitivesGetters = createPrimitivesGetters().replaceAll("_Q","_V");
+    String primitivesSetters = createPrimitivesSetters().replaceAll("_Q","_V");
+    content = content.replaceAll("\\{\\{PrimitivesGetters\\}\\}", primitivesGetters);
+    content = content.replaceAll("\\{\\{PrimitivesSetters\\}\\}", primitivesSetters);
 
     writer.write(content);
   }
