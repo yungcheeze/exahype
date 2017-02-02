@@ -46,6 +46,7 @@ exahype::solvers::Solver::RefinementControl MHD::MHDSolver_ADERDG::refinementCri
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+/* This is work for the Alfven wave
 void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // These are the no-boundary conditions:
   constexpr int nVar = 9;
@@ -55,6 +56,28 @@ void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t,
       stateOut[i] = stateIn[i];
   }
 }
+*/
+
+void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+  // These are the no-boundary conditions:
+  constexpr int nVar = 9;
+
+  if (faceIndex==1){
+    injectjet_(x, stateOut);
+                             // Here we need commpute the fluxIn in the circular region
+  }
+  else{
+  for(int i=0; i < nVar; i++) {
+      fluxOut[i]  = fluxIn[i];
+      stateOut[i] = stateIn[i];
+  }
+  }
+  
+}
+
+
+
+
 
 void MHD::MHDSolver_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
   constexpr int nVar = 9;

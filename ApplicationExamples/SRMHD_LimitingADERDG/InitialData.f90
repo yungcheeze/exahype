@@ -155,26 +155,20 @@ SUBROUTINE InjectJet(x, Q)
     va   = 0.0
 
     rhob = rhoa*eta
-    vb   = 0.99
-    
-    pa   = eta*abs(vb)**2 / (gamma*(gamma -1.0)*Ms**2  - gamma*abs(vb)**2)     
-    
+    vb   = 0.99    
+    pa   = eta*abs(vb)**2 / (gamma*(gamma -1.0)*Ms**2  - gamma*abs(vb)**2)         
     BV(1) = sqrt(2.0*Pa/betab)
     BV(2) = 0.0
     BV(3) = 0.0
-
     
-    IF(x(1).LT.1.e-2 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
-no      V = (/ rhob, vb, 0.0, 0.0, pa, 0.0, 0.0, 0.0, 0.0 /)      
+    IF(x(1).lt.1.e-4 .and. x(2)**2+x(3)**2.LE.1.0) THEN       
+     V = (/ rhob, vb, 0.0, 0.0, pa, 0.0, 0.0, 0.0, 0.0 /)      
     END IF 
     !
     ! Now convert to conservative variables
     !
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE InjectJet
-
-
-
 
 
 
