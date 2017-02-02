@@ -58,6 +58,7 @@ exahype-project  ElasticWave
 
   solver ADER-DG MyElasticWaveSolver
     variables         = 9
+    primitives        = 0
     parameters        = 0
     order             = 3
     /* 27 points: 0.05, 9 points: 0.15 */

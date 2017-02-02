@@ -45,6 +45,7 @@ exahype-project  SRHD
 
   solver ADER-DG SRHDSolver
     variables          = 5
+    primitives         = 0
     parameters         = 0
     order              = 2
     maximum-mesh-size  = 0.05

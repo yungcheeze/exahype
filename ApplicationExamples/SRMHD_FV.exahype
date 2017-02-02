@@ -49,6 +49,7 @@ exahype-project  MHDSolver
   solver Finite-Volumes MHDSolver
     /* for field (=variables) descriptions, see code */
     variables          = 9
+    primitives         = 0
     parameters         = 0
     patch-size         = 14
     /* 9 cells: 0.12, 3 cells: 0.4 */

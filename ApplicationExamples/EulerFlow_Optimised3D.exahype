@@ -33,6 +33,7 @@ exahype-project  Euler3d
 
   solver ADER-DG MyEulerSolver
     variables          = 5
+    primitives         = 0
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05
