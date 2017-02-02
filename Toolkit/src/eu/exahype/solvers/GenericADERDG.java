@@ -32,34 +32,34 @@ public class GenericADERDG implements Solver {
       throws java.io.IOException {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericADERDGSolverHeader.template");
-  
-	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-	  
-	  String profilerInclude                     = "";
-	  String solverConstructorSignatureExtension = "";
-	  String SolverInitSignatureExtension        = "";
-	  String ParserInclude                       = "";
-	  if (_enableProfiler) {
-		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-	  }
-	  if (_hasConstants) {
-		  SolverInitSignatureExtension = ", exahype::Parser::ParserView constants";
-		  ParserInclude = "#include \"exahype/Parser.h\"";
-		  solverConstructorSignatureExtension += SolverInitSignatureExtension;
-	  }
-	  content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
-	  content = content.replaceAll("\\{\\{ParserInclude\\}\\}", ParserInclude);
-	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-	  
-	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+
+    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+
+    String profilerInclude                     = "";
+    String solverConstructorSignatureExtension = "";
+    String SolverInitSignatureExtension        = "";
+    String ParserInclude                       = "";
+    if (_enableProfiler) {
+      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+    }
+    if (_hasConstants) {
+      SolverInitSignatureExtension = ", exahype::Parser::ParserView constants";
+      ParserInclude = "#include \"exahype/Parser.h\"";
+      solverConstructorSignatureExtension += SolverInitSignatureExtension;
+    }
+    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+    content = content.replaceAll("\\{\\{ParserInclude\\}\\}", ParserInclude);
+    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+
+    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
     content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
     content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
-	  
-	  writer.write(content);
+
+    writer.write(content);
   }
 
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
@@ -259,5 +259,9 @@ public class GenericADERDG implements Solver {
       throws java.io.IOException {
     // @todo Implement
     System.err.println("C-style kernels do not have a typesDef.f90.\n");
+  }
+
+  public boolean supportsVariables() {
+    return true;
   }
 }

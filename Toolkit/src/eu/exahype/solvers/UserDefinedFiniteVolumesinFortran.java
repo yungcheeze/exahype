@@ -42,4 +42,9 @@ public class UserDefinedFiniteVolumesinFortran implements Solver {
     // @todo Implement
     System.err.println("not implemented yet\n");
   }
+  
+  @Override
+  public boolean supportsVariables() {
+    return false;
+  }
 }

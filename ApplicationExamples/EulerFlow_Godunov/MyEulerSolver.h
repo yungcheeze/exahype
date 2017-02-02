@@ -18,10 +18,8 @@ namespace EulerFVM{
 
 class EulerFVM::MyEulerSolver : public exahype::solvers::FiniteVolumesSolver {
   public:
-    /**
-     * @todo Has to be generated
-     */
     class Variables;
+    class ReadOnlyVariables;
     class Fluxes;
 
     MyEulerSolver(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping);

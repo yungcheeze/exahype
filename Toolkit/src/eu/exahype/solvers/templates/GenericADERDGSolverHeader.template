@@ -29,6 +29,10 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int order     = {{Order}};
     static constexpr int basisSize = {{Order}} + 1;
   
+    class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
     
     static void staticToString(std::ostream& os) {

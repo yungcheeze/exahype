@@ -63,7 +63,7 @@ exahype-project  MHDSolver
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
     
     /* this is the fake plotter used to compute global integrals */
@@ -73,7 +73,7 @@ exahype-project  MHDSolver
       time = 0.0
       repeat = 0.05
       output = ./these-files-should-not-be-there
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -81,7 +81,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -89,7 +89,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
