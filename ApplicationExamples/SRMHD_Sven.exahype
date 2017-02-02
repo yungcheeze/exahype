@@ -1,29 +1,30 @@
 /**
-
- Ideal Special Relativistic Magnetohydrodynamics.
- A custom ExaHype Kernel PORTED TO CPP
- by Dominic in Oct 2016
-
+ * SRMHD generic specfile for convergence analysis.
+ *
+ *
+ * This convergence test is using ideal Special Relativistic
+ * Magnetohydrodynamics [using a Fortran kernel]?, in 2D.
+ * 
+ * Spec file generated at @DATE@ on machine @HOST@.
+ *
  */
 exahype-project  MHDSolver
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD_cpp/
+  output-directory           = ./ApplicationExamples/SRMHD/
   architecture               = noarch
 
   computational-domain
     dimension                = 2
-    width = 6.283185307179586, 6.283185307179586
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.8
+    end-time                 = 10.0
   end computational-domain
-
-
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -45,53 +46,64 @@ exahype-project  MHDSolver
   end optimisation
   
   solver ADER-DG MHDSolver
-    /* for field (=variables) descriptions, see code */
     variables          = 9
     primitives         = 0
     parameters         = 0
-    order              = 3
-    /* 27 grid points: 0.2327 */
-    maximum-mesh-size  = 0.24
+    order              = 2
+    maximum-mesh-size  = 0.366666666667
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
-    /* we are using the new Fortran interface */
     language           = C
-    /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:orsagtang}
+    constants          = {initialdata:alfven}
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables= 9
       time     = 0.0
-      repeat   = 0.05
+      repeat   = 0.2
       output   = ./conserved
       select    = x:0.0,y:0.0
     end plot
     
-    /* this is the fake plotter used to compute global integrals */
-    /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii IntegralsWriter
       variables = 0
       time = 0.0
-      repeat = 0.05
-      output = ./these-files-should-not-be-there
+      repeat = 0.1
+      output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.2
       output    = ./primitive
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables = 9
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.2
       output    = ./exact-primitive
       select    = x:0.0,y:0.0
     end plot
+
+    plot vtk::Cartesian::vertices::ascii ErrorWriter
+      variables = 9
+      time      = 0.0
+      repeat    = 0.2
+      output    = ./errors-conserved
+      select    = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii RelativeErrorWriter
+      variables = 9
+      time      = 0.0
+      repeat    = 0.2
+      output    = ./relative-errors-conserved
+      select    = x:0.0,y:0.0
+    end plot
+
   end solver
 
 end exahype-project

@@ -15,14 +15,19 @@ public class TestVariables {
     
     Map<String,Integer> variablesMap = new LinkedHashMap<String,Integer>();
     variablesMap.put("rho", 1);
-    variablesMap.put("u", 3);
+    variablesMap.put("j", 3);
     variablesMap.put("E", 1);
+    
+    Map<String,Integer> primitivesMap = new LinkedHashMap<String,Integer>();
+    primitivesMap.put("rho", 1);
+    primitivesMap.put("u", 3);
+    primitivesMap.put("E", 1);
     
     Map<String,Integer> parametersMap = new LinkedHashMap<String,Integer>();
     parametersMap.put("matScalar", 1);
     parametersMap.put("matVector", 3);
     
-    Variables variables = new Variables(variablesMap,parametersMap,dimensions);
+    Variables variables = new Variables(variablesMap,parametersMap,primitivesMap,dimensions);
     
     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out));
     

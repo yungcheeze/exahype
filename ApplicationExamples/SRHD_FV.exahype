@@ -40,6 +40,7 @@ exahype-project  SRHD
 
   solver Finite-Volumes SRHDSolverFV
     variables          = 5
+    primitives         = 0
     parameters         = 0
     patch-size         = 5
     maximum-mesh-size  = 0.05

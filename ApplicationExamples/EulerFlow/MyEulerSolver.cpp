@@ -69,18 +69,18 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 
   const double GAMMA = 1.4;
   const double irho = 1./vars.rho();
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.u()*vars.u() );
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  f.rho ( vars.u()                                 );
-  f.u   ( irho * outerDot(vars.u(),vars.u()) + p*I );
-  f.E   ( irho * (vars.E() + p) * vars.u()         );
+  f.rho ( vars.j()                                 );
+  f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
+  f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
 void Euler::MyEulerSolver::source(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
-  source.u(0,0,0);
+  source.j(0,0,0);
 }
 
 void Euler::MyEulerSolver::eigenvalues(const double* const Q,
@@ -91,14 +91,14 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
 
   const double GAMMA = 1.4;
   const double irho = 1./vars.rho();
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.u()*vars.u() );
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   double u_n = Q[normalNonZeroIndex + 1] * irho;
   double c  = std::sqrt(GAMMA * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
-  eigs.u(u_n,u_n,u_n);
+  eigs.j(u_n,u_n,u_n);
 }
 
 bool Euler::MyEulerSolver::hasToAdjustSolution(

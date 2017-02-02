@@ -42,6 +42,7 @@ exahype-project  Euler
   
   solver ADER-DG FirstEulerSolver
     variables         = 5
+    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.15
@@ -60,6 +61,7 @@ exahype-project  Euler
  
   solver ADER-DG SecondEulerSolver
     variables         = 5
+    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.15

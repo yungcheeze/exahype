@@ -32,6 +32,7 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
+    class Primitives;
   
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
     
