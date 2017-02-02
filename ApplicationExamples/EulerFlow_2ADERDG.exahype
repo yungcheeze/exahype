@@ -54,7 +54,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved1
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
  
@@ -72,7 +72,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved2
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
  

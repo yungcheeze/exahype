@@ -69,7 +69,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -79,7 +79,7 @@ exahype-project  Euler
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -87,7 +87,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -95,7 +95,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     /* Do not need the time series for a point in the moment

@@ -40,7 +40,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
@@ -58,7 +58,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution2
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
   
@@ -78,7 +78,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./fv
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

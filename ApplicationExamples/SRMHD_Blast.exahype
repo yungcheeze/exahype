@@ -68,7 +68,7 @@ exahype-project  MHDSolver
       time     = 0.0
       repeat   = 0.005
       output   = ./solution
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
