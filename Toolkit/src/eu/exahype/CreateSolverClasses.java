@@ -236,11 +236,18 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variables  = new Variables(node, _dimensions);
     boolean isFortran    = language.equals("Fortran");
     
+    int     patchSize       = 2*order+1;
+    String  limiterKernel   = node.getKernelLimiter().getText();
+    String  limiterLanguage = node.getLanguageLimiter().getText();
+    
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
-    eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
-        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(), order, hasConstants);
+    Solver solver  = solverFactory.createADERDGSolver(
+        kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),order,hasConstants);
+    Solver limiter = solverFactory.createFiniteVolumesSolver(
+        limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),patchSize,hasConstants);
 
     valid = validate(variables,order,kernel,language,solverName,solver);
+    valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,solver);
     
     if (valid) {
       _definedSolvers.add(solverName);
@@ -257,15 +264,23 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 //          userTypesDefFile = FileSearch.relocatableFile(
 //              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
 //        }
-        
-        
-        tryWriteSolverHeader(solver, solverName);
-        tryWriteSolverUserImplementation(solver, solverName);
-        tryWriteSolverGeneratedImplementation(solver, solverName);
+        tryWriteSolverHeader(solver, solverName+"_ADERDG");
+        tryWriteSolverHeader(limiter, solverName+"_FV");
+
+        tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
+        tryWriteSolverUserImplementation(limiter,solverName+"_FV");
+
+        tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
+        tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverName);
+          tryWriteVariablesHeader(variables, solverName+"_ADERDG");
         }
+        
+        if (limiter.supportsVariables()) {
+          tryWriteVariablesHeader(variables, solverName+"_FV");
+        }
+        
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
         valid = false;
