@@ -97,7 +97,7 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
   double c  = std::sqrt(GAMMA * p * irho);
 
   eigs.rho()=u_n - c;
-  eigs.E()  =u_n - c;
+  eigs.E()  =u_n + c;
   eigs.u(u_n,u_n,u_n);
 }
 

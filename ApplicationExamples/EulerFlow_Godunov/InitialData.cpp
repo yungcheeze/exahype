@@ -38,56 +38,18 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
   }
 }
 
-
+/*
+ *  Circular shaped pressure jump at centre of domain.
+ */
 void EulerFVM::explosionProblem(const double* const x,double* Q) {
-
-  EulerFVM::MyEulerSolver::Variables var(Q);
-
-  // @todo Das muss alles ins Guidebook
-
-  // Velocities are set to zero (initially). 
-/*
-  var.v(0) = 0.001;
-  var.v(1) = 0.001;
-  var.v(2) = 0.001;
-*/
-
-/*
-  tarch::la::Vector<3,double> tmp;
-  tmp = 0.001, 0.001, 0.001;
-  var.v( tmp );
-*/
-
-  var.v( 0.001, 0.001, 0.001 );
-
-/*
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-*/
-
-  // Circular shaped pressure jump at centre of domain.
+  MyEulerSolver::Variables var(Q);
+  var.u(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
-    var.rho() = 2.0;
-    //Q[0] = 1.0;
-    var.E() = 1.0;
-    //Q[4] = 1.0;
-
-    assertionNumericalEquals( Q[0], 2.0 );
-    assertionNumericalEquals( Q[1], 0.001 );
-    assertionNumericalEquals( Q[2], 0.001 );
-    assertionNumericalEquals( Q[3], 0.001 );
-    assertionNumericalEquals( Q[4], 1.0 );
+    var.rho() = 1.0;
+    var.E()   = 1.0;
   } else {
     var.rho() = 0.125;
     var.E()   = 0.1;
-//    Q[4] = 0.1;
-
-    assertionNumericalEquals( Q[0], 0.125 );
-    assertionNumericalEquals( Q[1], 0.001 );
-    assertionNumericalEquals( Q[2], 0.001 );
-    assertionNumericalEquals( Q[3], 0.001 );
-    assertionNumericalEquals( Q[4], 0.1 );
   }
 }
 #endif
