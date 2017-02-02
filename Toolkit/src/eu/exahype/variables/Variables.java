@@ -2,13 +2,18 @@ package eu.exahype.variables;
 
 import java.io.BufferedWriter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import eu.exahype.IOUtils;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
+import eu.exahype.node.AVariables;
+import eu.exahype.node.AWithNameVariable;
+import eu.exahype.node.AWithoutNameVariable;
 import eu.exahype.node.PSolver;
+import eu.exahype.node.PVariable;
 
 public class Variables {
   int                 _dimensions;
@@ -33,107 +38,83 @@ public class Variables {
     return _numberOfParameters;
   }
 
+  private static List<PVariable> getParametersAsList(PSolver node) {
+    List<PVariable> parametersAsList = null;
+    if (node instanceof AAderdgSolver) {
+      parametersAsList = ((AVariables)((AAderdgSolver) node).getParameters()).getVariable();
+    } else if (node instanceof ALimitingAderdgSolver) {
+      parametersAsList = ((AVariables)((ALimitingAderdgSolver) node).getParameters()).getVariable();
+    } else if (node instanceof AFiniteVolumesSolver) {
+      parametersAsList = ((AVariables)((AFiniteVolumesSolver) node).getParameters()).getVariable();
+    } 
+    return parametersAsList;
+  }
+  
+  private static List<PVariable> getVariablesAsList(PSolver node) {
+    List<PVariable> variablesAsList = null;
+    if (node instanceof AAderdgSolver) {
+      variablesAsList = ((AVariables)((AAderdgSolver) node).getVariables()).getVariable();
+    } else if (node instanceof ALimitingAderdgSolver) {
+      variablesAsList = ((AVariables)((ALimitingAderdgSolver) node).getVariables()).getVariable();
+    } else if (node instanceof AFiniteVolumesSolver) {
+      variablesAsList = ((AVariables)((AFiniteVolumesSolver) node).getVariables()).getVariable();
+    } 
+    return variablesAsList;
+  }
+  
+  private static Map<String,Integer> parseVariables(List<PVariable> variablesAsList) {
+    Map<String, Integer> map = new LinkedHashMap<String, Integer>(variablesAsList.size());
+    
+    for (PVariable pVariable :  variablesAsList) {
+      if (pVariable instanceof AWithNameVariable) {
+        AWithNameVariable variable = (AWithNameVariable) pVariable;
+        String name       = variable.getName().getText();
+        int multiplicity  = Integer.parseInt(variable.getMultiplicity().getText());
+        
+        if (multiplicity>0) {
+          map.put(name, multiplicity);
+        }
+      } else if (pVariable instanceof AWithoutNameVariable) {
+        AWithoutNameVariable variable = (AWithoutNameVariable) pVariable;
+        String name       = "Q";
+        int multiplicity  = Integer.parseInt(variable.getMultiplicity().getText());
+        
+        if (multiplicity > 0) {
+          map.put(name, multiplicity);
+        }
+      } else {
+        System.out.println("ERROR: I do not know how to handle variable type "+pVariable.getClass().toString()+"!");
+        System.exit(1);
+        return null;
+      }
+    }
+    return map;
+  }
+  
   /**
    * @note We rely on a linked hash map here that does not change the order of the variables.
    */
-  public static Map<String, Integer> readVariables(PSolver node) {
-    String variablesAsString = null;
-    
-    if (node instanceof AAderdgSolver) {
-      variablesAsString = ((AAderdgSolver) node).getVariables().getText();
-    } else if (node instanceof ALimitingAderdgSolver) {
-      variablesAsString = ((ALimitingAderdgSolver) node).getVariables().getText();
-    } else if (node instanceof AFiniteVolumesSolver) {
-      variablesAsString = ((AFiniteVolumesSolver) node).getVariables().getText();
+  public static Map<String, Integer> readVariables(PSolver node) {    
+    List<PVariable> variablesAsList = getVariablesAsList(node);
+    if (variablesAsList!=null) {
+      return parseVariables(variablesAsList); 
     } else {
       System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
       System.exit(1);
-    }
-    
-    try { // the user only gave us a number, e.g., 5, instead of a list, e.g., v0:1, v1:3, v2:3.
-      int numberOfVariables = Integer.parseInt(variablesAsString);
-      
-      Map<String, Integer> map = new LinkedHashMap<String, Integer>(1);
-      map.put("Q", numberOfVariables);
-      return map;
-    } catch (NumberFormatException exception) { // the user gave us a list       
-      String[] variables = variablesAsString.split(",");
-      Map<String, Integer> map = new LinkedHashMap<String, Integer>(variables.length);
-      
-      for (String variable : variables) {
-        String[] identifierAndQuantity = variable.split(":");
-        
-        String identifier = identifierAndQuantity[0].trim();
-        try {
-          int multiplicity    = Integer.parseInt(identifierAndQuantity[1].trim());
-          
-          if (multiplicity <= 0) {
-            System.out.println("ERROR: Quantity specifier of '"+identifier+"' is not a positive integer!");
-            System.exit(1);
-          }
-          
-          map.put(identifier, multiplicity);
-          
-          // System.out.println("Found variable "+identifier+" with "+multiplicity+" elements."); // Comment in for debugging purposes
-          
-        } catch (NumberFormatException exception2) { 
-          System.out.println("ERROR: Quantity specifier of '"+identifier+"' is not a positive integer!");
-          System.exit(1);
-        }
-      }
-      return map;
+      return null;
     }
   }
-  
   /**
    * @note We rely on a linked hash map here that does not change the order of the parameters.
    */
   public static Map<String, Integer> readParameters(PSolver node) {
-    String parametersAsString = null;
-    
-    if (node instanceof AAderdgSolver) {
-      parametersAsString = ((AAderdgSolver) node).getParameters().getText();
-    } else if (node instanceof ALimitingAderdgSolver) {
-      parametersAsString = ((ALimitingAderdgSolver) node).getParameters().getText();
-    } else if (node instanceof AFiniteVolumesSolver) {
-      parametersAsString = ((AFiniteVolumesSolver) node).getParameters().getText();
+    List<PVariable> parametersAsList = getParametersAsList(node);
+    if (parametersAsList!=null) {
+      return parseVariables(parametersAsList); 
     } else {
       System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
       System.exit(1);
-    }
-    
-    try { // the user only gave us a number, e.g., 5, instead of a list, e.g., v0:1, v1:3, v2:3.
-      int numberOfVariables = Integer.parseInt(parametersAsString);
-      
-      Map<String, Integer> map = new LinkedHashMap<String, Integer>(1);
-      map.put("Q", numberOfVariables);
-      return map;
-    } catch (NumberFormatException exception) { // the user gave us a list       
-      String[] variables = parametersAsString.split(",");
-      Map<String, Integer> map = new LinkedHashMap<String, Integer>(variables.length);
-      
-      for (String variable : variables) {
-        String[] identifierAndQuantity = variable.split(":");
-        
-        String identifier = identifierAndQuantity[0].trim();
-        try {
-          int dimension    = Integer.parseInt(identifierAndQuantity[1].trim());
-          
-          if (dimension <= 0) {
-            System.out.println("ERROR: Quantity specifier of '"+identifier+"' is not a positive integer!");
-            System.exit(1);
-          }
-          
-          map.put(identifier, dimension);
-          
-          // System.out.println("Found variable "+identifier+" with "+dimension+" elements."); // Comment in for debugging purposes
-          
-        } catch (NumberFormatException exception2) { 
-          System.out.println("ERROR: Quantity specifier of '"+identifier+"' is not a positive integer!");
-          System.exit(1);
-        }
-      }
-      return map;
+      return null;
     }
   }
   
@@ -170,16 +151,19 @@ public class Variables {
       // ex: double rho() const;
       getters += indent + "double "+identifier+"() const { return _Q["+offset+"]; }\n\n";
     } else {
-      // ex: double v(index) const;
+      // ex: double v(int index) const;
       getters += indent + "double "+identifier+"(int index) const {\n"
               +  indent + "  assertion(index >= 0 && index<"+multiplicity+");\n"
               +  indent + "  return _Q["+offset+"+index];\n"
               +  indent + "}\n\n";
       // ex: tarch::la::Vector<3,double> v() const;
       getters += indent + "tarch::la::Vector<"+multiplicity+",double> "+identifier+"() const {\n"
-               + indent + "  tarch::la::Vector<"+multiplicity+",double> values(_Q+"+offset+");\n"
-               + indent + "  return values;\n"
-               + indent + "}\n\n";
+              + indent + "  tarch::la::Vector<"+multiplicity+",double> values(";
+      for (int i=0; i<multiplicity; i++) {
+        getters += "_Q"+"["+(offset+i)+"]"+( i<multiplicity-1 ? "," : ");\n" );
+      }
+      getters += indent + "  return values;\n"
+              +  indent + "}\n\n";
     }
     return getters;
   }
@@ -222,7 +206,7 @@ public class Variables {
       // ex: void v(double v0, double v1, double v2);
       setters += indent +"void "+identifier+"(";
       for (int i=0; i<multiplicity; i++) {
-        setters += identifier+i+( i<multiplicity-1 ? "," : ") {\n" );
+        setters += "double "+identifier+i+( i<multiplicity-1 ? "," : ") {\n" );
       }
       for (int i=0; i<multiplicity; i++) {
         setters += indent +"  "+"*(_Q+"+(offset+i)+")="+identifier+i+";\n";
@@ -262,7 +246,7 @@ public class Variables {
       // ex: double rho(int column) const;  
       getters += indent + "double "+identifier+"(int column) const {\n"
               +  indent + "  assertion(column >= 0 && column<DIMENSIONS);\n"
-              +  indent + "  return _F[column]["+offset+"+row];\n"
+              +  indent + "  return _F[column]["+offset+"];\n"
               +  indent + "}\n\n";
       // ex: tarch::la::Vector<DIMENSIONS,double> rho() const;
       getters += indent + "tarch::la::Vector<DIMENSIONS,double> "+identifier+"() const {\n"
@@ -329,27 +313,53 @@ public class Variables {
     if (multiplicity==1) {
       // ex: double& v(int column);
       setters += indent + "double& "+identifier+"(int column) {\n" 
-              +  indent + "  assertion(column >= 0 && column<DIMENSIONS);\n"
-              +  indent + "  return _F[column]["+offset+"];\n" 
-              +  indent + "}\n\n";
-      
-      // ex: void rho(tarch::la::Vector<DIMENSIONS,double>& values);
-      setters += indent +"void "+identifier+"(tarch::la::Vector<DIMENSIONS,double>& values) {\n";
-      for (int j=0; j<_dimensions; j++) {
+          +  indent + "  assertion(column >= 0 && column<DIMENSIONS);\n"
+          +  indent + "  return _F[column]["+offset+"];\n" 
+          +  indent + "}\n\n";
+
+      // ex: void rho(tarch::la::Vector<DIMENSIONS,double>& values); 3D and 2D
+      setters += indent +"void "+identifier+"(const tarch::la::Vector<DIMENSIONS,double>& values) {\n";
+      for (int j=0; j<2; j++) {
         setters += indent +"  "+"_F["+j+"]["+offset+"]=values["+j+"];\n";
       }
-      setters += indent + "}\n\n";
-      
-      // ex: void v(double v0, double v1, double v2);
-      setters += indent +"void "+identifier+"(";
-      for (int j=0; j<_dimensions; j++) {
-        setters += "v"+j+( j<_dimensions-1 ? "," : ") {\n" );
+      setters += indent + "  #if DIMENSIONS==3\n";
+      setters += indent + "  _F[2]["+offset+"]=values[2];\n";
+      setters += indent + "  #endif\n";
+      setters += indent + "}\n";
+      // ex: void rho(tarch::la::Vector<DIMENSIONS,double>& values); 2.5D
+      setters += indent + "#if DIMENSIONS==2\n";
+      setters += indent +"/** Setter for 2.5D calculations. Third vector element is ignored.*/\n";
+      setters += indent +"void "+identifier+"(const tarch::la::Vector<3,double>& values) {\n";
+      for (int j=0; j<2; j++) {
+        setters += indent +"  "+"_F["+j+"]["+offset+"]=values["+j+"];\n";
       }
-      for (int j=0; j<_dimensions; j++) {
+      setters += indent + "}\n";
+      setters += indent + "#endif\n\n";
+
+      // ex: void v(double v0, double v1, double v2);  3D and 2.5D
+      setters += indent +"/** Setter for 3D and 2.5D calculations. Third argument is ignored for the latter.*/\n";
+      setters += indent +"void "+identifier+"(";
+      for (int j=0; j<3; j++) {
+        setters += "double v"+j+( j<2 ? "," : ") {\n" );
+      }
+      for (int j=0; j<2; j++) {
+        setters += indent +"  _F["+j+"]["+offset+"]=v"+j+";\n";
+      }
+      setters += indent + "  #if DIMENSIONS==3\n";
+      setters += indent + "  _F[2]["+offset+"]=v2;\n";
+      setters += indent + "  #endif\n";
+      setters += indent + "}\n";
+      // ex: void v(double v0, double v1);  2D
+      setters += indent + "#if DIMENSIONS==2\n";
+      setters += indent + "void "+identifier+"(";
+      for (int j=0; j<2; j++) {
+        setters += "double v"+j+( j<2-1 ? "," : ") {\n" );
+      }
+      for (int j=0; j<2; j++) {
         setters += indent +"  "+"_F["+j+"]["+offset+"]=v"+j+";\n";
       }
-      setters += indent + "}\n\n";
-      
+      setters += indent + "}\n";
+      setters += indent + "#endif\n\n";
     } else {
       // ex: double& v(int row, int column);
       setters += indent + "double& "+identifier+"(int row, int column) {\n"
@@ -358,49 +368,116 @@ public class Variables {
               +  indent + "  return _F[column]["+offset+"+row];\n"
               +  indent + "}\n\n";
 
-      // ex: void v(int row, const tarch::la::Vector<3,double>& values);
+      // ex: void v(int row, const tarch::la::Vector<3,double>& values); 2D and 3D
       setters += indent +"void "+identifier+"(int row, const tarch::la::Vector<DIMENSIONS,double>& values) {\n"
               +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
-      for (int j=0; j<_dimensions; j++) {
+      for (int j=0; j<2; j++) {
         setters += indent +"  _F["+j+"]["+offset+"+row]=values["+j+"];\n";
       }
-      setters += indent +"}\n\n";
+      setters += indent + "  #if DIMENSIONS==2\n";
+      setters += indent +"  _F[2]["+offset+"+row]=values[2];\n";
+      setters += indent + "  #endif\n";
+      setters += indent +"}\n";
+      setters += indent + "#if DIMENSIONS==2\n";
+      setters += indent +"/** Setter for 2.5D calculations. Third vector element is ignored.*/\n";
+      setters += indent +"void "+identifier+"(int row, const tarch::la::Vector<3,double>& values) {\n"
+          +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
+      for (int j=0; j<2; j++) {
+        setters += indent +"  _F["+j+"]["+offset+"+row]=values["+j+"];\n";
+      }
+      setters += indent +"}\n";
+      setters += indent +"#endif\n\n";
       
-      // ex: void v(const tarch::la::Matrix<3,DIMENSIONS,double>& values);
-      setters += indent +"void "+identifier+"(int row, const tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double>& values) {\n"
-              +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
-      for (int i=0; i<multiplicity; i++) {
-        for (int j=0; j<_dimensions; j++) {
-          setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=values["+i+"]["+j+"];\n";
+      // ex: void v(const tarch::la::Matrix<3,DIMENSIONS,double>& values);  2D and 3D
+      setters += indent +"void "+identifier+"(const tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double>& values) {\n";
+      for (int j=0; j<2; j++) {
+        for (int i=0; i<multiplicity; i++) {
+          setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=values("+i+","+j+");\n";
         }
       }
-      setters += indent +"}\n\n";
+      setters += indent + "  #if DIMENSIONS==3\n";
+      for (int i=0; i<multiplicity; i++) {
+        setters += indent +"  "+"_F[2]["+(offset+i)+"]=values("+i+",2);\n";
+      }
+      setters += indent + "  #endif\n";
+      setters += indent +"}\n";
+      // ex: void v(const tarch::la::Matrix<3,DIMENSIONS,double>& values);  2.5
+      setters += indent + "#if DIMENSIONS==2\n";
+      setters += indent +"/** Setter for 2.5D calculations. Third matrix column is ignored.*/\n";
+      setters += indent +"void "+identifier+"(const tarch::la::Matrix<"+multiplicity+",3,double>& values) {\n";
+      for (int j=0; j<2; j++) {
+        for (int i=0; i<multiplicity; i++) {
+          setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=values("+i+","+j+");\n";
+        }
+      }
+      setters += indent +"}\n";
+      setters += indent +"#endif\n\n";
       
       // ex: void v(int row, double v0, double v1, double v2);
+      setters += indent +"/** Setter for 3D and 2.5D calculations. Third argument is ignored for the latter.*/\n";
       setters += indent +"void "+identifier+"(int row, ";
-      for (int j=0; j<_dimensions; j++) {
-        setters += "int v"+j+( j<_dimensions-1 ? "," : ") {\n" );
+      for (int j=0; j<3; j++) {
+        setters += "double v"+j+( j<2 ? "," : ") {\n" );
       }
       setters += indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
-      for (int j=0; j<_dimensions; j++) {
+      for (int j=0; j<2; j++) {
+        setters += indent +"  _F["+j+"]["+offset+"+row]=v"+j+";\n";
+      }
+      setters += indent +"  #if DIMENSIONS==3\n";
+      setters += indent +"  _F[2]["+offset+"+row]=v2;\n";
+      setters += indent +"  #endif\n";
+      setters += indent +"}\n";
+      setters += indent +"#if DIMENSIONS==2\n";
+      setters += indent +"/** Setter for 2D calculations.*/\n";
+      setters += indent +"void "+identifier+"(int row, ";
+      for (int j=0; j<2; j++) {
+        setters += "double v"+j+( j<1 ? "," : ") {\n" );
+      }
+      setters += indent + "  assertion(row >= 0 && row<"+multiplicity+");\n";
+      for (int j=0; j<2; j++) {
         setters += indent +"  "+"_F["+j+"]["+offset+"+row]=v"+j+";\n";
       }
-      setters += indent +"}\n\n";
+      setters += indent +"}\n";
+      setters += indent +"#endif\n\n";
 
-      // ex: void v(double v00, double v01, double v02, double v10, double v11, double v12, double v20, double v21, double v22);
+      // ex: void v(double v00, double v01, double v02, double v10, double v11, double v12, double v20, double v21, double v22);  2.5D and 3D
+      int argIndentLength = ( indent +"void "+identifier+"(" ).length();
+      String argIndent = new String(new char[argIndentLength]).replace("\0", " ");
+      setters += indent +"/** Setter for 3D and 2.5D calculations. Third column values are ignored for the latter.*/\n";
       setters += indent +"void "+identifier+"(";
       for (int i=0; i<multiplicity; i++) {
-        for (int j=0; j<_dimensions; j++) {
-          setters += "int v"+i+j+( j<_dimensions-1 ? "," : "" );
+        for (int j=0; j<3; j++) {
+          setters += "double v"+i+j+( j<2 ? ", " : "" );
         }
-        setters += ( i<multiplicity-1 ? ", " : ") {\n" );
+        setters += ( i<multiplicity-1 ? ",\n"+argIndent : ") {\n" );
       }
-      for (int i=0; i<multiplicity; i++) {
-        for (int j=0; j<_dimensions; j++) {
+      for (int j=0; j<2; j++) {
+        for (int i=0; i<multiplicity; i++) {
           setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=v"+i+j+";\n";
         }
       }
-      setters += indent +"}\n\n";
+      setters += indent +"  #if DIMENSIONS==3\n";
+      for (int i=0; i<multiplicity; i++) {
+        setters += indent +"  "+"_F[2]["+(offset+i)+"]=v"+i+"2;\n";
+      }
+      setters += indent +"  #endif\n";
+      setters += indent +"}\n";
+      // ex: void v(double v00, double v01, double v02, double v10, double v11, double v12, double v20, double v21, double v22);  2D
+      setters += indent +"#if DIMENSIONS==2\n";
+      setters += indent +"void "+identifier+"(";
+      for (int i=0; i<multiplicity; i++) {
+        for (int j=0; j<2; j++) {
+          setters += "double v"+i+j+( j<1 ? ", " : "" );
+        }
+        setters += ( i<multiplicity-1 ? ",\n"+argIndent : ") {\n" );
+      }
+      for (int j=0; j<2; j++) {
+        for (int i=0; i<multiplicity; i++) {
+          setters += indent +"  "+"_F["+j+"]["+(offset+i)+"]=v"+i+j+";\n";
+        }
+      }
+      setters += indent +"}\n";
+      setters += indent +"#endif\n\n";
     }
     return setters;
   }

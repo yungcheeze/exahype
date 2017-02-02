@@ -25,6 +25,10 @@ class {{Project}}::{{Solver}} : public exahype::solvers::FiniteVolumesSolver {
     static constexpr int nParams   = {{NumberOfParameters}};
     static constexpr int nDim      = {{Dimensions}};
 
+	class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+
     {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
     
     static void staticToString(std::ostream& os) {

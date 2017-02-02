@@ -1,10 +1,13 @@
 package eu.exahype;
 
-import java.util.*;
+import java.util.LinkedList;
 
 import eu.exahype.analysis.DepthFirstAdapter;
-import eu.exahype.node.*;
-import eu.exahype.FileSearch;
+import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.ALimitingAderdgSolver;
+import eu.exahype.node.AProfiling;
+import eu.exahype.node.AProject;
+import eu.exahype.node.PSolver;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;

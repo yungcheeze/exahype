@@ -252,4 +252,9 @@ public class OptimisedADERDG implements Solver {
     // @todo Implement
     System.err.println("C-style kernels do not have a typesDef.f90.\n");
   }
+  
+  @Override
+  public boolean supportsVariables() {
+    return false;
+  }
 }
