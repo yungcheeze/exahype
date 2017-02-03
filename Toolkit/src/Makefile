@@ -41,15 +41,15 @@ jar:
 dist:
 	jar cmf ./Manifest.txt ExaHyPE.jar .
 	mv ExaHyPE.jar ../dist
-	tar -czvf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class Manifest.txt Makefile eu 
+	tar -czf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class Manifest.txt Makefile eu 
 
 
 all: clean createParser compile dist
 
 
 files.mk:
-	touch files.mk
-	echo "SOURCES=\\" > files.mk
+	@touch files.mk
+	@echo "SOURCES=\\" > files.mk
 	find . -name '*.java' | tr '\n' ' ' >> files.mk
 
 
