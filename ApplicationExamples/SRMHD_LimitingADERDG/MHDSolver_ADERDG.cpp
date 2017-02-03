@@ -46,7 +46,7 @@ exahype::solvers::Solver::RefinementControl MHD::MHDSolver_ADERDG::refinementCri
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-/* This is work for the Alfven wave
+/* This is work for the Alfven wave*/
 void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // These are the no-boundary conditions:
   constexpr int nVar = 9;
@@ -56,16 +56,25 @@ void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t,
       stateOut[i] = stateIn[i];
   }
 }
-*/
 
+
+/*
 void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // These are the no-boundary conditions:
   constexpr int nVar = 9;
 
-  if (faceIndex==1){
-    injectjet_(x, stateOut);
-                             // Here we need commpute the fluxIn in the circular region
-  }
+  double F[nDim * nVar]; // Fortran needs continous storage!                                         
+  kernels::idx2 F_idx(nDim, nVar);                                                                    
+  double Q[nVar];
+
+  if (x[1]<1.e-4 && x[2]*x[2] +x[3]*x[3]<1.0){                                            
+    injectjet_(x,Q);                                                                      
+    for(int m=0; m < nVar; m++) {                                                         
+      stateOut[m] = Q[m];                                                                 
+      fluxOut[m] = F[F_idx(normalNonZero, m)]; 
+    }                                         
+                                                                                          
+  }    
   else{
   for(int i=0; i < nVar; i++) {
       fluxOut[i]  = fluxIn[i];
@@ -74,10 +83,7 @@ void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t,
   }
   
 }
-
-
-
-
+*/
 
 void MHD::MHDSolver_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
   constexpr int nVar = 9;

@@ -12,7 +12,8 @@ extern exahype::Parser::ParserView* constants;
 extern "C" {
 
 // FORTRAN functions called by C
-void initialalfenwave_(double* x, double* Q);
+void initialmhdjet_(double* x, double* Q);
+void initialalfenwave_(double* x, double* Q);  
 void initialblast_(double* x, double* Q);
 void initialorsagtang_(double* x, double* Q);
 void initialrotor_(double* x, double* Q);

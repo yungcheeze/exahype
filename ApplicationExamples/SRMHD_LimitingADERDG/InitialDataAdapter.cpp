@@ -76,8 +76,8 @@ void initialdatabyexahypespecfile(double* x, double* Q) {
 //	// failure: Do fallback initial data
 //	if(HASNOT(atLeastOnceWarnedAboutFallback))
 //		logWarning( "InitialDatabyExahyPESpecFile()", "Falling back to AlfenWave");
-//	initialalfenwave_(x,Q);
-	initialmhdjet_(x,Q);
+	initialalfenwave_(x,Q);
+//	initialmhdjet_(x,Q);
 		
 }
 
