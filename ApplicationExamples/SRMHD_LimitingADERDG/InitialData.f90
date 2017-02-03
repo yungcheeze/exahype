@@ -65,7 +65,7 @@ SUBROUTINE InitialData(x, Q)
   END INTERFACE
   
   ! Call here one of
-   Call InitialMHDJet(x, Q)
+  ! Call InitialMHDJet(x, Q)
   ! Call InitialBlast(x, Q)
   ! Call InitialAlfenWave(x, Q)
   ! Call InitialRotor(x,Q)
@@ -161,8 +161,8 @@ SUBROUTINE InjectJet(x, Q)
     BV(2) = 0.0
     BV(3) = 0.0
     
-    IF(x(1).lt.1.e-4 .and. x(2)**2+x(3)**2.LE.1.0) THEN       
-     V = (/ rhob, vb, 0.0, 0.0, pa, 0.0, 0.0, 0.0, 0.0 /)      
+    IF(x(1).LT.1.e-4 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
+     V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
     END IF 
     !
     ! Now convert to conservative variables
