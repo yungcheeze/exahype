@@ -52,8 +52,6 @@ exahype-project  MHDSolver
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
     variables          = 9
-    primitives         = 0
-    parameters         = 0
     order              = 3
     /* was 0.24 */
     maximum-mesh-size  = 0.4

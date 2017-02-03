@@ -54,7 +54,6 @@ exahype-project  Elastic
   
   solver ADER-DG MyElasticSolver
     variables         = 8
-    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.2
