@@ -38,6 +38,7 @@ compile: files.mk $(OBJECTS)
 
 dist:
 	jar cmf ../Manifest.txt ../dist/ExaHyPE.jar .
+	tar -czvf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class eu 
 
 
 all: clean createParser compile dist
