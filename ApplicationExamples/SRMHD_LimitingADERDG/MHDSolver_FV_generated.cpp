@@ -7,8 +7,9 @@
 // ========================
 #include "MHDSolver_FV.h"
 #include "kernels/finitevolumes/godunov/c/2d/godunov.cpph"
+#include "kernels/finitevolumes/godunov/c/3d/godunov.cpph"
 
-MHD::MHDSolver_FV::MHDSolver_FV(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping):
+MHD::MHDSolver_FV::MHDSolver_FV(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping, exahype::Parser::ParserView constants):
   exahype::solvers::FiniteVolumesSolver("MHDSolver_FV",9,0,cellsPerCoordinateAxis,1 /* ghost layer width */,maximumMeshSize,timeStepping) {
   // @todo Please implement/augment if required
 }

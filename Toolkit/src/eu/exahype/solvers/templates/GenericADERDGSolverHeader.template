@@ -20,21 +20,18 @@ namespace {{Project}}{
 
 class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
   public:
-  	// Sorry for being inconsistent here: While AderDGSolver offers the methods getNumberOfVariables() etc.,
-    // in static context they cannot be accessed. Thus the toolkit offers you access to the variables here.
-    // Thank you,Toolkit!
-    static constexpr int nVar      = {{NumberOfVariables}};
-    static constexpr int nParams   = {{NumberOfParameters}};
-    static constexpr int nDim      = {{Dimensions}};
+    static constexpr int nVar      = {{NumberOfVariables}};  // TODO: Not required anymore
+    static constexpr int nParams   = {{NumberOfParameters}}; // TODO: Not required anymore
+    static constexpr int nDim      = {{Dimensions}};         // TODO: Was never required (->DIMENSIONS)
     static constexpr int order     = {{Order}};
     static constexpr int basisSize = {{Order}} + 1;
   
+    class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+    class Primitives;
+  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
-    
-    static void staticToString(std::ostream& os) {
-        // There is also toString (overwritten from solver::Solver, ADERDGSolver) but in method context.
-        os << "{{Project}}::{{Solver}}(order="<<order<<", nDim="<<nDim<<", basisSize="<<basisSize<<", nVar="<<nVar<<", nParams="<<nParams<<")";
-    }
 
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;

@@ -58,6 +58,7 @@ exahype-project  Acoustic
 
   solver ADER-DG MyAcousticWaveSolver
     variables         = 4
+    primitives        = 0
     parameters        = 0
     order             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
@@ -71,7 +72,7 @@ exahype-project  Acoustic
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -81,7 +82,7 @@ exahype-project  Acoustic
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there
-      select = {}
+      select    = x:0.0,y:0.0
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii PrimitivesWriter
@@ -89,7 +90,7 @@ exahype-project  Acoustic
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
@@ -97,7 +98,7 @@ exahype-project  Acoustic
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot*/
 
     /* Do not need the time series for a point in the moment

@@ -147,11 +147,11 @@ void exahype::Parser::readFile(const std::string& filename) {
     _interpretationErrorOccured = true;
   }
 
-// For debugging purposes
-//  std::cout << "_tokenStream=" << std::endl;
-//  for (std::string str : _tokenStream) {
-//    std::cout << "["<<str<<"]" << std::endl;
-//  }
+  //  For debugging purposes
+  //  std::cout << "_tokenStream=" << std::endl;
+  //  for (std::string str : _tokenStream) {
+  //    std::cout << "["<<str<<"]" << std::endl;
+  //  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -533,14 +533,33 @@ std::string exahype::Parser::getIdentifier(int solverNumber) const {
 int exahype::Parser::getVariables(int solverNumber) const {
   std::string token;
   int result;
+  std::regex COLON_SEPARATED(R"(([A-Za-z]\w*):([0-9]+))");
+  std::smatch match;
+
+  // first check if we read in a number
   token = getTokenAfter("solver", solverNumber + 1, "variables", 1);
   result = atoi(token.c_str());
 
-  if (result < 1) {
-    logError("getVariables()",
-             "'" << getIdentifier(solverNumber)
-                 << "': 'variables': Value must be greater than zero.");
-    _interpretationErrorOccured = true;
+  if (result < 1) { // token is not a number
+    result = 0;
+
+    int i = 1;
+    std::regex_search(token, match, COLON_SEPARATED);
+    while (match.size() > 1) {
+      int multiplicity = atoi(match.str(2).c_str());
+      result +=multiplicity; // std::string name = match.str(1);
+
+      // logInfo("getVariables(...)","token="<<token<<",name="<<match.str(1)<<",n="<<match.str(2));
+      token = getTokenAfter("solver", solverNumber + 1, "variables", 1, i++);
+      std::regex_search(token, match, COLON_SEPARATED);
+    }
+
+    if (result < 1) { // token is still 0
+      logError("getVariables()",
+               "'" << getIdentifier(solverNumber)
+               << "': 'variables': Value must be greater than zero.");
+          _interpretationErrorOccured = true;
+    }
   }
 
   logDebug("getVariables()", "found variables " << result);
@@ -550,17 +569,36 @@ int exahype::Parser::getVariables(int solverNumber) const {
 int exahype::Parser::getParameters(int solverNumber) const {
   std::string token;
   int result;
+  std::regex COLON_SEPARATED(R"(([A-Za-z]\w*):([0-9]+))");
+  std::smatch match;
+
+  // first check if we read in a number
   token = getTokenAfter("solver", solverNumber + 1, "parameters", 1);
   result = atoi(token.c_str());
 
-  if (result < 0) {
-    logError("getParameters()",
-             "'" << getIdentifier(solverNumber)
-                 << "': 'parameters': Value must not be negative.");
-    _interpretationErrorOccured = true;
+  if (result < 1) { // token is not a number
+    result = 0;
+
+    int i = 1;
+    std::regex_search(token, match, COLON_SEPARATED);
+    while (match.size() > 1) {
+      int multiplicity = atoi(match.str(2).c_str());
+      result +=multiplicity; // std::string name = match.str(1);
+
+      // logInfo("getVariables(...)","token="<<token<<",name="<<match.str(1)<<",n="<<match.str(2));
+      token = getTokenAfter("solver", solverNumber + 1, "parameters", 1, i++);
+      std::regex_search(token, match, COLON_SEPARATED);
+    }
+
+    if (result < 0) { // token is still 0
+      logError("getParameters()",
+               "'" << getIdentifier(solverNumber)
+               << "': 'parameters': Value must be non-negative.");
+          _interpretationErrorOccured = true;
+    }
   }
 
-  logDebug("getParameters()", "found parameters " << result);
+  logDebug("getVariables()", "found variables " << result);
   return result;
 }
 

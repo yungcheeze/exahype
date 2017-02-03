@@ -121,7 +121,7 @@ double exahype::solvers::Solver::getMinSolverTimeStampOfAllSolvers() {
   return currentMinTimeStamp;
 }
 
-double exahype::solvers::Solver::getMinNextSolverTimeStampOfAllSolvers() {
+double exahype::solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers() {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {

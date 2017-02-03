@@ -399,7 +399,7 @@ class exahype::solvers::Solver {
    * The result is a lower bound of the minimum time stamp
    * that will be obtained in the following time step.
    */
-  static double getMinNextSolverTimeStampOfAllSolvers();
+  static double estimateMinNextSolverTimeStampOfAllSolvers();
 
   /**
    * Run over all solvers and identify the minimal time step size.

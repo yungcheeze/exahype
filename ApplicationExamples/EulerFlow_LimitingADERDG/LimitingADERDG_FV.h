@@ -12,12 +12,23 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 
+#include <ostream>
+
 namespace Euler{
   class LimitingADERDG_FV;
 }
 
 class Euler::LimitingADERDG_FV : public exahype::solvers::FiniteVolumesSolver {
   public:
+    static constexpr int nVar      = 5;  // TODO: Not required anymore
+    static constexpr int nParams   = 0; // TODO: Not required anymore
+    static constexpr int nDim      = 2;         // TODO: Was never required (->DIMENSIONS)
+
+	class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+    class Primitives;
+
     LimitingADERDG_FV(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping);
     
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -30,12 +41,13 @@ class Euler::LimitingADERDG_FV : public exahype::solvers::FiniteVolumesSolver {
     void boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 	
+    
+  	void init(std::vector<std::string>& cmdlineargs);
+    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q); // TODO: Use template kernels
+    static void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);                        // TODO: Use template kernels
+    static void flux(const double* const Q,double** F);                                                                // TODO: Use template kernels
+    static void source(const double* const Q,double* S);                                                               // TODO: Use template kernels
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
-  private:
-    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
-    static void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);
-    static void flux(const double* const Q,double** F);
-    static void source(const double* const Q,double* S);
 };
 
 

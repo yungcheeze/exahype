@@ -52,6 +52,7 @@ exahype-project  MHDSolver
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
     variables          = 9
+    primitives         = 0
     parameters         = 0
     order              = 3
     /* 27 grid points: 0.2327 @TODO refinment not yet done */
@@ -68,7 +69,7 @@ exahype-project  MHDSolver
       time     = 0.0
       repeat   = 0.005
       output   = ./solution
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

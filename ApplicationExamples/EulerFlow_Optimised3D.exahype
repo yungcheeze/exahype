@@ -33,6 +33,7 @@ exahype-project  Euler3d
 
   solver ADER-DG MyEulerSolver
     variables          = 5
+    primitives         = 0
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05
@@ -45,7 +46,7 @@ exahype-project  Euler3d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

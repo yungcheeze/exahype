@@ -59,6 +59,7 @@ exahype-project  Elastic
   
   solver ADER-DG MyElasticSolver
     variables         = 12
+    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 2.0
@@ -71,7 +72,7 @@ exahype-project  Elastic
       time      = 0.0
       repeat    = 0.2
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -82,7 +83,7 @@ exahype-project  Elastic
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
     
     
@@ -91,7 +92,7 @@ exahype-project  Elastic
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
     
     plot vtk::Cartesian::vertices::ascii
@@ -99,7 +100,7 @@ exahype-project  Elastic
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
     */
 

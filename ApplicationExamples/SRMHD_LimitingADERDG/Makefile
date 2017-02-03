@@ -6,20 +6,20 @@
 #
 # export variable  |  default-value  |  further values         |  description
 #--------------------------------------------------------------------------------------------------
-# ARCHITECTURE        CPU               Phi                       Hardware-plattfrom
+# ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-platform
 # COMPILER            Intel             GNU                       Used compiler (and linker)
 # MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
 # *********************************************************************************************
-PEANO_KERNEL_PEANO_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/peano
-PEANO_KERNEL_TARCH_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/tarch
-PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/multiscalelinkedcell
-PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/sharedmemoryoracles
-PEANO_TOOLBOX_MPI_BLANCING_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./Peano/mpibalancing
-EXAHYPE_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ExaHyPE
-PROJECT_PATH=/home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ApplicationExamples/MHD_LimitingADERDG
+PEANO_KERNEL_PEANO_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./Peano/peano
+PEANO_KERNEL_TARCH_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./Peano/tarch
+PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./Peano/multiscalelinkedcell
+PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./Peano/sharedmemoryoracles
+PEANO_TOOLBOX_MPI_BLANCING_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./Peano/mpibalancing
+EXAHYPE_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./ExaHyPE
+PROJECT_PATH=/mnt/beegfs/osorio/ExaHyPE-Engine/./ApplicationExamples/SRMHD_LimitingADERDG
 EXECUTABLE=ExaHyPE-MHD 
 
 
@@ -29,7 +29,7 @@ PROJECT_CFLAGS+=-DALIGNMENT=16
 # However, feel free to give it a try in your code on your system by disabling 
 # this flag. 
 PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls
-PROJECT_CFLAGS+=-DDim2
+PROJECT_CFLAGS+=-DDim3
 ifeq ($(SHAREDMEM),)
   SHAREDMEM=TBB
 endif
@@ -40,7 +40,7 @@ endif
 
 
 
--include /home/dominic/dev/codes/c/ExaHyPE/ExaHyPE-Engine/./ExaHyPE/Makefile
+-include /mnt/beegfs/osorio/ExaHyPE-Engine/./ExaHyPE/Makefile
 
 
 

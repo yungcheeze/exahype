@@ -57,7 +57,8 @@ exahype-project  Euler
   end optimisation
 
   solver Limiting-ADER-DG LimitingADERDG
-    variables         = 5
+    variables         = rho:1,j:3,E:1
+    primitives        = rho:1,u:3,E:1
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.05
@@ -74,7 +75,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.00001
       output    = ./limitingaderg-dg
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

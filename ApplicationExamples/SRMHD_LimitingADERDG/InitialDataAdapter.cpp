@@ -26,7 +26,7 @@ std::string getEnvValue(const std::string& key) { assert(envKeyExists(key)); ret
 bool shallUseEnvWorkaround() { return envKeyExists(envPrefix+"parameter_workaround"); }
 bool wrap_isValueValidString(const std::string& key) {
 	if(shallUseEnvWorkaround()) return envKeyExists(envPrefix+key);
-	assert(constants != nullptr);
+//	assert(constants != nullptr);
 	return constants->isValueValidString(key);
 }
 	
@@ -47,36 +47,38 @@ extern "C" {
 	
 // C function called by FORTRAN
 void initialdatabyexahypespecfile(double* x, double* Q) {
-	if(shallUseEnvWorkaround() && HASNOT(atLeastOnceWarnedAboutEnv))
-		logWarning("InitialDatabyExahyPESpecFile()", "Using ENV workaround to determine parameters");
-	if(!shallUseEnvWorkaround() && !constants && HASNOT(atLeastOnceWarnedAboutEnv)) {
-		logError("InitialDatabyExahyPESpecFile()", "Parser instance is Null!");
-	} else if(!wrap_isValueValidString(specfile_initialdata_key)) {
-		logError("InitialDatabyExahyPESpecFile()", "Initial Data Value is not valid");
-	} else {
-		std::string id_name = wrap_getValueAsString(specfile_initialdata_key);
-		// c++ string to lower
-		std::transform(id_name.begin(), id_name.end(), id_name.begin(), ::tolower);
+//	if(shallUseEnvWorkaround() && HASNOT(atLeastOnceWarnedAboutEnv))
+//		logWarning("InitialDatabyExahyPESpecFile()", "Using ENV workaround to determine parameters");
+//	if(!shallUseEnvWorkaround() && !constants && HASNOT(atLeastOnceWarnedAboutEnv)) {
+//		logError("InitialDatabyExahyPESpecFile()", "Parser instance is Null!");
+//	} else if(!wrap_isValueValidString(specfile_initialdata_key)) {
+//		logError("InitialDatabyExahyPESpecFile()", "Initial Data Value is not valid");
+//	} else {
+//		std::string id_name = wrap_getValueAsString(specfile_initialdata_key);
+//		// c++ string to lower
+//		std::transform(id_name.begin(), id_name.end(), id_name.begin(), ::tolower);
+//
+//		     if(id_name == "alfenwave") initialalfenwave_(x,Q);
+//		else if(id_name == "blast")     initialblast_(x,Q);
+//		else if(id_name == "orsagtang") initialorsagtang_(x,Q);
+//		else if(id_name == "shocktube") initialshocktube_(x,Q);
+//		else if(id_name == "rotor")     initialrotor_(x,Q);
+//		else {
+//			logError("InitialDatabyExahyPESpecFile()", "Unknown Initial Data value '"<< id_name <<"'");
+//		}
+//
+//		if(HASNOT(atLeastOnceInformAboutSuccess)) {
+//			logWarning("InitialDatabyExahyPESpecFile()", "Successfully loaded Initial Data '"<< id_name << "'");
+//		}
+//
+//		return; // success. or so.
+//	}
+//	// failure: Do fallback initial data
+//	if(HASNOT(atLeastOnceWarnedAboutFallback))
+//		logWarning( "InitialDatabyExahyPESpecFile()", "Falling back to AlfenWave");
+//	initialalfenwave_(x,Q);
+	initialmhdjet_(x,Q);
 		
-		     if(id_name == "alfenwave") initialalfenwave_(x,Q);
-		else if(id_name == "blast")     initialblast_(x,Q);
-		else if(id_name == "orsagtang") initialorsagtang_(x,Q);
-		else if(id_name == "shocktube") initialshocktube_(x,Q);
-		else if(id_name == "rotor")     initialrotor_(x,Q);
-		else {
-			logError("InitialDatabyExahyPESpecFile()", "Unknown Initial Data value '"<< id_name <<"'");
-		}
-		
-		if(HASNOT(atLeastOnceInformAboutSuccess)) {
-			logWarning("InitialDatabyExahyPESpecFile()", "Successfully loaded Initial Data '"<< id_name << "'");
-		}
-		
-		return; // success. or so.
-	}
-	// failure: Do fallback initial data
-	if(HASNOT(atLeastOnceWarnedAboutFallback))
-		logWarning( "InitialDatabyExahyPESpecFile()", "Falling back to AlfenWave");
-	initialalfenwave_(x,Q);
 }
 
 }/* extern "C" */

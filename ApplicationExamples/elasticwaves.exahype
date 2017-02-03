@@ -45,6 +45,7 @@ exahype-project  ElasticWave
   
   solver ADER-DG MyElasticWaveSolver
     variables         = 9
+    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.25
@@ -57,7 +58,7 @@ exahype-project  ElasticWave
       time      = 0.0
       repeat    = 0.05
       output    = ./result
-      select    = {} 
+      select    = x:0.0,y:0.0 
     end plot
     
   end solver
