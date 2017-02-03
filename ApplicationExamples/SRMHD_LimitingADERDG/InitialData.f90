@@ -67,7 +67,7 @@ SUBROUTINE InitialData(x, Q)
   ! Call here one of
   ! Call InitialMHDJet(x, Q)
   ! Call InitialBlast(x, Q)
-  ! Call InitialAlfenWave(x, Q)
+   Call InitialAlfenWave(x, Q)
   ! Call InitialRotor(x,Q)
   ! Call InitialBlast(x, Q)
   ! Call InitialOrsagTang(x, Q)
