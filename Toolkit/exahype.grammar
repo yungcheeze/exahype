@@ -324,12 +324,6 @@ Productions
     plot_solution_list?
       { -> [New plot_solution(plotter_type,name,variables,time,repeat,output,select_list.constants),plot_solution_list.plot_solution] }
     ;
-    
-  naming_scheme_list {->variables*} =
-    token_naming_scheme token_equals variables 
-    naming_scheme_list?
-      { -> [variables, naming_scheme_list.variables ] };
-
   constants_list {->constants} =
     token_constants          [constants_equals]:token_equals          [constants]:constants
       { -> constants };
@@ -343,7 +337,7 @@ Productions
       [begin_token]:token_solver token_aderdg [name]:identifier
         token_variables          [variables_equals]:token_equals          [variables]:variables
         parameters_list?
-        naming_scheme_list?
+        naming_schemes?
         token_order              [order_equals]:token_equals              [order]:int_number
         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
@@ -353,13 +347,13 @@ Productions
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.aderdg(name,variables,parameters_list.variables,[naming_scheme_list.variables],order,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.aderdg(name,variables,parameters_list.variables,naming_schemes,order,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {limiting_aderdg}
     [begin_token]:token_solver token_limiting_aderdg [name]:identifier
         token_variables                  [variables_equals]:token_equals                    [variables]:variables
         parameters_list?
-        naming_scheme_list?
+        naming_schemes?
         token_order                      [order_equals]:token_equals                        [order]:int_number
         token_maximum_mesh_size          [maximum_mesh_size_equals]:token_equals            [maximum_mesh_size]:float_number
         token_time_stepping              [time_stepping_equals]:token_equals                [time_stepping]:identifier
@@ -373,13 +367,13 @@ Productions
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,[naming_scheme_list.variables],order,maximum_mesh_size,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,naming_schemes.naming_schemes,order,maximum_mesh_size,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {finite_volumes}
       [begin_token]:token_solver token_finite_volumes [name]:identifier
         token_variables          [variables_equals]:token_equals          [variables]:variables
         parameters_list?
-        naming_scheme_list?
+        naming_schemes?
         token_patch_size         [patch_size_equals]:token_equals         [patch_size]:int_number
         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
@@ -389,12 +383,16 @@ Productions
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,[naming_scheme_list.variables],patch_size,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
+      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,naming_schemes.naming_schemes,patch_size,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
+    
+  naming_schemes = 
+    naming_scheme_list
+      { -> New naming_schemes ([naming_scheme_list.naming_scheme]) };
     
   items = 
     item_list
       { -> New items ([item_list.item]) };
-  
+
   variables = 
     variable_list
       { -> New variables ([variable_list.variable]) };
@@ -402,6 +400,14 @@ Productions
   constants = 
     constant_list
       { -> New constants ([constant_list.constant]) };
+  
+  
+  naming_scheme_list {->naming_scheme+} =
+    {single} [name]:identifier token_equals [scheme]:variables 
+      { -> [New naming_scheme(name,scheme)] }
+    |
+    {list}   [name]:identifier token_equals [value]:variables naming_scheme_list
+      { -> [New naming_scheme(name,value),naming_scheme_list.naming_scheme] };
   
   item_list {->item+} =
     {single} [value]:typename
@@ -427,7 +433,6 @@ Productions
     |
     {list}   [name]:identifier token_colon [value]:int_number token_comma variable_list
       { -> [New variable.with_name(name,value),variable_list.variable] };
-             
 
 Abstract Syntax Tree
   project =
@@ -470,6 +475,12 @@ Abstract Syntax Tree
 
   profiling =
     [profiler]:identifier [metrics]:item+ [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
+ 
+  naming_schemes =
+    naming_scheme+;
+ 
+  naming_scheme =
+    [name]:identifier [scheme]:variables;
 
   items =
     item+;
@@ -479,7 +490,7 @@ Abstract Syntax Tree
     
   constants =
     constant+; 
-
+	
   item = 
     [value]:typename
     ;
@@ -494,9 +505,9 @@ Abstract Syntax Tree
     ;
   
   solver =
-      {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+      {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
     ;
 
   plot_solution =
