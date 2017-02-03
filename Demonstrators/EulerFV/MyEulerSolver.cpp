@@ -1,3 +1,7 @@
+/**
+ * This file is part of the ExaHyPE project. For copyright and information
+ * please see www.exahype.eu.
+ */
 #include "MyEulerSolver.h"
 #include "MyEulerSolver_Variables.h"
 #include "Logo.h"
@@ -15,37 +19,39 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   
-  // @todo Please implement/augment if required
-  // State variables:
   tarch::la::Vector<DIMENSIONS,double> myX( x[0], 1.0-x[1] );
   myX *= static_cast<double>(Image.width);
 
   tarch::la::Vector<DIMENSIONS,int>    myIntX( myX(0), myX(1) );
 
-  double rho = 0.1;
+  double Energy = 0.1;
 
   if (
     myIntX(0) < static_cast<int>(Image.width)
     &&
     myIntX(1) < static_cast<int>(Image.height)
   ) {
-    rho += (
+    Energy += (
         Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+0]
       + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+1]
       + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+2]) / 3.0 / 256.0;
   }
+  else {
+    Energy += (
+        Image.pixel_data[0]
+      + Image.pixel_data[1]
+      + Image.pixel_data[2]) / 3.0 / 256.0;
+  }
 
-  //if (tarch::la::equals(t, 0.0)) {
-    Q[0] = rho;
-    Q[1] = 0.0;
-    Q[2] = 0.0;
-    Q[3] = 0.0;
-    Q[4] = 1.0;
-  //}
+  Q[0] = 1.0;
+  Q[1] = 0.0;
+  Q[2] = 0.0;
+  Q[3] = 0.0;
+  Q[4] = Energy;
 }
 
+
 exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
-  // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
@@ -103,4 +109,10 @@ void EulerFV::MyEulerSolver::boundaryValues(
     double* stateOutside) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
+
+  stateOutside[0] = stateInside[0];
+  stateOutside[1] = stateInside[1];
+  stateOutside[2] = stateInside[2];
+  stateOutside[3] = stateInside[3];
+  stateOutside[4] = stateInside[4];
 }
