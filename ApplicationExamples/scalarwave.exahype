@@ -45,8 +45,6 @@ exahype-project  ScalarWave
   
   solver ADER-DG MyScalarWaveSolver
     variables         = 1
-    primitives        = 0
-    parameters        = 0
     order             = 3
     maximum-mesh-size = 0.3
     time-stepping     = global

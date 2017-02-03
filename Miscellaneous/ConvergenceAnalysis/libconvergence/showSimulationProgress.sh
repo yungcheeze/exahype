@@ -47,11 +47,15 @@ for sim in $(find $SIMBASE -maxdepth 1 -type d | sort); do
 				echo -ne "$SEP RUNNING?"
 			fi
 
-			# filter lines like
+			# in assertion mode, filter lines like
 			# ... exahype::runners::Runner::startNewTimeStep(...)         step 499 t_min          =0.511616 ...
 			if LASTSTEP="$(grep -h startNewTimeStep $simlog | grep step)"; then
-				# red black box, thats why we log for, isnt it?
+				# read black box, thats why we log for, isnt it?
 				BLACKBOX="$(echo "$LASTSTEP" | tail -n1 | awk '{print $6" "$7" "$8" "$9 }')"
+			# in release mode, filter lines like
+			# 2017-02-01 12:46:44  158753       info         step 6482        t_min          =3.00505
+			elif LASTSTEP="$(grep -E 'info\s+step\s+[0-9]' $simlog | grep t_min)"; then
+				BLACKBOX="$(echo "$LASTSTEP" | tail -n1 | awk '{print $5" "$6" "$7" "$8 }')"
 			else
 				# apparently not even onetime step started.
 				BLACKBOX="None started"

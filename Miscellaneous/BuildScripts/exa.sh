@@ -105,7 +105,7 @@ case $CMD in
 		# do NOT parallelize the loop as the build system does not allow
 		# Use build-poly-all for a parallel version
 		set -e
-		for p in 2 3 4 5 6 6 7 8 9; do subreq polycompile $APPNAME $p; done
+		for p in 2 3 4 5 6 6 7 8 9; do subreq compile-poly $APPNAME $p; done
 		;;	
 	"make") # compile without invoking the toolkit
 		cdapp

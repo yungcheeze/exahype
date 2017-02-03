@@ -45,7 +45,6 @@ exahype-project  AcousticWave
   
   solver ADER-DG MyAcousticWaveSolver
     variables         = 4
-    primitives        = 0
     parameters        = 0
     order             = 3
     maximum-mesh-size = 0.15

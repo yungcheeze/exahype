@@ -300,7 +300,7 @@ class ConvergenceReporter:
 			self.logger.warning("Not all simulation domains are equal! Sizes are: ", widths)
 		ncells_float = widths / meshsizes
 		self.ncells = np.rint(ncells_float).astype(int)
-		assert np.all( np.abs(ncells_float - self.ncells) < 1e-10), "Nonintegral number of cells: "+str(ncells_float)
+		assert np.all( np.abs(ncells_float - self.ncells) < 1e-8), "Nonintegral number of cells: "+str(ncells_float)
 
 		# 2D) Beautifying of paramtable
 		# the following beautifying is only done for printing the paramtable
@@ -575,9 +575,9 @@ class ConvergenceReporter:
 				idx.dt_min = 'dt_min'
 				
 				# just go on and make a plot
-				plt.plot(timesteps[idx.t_min], timesteps[idx.dt_min], "o-", label="P=%d,Nc=%d"%(simporder,simncells))
+				plt.plot(timesteps[idx.t_min], timesteps[idx.dt_min], "-", label="P=%d,Nc=%d"%(simporder,simncells))
 
-				# poor mans "append row to pandas"				
+				# poor mans "append row to pandas"
 				dt = timesteps[idx.dt_min]
 				idx.dtmean = 'dt_mean'
 				idx.dtstd = 'dt_std'
@@ -694,7 +694,7 @@ class ConvergenceReporter:
 
 			plt.xlabel("Simulation time")
 			plt.ylabel("Convergence order")
-			plt.legend()#.draggable()
+			plt.legend(ncol=2)#.draggable()
 			plt.ylim(0,10)
 
 
