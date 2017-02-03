@@ -17,7 +17,7 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
   
   // @todo Please implement/augment if required
   // State variables:
-  tarch::la::Vector<DIMENSIONS,double> myX( x[0], x[1] );
+  tarch::la::Vector<DIMENSIONS,double> myX( x[0], 1.0-x[1] );
   myX *= static_cast<double>(Image.width);
 
   tarch::la::Vector<DIMENSIONS,int>    myIntX( myX(0), myX(1) );
@@ -30,9 +30,9 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
     myIntX(1) < static_cast<int>(Image.height)
   ) {
     rho += (
-        Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+0]
-      + Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+1]
-      + Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+2]) / 3.0 / 256.0;
+        Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+0]
+      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+1]
+      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+2]) / 3.0 / 256.0;
   }
 
   //if (tarch::la::equals(t, 0.0)) {
@@ -103,11 +103,4 @@ void EulerFV::MyEulerSolver::boundaryValues(
     double* stateOutside) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-
-  // @todo Please implement/augment if required
-  stateOutside[0] = 0.0;
-  stateOutside[1] = 0.0;
-  stateOutside[2] = 0.0;
-  stateOutside[3] = 0.0;
-  stateOutside[4] = 0.0;
 }
