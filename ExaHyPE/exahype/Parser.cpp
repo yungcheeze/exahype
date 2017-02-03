@@ -96,7 +96,7 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
   int currentlyReadsComment = 0;
-
+  int lineNumber            = 0;
   while (!inputFile.eof() && inputFile) {
     char lineBuffer[MAX_CHARS_PER_LINE];
     inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
@@ -136,14 +136,15 @@ void exahype::Parser::readFile(const std::string& filename) {
       } // else do nothing
     } else if (currentlyReadsComment<0) {
       logError("readFile(String)",
-           "Please remove additional multi-line comment end(s) in line '" << line << "'.");
+           "Please remove additional multi-line comment end(s) in line '" << lineNumber << "'.");
        _interpretationErrorOccured = true;
     }
+    lineNumber++;
   }
 
   if (currentlyReadsComment>0) {
     logError("readFile(String)",
-             "A multi-line comment was not closed.");
+             "A multi-line comment was not closed after line " << lineNumber);
     _interpretationErrorOccured = true;
   }
 
