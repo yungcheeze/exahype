@@ -125,6 +125,7 @@ public class Main {
       waitForInteraction(interactive);
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
+      e.printStackTrace();
       System.err.println("ExaHyPE script failed ");
       return;
     }

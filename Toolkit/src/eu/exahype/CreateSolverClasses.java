@@ -69,7 +69,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       }
     }
 
-    _microarchitecture = node.getArchitecture().getText().toLowerCase();
+    if (node.getArchitecture()!=null) {
+      _microarchitecture = node.getArchitecture().getText().toLowerCase();
+    }
+    else {
+      _microarchitecture = "noarch";
+    }
     if (!_supportedMicroarchitectures.contains(_microarchitecture)) {
       System.out.println("Unknown architecture specified ... fallback solution \"noarch\" taken");
       _microarchitecture = "noarch";

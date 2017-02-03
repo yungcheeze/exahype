@@ -55,17 +55,25 @@ public class Variables {
   private static List<PVariable> getParametersAsList(PSolver node) {
     List<PVariable> parametersAsList = null;
     if (node instanceof AAderdgSolver) {
-      parametersAsList = ((AVariables)((AAderdgSolver) node).getParameters()).getVariable();
+      if ( ((AAderdgSolver) node).getParameters() != null) {
+        parametersAsList = ((AVariables)((AAderdgSolver) node).getParameters()).getVariable();
+      }
     } else if (node instanceof ALimitingAderdgSolver) {
-      parametersAsList = ((AVariables)((ALimitingAderdgSolver) node).getParameters()).getVariable();
+      if ( ((ALimitingAderdgSolver) node).getParameters() != null) {
+        parametersAsList = ((AVariables)((ALimitingAderdgSolver) node).getParameters()).getVariable();
+      }
     } else if (node instanceof AFiniteVolumesSolver) {
-      parametersAsList = ((AVariables)((AFiniteVolumesSolver) node).getParameters()).getVariable();
+      if ( ((AFiniteVolumesSolver) node).getParameters() != null) {
+        parametersAsList = ((AVariables)((AFiniteVolumesSolver) node).getParameters()).getVariable();
+      }
     } 
     return parametersAsList;
   }
   
   private static List<PVariable> getPrimitivesAsList(PSolver node) {
     List<PVariable> primivitesAsList = null;
+    /*
+     * @todo Dominic, I killed this for the time being
     if (node instanceof AAderdgSolver) {
       primivitesAsList = ((AVariables)((AAderdgSolver) node).getPrimitives()).getVariable();
     } else if (node instanceof ALimitingAderdgSolver) {
@@ -73,6 +81,7 @@ public class Variables {
     } else if (node instanceof AFiniteVolumesSolver) {
       primivitesAsList = ((AVariables)((AFiniteVolumesSolver) node).getPrimitives()).getVariable();
     } 
+    */
     return primivitesAsList;
   }
   
@@ -113,24 +122,12 @@ public class Variables {
     if (variablesAsList!=null) {
       return parseVariables(variablesAsList); 
     } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
+      System.out.println("ERROR: I do not know how to handle variables of solver type "+node.getClass().toString()+"!");
       System.exit(1);
       return null;
     }
   }
-  /**
-   * @note We rely on a linked hash map here that does not change the order of the parameters.
-   */
-  public static Map<String, Integer> readParameters(PSolver node) {
-    List<PVariable> parametersAsList = getParametersAsList(node);
-    if (parametersAsList!=null) {
-      return parseVariables(parametersAsList); 
-    } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
-      System.exit(1);
-      return null;
-    }
-  }
+
   
   /**
    * @note We rely on a linked hash map here that does not change the order of the parameters.
@@ -140,7 +137,7 @@ public class Variables {
     if (parametersAsList!=null) {
       return parseVariables(parametersAsList); 
     } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
+      System.out.println("ERROR: I do not know how to handle primitives of solver type "+node.getClass().toString()+"!");
       System.exit(1);
       return null;
     }
@@ -157,8 +154,9 @@ public class Variables {
   
   public Variables(PSolver node, int dimensions) {
     _variablesMap       = readVariables(node);
-    _parametersMap      = readParameters(node);
-    _primitivesMap      = readPrimitives(node);
+    // @todo Hier stimmt's halt nimmer, weil jetzt beide null sein koennen bzw. leer
+    _parametersMap      = null;
+    _primitivesMap      = null;
     _numberOfVariables  = sumMultiplicities(_variablesMap);
     _numberOfParameters = sumMultiplicities(_parametersMap);
     _numberOfPrimitives = sumMultiplicities(_primitivesMap);
