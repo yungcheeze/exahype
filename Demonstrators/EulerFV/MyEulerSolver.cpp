@@ -1,5 +1,6 @@
 #include "MyEulerSolver.h"
 #include "MyEulerSolver_Variables.h"
+#include "Logo.h"
 
 
 bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
@@ -16,13 +17,31 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
   
   // @todo Please implement/augment if required
   // State variables:
-  if (tarch::la::equals(t, 0.0)) {
-    Q[0] = x[0]<0.5 ? 1.0 : 0.1;
+  tarch::la::Vector<DIMENSIONS,double> myX( x[0], x[1] );
+  myX *= static_cast<double>(Image.width);
+
+  tarch::la::Vector<DIMENSIONS,int>    myIntX( myX(0), myX(1) );
+
+  double rho = 0.1;
+
+  if (
+    myIntX(0) < static_cast<int>(Image.width)
+    &&
+    myIntX(1) < static_cast<int>(Image.height)
+  ) {
+    rho += (
+        Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+0]
+      + Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+1]
+      + Image.pixel_data[myIntX(0)*Image.width*3+myIntX(1)*3+2]) / 3.0 / 256.0;
+  }
+
+  //if (tarch::la::equals(t, 0.0)) {
+    Q[0] = rho;
     Q[1] = 0.0;
     Q[2] = 0.0;
     Q[3] = 0.0;
     Q[4] = 1.0;
-  }
+  //}
 }
 
 exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
