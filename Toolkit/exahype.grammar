@@ -68,8 +68,8 @@ Tokens
   token_finite_volumes              = 'Finite-Volumes';
   token_limiting_aderdg             = 'Limiting-ADER-DG';
   token_variables                   = 'variables';
-  token_primitives                  = 'primitives';
   token_parameters                  = 'parameters';
+  token_naming_scheme               = 'naming-scheme';
   token_constants                   = 'constants';
   token_order                       = 'order';
   token_patch_size                  = 'patch-size';
@@ -146,7 +146,7 @@ Ignored Tokens
 Productions
   
   project {->project} =
-     {without_logfile}
+     {without_logfile_with_architecure}
      [begin_token]:token_project [name]:identifier
        paths
        token_architecture token_equals [architecture]:identifier
@@ -159,7 +159,7 @@ Productions
      token_end [end_token]:token_project
        { -> New project( name, paths.paths, architecture, Null, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
      |
-     {with_logfile}
+     {with_logfile_with_architecure}
      [begin_token]:token_project [name]:identifier
        paths
        token_architecture [architecture_equals]:token_equals [architecture]:identifier
@@ -172,6 +172,31 @@ Productions
        solver_list?
      token_end [end_token]:token_project
        { -> New project( name, paths.paths, architecture, logfile, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+     |
+     {without_logfile_without_architecure}
+     [begin_token]:token_project [name]:identifier
+       paths
+       computational_domain
+       shared_memory?
+       distributed_memory?
+       optimisation?
+       profiling?
+       solver_list?
+     token_end [end_token]:token_project
+       { -> New project( name, paths.paths, Null, Null, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+     |
+     {with_logfile_without_architecure}
+     [begin_token]:token_project [name]:identifier
+       paths
+       token_logfile      [logfile_equals]:token_equals      [logfile]:filename
+       computational_domain
+       shared_memory?
+       distributed_memory?
+       optimisation?
+       profiling?
+       solver_list?
+     token_end [end_token]:token_project
+       { -> New project( name, paths.paths, Null, logfile, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
    ;
 
   paths {->paths} =
@@ -282,6 +307,11 @@ Productions
       token_end [end_token]:token_profiling
        { -> New profiling(profiler,[metrics.item],Null,Null,Null,Null) }
      ;
+     
+  select_list {->constants} =
+    token_select    [select_equals]:token_equals    constants
+       { -> constants }
+     ;
 
   plot_solution_list {->plot_solution*} =
     [begin_token]:token_plot [plotter_type]:typename [name]:identifier 
@@ -289,68 +319,47 @@ Productions
       token_time      [time_equals]:token_equals      [time]:float_number
       token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
       token_output    [output_equals]:token_equals    [output]:filename
-      token_select    [select_equals]:token_equals    [select]:constants
+      select_list?
     token_end [end_token]:token_plot
     plot_solution_list?
-      { -> [New plot_solution(plotter_type,name,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
+      { -> [New plot_solution(plotter_type,name,variables,time,repeat,output,select_list.constants),plot_solution_list.plot_solution] }
     ;
+    
+  naming_scheme_list {->variables*} =
+    token_naming_scheme token_equals variables 
+    naming_scheme_list?
+      { -> [variables, naming_scheme_list.variables ] };
+
+  constants_list {->constants} =
+    token_constants          [constants_equals]:token_equals          [constants]:constants
+      { -> constants };
+
+  parameters_list {->variables} =
+   token_parameters         [parameters_equals]:token_equals          variables
+      { -> variables };
 
   solver_list {->solver*} =
     {aderdg}
       [begin_token]:token_solver token_aderdg [name]:identifier
         token_variables          [variables_equals]:token_equals          [variables]:variables
-        token_primitives         [primitives_equals]:token_equals         [primitives]:variables
-        token_parameters         [parameters_equals]:token_equals         [parameters]:variables
+        parameters_list?
+        naming_scheme_list?
         token_order              [order_equals]:token_equals              [order]:int_number
         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
         token_kernel             [kernel_equals]:token_equals             [kernel]:typename
         token_language           [language_equals]:token_equals           [language]:identifier
+        constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.aderdg(name,variables,primitives,parameters,order,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,Null,[plot_solution_list.plot_solution]),solver_list.solver] }
-    |  
-    {aderdg_with_constants}
-      [begin_token]:token_solver token_aderdg [name]:identifier
-        token_variables          [variables_equals]:token_equals          [variables]:variables
-        token_primitives         [primitives_equals]:token_equals         [primitives]:variables
-        token_parameters         [parameters_equals]:token_equals         [parameters]:variables
-        token_order              [order_equals]:token_equals              [order]:int_number
-        token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
-        token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel             [kernel_equals]:token_equals             [kernel]:typename
-        token_language           [language_equals]:token_equals           [language]:identifier
-        token_constants          [constants_equals]:token_equals          [constants]:constants
-        plot_solution_list?
-      token_end [end_token]:token_solver
-      solver_list?
-      { -> [New solver.aderdg(name,variables,primitives,parameters,order,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.aderdg(name,variables,parameters_list.variables,[naming_scheme_list.variables],order,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {limiting_aderdg}
-      [begin_token]:token_solver token_limiting_aderdg [name]:identifier
-        token_variables                  [variables_equals]:token_equals                    [variables]:variables
-        token_primitives                 [primitives_equals]:token_equals                   [primitives]:variables
-        token_parameters                 [parameters_equals]:token_equals                   [parameters]:variables
-        token_order                      [order_equals]:token_equals                        [order]:int_number
-        token_maximum_mesh_size          [maximum_mesh_size_equals]:token_equals            [maximum_mesh_size]:float_number
-        token_time_stepping              [time_stepping_equals]:token_equals                [time_stepping]:identifier
-        token_kernel                     [kernel_equals]:token_equals                       [kernel]:typename
-        token_language                   [language_equals]:token_equals                     [language]:identifier
-        token_kernel_limiter             [kernel_limiter_equals]:token_equals               [kernel_limiter]:typename
-        token_language_limiter           [language_limiter_equals]:token_equals             [language_limiter]:identifier
-        token_dmp_relaxation_parameter   [dmp_relaxation_parameter_equals]:token_equals     [dmp_relaxation_parameter]:float_number
-        token_dmp_difference_scaling     [dmp_difference_scaling_equals]:token_equals       [dmp_difference_scaling]:float_number
-        plot_solution_list?
-      token_end [end_token]:token_solver
-      solver_list?
-      { -> [New solver.limiting_aderdg(name,variables,primitives,parameters,order,maximum_mesh_size,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,Null,[plot_solution_list.plot_solution]),solver_list.solver] }
-    |  
-    {limiting_aderdg_with_constants}
     [begin_token]:token_solver token_limiting_aderdg [name]:identifier
         token_variables                  [variables_equals]:token_equals                    [variables]:variables
-        token_primitives                 [primitives_equals]:token_equals                   [primitives]:variables
-        token_parameters                 [parameters_equals]:token_equals                   [parameters]:variables
+        parameters_list?
+        naming_scheme_list?
         token_order                      [order_equals]:token_equals                        [order]:int_number
         token_maximum_mesh_size          [maximum_mesh_size_equals]:token_equals            [maximum_mesh_size]:float_number
         token_time_stepping              [time_stepping_equals]:token_equals                [time_stepping]:identifier
@@ -360,42 +369,27 @@ Productions
         token_language_limiter           [language_limiter_equals]:token_equals             [language_limiter]:identifier
         token_dmp_relaxation_parameter   [dmp_relaxation_parameter_equals]:token_equals     [dmp_relaxation_parameter]:float_number
         token_dmp_difference_scaling     [dmp_difference_scaling_equals]:token_equals       [dmp_difference_scaling]:float_number
-        token_constants                  [constants_equals]:token_equals                    [constants]:constants
+        constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.limiting_aderdg(name,variables,primitives,parameters,order,maximum_mesh_size,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,[naming_scheme_list.variables],order,maximum_mesh_size,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {finite_volumes}
       [begin_token]:token_solver token_finite_volumes [name]:identifier
         token_variables          [variables_equals]:token_equals          [variables]:variables
-        token_primitives         [primitives_equals]:token_equals         [primitives]:variables
-        token_parameters         [parameters_equals]:token_equals         [parameters]:variables
+        parameters_list?
+        naming_scheme_list?
         token_patch_size         [patch_size_equals]:token_equals         [patch_size]:int_number
         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
         token_kernel             [kernel_equals]:token_equals             [kernel]:typename
         token_language           [language_equals]:token_equals           [language]:identifier
+        constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.finite_volumes(name,variables,primitives,parameters,patch_size,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,Null,[plot_solution_list.plot_solution]),solver_list.solver] }
-    |
-    {finite_volumes_with_constants}
-      [begin_token]:token_solver token_finite_volumes [name]:identifier
-        token_variables          [variables_equals]:token_equals          [variables]:variables
-        token_primitives         [primitives_equals]:token_equals         [primitives]:variables
-        token_parameters         [parameters_equals]:token_equals         [parameters]:variables
-        token_patch_size         [patch_size_equals]:token_equals         [patch_size]:int_number
-        token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
-        token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel             [kernel_equals]:token_equals             [kernel]:typename
-        token_language           [language_equals]:token_equals           [language]:identifier
-        token_constants          [constants_quals]:token_equals           [constants]:constants
-        plot_solution_list?
-      token_end [end_token]:token_solver
-      solver_list?
-      { -> [New solver.finite_volumes(name,variables,primitives,parameters,patch_size,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants,[plot_solution_list.plot_solution]),solver_list.solver] };
+      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,[naming_scheme_list.variables],patch_size,maximum_mesh_size,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
     
   items = 
     item_list
@@ -439,7 +433,7 @@ Abstract Syntax Tree
   project =
     [name]:identifier
     paths
-    [architecture]:identifier
+    [architecture]:identifier?
     [log_file]:filename?
     computational_domain
     shared_memory?
@@ -500,9 +494,9 @@ Abstract Syntax Tree
     ;
   
   solver =
-      {aderdg}           [name]:identifier [variables]:variables [primitives]:variables? [parameters]:variables? [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {limiting_aderdg}  [name]:identifier [variables]:variables [primitives]:variables? [parameters]:variables? [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {finite_volumes}   [name]:identifier [variables]:variables [primitives]:variables? [parameters]:variables? [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+      {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [order]:int_number      [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:variables* [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
     ;
 
   plot_solution =

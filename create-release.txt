@@ -1,1 +1,0 @@
-tar -czvf exahype.tar.gz Peano ExaHyPE LICENSE.txt --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch
