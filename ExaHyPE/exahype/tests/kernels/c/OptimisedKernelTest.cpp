@@ -342,7 +342,7 @@ void OptimisedKernelTest::testStableTimeStep() {
  
 
 void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
-    std::ostringstream out;
+/*  std::ostringstream out;
   out << "Test spaceTimePredictorNonLinear with gaussian pulse on Q[0], ORDER="<< _order <<", NVAR=" << _numberOfVariables;
   logInfo("OptimisedKernelTest::testSpaceTimePredictorNonLinear()", out.str());
 
@@ -456,6 +456,7 @@ void OptimisedKernelTest::testSpaceTimePredictorNonLinear() {
   delete[] lFhbnd_opt;
   delete[] lQhi_opt;
   delete[] lFhi_opt;
+  */
 }
 
 

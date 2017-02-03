@@ -151,9 +151,9 @@ void exahype::plotters::ADERDG2LegendreCSV::plotPatch(
   
   for (int x=0; x < _order + 1; x++){
     for (int y=0; y < _order + 1; y++){
-      double weight = kernels::gaussLegendreWeights[_order][x] *
-                      kernels::gaussLegendreWeights[_order][y] * 
-                      sizeOfPatch(0)*sizeOfPatch(1);
+//      double weight = kernels::gaussLegendreWeights[_order][x] *
+//                      kernels::gaussLegendreWeights[_order][y] *
+//                      sizeOfPatch(0)*sizeOfPatch(1); // TODO(Dominic): Unused
                       
       
       //Data

@@ -33,10 +33,8 @@ void MHDSolver::RelativeErrorWriter::mapQuantities(
   const int nDim = MHDSolver::MHDSolver::nDim;
   const int nVar = MHDSolver::MHDSolver::nVar;
   
-  // convert tarch::la::Vector to double*  
-  double xpos[nDim];
+  const double *xpos = x.data();
   double exactCons[nVar];
-  for(int i=0; i<nDim; i++) xpos[i] = x[i];
 
   alfenwave_(xpos, exactCons, &timeStamp);
 

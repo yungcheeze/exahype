@@ -56,7 +56,6 @@ exahype-project SRHD
 
   solver Limiting-ADER-DG SRHDSolver
     variables                = 5
-    parameters               = 0
     order                    = 3
     maximum-mesh-size        = 0.05
     time-stepping            = global
@@ -72,7 +71,7 @@ exahype-project SRHD
       time      = 0.0
       repeat    = 0.01
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

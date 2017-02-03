@@ -72,7 +72,7 @@ public class Main {
     try {
       System.out.print("read input file " + inputFileName + " .");
       parser = new eu.exahype.parser.Parser(new eu.exahype.lexer.Lexer(
-          new java.io.PushbackReader(new java.io.FileReader(inputFileName))));
+          new java.io.PushbackReader(new java.io.FileReader(inputFileName),5000))); //TODO Dominic fix the PushbackReader buffer size
       document = parser.parse();
       System.out.println(".. ok");
       System.out.println("\n\n\n\n");
@@ -125,6 +125,8 @@ public class Main {
       waitForInteraction(interactive);
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
+      // @tood remove later again
+      e.printStackTrace();
       System.err.println("ExaHyPE script failed ");
       return;
     }
@@ -146,6 +148,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
 
@@ -167,6 +170,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
 
@@ -190,6 +194,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
   }

@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class IOUtils {
   /**
    * Converts the content of a resource which might be
-   * located in a jar or on the disk to a string.
+   * located in a jar or in folder to a string.
    * 
    * @note The relative path must not start with a "/"!
    * 

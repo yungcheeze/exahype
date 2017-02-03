@@ -65,15 +65,112 @@ SUBROUTINE InitialData(x, Q)
   END INTERFACE
   
   ! Call here one of
+  ! Call InitialMHDJet(x, Q)
   ! Call InitialBlast(x, Q)
-  ! Call InitialAlfenWave(x, Q)
+   Call InitialAlfenWave(x, Q)
   ! Call InitialRotor(x,Q)
   ! Call InitialBlast(x, Q)
   ! Call InitialOrsagTang(x, Q)
-  ! Call InitialShockTube(x, Q)
+  !Call InitialShockTube(x, Q)
 
-  CALL InitialDataByExaHyPESpecFile(x,Q)
+  ! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
+
+SUBROUTINE InitialMHDJet(x, Q)
+  ! Get the MHDJet for t=0
+  ! Is neccesary to impose the static or inflow boundary condition
+  ! in the jet injection, but we need take the initial values
+  ! in all domain
+ 
+    USE, INTRINSIC :: ISO_C_BINDING
+    Use Parameters, ONLY : nDim, nVar
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+    CALL MHDjet(x, Q)
+END SUBROUTINE InitialMHDJet
+
+SUBROUTINE MHDJet(x, Q)
+  ! Computes the MHD Jet at the initial data
+
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE Parameters, ONLY : nVar, nDim, gamma
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+
+    REAL :: rhoa, pa, va, Ms, eta
+    REAL :: rhob, pb, vb, betab
+    REAL :: V(nVar), BV(3)
+
+    Ms   = 4.0
+    eta  = 1.e-2
+    betab= 10.0
+    
+    rhoa = 1.0
+    va   = 0.0
+
+    rhob = rhoa*eta
+    vb   = 0.99
+    
+    pa   = eta*abs(vb)**2 / (gamma*(gamma -1.0)*Ms**2  - gamma*abs(vb)**2)     
+    
+    BV(1) = sqrt(2.0*Pa/betab)
+    BV(2) = 0.0
+    BV(3) = 0.0
+
+    
+    IF(x(1).LT.1.e-2 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
+      V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
+    ELSE
+      V = (/ rhoa, va, 0.0, 0.0, pa, BV(1:3), 0.0 /)
+    END IF 
+    !
+    ! Now convert to conservative variables
+    !
+    CALL PDEPrim2Cons(Q,V)
+END SUBROUTINE MHDJet
+
+SUBROUTINE InjectJet(x, Q)
+  ! Computes the MHD Jet at the initial data
+
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE Parameters, ONLY : nVar, nDim, gamma
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+
+    REAL :: rhoa, pa, va, Ms, eta
+    REAL :: rhob, pb, vb, betab
+    REAL :: V(nVar), BV(3)
+
+    Ms   = 4.0
+    eta  = 1.e-2
+    betab= 10.0
+    
+    rhoa = 1.0
+    va   = 0.0
+
+    rhob = rhoa*eta
+    vb   = 0.99    
+    pa   = eta*abs(vb)**2 / (gamma*(gamma -1.0)*Ms**2  - gamma*abs(vb)**2)         
+    BV(1) = sqrt(2.0*Pa/betab)
+    BV(2) = 0.0
+    BV(3) = 0.0
+    
+    IF(x(1).LT.1.e-4 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
+     V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
+    END IF 
+    !
+    ! Now convert to conservative variables
+    !
+    CALL PDEPrim2Cons(Q,V)
+END SUBROUTINE InjectJet
+
+
 
 SUBROUTINE InitialAlfenWave(x, Q)
     ! Get the AlfenWave for t=0
@@ -85,10 +182,10 @@ SUBROUTINE InitialAlfenWave(x, Q)
     ! Argument list 
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
-
     CALL AlfenWave(x, Q, 0.0)
 END SUBROUTINE InitialAlfenWave
 
+  
 SUBROUTINE AlfenWave(x, Q, t)
     ! Computes the AlfenWave at a given time t.
     ! Use it ie. with t=0 for initial data
@@ -129,6 +226,7 @@ SUBROUTINE AlfenWave(x, Q, t)
     V = (/ rho0, VV(1:3), p0, BV(1:3), 0.0 /)
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE AlfenWave
+  
 
 SUBROUTINE InitialBlast(x, Q)
     ! Blast wave: See 10.1137/0915019 or 10.1016/j.cpc.2014.03.018

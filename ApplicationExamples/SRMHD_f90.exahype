@@ -25,7 +25,6 @@ exahype-project  MHDSolver
 
   solver ADER-DG MHDSolver
     variables          = 9
-    parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.2
     time-stepping      = global
@@ -38,7 +37,7 @@ exahype-project  MHDSolver
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
     
     plot vtk::Legendre::vertices::ascii
@@ -46,7 +45,7 @@ exahype-project  MHDSolver
       time = 0.0
       repeat = 0.05
       output = ./global-integrals
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Legendre::vertices::ascii
@@ -54,7 +53,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Legendre::vertices::ascii
@@ -62,7 +61,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Legendre::vertices::ascii
@@ -70,7 +69,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./errors-conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Legendre::vertices::ascii
@@ -78,7 +77,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./relative-errors-conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

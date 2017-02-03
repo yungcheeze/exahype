@@ -61,7 +61,7 @@ exahype-project  Elastic
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 end exahype-project

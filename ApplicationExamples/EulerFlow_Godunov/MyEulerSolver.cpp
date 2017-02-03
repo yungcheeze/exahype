@@ -1,5 +1,9 @@
 #include "MyEulerSolver.h"
 
+// @todo Has to be included by generator
+#include "MyEulerSolver_Variables.h"
+
+
 #include "InitialData.h"
 
 // TODO(Dominic): Assess
@@ -35,79 +39,45 @@ exahype::solvers::Solver::RefinementControl EulerFVM::MyEulerSolver::refinementC
 
 
 void EulerFVM::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
-  // Dimensions             = 2/3
-  // Number of variables    = 5 (#unknowns + #parameters)
-  const double GAMMA = 1.4;
+  ReadOnlyVariables vars(Q);
+  Variables eigs(lambda);
 
-  double irho = 1.0 / Q[0];
-  #ifdef Dim2
-  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
-  #else
-  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] *
-  Q[3]) * irho);
-  #endif
+  const double GAMMA = 1.4;
+  const double irho = 1./vars.rho();
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   double u_n = Q[normalNonZeroIndex + 1] * irho;
-  double c = std::sqrt(GAMMA * p * irho);
+  double c  = std::sqrt(GAMMA * p * irho);
 
-  lambda[0] = u_n - c;
-  lambda[1] = u_n;
-  lambda[2] = u_n;
-  lambda[3] = u_n;
-  lambda[4] = u_n + c;
+  eigs.rho()=u_n - c;
+  eigs.E()  =u_n + c;
+  eigs.j(u_n,u_n,u_n);
 }
 
 void EulerFVM::MyEulerSolver::flux(const double* const Q, double** F) {
-  // Dimensions             = 2/3
-  // Number of variables    = 5 (#unknowns + #parameters)
+  ReadOnlyVariables vars(Q);
+  Fluxes f(F);
+
+  tarch::la::Matrix<3,3,double> I;
+  I = 1, 0, 0,
+      0, 1, 0,
+      0, 0, 1;
 
   const double GAMMA = 1.4;
+  const double irho = 1./vars.rho();
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  const double irho = 1.0 / Q[0];
-  #ifdef Dim2
-  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
-  #else
-  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
-  #endif
-
-  double* f = F[0];
-  double* g = F[1];
-
-  // @todo Please implement
-  // f
-  f[0] = Q[1];
-  f[1] = irho * Q[1] * Q[1] + p;
-  f[2] = irho * Q[1] * Q[2];
-  f[3] = irho * Q[1] * Q[3];
-  f[4] = irho * Q[1] * (Q[4] + p);
-  // g
-  // @todo Please implement
-  g[0] = Q[2];
-  g[1] = irho * Q[2] * Q[1];
-  g[2] = irho * Q[2] * Q[2] + p;
-  g[3] = irho * Q[2] * Q[3];
-  g[4] = irho * Q[2] * (Q[4] + p);
-
-#ifdef Dim3
-  double* h = F[2];
-  // h
-  // @todo Please implement
-  h[0] = Q[3];
-  h[1] = irho * Q[3] * Q[1];
-  h[2] = irho * Q[3] * Q[2];
-  h[3] = irho * Q[3] * Q[3] + p;
-  h[4] = irho * Q[3] * (Q[4] + p);
-#endif
-
+  f.rho ( vars.j()                                 );
+  f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
+  f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
 
 void EulerFVM::MyEulerSolver::source(const double* const Q, double* S) {
-  S[0] = 0.0;
-  S[1] = 0.0;
-  S[2] = 0.0;
-  S[3] = 0.0;
-  S[4] = 0.0;
+  Variables source(S);
+  source.rho()=0;
+  source.E()=0;
+  source.j(0,0,0);
 }
 
 void EulerFVM::MyEulerSolver::boundaryValues(

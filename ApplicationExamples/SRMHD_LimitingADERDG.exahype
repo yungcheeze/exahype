@@ -24,10 +24,10 @@ exahype-project MHD
   architecture               = noarch
 
   computational-domain
-    dimension                = 2
-    width                    = 1.0, 0.2
-    offset                   = 0.0, 0.0
-    end-time                 = 0.8
+    dimension                = 3
+    width                    = 10.0, 5.0, 5.0
+    offset                   = 0.0, -5.0,-5.0
+    end-time                 = 10.0
   end computational-domain
   
   shared-memory
@@ -56,9 +56,8 @@ exahype-project MHD
 
   solver Limiting-ADER-DG MHDSolver
     variables                = 9
-    parameters               = 0
     order                    = 7
-    maximum-mesh-size        = 0.12
+    maximum-mesh-size        = 0.1
     time-stepping            = global
     kernel                   = generic::fluxes::nonlinear
     language                 = C
@@ -72,7 +71,7 @@ exahype-project MHD
       time      = 0.0
       repeat    = 0.01
       output    = ./conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

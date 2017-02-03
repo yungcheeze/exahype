@@ -45,7 +45,6 @@ exahype-project  SRHD
 
   solver ADER-DG SRHDSolver
     variables          = 5
-    parameters         = 0
     order              = 2
     maximum-mesh-size  = 0.05
     time-stepping      = global
@@ -57,7 +56,7 @@ exahype-project  SRHD
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -65,7 +64,7 @@ exahype-project  SRHD
       time     = 0.0
       repeat   = 0.05
       output   = ./primitive
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

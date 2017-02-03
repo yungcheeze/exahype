@@ -42,7 +42,6 @@ exahype-project  Euler
   
   solver ADER-DG FirstEulerSolver
     variables         = 5
-    parameters        = 0
     order             = 3
     maximum-mesh-size = 0.15
     time-stepping     = globalfixed
@@ -54,13 +53,12 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved1
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
  
   solver ADER-DG SecondEulerSolver
     variables         = 5
-    parameters        = 0
     order             = 3
     maximum-mesh-size = 0.15
     time-stepping     = globalfixed
@@ -72,7 +70,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved2
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
  

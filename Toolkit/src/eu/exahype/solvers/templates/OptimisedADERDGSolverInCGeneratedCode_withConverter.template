@@ -38,9 +38,12 @@ void {{Project}}::{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,d
   
   
   if(useOptimised) {
-    kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );
+    /*kernels::aderdg::optimised::picardLoop<fluxSplitted>( tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], luh, dx, dt );
     kernels::aderdg::optimised::predictor( tempUnknowns, tempFluxUnknowns, tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0] );
-    kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );
+    kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, tempUnknowns, tempFluxUnknowns );*/
+    kernels::aderdg::optimised::picardLoopNonlinear<flux>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //S, gradQ, BGradQ
+    kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], tempUnknowns, tempFluxUnknowns);
+    kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
   } else {
     double* lQhi = new double[kernels::aderdg::optimised::converter::getQhiGenArraySize()];
     double* lFhi = new double[kernels::aderdg::optimised::converter::getFhiGenArraySize()];

@@ -52,7 +52,6 @@ exahype-project  MHDSolver
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
     variables          = 9
-    parameters         = 0
     order              = 3
     /* was 0.24 */
     maximum-mesh-size  = 0.4
@@ -71,7 +70,7 @@ exahype-project  MHDSolver
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
     
     plot vtk::Cartesian::vertices::ascii
@@ -79,7 +78,7 @@ exahype-project  MHDSolver
       time = 0.0
       repeat = 0.05
       output = ./global-integrals
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -87,7 +86,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -95,7 +94,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -103,7 +102,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./errors-conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii
@@ -111,7 +110,7 @@ exahype-project  MHDSolver
       time      = 0.0
       repeat    = 0.05
       output    = ./relative-errors-conserved
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

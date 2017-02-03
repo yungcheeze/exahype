@@ -25,32 +25,29 @@
 namespace kernels {
   namespace aderdg {
     namespace optimised {
-{% if nDim == 2 %}
-      template<void PDEFlux2d(const double* const Q, double* f, double* g)>
-{% else %}
-      template<void PDEFlux3d(const double* const Q, double* f, double* g, double* h)>
-{% endif %}
-      void picardLoop( 
-        double* restrict lqh, 
-        double* restrict lFh, 
+      template <void PDEflux(const double* const Q, double** F)>
+      void picardLoopNonlinear(
         const double* restrict const luh, 
-        const tarch::la::Vector<DIMENSIONS,double> &dx,
-        const double dt 
+        const double dt,
+        const tarch::la::Vector<DIMENSIONS, double>& dx,
+        double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
+        double* restrict lFi,
+        double* restrict S, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
       );
 
-      void predictor( 
-        double* restrict lqhi, 
-        double* restrict lFhi, 
-        const double* restrict const lqh, 
-        const double* restrict const lFh 
+      void predictorNonlinear(
+        const double* restrict const lQi, 
+        const double* restrict const lFi,
+        double* restrict lQhi,
+        double* restrict lFhi
       );
 
-      void extrapolator( 
-        double* restrict lQbnd, 
-        double* restrict lFbnd, 
-        const double* restrict const lqhi, 
-        const double* restrict const lFhi 
-      );
+      void extrapolatorNonlinear(
+        const double* restrict const lQhi, 
+        const double* restrict const lFhi,
+        double* restrict lQhbnd, 
+        double* restrict lFhbnd);
+
 
       void solutionUpdate( 
         double* restrict luh, 

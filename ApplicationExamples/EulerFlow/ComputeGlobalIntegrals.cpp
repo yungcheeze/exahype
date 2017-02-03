@@ -88,12 +88,10 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 	// now do the convergence test, as we have exact initial data
 	double ExactCons[nVar];
 	double ExactPrim[nVar];
-	// TODO: Need a way to access _data in tarch::la::Vector.
-	double xpos[DIMENSIONS];
-	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
+	const double *xpos = x.data();
 	
 	idfunc(xpos, ExactCons, time); // Sven, this returns the conserved quantities
-  cons2prim(ExactPrim, ExactCons);
+	cons2prim(ExactPrim, ExactCons);
 
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {

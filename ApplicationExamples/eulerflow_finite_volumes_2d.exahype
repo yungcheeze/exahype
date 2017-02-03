@@ -28,7 +28,6 @@ exahype-project  Euler2d
   
   solver ADER-DG MyADERDGSolver
     variables          = 5
-    parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.1
     time-stepping      = global
@@ -40,13 +39,12 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
   solver ADER-DG MyADERDGSolver2
     variables          = 5
-    parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.1
     time-stepping      = global
@@ -58,7 +56,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution2
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
   
@@ -66,7 +64,6 @@ exahype-project  Euler2d
  
   solver Finite-Volumes MyFiniteVolumesSolver
     variables          = 5
-    parameters         = 0
     patch-size         = 8
     maximum-mesh-size  = 0.05
     time-stepping      = global
@@ -78,7 +75,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./fv
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 

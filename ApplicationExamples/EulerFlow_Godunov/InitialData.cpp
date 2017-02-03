@@ -1,4 +1,6 @@
 #include "InitialData.h"
+#include "MyEulerSolver_Variables.h"
+
 
 #include <cmath>
 
@@ -36,19 +38,18 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
   }
 }
 
-
+/*
+ *  Circular shaped pressure jump at centre of domain.
+ */
 void EulerFVM::explosionProblem(const double* const x,double* Q) {
-  // Velocities are set to zero (initially). 
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  // Circular shaped pressure jump at centre of domain.
+  MyEulerSolver::Variables vars(Q);
+  vars.j(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
-    Q[0] = 1.0;
-    Q[4] = 1.0;
+    vars.rho() = 1.0;
+    vars.E()   = 1.0;
   } else {
-    Q[0] = 0.125;
-    Q[4] = 0.1;
+    vars.rho() = 0.125;
+    vars.E()   = 0.1;
   }
 }
 #endif
@@ -89,13 +90,17 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
 
 
 void EulerFVM::explosionProblem(const double* const x,double* Q) {
+
+  Variables var(Q);
+
+
   // Density and velocities are set to zero (initially).
   Q[1] = 0.0;
   Q[2] = 0.0;
   Q[3] = 0.0;
   // Spherically shaped pressure jump at centre of domain.
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) + (x[2] -0.5) *(x[2] -0.5) < 0.1) {
-   Q[0] = 1.0;
+   var.rho = 1.0;   // war vorher Q[0] = 1.0;
    Q[4] = 1.0;
   } else {
     Q[0] = 0.125;

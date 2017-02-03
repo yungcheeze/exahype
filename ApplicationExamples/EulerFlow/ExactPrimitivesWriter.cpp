@@ -37,10 +37,7 @@ void Euler::ExactPrimitivesWriter::mapQuantities(
    * as primitive Variables
    **/
 
-  // convert tarch::la::Vector to double*  
-  double xpos[DIMENSIONS];
-  for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
-
+  const double *xpos = x.data();
   idfunc(xpos, outputQuantities, this->time);
   cons2prim(outputQuantities, Q);
 

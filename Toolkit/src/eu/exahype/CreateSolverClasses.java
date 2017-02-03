@@ -12,7 +12,7 @@ import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 import eu.exahype.solvers.Solver;
 import eu.exahype.solvers.SolverFactory;
-import eu.exahype.FileSearch;
+import eu.exahype.variables.Variables;
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -42,7 +42,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   @Override
   public void inAProject(AProject node) {
-    _projectName     = node.getName().toString().trim();
+    _projectName     = node.getName().getText();
     _definedSolvers  = new java.util.HashSet<String>();
 
     if (node.getSolver().size() == 0) {
@@ -55,8 +55,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       for(PSolver psolver : node.getSolver()) {
         if(psolver instanceof AAderdgSolver) {
           AAderdgSolver asolver = (AAderdgSolver) psolver;
-          if(    asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
-              || asolver.getKernel().toString().trim().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )
+          if(    asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
+              || asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )
               ){
             optimisedCount++;
           }
@@ -69,7 +69,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       }
     }
 
-    _microarchitecture = node.getArchitecture().toString().trim().toLowerCase();
+    if (node.getArchitecture()!=null) {
+      _microarchitecture = node.getArchitecture().getText().toLowerCase();
+    }
+    else {
+      _microarchitecture = "noarch";
+    }
     if (!_supportedMicroarchitectures.contains(_microarchitecture)) {
       System.out.println("Unknown architecture specified ... fallback solution \"noarch\" taken");
       _microarchitecture = "noarch";
@@ -82,13 +87,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       // attribute 'libxsmm-path' did not occur in spec file
       _pathToLibxsmm = "";
     } else {
-      _pathToLibxsmm = node.getLibxsmmPath().toString().trim();
+      _pathToLibxsmm = node.getLibxsmmPath().getText();
     }
   };
 
   @Override
   public void inAComputationalDomain(AComputationalDomain node) {
-    _dimensions = Integer.parseInt( node.getDimension().toString().trim() );
+    _dimensions = Integer.parseInt( node.getDimension().getText() );
     if (_dimensions!=2 && _dimensions!=3) {
       System.err.println( "ERROR: dimension has to be either 2 or 3.");
     }
@@ -97,231 +102,197 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
   @Override
   public void inAProfiling(AProfiling node) {
-    _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
+    _enableProfiler = !node.getProfiler().getText().equals("NoOpProfiler");
   };
 
-  @Override
-  public void inAAderdgSolver(AAderdgSolver node) {
-    String solverName = node.getName().toString().trim();
-
+  private boolean validate(
+      Variables variables,
+      int order,String kernel,String language,
+      String solverName,eu.exahype.solvers.Solver solver) {
     if (_definedSolvers.contains(solverName)) {
-      System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
-      valid = false;
+      System.err.println( "ERROR: Solver " + solverName + " multiple definitions." );
+      return false;
     }
-    else {
-      _definedSolvers.add(solverName);
-    }
-
-    java.io.File userPDEFile = null;
-    java.io.File userTypesDefFile = null;
-
-    boolean isFortran = false;
-    if (node.getLanguage().getText().trim().equals("C")) {
-      isFortran = false;
-    } else if (node.getLanguage().getText().trim().equals("Fortran")) {
-      isFortran = true;
-      userPDEFile =
-          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = FileSearch.relocatableFile(
-          _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-    } else {
-      System.err.println("ERROR: unknown language for solver " + node.getName().getText()
+    
+    if (!language.equals("C") && !language.equals("Fortran")) {
+      System.err.println("ERROR: unknown language for solver " + solverName
           + ". Supported languages are C and Fortran");
-      valid = false;
-      return;
+      return false;
     }
-
-    String  kernel             = node.getKernel().toString().trim();
-    int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
-    int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
-    int     order              = Integer.parseInt(node.getOrder().toString().trim());
-    boolean hasConstants       = node.getConstants()!=null;
-
-    if (numberOfParameters != 0) {
-      System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
+    
+    if (variables.getNumberOfParameters() != 0) {
+      System.err.println("ERROR: At the moment, parameters are not supported. " + 
           " Please add the parameters as additional quantities to your PDE formulation.");
-      valid = false;
-      return;
+      return false;
     }
-
     if (order < 1 || order > 9) {
       System.err.println("ERROR: Only polynomial degrees of 1..9 are supported.");
-      valid = false;
-      return;
+      return false;
     }
+    if (solver == null) {
+      System.err.println("ERROR: creation solver " + solverName + " ... failed as kernel " + kernel
+          + " for language " + language + " is not supported");
+      return false;
+    }
+    return true;
+  }
+  
+  @Override
+  public void inAAderdgSolver(AAderdgSolver node) {
+    String solverName    = node.getName().getText();
+    String  kernel       = node.getKernel().getText();
+    String  language     = node.getLanguage().getText();
+    int     order        = Integer.parseInt(node.getOrder().getText());
+    boolean hasConstants = node.getConstants()!=null;
+    Variables variables  = new Variables(node, _dimensions);
+    boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
     eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
-        kernel, isFortran, numberOfVariables, numberOfParameters, order, hasConstants);
+        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(), order, hasConstants);
 
-    if (solver == null) {
-      System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
-          + " for language " + node.getLanguage().getText().trim() + " is not supported");
-      valid = false;
-      return;
-    }
+    valid = validate(variables,order,kernel,language,solverName,solver);
+    
+    if (valid) {
+      _definedSolvers.add(solverName);
 
-    //
-    // Write the files
-    //
-    try {
-      tryWriteSolverHeader(solver, solverName);
-      tryWriteSolverUserImplementation(solver, solverName);
-      tryWriteSolverGeneratedImplementation(solver, solverName);
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
+      // write the files
+      try {
+//        TODO(Dominic): Unused
+//        java.io.File userPDEFile = null;
+//        java.io.File userTypesDefFile = null;
+//        
+//        if (isFortran) {
+//          userPDEFile =
+//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+//          userTypesDefFile = FileSearch.relocatableFile(
+//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
+//        }
+        
+        
+        tryWriteSolverHeader(solver, solverName);
+        tryWriteSolverUserImplementation(solver, solverName);
+        tryWriteSolverGeneratedImplementation(solver, solverName);
+
+        if (solver.supportsVariables()) {
+          tryWriteVariablesHeader(variables, solverName);
+        }
+      } catch (Exception exc) {
+        System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
+        valid = false;
+      }
     }
   }
 
   @Override
   public void inAFiniteVolumesSolver(AFiniteVolumesSolver node) {
-    String solverName = node.getName().toString().trim();
-
-    if (_definedSolvers.contains(solverName)) {
-      System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
-      valid = false;
-    }
-    else {
-      _definedSolvers.add(solverName);
-    }
-
-    java.io.File userPDEFile = null;
-    java.io.File userTypesDefFile = null;
-
-
-    boolean isFortran = false;
-    if (node.getLanguage().getText().trim().equals("C")) {
-      isFortran = false;
-    } else if (node.getLanguage().getText().trim().equals("Fortran")) {
-      isFortran = true;
-      userPDEFile =
-          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = FileSearch.relocatableFile(
-          _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-    } else {
-      System.err.println("ERROR: unknown language for solver " + node.getName().getText()
-          + ". Supported languages are C and Fortran");
-      valid = false;
-      return;
-    }
-
-    String kernel = node.getKernel().toString().trim();
-
-    int numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
-    int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
-    int patchSize          = Integer.parseInt(node.getPatchSize().toString().trim());
-    boolean hasConstants   = node.getConstants()!=null;
-
-    if (numberOfParameters != 0) {
-      System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
-          " Please add the parameters as additional quantities to your PDE formulation.");
-      valid = false;
-      return;
-    }
+    String solverName    = node.getName().getText();
+    String  kernel       = node.getKernel().getText();
+    String  language     = node.getLanguage().getText();
+    int     patchSize    = Integer.parseInt(node.getPatchSize().getText());
+    boolean hasConstants = node.getConstants()!=null;
+    Variables variables  = new Variables(node, _dimensions);
+    boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
-    Solver solver = solverFactory.createFiniteVolumesSolver(
-        kernel,isFortran,numberOfVariables,numberOfParameters,patchSize,hasConstants);
+    eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
+        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(), patchSize, hasConstants);
 
-    if (solver == null) {
-      System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
-          + " for language " + node.getLanguage().getText().trim() + " is not supported");
-      valid = false;
-      return;
-    }
+    valid = validate(variables,1/*patchSize is always supported*/,kernel,language,solverName,solver);
+    
+    if (valid) {
+      _definedSolvers.add(solverName);
 
-    //
-    // Write the files
-    //
-    try {
-      tryWriteSolverHeader(solver, solverName);
-      
-      tryWriteSolverUserImplementation(solver, solverName);
-      
-      tryWriteSolverGeneratedImplementation(solver, solverName);
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
+      // write the files
+      try {
+// TODO(Dominic): Unused
+//        java.io.File userPDEFile = null;
+//        java.io.File userTypesDefFile = null;
+//        
+//        if (isFortran) {
+//          userPDEFile =
+//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+//          userTypesDefFile = FileSearch.relocatableFile(
+//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
+//        }
+        
+        
+        tryWriteSolverHeader(solver, solverName);
+        tryWriteSolverUserImplementation(solver, solverName);
+        tryWriteSolverGeneratedImplementation(solver, solverName);
+
+        if (solver.supportsVariables()) {
+          tryWriteVariablesHeader(variables, solverName);
+        }
+      } catch (Exception exc) {
+        System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
+        valid = false;
+      }
     }
   }
-
+  
   @Override
   public void inALimitingAderdgSolver(ALimitingAderdgSolver node) {
-    String solverName = node.getName().toString().trim();
-
-    if (_definedSolvers.contains(solverName)) {
-      System.err.println( "ERROR: Solver " + solverName + " multiply defined" );
-      valid = false;
-    }
-    else {
-      _definedSolvers.add(solverName);
-    }
-
-    java.io.File userPDEFile = null; // TODO(Dominic): Fortran specifics; not used yet
-    java.io.File userTypesDefFile = null;
+    String solverName    = node.getName().getText();
+    String  kernel       = node.getKernel().getText();
+    String  language     = node.getLanguage().getText();
+    int     order        = Integer.parseInt(node.getOrder().getText());
+    boolean hasConstants = node.getConstants()!=null;
+    Variables variables  = new Variables(node, _dimensions);
+    boolean isFortran    = language.equals("Fortran");
     
-
-    boolean isFortran = false;
-    if (node.getLanguage().getText().trim().equals("C")) {
-      isFortran = false;
-    } else if (node.getLanguage().getText().trim().equals("Fortran")) {
-      isFortran = true;
-      userPDEFile =
-          FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-      userTypesDefFile = FileSearch.relocatableFile(
-          _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-    } else {
-      System.err.println("ERROR: unknown language for solver " + node.getName().getText()
-          + ". Supported languages are C and Fortran");
-      valid = false;
-      return;
-    }
-
-    String  kernel             = node.getKernel().toString().trim();
-    int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
-    int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
-    int     order              = Integer.parseInt(node.getOrder().toString().trim());
-    int     patchSize          = 2*order+1;
-    boolean hasConstants       = node.getConstants()!=null;
-    
-    String  limiterKernel      = node.getKernelLimiter().toString().trim();
-
-    if (numberOfParameters != 0) {
-      System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
-          " Please add the parameters as additional quantities to your PDE formulation.");
-      valid = false;
-      return;
-    }
+    int     patchSize       = 2*order+1;
+    String  limiterKernel   = node.getKernelLimiter().getText();
+    String  limiterLanguage = node.getLanguageLimiter().getText();
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
     Solver solver  = solverFactory.createADERDGSolver(
-        kernel,isFortran,numberOfVariables,numberOfParameters,order,hasConstants);
+        kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),order,hasConstants);
     Solver limiter = solverFactory.createFiniteVolumesSolver(
-        limiterKernel,isFortran,numberOfVariables,numberOfParameters,patchSize,hasConstants);
+        limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),patchSize,hasConstants);
 
-    if (solver == null || limiter == null) {
-      System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
-          + " for language " + node.getLanguage().getText().trim() + " is not supported");
-      valid = false;
-      return;
-    }
+    valid = validate(variables,order,kernel,language,solverName,solver);
+    valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,solver);
+    
+    if (valid) {
+      _definedSolvers.add(solverName);
 
-    //
-    // Write the files
-    //
-    try {
-      tryWriteSolverHeader(solver, solverName+"_ADERDG");
-      tryWriteSolverHeader(limiter, solverName+"_FV");
+      // write the files
+      try {
+//        TODO(Dominic): Unused
+//        java.io.File userPDEFile = null;
+//        java.io.File userTypesDefFile = null;
+//        
+//        if (isFortran) {
+//          userPDEFile =
+//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
+//          userTypesDefFile = FileSearch.relocatableFile(
+//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
+//        }
+        tryWriteSolverHeader(solver, solverName+"_ADERDG");
+        tryWriteSolverHeader(limiter, solverName+"_FV");
 
-      tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
-      tryWriteSolverUserImplementation(limiter,solverName+"_FV");
+        tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
+        tryWriteSolverUserImplementation(limiter,solverName+"_FV");
 
-      tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
-      tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
+        tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
+        tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
+
+        if (solver.supportsVariables()) {
+          tryWriteVariablesHeader(variables, solverName+"_ADERDG");
+        }
+        
+        if (limiter.supportsVariables()) {
+          tryWriteVariablesHeader(variables, solverName+"_FV");
+        }
+        
+      } catch (Exception exc) {
+        System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
+        valid = false;
+      }
     }
   }
   
@@ -373,5 +344,27 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
     System.out.println("create generated implementation of solver " + solverName + " ... ok");
     generatedImplementationWriter.close();
+  }
+  
+  
+  private void tryWriteVariablesHeader(Variables variables,String solverName) throws IOException {
+    java.io.File solverHeaderFile = FileSearch.relocatableFile(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_Variables.h");
+    
+    if (solverHeaderFile.exists()) {
+      java.io.BufferedWriter headerWriter =
+          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      variables.writeHeader(headerWriter, solverName, _projectName);
+      System.out.println("create header of variables for solver " + solverName + " ... header "
+          + solverHeaderFile.getAbsoluteFile()
+          + " does exist already and will be overwritten");
+      headerWriter.close();
+    } else {
+      java.io.BufferedWriter headerWriter =
+          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      variables.writeHeader(headerWriter, solverName, _projectName);
+      System.out.println("create header of variables for solver " + solverName + " ... ok");
+      headerWriter.close();
+    }
   }
 }

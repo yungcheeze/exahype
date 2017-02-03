@@ -3,9 +3,7 @@ package eu.exahype.solvers;
 import java.io.IOException;
 
 public class Helpers {
-  /**
-   * @deprecated This method will soon be replaced by a template-based generation scheme.
-   */
+  
   public static void writeMinimalADERDGSolverHeader(
       String solverName, java.io.BufferedWriter writer, String projectName, boolean hasConstants,
       int order, int dimensions, int numberOfUnknowns, int numberOfParameters, boolean enableProfiler) throws IOException {
@@ -21,11 +19,7 @@ public class Helpers {
     writeHeaderMinimalFiniteVolumesClassSignature(writer, solverName, projectName, hasConstants);
   }
 
-  /**
-   * Creates all the public operations that are mandatory for any solver.
-   * 
-   * @deprecated This method will soon be replaced by a template-based generation scheme.
-   */
+  
   private static void writeHeaderMinimalADERDGClassSignature(
       java.io.BufferedWriter writer, String solverName, String projectName, boolean hasConstants,
       int order, int dimensions, int numberOfUnknowns, int numberOfParameters, boolean enableProfiler) throws IOException {

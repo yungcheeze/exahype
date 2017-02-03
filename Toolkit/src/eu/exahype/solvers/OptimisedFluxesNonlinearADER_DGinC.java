@@ -464,4 +464,9 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
 
     writer.write("\n\n\n");
   }
+    
+    @Override
+    public boolean supportsVariables() {
+      return false;
+    }
 }

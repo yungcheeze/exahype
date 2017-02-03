@@ -7,7 +7,7 @@
 // ========================
 
 #include <sstream>
-
+#include <ostream>
 #include "exahype/plotters/Plotter.h"
 #include "exahype/profilers/ProfilerFactory.h"
 #include "exahype/solvers/Solver.h"
@@ -24,7 +24,7 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 #include "LimitingADERDG_ADERDG.h"
 #include "LimitingADERDG_FV.h"
-#include "LimitingADERDG_Plotter0.h"
+#include "Plotter.h"
 
 
 
@@ -44,12 +44,12 @@ void kernels::initSolvers(exahype::Parser& parser, std::vector<std::string>& cmd
   std::unique_ptr<exahype::solvers::FiniteVolumesSolver> finiteVolumesSolver(static_cast<exahype::solvers::FiniteVolumesSolver*>(solver));
   
   exahype::solvers::RegisteredSolvers.push_back(
-    new exahype::solvers::LimitingADERDGSolver("LimitingADERDG",std::move(aderdgSolver),std::move(finiteVolumesSolver)) );
+    new exahype::solvers::LimitingADERDGSolver("LimitingADERDG",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0)) );
   parser.checkSolverConsistency(0);
   }
 
   
-  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser,new Euler::LimitingADERDG_Plotter0(  *static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[0])) ));
+  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser,new Euler::Plotter(  *static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[0])) ));
 
 
   std::set<int> orders;
@@ -90,5 +90,20 @@ void kernels::finalise() {
   exahype::solvers::RegisteredSolverCouplings.clear();
 }
 
+
+
+void kernels::toString(std::ostream& ostream) {
+/* Generated SolverRegistration code by the toolkit */
+
+  ostream << "projectName: Euler\n";
+  ostream << "useOptimisedKernels: no\n";
+  ostream << "Kernel[0].registration: LimitingAderdgSolver\n";
+  ostream << "Kernel[0].type: ";
+  exahype::solvers::RegisteredSolvers[0]->toString(ostream);
+  ostream << "\n";
+  ostream << "Kernel[0].name: Euler::LimitingADERDG{_ADERDG, _FV}\n";
+  ostream << "Kernel[0].hasConstants: false\n";
+  ostream << "Kernel[1].Plotter[0]: Euler::Plotter\n";
+}
 
 

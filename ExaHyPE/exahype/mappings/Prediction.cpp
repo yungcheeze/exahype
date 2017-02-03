@@ -119,13 +119,13 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
       _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
       for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
         _tempSpaceTimeUnknowns[solverNumber][i] =
-            new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
+            new double[aderdgSolver->getTempSpaceTimeUnknownsSize()]();
       }
       //
       _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
       for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
         _tempSpaceTimeFluxUnknowns[solverNumber][i] =
-            new double[aderdgSolver->getTempSpaceTimeFluxUnknownsSize()];
+            new double[aderdgSolver->getTempSpaceTimeFluxUnknownsSize()]();
       }
       //
       _tempUnknowns    [solverNumber]      = new double[aderdgSolver->getTempUnknownsSize()]; 

@@ -56,7 +56,6 @@ exahype-project  Euler
 
   solver ADER-DG MyADERDG
     variables         = 5
-    parameters        = 0
     order             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.15
@@ -69,14 +68,13 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./aderdg
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
  
   solver Finite-Volumes MyFVM
     variables         = 5
-    parameters        = 0
     patch-size        = 10
     maximum-mesh-size = 0.15
     time-stepping     = global
@@ -87,7 +85,7 @@ exahype-project  Euler
       time      = 0.0
       repeat    = 0.05
       output    = ./fvm
-      select = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 end exahype-project

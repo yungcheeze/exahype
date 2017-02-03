@@ -17,6 +17,6 @@
 // picard gemms
 {% if isLinear %}
 {% else %}
-#include "kernels/aderdg/optimised/asm_picard.c"
+//#include "kernels/aderdg/optimised/asm_picard.c"
 {% endif %}
 

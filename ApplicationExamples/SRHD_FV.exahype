@@ -40,7 +40,6 @@ exahype-project  SRHD
 
   solver Finite-Volumes SRHDSolverFV
     variables          = 5
-    parameters         = 0
     patch-size         = 5
     maximum-mesh-size  = 0.05
     time-stepping      = global
@@ -53,7 +52,7 @@ exahype-project  SRHD
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::cells::ascii PrimitivesWriter
@@ -61,7 +60,7 @@ exahype-project  SRHD
       time     = 0.0
       repeat   = 0.05
       output   = ./primitive
-      select   = {}
+      select    = x:0.0,y:0.0
     end plot
   end solver
 
