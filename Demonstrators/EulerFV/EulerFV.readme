@@ -1,0 +1,13 @@
+How to install:
+===============
+
+tar -xzvf EulerFV.tar.gz
+
+
+
+Create snapshot:
+================
+
+tar -czvf EulerFV.tar.gz Demonstrators/EulerFV/EulerFV.exahype
+
+Copy over into demonstrators directory

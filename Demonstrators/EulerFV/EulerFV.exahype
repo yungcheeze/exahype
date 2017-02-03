@@ -23,7 +23,7 @@ exahype-project EulerFVM
 
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
-  output-directory           = ./Demonstrators/00_EulerFV
+  output-directory           = ./Demonstrators/EulerFV
 
   computational-domain
     dimension                = 2
