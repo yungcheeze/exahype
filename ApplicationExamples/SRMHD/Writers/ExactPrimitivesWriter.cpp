@@ -16,17 +16,15 @@ void MHDSolver::ExactPrimitivesWriter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  // convert tarch::la::Vector to double*  
-  double xpos[DIMENSIONS];
-  double V[10];
-  for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
+  const double *xpos = x.data();
+  double Conserved[MHDSolver::MHDSolver::nVar];
 
   // Caveat: I don't properly use initialdatabyexahypespecfile here as it doesn't pass
   // the time. However, the Alfen Wave is the only exact solution we currently have, anyway
 
-  alfenwave_(xpos, V, &timeStamp);
-  int i;
-  pdecons2prim_(outputQuantities, V, &i);
+  alfenwave_(xpos, Conserved, &timeStamp);
+  int error;
+  pdecons2prim_(outputQuantities, Conserved, &error);
 }
 
 

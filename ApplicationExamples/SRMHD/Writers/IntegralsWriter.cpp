@@ -105,16 +105,13 @@ void MHDSolver::IntegralsWriter::mapQuantities(
 
 	// now do the convergence test, as we have exact initial data
 	double ExactCons[nVar];
-  double ExactPrim[nVar];
-	// TODO: Need a way to access _data in tarch::la::Vector.
-	double xpos[DIMENSIONS];
-	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
+	double ExactPrim[nVar];
+	const double *xpos = x.data();
 	
 	//InitialData(xpos, Exact, time);
 	// we compare against AlfenWave:
 	alfenwave_(xpos, ExactCons, &timeStamp);
-
-  pdecons2prim_(ExactPrim,ExactCons,&err);
+	pdecons2prim_(ExactPrim, ExactCons, &err);
 	
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {

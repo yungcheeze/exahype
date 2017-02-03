@@ -93,9 +93,7 @@ void Euler::ComputeGlobalIntegralsLegendre::mapQuantities(
 
 	// now do the convergence test, as we have exact initial data
 	double Exact[nVar];
-	// TODO: Need a way to access _data in tarch::la::Vector.
-	double xpos[DIMENSIONS];
-	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
+	const double *xpos = x.data();
 	
 	idfunc(xpos, Exact, time);
 	double ExactPrim[nVar];
