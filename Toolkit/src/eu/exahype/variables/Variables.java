@@ -145,8 +145,10 @@ public class Variables {
   
   public static int sumMultiplicities(Map<String,Integer> variables) {
     int sumOfMultiplicities = 0;
-    for (String key : variables.keySet()) {
-      sumOfMultiplicities += variables.get(key);
+    if (variables!=null) {
+      for (String key : variables.keySet()) {
+        sumOfMultiplicities += variables.get(key);
+      }
     }
     
     return sumOfMultiplicities;
