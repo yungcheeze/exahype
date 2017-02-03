@@ -81,8 +81,8 @@ I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Rel
 
 3) Create the two repository images
 - Change into your exahype engine's repository:
-- tar -czhvf exahype.tar.gz --exclude=.svn --exclude=*.o Peano ExaHyPE LICENSE.txt 
-- tar -czvf exahype-without-Peano.tar.gz --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch Peano ExaHyPE LICENSE.txt 
+- tar -czhvf ExaHyPE.tar.gz --exclude=.svn --exclude=*.o Peano ExaHyPE LICENSE.txt 
+- tar -czvf ExaHyPE-without-Peano.tar.gz --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch Peano ExaHyPE LICENSE.txt 
 - mv *.tar.gz ~/git/ExaHyPE-Release
 
 4) Copy over the source files
@@ -98,6 +98,12 @@ I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Rel
 - cp -R Toolkit/Manifest.txt ~/git/ExaHyPE-Release/Toolkit
 - cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
 
-5) Push 
+5) Cleanup
+Change into the release directory
+- find . -name "*.o" -delete
+- find . -name "*.class" -delete
+
+
+6) Push 
 
 
