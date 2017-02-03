@@ -575,9 +575,9 @@ class ConvergenceReporter:
 				idx.dt_min = 'dt_min'
 				
 				# just go on and make a plot
-				plt.plot(timesteps[idx.t_min], timesteps[idx.dt_min], "o-", label="P=%d,Nc=%d"%(simporder,simncells))
+				plt.plot(timesteps[idx.t_min], timesteps[idx.dt_min], "-", label="P=%d,Nc=%d"%(simporder,simncells))
 
-				# poor mans "append row to pandas"				
+				# poor mans "append row to pandas"
 				dt = timesteps[idx.dt_min]
 				idx.dtmean = 'dt_mean'
 				idx.dtstd = 'dt_std'
@@ -694,7 +694,7 @@ class ConvergenceReporter:
 
 			plt.xlabel("Simulation time")
 			plt.ylabel("Convergence order")
-			plt.legend()#.draggable()
+			plt.legend(ncol=2)#.draggable()
 			plt.ylim(0,10)
 
 
