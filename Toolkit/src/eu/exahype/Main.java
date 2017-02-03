@@ -125,6 +125,7 @@ public class Main {
       waitForInteraction(interactive);
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
+      // @tood remove later again
       e.printStackTrace();
       System.err.println("ExaHyPE script failed ");
       return;
@@ -147,6 +148,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
 
@@ -168,6 +170,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
 
@@ -191,6 +194,7 @@ public class Main {
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
       return;
     }
   }

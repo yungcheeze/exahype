@@ -216,10 +216,12 @@ public class Variables {
       getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
       offset  += multiplicity;
     }
-    for (String identifier : _parametersMap.keySet()) {
-      int multiplicity = _parametersMap.get(identifier);
-      getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
-      offset  += multiplicity;
+    if (_parametersMap!=null) {
+      for (String identifier : _parametersMap.keySet()) {
+        int multiplicity = _parametersMap.get(identifier);
+        getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
+        offset  += multiplicity;
+      }
     }
     
     return getters;
@@ -267,10 +269,12 @@ public class Variables {
       setters = appendVariableSetters(setters, identifier, multiplicity, offset);
       offset += multiplicity;
     }
-    for (String identifier : _parametersMap.keySet()) {
-      int multiplicity = _parametersMap.get(identifier);
-      setters = appendVariableSetters(setters, identifier, multiplicity, offset);
-      offset += multiplicity;
+    if (_parametersMap!=null) {
+      for (String identifier : _parametersMap.keySet()) {
+        int multiplicity = _parametersMap.get(identifier);
+        setters = appendVariableSetters(setters, identifier, multiplicity, offset);
+        offset += multiplicity;
+      }
     }
     
     return setters;
@@ -283,10 +287,12 @@ public class Variables {
     String getters = "";
     
     int offset = 0;
-    for (String identifier : _primitivesMap.keySet()) {
-      int multiplicity = _primitivesMap.get(identifier);
-      getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
-      offset  += multiplicity;
+    if (_primitivesMap!=null) {
+      for (String identifier : _primitivesMap.keySet()) {
+        int multiplicity = _primitivesMap.get(identifier);
+        getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
+        offset  += multiplicity;
+      }
     }
     
     return getters;
@@ -299,10 +305,12 @@ public class Variables {
     String setters = "";
     
     int offset = 0;
-    for (String identifier : _primitivesMap.keySet()) {
-      int multiplicity = _primitivesMap.get(identifier);
-      setters = appendVariableSetters(setters, identifier, multiplicity, offset);
-      offset += multiplicity;
+    if (_primitivesMap!=null) {
+      for (String identifier : _primitivesMap.keySet()) {
+        int multiplicity = _primitivesMap.get(identifier);
+        setters = appendVariableSetters(setters, identifier, multiplicity, offset);
+        offset += multiplicity;
+      }
     }
     
     return setters;

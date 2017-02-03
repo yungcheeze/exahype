@@ -179,6 +179,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
         valid = false;
       }
     }
@@ -226,6 +227,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
         valid = false;
       }
     }
@@ -288,6 +290,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
         valid = false;
       }
     }
