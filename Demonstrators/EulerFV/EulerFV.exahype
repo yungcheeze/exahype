@@ -20,7 +20,6 @@
  * For the full license text, see LICENSE.txt
  */
 exahype-project EulerFV
-
   peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   output-directory           = ./Demonstrators/EulerFV
