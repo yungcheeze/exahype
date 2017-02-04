@@ -1,13 +1,13 @@
 /**
-
- Euler Flow
-
- This setup corresponds to the Finite Volume demonstrator code as discussed in 
- Section 2 of the guidebook. To keep stuff here extremely simple, the spec file 
- does not contain any optimisations or any parallelisation. How to add parallel
- features is solely described in the guidebook.
-
-
+ * 
+ * Euler Flow
+ * 
+ * This setup corresponds to the Finite Volume demonstrator code as discussed in 
+ * Section 2 of the guidebook. To keep stuff here extremely simple, the spec file 
+ * does not contain any optimisations or any parallelisation. How to add parallel
+ * features is solely described in the guidebook.
+ * 
+ * 
  * This file is part of the ExaHyPE project.
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
