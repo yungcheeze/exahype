@@ -1,5 +1,7 @@
 package eu.exahype.solvers;
 
+import java.util.Set;
+
 import eu.exahype.IOUtils;
 
 public class GenericFiniteVolumesGodunovInC implements Solver {
@@ -8,15 +10,17 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
   private int _dimensions;
   private int _numberOfVariables;
   private int _numberOfParameters;
+  private Set<String> _namingSchemeNames;
 //  private int _patchSize;
   private boolean _enableProfiler;
   private boolean _hasConstants;
 
-  public GenericFiniteVolumesGodunovInC(int dimensions, int numberOfVariables, int numberOfParameters, int patchSize,
+  public GenericFiniteVolumesGodunovInC(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize,
       boolean enableProfiler, boolean hasConstants) {
     _dimensions = dimensions;
     _numberOfVariables = numberOfVariables;
     _numberOfParameters = numberOfParameters;
+    _namingSchemeNames = namingSchemeNames;
 //    _patchSize = patchSize;
     _enableProfiler = enableProfiler;
     _hasConstants = hasConstants;
@@ -48,6 +52,12 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
 
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+	  
+	  String namingSchemes = "";
+      for (String name : _namingSchemeNames) {
+        namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+      }
+      content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
 	  
 	  writer.write(content);
   }

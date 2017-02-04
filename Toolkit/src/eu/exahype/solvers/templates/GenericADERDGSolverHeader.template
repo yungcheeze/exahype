@@ -20,8 +20,8 @@ namespace {{Project}}{
 
 class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
   public:
-    static constexpr int nVar      = {{NumberOfVariables}};  // TODO: Not required anymore
-    static constexpr int nParams   = {{NumberOfParameters}}; // TODO: Not required anymore
+    static constexpr int nVar      = {{NumberOfVariables}};  // TODO: Not required anymore (->Variables)
+    static constexpr int nParams   = {{NumberOfParameters}}; // TODO: Not required anymore (->Variables)
     static constexpr int nDim      = {{Dimensions}};         // TODO: Was never required (->DIMENSIONS)
     static constexpr int order     = {{Order}};
     static constexpr int basisSize = {{Order}} + 1;
@@ -29,7 +29,7 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
-    class Primitives;
+{{NamingSchemes}}
   
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 

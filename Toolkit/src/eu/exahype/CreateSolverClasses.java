@@ -144,12 +144,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     order        = Integer.parseInt(node.getOrder().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node, _dimensions);
+    Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
     eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
-        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(), order, hasConstants);
+        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), order, hasConstants);
 
     valid = validate(variables,order,kernel,language,solverName,solver);
     
@@ -192,12 +192,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     patchSize    = Integer.parseInt(node.getPatchSize().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node, _dimensions);
+    Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
     eu.exahype.solvers.Solver solver = solverFactory.createFiniteVolumesSolver(
-        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(), patchSize, hasConstants);
+        kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), patchSize, hasConstants);
 
     valid = validate(variables,1/*patchSize is always supported*/,kernel,language,solverName,solver);
     
@@ -240,7 +240,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     String  language     = node.getLanguage().getText();
     int     order        = Integer.parseInt(node.getOrder().getText());
     boolean hasConstants = node.getConstants()!=null;
-    Variables variables  = new Variables(node, _dimensions);
+    Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
     int     patchSize       = 2*order+1;
@@ -249,9 +249,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     
     SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
     Solver solver  = solverFactory.createADERDGSolver(
-        kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),order,hasConstants);
+        kernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),order,hasConstants);
     Solver limiter = solverFactory.createFiniteVolumesSolver(
-        limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),patchSize,hasConstants);
+        limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),patchSize,hasConstants);
 
     valid = validate(variables,order,kernel,language,solverName,solver);
     valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,solver);

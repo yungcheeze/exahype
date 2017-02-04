@@ -1,5 +1,7 @@
 package eu.exahype.solvers;
 
+import java.util.Set;
+
 import eu.exahype.IOUtils;
 
 public class GenericADERDG implements Solver {
@@ -8,6 +10,7 @@ public class GenericADERDG implements Solver {
   private int _dimensions;
   private int _numberOfVariables;
   private int _numberOfParameters;
+  private Set<String> _namingSchemeNames;
   private int _order;
 //  private int _patchSize;
   private boolean _enableProfiler;
@@ -15,11 +18,12 @@ public class GenericADERDG implements Solver {
   private boolean _isLinear;
   private boolean _isFortran;
 
-  public GenericADERDG(int dimensions, int numberOfVariables, int numberOfParameters,
+  public GenericADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order, boolean enableProfiler, boolean hasConstants, boolean isLinear, boolean isFortran) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
+    _namingSchemeNames  = namingSchemeNames;
     _order              = order;
 //    _patchSize = patchSize;
     _enableProfiler     = enableProfiler;
@@ -58,6 +62,12 @@ public class GenericADERDG implements Solver {
     content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
     content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
+    
+    String namingSchemes = "";
+    for (String name : _namingSchemeNames) {
+      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+    }
+    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
 
     writer.write(content);
   }
@@ -151,10 +161,10 @@ public class GenericADERDG implements Solver {
 	  }
 	  
 	  if (_isFortran) {
-      content = content.replaceAll("\\{\\{Language\\}\\}","fortran");
-    } else {
-      content = content.replaceAll("\\{\\{Language\\}\\}","c");
-    }
+	    content = content.replaceAll("\\{\\{Language\\}\\}","fortran");
+	  } else {
+	    content = content.replaceAll("\\{\\{Language\\}\\}","c");
+	  }
 	  
 	  writer.write(content);
   }

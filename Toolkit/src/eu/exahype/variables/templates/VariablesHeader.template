@@ -21,7 +21,7 @@ class {{Project}}::{{Solver}}::Variables {
   public:
     static constexpr int SizeVariables  = {{NumberOfVariables}};
     static constexpr int SizeParameters = {{NumberOfParameters}};
-    static constexpr int Size           = SizeVariables+SizeParameters;
+    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
   
     Variables(double* Q) : _Q(Q) {}
   
@@ -64,7 +64,7 @@ class {{Project}}::{{Solver}}::ReadOnlyVariables {
   public:
     static constexpr int SizeVariables  = {{NumberOfVariables}};
     static constexpr int SizeParameters = {{NumberOfParameters}};
-    static constexpr int Size           = SizeVariables+SizeParameters;
+    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
     
     ReadOnlyVariables(const double* const Q) : _Q(Q) {}
     
@@ -99,6 +99,7 @@ class {{Project}}::{{Solver}}::ReadOnlyVariables {
 };
 
 
+
 class {{Project}}::{{Solver}}::Fluxes {
   private:
     double** _F;
@@ -124,36 +125,7 @@ class {{Project}}::{{Solver}}::Fluxes {
 {{FluxesSetters}}
 };
 
-class {{Project}}::{{Solver}}::Primitives {
-  private:
-    double _V[{{NumberOfVariables}}];
-  public:
-    static constexpr int SizeVariables = {{NumberOfVariables}};
-    
-    Primitives() {}
-  
-    double& operator [] (int index) {
-      assertion(index>=0 && index < SizeVariables);
-      return _V[index];
-    }
-    
-    double& operator () (int index) {
-      assertion(index>=0 && index < SizeVariables);
-      return _V[index];
-    }
-    
-    double* data() {
-      return _V;
-    }
-    
-    int variables() const {
-      return SizeVariables;
-    }
-    
 
-{{PrimitivesGetters}}
-
-{{PrimitivesSetters}}
-};
+{{NamingSchemes}}
 
 #endif
