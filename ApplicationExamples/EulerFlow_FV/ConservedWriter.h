@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace EulerFVM{
+namespace Euler{
   class ConservedWriter;
 
   /**
@@ -18,7 +18,7 @@ namespace EulerFVM{
 
 
 
-class EulerFVM::ConservedWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class Euler::ConservedWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   ConservedWriter(MyEulerSolver&  solver);
   virtual ~ConservedWriter();

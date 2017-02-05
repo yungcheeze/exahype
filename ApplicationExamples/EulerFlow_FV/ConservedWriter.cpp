@@ -1,27 +1,27 @@
 #include "ConservedWriter.h"
 
 
-EulerFVM::ConservedWriter::ConservedWriter(MyEulerSolver&  solver) {
+Euler::ConservedWriter::ConservedWriter(MyEulerSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-EulerFVM::ConservedWriter::~ConservedWriter() {
+Euler::ConservedWriter::~ConservedWriter() {
   // @todo Please insert your code here
 }
 
 
-void EulerFVM::ConservedWriter::startPlotting(double time) {
+void Euler::ConservedWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void EulerFVM::ConservedWriter::finishPlotting() {
+void Euler::ConservedWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void EulerFVM::ConservedWriter::mapQuantities(
+void Euler::ConservedWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

@@ -7,7 +7,7 @@
 ///// 2D /////
 
 #ifdef Dim2
-void EulerFVM::rarefactionWave(const double* const x,double* Q) {
+void Euler::rarefactionWave(const double* const x,double* Q) {
   // Adiabatic constant 
   const double GAMMA = 1.4;
   
@@ -23,7 +23,7 @@ void EulerFVM::rarefactionWave(const double* const x,double* Q) {
       1.0e-1;
 }
 
-void EulerFVM::sodShockTube(const double* const x,double* Q) {
+void Euler::sodShockTube(const double* const x,double* Q) {
   // Velocities are set to zero.
   Q[1] = 0.0;
   Q[2] = 0.0;
@@ -41,8 +41,9 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
 /*
  *  Circular shaped pressure jump at centre of domain.
  */
-void EulerFVM::explosionProblem(const double* const x,double* Q) {
+void Euler::explosionProblem(const double* const x,double* Q) {
   MyEulerSolver::Variables vars(Q);
+
   vars.j(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
     vars.rho() = 1.0;
@@ -57,7 +58,7 @@ void EulerFVM::explosionProblem(const double* const x,double* Q) {
 ///// 3D /////
 
 #ifdef Dim3
-void EulerFVM::rarefactionWave(const double* const x,double* Q) {
+void Euler::rarefactionWave(const double* const x,double* Q) {
   // Adiabatic constant 
   const double GAMMA = 1.4;
   // Density is homogeneous.
@@ -73,7 +74,7 @@ void EulerFVM::rarefactionWave(const double* const x,double* Q) {
       1.0e-1;
 }
 
-void EulerFVM::sodShockTube(const double* const x,double* Q) {
+void Euler::sodShockTube(const double* const x,double* Q) {
   // Velocities are set to zero.
   Q[1] = 0.0;
   Q[2] = 0.0;
@@ -89,27 +90,21 @@ void EulerFVM::sodShockTube(const double* const x,double* Q) {
 }
 
 
-void EulerFVM::explosionProblem(const double* const x,double* Q) {
+void Euler::explosionProblem(const double* const x,double* Q) {
+  MyEulerSolver::Variables vars(Q);
 
-  Variables var(Q);
-
-
-  // Density and velocities are set to zero (initially).
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  // Spherically shaped pressure jump at centre of domain.
-  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) + (x[2] -0.5) *(x[2] -0.5) < 0.1) {
-   var.rho = 1.0;   // war vorher Q[0] = 1.0;
-   Q[4] = 1.0;
+  vars.j(0.0,0.0,0.0);
+  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
+    vars.rho() = 1.0;
+    vars.E()   = 1.0;
   } else {
-    Q[0] = 0.125;
-    Q[4] = 0.1;
+    vars.rho() = 0.125;
+    vars.E()   = 0.1;
   }
 }
 #endif
 
-void EulerFVM::initialData(const double* const x,double* Q) {
+void Euler::initialData(const double* const x,double* Q) {
   //rarefactionWave(x,Q);
   //sodShockTube(x,Q);
   explosionProblem(x,Q);

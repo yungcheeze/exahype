@@ -7,11 +7,11 @@
 #include "InitialData.h"
 
 // TODO(Dominic): Assess
-//void EulerFVM::MyEulerSolver::init() {
+//void Euler::MyEulerSolver::init() {
 //  // empty
 //}
 
-bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   // @todo Please implement
   if ( tarch::la::equals(t,0.0) ) {
     // Tell kernel that you want to set initial conditions 
@@ -23,7 +23,7 @@ bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENS
   }
 }
 
-void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
+void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
                                                   const double w,
                                                   const double t,
                                                   const double dt, double* Q) {
@@ -32,13 +32,13 @@ void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
   } 
 }
 
-exahype::solvers::Solver::RefinementControl EulerFVM::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
+exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 
-void EulerFVM::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
@@ -54,7 +54,7 @@ void EulerFVM::MyEulerSolver::eigenvalues(const double* const Q, const int norma
   eigs.j(u_n,u_n,u_n);
 }
 
-void EulerFVM::MyEulerSolver::flux(const double* const Q, double** F) {
+void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
   Fluxes f(F);
 
@@ -73,14 +73,14 @@ void EulerFVM::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void EulerFVM::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::source(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
   source.j(0,0,0);
 }
 
-void EulerFVM::MyEulerSolver::boundaryValues(
+void Euler::MyEulerSolver::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,
