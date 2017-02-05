@@ -31,35 +31,35 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
   
-	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-	  
-	  String profilerInclude                     = "";
-	  String solverConstructorSignatureExtension = "";
-	  if (_enableProfiler) {
-		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-	  }
-	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-	  }
+      content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+      content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+      
+      String profilerInclude                     = "";
+      String solverConstructorSignatureExtension = "";
+      if (_enableProfiler) {
+          profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+          solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      }
+      if (_hasConstants) {
+          solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+      }
 
 
-	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-	  content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
-	  //content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
+      content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+      content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+      content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
+      //content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
 
-	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-	  
-	  String namingSchemes = "";
+      content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+      content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+      
+      String namingSchemes = "";
       for (String name : _namingSchemeNames) {
         namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
       }
       content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
-	  
-	  writer.write(content);
+      
+      writer.write(content);
   }
 
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
@@ -67,28 +67,28 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverGodunovInCGeneratedCode.template");
     
-	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-	  //
-	  String profilerInclude                     = "";
-	  String solverConstructorSignatureExtension = "";
-	  String solverConstructorArgumentExtension  = "";
-	  if (_enableProfiler) {
-		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-		  solverConstructorArgumentExtension  += ", std::move(profiler)";
-	  }
-	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-	  }
-	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
-	  //
-	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-	  
-	  writer.write(content);
+      content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+      content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+      //
+      String profilerInclude                     = "";
+      String solverConstructorSignatureExtension = "";
+      String solverConstructorArgumentExtension  = "";
+      if (_enableProfiler) {
+          profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+          solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+          solverConstructorArgumentExtension  += ", std::move(profiler)";
+      }
+      if (_hasConstants) {
+          solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+      }
+      content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+      content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+      content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+      //
+      content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+      content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+      
+      writer.write(content);
   }
   
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
