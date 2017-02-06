@@ -332,17 +332,17 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   
   private void tryWriteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
     java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".cpp");
     
     if (solverGeneratedImplementationFile.exists()) {
-      System.out.println("generated implementation file of solver " + solverName
+      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
           + " ... does exist already. Is overwritten");
     }
 
     java.io.BufferedWriter generatedImplementationWriter =
         new java.io.BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
     solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
-    System.out.println("create generated implementation of solver " + solverName + " ... ok");
+    System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
     generatedImplementationWriter.close();
   }
   
