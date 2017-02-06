@@ -787,9 +787,7 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
                                     plotterNumber + 1, 11);
   logDebug("getSelectorForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
-             plotterNumber);
-  return (token != _noTokenFound) ? token : "{}";
+  return (token != _noTokenFound) ? token : "";
 }
 
 std::string exahype::Parser::getLogFileName() const {
