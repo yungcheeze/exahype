@@ -25,24 +25,24 @@ exahype-project EulerFV
   output-directory const           = ./Demonstrators/EulerFV
 
   computational-domain
-    dimension const                = 2
+    dimension const         = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 1.00
   end computational-domain
  
   solver Finite-Volumes MyEulerSolver
-    variables const         = rho:1,j:3,E:1
-    patch-size        = 10
+    variables const    = rho:1,j:3,E:1
+    patch-size const  = 10
     maximum-mesh-size = 5e-3
     time-stepping     = global
-    kernel const            = generic::Godunov
-    language const          = C
+    kernel const      = generic::Godunov
+    language const    = C
     plot vtk::Cartesian::cells::ascii EulerWriter
       variables const = 5
-      time      = 0.0
-      repeat    = 0.01
-      output    = ./variables
+      time            = 0.0
+      repeat          = 0.01
+      output          = ./variables
     end plot
   end solver
 end exahype-project
