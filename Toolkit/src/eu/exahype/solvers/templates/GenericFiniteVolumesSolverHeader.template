@@ -29,7 +29,7 @@ class {{Project}}::{{Solver}} : public exahype::solvers::FiniteVolumesSolver {
     class Fluxes;
 {{NamingSchemes}}
 
-    {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
     
     void init(std::vector<std::string>& cmdlineargs);
     

@@ -9,9 +9,9 @@
 #include "kernels/finitevolumes/godunov/c/2d/godunov.cpph"
 #include "kernels/finitevolumes/godunov/c/3d/godunov.cpph"
 
-{{Project}}::{{Solver}}::{{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::{{Solver}}::{{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   exahype::solvers::FiniteVolumesSolver("{{Solver}}",{{NumberOfVariables}},{{NumberOfParameters}},cellsPerCoordinateAxis,1 /* ghost layer width */,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
-  // @todo Please implement/augment if required
+  init(cmdlineargs);
 }
 
 double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {

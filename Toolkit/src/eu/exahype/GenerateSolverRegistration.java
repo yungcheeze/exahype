@@ -219,7 +219,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
-      _methodBodyWriter.write( "  ));\n");
+      _methodBodyWriter.write( "  , cmdlineargs));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       
@@ -286,7 +286,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  solver = new " + _projectName +
                           "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
-                          (_enableProfiler ? ", std::move(profiler)": ""));
+                          (_enableProfiler ? ", std::move(profiler)": "")+
+                          ",cmdlineargs");
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
@@ -298,7 +299,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       // Limiting ADER-DG
       _methodBodyWriter.write("  \n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back(\n"
-          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0)) );\n");
+          + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),parser.getDMPRelaxationParameter(0),parser.getDMPDifferenceScaling(0),cmdlineargs) );\n");
       
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n");
       _methodBodyWriter.write("  }\n\n");
