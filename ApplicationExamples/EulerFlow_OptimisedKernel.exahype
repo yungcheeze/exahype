@@ -18,30 +18,30 @@
  */
 exahype-project  Euler
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
   libxsmm-path               = ./Libxsmm
-  output-directory           = ./ApplicationExamples/OptimisedKernel_Euler
-  architecture               = noarch
+  output-directory const           = ./ApplicationExamples/OptimisedKernel_Euler
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.12
   end computational-domain
 
   solver ADER-DG MyEulerSolver
-    variables         = 5
-    order             = 3
+    variables const         = 5
+    order const             = 3
     maximum-mesh-size = 0.05
     time-stepping     = globalfixed
-    kernel            = optimised::fluxes::nonlinear
-    language          = C
+    kernel const            = optimised::fluxes::nonlinear
+    language const          = C
 	
 
     plot vtk::Cartesian::cells::ascii Plotter0
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.01
       output    = ./conserved

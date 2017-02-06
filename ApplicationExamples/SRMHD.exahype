@@ -11,13 +11,13 @@
  */
 exahype-project  MHDSolver
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/SRMHD/
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/SRMHD/
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.12
@@ -48,14 +48,14 @@ exahype-project  MHDSolver
   
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
-    variables          = 9
-    order              = 3
+    variables const          = 9
+    order const              = 3
     /* 27 grid points: 0.2327 */
     maximum-mesh-size  = 0.5
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
+    kernel const             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
-    language           = C
+    language const           = C
     /* choose your iniitial data here. Caveats on whitespace */
     constants = {initialdata:alfven}
 
@@ -64,7 +64,7 @@ exahype-project  MHDSolver
     /* use vtk::Legendre::vertices::ascii instead */
     /* however, Legendre does not work in 3D */
     plot vtk::Cartesian::vertices::ascii ConservedWriter
-      variables= 9
+      variables const= 9
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
@@ -72,7 +72,7 @@ exahype-project  MHDSolver
     end plot
     
     plot vtk::Cartesian::vertices::ascii IntegralsWriter
-      variables = 0
+      variables const = 0
       time = 0.0
       repeat = 0.05
       output = ./global-integrals
@@ -80,7 +80,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii PrimitivesWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
@@ -88,7 +88,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
@@ -96,7 +96,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii ErrorWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./errors-conserved
@@ -104,7 +104,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii RelativeErrorWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./relative-errors-conserved

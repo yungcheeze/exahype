@@ -20,13 +20,13 @@
  */
 exahype-project  AcousticWave
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/acousticwaveF90
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/acousticwaveF90
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 2.0
@@ -44,16 +44,16 @@ exahype-project  AcousticWave
   end optimisation
   
   solver ADER-DG MyAcousticWaveSolver
-    variables         = 4
-    parameters        = 0
-    order             = 3
+    variables const         = 4
+    parameters const        = 0
+    order const             = 3
     maximum-mesh-size = 0.15
     time-stepping     = global
-    kernel            = generic::fluxes::linear
-    language          = Fortran
+    kernel const            = generic::fluxes::linear
+    language const          = Fortran
     
     plot vtk::Cartesian::vertices::ascii
-      variables = 4
+      variables const = 4
       time      = 0.0
       repeat    = 0.05
       output    = ./result

@@ -11,12 +11,12 @@ exahype-project  elasticwaves3d
   tarch-path                 = ./Peano/tarch
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/elasticwaves3d
-  architecture               = noarch
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./Applications/elasticwaves3d
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.4
@@ -41,16 +41,16 @@ exahype-project  elasticwaves3d
   end optimisation
 
   solver ADER-DG MyElasticSolver
-    variables          = 9
-    parameters         = 0
-    order              = 3
+    variables const          = 9
+    parameters const         = 0
+    order const              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::fluxes::linear
-    language           = C
+    kernel const             = generic::fluxes::linear
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 9
+      variables const= 9
       time     = 0.0
       repeat   = 0.05
       output = ./solution

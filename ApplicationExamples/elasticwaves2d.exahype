@@ -7,13 +7,13 @@
  */
 exahype-project  elasticwaves2d
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/elasticwaves2d
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./Applications/elasticwaves2d
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 1.0
@@ -38,16 +38,16 @@ exahype-project  elasticwaves2d
   end optimisation
 
   solver ADER-DG MyElasticSolver
-    variables          = 5
-    parameters         = 0
-    order              = 3
+    variables const          = 5
+    parameters const         = 0
+    order const              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = user::defined
-    language           = C
+    kernel const             = user::defined
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output = ./solution

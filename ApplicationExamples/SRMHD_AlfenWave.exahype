@@ -11,13 +11,13 @@
  */
 exahype-project  MHDSolver
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/SRMHD/
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/SRMHD/
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     /* this is the grid for the MHD AlfenWave test */
     width                    = 1.0, 0.4
     offset                   = 0.0, 0.0
@@ -48,16 +48,16 @@ exahype-project  MHDSolver
   end optimisation
   
   solver ADER-DG MHDSolver
-    variables          = 9
-    order              = 3
+    variables const          = 9
+    order const              = 3
     maximum-mesh-size  = 0.1
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
-    language           = C
+    kernel const             = generic::fluxes::nonlinear
+    language const           = C
     constants          = {initialdata:alfenwave}
 
     plot vtk::Cartesian::vertices::ascii
-      variables= 9
+      variables const= 9
       time     = 0.0
       repeat   = 0.025
       output   = ./conserved
@@ -67,7 +67,7 @@ exahype-project  MHDSolver
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
     plot vtk::Cartesian::vertices::ascii
-      variables = 0
+      variables const = 0
       time = 0.0
       repeat = 0.025
       output = ./these-files-should-not-be-there
@@ -75,7 +75,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.025
       output    = ./primitive
@@ -83,7 +83,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.025
       output    = ./exact-primitive

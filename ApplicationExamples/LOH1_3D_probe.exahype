@@ -20,13 +20,13 @@
  */
 exahype-project  Elastic
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/LOH1_3D_probe
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/LOH1_3D_probe
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 10.0, 20.0, 20.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 4.0
@@ -53,16 +53,16 @@ exahype-project  Elastic
   end optimisation
   
   solver ADER-DG MyElasticSolver
-    variables         = 12
-    parameters        = 0
-    order             = 3
+    variables const         = 12
+    parameters const        = 0
+    order const             = 3
     maximum-mesh-size = 10.0
     time-stepping     = global
-    kernel            = generic::fluxes::nonlinear
-    language          = C
+    kernel const            = generic::fluxes::nonlinear
+    language const          = C
 
     plot vtk::Cartesian::vertices::asc
-      variables = 3
+      variables const = 3
       time      = 0.0
       repeat    = 0.2
       output    = ./conserved
@@ -73,7 +73,7 @@ exahype-project  Elastic
     /* it has no output fields. */
     /*
     plot vtk::Cartesian::vertices::ascii
-      variables = 0
+      variables const = 0
       time = 0.0
       repeat = 0.05
       output = ./output/these-files
@@ -82,7 +82,7 @@ exahype-project  Elastic
     
     
     plot vtk::Cartesian::vertices::ascii
-      variables = 3
+      variables const = 3
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
@@ -90,7 +90,7 @@ exahype-project  Elastic
     end plot
     
     plot vtk::Cartesian::vertices::ascii
-      variables = 3
+      variables const = 3
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
@@ -100,7 +100,7 @@ exahype-project  Elastic
 
     /* Do not need the time series for a point in the moment*/
     plot probe::ascii
-      variables = 3
+      variables const = 3
       time      = 0.0
       repeat    = 0.05
       output    = ./seismogram

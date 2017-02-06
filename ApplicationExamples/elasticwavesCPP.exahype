@@ -20,13 +20,13 @@
  */
 exahype-project  ElasticWave
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/elasticwaveCPP
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/elasticwaveCPP
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 2.0
@@ -57,17 +57,17 @@ exahype-project  ElasticWave
   end optimisation
 
   solver ADER-DG MyElasticWaveSolver
-    variables         = 9
-    parameters        = 0
-    order             = 3
+    variables const         = 9
+    parameters const        = 0
+    order const             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.15
     time-stepping     = globalfixed
-    kernel            = generic::fluxes::linear
-    language          = C
+    kernel const            = generic::fluxes::linear
+    language const          = C
 
     plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved
@@ -77,7 +77,7 @@ exahype-project  ElasticWave
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
     /*plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
-      variables = 0
+      variables const = 0
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there
@@ -85,7 +85,7 @@ exahype-project  ElasticWave
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii PrimitivesWriter
-      variables = 4
+      variables const = 4
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
@@ -93,7 +93,7 @@ exahype-project  ElasticWave
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
-      variables = 4
+      variables const = 4
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive
@@ -102,7 +102,7 @@ exahype-project  ElasticWave
 
     /* Do not need the time series for a point in the moment
     plot probe::ascii ProbeWriter
-      variables = 3
+      variables const = 3
       time      = 0.0
       repeat    = 0.05
       output    = ./seismogram

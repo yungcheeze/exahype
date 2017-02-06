@@ -45,6 +45,8 @@ Tokens
   token_end                         = 'end';
 
   token_project                     = 'exahype-project';
+  
+  token_const                       = 'const';
 
   token_peano_kernel_path           = 'peano-kernel-path';
   token_peano_toolbox_path          = 'peano-toolbox-path';
@@ -149,7 +151,7 @@ Productions
      {without_logfile_with_architecure}
      [begin_token]:token_project [name]:identifier
        paths
-       token_architecture token_equals [architecture]:identifier
+       token_architecture token_equals [architecture_const]:token_const [architecture]:identifier
        computational_domain
        shared_memory?
        distributed_memory?
@@ -162,7 +164,7 @@ Productions
      {with_logfile_with_architecure}
      [begin_token]:token_project [name]:identifier
        paths
-       token_architecture [architecture_equals]:token_equals [architecture]:identifier
+       token_architecture [architecture_const]:token_const [architecture_equals]:token_equals [architecture]:identifier
        token_logfile      [logfile_equals]:token_equals      [logfile]:filename
        computational_domain
        shared_memory?
@@ -201,31 +203,31 @@ Productions
 
   paths {->paths} =
     {without}
-       token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+       token_peano_kernel_path [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+       token_exahype_path      [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+       token_output_directory  [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
     { -> New paths(peano_kernel_path, Null, exahype_path, Null, output_directory) }
     |
     {with_toolbox}
-       token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
-       token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+       token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+       token_peano_toolbox_path [peano_toolbox_path_const]:token_const         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
+       token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+       token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, Null, output_directory) }
   |
     {with_libxsmm}
-       token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
-       token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+       token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+       token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+       token_libxsmm_path       [libxsmm_path_const]:token_const               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
+       token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
     { -> New paths(peano_kernel_path, Null, exahype_path, libxsmm_path, output_directory) }
     |
     {with_toolbox_and_libxsmm}
-       token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
-       token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
-       token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-       token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
-       token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+       token_peano_kernel_path  [peano_kernel_path_const]:token_const          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+       token_peano_toolbox_path [peano_toolbox_path_const]:token_const         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
+       token_exahype_path       [exahype_path_const]:token_const               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+       token_libxsmm_path       [libxsmm_path_const]:token_const               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
+       token_output_directory   [output_directory_const]:token_const           [output_directory_equals]:token_equals                 [output_directory]:filename
     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, libxsmm_path, output_directory) }
    ;
 
@@ -249,16 +251,16 @@ Productions
   computational_domain {->computational_domain} =
     {two_dimensional}
      [begin_token]:token_computational_domain
-      token_dimension          [dimension_equals]:token_equals          [dimension]:int_number
-      token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number
-      token_offset             [offset_equals]:token_equals             [offset_x]:float_number [offset_comma_xy]:token_comma [offset_y]:float_number
-      token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
+      token_dimension [dimension_const]:token_const          [dimension_equals]:token_equals          [dimension]:int_number
+      token_width                   [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number
+      token_offset                  [offset_equals]:token_equals             [offset_x]:float_number [offset_comma_xy]:token_comma [offset_y]:float_number
+      token_end_time                [end_time_equals]:token_equals           [end_time]:float_number
      token_end [end_token]:token_computational_domain
       { -> New computational_domain( dimension, width_x, width_y, Null, offset_x, offset_y, Null, end_time ) }
       |
     {three_dimensional}
      [begin_token]:token_computational_domain
-      token_dimension          [dimension_equals]:token_equals          [dimension]:int_number
+      token_dimension [dimension_const]:token_const          [dimension_equals]:token_equals          [dimension]:int_number
       token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number [width_comma_yz]:token_comma [width_z]:float_number
       token_offset             [offset_equals]:token_equals             [offset_x]:float_number  [offset_comma_xy]:token_comma [offset_y]:float_number [offset_comma_yz]:token_comma [offset_z]:float_number
       token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
@@ -281,28 +283,28 @@ Productions
   profiling {->profiling} =
      {with_likwid}
       [begin_token]:token_profiling
-        token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-        token_metrics [token_metrics_equals]:token_equals [metrics]:item_list
+        token_profiler   [profiler_const]:token_const [token_profiler_equals]:token_equals [profiler]:identifier
+        token_metrics    [metrics_const]:token_const [token_metrics_equals]:token_equals [metrics]:item_list
         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
-        token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
-        token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
+        token_likwid_inc [likwid_inc_const]:token_const [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
+        token_likwid_lib [likwid_lib_const]:token_const [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
       token_end [end_token]:token_profiling
        { -> New profiling(profiler,[metrics.item],likwid_inc,likwid_lib,Null,Null) }
      |
      {with_ipcm}
       [begin_token]:token_profiling
-        token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-        token_metrics [token_metrics_equals]:token_equals [metrics]:item_list
+        token_profiler   [profiler_const]:token_const [token_profiler_equals]:token_equals [profiler]:identifier
+        token_metrics    [metrics_const]:token_const [token_metrics_equals]:token_equals [metrics]:item_list
         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
-        token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
-        token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
+        token_ipcm_inc [ipcm_inc_const]:token_const [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
+        token_ipcm_lib [ipcm_lib_const]:token_const [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
       token_end [end_token]:token_profiling
        { -> New profiling(profiler,[metrics.item],Null,Null,ipcm_inc,ipcm_lib)}
      |
      {default}
       [begin_token]:token_profiling
-        token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-        token_metrics [token_metrics_equals]:token_equals [metrics]:item_list
+        token_profiler   [profiler_const]:token_const [token_profiler_equals]:token_equals [profiler]:identifier
+        token_metrics    [metrics_const]:token_const [token_metrics_equals]:token_equals [metrics]:item_list
         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
       token_end [end_token]:token_profiling
        { -> New profiling(profiler,[metrics.item],Null,Null,Null,Null) }
@@ -315,7 +317,7 @@ Productions
 
   plot_solution_list {->plot_solution*} =
     [begin_token]:token_plot [plotter_type]:typename [name]:identifier 
-      token_variables [variables_equals]:token_equals [variables]:int_number
+      token_variables [variables_const]:token_const [variables_equals]:token_equals [variables]:int_number
       token_time      [time_equals]:token_equals      [time]:float_number
       token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
       token_output    [output_equals]:token_equals    [output]:filename
@@ -329,20 +331,20 @@ Productions
       { -> constants };
 
   parameters_list {->variables} =
-   token_parameters         [parameters_equals]:token_equals          variables
+   token_parameters token_const [parameters_equals]:token_equals          variables
       { -> variables };
 
   solver_list {->solver*} =
     {aderdg}
       [begin_token]:token_solver token_aderdg [name]:identifier
-        token_variables          [variables_equals]:token_equals          [variables]:variables
+        token_variables [variables_const]:token_const          [variables_equals]:token_equals          [variables]:variables
         parameters_list?
         naming_schemes?
-        token_order              [order_equals]:token_equals              [order]:int_number
+        token_order     [order_const]:token_const              [order_equals]:token_equals              [order]:int_number
         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel             [kernel_equals]:token_equals             [kernel]:typename
-        token_language           [language_equals]:token_equals           [language]:identifier
+        token_kernel    [kernel_const]:token_const             [kernel_equals]:token_equals             [kernel]:typename
+        token_language  [language_const]:token_const           [language_equals]:token_equals           [language]:identifier
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
@@ -351,16 +353,16 @@ Productions
     |  
     {limiting_aderdg}
     [begin_token]:token_solver token_limiting_aderdg [name]:identifier
-        token_variables                  [variables_equals]:token_equals                    [variables]:variables
+        token_variables [variables_const]:token_const                  [variables_equals]:token_equals                    [variables]:variables
         parameters_list?
         naming_schemes?
-        token_order                      [order_equals]:token_equals                        [order]:int_number
+        token_order [order_const]:token_const                      [order_equals]:token_equals                        [order]:int_number
         token_maximum_mesh_size          [maximum_mesh_size_equals]:token_equals            [maximum_mesh_size]:float_number
         token_time_stepping              [time_stepping_equals]:token_equals                [time_stepping]:identifier
-        token_kernel                     [kernel_equals]:token_equals                       [kernel]:typename
-        token_language                   [language_equals]:token_equals                     [language]:identifier
-        token_kernel_limiter             [kernel_limiter_equals]:token_equals               [kernel_limiter]:typename
-        token_language_limiter           [language_limiter_equals]:token_equals             [language_limiter]:identifier
+        token_kernel         [kernel_const]:token_const                     [kernel_equals]:token_equals                       [kernel]:typename
+        token_language       [language_const]:token_const                   [language_equals]:token_equals                     [language]:identifier
+        token_kernel_limiter [kernel_limiter_const]:token_const             [kernel_limiter_equals]:token_equals               [kernel_limiter]:typename
+        token_language_limiter [language_limiter_const]:token_const         [language_limiter_equals]:token_equals             [language_limiter]:identifier
         token_dmp_relaxation_parameter   [dmp_relaxation_parameter_equals]:token_equals     [dmp_relaxation_parameter]:float_number
         token_dmp_difference_scaling     [dmp_difference_scaling_equals]:token_equals       [dmp_difference_scaling]:float_number
         constants_list?
@@ -371,14 +373,14 @@ Productions
     |  
     {finite_volumes}
       [begin_token]:token_solver token_finite_volumes [name]:identifier
-        token_variables          [variables_equals]:token_equals          [variables]:variables
+        token_variables  [variables_const]:token_const          [variables_equals]:token_equals          [variables]:variables
         parameters_list?
         naming_schemes?
-        token_patch_size         [patch_size_equals]:token_equals         [patch_size]:int_number
-        token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
-        token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel             [kernel_equals]:token_equals             [kernel]:typename
-        token_language           [language_equals]:token_equals           [language]:identifier
+        token_patch_size [patch_size_const]:token_const         [patch_size_equals]:token_equals         [patch_size]:int_number
+        token_maximum_mesh_size [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
+        token_time_stepping     [time_stepping_equals]:token_equals      [time_stepping]:identifier
+        token_kernel     [kernel_const]:token_const             [kernel_equals]:token_equals             [kernel]:typename
+        token_language   [language_const]:token_const           [language_equals]:token_equals           [language]:identifier
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
@@ -403,10 +405,10 @@ Productions
   
   
   naming_scheme_list {->naming_scheme+} =
-    {single} [name]:identifier token_equals [scheme]:variables 
+    {single} [name]:identifier token_const token_equals [scheme]:variables 
       { -> [New naming_scheme(name,scheme)] }
     |
-    {list}   [name]:identifier token_equals [value]:variables naming_scheme_list
+    {list} [name]:identifier token_const token_equals [value]:variables naming_scheme_list
       { -> [New naming_scheme(name,value),naming_scheme_list.naming_scheme] };
   
   item_list {->item+} =

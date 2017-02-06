@@ -18,13 +18,13 @@
  */
 exahype-project SRHD
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/SRHD_LimitingADERDG
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/SRHD_LimitingADERDG
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
@@ -55,19 +55,19 @@ exahype-project SRHD
   end optimisation
 
   solver Limiting-ADER-DG SRHDSolver
-    variables                = 5
-    order                    = 3
+    variables const                = 5
+    order const                    = 3
     maximum-mesh-size        = 0.05
     time-stepping            = global
-    kernel                   = generic::fluxes::nonlinear
-    language                 = C
-    limiter-kernel           = generic::Godunov 
-    limiter-language         = C
+    kernel const                   = generic::fluxes::nonlinear
+    language const                 = C
+    limiter-kernel const           = generic::Godunov 
+    limiter-language const         = C
     dmp-relaxation-parameter = 0.0001
     dmp-difference-scaling   = 0.001
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.01
       output    = ./conserved
