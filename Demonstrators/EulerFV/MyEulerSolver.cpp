@@ -4,8 +4,24 @@
  */
 #include "MyEulerSolver.h"
 #include "MyEulerSolver_Variables.h"
-#include "Logo.h"
+#include "picopng.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+
+picopng::Image Image;
+
+void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+	// Reading in Initial Data at startup
+	// You might pass your own PNG file on the command line next to the specfile.
+	const char* imagename = cmdlineargs.size() > 1 ? cmdlineargs.back().c_str() : "logo.png";
+	int ret = Image.loadPNG(imagename);
+	if(ret) {
+		fprintf(stderr, "Please ensure image '%s' is readable and a proper PNG file (err %d)\n", imagename, ret);
+		exit(-1);
+	}
+}
 
 bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   return tarch::la::equals(t,0.0);
@@ -30,9 +46,9 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
     myIntX(1) < static_cast<int>(Image.height)
   ) {
     Energy += (
-        Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+0]
-      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+1]
-      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+2]) / 3.0 / 256.0;
+        Image.pixel_data[myIntX(1)*Image.width*4+myIntX(0)*4+0]
+      + Image.pixel_data[myIntX(1)*Image.width*4+myIntX(0)*4+1]
+      + Image.pixel_data[myIntX(1)*Image.width*4+myIntX(0)*4+2]) / 3.0 / 256.0;
   }
   else {
     Energy += (
