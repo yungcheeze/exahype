@@ -49,10 +49,6 @@ void Vacuum(const double* x, double* Q, double t = 0.0) {
 /**
  * Source: MD ADERDG F90 CODE
  * ShuVortex produces primitive Variables which have to pass Prim2Con afterwards
- *
- * TODO(Dominic): Please check your SQ macros.
- * ANSWER(Sven):  SQ is an inline cpp function. Anything wrong about that?
- *
  **/
 void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
   static const double epsilon = 5.0;
