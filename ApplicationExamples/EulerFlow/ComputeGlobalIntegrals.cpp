@@ -5,7 +5,7 @@
 Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver)
 {
 	// open all the reductions
-	assert( 5 == nVar );
+	assert( 5 == NumberOfVariables );
 	
 	conserved[0] = new TimeSeriesReductions("output/dens.asc");
 	conserved[1] = new TimeSeriesReductions("output/sconx.asc");
@@ -37,7 +37,7 @@ Euler::ComputeGlobalIntegrals::~ComputeGlobalIntegrals() {
 
 void Euler::ComputeGlobalIntegrals::startPlotting(double time) {
 	this->time = time;
-	for(int i=0; i<nVar; i++) {
+	for(int i=0; i<NumberOfVariables; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
 		errors[i]->initRow(time);
@@ -47,7 +47,7 @@ void Euler::ComputeGlobalIntegrals::startPlotting(double time) {
 
 
 void Euler::ComputeGlobalIntegrals::finishPlotting() {
-	for(int i=0; i<nVar; i++) {
+	for(int i=0; i<NumberOfVariables; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
 		errors[i]->writeRow();
@@ -68,33 +68,33 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	const double NumberOfLagrangePointsPerAxis = Euler::MyEulerSolver::order + 1;
-	//const double NumberOfUnknownsPerGridPoint = nVar;
+	const double NumberOfLagrangePointsPerAxis = Euler::MyEulerSolver::Order + 1;
+	//const double NumberOfUnknownsPerGridPoint = NumberOfVariables;
 
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
 	statistics->addValue(scaling, 1);
 
 	// reduce the conserved quantities
-	for (int i=0; i<nVar; i++)
+	for (int i=0; i<NumberOfVariables; i++)
 		conserved[i]->addValue( Q[i], scaling );
 
 	// reduce the primitive quantities
-	double V[nVar];
+	double V[NumberOfVariables];
 	cons2prim(V, Q);
-	for(int i=0; i<nVar; i++)
+	for(int i=0; i<NumberOfVariables; i++)
 		primitives[i]->addValue( V[i], scaling );
 
 	// now do the convergence test, as we have exact initial data
-	double ExactCons[nVar];
-	double ExactPrim[nVar];
+	double ExactCons[NumberOfVariables];
+	double ExactPrim[NumberOfVariables];
 	const double *xpos = x.data();
 	
 	idfunc(xpos, ExactCons, time); // Sven, this returns the conserved quantities
 	cons2prim(ExactPrim, ExactCons);
 
-	double localError[nVar];
-	for(int i=0; i<nVar; i++) {
+	double localError[NumberOfVariables];
+	for(int i=0; i<NumberOfVariables; i++) {
 		localError[i] = abs(V[i] - ExactPrim[i]);
 		errors[i]->addValue( localError[i], scaling );
 	}

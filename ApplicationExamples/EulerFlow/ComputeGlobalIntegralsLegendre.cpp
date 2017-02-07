@@ -6,7 +6,7 @@
 
 Euler::ComputeGlobalIntegralsLegendre::ComputeGlobalIntegralsLegendre(MyEulerSolver&  solver) {
 	// open all the reductions
-	assert( 5 == nVar );
+	assert( 5 == NumberOfVariables );
 	
 	conserved[0] = new TimeSeriesReductions("output/dens.asc");
 	conserved[1] = new TimeSeriesReductions("output/sconx.asc");
@@ -38,7 +38,7 @@ Euler::ComputeGlobalIntegralsLegendre::~ComputeGlobalIntegralsLegendre() {
 
 void Euler::ComputeGlobalIntegralsLegendre::startPlotting(double time) {
 	this->time = time;
-	for(int i=0; i<nVar; i++) {
+	for(int i=0; i<NumberOfVariables; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
 		errors[i]->initRow(time);
@@ -48,7 +48,7 @@ void Euler::ComputeGlobalIntegralsLegendre::startPlotting(double time) {
 
 
 void Euler::ComputeGlobalIntegralsLegendre::finishPlotting() {
-	for(int i=0; i<nVar; i++) {
+	for(int i=0; i<NumberOfVariables; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
 		errors[i]->writeRow();
@@ -74,37 +74,37 @@ void Euler::ComputeGlobalIntegralsLegendre::mapQuantities(
   statistics->addValue(scaling, 1);
 
   // Gauss-Legendre weights from pos argument
-  double wx = kernels::gaussLegendreWeights[Euler::MyEulerSolver::order][pos[0]];
-  double wy = kernels::gaussLegendreWeights[Euler::MyEulerSolver::order][pos[1]];
+  double wx = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[0]];
+  double wy = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[1]];
   double wz = 1;
   #ifdef Dim3
-  wz = kernels::gaussLegendreWeights[Euler::MyEulerSolver::order][pos[2]];
+  wz = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[2]];
   #endif
 
 	// reduce the conserved quantities
-	for (int i=0; i<nVar; i++)
+	for (int i=0; i<NumberOfVariables; i++)
 		conserved[i]->addValue( Q[i], scaling );
 
 	// reduce the primitive quantities
-	double V[nVar];
+	double V[NumberOfVariables];
 	cons2prim(V, Q);
-	for(int i=0; i<nVar; i++)
+	for(int i=0; i<NumberOfVariables; i++)
 		primitives[i]->addValue( V[i], scaling );
 
 	// now do the convergence test, as we have exact initial data
-	double Exact[nVar];
+	double Exact[NumberOfVariables];
 	const double *xpos = x.data();
 	
 	idfunc(xpos, Exact, time);
-	double ExactPrim[nVar];
+	double ExactPrim[NumberOfVariables];
 	cons2prim(ExactPrim, Exact);
 
 	// Uncomment for debugging reasons
 //	std::cout << "x="<<x.toString()<<"J="<<scaling << std::endl;
 //  std::cout << "wx="<<wx<<",wy="<<wy<<",wz="<<wz << std::endl;
 
-	double localError[nVar];
-	for(int i=0; i<nVar; i++) {
+	double localError[NumberOfVariables];
+	for(int i=0; i<NumberOfVariables; i++) {
 		localError[i] = abs(V[i] - ExactPrim[i]);
 		errors[i]->addValue( localError[i], scaling*wx*wy*wz );
 

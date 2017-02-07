@@ -189,11 +189,11 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
 }
 
 void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, nVar * sizeof(double));
+  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, nVar * sizeof(double));
+  std::memset(Bn, 0, NumberOfVariables * sizeof(double));
 }
 
 bool Euler::MyEulerSolver::isDummyKRequired() const {

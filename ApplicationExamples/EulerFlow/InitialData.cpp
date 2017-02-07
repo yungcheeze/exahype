@@ -62,7 +62,7 @@ void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
   double drho = pow(1. + dTemp, 1. / (eos_gamma - 1.)) - 1.;
   double dp = pow(1. + dTemp, eos_gamma / (eos_gamma - 1.)) - 1.;
 
-  double V[Euler::MyEulerSolver::nVar];
+  double V[Euler::MyEulerSolver::NumberOfVariables];
   V[0] = 1. + drho;
   V[1] = 1. + du;
   V[2] = 1. + dv;
@@ -82,10 +82,10 @@ void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
   Pasta::vec2 x0({0.5, 0.5});
   double width = 0.20;
 
-  double V[Euler::MyEulerSolver::nVar];
+  double V[Euler::MyEulerSolver::NumberOfVariables];
   V[0] = 0.5 +
          0.3 * exp(-(xvec - x0 - v0 * t).norm() /
-                   pow(width, Euler::MyEulerSolver::nDim));  // rho
+                   pow(width, DIMENSIONS));  // rho
   V[1] = v0(0);
   V[2] = v0(1);
   V[3] = 0.;
@@ -131,5 +131,5 @@ void DiffusingGauss(const double* const x, double* Q, double /*t*/) {
   Q[2] = 0.;
   Q[3] = 0.;
   Q[4] = 1. / (eos_gamma - 1) +
-         exp(-(xvec - x0).norm() / pow(width, Euler::MyEulerSolver::nDim)) * 2;
+         exp(-(xvec - x0).norm() / pow(width, DIMENSIONS)) * 2;
 }
