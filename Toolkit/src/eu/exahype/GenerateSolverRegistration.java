@@ -322,7 +322,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write(FileSearch.PPinclude(plotterName, _directoryAndPathChecker.outputDirectory.getAbsolutePath()));
       
-      writeVersionString("Kernel["+_kernelNumber+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
+      writeVersionString("Kernel["+(_kernelNumber-1)+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
 
       if (_inALimitingADERDGSolver) {
         _methodBodyWriter.write(
