@@ -1,5 +1,8 @@
 package eu.exahype.solvers;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import eu.exahype.IOUtils;
 
 public class OptimisedADERDG implements Solver {
@@ -31,6 +34,20 @@ public class OptimisedADERDG implements Solver {
     _isLinear           = isLinear;
   }
 
+  @Override
+  public void writeAbstractHeader(BufferedWriter writer, String solverName,
+      String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
+  @Override
+  public void writeAbstractImplementation(BufferedWriter writer,
+      String solverName, String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
 	  String content = IOUtils.convertRessourceContentToString(

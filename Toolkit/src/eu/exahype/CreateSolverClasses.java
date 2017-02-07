@@ -168,11 +168,18 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 //          userTypesDefFile = FileSearch.relocatableFile(
 //              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
 //        }
-        
-        
         tryWriteSolverHeader(solver, solverName);
-        tryWriteSolverUserImplementation(solver, solverName);
-        tryWriteSolverGeneratedImplementation(solver, solverName);
+        tryWriteSolverUserImplementation(solver,solverName);
+        
+        // TODO(Dominic): Please remove as soon as the optimised solvers
+        // are using an abstract base class as well.
+        {
+          tryWriteSolverGeneratedImplementation(solver,solverName);
+          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
+        }
+        
+        tryWriteAbstractSolverHeader(solver,solverName);
+        tryWriteAbstractSolverImplementation(solver,solverName);
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName);
@@ -216,11 +223,18 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 //          userTypesDefFile = FileSearch.relocatableFile(
 //              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
 //        }
-        
-        
         tryWriteSolverHeader(solver, solverName);
-        tryWriteSolverUserImplementation(solver, solverName);
-        tryWriteSolverGeneratedImplementation(solver, solverName);
+        tryWriteSolverUserImplementation(solver,solverName);
+        
+        // TODO(Dominic): Please remove as soon as the optimised solvers
+        // are using an abstract base class as well.
+        {
+          tryWriteSolverGeneratedImplementation(solver,solverName);
+          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
+        }
+        
+        tryWriteAbstractSolverHeader(solver,solverName);
+        tryWriteAbstractSolverImplementation(solver,solverName);
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName);
@@ -277,8 +291,19 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
         tryWriteSolverUserImplementation(limiter,solverName+"_FV");
 
-        tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
-        tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
+        // TODO(Dominic): Please remove as soon as the optimised solvers
+        // are using an abstract base class as well.
+        {
+          tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
+          tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
+          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName+"_ADERDG"); }
+          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverName+"_FV"); }
+        }
+        
+        tryWriteAbstractSolverHeader(solver,solverName+"_ADERDG");
+        tryWriteAbstractSolverHeader(limiter,solverName+"FV");
+        tryWriteAbstractSolverImplementation(solver,solverName+"_ADERDG");
+        tryWriteAbstractSolverImplementation(limiter,solverName+"FV");
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName+"_ADERDG");
@@ -330,22 +355,71 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
   }
   
+  /**
+   * @deprecated
+   */
   private void tryWriteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
     java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
-        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".cpp");
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
     
     if (solverGeneratedImplementationFile.exists()) {
-      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+      System.out.println("generated implementation file for solver " + solverName
           + " ... does exist already. Is overwritten");
     }
 
     java.io.BufferedWriter generatedImplementationWriter =
         new java.io.BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
     solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
-    System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
+    System.out.println("create generated implementation file for solver " + solverName + " ... ok");
     generatedImplementationWriter.close();
   }
   
+  /**
+   * @deprecated This is only for cleaning up old projects.
+   * Remove if not needed anymore.
+   */
+  private void tryDeleteSolverGeneratedImplementation(Solver solver, String solverName) throws IOException {
+    java.io.File solverGeneratedImplementationFile = FileSearch.relocatableFile(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
+    
+    if (solverGeneratedImplementationFile.exists()) {
+      System.out.println("deprecated generated implementation file for solver " + solverName
+          + " ... does exist. Is");
+      solverGeneratedImplementationFile.delete();
+    }
+  }
+
+  private void tryWriteAbstractSolverHeader(Solver solver, String solverName) throws IOException {
+    java.io.File abstractSolverHeaderFile = FileSearch.relocatableFile(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".h");
+    
+    if (abstractSolverHeaderFile.exists()) {
+      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+          + " ... does exist already. Is overwritten");
+    }
+
+    java.io.BufferedWriter writer =
+        new java.io.BufferedWriter(new java.io.FileWriter(abstractSolverHeaderFile));
+    solver.writeAbstractHeader(writer, solverName, _projectName);
+    System.out.println("create header file for abstract solver superclass Abstract" + solverName + " ... ok");
+    writer.close();
+  }
+  
+  private void tryWriteAbstractSolverImplementation(Solver solver, String solverName) throws IOException {
+    java.io.File abstractSolverImplementationFile = FileSearch.relocatableFile(
+        _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".cpp");
+    
+    if (abstractSolverImplementationFile.exists()) {
+      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+          + " ... does exist already. Is overwritten");
+    }
+
+    java.io.BufferedWriter writer =
+        new java.io.BufferedWriter(new java.io.FileWriter(abstractSolverImplementationFile));
+    solver.writeAbstractImplementation(writer, solverName, _projectName);
+    System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
+    writer.close();
+  }
   
   private void tryWriteVariablesHeader(Variables variables,String solverName) throws IOException {
     java.io.File solverHeaderFile = FileSearch.relocatableFile(

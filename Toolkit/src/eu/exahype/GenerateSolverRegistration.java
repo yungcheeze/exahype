@@ -214,7 +214,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
@@ -285,7 +285,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
 
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + _solverName+"_FV(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": "")+
                           ",cmdlineargs");
       if (node.getConstants()!=null) {

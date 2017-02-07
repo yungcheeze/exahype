@@ -7,14 +7,14 @@
  */
 exahype-project  TrivialProject
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
   
-  output-directory           = ./Applications/trivialproject
+  output-directory const           = ./Applications/trivialproject
   
   
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.1
