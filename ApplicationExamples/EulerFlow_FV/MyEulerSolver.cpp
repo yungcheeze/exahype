@@ -6,10 +6,9 @@
 
 #include "InitialData.h"
 
-// TODO(Dominic): Assess
-//void Euler::MyEulerSolver::init() {
-//  // empty
-//}
+void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+  // do nothing
+}
 
 bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   // @todo Please implement
