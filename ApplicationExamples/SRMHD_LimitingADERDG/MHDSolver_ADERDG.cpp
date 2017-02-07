@@ -12,7 +12,7 @@
 /* This is the MHDSolver_ADERDG.cpp binding to Fortran functions, as done in SRHD. */
 
 
-void MHD::MHDSolver_ADERDG::init(std::vector<std::string>& cmdargs, exahype::Parser::ParserView constants) {
+void MHD::MHDSolver_ADERDG::init(std::vector<std::string>& cmdargs) {
   // do nothing
 }
 
@@ -95,6 +95,7 @@ void MHD::MHDSolver_ADERDG::matrixb(const double* const Q, const int normalNonZe
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
+/*
 bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
@@ -106,7 +107,7 @@ bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const Q
 
   return true;
 }
-
+*/
 bool MHD::MHDSolver_ADERDG::isDummyKRequired() const {
   return false;
 }
