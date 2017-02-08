@@ -19,7 +19,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  */
-exahype-project EulerFV
+exahype-project Euler
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./Demonstrators/EulerFV
@@ -32,7 +32,7 @@ exahype-project EulerFV
   end computational-domain
  
   solver Finite-Volumes MyEulerSolver
-    variables const    = rho:1,j:3,E:1
+    variables const   = rho:1,j:3,E:1
     patch-size const  = 10
     maximum-mesh-size = 5e-3
     time-stepping     = global

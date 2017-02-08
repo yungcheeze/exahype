@@ -12,7 +12,7 @@
 
 picopng::Image Image;
 
-void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 	// Reading in Initial Data at startup
 	// You might pass your own PNG file on the command line next to the specfile.
 	const char* imagename = cmdlineargs.size() > 1 ? cmdlineargs.back().c_str() : "logo.png";
@@ -23,12 +23,12 @@ void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 	}
 }
 
-bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   return tarch::la::equals(t,0.0);
 }
 
 
-void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
+void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
                                                   const double w,
                                                   const double t,
                                                   const double dt, double* Q) {
@@ -63,12 +63,12 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
 }
 
 
-exahype::solvers::Solver::RefinementControl EulerFV::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
+exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 
-void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
@@ -85,7 +85,7 @@ void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int normal
 }
 
 
-void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
+void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
   Fluxes fluxes(F);
 
@@ -104,7 +104,7 @@ void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void EulerFV::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::source(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
@@ -112,7 +112,7 @@ void EulerFV::MyEulerSolver::source(const double* const Q, double* S) {
 }
 
 
-void EulerFV::MyEulerSolver::boundaryValues(
+void Euler::MyEulerSolver::boundaryValues(
     const double* const x,
     const double t,const double dt,
     const int faceIndex,
