@@ -176,6 +176,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         {
           tryWriteSolverGeneratedImplementation(solver,solverName);
           if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
+          if (kernel.startsWith("optimised")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
         }
         
         tryWriteAbstractSolverHeader(solver,solverName);
