@@ -62,6 +62,8 @@ class {{Project}}::{{Solver}}: public exahype::solvers::ADERDGSolver {
     int getBndFaceSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
     int getBndTotalSize()                  const {return kernels::aderdg::optimised::getBndTotalSize();                 }
     
+    bool alignTempArray()                  const {return true;}
+    
     bool usePaddedData_nVar() const {return true;}
     bool usePaddedData_nDoF() const {return true;}
 };

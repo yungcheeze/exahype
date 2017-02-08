@@ -29,13 +29,22 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         double* restrict S, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
 ) {
 
+
+#ifdef __INTEL_COMPILER
+  __assume_aligned(lQi, ALIGNMENT);
+  __assume_aligned(lQi_old, ALIGNMENT);
+  __assume_aligned(rhs, ALIGNMENT);
+  __assume_aligned(rhs_0, ALIGNMENT);
+  __assume_aligned(lFi, ALIGNMENT);
+  __assume_aligned(F0, ALIGNMENT);
+  __assume_aligned(s_m, ALIGNMENT);
+  __assume_aligned(Kxi, ALIGNMENT);
+#endif
+
   // 1. Trivial initial guess
   for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
     for (int l = 0; l < {{nDof}}; l++) {
-      for (int n = 0; n < {{nVar}}; n++) {
-        // Fortran: lQi(n,:,k,j,i) = luh(n,k,j,i)
-        lQi[n+{{nVarPad}}*(l+{{nDof}}*ijk)] = luh[n+{{nVar}}*ijk]; //TODO JMG memcpy ?
-      }
+      std::copy(&luh[{{nVar}}*ijk], &luh[{{nVar}}*ijk]+{{nVar}}, &lQi[{{nVarPad}}*(l+{{nDof}}*ijk)]);
     }
   }
 
@@ -44,11 +53,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     for (int j = 0; j < {{nDof}}; j++) {
       for (int k = 0; k < {{nDof}}; k++) {
         const double weight = {{'weights1[i] * ' if nDim == 3 else ''}} weights1[j] * weights1[k];
+        #pragma simd
         for (int n = 0; n < {{nVar}}; n++) {
-          for (int m = 0; m < {{nDof}}; m++) { //TODO JMG unroll
-            rhs_0[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] =
-                weight * F0[m] * luh[n+{{nVar}}*(k+{{nDof}}*(j+{{nDof}}*i))];
-          }
+{% for m in nDof_seq %}
+          rhs_0[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D*m}})))] =
+                weight * F0[{{m}}] * luh[n+{{nVar}}*(k+{{nDof}}*(j+{{nDof}}*i))];
+{% endfor %}
         }
       }
     }
@@ -59,7 +69,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, {{nDof**(nDim+1)*nVarPad}} * sizeof(double));
+    std::copy(&lQi[0], &lQi[0]+{{nDof**(nDim+1)*nVarPad}}, lQi_old);
 
     for (int i = 0; i < {{nDof}}; i++) {  // time DOF
     
@@ -89,8 +99,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           const double updateSize = weight * dt / dx[0];
 
           // Matrix operation
+          /*
           for (int l = 0; l < {{nDof}}; l++) {
             for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
               for (int n = 0; n < {{nVar}}; n++) {
                 rhs[n+{{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i)))] -= updateSize *
                                                lFi[n+{{nVarPad}}*(m+{{nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i)))] *
@@ -98,6 +110,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
           }
+          */
+          #pragma simd
+          for(int it=0;it<{{nDof*nDofPad}};it++) {
+            s_m[it] = -updateSize * Kxi[it];
+          }
+          {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
         }
       }
 
@@ -108,8 +126,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           const double updateSize = weight * dt / dx[1];
 
           // Matrix operation
+          /*
           for (int l = 0; l < {{nDof}}; l++) {
             for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
               for (int n = 0; n < {{nVar}}; n++) {
                 rhs[n+{{nVarPad}}*(k+{{nDof}}*(l+{{nDof}}*(j+{{nDof3D}}*i)))] -= updateSize *
                                                lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+n+{{nVarPad}}*(k+{{nDof}}*(m+{{nDof}}*(j+{{nDof3D}}*i)))] *
@@ -117,6 +137,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
           }
+          */
+          #pragma simd
+          for(int it=0;it<{{nDof*nDofPad}};it++) {
+            s_m[it] = -updateSize * Kxi[it];
+          }
+          {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
         }
       }
       
@@ -128,8 +154,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           const double updateSize = weight * dt / dx[2];
 
           // Matrix operation
+          /*
           for (int l = 0; l < {{nDof}}; l++) {
             for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
               for (int n = 0; n < {{nVar}}; n++) {
                 rhs[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(l+{{nDof}}*i)))] -= updateSize *
                                                lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(m+{{nDof}}*i)))] *
@@ -137,6 +165,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
           }
+          */
+          #pragma simd
+          for(int it=0;it<{{nDof*nDofPad}};it++) {
+            s_m[it] = -updateSize * Kxi[it];
+          }
+          {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
         }
       }
       {% endif %}
@@ -155,8 +189,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           const double iweight = 1.0 / weight;
 
           // Matrix operation
+          /*
           for (int l = 0; l < {{nDof}}; l++) {
             for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
               for (int n = 0; n < {{nVar}}; n++) {
                 lQi[n+{{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*i)))] += iweight *
                                                rhs[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] *
@@ -164,6 +200,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
           }
+          */
+          #pragma simd
+          for(int it=0;it<{{nDof*nDofPad}};it++) {
+            s_m[it] = iweight * iK1[it];
+          }
+          {{gemm_lqh}}(&rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))], &s_m[0], &lQi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof}}*i))]);
         }
       }
     }
