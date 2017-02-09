@@ -92,16 +92,18 @@ Change into the release directory
 
 5) Copy over the source files
 - Change into your exahype engine's repository:
+- Create directories (only once):
 - mkdir ~/git/ExaHyPE-Release/ExaHyPE
 - mkdir ~/git/ExaHyPE-Release/Peano
 - mkdir ~/git/ExaHyPE-Release/Toolkit
-- cp -R ExaHyPE ~/git/ExaHyPE-Release
-- cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
-- cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
-- cp -R Peano/sharedmemoryoracles ~/git/ExaHyPE-Release/Peano
-- cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
-- cp -R Toolkit/Manifest.txt ~/git/ExaHyPE-Release/Toolkit
-- cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
+- Actual copy command:
+cp -R ExaHyPE ~/git/ExaHyPE-Release
+cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
+cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
+cp -R Peano/sharedmemoryoracles ~/git/ExaHyPE-Release/Peano
+cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
+cp -R Toolkit/src/Manifest.txt ~/git/ExaHyPE-Release/Toolkit/src
+cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
 
 
 
