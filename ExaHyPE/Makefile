@@ -348,9 +348,9 @@ ffiles.mk: | doFortran
 	# we don't do this:
 	## find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 	# but instead sort the MODULES first in ffiles.mk:
-	find -L $(PROJECT_PATH) -name '*.f90' | grep -l "MODULE" | tr '\n' ' ' >> ffiles.mk
+	find -L $(PROJECT_PATH) -name '*.f90' | xargs grep -l "MODULE" | tr '\n' ' ' >> ffiles.mk
 	# and afterwards the non-modules (not containing "MODULE")
-	find -L $(PROJECT_PATH) -name '*.f90' | grep -L "MODULE" | tr '\n' ' ' >> ffiles.mk
+	find -L $(PROJECT_PATH) -name '*.f90' | xargs grep -L "MODULE" | tr '\n' ' ' >> ffiles.mk
 	# only for the projects which use the old fortran kernels:
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
