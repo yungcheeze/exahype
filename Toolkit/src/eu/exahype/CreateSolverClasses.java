@@ -286,32 +286,35 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 //          userTypesDefFile = FileSearch.relocatableFile(
 //              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
 //        }
-        tryWriteSolverHeader(solver, solverName+"_ADERDG");
-        tryWriteSolverHeader(limiter, solverName+"_FV");
+        String solverNameADERDG = solverName+"_ADERDG";
+        String solverNameFV     = solverName+"_FV";
+        
+        tryWriteSolverHeader(solver, solverNameADERDG);
+        tryWriteSolverHeader(limiter, solverNameFV);
 
-        tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
-        tryWriteSolverUserImplementation(limiter,solverName+"_FV");
+        tryWriteSolverUserImplementation(solver,solverNameADERDG);
+        tryWriteSolverUserImplementation(limiter,solverNameFV);
 
         // TODO(Dominic): Please remove as soon as the optimised solvers
         // are using an abstract base class as well.
         {
-          tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
-          tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
-          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName+"_ADERDG"); }
-          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverName+"_FV"); }
+          tryWriteSolverGeneratedImplementation(solver,solverNameADERDG);
+          tryWriteSolverGeneratedImplementation(limiter,solverNameFV);
+          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverNameADERDG); }
+          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverNameFV); }
         }
         
-        tryWriteAbstractSolverHeader(solver,solverName+"_ADERDG");
-        tryWriteAbstractSolverHeader(limiter,solverName+"_FV");
-        tryWriteAbstractSolverImplementation(solver,solverName+"_ADERDG");
-        tryWriteAbstractSolverImplementation(limiter,solverName+"_FV");
+        tryWriteAbstractSolverHeader(solver,solverNameADERDG);
+        tryWriteAbstractSolverHeader(limiter,solverNameFV);
+        tryWriteAbstractSolverImplementation(solver,solverNameADERDG);
+        tryWriteAbstractSolverImplementation(limiter,solverNameFV);
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverName+"_ADERDG");
+          tryWriteVariablesHeader(variables, solverNameADERDG);
         }
         
         if (limiter.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverName+"_FV");
+          tryWriteVariablesHeader(variables, solverNameFV);
         }
         
       } catch (Exception exc) {
