@@ -14,7 +14,15 @@
     ! computational-domain / dimension       ->  goes to ->  nDim
     !
 
-    INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate
+#if Dim2
+    ! Number of Dimensions extracted by ExaHyPE Make system
+    INTEGER, PARAMETER             :: nDim = 2                   ! The number of space dimensions that we actually want to simulate
+#elif Dim3
+    ! Number of Dimensions extracted by ExaHyPE Make system
+    INTEGER, PARAMETER             :: nDim = 3                   ! The number of space dimensions that we actually want to simulate
+#else
+    #error No Dimensions specified
+#endif
     INTEGER, PARAMETER             :: nVar = 9                            ! The number of variables of the PDE system  
     
     

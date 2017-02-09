@@ -92,7 +92,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
   # ----------------------------------------------
   FC=ifort
   CC=icpc
-  FCOMPILER_CFLAGS  += -r8
+  FCOMPILER_CFLAGS  += -r8 -cpp
   LINK_FORTRAN      += -lifcore
 
   COMPILER_CFLAGS   +=  -restrict
@@ -103,7 +103,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
   # --------------------------------------------
   CC=g++
   FC=gfortran
-  FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none
+  FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
   LINK_FORTRAN      += -lgfortran
 
   COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
@@ -344,7 +344,14 @@ ffiles.mk: | doFortran
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
 	# ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
-	find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	# In order to resolve the dependency problem (compile fortran modules first),
+	# we don't do this:
+	## find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	# but instead sort the MODULES first in ffiles.mk:
+	find -L $(PROJECT_PATH) -name '*.f90' | grep -l "MODULE" | tr '\n' ' ' >> ffiles.mk
+	# and afterwards the non-modules (not containing "MODULE")
+	find -L $(PROJECT_PATH) -name '*.f90' | grep -L "MODULE" | tr '\n' ' ' >> ffiles.mk
+	# only for the projects which use the old fortran kernels:
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
@@ -403,7 +410,7 @@ $(COBJECTS): %.o : %.cpp
 	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90
-	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@
+	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	
