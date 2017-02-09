@@ -63,7 +63,7 @@ void MHD::MHDSolver_ADERDG::matrixb(const double* const Q, const int normalNonZe
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
-/*
+
 bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
@@ -75,7 +75,7 @@ bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const Q
 
   return true;
 }
-*/
+
 bool MHD::MHDSolver_ADERDG::isDummyKRequired() const {
   return false;
 }
@@ -83,3 +83,5 @@ bool MHD::MHDSolver_ADERDG::isDummyKRequired() const {
 void MHD::MHDSolver_ADERDG::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // do nothing
 }
+
+
