@@ -200,7 +200,7 @@ endif
 
 # Include files
 -include cfiles.mk
-#-include ffiles.mk
+-include ffiles.mk
 
 
 
@@ -295,10 +295,9 @@ wellsortedbuild: header buildinfo
 	$(MAKE) build
 
 
-# add any variables which you want to be able to see
-# in the binary when calling with --version:
-
 buildinfo:
+#	add any variables which you want to be able to see
+#	in the binary when calling with --version:
 	@echo "generate-buildinfo.sh > buildinfo.h"
 	@$(EXAHYPE_PATH)/generate-buildinfo.sh \
 		"COMPILER = $(COMPILER)" \
@@ -315,8 +314,7 @@ buildinfo:
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
 		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)" \
 		> $(EXAHYPE_PATH)/buildinfo.h
-		
-# omit the last backslash in the last line of the previous call!
+
 		
 cfiles.mk:
 	touch cfiles.mk
@@ -343,15 +341,15 @@ endif
 ffiles.mk: | doFortran
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	# ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
-	# In order to resolve the dependency problem (compile fortran modules first),
-	# we don't do this:
-	## find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-	# but instead sort the MODULES first in ffiles.mk:
-	find -L $(PROJECT_PATH) -name '*.f90' | xargs grep -l "MODULE" | tr '\n' ' ' >> ffiles.mk
-	# and afterwards the non-modules (not containing "MODULE")
-	find -L $(PROJECT_PATH) -name '*.f90' | xargs grep -L "MODULE" | tr '\n' ' ' >> ffiles.mk
-	# only for the projects which use the old fortran kernels:
+#	ALLOW mixed language Fortran applications! C.f. SRHD, MHD, Z4
+#	In order to resolve the dependency problem (compile fortran modules first),
+#	we don't do this:
+#	# find -L $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+#	 but instead sort the MODULES first in ffiles.mk:
+	find -L $(PROJECT_PATH) -name '*.f90' -exec grep -il module {} \+ | tr '\n'  ' ' >> ffiles.mk
+#	and afterwards the non-modules (not containing "MODULE")
+	find -L $(PROJECT_PATH) -name '*.f90' -exec grep -iL module {} \+ | tr '\n' ' ' >> ffiles.mk
+#	 only for the projects which use the old fortran kernels:
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	find -L $(EXAHYPE_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
@@ -409,11 +407,11 @@ clean:
 $(COBJECTS): %.o : %.cpp
 	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
-#$(FOBJECTS): %.o : %.f90#
-#	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
+$(FOBJECTS): %.o : %.f90#
+	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	
 #%.mod: %.o
 	
-#-include fdeps.mk	
+-include fdeps.mk	

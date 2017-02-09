@@ -15,6 +15,8 @@ exahype-project  MHDSolver
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./ApplicationExamples/SRMHD/
   architecture const               = noarch
+  log-file                         = whatever.log
+
 
   computational-domain
     dimension const                = 2
@@ -56,8 +58,6 @@ exahype-project  MHDSolver
     kernel const             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
     language const           = C
-    /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:alfven}
 
 
     /* do not trust vtk::Cartesian::vertices::ascii as it probably contains bugs */

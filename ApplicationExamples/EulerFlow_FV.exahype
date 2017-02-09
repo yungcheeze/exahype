@@ -25,6 +25,7 @@ exahype-project Euler
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./ApplicationExamples/EulerFlow_FV
   architecture const               = noarch
+  log-file  = we-dont-care.log
 
   computational-domain
     dimension const          = 2
