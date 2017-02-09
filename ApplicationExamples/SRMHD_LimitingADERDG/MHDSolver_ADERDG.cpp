@@ -46,15 +46,11 @@ exahype::solvers::Solver::RefinementControl MHD::MHDSolver_ADERDG::refinementCri
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-/* This is work for the Alfven wave*/
 void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
-  // These are the no-boundary conditions:
-  constexpr int nVar = 9;
-  
-  for(int i=0; i < nVar; i++) {
-      fluxOut[i]  = fluxIn[i];
-      stateOut[i] = stateIn[i];
-  }
+  // pass to Fortran:
+  double nv[3] = {0.};
+  nv[normalNonZero] = 1;
+  pdeboundaryvalues_(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
 }
 
 

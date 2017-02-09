@@ -157,3 +157,24 @@ SUBROUTINE PDESource(S,Q)
   S(9) = - DivCleaning_a * Q(9)
 
 END SUBROUTINE PDESource
+
+SUBROUTINE PDEBoundaryValues(x,t,dt,faceIndex,nv,fluxIn,stateIn,fluxOut,stateOut)
+  USE Parameters, ONLY : nVar, nDim
+  USE, INTRINSIC :: ISO_C_BINDING
+  IMPLICIT NONE
+  ! Argument list
+  REAL, INTENT(IN) :: x(nDim), t, dt, nv(3)
+  INTEGER, INTENT(IN) :: faceIndex
+  REAL, INTENT(IN) :: fluxIn(nVar,nDim), stateIn(nVar)
+  REAL, INTENT(OUT) :: fluxOut(nVar,nDim), stateOut(nVar)
+  ! Local variables
+
+  ! Null BC
+  fluxOut = 0
+  stateOut = 0
+
+  ! Outgoing BC
+  fluxOut = fluxIn
+  stateOut = stateIn
+
+END SUBROUTINE PDEBoundaryValues
