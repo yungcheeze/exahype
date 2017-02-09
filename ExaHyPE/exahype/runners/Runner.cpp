@@ -459,11 +459,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     bool plot = exahype::plotters::isAPlotterActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
     if (plot) {
-      #if DIMENSIONS==2
-      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
-      #else
+//      #if DIMENSIONS==2
+//      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
+//      #else
       repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-      #endif
+//      #endif
     } else {
       repository.switchToPredictionAndFusedTimeSteppingInitialisation();
     }
@@ -844,11 +844,11 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
    */
   repository.getState().switchToPredictionContext();
   if (plot) {
-    #if DIMENSIONS==2
-    repository.switchToPredictionAndPlot2d();
-    #else
+//    #if DIMENSIONS==2
+//    repository.switchToPredictionAndPlot2d();
+//    #else
     repository.switchToPredictionAndPlot();
-    #endif
+//    #endif
   } else {
     repository.switchToPrediction();   // Cell onto faces
   }
