@@ -200,3 +200,6 @@ bool Euler::MyEulerSolver::isDummyKRequired() const {
   return false;
 }
 
+void Euler::MyEulerSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+  //TODO KD
+}
