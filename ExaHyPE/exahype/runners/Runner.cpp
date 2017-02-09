@@ -174,7 +174,8 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         "use autotuning shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(
-          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
+          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
+          true
         ));
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
