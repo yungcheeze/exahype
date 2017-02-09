@@ -201,7 +201,7 @@ SUBROUTINE MHDJetBC(x,t,dt,faceIndex,nv,fluxIn,stateIn,fluxOut,stateOut)
   ! faces: 0-left, 1-right, 2-front, 3-back, 4-bottom, 5-top
   ! ie.    0 x=0   1 x=max, 2 y=0    3 y=max 4 z=0     5 z=max
   IF (faceIndex.eq.0.and.rho<rb) THEN
-    CALL MHDjet(x, stateOut)
+    CALL MHDjet(x, stateOut, .FALSE.) ! do jet
     CALL PDEFlux(allFluxOut, stateOut)
     fluxOut = MATMUL(allFluxOut, nv) ! Project flux in boundary direction
   ELSE
