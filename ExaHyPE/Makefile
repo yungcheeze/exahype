@@ -200,7 +200,7 @@ endif
 
 # Include files
 -include cfiles.mk
--include ffiles.mk
+#-include ffiles.mk
 
 
 
@@ -409,11 +409,11 @@ clean:
 $(COBJECTS): %.o : %.cpp
 	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
-$(FOBJECTS): %.o : %.f90
-	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
+#$(FOBJECTS): %.o : %.f90#
+#	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	
-%.mod: %.o
+#%.mod: %.o
 	
--include fdeps.mk	
+#-include fdeps.mk	

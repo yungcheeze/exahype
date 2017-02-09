@@ -7,8 +7,10 @@
 #include "Logo.h"
 
 
+
 void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 }
+
 
 bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   return tarch::la::equals(t,0.0);
