@@ -76,34 +76,31 @@ SUBROUTINE InitialData(x, Q)
   ! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
 
-SUBROUTINE InitialMHDJet(x, Q)
-  ! Get the MHDJet for t=0
-  ! Is neccesary to impose the static or inflow boundary condition
-  ! in the jet injection, but we need take the initial values
-  ! in all domain
- 
-    USE, INTRINSIC :: ISO_C_BINDING
-    Use Parameters, ONLY : nDim, nVar
-    IMPLICIT NONE 
-    ! Argument list 
-    REAL, INTENT(IN)               :: x(nDim)        ! 
-    REAL, INTENT(OUT)              :: Q(nVar)        ! 
-    CALL MHDjet(x, Q)
-END SUBROUTINE InitialMHDJet
-
 SUBROUTINE MHDJet(x, Q)
-  ! Computes the MHD Jet at the initial data
-
+    ! Computes the MHD Jet initial data.
+    ! This is also used for boundary condition value computation.
+    !
+    ! The Jet enters the domain at the zy plane (x=0) in a small circle
+    ! with radius rb (=1) around the origin.
+    ! A small grid setup is for y,z = min:-5, max:+5
+    ! A big grid setup is for y,z = min:-25, max:+25
+    ! In any case, the extend in x should be large (5 to 25).
+    ! Also use long simulation times (like t=40).
+    ! 
+    ! This simulation was made for 3D but also works in 2D. The jet
+    ! then just enters at the y axis around |y|<1.
+    ! 
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim, gamma
     IMPLICIT NONE 
     ! Argument list 
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
-
+    ! Local variables
     REAL :: rhoa, pa, va, Ms, eta
     REAL :: rhob, pb, vb, betab
     REAL :: V(nVar), BV(3)
+    REAL :: rho, rb, xlim
 
     Ms   = 4.0
     eta  = 1.e-2
@@ -121,8 +118,12 @@ SUBROUTINE MHDJet(x, Q)
     BV(2) = 0.0
     BV(3) = 0.0
 
-    
-    IF(x(1).LT.1.e-2 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
+    rho = SQRT(SUM(x(2:nDim)**2)) ! radius on yz plane, or radius in y
+    rb = 1.0 ! Beam radius
+    xlim = 1.e-2 ! Some artificial small area above the yz plane
+
+    ! cf the same query at PDE.f90/MHDJetBC
+    IF(x(1).LT.xlim .AND. rho.LE.rb) THEN       
       V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
     ELSE
       V = (/ rhoa, va, 0.0, 0.0, pa, BV(1:3), 0.0 /)
@@ -132,45 +133,6 @@ SUBROUTINE MHDJet(x, Q)
     !
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE MHDJet
-
-SUBROUTINE InjectJet(x, Q)
-  ! Computes the MHD Jet at the initial data
-
-    USE, INTRINSIC :: ISO_C_BINDING
-    USE Parameters, ONLY : nVar, nDim, gamma
-    IMPLICIT NONE 
-    ! Argument list 
-    REAL, INTENT(IN)               :: x(nDim)        ! 
-    REAL, INTENT(OUT)              :: Q(nVar)        ! 
-
-    REAL :: rhoa, pa, va, Ms, eta
-    REAL :: rhob, pb, vb, betab
-    REAL :: V(nVar), BV(3)
-
-    Ms   = 4.0
-    eta  = 1.e-2
-    betab= 10.0
-    
-    rhoa = 1.0
-    va   = 0.0
-
-    rhob = rhoa*eta
-    vb   = 0.99    
-    pa   = eta*abs(vb)**2 / (gamma*(gamma -1.0)*Ms**2  - gamma*abs(vb)**2)         
-    BV(1) = sqrt(2.0*Pa/betab)
-    BV(2) = 0.0
-    BV(3) = 0.0
-    
-    IF(x(1).LT.1.e-4 .AND. x(2)**2+x(3)**2.LE.1.0) THEN       
-     V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
-    END IF 
-    !
-    ! Now convert to conservative variables
-    !
-    CALL PDEPrim2Cons(Q,V)
-END SUBROUTINE InjectJet
-
-
 
 SUBROUTINE InitialAlfenWave(x, Q)
     ! Get the AlfenWave for t=0
