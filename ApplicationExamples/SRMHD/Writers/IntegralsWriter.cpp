@@ -9,7 +9,7 @@
 #include "C2P-MHD.h"
 #include "InitialDataAdapter.h"
 
-MHDSolver::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
+SRMHD::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
 	// open all the reductions
 	assert( 9 == nVar );
 	
@@ -47,13 +47,13 @@ MHDSolver::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
 }
 
 
-MHDSolver::IntegralsWriter::~IntegralsWriter() {
+SRMHD::IntegralsWriter::~IntegralsWriter() {
 	// delete all the TimeSeriesReductions. Not that important
 	// as this is a kind of a Singleton object.
 }
 
 
-void MHDSolver::IntegralsWriter::startPlotting(double time) {
+void SRMHD::IntegralsWriter::startPlotting(double time) {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
@@ -63,7 +63,7 @@ void MHDSolver::IntegralsWriter::startPlotting(double time) {
 }
 
 
-void MHDSolver::IntegralsWriter::finishPlotting() {
+void SRMHD::IntegralsWriter::finishPlotting() {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
@@ -73,7 +73,7 @@ void MHDSolver::IntegralsWriter::finishPlotting() {
 }
 
 
-void MHDSolver::IntegralsWriter::mapQuantities(
+void SRMHD::IntegralsWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -85,7 +85,7 @@ void MHDSolver::IntegralsWriter::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	const double NumberOfLagrangePointsPerAxis = MHDSolver::MHDSolver::order + 1;
+	const double NumberOfLagrangePointsPerAxis = SRMHD::AbstractMHDSolver::Order + 1;
 	//const double NumberOfUnknownsPerGridPoint = nVar;
 
 	// volume form for integration

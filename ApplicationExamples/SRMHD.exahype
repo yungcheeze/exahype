@@ -9,7 +9,7 @@
  Based on srhd3dfortran.exahype
 
  */
-exahype-project  MHDSolver
+exahype-project  SRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE

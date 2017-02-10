@@ -1,12 +1,12 @@
 #include "Writers/ConservedWriter.h"
 
 
-MHDSolver::ConservedWriter::ConservedWriter(MHDSolver&  solver) {}
-MHDSolver::ConservedWriter::~ConservedWriter() {}
-void MHDSolver::ConservedWriter::startPlotting(double time) {}
-void MHDSolver::ConservedWriter::finishPlotting() {}
+SRMHD::ConservedWriter::ConservedWriter(MHDSolver&  solver) {}
+SRMHD::ConservedWriter::~ConservedWriter() {}
+void SRMHD::ConservedWriter::startPlotting(double time) {}
+void SRMHD::ConservedWriter::finishPlotting() {}
 
-void MHDSolver::ConservedWriter::mapQuantities(
+void SRMHD::ConservedWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

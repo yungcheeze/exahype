@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace MHDSolver{
+namespace SRMHD{
   class ErrorWriter;
 
   /**
@@ -18,7 +18,7 @@ namespace MHDSolver{
 
 
 
-class MHDSolver::ErrorWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class SRMHD::ErrorWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   ErrorWriter(MHDSolver&  solver);
   virtual ~ErrorWriter();

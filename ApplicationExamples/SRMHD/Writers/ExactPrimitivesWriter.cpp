@@ -2,12 +2,12 @@
 #include "InitialDataAdapter.h"
 #include "C2P-MHD.h"
 
-MHDSolver::ExactPrimitivesWriter::ExactPrimitivesWriter(MHDSolver&  solver) {}
-MHDSolver::ExactPrimitivesWriter::~ExactPrimitivesWriter() {}
-void MHDSolver::ExactPrimitivesWriter::startPlotting(double time) {}
-void MHDSolver::ExactPrimitivesWriter::finishPlotting() {}
+SRMHD::ExactPrimitivesWriter::ExactPrimitivesWriter(MHDSolver&  solver) {}
+SRMHD::ExactPrimitivesWriter::~ExactPrimitivesWriter() {}
+void SRMHD::ExactPrimitivesWriter::startPlotting(double time) {}
+void SRMHD::ExactPrimitivesWriter::finishPlotting() {}
 
-void MHDSolver::ExactPrimitivesWriter::mapQuantities(
+void SRMHD::ExactPrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -17,7 +17,7 @@ void MHDSolver::ExactPrimitivesWriter::mapQuantities(
     double timeStamp
 ) {
   const double *xpos = x.data();
-  double Conserved[MHDSolver::MHDSolver::nVar];
+  double Conserved[SRMHD::AbstractMHDSolver::NumberOfVariables];
 
   // Caveat: I don't properly use initialdatabyexahypespecfile here as it doesn't pass
   // the time. However, the Alfen Wave is the only exact solution we currently have, anyway
