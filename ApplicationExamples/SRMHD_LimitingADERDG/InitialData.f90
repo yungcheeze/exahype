@@ -1,82 +1,9 @@
 ! MHD Initial Data
- 
- SUBROUTINE MinimumTreeDepth(depth)
-    USE, INTRINSIC :: ISO_C_BINDING
-    IMPLICIT NONE 
-    ! Argument list 
-    INTEGER, INTENT(OUT)              :: depth        ! maximal depth of tree recursion
-    
-    depth = 4
-    
-END SUBROUTINE MinimumTreeDepth 
 
-SUBROUTINE HasToAdjustSolution(time, refine)
-    USE, INTRINSIC :: ISO_C_BINDING
-    IMPLICIT NONE 
-    ! Argument list 
-    REAL   , INTENT(IN)               :: time        ! 
+! InitialData is chosen by the C function pointer "idfunc" which is set
+! in MHDSolver_ADERDG.cpp in the init() method.
 
-    LOGICAL, INTENT(OUT)              :: refine      ! 
-    
-    IF(time<0.000000001) THEN
-      refine = .TRUE.
-    ELSE
-      refine = .FALSE.
-    ENDiF
-    
-END SUBROUTINE HasToAdjustSolution
-
-
-SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
-  USE, INTRINSIC :: ISO_C_BINDING
-  USE Parameters, ONLY : nVar, nDim
-  IMPLICIT NONE 
-  ! Argument list 
-  REAL, INTENT(IN)               :: x(nDim)        ! 
-  REAL, INTENT(IN)               :: w           ! 
-  REAL, INTENT(IN)               :: t           ! 
-  REAL, INTENT(IN)               :: dt          ! 
-
-  REAL, INTENT(OUT)              :: Q(nVar)        ! 
-  
-  IF ( t < 1e-15 ) THEN
-    CALL InitialData(x, Q)
-  ENDIF
-END SUBROUTINE AdjustedSolutionValues
-
-SUBROUTINE InitialData(x, Q)
-  USE, INTRINSIC :: ISO_C_BINDING
-  USE Parameters, ONLY : nVar, nDim
-  IMPLICIT NONE 
-  ! Argument list 
-  REAL, INTENT(IN)               :: x(nDim)        ! 
-  REAL, INTENT(OUT)              :: Q(nVar)        ! 
-
-  ! We call a C++ function which helps us to get access to the
-  ! exahype specification file constants
-  INTERFACE
-    SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
-      USE, INTRINSIC :: ISO_C_BINDING
-      USE Parameters, ONLY : nVar, nDim
-      IMPLICIT NONE
-      REAL, INTENT(IN)               :: x(nDim)
-      REAL, INTENT(OUT)              :: Q(nVar)
-    END SUBROUTINE InitialDataByExaHyPESpecFile
-  END INTERFACE
-  
-  ! Call here one of
-  Call MHDJet(x, Q, .TRUE.) ! do vacuum
-  ! Call InitialBlast(x, Q)
-  ! Call InitialAlfenWave(x, Q)
-  ! Call InitialRotor(x,Q)
-  ! Call InitialBlast(x, Q)
-  ! Call InitialOrsagTang(x, Q)
-  !Call InitialShockTube(x, Q)
-
-  ! CALL InitialDataByExaHyPESpecFile(x,Q)
-END SUBROUTINE InitialData
-
-SUBROUTINE MHDJet(x, Q, askedForInitialData)
+SUBROUTINE InitialJet(x, Q)
     ! Computes the MHD Jet initial data.
     ! This is also used for boundary condition value computation.
     !
@@ -99,7 +26,7 @@ SUBROUTINE MHDJet(x, Q, askedForInitialData)
     ! Asked for initial data: With this boolean variable we could
     ! determine whether this is a call for setting ID on the whole
     ! domain or only BC on the yz axis.
-    LOGICAL, INTENT(IN)            :: askedForInitialData
+    !LOGICAL, INTENT(IN)            :: askedForInitialData
     ! Local variables
     REAL :: rhoa, pa, va, Ms, eta
     REAL :: rhob, pb, vb, betab
@@ -138,7 +65,7 @@ SUBROUTINE MHDJet(x, Q, askedForInitialData)
     ! Now convert to conservative variables
     !
     CALL PDEPrim2Cons(Q,V)
-END SUBROUTINE MHDJet
+END SUBROUTINE InitialJet
 
 SUBROUTINE InitialAlfenWave(x, Q)
     ! Get the AlfenWave for t=0
