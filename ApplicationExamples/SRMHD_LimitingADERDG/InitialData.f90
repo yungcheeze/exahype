@@ -65,7 +65,7 @@ SUBROUTINE InitialData(x, Q)
   END INTERFACE
   
   ! Call here one of
-  Call MHDJet(x, Q)
+  Call MHDJet(x, Q, .TRUE.) ! do vacuum
   ! Call InitialBlast(x, Q)
   ! Call InitialAlfenWave(x, Q)
   ! Call InitialRotor(x,Q)
@@ -76,7 +76,7 @@ SUBROUTINE InitialData(x, Q)
   ! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
 
-SUBROUTINE MHDJet(x, Q)
+SUBROUTINE MHDJet(x, Q, askedForInitialData)
     ! Computes the MHD Jet initial data.
     ! This is also used for boundary condition value computation.
     !
@@ -96,6 +96,10 @@ SUBROUTINE MHDJet(x, Q)
     ! Argument list 
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
+    ! Asked for initial data: With this boolean variable we could
+    ! determine whether this is a call for setting ID on the whole
+    ! domain or only BC on the yz axis.
+    LOGICAL, INTENT(IN)            :: askedForInitialData
     ! Local variables
     REAL :: rhoa, pa, va, Ms, eta
     REAL :: rhob, pb, vb, betab
@@ -120,12 +124,14 @@ SUBROUTINE MHDJet(x, Q)
 
     rho = SQRT(SUM(x(2:nDim)**2)) ! radius on yz plane, or radius in y
     rb = 1.0 ! Beam radius
-    xlim = 1.e-2 ! Some artificial small area above the yz plane
+    xlim = 0.2 ! Some artificial small area above the yz plane
 
     ! cf the same query at PDE.f90/MHDJetBC
-    IF(x(1).LT.xlim .AND. rho.LE.rb) THEN       
+    IF (x(1).LT.xlim.and.rho.LE.rb) THEN
+      ! Jet
       V = (/ rhob, vb, 0.0, 0.0, pa, BV(1:3), 0.0 /)      
     ELSE
+      ! vacuum
       V = (/ rhoa, va, 0.0, 0.0, pa, BV(1:3), 0.0 /)
     END IF 
     !
