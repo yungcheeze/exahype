@@ -135,3 +135,12 @@ void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, d
 bool SRMHD::MHDSolver::isDummyKRequired() const {
   return false;
 }
+
+void SRMHD::MHDSolver::dummyK_Value(double const*, double, double, double*, double*) {
+  // whatever
+}
+
+bool SRMHD::MHDSolver::physicalAdmissibilityDetection(double const*, double const*) {
+  // why do we need this function?
+  return false;
+}
