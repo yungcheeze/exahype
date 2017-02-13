@@ -10,6 +10,8 @@
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/KernelUtils.h" // matrix indexing
 
+#include <stdio.h>
+
 /* This is the MHDSolver.cpp binding to Fortran functions, as done in SRHD. */
 
 
@@ -35,6 +37,7 @@ void SRMHD::MHDSolver::eigenvalues(const double* const Q, const int normalNonZer
 
 
 bool SRMHD::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
+  //printf("hasToAdjustSolution at t=%e\n", t);
   return (t < 1e-10);
 }
 
@@ -42,6 +45,7 @@ bool SRMHD::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, d
 
 void SRMHD::MHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran call:
+  //printf("adjustedSolutionValues at t=%e\n", t);
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
@@ -94,6 +98,7 @@ void SRMHD::MHDSolver::boundaryValues(const double* const x,const double t, cons
   kernels::idx2 F_idx(nDim, nVar);
 
   // Integrate solution in gauss points (Qgp) in time
+  /*
   if (faceIndex==2 || faceIndex==3) {     
      for(int m=0; m < nVar; m++) {
         stateOut[m] = stateIn[m];
@@ -101,6 +106,7 @@ void SRMHD::MHDSolver::boundaryValues(const double* const x,const double t, cons
      }
      return;
   }
+  */
 
   for(int i=0; i < basisSize; i++)  { // i == time
      const double weight = kernels::gaussLegendreWeights[order][i];

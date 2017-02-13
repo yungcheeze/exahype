@@ -52,7 +52,7 @@ exahype-project  SRMHD
     /* for field (=variables) descriptions, see code */
     variables const          = 9
     order const              = 3
-    maximum-mesh-size  = 0.04
+    maximum-mesh-size  = 0.013
     time-stepping      = global
     kernel const             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
@@ -65,7 +65,7 @@ exahype-project  SRMHD
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const= 9
       time     = 0.0
-      repeat   = 0.03
+      repeat   = 0.003
       output   = ./conserved
       select    = x:0.0,y:0.0
     end plot
@@ -73,11 +73,11 @@ exahype-project  SRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.03
+      repeat = 0.000333
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
-
+/*
     plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables const = 9
       time      = 0.0
@@ -110,5 +110,5 @@ exahype-project  SRMHD
       select    = x:0.0,y:0.0
     end plot
   end solver
-
+*/
 end exahype-project
