@@ -14,8 +14,8 @@ SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 	
 	IF ( t < 1e-15 ) THEN
-		CALL AlfenWave(x, Q, t)
-		!CALL InitialData(x, Q)
+		!CALL AlfenWave(x, Q, t)
+		CALL InitialData(x, Q)
 	ENDIF
 END SUBROUTINE AdjustedSolutionValues
 
@@ -41,10 +41,12 @@ SUBROUTINE InitialData(x, Q)
 	
 	! Call here one of
 	! CALL InitialBlast(x, Q)
-	Call InitialAlfenWave(x, Q)
+	! Call InitialAlfenWave(x, Q)
 	! Call InitialRotor(x,Q)
 	! Call InitialBlast(x, Q)
 	! Call InitialOrsagTang(x, Q)
+	
+	CALL InitialAccretionDisc(x, Q)
 
 	! CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
@@ -67,6 +69,14 @@ SUBROUTINE AlfenWave(x, Q, t)
     ! Computes the AlfenWave conserved variables (Q) at a given time t.
     ! Use it ie. with t=0 for initial data
     ! Use it for any other time ie. for comparison
+    
+    ! GRID FOR ALFENWAVE:
+    !     dimension const                = 2
+    !     width                          = 1.0, 0.3
+    !     offset                         = 0.0, 0.0
+    !     end-time                       = 2.1
+    !
+    !  maximum-mesh-size              = 0.04
 
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim, gamma
@@ -238,6 +248,73 @@ SUBROUTINE InitialRotor(x,Q)
     V(10:19) = (/ 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0 /)
     CALL PDEPrim2Cons(Q, V)
 END SUBROUTINE InitialRotor
+
+
+
+SUBROUTINE InitialAccretionDisc(x,Q)
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE Parameters, ONLY : nVar, nDim, gamma
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+    ! Local variables
+    
+    REAL :: rho0, p0, eta, B0, hh, tempaa, tempab, tempac, va2, vax
+    REAL :: V(nVar), BV(3), VV(3), Pi = ACOS(-1.0)
+    REAL :: r, zz, urc, vc2, tc, pc,tt, c1, c2, urr, f
+    REAL :: df, dt, ut, LF, vr, vtheta, vphi, rho, p, VV_cov(3), g_cov(3,3), g_contr(3,3)
+    REAL :: gp, gm, shift(3), lapse
+    
+    ! PARAMETERS:
+    REAL :: rhoc = 0.0625  ! Critical radius
+    REAL :: rc = 8.0
+    INTEGER :: MAXNEWTON = 50, iNewton
+    REAL :: ng = 1.0 / (gamma-1.0)
+
+    CALL METRIC ( x, lapse, gp, gm, shift, g_cov, g_contr)
+
+    
+     ! The Following is for Kerr-Schild spherical coordinates
+       r      = x(1)
+       !
+       zz     = 2.0/r               ! we are computing the solution at theta=pi/2
+       !
+       urc = sqrt(1.0 / (2.0*rc))
+       vc2 = urc**2 / (1.0 - 3.0*urc**2)
+       tc  = ng*vc2 / ((1.0 + ng)*(1.0 - ng*vc2))
+       pc  = rhoc*tc
+      
+       c1 = urc*tc**ng*rc**2
+       c2 = (1.0 + ( 1.0 + ng)*tc)**2*(1.0 - 2.0/rc+urc**2)
+       !
+       tt = tc
+       DO iNewton = 1, MAXNEWTON  
+          urr = c1 / (r**2*tt**ng)
+          f   = (1.0 + (1.0 + ng)*tt)**2*(1.0 - 2.0/r + urr**2) - c2
+          df  = 2.0 * (1.0 + ng)*(1.0 + (1.0 + ng)*tt)*(1.0 - 2.0/r + urr**2) - 2.0*ng*urr**2/tt*(1.0 + (1.0 + ng)*tt)**2
+          dt  = -f/df
+          IF (abs(dt) < 1.e-10) EXIT
+          tt = tt + dt
+       ENDDO
+       ut     = (-zz*urr + sqrt(urr**2 - zz + 1.0))/(zz - 1.0)
+       LF     = lapse*ut
+       vr     = ( urr / LF + shift(1) / lapse)
+       vtheta = 0.0
+       vphi   = 0.0
+       !
+       VV(1:3) = (/ vr, vtheta, vphi /)
+       ! Convert to covariant velocities
+       VV_cov = MATMUL(g_cov, VV)
+       !
+       rho = rhoc*(tt/tc)**ng
+       p   = rho*tt      
+
+       V(1:9) = (/ rho, VV_cov(1:3), p, 0., 0., 0., 0. /)
+       V(10:19) = (/ 1., 0., 0., 0., 1., 0., 0., 1., 0., 1. /)
+       CALL PDEPrim2Cons(Q,V)
+END SUBROUTINE InitialAccretionDisc
+
 
 
 

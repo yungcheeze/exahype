@@ -64,7 +64,8 @@ void GRMHD::GRMHDSolver::boundaryValues(const double* const x,const double t,con
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
-     alfenwave_(x, Qgp, &ti);
+     // alfenwave_(x, Qgp, &ti);
+     initialaccretiondisc_(x, Qgp);
      pdeflux_(F, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];

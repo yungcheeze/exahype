@@ -12,7 +12,9 @@ void initialrotor_(double* x, double* Q);
 
 // Exact solutions in FORTRAN
 void alfenwave_(const double* x, double* Q, const double* /* scalar */ t);
-	
+
+void initialaccretiondisc_(const double* x, double* Q);
+
 // C functions called by FORTRAN
 void initialdatabyexahypespecfile(double* x, double* Q);
 
