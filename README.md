@@ -79,24 +79,20 @@ I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Rel
 - ./build.sh
 - cp dist/* ~/git/ExaHyPE-Release
 
-3) Cleanup
-Change into the release directory
-- find . -name "*.o" -delete
-- find . -name "*.class" -delete
-
-4) Create the two repository images
+3) Create the two repository images
 - Change into your exahype engine's repository:
 - tar -czhvf ExaHyPE.tar.gz --exclude=.svn --exclude=*.o Peano ExaHyPE LICENSE.txt 
 - tar -czvf ExaHyPE-without-Peano.tar.gz --exclude=.svn --exclude=*.o --exclude Peano/peano --exclude Peano/tarch Peano ExaHyPE LICENSE.txt 
 - mv *.tar.gz ~/git/ExaHyPE-Release
 
-5) Copy over the source files
+4) Copy over the source files
 - Change into your exahype engine's repository:
 - Create directories (only once):
 - mkdir ~/git/ExaHyPE-Release/ExaHyPE
 - mkdir ~/git/ExaHyPE-Release/Peano
 - mkdir ~/git/ExaHyPE-Release/Toolkit
 - Actual copy command:
+cp -R LICENSE.txt ~/git/ExaHyPE-Release
 cp -R ExaHyPE ~/git/ExaHyPE-Release
 cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
 cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
@@ -105,10 +101,16 @@ cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
 cp -R Toolkit/src/Manifest.txt ~/git/ExaHyPE-Release/Toolkit/src
 cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
 
+5) Cleanup
+Change into the release directory
+find . -name "*.o" -delete
+find . -name "*.class" -delete
 
-6) Push 
+6) Clarify/ensure that a new snapshot of Peano is uploaded to Peano's page
 
-7) Log into http://github.com
+7) Push 
+
+8) Log into http://github.com
 - Change into the repository view and click on the tab releases
 - Create a new release
 - Add the tars to the release (at least the two ExaHyPE tars plus the toolkit. And then probably the demonstrators, too.
