@@ -1,12 +1,12 @@
 #include "Writers/PrimitivesWriter.h"
 #include "C2P-MHD.h"
 
-MHDSolver::PrimitivesWriter::PrimitivesWriter(MHDSolver&  solver) {}
-MHDSolver::PrimitivesWriter::~PrimitivesWriter() {}
-void MHDSolver::PrimitivesWriter::startPlotting(double time) {}
-void MHDSolver::PrimitivesWriter::finishPlotting() {}
+SRMHD::PrimitivesWriter::PrimitivesWriter(MHDSolver&  solver) {}
+SRMHD::PrimitivesWriter::~PrimitivesWriter() {}
+void SRMHD::PrimitivesWriter::startPlotting(double time) {}
+void SRMHD::PrimitivesWriter::finishPlotting() {}
 
-void MHDSolver::PrimitivesWriter::mapQuantities(
+void SRMHD::PrimitivesWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

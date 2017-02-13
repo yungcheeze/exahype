@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace MHDSolver{
+namespace SRMHD{
   class IntegralsWriter;
 
   /**
@@ -18,9 +18,9 @@ namespace MHDSolver{
 #include "Writers/TimeSeriesReductions.h"
 #include "MHDSolver.h"
 
-class MHDSolver::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class SRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  static const int nVar = MHDSolver::MHDSolver::nVar; // shortcut
+  static const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   TimeSeriesReductions* conserved[nVar];
   TimeSeriesReductions* primitives[nVar];
   TimeSeriesReductions* errors[nVar];

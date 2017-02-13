@@ -1,6 +1,8 @@
 #include "MHDSolver_ADERDG.h"
 //#include "fortran.h" _ltob
 
+#include "InitialData.h"
+#include "BoundaryConditions.h"
 #include "PDE.h"
 
 #include <memory>
@@ -9,11 +11,66 @@
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/KernelUtils.h" // matrix indexing
 
-/* This is the MHDSolver_ADERDG.cpp binding to Fortran functions, as done in SRHD. */
-
+// storage
+InitialDataHandler idfunc;
+BoundaryConditionHandler bcfunc;
 
 void MHD::MHDSolver_ADERDG::init(std::vector<std::string>& cmdargs) {
-  // do nothing
+	/**
+	 * InitialData with consistent BC can be set by environment:
+	 *    export EXAHYPE_INITIALDATA="Blast"
+	 * or by command line:
+	 *    ./ExaHyPE-MHD ../MHD_Limiting.exahype Blast
+	 * You can also set the default_id to trigger another ID.
+	 *
+	 * Obey that you need the matching grid for your simulation.
+	 **/
+
+	static tarch::logging::Log _log("MHDSolver_ADERDG::init");
+	// Don't rely on exahype specfile parameters, use Environment
+	// variables or command line variables instead.
+	const char* env_id = std::getenv("EXAHYPE_INITIALDATA");
+	const char* cmd_id = cmdargs.size()>1 ? cmdargs[1].c_str() : nullptr;
+	std::string default_id = "Jet";
+
+	std::string id, bc;	
+	std::map<std::string, InitialDataHandler> ids;
+	std::map<std::string, BoundaryConditionHandler> bcs;
+	
+	ids["Jet"] = initialjet_;
+	bcs["Jet"] = boundaryjet_;
+
+	ids["AlfenWave"] = initialalfenwave_;
+	bcs["AlfenWave"] = BoundaryAlfenWave;
+	
+	ids["Rotor"] = initialrotor_;
+	bcs["Rotor"] = boundaryoutflow_;
+	
+	ids["Blast"] = initialblast_;
+	bcs["Blast"] = boundaryoutflow_;
+	
+	ids["OrsagTang"] = initialorsagtang_;
+	bcs["OrsagTang"] = boundaryoutflow_;
+	
+	ids["ShockTube"] = initialshocktube_;
+	bcs["ShockTube"] = boundaryoutflow_;
+	
+	if(env_id) id = env_id;
+	else if(cmd_id) id = cmd_id;
+	else id = default_id;
+	
+	if(id==default_id)
+		logError("ID", "Loading default Initial Data: " << id);
+	if(!ids.count(id) && !bcs.count(id)) {
+		logError("ID", "Cannot understand requested ID: " << id);
+		exit(-1);
+	} else {
+		logInfo("ID", "Will load requested Initial Data: " << id);
+	}
+	
+	// TODO: Lowercase key lookup
+	idfunc = ids[id];
+	bcfunc = bcs[id];
 }
 
 void MHD::MHDSolver_ADERDG::flux(const double* const Q, double** F) {
@@ -33,8 +90,9 @@ bool MHD::MHDSolver_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIO
 }
 
 void MHD::MHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Fortran call:
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  if (tarch::la::equals(t, 0.0)) {
+    idfunc(x, Q);
+  }
 }
 
 void MHD::MHDSolver_ADERDG::source(const double* const Q, double* S) {
@@ -47,10 +105,10 @@ exahype::solvers::Solver::RefinementControl MHD::MHDSolver_ADERDG::refinementCri
 }
 
 void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
-  // pass to Fortran:
+  // pass to Fortran/generic function pointer
   double nv[3] = {0.};
   nv[normalNonZero] = 1;
-  pdeboundaryvalues_(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
+  bcfunc(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
 }
 
 void MHD::MHDSolver_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {

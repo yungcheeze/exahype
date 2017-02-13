@@ -81,6 +81,10 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   Lambda(7) = 0.0
   Lambda(8) = 0.0
   Lambda(9) = 0.0
+  
+  ! MUST be 1 as Divergence cleaning factor is 1.
+  ! they travel with speed 1
+  Lambda = 1
 
 END SUBROUTINE PDEEigenvalues
  
