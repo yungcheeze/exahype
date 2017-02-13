@@ -106,7 +106,11 @@ cp -R Toolkit/src/Manifest.txt ~/git/ExaHyPE-Release/Toolkit/src
 cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
 
 
-
 6) Push 
+
+7) Log into http://github.com
+- Change into the repository view and click on the tab releases
+- Create a new release
+- Add the tars to the release (at least the two ExaHyPE tars plus the toolkit. And then probably the demonstrators, too.
 
 
