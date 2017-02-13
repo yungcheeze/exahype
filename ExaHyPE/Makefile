@@ -90,8 +90,14 @@ endif
 ifeq ($(call tolower,$(COMPILER)),intel)
   # Settings for the Intel Compiler
   # ----------------------------------------------
-  FC=ifort
+  ifdef CC
+  else
   CC=icpc
+  endif
+  ifdef FC
+  else
+  FC=ifort
+  endif
   FCOMPILER_CFLAGS  += -r8 -cpp
   LINK_FORTRAN      += -lifcore
 
@@ -101,8 +107,14 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 else ifeq ($(call tolower,$(COMPILER)),gnu)
   # Settings for the GNU Compiler
   # --------------------------------------------
+  ifdef CC
+  else
   CC=g++
+  endif
+  ifdef FC
+  else
   FC=gfortran
+  endif
   FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
   LINK_FORTRAN      += -lgfortran
 
@@ -247,8 +259,7 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-        ifdef MPICC
-		CC=$(MPICC)
+        ifdef CC
         else
 		ifeq ($(call tolower,$(COMPILER)),gnu)
 			CC = mpiCC
@@ -380,9 +391,11 @@ header:
 	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
 	@echo ================================
 	@echo
-	@echo By default, ExaHyPE uses mpiicpc if you use INTEL and MPI. To 
-	@echo change this and make ExaHyPE use mpiCC always, please set the 
-	@echo environment variable MPICC to mpiCC.
+	@echo ExaHyPE uses environment variables CC and FC for the C++ or
+	@echo Fortran compiler, respectively. If you haven\'t defined CC and 
+	@echo FC yourself, ExaHyPE sets CC to mpiicpc, icpc or g++ depending
+	@echo on the target. If you specify your own compile variables, please
+	@echo specify a valid COMPILER mode nevertheless.
 
 
 build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)

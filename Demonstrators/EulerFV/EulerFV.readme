@@ -8,8 +8,6 @@ tar -xzvf EulerFV.tar.gz
 Create snapshot:
 ================
 
-tar -czvf EulerFV.tar.gz Demonstrators/EulerFV/EulerFV.exahype Demonstrators/EulerFV/MyEulerSolver.cpp Demonstrators/EulerFV/Logo.h
+tar -czvf Demonstrator-EulerFV.tar.gz Demonstrators/EulerFV/EulerFV.exahype Demonstrators/EulerFV/MyEulerSolver.cpp Demonstrators/EulerFV/Logo.h
 
-Copy over into demonstrators directory
-======================================
-mv EulerFV.tar.gz ~/git/ExaHyPE-Release/Demonstrators
+mv Demonstrator-EulerFV.tar.gz ~/git/ExaHyPE-Release/Demonstrators
