@@ -51,3 +51,55 @@ SUBROUTINE METRIC ( xc, lapse, gp, gm, shift, g_cov, g_contr)
   !
  
 END SUBROUTINE METRIC
+
+SUBROUTINE METRIC_3D  ( xc, lapse, gp, gm, shift, g_cov, g_contr)
+  USE Parameters, ONLY : nVar, nDim
+  IMPLICIT NONE
+  !
+  REAL, DIMENSION(nDim), intent(IN) :: xc
+  REAL                :: lapse,gp,gm
+  REAL,dimension(3)   :: shift
+  REAL,dimension(3,3) :: g_cov, g_contr
+
+  REAL :: x, y, z, r, z2, r2, aom2
+  REAL :: lx, ly, lz, HH, SS, detg
+  REAL :: st, st2, delta, rho2, sigma, zz
+  
+  REAL :: aom = 0.0
+  REAL :: Mbh = 1.0
+
+! Rotating black hole in Kerr-Schild Cartesian coordinates. See De Felice & Clarke Sect. 11.4
+  x    = xc(1)
+  y    = xc(2)
+  z    = xc(3)
+ 
+  z2   = z**2
+  aom2 = aom**2
+  r    = SQRT( (x**2 + y**2 + z**2 - aom2)/2.0 + SQRT(((x**2 + y**2 + z**2 - aom2)/2.0)**2 + z2*aom2))
+ 
+  r2   = r**2
+ 
+  HH = Mbh*r2*r / (r2*r2 + aom2*z2)
+  SS = 1.0 + 2.0*HH
+  lx = (r*x + aom*y)/(r2 + aom2) 
+  ly = (r*y - aom*x)/(r2 + aom2)
+  lz = z/r 
+ 
+  lapse   = 1.0/SQRT(SS)
+  shift(1) = 2.0*HH/SS*lx        
+  shift(2) = 2.0*HH/SS*ly        
+  shift(3) = 2.0*HH/SS*lz       
+    
+  g_cov( 1, 1:3) = (/ 1.0 + 2.0*HH*lx**2, 2.0*HH*lx*ly,        2.0*HH*lx*lz       /)
+  g_cov( 2, 1:3) = (/ 2.0*HH*lx*ly,       1.0 + 2.0*HH*ly**2,  2.0*HH*ly*lz       /)
+  g_cov( 3, 1:3) = (/ 2.0*HH*lx*lz,       2.0*HH*ly*lz,        1.0 + 2.0*HH*lz**2 /)
+ 
+  g_contr( 1, 1:3) = (/  1.0 + 2.0*HH*ly**2 + 2.0*HH*lz**2,   -2.0*HH*lx*ly,    -2.0*HH*lx*lz   /)
+  g_contr( 2, 1:3) = (/ -2.0*HH*lx*ly,        1.0 + 2.0*HH*lx**2 + 2.0*HH*lz**2,  -2.0*HH*ly*lz    /)
+  g_contr( 3, 1:3) = (/ -2.0*HH*lx*lz,     -2.0*HH*ly*lz,       1.0 + 2.0*HH*lx**2 + 2.0*HH*ly**2 /)
+ 
+  g_contr = g_contr/SS
+ 
+  gp = SQRT(SS)
+  gm = 1.0/gp
+END SUBROUTINE METRIC_3D

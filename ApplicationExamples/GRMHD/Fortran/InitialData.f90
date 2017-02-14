@@ -1,71 +1,27 @@
 ! GRMHD Initial Data
 
 
-SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
+SUBROUTINE InitialData(x, t, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
 	USE Parameters, ONLY : nVar, nDim
 	IMPLICIT NONE 
 	! Argument list 
-	REAL, INTENT(IN)               :: x(nDim)        ! 
-	REAL, INTENT(IN)               :: w           ! 
-	REAL, INTENT(IN)               :: t           ! 
-	REAL, INTENT(IN)               :: dt          ! 
-
-	REAL, INTENT(OUT)              :: Q(nVar)        ! 
-	
-	IF ( t < 1e-15 ) THEN
-		!CALL AlfenWave(x, Q, t)
-		CALL InitialData(x, Q)
-	ENDIF
-END SUBROUTINE AdjustedSolutionValues
-
-SUBROUTINE InitialData(x, Q)
-	USE, INTRINSIC :: ISO_C_BINDING
-	USE Parameters, ONLY : nVar, nDim
-	IMPLICIT NONE 
-	! Argument list 
-	REAL, INTENT(IN)               :: x(nDim)        ! 
+	REAL, INTENT(IN)               :: x(nDim), t        ! 
 	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
-	! We call a C++ function which helps us to get access to the
-	! exahype specification file constants
-	INTERFACE
-		SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
-			USE, INTRINSIC :: ISO_C_BINDING
-			USE Parameters, ONLY : nVar, nDim
-			IMPLICIT NONE
-			REAL, INTENT(IN)               :: x(nDim)
-			REAL, INTENT(OUT)              :: Q(nVar)
-		END SUBROUTINE InitialDataByExaHyPESpecFile
-	END INTERFACE
-	
 	! Call here one of
-	! CALL InitialBlast(x, Q)
-	! Call InitialAlfenWave(x, Q)
-	! Call InitialRotor(x,Q)
-	! Call InitialBlast(x, Q)
-	! Call InitialOrsagTang(x, Q)
+	! CALL InitialBlast(x, 0,  Q)
+	! Call AlfenWave(x, t, Q)
+	! Call InitialRotor(x, 0, Q)
+	! Call InitialBlast(x, 0, Q)
+	! Call InitialOrsagTang(x, 0 , Q)
 	
-	CALL InitialAccretionDisc(x, Q)
-
-	! CALL InitialDataByExaHyPESpecFile(x,Q)
+	! CALL InitialAccretionDisc(x, 0,  Q)
+	CALL InitialAccretionDisc3D(x, 0, Q)
 END SUBROUTINE InitialData
 
-SUBROUTINE InitialAlfenWave(x, Q)
-    ! Get the AlfenWave for t=0
-    ! This subroutine is neccessary for a common argument interface InitialFooBar(x,Q)
-    ! for all initial data.
-    USE, INTRINSIC :: ISO_C_BINDING
-    Use Parameters, ONLY : nDim, nVar
-    IMPLICIT NONE 
-    ! Argument list 
-    REAL, INTENT(IN)               :: x(nDim)        ! 
-    REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
-    CALL AlfenWave(x, Q, 0.0)
-END SUBROUTINE InitialAlfenWave
-
-SUBROUTINE AlfenWave(x, Q, t)
+SUBROUTINE AlfenWave(x, t, Q)
     ! Computes the AlfenWave conserved variables (Q) at a given time t.
     ! Use it ie. with t=0 for initial data
     ! Use it for any other time ie. for comparison
@@ -116,7 +72,7 @@ SUBROUTINE AlfenWave(x, Q, t)
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE AlfenWave
 
-SUBROUTINE InitialBlast(x, Q)
+SUBROUTINE InitialBlast(x, t, Q)
     ! Blast wave initial data in conserved variables (Q):
     ! Simulation domain:  -6 .. +6
 
@@ -124,6 +80,7 @@ SUBROUTINE InitialBlast(x, Q)
     USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
+    REAL, INTENT(IN)               :: t
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
@@ -166,7 +123,7 @@ SUBROUTINE InitialBlast(x, Q)
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE
 
-SUBROUTINE InitialOrsagTang(x, Q)
+SUBROUTINE InitialOrsagTang(x, t, Q)
     ! Orsang-Tang initial data in conserved variables (Q)
     ! Simulation Domain: 0 .. 2*pi = 6.283185307179586
 
@@ -174,6 +131,7 @@ SUBROUTINE InitialOrsagTang(x, Q)
     USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
+    REAL, INTENT(IN)               :: t
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
@@ -200,7 +158,7 @@ SUBROUTINE InitialOrsagTang(x, Q)
     Call PDEPrim2Cons(Q,V)
 END SUBROUTINE InitialOrsagTang
 
-SUBROUTINE InitialRotor(x,Q)
+SUBROUTINE InitialRotor(x,t,Q)
     ! MHD Rotor initial data in conserved variables (Q)
     ! Domain: -0.5 .. 0.5  (square domain)
 
@@ -208,6 +166,7 @@ SUBROUTINE InitialRotor(x,Q)
     USE Parameters, ONLY : nVar, nDim
     IMPLICIT NONE 
     ! Argument list 
+    REAL, INTENT(IN)               :: t
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
     
@@ -251,11 +210,20 @@ END SUBROUTINE InitialRotor
 
 
 
-SUBROUTINE InitialAccretionDisc(x,Q)
+SUBROUTINE InitialAccretionDisc(x,t,Q)
+    ! 2D Accretion disk, with simulation domain:
+    !    dimension const                = 2
+    !    width                          = 8.5, 2.0
+    !    offset                         = 1.5, 0.5
+    !    end-time                       = 2.1
+    ! mesh:     maximum-mesh-size              = 0.1
+    ! Timestep size is around repeat = 0.000785674, for plotter.
+
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim, gamma
     IMPLICIT NONE 
     ! Argument list 
+    REAL, INTENT(IN)               :: t
     REAL, INTENT(IN)               :: x(nDim)        ! 
     REAL, INTENT(OUT)              :: Q(nVar)        ! 
     ! Local variables
@@ -316,5 +284,110 @@ SUBROUTINE InitialAccretionDisc(x,Q)
 END SUBROUTINE InitialAccretionDisc
 
 
+SUBROUTINE InitialAccretionDisc3D(x,t,Q)
+    ! 3D Accretion disk, with simulation domain
+    !     width                          = 2.0, 2.0, 2.0
+    !     offset                         = 0.0, 0.0, 0.0
+    ! 
 
+    USE, INTRINSIC :: ISO_C_BINDING
+    USE Parameters, ONLY : nVar, nDim, gamma
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: t
+    REAL, INTENT(IN)               :: x(nDim)        ! 
+    REAL, INTENT(OUT)              :: Q(nVar)        ! 
+    ! Local variables
+    
+    REAL :: rho0, p0, eta, B0, hh, tempaa, tempab, tempac, va2, vax
+    REAL :: V(nVar), BV(3), VV(3), Pi = ACOS(-1.0)
+    REAL :: r, zz, urc, vc2, tc, pc,tt, c1, c2, urr, f
+    REAL :: df, dt, ut, LF, vr, vtheta, vphi, rho, p, VV_cov(3), g_cov(3,3), g_contr(3,3)
+    REAL :: gp, gm, shift(3), lapse, gammaij(6), betaru, g_tt, phi, theta, vx, vy, vz
+    
+    ! PARAMETERS:
+    REAL :: rhoc = 0.0625  ! Critical radius
+    REAL :: rc = 8.0
+    INTEGER :: MAXNEWTON = 50, iNewton
+    REAL :: ng = 1.0 / (gamma-1.0)
 
+     CALL METRIC_3D ( x, lapse, gp, gm, shift, g_cov, g_contr)
+
+     ng     = 1.0/(gamma - 1.0)
+
+       ! The Following is for Kerr-Schild Cartesian coordinates
+       r      = SQRT( x(1)**2 + x(2)**2 + x(3)**2)
+       !
+       !IF ( x(1) .LT. 0.1) RETURN
+       !IF ( x(2) .LT. 0.1) RETURN
+       !IF ( x(3) .LT. 0.1) RETURN
+       IF ( r .LT. 0.1) THEN
+		! To avoid division by zero, never used for evolution or BC
+		rho = 1.0
+		VV_cov(1:3) = 0.0
+		p = 1.0
+		BV = 0.0 
+		V(1:9) = (/ rho, VV_cov(1:3), p, BV(1:3), 0. /)
+		V(10:19) = (/ 1.0, 0.0,0.0,0.0, 1.0,0.0,0.0,1.0,0.0,1.0 /)
+		CALL PDEPrim2Cons(Q,V)       
+		RETURN
+       ENDIF
+       !
+       theta  = ACOS( x(3)/r)
+       phi    = ATAN( x(2)/x(1))
+       !phi    = ACOS( x(1) / (r*SIN(theta)))
+       zz     = 2.0/r   ! we are computing the solution at theta=pi/2
+       betaru = zz/(1.0 + zz)
+       g_tt   = zz - 1.0
+       !
+       urc = sqrt(1.0 / (2.0*rc))
+       vc2 = urc**2 / (1.0 - 3.0*urc**2)
+       tc  = ng*vc2 / ((1.0 + ng)*(1.0 - ng*vc2))
+       pc  = rhoc*tc
+      
+       c1 = urc*tc**ng*rc**2
+       c2 = (1.0 + ( 1.0 + ng)*tc)**2*(1.0 - 2.0/rc+urc**2)
+       !
+       tt = tc
+       DO iNewton = 1, MAXNEWTON  
+          urr = c1 / (r**2*tt**ng)
+          f   = (1.0 + (1.0 + ng)*tt)**2*(1.0 - 2.0/r + urr**2) - c2
+          df  = 2.0 * (1.0 + ng)*(1.0 + (1.0 + ng)*tt)*(1.0 - 2.0/r + urr**2) - 2.0*ng*urr**2/tt*(1.0 + (1.0 + ng)*tt)**2
+          dt  = -f/df
+          IF (abs(dt) < 1.e-10) EXIT
+          tt = tt + dt
+       ENDDO
+       ut     = (-zz*urr + sqrt(urr**2 - zz + 1.0))/(zz - 1.0)
+       LF     = lapse*ut
+       vr     = ( urr / LF + betaru / lapse)
+       vtheta = 0.0
+       vphi   = 0.0
+       !
+       vx  = SIN(theta)*COS(phi)*vr
+       vy  = SIN(theta)*SIN(phi)*vr
+       vz  = COS(theta)*         vr
+       !
+       VV(1:3) = (/ vx, vy, vz /)
+       ! Convert to covariant velocities
+       VV_cov = MATMUL(g_cov, VV)
+       !
+       rho = rhoc*(tt/tc)**ng
+       p   = rho*tt
+       !
+       BV(1:3) = 0.
+       !
+       lapse = lapse
+       !
+       !shift_contr = MATMUL(g_contr,shift)  !shift is controvariant. See fluxes....
+       !
+       gammaij(1) = g_cov(1,1)
+       gammaij(2) = g_cov(1,2)
+       gammaij(3) = g_cov(1,3)
+       gammaij(4) = g_cov(2,2)
+       gammaij(5) = g_cov(2,3)
+       gammaij(6) = g_cov(3,3)
+
+       V(1:9) = (/ rho, VV_cov(1:3), p, BV(1:3), 0. /)
+       V(10:19) = (/ lapse, shift(1:3), gammaij(1:6) /)
+       CALL PDEPrim2Cons(Q,V)
+END SUBROUTINE InitialAccretionDisc3D

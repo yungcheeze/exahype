@@ -10,18 +10,21 @@
 #include "kernels/GaussLegendreQuadrature.h"
 
 
+const double excision_radius = 1.0;
+
 void GRMHD::GRMHDSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
 bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0);
+  bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
+  //bool insideExcisionBall = false;
+  return tarch::la::equals(t,0.0) || insideExcisionBall;
 }
 
 void GRMHD::GRMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  initialdata_(x, &t, Q);
 }
 
 void GRMHD::GRMHDSolver::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -64,8 +67,7 @@ void GRMHD::GRMHDSolver::boundaryValues(const double* const x,const double t,con
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
-     // alfenwave_(x, Qgp, &ti);
-     initialaccretiondisc_(x, Qgp);
+     initialdata_(x, &ti, Qgp);
      pdeflux_(F, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];

@@ -21,14 +21,14 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD
+  output-directory const           = ./ApplicationExamples/GRMHD_f90
   architecture const               = noarch
   log-file                         = whatever.log
 
   computational-domain
     dimension const                = 3
-    width                          = 4.0, 4.0, 4.0
-    offset                         = -2.0, -2.0, -2.0
+    width                          = 2.0, 2.0, 2.0
+    offset                         = 0.0, 0.0, 0.0
     end-time                       = 2.1
   end computational-domain
   
@@ -59,15 +59,15 @@ exahype-project GRMHD
     /* gamma is actually parts of a matrix... */
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
     order const                    = 3
-    maximum-mesh-size              = 0.5
+    maximum-mesh-size              = 0.3 
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
-    language const                 = C
+    language const                 = Fortran
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    plot vtk::Legendre::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.01
+      repeat    = 0.00111111
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
@@ -75,7 +75,7 @@ exahype-project GRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.00157
+      repeat = 0.00111111
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
