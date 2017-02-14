@@ -40,7 +40,8 @@ SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 	
 	IF ( t < 1e-15 ) THEN
-		CALL InitialData(x, Q)
+		CALL AlfenWave(x, Q, t)
+		!CALL InitialData(x, Q)
 	ENDIF
 END SUBROUTINE AdjustedSolutionValues
 

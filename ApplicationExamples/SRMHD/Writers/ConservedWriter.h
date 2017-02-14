@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace MHDSolver{
+namespace SRMHD{
   class ConservedWriter;
 
   /**
@@ -18,7 +18,7 @@ namespace MHDSolver{
 
 
 
-class MHDSolver::ConservedWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class SRMHD::ConservedWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   ConservedWriter(MHDSolver&  solver);
   virtual ~ConservedWriter();

@@ -253,7 +253,6 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
       const int newCellNumber = _cellWriter->plotQuadrangle(cellsVertexIndices);
       firstCell = firstCell==-1 ? newCellNumber : firstCell;
       #elif Dim3
-      assertionMsg( false, "not implemented yet" );
       int cellsVertexIndices[8];
       cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
       cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);

@@ -64,6 +64,11 @@ Please, don't commit the following:
 Please write good commit messages that document how you changed ExaHyPE.
 
 
+## Regenerate ExaHyPE's kernel gluecode ##
+ 
+java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.specification exahype ~/workspace/peano/pdt/usrtemplates:../Peano/multiscalelinkedcell
+
+
 
 ## Build a new release ##
 
@@ -87,23 +92,32 @@ I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Rel
 
 4) Copy over the source files
 - Change into your exahype engine's repository:
+- Create directories (only once):
 - mkdir ~/git/ExaHyPE-Release/ExaHyPE
 - mkdir ~/git/ExaHyPE-Release/Peano
 - mkdir ~/git/ExaHyPE-Release/Toolkit
-- cp -R ExaHyPE ~/git/ExaHyPE-Release
-- cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
-- cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
-- cp -R Peano/sharedmemoryoracles ~/git/ExaHyPE-Release/Peano
-- cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
-- cp -R Toolkit/Manifest.txt ~/git/ExaHyPE-Release/Toolkit
-- cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
+- Actual copy command:
+cp -R LICENSE.txt ~/git/ExaHyPE-Release
+cp -R ExaHyPE ~/git/ExaHyPE-Release
+cp -R Peano/mpibalancing ~/git/ExaHyPE-Release/Peano
+cp -R Peano/multiscalelinkedcell ~/git/ExaHyPE-Release/Peano
+cp -R Peano/sharedmemoryoracles ~/git/ExaHyPE-Release/Peano
+cp -R Toolkit/src ~/git/ExaHyPE-Release/Toolkit
+cp -R Toolkit/src/Manifest.txt ~/git/ExaHyPE-Release/Toolkit/src
+cp -R Toolkit/build.sh ~/git/ExaHyPE-Release/Toolkit
 
 5) Cleanup
 Change into the release directory
-- find . -name "*.o" -delete
-- find . -name "*.class" -delete
+find . -name "*.o" -delete
+find . -name "*.class" -delete
 
+6) Clarify/ensure that a new snapshot of Peano is uploaded to Peano's page
 
-6) Push 
+7) Push 
+
+8) Log into http://github.com
+- Change into the repository view and click on the tab releases
+- Create a new release
+- Add the tars to the release (at least the two ExaHyPE tars plus the toolkit. And then probably the demonstrators, too.
 
 

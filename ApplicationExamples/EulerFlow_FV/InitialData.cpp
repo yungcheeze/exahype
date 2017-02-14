@@ -94,7 +94,7 @@ void Euler::explosionProblem(const double* const x,double* Q) {
   MyEulerSolver::Variables vars(Q);
 
   vars.j(0.0,0.0,0.0);
-  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
+  if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) + (x[2] -0.5) *(x[2] -0.5) < 0.1) {
     vars.rho() = 1.0;
     vars.E()   = 1.0;
   } else {
@@ -105,7 +105,7 @@ void Euler::explosionProblem(const double* const x,double* Q) {
 #endif
 
 void Euler::initialData(const double* const x,double* Q) {
-  //rarefactionWave(x,Q);
-  //sodShockTube(x,Q);
+  // rarefactionWave(x,Q);
+  // sodShockTube(x,Q);
   explosionProblem(x,Q);
 }

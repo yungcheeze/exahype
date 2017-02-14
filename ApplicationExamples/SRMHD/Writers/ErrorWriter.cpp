@@ -4,23 +4,23 @@
 #include "InitialDataAdapter.h"
 
 
-MHDSolver::ErrorWriter::ErrorWriter(MHDSolver&  solver) {
+SRMHD::ErrorWriter::ErrorWriter(MHDSolver&  solver) {
 }
 
 
-MHDSolver::ErrorWriter::~ErrorWriter() {
+SRMHD::ErrorWriter::~ErrorWriter() {
 }
 
 
-void MHDSolver::ErrorWriter::startPlotting(double time) {
+void SRMHD::ErrorWriter::startPlotting(double time) {
 }
 
 
-void MHDSolver::ErrorWriter::finishPlotting() {
+void SRMHD::ErrorWriter::finishPlotting() {
 }
 
 
-void MHDSolver::ErrorWriter::mapQuantities(
+void SRMHD::ErrorWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -29,8 +29,8 @@ void MHDSolver::ErrorWriter::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  const int nDim = MHDSolver::MHDSolver::nDim;
-  const int nVar = MHDSolver::MHDSolver::nVar;
+  const int nDim = DIMENSIONS;
+  const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
 
   const double *xpos = x.data();
   alfenwave_(xpos, outputQuantities, &timeStamp);

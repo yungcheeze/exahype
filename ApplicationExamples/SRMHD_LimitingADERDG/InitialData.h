@@ -7,23 +7,26 @@
 
 #include "exahype/Parser.h"
 
-extern exahype::Parser::ParserView* constants;
-
 extern "C" {
 
 // FORTRAN functions called by C
-void initialmhdjet_(double* x, double* Q);
-void initialalfenwave_(double* x, double* Q);  
-void initialblast_(double* x, double* Q);
-void initialorsagtang_(double* x, double* Q);
-void initialrotor_(double* x, double* Q);
-void initialshocktube_(double* x, double* Q);
+void initialjet_(const double* const x, double* Q);
+void initialalfenwave_(const double* const x, double* Q);
+void initialblast_(const double* const x, double* Q);
+void initialorsagtang_(const double* const x, double* Q);
+void initialrotor_(const double* const x, double* Q);
+void initialshocktube_(const double* const x, double* Q);
+
+typedef void (*InitialDataHandler)(const double* const x, double* Q);
+extern InitialDataHandler idfunc;
 
 // Exact solutions in FORTRAN
 void alfenwave_(const double* x, double* Q, const double* /* scalar */ t);
 	
-// C functions called by FORTRAN
-void initialdatabyexahypespecfile(double* x, double* Q);
+
+
+
+
 
 }/* extern "C" */
 #endif /* __INITIAL_DATA_ADAPTER_CPP_FORTRAN_MHD__ */

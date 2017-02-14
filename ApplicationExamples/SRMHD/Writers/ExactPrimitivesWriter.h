@@ -6,7 +6,7 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-namespace MHDSolver{
+namespace SRMHD{
   class ExactPrimitivesWriter;
 
   /**
@@ -18,7 +18,7 @@ namespace MHDSolver{
 
 
 
-class MHDSolver::ExactPrimitivesWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class SRMHD::ExactPrimitivesWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   ExactPrimitivesWriter(MHDSolver&  solver);
   virtual ~ExactPrimitivesWriter();

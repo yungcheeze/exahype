@@ -28,11 +28,77 @@ tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter
 
 exahype::plotters::Plotter::Plotter(
         const int solverConfig,const int plotterConfig,
+        const exahype::Parser& parser,
+        Device* device) :
+        _solver(solverConfig),
+        _identifier(parser.getIdentifierForPlotter(solverConfig, plotterConfig)),
+        _writtenUnknowns(parser.getUnknownsForPlotter(solverConfig, plotterConfig)),
+        _time(parser.getFirstSnapshotTimeForPlotter(solverConfig, plotterConfig)),
+        _solverTimeStamp(-std::numeric_limits<double>::max()),
+        _repeat(parser.getRepeatTimeForPlotter(solverConfig, plotterConfig)),
+        _filename(parser.getFilenameForPlotter(solverConfig, plotterConfig)),
+        _select(parser.getSelectorForPlotter(solverConfig, plotterConfig)),
+        _isActive(false),
+        _device(device) {
+  if (_time < 0.0) {
+    logError("Plotter(...)",
+        "plotter's first snapshot time is set to negative value "
+        << _time << ". Plotter configuration=" << toString() );
+  }
+  if (_repeat < 0.0) {
+    logError("Plotter(...)", "plotter's repeat time is set to negative value "
+        << _repeat << ". Plotter configuration=" << toString() );
+  }
+  logInfo("Plotter(...)", "write snapshot to file "
+      << _filename << " every " << _repeat
+      << " time units with first snapshot at " << _time
+      << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
+
+  if (  _writtenUnknowns <= 0) {
+    logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
+        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  }
+
+  assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
+
+  if (_device!=nullptr) {
+    _device->init(
+        _filename,
+        solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        _writtenUnknowns,
+        _select
+    );
+  }
+  else if (_identifier=="notoken") {
+    logError(
+      "Plotter(...)",
+      "unable to set up " << (plotterConfig+1) << "th plotter for the "
+      << (_solver+1) << "th solverNumber. Ensure number of plot sections "
+      << "equals number of plotters originally passed to toolkit and "
+      << "validate that plot syntax is correct"
+    );
+  }
+  else {
+    logError(
+      "Plotter(...)",
+      "unknown plotter type "
+          << _identifier << " for "
+          << solvers::RegisteredSolvers[_solver]->getIdentifier()
+    << ". Potential reasons: you have not specified a valid identifier following the plot keyword or you have specified a plotter in the ExaHyPE toolkit and later removed this plotter from the config"
+    );
+  }
+}
+
+
+exahype::plotters::Plotter::Plotter(
+        const int solverConfig,const int plotterConfig,
         const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
     : _solver(solverConfig),
       _identifier(parser.getIdentifierForPlotter(solverConfig, plotterConfig)),
       _writtenUnknowns(parser.getUnknownsForPlotter(solverConfig, plotterConfig)),
       _time(parser.getFirstSnapshotTimeForPlotter(solverConfig, plotterConfig)),
+      _solverTimeStamp(-std::numeric_limits<double>::max()),
       _repeat(parser.getRepeatTimeForPlotter(solverConfig, plotterConfig)),
       _filename(parser.getFilenameForPlotter(solverConfig, plotterConfig)),
       _select(parser.getSelectorForPlotter(solverConfig, plotterConfig)),

@@ -33,17 +33,17 @@ void aderPicardLoopNonlinear(SolverType& solver,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              double* lQi, double* lQi_old, double* rhs, double* rhs_0,
                              double* lFi, double* gradQ, double* BGradQ) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int basisSize2         = basisSize * basisSize;
+  constexpr int basisSize3         = basisSize2 * basisSize;
+  constexpr int order              = basisSize - 1;
 
-  idx3 idx_luh(basisSize, basisSize, numberOfVariables); // idx_luh(y,x,nVar)
+  idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters); // idx_luh(y,x,nVar)
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables); // idx_lQi(y,x,t,nVar)
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
       numberOfVariables); // idx_lFi(t, y, x, nDim + 1 for Source, nVar)
-
-  const int order = basisSize - 1;
-  const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
 
   // 1. Trivial initial guess
   for (int j = 0; j < basisSize; j++) { // j == y
@@ -74,7 +74,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
   }
 
   // 3. Discrete Picard iterations
-  const int MaxIterations = 2 * (order + 1);
+  constexpr int MaxIterations = 2 * (order + 1);
 
   // spatial gradient of q
   idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables); // idx_gradQ(y,x,t,nDim,nVar)
@@ -198,7 +198,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
     // Qt is fundamental for debugging, do not remove this.
     /*
-    double* lQt = new double[basisSize * numberOfVariables];
+    double lQt[basisSize * numberOfVariables];
     idx2 idx_lQt(basisSize, numberOfVariables);
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -218,14 +218,13 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
     }
-    delete[] lQt;
      */
 
     // 5. Exit condition
     // TODO(guera): Stability of sum? -> Kahan, reduction?
     // TODO(guera): Is there something like kernels::tol?
     // TODO(guera): Dangerous!
-    const double tol = 1e-7;
+    constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize3 * numberOfVariables; i++) {
       sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
@@ -253,7 +252,7 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
   // Immediately compute the time - averaged space - time polynomials
 
   const int basisSize2 = basisSize * basisSize;
-  const int order = basisSize - 1;
+  const int order      = basisSize - 1;
 
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables);
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
@@ -525,10 +524,9 @@ void spaceTimePredictorNonlinear(
     double dt,
     double* tempPointForceSources //not used, should be nullptr
     ) {
-
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const int basisSize2 = basisSize * basisSize;
+  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int basisSize         = SolverType::Order+1;
+  constexpr int basisSize2        = basisSize * basisSize;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];

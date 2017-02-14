@@ -176,7 +176,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         {
           tryWriteSolverGeneratedImplementation(solver,solverName);
           if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
-          if (kernel.startsWith("optimised")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
         }
         
         tryWriteAbstractSolverHeader(solver,solverName);
@@ -395,7 +394,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".h");
     
     if (abstractSolverHeaderFile.exists()) {
-      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+      System.out.println("header file for abstract solver superclass Abstract" + solverName
           + " ... does exist already. Is overwritten");
     }
 

@@ -165,10 +165,12 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
 //  For debugging purposes
+/*
   std::cout << "_tokenStream=" << std::endl;
   for (std::string str : _tokenStream) {
     std::cout << "["<<str<<"]" << std::endl;
   }
+*/
 }
 
 bool exahype::Parser::isValid() const {

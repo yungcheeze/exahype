@@ -30,6 +30,10 @@ static const int kBasisSize = kN + 1;
 
 class ElasticityKernelTest : public tarch::tests::TestCase {
  public:
+  static constexpr int NumberOfVariables  = 9+3;
+  static constexpr int NumberOfParameters = 0;
+  static constexpr int Order              = 4;
+
   ElasticityKernelTest();
   virtual ~ElasticityKernelTest();
 

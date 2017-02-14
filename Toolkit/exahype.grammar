@@ -414,19 +414,78 @@ Productions
       { -> [New naming_scheme(name,value),naming_scheme_list.naming_scheme] };
   
   item_list {->item+} =
-    {single} [value]:typename
-      { -> [New item(value)] }
+    {single_int}
+      [value]:int_number
+      { -> [New item.int(value)] }
     |
-    {list} [value]:typename token_comma item_list
-      { -> [New item(value),item_list.item] };
+    {list_int} [value]:int_number token_comma item_list
+      { -> [New item.int(value),item_list.item] }
+    | 
+    {single_float}
+      [value]:float_number
+      { -> [New item.float(value)] }
+    |
+    {list_float} [value]:float_number token_comma item_list
+      { -> [New item.float(value),item_list.item] }
+    | 
+    {single_file}
+      [value]:filename
+      { -> [New item.file(value)] }
+    |
+    {list_file} [value]:filename token_comma item_list
+      { -> [New item.file(value),item_list.item] }
+    |
+    {single_type}
+      [value]:typename
+      { -> [New item.type(value)] }
+    |
+    {list_type} [value]:typename token_comma item_list
+      { -> [New item.type(value),item_list.item] }
+    |
+    {single_identifier}
+      [value]:identifier
+      { -> [New item.identifier(value)] }
+    |
+    {list_identifier} [value]:identifier token_comma item_list
+      { -> [New item.identifier(value),item_list.item] }    
+    ;
   
   constant_list {->constant+} =
-    {single}
-      [name]:identifier token_colon [value]:float_number
-      { -> [New constant(name,value)] }
+    {single_int}
+      [name]:identifier token_colon [value]:int_number
+      { -> [New constant.int(name,value)] }
     |
-    {list} [name]:identifier token_colon [value]:float_number token_comma constant_list
-      { -> [New constant(name,value),constant_list.constant] };
+    {list_int} [name]:identifier token_colon [value]:int_number token_comma constant_list
+      { -> [New constant.int(name,value),constant_list.constant] }
+    | 
+    {single_float}
+      [name]:identifier token_colon [value]:float_number
+      { -> [New constant.float(name,value)] }
+    |
+    {list_float} [name]:identifier token_colon [value]:float_number token_comma constant_list
+      { -> [New constant.float(name,value),constant_list.constant] }
+    | 
+    {single_file}
+      [name]:identifier token_colon [value]:filename
+      { -> [New constant.file(name,value)] }
+    |
+    {list_file} [name]:identifier token_colon [value]:filename token_comma constant_list
+      { -> [New constant.file(name,value),constant_list.constant] }
+    |
+    {single_type}
+      [name]:identifier token_colon [value]:typename
+      { -> [New constant.type(name,value)] }
+    |
+    {list_type} [name]:identifier token_colon [value]:typename token_comma constant_list
+      { -> [New constant.type(name,value),constant_list.constant] }
+    |
+    {single_identifier}
+      [name]:identifier token_colon [value]:identifier
+      { -> [New constant.identifier(name,value)] }
+    |
+    {list_identifier} [name]:identifier token_colon [value]:identifier token_comma constant_list
+      { -> [New constant.identifier(name,value),constant_list.constant] }    
+    ;
   
   variable_list {->variable+} =
     {single_int} [value]:int_number 
@@ -496,7 +555,11 @@ Abstract Syntax Tree
     constant+; 
 	
   item = 
-    [value]:typename
+      {int}        [value]:int_number
+    | {float}      [value]:float_number
+    | {file}       [value]:filename
+    | {type}       [value]:typename
+    | {identifier} [value]:identifier
     ;
 
   variable = 
@@ -505,7 +568,11 @@ Abstract Syntax Tree
     ;
     
   constant = 
-    [name]:identifier [value]:float_number
+      {int}        [name]:identifier [value]:int_number
+    | {float}      [name]:identifier [value]:float_number
+    | {file}       [name]:identifier [value]:filename
+    | {type}       [name]:identifier [value]:typename
+    | {identifier} [name]:identifier [value]:identifier
     ;
   
   solver =

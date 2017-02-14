@@ -1,11 +1,13 @@
 #include "MHDSolver_FV.h"
 
 #include "PDE.h"
+#include "InitialData.h"
+#include "BoundaryConditions.h"
 
 #include <memory>
 
 void MHD::MHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
-  // @todo Please implement/augment if required
+  // All the work is done in MHDSolver_ADERDG::init.
 }
 
 bool MHD::MHDSolver_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
@@ -13,8 +15,9 @@ bool MHD::MHDSolver_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,d
 }
 
 void MHD::MHDSolver_FV::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
-    // Fortran call:
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  if (tarch::la::equals(t, 0.0)) {
+    idfunc(x, Q);
+  }
 }
 
 exahype::solvers::Solver::RefinementControl MHD::MHDSolver_FV::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
@@ -37,21 +40,18 @@ void MHD::MHDSolver_FV::flux(const double* const Q,double** F) {
 
 
 void MHD::MHDSolver_FV::source(const double* const Q,double* S) {
-  constexpr int nVar = 9;
-
-  for(int i=0; i < nVar; i++) {
-    S[i] = 0.0;
-  }
+  pdesource_(S, Q);
 }
 
 
 void MHD::MHDSolver_FV::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
 const double* const stateIn,double* stateOut) {
-  constexpr int nVar = 9;
-  
-  for (int i=0; i<nVar; ++i) {
-    stateOut[i] = stateIn[i];
-  }
+  // we abuse the BC func for the ADERDG here, thus we reserve arbitrary
+  // storage for the fluxes.
+  double fluxIn[9], fluxOut[9];
+  double nv[3] = {0.};
+  nv[normalNonZero] = 1;
+  bcfunc(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
 
 //  const double* normalVelocity = stateIn+1+normalNonZero;
 //  const double sign = (faceIndex-2*normalNonZero)==0 ? -1.0 : 1.0;

@@ -32,15 +32,13 @@ namespace c {
  * A simple Rusanov flux considering pointwise
  * left and right values.
  */ 
-// TODO: Remove later. template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-//                              double* lambda),
-//          void PDEFlux(const double* const Q, double** F)>
 template <typename SolverType>
 double riemannSolver(
     SolverType& solver,
-    double* F, const double* qL, const double* qR,
-    int numberOfVariables, int normalNonZero,
+    double* F, const double* qL, const double* qR, int normalNonZero, 
     double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
+  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  
   double* sL = tempStateSizedVectors[0]; 
   double* sR = tempStateSizedVectors[1];
 
@@ -77,14 +75,18 @@ double riemannSolver(
  * \param[in] neighbourPosition A 2-d array which must be one of the
  * pairs (-1,0), (+1,0), (0,-1), or (0,+1).
  */
+template <typename SolverType>
 void boundaryLayerExtraction(
-    double* luhbnd,
-    const double* luh,
-    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition,
-    int numberOfVariables,int basisSize) {
-  constexpr int patchBegin=1;
-  const int patchEnd=basisSize;
-  idx3 idx(basisSize+2,basisSize+2,numberOfVariables);
+    SolverType& solver,
+    double* luhbnd,const double* luh,
+    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
+  
+  constexpr int patchBegin = 1;
+  constexpr int patchEnd   = basisSize;
+  idx3 idx(basisSize+2,basisSize+2,numberOfVariables+numberOfParameters);
   idx2 idx_bnd(basisSize,numberOfVariables);
   
   // TODO: Depending on the memory layout, we can remove the loops
@@ -132,22 +134,27 @@ void boundaryLayerExtraction(
 /** 
  * Fill a part of the ghost layer of a patch with
  * values from an array. This function is used 
- * for the MPI and domain treatment.
+ * for the MPI and boundary treatment.
  * 
  * \param[in] boundaryPosition A 2-d array which must be one of the
  * pairs (-1,0), (+1,0), (0,-1), or (0,+1).
  * 
  * \see boundaryLayerExtraction
  */
+template <typename SolverType>
 void ghostLayerFillingAtBoundary(
-    double* luh,
-    const double* luhbnd,
-    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition,
-    int numberOfVariables,int basisSize) {
-  idx3 idx(basisSize+2,basisSize+2,numberOfVariables);
-  idx2 idx_bnd(basisSize,numberOfVariables);
+    SolverType& solver,
+    double* luh,const double* luhbnd,
+    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
+  
   constexpr int patchBegin=1;
-  const int patchEnd=basisSize;
+  constexpr int patchEnd=basisSize;
+  
+  idx3 idx(basisSize+2,basisSize+2,numberOfVariables+numberOfParameters);
+  idx2 idx_bnd(basisSize,numberOfVariables);
 
   // TODO: Depending on the memory layout, we can remove the loop,
   // and use larger strides for one of the coordinate directions. 
@@ -191,16 +198,19 @@ void ghostLayerFillingAtBoundary(
   }
 }
 
-
+template <typename SolverType>
 void ghostLayerFilling(
-      double* luh,
-      const double* luhNeighbour,
-      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition,
-      int numberOfVariables,int basisSize) {
-  idx3 idx(basisSize+2,basisSize+2,numberOfVariables);
+      SolverType& solver,
+      double* luh,const double* luhNeighbour,
+      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
+  
   constexpr int patchBegin=1;
-  const int patchEnd=basisSize;
-
+  constexpr int patchEnd=basisSize;
+  idx3 idx(basisSize+2,basisSize+2,numberOfVariables+numberOfParameters);
+  
   // TODO: Depending on the memory layout, we can remove the loop,
   // and use larger strides for one of the coordinate directions. 
   
@@ -209,7 +219,7 @@ void ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd+1; ++i) {
       std::copy(
           luhNeighbour+idx(i,patchEnd,0),
-          luhNeighbour+idx(i,patchEnd,0)+numberOfVariables, // past-the-end element
+          luhNeighbour+idx(i,patchEnd,0)+numberOfVariables+numberOfParameters, // past-the-end element
           luh+idx(i,0,0));
     }
   }
@@ -218,7 +228,7 @@ void ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd+1; ++i) {
       std::copy(
           luhNeighbour+idx(i,patchBegin,0),
-          luhNeighbour+idx(i,patchBegin,0)+numberOfVariables, // past-the-end element
+          luhNeighbour+idx(i,patchBegin,0)+numberOfVariables+numberOfParameters, // past-the-end element
           luh+idx(i,patchEnd+1,0));
     }
   }
@@ -228,7 +238,7 @@ void ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd+1; ++i) {
       std::copy(
           luhNeighbour+idx(patchEnd,i,0),
-          luhNeighbour+idx(patchEnd,i,0)+numberOfVariables, // past-the-end element
+          luhNeighbour+idx(patchEnd,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
           luh+idx(0,i,0));
     }
   }
@@ -237,7 +247,7 @@ void ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd+1; ++i) {
       std::copy(
           luhNeighbour+idx(patchBegin,i,0),
-          luhNeighbour+idx(patchBegin,i,0)+numberOfVariables, // past-the-end element
+          luhNeighbour+idx(patchBegin,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
           luh+idx(patchEnd+1,i,0));
     }
   }
@@ -249,25 +259,23 @@ void ghostLayerFilling(
  * new solution. 
  * Finally add the source terms.
  */
-//TODO: Remove later: template <void PDEFlux(const double* const Q, double** F),
-//          void PDESource(const double* const Q, double* S),
-//          void PDEEigenvalues(const double* const Q, const int normalNonZero,
-//                              double* lambda)>
 template <typename SolverType>
 double solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    double dt, int numberOfVariables, int basisSize) {  
-  idx3 idx(basisSize+2, basisSize+2, numberOfVariables);
+    const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {  
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
   
-  const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
-
   constexpr int patchBegin=1;
   const int     patchEnd=basisSize;
+  idx3 idx(basisSize+2, basisSize+2, numberOfVariables+numberOfParameters);
   
-  // 4. Solve Riemann problems
+  const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
+  
+  // Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
   
@@ -281,7 +289,7 @@ double solutionUpdate(
               Fn, 
               luh + idx(j, k, 0),
               luh + idx(j, k+1, 0), 
-              numberOfVariables, 0, tempStateSizedVectors + 1);
+              0, tempStateSizedVectors + 1);
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
       dt_max_allowed = std::min(
@@ -303,7 +311,7 @@ double solutionUpdate(
           Fn, 
           luh + idx(j, k, 0),
           luh + idx(j+1, k, 0), 
-          numberOfVariables, 1, tempStateSizedVectors + 1);
+          1, tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
@@ -331,59 +339,61 @@ double solutionUpdate(
   return dt_max_allowed;
 }
   
-// TODO Remove later: template <void PDEEigenvalues(const double* const Q, const int normalNonZero,double* lambda)>
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver,
                           const double* const luh,
                           double* tempEigenvalues,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          int numberOfVariables, int basisSize) {  
+                          const tarch::la::Vector<DIMENSIONS, double>& dx) {  
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
+  
   double dt_max_stable = std::numeric_limits<double>::max();
-  static const double cflFactor = 0.9; // TODO externalize
+  constexpr double cflFactor = 0.9; // TODO externalize
+  
+  constexpr int patchBegin=1;
+  constexpr int patchEnd=basisSize;
+  idx3 idx_luh(basisSize+2, basisSize+2, numberOfVariables+numberOfParameters);
   
   double* lambda = tempEigenvalues;
   
-  constexpr int patchBegin=1;
-  const int     patchEnd=basisSize;
-  idx3 idx_luh(basisSize+2, basisSize+2, numberOfVariables);
-  
   for (int j = patchBegin; j < patchEnd+1; j++) {
-    for (int k = patchBegin; k < patchEnd+1; k++) {
-      // x
-      solver.eigenvalues(luh + idx_luh(j, k, 0), 0, lambda);
-      std::transform(lambda, lambda + numberOfVariables, lambda,
-                     std::abs<double>);
-      double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
-      dt_max_stable = std::min(
-          dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
+  for (int k = patchBegin; k < patchEnd+1; k++) {
+    // x
+    solver.eigenvalues(luh + idx_luh(j, k, 0), 0, lambda);
+    std::transform(lambda, lambda + numberOfVariables, lambda,
+                   std::abs<double>);
+    double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
+    dt_max_stable = std::min(
+        dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
 
-      // y
-      solver.eigenvalues(luh + idx_luh(j, k, 0), 1, lambda);
-      std::transform(lambda, lambda + numberOfVariables, lambda,
-                     std::abs<double>);
-      double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
-      dt_max_stable = std::min(
-          dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
-    }
+    // y
+    solver.eigenvalues(luh + idx_luh(j, k, 0), 1, lambda);
+    std::transform(lambda, lambda + numberOfVariables, lambda,
+                   std::abs<double>);
+    double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
+    dt_max_stable = std::min(
+        dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
+  }
   }
 
   return dt_max_stable;
 }
 
-// TODO Remove later template <void PDESolutionAdjustment(const double* const x, const double w,
-//    const double t, const double dt,
-//    double* Q)>
 template <typename SolverType>
 void solutionAdjustment(
     SolverType& solver,
     double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
-    const double dt, const int numberOfVariables, const int basisSize) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,const double dt) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::PatchSize;
+  
   double x[DIMENSIONS];
   
   constexpr int patchBegin=1;
-  const int     patchEnd=basisSize;
-  idx3 idx_luh(basisSize+2, basisSize+2, numberOfVariables);
+  constexpr int patchEnd=basisSize;
+  idx3 idx_luh(basisSize+2, basisSize+2, numberOfVariables+numberOfParameters);
 
   for (int j = patchBegin; j < patchEnd+1; j++) {  // loop over dof
     const double qs = (2.0*(j-patchBegin)+1.0)/(2.0*basisSize); //linspace; 
@@ -408,8 +418,8 @@ void boundaryConditions(SolverType& solver,
                         const double t,const double dt,
                         const int faceIndex,
                         const int normalNonZero) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize         = solver.getNodesPerCoordinateAxis();
+  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int basisSize         = SolverType::PatchSize;
   // Determine if face is "left" (=0 for faceIndex=0,2,4) or "right" face (=1 for faceIndex=1,2,3).
   const int f = faceIndex-2*normalNonZero;
 

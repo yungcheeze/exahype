@@ -228,9 +228,10 @@ public class Variables {
               +  indent + "}\n\n";
       // ex: tarch::la::Vector<3,double> v() const;
       getters += indent + "tarch::la::Vector<"+multiplicity+",double> "+identifier+"() const {\n"
-              + indent + "  tarch::la::Vector<"+multiplicity+",double> values(";
+              +  indent + "  tarch::la::Vector<"+multiplicity+",double> values;\n";
+      getters += indent + "  values=";
       for (int i=0; i<multiplicity; i++) {
-        getters += "_Q"+"["+(offset+i)+"]"+( i<multiplicity-1 ? "," : ");\n" );
+        getters += "_Q"+"["+(offset+i)+"]"+( i<multiplicity-1 ? "," : ";\n" );
       }
       getters += indent + "  return values;\n"
               +  indent + "}\n\n";

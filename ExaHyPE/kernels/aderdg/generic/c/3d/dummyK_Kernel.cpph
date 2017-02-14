@@ -11,6 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
 
+<<<<<<< HEAD
 #include <memory>
 
 #include "kernels/DGBasisFunctions.h"
@@ -26,7 +27,6 @@
 
 #if DIMENSIONS == 3
 
-
 template <typename SolverType>
 void kernels::aderdg::generic::c::dummyK_Kernel(
     SolverType& solver,
@@ -38,7 +38,7 @@ void kernels::aderdg::generic::c::dummyK_Kernel(
     const int numberOfParameters, 
     const int basisSize,
     double* pointForceSources //memory space for forceVector
-    ) { 
+) { 
 
     //TODO KD
     
@@ -153,6 +153,12 @@ else {
      
       //apply the result for this quadrature point
 
+  //idx5 idx_pointForceSources(basisSize + 1, basisSize, basisSize, basisSize,
+      numberOfVariables);
+  //loop over all quadrature point
+  //do your stuff to get ready to get the value for one quadrature pointer
+  //solver.dummyK_Value(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,ndof3,0)], &x0);
+  //apply the result for this quadrature point
 }
 
 #endif  // DIMENSIONS == 3
