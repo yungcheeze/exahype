@@ -600,8 +600,9 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   tempSpaceTimeUnknowns[3] = new double[1280]; // nVar * nDOFx * nDOFy * nDOFz * nDOFt
 
   // space-time flux unknowns
-  double** tempSpaceTimeFluxUnknowns = new double*[1];
+  double** tempSpaceTimeFluxUnknowns = new double*[2];
   tempSpaceTimeFluxUnknowns[0]       = new double[5120+1280]; // nVar * nDOFx * nDOFy * nDOFz * nDOFt * (dim + 1)
+  tempSpaceTimeFluxUnknowns[1]       = new double[5120+1280]; // nVar * nDOFx * nDOFy * nDOFz * nDOFt * (dim + 1)
 
   double* tempStateSizedVector = new double[5];
 
@@ -690,6 +691,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   delete[] tempSpaceTimeUnknowns[3];
   delete[] tempSpaceTimeUnknowns;
 
+  delete[] tempSpaceTimeFluxUnknowns[1];
   delete[] tempSpaceTimeFluxUnknowns[0];
   delete[] tempSpaceTimeFluxUnknowns;
 
