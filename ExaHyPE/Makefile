@@ -91,11 +91,9 @@ ifeq ($(call tolower,$(COMPILER)),intel)
   # Settings for the Intel Compiler
   # ----------------------------------------------
   ifeq ($(CC),"")
-  else
   CC=icpc
   endif
   ifeq ($(FC),"")
-  else
   FC=ifort
   endif
   FCOMPILER_CFLAGS  += -r8 -cpp
@@ -108,11 +106,9 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
   # Settings for the GNU Compiler
   # --------------------------------------------
   ifeq ($(CC),"")
-  else
   CC=g++
   endif
   ifeq ($(FC),"")
-  else
   FC=gfortran
   endif
   FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
@@ -259,8 +255,7 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-        ifeq ($(CC),"")
-        else
+	ifeq ($(CC),"")
 		ifeq ($(call tolower,$(COMPILER)),gnu)
 			CC = mpiCC
 		else
