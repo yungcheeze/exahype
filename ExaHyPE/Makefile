@@ -309,7 +309,7 @@ wellsortedbuild: header buildinfo
 buildinfo:
 #	add any variables which you want to be able to see
 #	in the binary when calling with --version:
-	@echo "generate-buildinfo.sh > buildinfo.h"
+	@echo "generate-buildinfo.sh > $(PROJECT_PATH)/buildinfo.h"
 	@$(EXAHYPE_PATH)/generate-buildinfo.sh \
 		"COMPILER = $(COMPILER)" \
 		"MODE = $(MODE)" \
@@ -324,7 +324,7 @@ buildinfo:
 		"PROJECT_PATH = $(PROJECT_PATH)" \
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
 		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)" \
-		> $(EXAHYPE_PATH)/buildinfo.h
+		> $(PROJECT_PATH)/buildinfo.h
 
 		
 cfiles.mk:
@@ -415,6 +415,7 @@ clean:
 	rm -f ffiles.mk
 	rm -f $(COBJECTS)
 	rm -f cfiles.mk
+	rm -f buildinfo.h
 
 
 $(COBJECTS): %.o : %.cpp
