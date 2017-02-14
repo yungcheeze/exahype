@@ -64,6 +64,11 @@ Please, don't commit the following:
 Please write good commit messages that document how you changed ExaHyPE.
 
 
+## Regenerate ExaHyPE's kernel gluecode ##
+ 
+java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.specification exahype ~/workspace/peano/pdt/usrtemplates:../Peano/multiscalelinkedcell
+
+
 
 ## Build a new release ##
 
