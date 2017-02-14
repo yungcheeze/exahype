@@ -71,9 +71,9 @@ int order = basisSize-1;
 	    tn = dt* gaussLegendreNodes[order][n-1] + t;
 	   }
     	   for (int i = 0; i < basisSize; i++) {   //x loop
-	   x[0] = center[0] + dx[0] * (kernels::gaussLegendreNodes[basisSize-1][i] - 0.5);
+	   x[1] = center[1] + dx[1] * (kernels::gaussLegendreNodes[basisSize-1][i] - 0.5);
       for (int j = 0; j < basisSize; j++) {  //y loop
-       x[1] = center[1] + dx[1] * (kernels::gaussLegendreNodes[basisSize-1][j] - 0.5);
+       x[0] = center[0] + dx[0] * (kernels::gaussLegendreNodes[basisSize-1][j] - 0.5);
 	 
    // get the source vector located at x0 = (x, y) and at tn = t; and at the quadrature nodes tn
   solver.dummyK_Value(x, tn, dt, &pointForceSources[idx_pointForceSources(n,i,j,0)], &x0[0]);
@@ -97,19 +97,28 @@ int order = basisSize-1;
 
       	for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
          unknown++) {
-           dfor(ii, order + 1) {  // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii, order + 1);
-          double value = kernels::basisFunctions[order][ii(0)](xRef(0)) *
-            kernels::basisFunctions[order][ii(1)](xRef(1))*
+           //dfor(ii, order + 1) {  // Gauss-Legendre node indices
+          //int iGauss = peano::utils::dLinearisedWithoutLookup(ii, order + 1);
+          //double value = kernels::basisFunctions[order][ii(0)](xRef(0)) *
+          //  kernels::basisFunctions[order][ii(1)](xRef(1))*
+          //   pointForceSources[idx_pointForceSources(n,i,j,unknown)];
+          //value /= ((kernels::gaussLegendreWeights[order][ii(0)])*
+           //        (kernels::gaussLegendreWeights[order][ii(1)]));
+		   
+          //pointForceSources[idx_pointForceSources(n,i,j,unknown)] = value;
+
+
+          double value = kernels::basisFunctions[order][i](xRef(1)) *
+            kernels::basisFunctions[order][j](xRef(0))*
              pointForceSources[idx_pointForceSources(n,i,j,unknown)];
-          value /= ((kernels::gaussLegendreWeights[order][ii(0)])*
-                   (kernels::gaussLegendreWeights[order][ii(1)]));
+          value /= ((kernels::gaussLegendreWeights[order][i])*
+                   (kernels::gaussLegendreWeights[order][j]));
 		   
           pointForceSources[idx_pointForceSources(n,i,j,unknown)] = value;
 
 	  
 
-        }  // dfor
+       // }  // dfor
     } // for
 
   }  // endif xRef inside the domain

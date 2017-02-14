@@ -13,7 +13,7 @@
  
 /**
 
- Elastic Wave
+  Elastic Waves
 
  A simple project. (well, it was simple, in the beginning).
 
@@ -22,14 +22,14 @@ exahype-project  ElasticWave
 
   peano-kernel-path const = ./Peano
   exahype-path const      = ./ExaHyPE
-  output-directory const  = ./ApplicationExamples/ElasticWavesK2D_Probe
+  output-directory const  = ./ApplicationExamples/ElasticWavesK3D_Probe
   architecture const      = noarch
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 2
-    width                    = 20.0, 20.0
-    offset                   = 0.0, 0.0
+    dimension const          = 3
+    width                    = 10.0, 10.0, 10.0
+    offset                   = 0.0, 0.0, 0.0
     end-time                 = 4.0
   end computational-domain
 
@@ -58,7 +58,7 @@ exahype-project  ElasticWave
   end optimisation
 
   solver ADER-DG MyElasticWaveSolver
-    variables const   = v:2,s:3
+    variables const   = v:3,s:6
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 1.5
@@ -67,11 +67,11 @@ exahype-project  ElasticWave
     language const    = C
 
     plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
-      variables const = 4
+      variables const = 3
       time            = 0.0
-      repeat          = 0.1
+      repeat          = 0.05
       output          = ./conserved
-      select          = x:0.0,y:0.0
+      select          = x:0.0,y:0.0,z:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -102,11 +102,11 @@ exahype-project  ElasticWave
 
     /* Do not need the time series for a point in the moment*/
     plot probe::ascii ProbeWriter
-      variables const = 5
+      variables const = 3
       time            = 0.0
       repeat          = 0.01
       output          = ./seismogram
-      select          = {x:0.0,y:16.0}
+      select          = {x:6.0,y:5.0,z:5.0}
     end plot
    
   end solver

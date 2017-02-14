@@ -40,7 +40,7 @@ void spaceTimePredictorLinear(SolverType& solver,
   const int basisSize3 = basisSize2 * basisSize;
   const int order = basisSize - 1;
 
-  double* PSi = tempPointForceSources; // size: basisSize3 * (basisSize + 1) * numberOfVariables;
+  double* PSi = tempPointForceSources; // size: basisSize2 * (basisSize + 1) * numberOfVariables;
   double* lQi = tempSpaceTimeUnknowns[0]; // size: basisSize2 * (basisSize + 1) * numberOfVariables;
   std::memset(lQi, 0, basisSize2 * (basisSize + 1) * numberOfVariables * sizeof(double));
 
