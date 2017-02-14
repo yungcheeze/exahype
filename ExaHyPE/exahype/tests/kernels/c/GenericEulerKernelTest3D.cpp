@@ -485,11 +485,7 @@ void GenericEulerKernelTest::testSolutionUpdate() {
     lduh[i] = i;
   }
 
-  kernels::aderdg::generic::c::solutionUpdate(luh, lduh, dt,
-                                              5,  // getNumberOfVariables()
-                                              0,  // getNumberOfParameters()
-                                              4   // getNodesPerCoordinateAxis()
-                                              );
+  kernels::aderdg::generic::c::solutionUpdate<GenericEulerKernelTest>(*this,luh, lduh, dt);
 
   for (int i = 0; i < 320; i++) {
     validateNumericalEqualsWithEpsWithParams1(

@@ -33,16 +33,17 @@ void aderPicardLoopNonlinear(SolverType& solver,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              double* lQi, double *lQi_old, double* rhs, double* rhs_0,
                              double* lFi, double* gradQ, double* BGradQ) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables);
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int basisSize2         = basisSize * basisSize;
+  constexpr int basisSize4         = basisSize2 * basisSize2;
+  constexpr int order              = basisSize - 1;
+  
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
   idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
   idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1,
                numberOfVariables);
-
-  const int order = basisSize - 1;
-  const int basisSize2 = basisSize * basisSize;
-  const int basisSize4 = basisSize2 * basisSize2;
 
   // 1. Trivial initial guess
   for (int i = 0; i < basisSize; i++) {
@@ -77,7 +78,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
   }
 
   // 3. Discrete Picard iterations
-  const int MaxIterations = 2 * (order + 1);
+  constexpr int MaxIterations = 2 * (order + 1);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
@@ -234,7 +235,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
     // TODO(guera): Stability of sum? -> Kahan, reduction?
     // TODO(guera): Is there something like kernels::tol?
     // TODO(guera): Dangerous!
-    const double tol = 1e-7;
+    constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize4 * numberOfVariables; i++) {
       sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
@@ -430,10 +431,10 @@ void spaceTimePredictorNonlinear(
     double dt,
     double* tempPointForceSources //not used should be nullptr
     ) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
+  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int basisSize         = SolverType::Order+1;
+  constexpr int basisSize2        = basisSize * basisSize;
+  constexpr int basisSize3        = basisSize2 * basisSize;
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];

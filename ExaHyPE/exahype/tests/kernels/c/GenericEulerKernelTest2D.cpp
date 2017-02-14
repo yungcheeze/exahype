@@ -159,12 +159,9 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   const double dt = 1.40831757919882352703e-03;
   // ::exahype::tests::testdata::generic_euler::GenericEulerKernelTest::lduh[80]
 
-  kernels::aderdg::generic::c::solutionUpdate(
+  kernels::aderdg::generic::c::solutionUpdate<GenericEulerKernelTest>(*this,
       luh, ::exahype::tests::testdata::generic_euler::testSolutionUpdate::lduh,
-      dt,
-      5,  // getNumberOfVariables(),
-      0,  // getNumberOfParameters
-      4   // getNodesPerCoordinateAxis()
+      dt
       );
 
   for (int i = 0; i < 80; i++) {

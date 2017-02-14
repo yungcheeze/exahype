@@ -45,7 +45,7 @@ void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* 
 
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
 {{BeforeSolutionUpdate}}
-  kernels::aderdg::generic::{{Language}}::solutionUpdate(luh,lduh,dt,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::{{Language}}::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,lduh,dt);
 {{AfterSolutionUpdate}}
 }
 

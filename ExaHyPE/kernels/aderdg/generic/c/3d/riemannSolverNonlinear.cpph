@@ -34,10 +34,10 @@ void riemannSolverNonlinear(SolverType& solver,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
                             const int normalNonZero) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int numberOfParameters = solver.getNumberOfParameters();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const int order = basisSize - 1;
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int order              = basisSize - 1;
 
   // Compute the average states (and parameters) from the left and the right
   double* QavL = tempStateSizedVectors[0];
