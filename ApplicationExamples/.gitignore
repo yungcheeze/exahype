@@ -28,3 +28,7 @@ ExaHyPE-*
 output/
 run/
 RUN/
+Abstract*Solver.cpp
+ConservedQuantitiesWriter.*
+*_Variables.h
+*.LOG
