@@ -23,54 +23,12 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void elementupdate_(double *luh, double *lduh, double *dt);
+void elementupdate_(double *luh, const double *const lduh, const double *dt);
 }
 
 template <typename SolverType>
 void kernels::aderdg::generic::fortran::solutionUpdate(
     SolverType& solver,double *luh, const double *const lduh, const double dt) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int numberOfParameters = solver.getNumberOfParameters();
 
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-
-  double *lduhFortran =
-      new double[numberOfVariables * basisSize * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize * basisSize;
-       i++) {
-    lduhFortran[i] = lduh[i];
-  }
-
-  double *luhFortran =
-        new double[numberOfVariables * basisSize * basisSize * basisSize];
-  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
-  idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
-  for (int i = 0; i < basisSize; ++i) {
-    for (int j = 0; j < basisSize; ++j) {
-      for (int k = 0; k < basisSize; ++k) {
-        for (int l = 0; l < numberOfVariables; ++l) {
-          luhFortran[idx_lduh(i,j,k,l)] = luh[idx_luh(i,j,k,l)];
-        }
-      }
-    }
-  }
-
-  double *dtTemp = new double[1];
-  dtTemp[0] = dt;
-
-  elementupdate_(luh, lduhFortran, dtTemp);
-
-  for (int i = 0; i < basisSize; ++i) {
-    for (int j = 0; j < basisSize; ++j) {
-      for (int k = 0; k < basisSize; ++k) {
-        for (int l = 0; l < numberOfVariables; ++l) {
-          luh[idx_luh(i,j,k,l)] = luhFortran[idx_lduh(i,j,k,l)];
-        }
-      }
-    }
-  }
-
-  delete[] lduhFortran;
-  delete[] luhFortran;
-  delete dtTemp;
+  elementupdate_(luh, lduh, &dt);
 }

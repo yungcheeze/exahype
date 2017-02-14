@@ -315,6 +315,9 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
 
 
 template <typename SolverType>
+void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);
+
+template <typename SolverType>
 void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -382,6 +385,7 @@ void volumeUnknownsRestriction(
 #if DIMENSIONS == 3
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/solutionUpdate.cpph"
 #include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"

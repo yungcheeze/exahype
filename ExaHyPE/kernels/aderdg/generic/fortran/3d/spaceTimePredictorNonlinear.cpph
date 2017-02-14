@@ -12,11 +12,13 @@
  **/
 
 extern "C" {
-void aderpicardloopnonlinear_(const double *luhTemp, double *dtTemp, double *dxTemp,
+void aderpicardloopnonlinear_(const double* const luh,
+			      const double* const dt,
+			      const double* const dx,
                               double *lQi, double *lFi);
 // void aderpredictor_(double *lQi, double *lFi, double *lQhi, double *lFhi);
 void aderpredictornonlinear_(double *lQi, double *lFi_x, double *lFhi_y,
-                             double *lFhi_z, double *lQhi, double *lFhi);
+                             double *lFhi_z, double* lShi, double *lQhi, double *lFhi);
 // void aderextrapolator_(double *lQhi, double *lFhi, double *lQbnd, double
 // *lFbnd);
 void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
@@ -59,6 +61,7 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
   double* lQhi = tempUnknowns;
   double* lFhi = tempFluxUnknowns;
 
+  /*
   double dtTemp[1];
   dtTemp[0] = dt;
 
@@ -66,8 +69,10 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
   dxTemp[0] = dx[0];
   dxTemp[1] = dx[1];
   dxTemp[2] = dx[2];
+  */
 
   // space-time predictor:
+  /*
   double *luhFortran =
         new double[numberOfVariables * basisSize * basisSize * basisSize];
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
@@ -80,21 +85,27 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
         }
       }
     }
-  }
+  }*/
   
-  aderpicardloopnonlinear_(luhFortran, dtTemp, dxTemp, lQi, lFi);
+  aderpicardloopnonlinear_(luh, &dt, dx.data(), lQi, lFi);
 
   // std::cout << "numSpaceDof: " << numSpaceDof << std::endl;
   // lFhi = [ lFhi_x | lFhi_y | lFhi_z ]
   // aderpredictor_(lQi,lFi,lQhi,lFhi);
-  aderpredictornonlinear_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof],
-                          &lFhi[1 * numSpaceDof], &lFhi[2 * numSpaceDof]);
+  aderpredictornonlinear_(lQi, lFi, lQhi, 
+			  &lFhi[0 * numSpaceDof], // lFhi_x
+                          &lFhi[1 * numSpaceDof], // lFhi_y
+			  &lFhi[2 * numSpaceDof], // lFhi_z
+			  &lFhi[3 * numSpaceDof]  // lShi
+ 			);
   // aderextrapolator_(lQhi,lFhi,lQbnd,lFbnd);
-  aderextrapolatornonlinear_(lQhi, &lFhi[0 * numSpaceDof],
-                             &lFhi[1 * numSpaceDof], &lFhi[2 * numSpaceDof],
+  aderextrapolatornonlinear_(lQhi, 
+			     &lFhi[0 * numSpaceDof],
+                             &lFhi[1 * numSpaceDof], 
+			     &lFhi[2 * numSpaceDof],
                              lQbnd, lFbnd);
 
-   delete[] luhFortran;
+   //delete[] luhFortran;
 
   // std::ofstream ofs;
   // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);
