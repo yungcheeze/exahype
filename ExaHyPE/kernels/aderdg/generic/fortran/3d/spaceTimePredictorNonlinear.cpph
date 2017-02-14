@@ -25,13 +25,6 @@ void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
                                 double *lFhi_z, double *lQbnd, double *lFbnd);
 }
 
-// template <void PDEFlux3d(const double *const Q, double **F),
-          // void PDESource(const double* const Q, double* S)>
-// void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
-    // double *lQi, double *lFi, double *lQhi, double *lFhi, double *lQbnd,
-    // double *lFbnd, const double *const luh,
-    // const tarch::la::Vector<DIMENSIONS, double> &dx, const double dt,
-    // const int numberOfVariables, const int numberOfParameters, const int basisSize) {
 template <typename SolverType>
 void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     SolverType& solver,
@@ -46,11 +39,6 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     const double dt,
     double* tempPointForceSources //Not used, should be nullptr
     ){
-  // circumvent 'const double'
-  // double *luhTemp =
-      // new double[numberOfVariables * basisSize * basisSize * basisSize];
-  // memcpy(luhTemp, luh, numberOfVariables * basisSize * basisSize * basisSize *
-                           // sizeof(double));
   const int numberOfVariables  = solver.getNumberOfVariables();
   const int numberOfParameters = solver.getNumberOfParameters();
   const int basisSize          = solver.getNodesPerCoordinateAxis();
@@ -60,32 +48,6 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
   double* lFi  = tempSpaceTimeFluxUnknowns[0];
   double* lQhi = tempUnknowns;
   double* lFhi = tempFluxUnknowns;
-
-  /*
-  double dtTemp[1];
-  dtTemp[0] = dt;
-
-  double dxTemp[3];
-  dxTemp[0] = dx[0];
-  dxTemp[1] = dx[1];
-  dxTemp[2] = dx[2];
-  */
-
-  // space-time predictor:
-  /*
-  double *luhFortran =
-        new double[numberOfVariables * basisSize * basisSize * basisSize];
-  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
-  idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
-  for (int i = 0; i < basisSize; ++i) {
-    for (int j = 0; j < basisSize; ++j) {
-      for (int k = 0; k < basisSize; ++k) {
-        for (int l = 0; l < numberOfVariables; ++l) {
-          luhFortran[idx_lduh(i,j,k,l)] = luh[idx_luh(i,j,k,l)];
-        }
-      }
-    }
-  }*/
   
   aderpicardloopnonlinear_(luh, &dt, dx.data(), lQi, lFi);
 
@@ -104,8 +66,6 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
                              &lFhi[1 * numSpaceDof], 
 			     &lFhi[2 * numSpaceDof],
                              lQbnd, lFbnd);
-
-   //delete[] luhFortran;
 
   // std::ofstream ofs;
   // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);

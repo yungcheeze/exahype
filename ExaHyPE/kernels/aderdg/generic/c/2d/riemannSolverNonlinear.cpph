@@ -80,8 +80,9 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
       std::max_element(LR, LR + numberOfVariables - numberOfParameters);
   const double smax = std::max(*smax_L, *smax_R);
 
-  double* Bn = new double[numberOfVariables * numberOfVariables]();
-  double* ncp = new double[numberOfVariables]();
+  // @todo, probably: Find space for this on tempStateSizedVectors
+  double Bn[numberOfVariables * numberOfVariables];
+  double ncp[numberOfVariables];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
   solver.matrixb(Qavg, normalNonZero, Bn);
   
@@ -149,10 +150,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
      */
     }
   }
-  
-//  delete[] Qavg;
-  delete[] Bn;
-  delete[] ncp;
+
 }
 
 }  // namespace c

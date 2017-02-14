@@ -35,22 +35,7 @@ void kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
     double* lduh, const double* const lFhi,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const int numberOfVariables, const int numberOfParameters, const int basisSize) {
-  // todo Angelika
-  // Please remove the typedefs in generic kernels again since numberOf(...)Dof
-  // is not
-  // a compile time variable anymore
 
-  // circumvent 'const double'
-	/*
-  double* lFhiFortran = new double[numberOfVariables * (DIMENSIONS+1) * basisSize *
-                                   basisSize * basisSize];
-  for (int i = 0;
-       i < numberOfVariables * (DIMENSIONS+1) * basisSize * basisSize * basisSize;
-       i++) {
-    lFhiFortran[i] = lFhi[i];
-  }
-  */
-	
   // lFhiFortran = [ lFhi_x | lFhi_y | lFhi_z ]
   const double* const lFhi_x =
       &lFhi[0 * numberOfVariables * basisSize * basisSize * basisSize];
@@ -86,14 +71,7 @@ void kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
   // cout << lFhi[5] << "\n";
   // cout << "-------------lFhi in volumeIntegral.cpph------------------" <<
   // "\n";
-/*
-  double* dxTemp = new double[3];
-  dxTemp[0] = dx[0];
-  dxTemp[1] = dx[1];
-  dxTemp[2] = dx[2];
-*/
+
   adervolumeintegralnonlinear_(lduh, lFhi_x, lFhi_y, lFhi_z, lShi, dx.data());
 
-  //delete[] lFhiFortran;
-  //delete[] dxTemp;
 }
