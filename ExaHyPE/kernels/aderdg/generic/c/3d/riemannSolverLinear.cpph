@@ -94,6 +94,8 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
               numberOfVariables * numberOfVariables * sizeof(double));
   std::memcpy(BnPlusIdSmax, Bn,
               numberOfVariables * numberOfVariables * sizeof(double));
+  
+  // TODO: NCP and MatrixB also for Linear Kernels in 3D!
 
   {
     idx2 idx_BnPM(numberOfVariables, numberOfVariables);
