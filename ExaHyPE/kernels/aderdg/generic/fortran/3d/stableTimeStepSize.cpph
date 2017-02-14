@@ -30,9 +30,9 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(SolverType& solver,
   const double PNPM[10] = {1.0,   0.33,  0.17, 0.1,  0.069,
                              0.045, 0.038, 0.03, 0.02, 0.015};
 
-  double* lambda = new double[numberOfVariables];
+  double lambda[numberOfVariables];
 
-  double* nv = new double[DIMENSIONS];
+  double nv[3];
   nv[0] = 0.;
   nv[1] = 0.;
   nv[2] = 0.;
@@ -69,8 +69,6 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(SolverType& solver,
     }
   }
 
-  delete[] lambda;
-  delete[] nv;
   // std::cout << "-----------------------------------" << std::endl;
   // std::cout << dt << std::endl;
   // std::cout << "-----------------------------------" << std::endl;

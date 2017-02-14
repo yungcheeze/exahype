@@ -198,7 +198,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
     // Qt is fundamental for debugging, do not remove this.
     /*
-    double* lQt = new double[basisSize * numberOfVariables];
+    double lQt[basisSize * numberOfVariables];
     idx2 idx_lQt(basisSize, numberOfVariables);
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -218,7 +218,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
     }
-    delete[] lQt;
      */
 
     // 5. Exit condition
