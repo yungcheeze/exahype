@@ -108,7 +108,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/GaussLobattoQuadrature.h\"\n");
       _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
-      _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
+      _writer.write("#include \"kernels/DGBasisFunctions.h\"\n");
+      _writer.write("#include \"buildinfo.h\"\n\n");
       if(_useOptimisedKernels) {
         _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
         _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
