@@ -176,7 +176,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         {
           tryWriteSolverGeneratedImplementation(solver,solverName);
           if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
-          if (kernel.startsWith("optimised")) { tryDeleteSolverGeneratedImplementation(solver,solverName); }
         }
         
         tryWriteAbstractSolverHeader(solver,solverName);
@@ -286,35 +285,32 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 //          userTypesDefFile = FileSearch.relocatableFile(
 //              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
 //        }
-        String solverNameADERDG = solverName+"_ADERDG";
-        String solverNameFV     = solverName+"_FV";
-        
-        tryWriteSolverHeader(solver, solverNameADERDG);
-        tryWriteSolverHeader(limiter, solverNameFV);
+        tryWriteSolverHeader(solver, solverName+"_ADERDG");
+        tryWriteSolverHeader(limiter, solverName+"_FV");
 
-        tryWriteSolverUserImplementation(solver,solverNameADERDG);
-        tryWriteSolverUserImplementation(limiter,solverNameFV);
+        tryWriteSolverUserImplementation(solver,solverName+"_ADERDG");
+        tryWriteSolverUserImplementation(limiter,solverName+"_FV");
 
         // TODO(Dominic): Please remove as soon as the optimised solvers
         // are using an abstract base class as well.
         {
-          tryWriteSolverGeneratedImplementation(solver,solverNameADERDG);
-          tryWriteSolverGeneratedImplementation(limiter,solverNameFV);
-          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverNameADERDG); }
-          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverNameFV); }
+          tryWriteSolverGeneratedImplementation(solver,solverName+"_ADERDG");
+          tryWriteSolverGeneratedImplementation(limiter,solverName+"_FV");
+          if (kernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(solver,solverName+"_ADERDG"); }
+          if (limiterKernel.startsWith("generic")) { tryDeleteSolverGeneratedImplementation(limiter,solverName+"_FV"); }
         }
         
-        tryWriteAbstractSolverHeader(solver,solverNameADERDG);
-        tryWriteAbstractSolverHeader(limiter,solverNameFV);
-        tryWriteAbstractSolverImplementation(solver,solverNameADERDG);
-        tryWriteAbstractSolverImplementation(limiter,solverNameFV);
+        tryWriteAbstractSolverHeader(solver,solverName+"_ADERDG");
+        tryWriteAbstractSolverHeader(limiter,solverName+"FV");
+        tryWriteAbstractSolverImplementation(solver,solverName+"_ADERDG");
+        tryWriteAbstractSolverImplementation(limiter,solverName+"FV");
 
         if (solver.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverNameADERDG);
+          tryWriteVariablesHeader(variables, solverName+"_ADERDG");
         }
         
         if (limiter.supportsVariables()) {
-          tryWriteVariablesHeader(variables, solverNameFV);
+          tryWriteVariablesHeader(variables, solverName+"_FV");
         }
         
       } catch (Exception exc) {
@@ -398,7 +394,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Abstract" + solverName + ".h");
     
     if (abstractSolverHeaderFile.exists()) {
-      System.out.println("implementation file for abstract solver superclass Abstract" + solverName
+      System.out.println("header file for abstract solver superclass Abstract" + solverName
           + " ... does exist already. Is overwritten");
     }
 
