@@ -103,7 +103,7 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
@@ -113,7 +113,7 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
   x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
@@ -244,7 +244,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
 
     assertion(_cellWriter!=nullptr);
     dfor(i,_order) {
-      #ifdef Dim2
+      #if DIMENSIONS==2
       int cellsVertexIndices[4];
       cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1);
       cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1);
@@ -252,7 +252,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
       cellsVertexIndices[3] = firstVertex + (i(0)+1) + (i(1)+1) * (_order+1);
       const int newCellNumber = _cellWriter->plotQuadrangle(cellsVertexIndices);
       firstCell = firstCell==-1 ? newCellNumber : firstCell;
-      #elif Dim3
+      #elif DIMENSIONS==3
       int cellsVertexIndices[8];
       cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
       cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);

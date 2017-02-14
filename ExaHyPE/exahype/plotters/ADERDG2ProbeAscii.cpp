@@ -54,7 +54,7 @@ void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int
 
   _x(0) = Parser::getValueFromPropertyString( select, "x" );
   _x(1) = Parser::getValueFromPropertyString( select, "y" );
-  #if DIM3
+  #if DIMENSIONS==3
   _x(2) = Parser::getValueFromPropertyString( select, "z" );
   #endif
 

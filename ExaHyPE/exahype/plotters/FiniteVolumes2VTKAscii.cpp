@@ -67,7 +67,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
   _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
@@ -77,7 +77,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
   x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
