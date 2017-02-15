@@ -301,9 +301,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
         
         tryWriteAbstractSolverHeader(solver,solverName+"_ADERDG");
-        tryWriteAbstractSolverHeader(limiter,solverName+"FV");
+        tryWriteAbstractSolverHeader(limiter,solverName+"_FV");
         tryWriteAbstractSolverImplementation(solver,solverName+"_ADERDG");
-        tryWriteAbstractSolverImplementation(limiter,solverName+"FV");
+        tryWriteAbstractSolverImplementation(limiter,solverName+"_FV");
 
         if (solver.supportsVariables()) {
           tryWriteVariablesHeader(variables, solverName+"_ADERDG");
