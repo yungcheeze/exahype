@@ -1951,6 +1951,15 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
   }
 }
 
+
+void printFaceValues(double* values, int N) {
+  std::cout << "values=";
+  for (int i = 0; i < N; ++i) {
+    std::cout << values[i] << ",";
+  }
+  std::cout << std::endl;
+}
+
 void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     CellDescription& p,
     const int faceIndex,
@@ -1967,6 +1976,10 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
       (faceIndex * numberOfFaceDof);
   double* fluxIn = DataHeap::getInstance().getData(p.getFluctuation()).data() +
       (faceIndex * numberOfFaceDof);
+
+  // TODO(Dominic): If I include these statements it works. What the heck?
+  printFaceValues(stateIn,1);
+  printFaceValues(fluxIn,1);
 
   const int normalDirection = (faceIndex - faceIndex % 2)/2;
   assertion2(normalDirection<DIMENSIONS,faceIndex,normalDirection);
