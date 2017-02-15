@@ -5,6 +5,8 @@
 
 #include <cstring>
 
+const int nVar = Euler::AbstractLimitingADERDG_ADERDG::NumberOfVariables;
+
 void Euler::LimitingADERDG_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   // This function is called inside the constructur.
   // @todo Please implement/augment if required.

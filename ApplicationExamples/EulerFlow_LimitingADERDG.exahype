@@ -24,10 +24,11 @@ exahype-project  Euler
   exahype-path const               = ./ExaHyPE
   output-directory const           = ./ApplicationExamples/EulerFlow_LimitingADERDG
   architecture const               = noarch
+  log-file  = bla.log
 
   computational-domain
     dimension const                = 2
-    width                    = 1.0, 1.0
+    width                    = 1.0, 0.3
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -59,7 +60,7 @@ exahype-project  Euler
   solver Limiting-ADER-DG LimitingADERDG
     variables const         = rho:1,j:3,E:1
     order const             = 3
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 0.04
     time-stepping     = global
     kernel const            = generic::fluxes::nonlinear
     language const          = C
