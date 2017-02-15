@@ -788,6 +788,13 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
                                     plotterNumber + 1, 11);
+  token += "," + getTokenAfter("solver", solverNumber + 1, "plot",
+                                      plotterNumber + 1, 12);
+  #if DIMENSIONS==3
+  token = getTokenAfter("solver",solverNumber + 1, "plot",
+                                 plotterNumber + 1, 13);
+  #endif
+
   logDebug("getSelectorForPlotter()", "found token " << token);
   return (token != _noTokenFound) ? token : "";
 }
