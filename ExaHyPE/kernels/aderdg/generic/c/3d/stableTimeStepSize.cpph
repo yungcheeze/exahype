@@ -41,7 +41,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
         // !!
         // TODO(Dominic): For refactoring purposes. Remove old indexing method.
         const int nodeIndex = i + basisSize * j + basisSize * basisSize * k;
-        const int dofStartIndex = nodeIndex * numberOfVariables;
+        const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
         assertion(dofStartIndex==idx_luh(k,j,i,0));
         // !!
          

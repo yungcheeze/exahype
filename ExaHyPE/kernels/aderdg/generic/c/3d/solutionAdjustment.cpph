@@ -46,7 +46,7 @@ void kernels::aderdg::generic::c::solutionAdjustment(
         // !!
         // TODO(Dominic): For refactoring purposes. Remove old indexing method.
         const int nodeIndex     = i + basisSize * j + basisSize * basisSize * k;
-        const int dofStartIndex = nodeIndex * numberOfVariables;
+        const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
         assertion(dofStartIndex==idx_luh(k,j,i,0)); 
         // !
         solver.adjustedSolutionValues(x, weight, t, dt, &luh[idx_luh(i,j,k,0)]);
