@@ -449,3 +449,8 @@ void ElasticWave::MyElasticWaveSolver::dummyK_Value(const double* const x,const 
   forceVector[7] = 0.0;
   forceVector[8] = 0.0*f;
 }
+
+
+bool ElasticWave::MyElasticWaveSolver::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+  return true;
+}
