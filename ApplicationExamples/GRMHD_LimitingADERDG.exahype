@@ -76,6 +76,14 @@ exahype-project GRMHD
       output    = ./conserved
       select    = x:0.0,y:0.0
     end plot
+
+    plot vtk::Legendre::vertices::ascii IntegralsWriter
+      variables const = 0
+      time = 0.0
+      repeat = 0.00157
+      output = ./global-integrals
+      select    = x:0.0,y:0.0
+    end plot
   end solver
 
 end exahype-project
