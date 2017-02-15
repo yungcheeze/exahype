@@ -120,11 +120,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return false;
     }
     
-    if (variables.getNumberOfParameters() != 0) {
-      System.err.println("ERROR: At the moment, parameters are not supported. " + 
-          " Please add the parameters as additional quantities to your PDE formulation.");
-      return false;
-    }
+//    if (variables.getNumberOfParameters() != 0) {
+//      System.err.println("ERROR: At the moment, parameters are not supported. " + 
+//          " Please add the parameters as additional quantities to your PDE formulation.");
+//      return false;
+//    }
     if (order < 1 || order > 9) {
       System.err.println("ERROR: Only polynomial degrees of 1..9 are supported.");
       return false;
