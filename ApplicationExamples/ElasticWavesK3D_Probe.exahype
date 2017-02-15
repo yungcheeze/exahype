@@ -47,8 +47,8 @@ exahype-project  ElasticWave
   end distributed-memory*/
 
   optimisation
-    fuse-algorithmic-steps          = off
-    fuse-algorithmic-steps-factor   = 0.99
+    fuse-algorithmic-steps          = on
+    fuse-algorithmic-steps-factor   = 0.8
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
@@ -61,14 +61,13 @@ exahype-project  ElasticWave
     variables  const  = v:3,s:6
     parameters const  = rho:1,cs:1,cp:1
     order const       = 3
-    /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 1.5
     time-stepping     = globalfixed
     kernel const      = generic::fluxes::linear
     language const    = C
 
     plot vtk::Cartesian::vertices::ascii ConservedQuantitiesWriter
-      variables const = 3
+      variables const = 6
       time            = 0.0
       repeat          = 0.05
       output          = ./conserved
