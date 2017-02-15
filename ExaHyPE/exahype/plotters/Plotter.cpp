@@ -65,7 +65,7 @@ exahype::plotters::Plotter::Plotter(
     _device->init(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
-        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
         _writtenUnknowns,
         _select
     );
@@ -279,7 +279,7 @@ exahype::plotters::Plotter::Plotter(
     _device->init(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
-        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
         _writtenUnknowns,
         _select
     );
@@ -318,7 +318,7 @@ exahype::plotters::Plotter::Plotter(
     _device->init(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
-        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
         _writtenUnknowns,
         _select
     );
