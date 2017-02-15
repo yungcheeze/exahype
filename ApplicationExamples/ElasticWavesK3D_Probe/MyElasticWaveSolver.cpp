@@ -15,20 +15,13 @@ bool ElasticWave::MyElasticWaveSolver::hasToAdjustSolution(const tarch::la::Vect
 }
 
 void ElasticWave::MyElasticWaveSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Dimensions             = 3
-  // Number of variables    = 9 (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-  // State variables:
-  Q[0] = 0.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  Q[4] = 0.0;
-  Q[5] = 0.0;
-  Q[6] = 0.0;
-  Q[7] = 0.0;
-  Q[8] = 0.0;
+  Variables vars(Q);
+  vars.v(0,0,0);
+  vars.s(0,0,0,0,0,0);
+
+  vars.rho()=c;
+  vars.cs()=3.464;
+  vars.cp()=6.0;
 }
 
 exahype::solvers::Solver::RefinementControl ElasticWave::MyElasticWaveSolver::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
@@ -38,34 +31,29 @@ exahype::solvers::Solver::RefinementControl ElasticWave::MyElasticWaveSolver::re
 
 
 void ElasticWave::MyElasticWaveSolver::eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda) {
-  // Dimensions             = 3
-  // Number of variables    = 9 (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-   // @todo Please implement/augment if required
-   double cs = 3.464;  // km/s
-  double cp = 6.0;    // km/s
-  
-  lambda[0] = -cp;
-  lambda[1] = -cs;
-  lambda[2] = -cs;
+  ReadOnlyVariables vars(Q);
+
+  lambda[0] = -vars.cp(); // parameters: TODO this works (Q is part of solution)
+  lambda[1] = -vars.cs();
+  lambda[2] = -vars.cs();
   lambda[3] = 0.0;
   lambda[4] = 0.0;
   lambda[5] = 0.0;
-  lambda[6] = cs;
-  lambda[7] = cs;
-  lambda[8] = cp;
+  lambda[6] = vars.cs();
+  lambda[7] = vars.cs();
+  lambda[8] = vars.cp();
 }
 
 void ElasticWave::MyElasticWaveSolver::flux(const double* const Q,double** F) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
-  
+  ReadOnlyVariables vars(Q);
+
   // @todo Please implement/augment if required
   F[0][0] = 0.0;
   F[0][1] = 0.0;
   F[0][2] = 0.0;
-  F[0][3] = 0.0;
+  F[0][3] = 0.0; // TODO parameters: this does not work (Q is part of predictor)
   F[0][4] = 0.0;
   F[0][5] = 0.0;
   F[0][6] = 0.0;
@@ -101,7 +89,7 @@ void ElasticWave::MyElasticWaveSolver::source(const double* const Q,double* S) {
   // @todo Please implement/augment if required
   S[0] = 0.0;
   S[1] = 0.0;
-  S[2] = 0.0;
+  S[2] = 0.0; // TODO parameters: this does not work (Q is part of predictor)
   S[3] = 0.0;
   S[4] = 0.0;
   S[5] = 0.0;
@@ -120,7 +108,7 @@ void ElasticWave::MyElasticWaveSolver::boundaryValues(const double* const x,cons
   // @todo Please implement/augment if required
   stateOut[0] = stateIn[0];
   stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
+  stateOut[2] = stateIn[2]; // TODO parameters: this does not work (stateIn is part of extrap. predictor)
   
   stateOut[3] = -stateIn[3];
   stateOut[4] = -stateIn[4];
@@ -163,14 +151,14 @@ void ElasticWave::MyElasticWaveSolver::boundaryValues(const double* const x,cons
 void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
+  ReadOnlyVariables vars(Q);
 
-  // @todo Please implement/augment if required
-    double lam;
+  double lam;
   double mu;
   double rho;
 
-  double cs = 3.464;  // km/s
-  double cp = 6.0;    // km/s
+  double cs = 3.464; // km/s // TODO parameters: this does not work (stateIn is part of extrap. predictor)
+  double cp = 6.0; // km/s
 
   rho = 2.67;   // gm/cm^3
   
@@ -335,12 +323,12 @@ void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int n
   Bn[79] = 0.0;
   Bn[80] = 0.0;
 
-   double lam;  //= 2.0;
+  double lam;  //= 2.0;
   double mu; // = 1.0;
   double rho; // = 1.0;
   
   double cs = 3.464;  // km/s
-  double cp = 6.0;    // km/s
+  double cp = 6.0;    // km/s // TODO parameters: this does not work (stateIn is part of extrap. predictor)
 
   rho = 2.67;   // gm/cm^3
   
