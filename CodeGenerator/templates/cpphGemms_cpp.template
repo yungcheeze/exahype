@@ -20,3 +20,5 @@
 #include "kernels/aderdg/optimised/asm_picard.c"
 {% endif %}
 
+//volume integral gemms
+#include "kernels/aderdg/optimised/asm_volumeIntegral.c"

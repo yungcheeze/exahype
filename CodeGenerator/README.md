@@ -16,4 +16,5 @@ Using the C index order convention with index in italic being absent in dim 2
 | lQhi | _nDof_, nDof, nDof, **nVar** | _nDof_, nDof, nDof, **nVarPad** | |
 | lFhi | (nDim+1) * (_nDof_, nDof, nDof, **nVar**) | (nDim+1) * (_nDof_, nDof, nDof, **nVarPad**) | lFhi has nDim+1 blocks |
 | LQh (LQi+LQhi_old+rhs+rhs_old or tempSpaceTimeUnknowns) | _nDof_, nDof, nDof, nDof, **nVar** | _nDof_, nDof, nDof, nDof, **nVarPad** | nonlinear case |
-| LFh (LFi+gradQ or tempSpaceTimeFluxUnknowns) | nDim+1, _nDof_, nDof, nDof, nDof, **nVar** | nDim+1, _nDof_, nDof, nDof, nDof, **nVarPad** | nonlinear case, +1 for source |
+| LFh (LFi or tempSpaceTimeFluxUnknowns[0]) | nDim+1, _nDof_, nDof, nDof, nDof, **nVar** | nDim+1, _nDof_, nDof, nDof, nDof, **nVarPad** | nonlinear case, +1 for source |
+| gradQ (tempSpaceTimeFluxUnknowns[1]) | _nDof_, nDof, nDof, nDof, nDim, nVar | _nDof_, nDof, nDof, nDof, nDim, nVar | Non padded/reordered since used in user code |

@@ -29,16 +29,31 @@ void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 	os << "{{Project}}::{{AbstractSolver}}("
 	   << "nVar=" << nVar << ", "
 	   << "nParam=" << nParams << ", "
-	   << "nDim=" << nDim ", "
+	   << "nDim=" << nDim << ", "
 	   << "order=" << order
 	   << ")";
 }
 
 void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  kernels::aderdg::optimised::picardLoopNonlinear<{{Solver}}::{{Solver}}::flux>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //S, gradQ, BGradQ
-  kernels::aderdg::optimised::predictorNonlinear(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], tempUnknowns, tempFluxUnknowns);
-  kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
+  bool useSource = false;
+  if(useSource) {
+#if DIMENSIONS==2
+    constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+    constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+#else
+    constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
+    constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+#endif
+    kernels::aderdg::optimised::picardLoopNonlinear<true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
+    kernels::aderdg::optimised::predictorNonlinear<true>(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
+    kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
+  } else {
+    kernels::aderdg::optimised::picardLoopNonlinear<false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //lSi, gradQ, BGradQ
+    kernels::aderdg::optimised::predictorNonlinear<false>(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], nullptr, tempUnknowns, tempFluxUnknowns, nullptr);
+    kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
+  }
+  
 {{AfterSpaceTimePredictor}}
 }
 
@@ -54,7 +69,17 @@ void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, dx );
+  bool useSource = false;
+  if(useSource) {
+#if DIMENSIONS==2
+    constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+#else
+    constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
+#endif
+    kernels::aderdg::optimised::volumeIntegral<true>( lduh, lFhi, &lFhi[lShi_offset], dx );
+  } else {
+    kernels::aderdg::optimised::volumeIntegral<false>( lduh, lFhi, nullptr, dx );
+  }
 {{AfterVolumeIntegral}}
 }
 

@@ -24,5 +24,13 @@ void {{gemm_a_b_c}}_rhs_z(const double* A, const double* B, double* C);
 {% endif %}  
 void {{gemm_a_b_c}}_lqh(const double* A, const double* B, double* C);
 {% endif %}
+
+// volume integral gemms
+void {{gemm_a_b_c}}_lduh_x(const double* A, const double* B, double* C);
+void {{gemm_a_b_c}}_lduh_y(const double* A, const double* B, double* C);
+{% if nDim == 3 %} 
+void {{gemm_a_b_c}}_lduh_z(const double* A, const double* B, double* C);
+{% endif %}
+
 #endif //EXAHYPE_KERNELS_OPTIMISED_GEMMS_H_
 

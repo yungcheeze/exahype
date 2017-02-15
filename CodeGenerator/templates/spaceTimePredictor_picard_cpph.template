@@ -18,15 +18,16 @@
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 #include "kernels/aderdg/optimised/CpphGemms.h"
 
-//template <void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S)> 
-template <void PDEflux(const double* const Q, double** F)>
+#include "kernels/DGMatrices.h" //TODO JMG remove after dudx implemented
+
+template <bool useSource, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
         const tarch::la::Vector<DIMENSIONS, double>& dx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
-        double* restrict S, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
 ) {
 
 
@@ -39,6 +40,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(s_m, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
+  if(useSource) {
+    __assume_aligned(lSi, ALIGNMENT);
+    __assume_aligned(gradQ, ALIGNMENT);
+    __assume_aligned(BGradQ, ALIGNMENT);
+  }
 #endif
 
   // 1. Trivial initial guess
@@ -84,11 +90,17 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         F[2] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{2*(nDof**nDim)*nDof*nVarPad}}];
         {% endif %}
         PDEflux(Q, F);
-        //TODO JMG source
+        if(useSource) { //optimised away at compile time
+          PDEsource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
+        }
       }
 
       // Copy rhs0 -> rhs for slice at i
       std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);
+      
+      if(useSource) { //optimised away at compile time
+        std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVar*nDim}} * sizeof(double));
+      }
       
 
       // Compute the "derivatives" (contributions of the stiffness matrix)
@@ -116,6 +128,17 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
+          if(useSource) {
+          for (int l = 0; l < {{nDof}}; l++) {
+            for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
+              for (int n = 0; n < {{nVar}}; n++) {
+                gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += 1.0 / dx[0] *
+                    lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+              }
+            }
+          }
+          }          
         }
       }
 
@@ -143,6 +166,17 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
+          if(useSource) {
+          for (int l = 0; l < {{nDof}}; l++) {
+            for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
+              for (int n = 0; n < {{nVar}}; n++) {
+                gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += 1.0 / dx[0] *
+                    lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+              }
+            }
+          }
+          }
         }
       }
       
@@ -171,11 +205,41 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
+          if(useSource) {
+          for (int l = 0; l < {{nDof}}; l++) {
+            for (int m = 0; m < {{nDof}}; m++) {
+              #pragma simd
+              for (int n = 0; n < {{nVar}}; n++) {
+                gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += 1.0 / dx[0] *
+                    lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * kernels::dudx[{{nDof-1}}][l][m];
+              }
+            }
+          }
+          }
         }
       }
       {% endif %}
 
-      //TODO JMG source
+      if(useSource) {
+        for (int j = 0; j < {{nDof3D}}; j++) { // z
+          for (int k = 0; k < {{nDof}}; k++) { // y
+            for (int l = 0; l < {{nDof}}; l++) { // x
+              const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k] * weights1[l];
+              const double updateSize = weight * dt;
+
+              // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
+              PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j)))], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j)))], BGradQ);
+
+              const int shift = {{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i)));
+              #pragma simd
+              for (int n = 0; n < {{nVar}}; n++) {
+                lSi[n+shift] -= BGradQ[n];
+                rhs[n+{{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i)))] += updateSize * lSi[n+shift];
+              }
+            }
+          }
+        }
+      }
      
     }  // end time dof
 

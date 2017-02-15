@@ -15,12 +15,15 @@
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 //#include "kernels/aderdg/optimised/asm_predictor.c"
- 
+
+template <bool useSource>
 void kernels::aderdg::optimised::predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
+        const double* restrict const lSi, //nullptr if not used
         double* restrict lQhi,
-        double* restrict lFhi
+        double* restrict lFhi,
+        double* restrict lShi //nullptr if not used
 ) {
   // Immediately compute the time - averaged space - time polynomials
 
@@ -53,7 +56,10 @@ void kernels::aderdg::optimised::predictorNonlinear(
             {% endif %}
             
             // Fortran: lFhi_S(:,k,j,i) = lSh(:,k,j,i,:) * wGPN(:)
-            //TODO JMG source
+            if(useSource) { //branch optimised away at compile time
+              lShi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] +=
+                lSi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] * weights1[m];
+            }
           }
         }
       }
