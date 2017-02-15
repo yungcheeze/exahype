@@ -11,13 +11,13 @@ SUBROUTINE InitialData(x, t, Q)
 
 	! Call here one of
 	! CALL InitialBlast(x, 0,  Q)
-	! Call AlfenWave(x, t, Q)
+	Call AlfenWave(x, t, Q)
 	! Call InitialRotor(x, 0, Q)
 	! Call InitialBlast(x, 0, Q)
 	! Call InitialOrsagTang(x, 0 , Q)
 	
-	! CALL InitialAccretionDisc(x, 0,  Q)
-	CALL InitialAccretionDisc3D(x, 0, Q)
+	! CALL InitialAccretionDisc(x, 0.0,  Q)
+	! CALL InitialAccretionDisc3D(x, 0, Q)
 END SUBROUTINE InitialData
 
 
@@ -159,7 +159,7 @@ SUBROUTINE InitialOrsagTang(x, t, Q)
 END SUBROUTINE InitialOrsagTang
 
 SUBROUTINE InitialRotor(x,t,Q)
-    ! MHD Rotor initial data in conserved variables (Q)
+    ! GRMHD Rotor initial data in conserved variables (Q)
     ! Domain: -0.5 .. 0.5  (square domain)
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -321,7 +321,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        !IF ( x(1) .LT. 0.1) RETURN
        !IF ( x(2) .LT. 0.1) RETURN
        !IF ( x(3) .LT. 0.1) RETURN
-       IF ( r .LT. 0.1) THEN
+       IF ( r .LT. 0.5) THEN
 		! To avoid division by zero, never used for evolution or BC
 		rho = 1.0
 		VV_cov(1:3) = 0.0
@@ -334,7 +334,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        ENDIF
        !
        theta  = ACOS( x(3)/r)
-       phi    = ATAN( x(2)/x(1))
+       phi    = ATAN2( x(2), x(1))
        !phi    = ACOS( x(1) / (r*SIN(theta)))
        zz     = 2.0/r   ! we are computing the solution at theta=pi/2
        betaru = zz/(1.0 + zz)

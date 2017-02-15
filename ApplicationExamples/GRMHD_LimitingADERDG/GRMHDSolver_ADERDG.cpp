@@ -8,13 +8,17 @@
 #include "kernels/KernelUtils.h" // matrix indexing
 #include "kernels/GaussLegendreQuadrature.h"
 
+const double excision_radius = 1.0;
+
+
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
 bool GRMHD::GRMHDSolver_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  // excision is missing here, probably
-  return tarch::la::equals(t,0.0);
+   bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
+  insideExcisionBall = false;
+  return tarch::la::equals(t,0.0) || insideExcisionBall;
 }
 
 void GRMHD::GRMHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
@@ -54,7 +58,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
 
   double F[3 * nVar]; // Fortran needs continous storage!
                       // Use always 3 dimensions here since the kernels works with those internally; see nDim in PDE.f90;
-                      
+
   kernels::idx2 F_idx(nDim, nVar);
 
   for(int i=0; i < basisSize; i++)  { // i == time
@@ -80,7 +84,7 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
 
 bool GRMHD::GRMHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
   // Disable Limiter for AlfenWave:
-  return false;
+  return true; // TRUE = LIMITER OFF
 }
 
 

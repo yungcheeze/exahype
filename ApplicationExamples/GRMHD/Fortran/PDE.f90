@@ -566,7 +566,11 @@ REAL :: BQ(3), g_cov(3,3), g_contr(3,3), Fij(3,3), Vtr(3)
       ENDDO
   !ENDDO 
   !
-  An = A*nv(1) + B*nv(2) + C*nv(3) 
+  IF(nDim == 3) THEN
+     An = A*nv(1) + B*nv(2) + C*nv(3) 
+  ELSE
+     An = A*nv(1) + B*nv(2)
+  ENDIF
   
 END SUBROUTINE PDEMatrixB
 

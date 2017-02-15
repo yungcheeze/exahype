@@ -6,6 +6,7 @@
 #include "Fortran/InitialData.h"
 #include "Fortran/PDE.h"
 
+#include <stdio.h>
 #include <cstring> // memset
 #include "kernels/KernelUtils.h" // matrix indexing
 #include "kernels/GaussLegendreQuadrature.h"
