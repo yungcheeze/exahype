@@ -58,7 +58,8 @@ exahype-project  ElasticWave
   end optimisation
 
   solver ADER-DG MyElasticWaveSolver
-    variables const   = v:3,s:6
+    variables  const  = v:3,s:6
+    parameters const  = rho:1,cs:1,cp:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 1.5
@@ -66,12 +67,11 @@ exahype-project  ElasticWave
     kernel const      = generic::fluxes::linear
     language const    = C
 
-    plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
+    plot vtk::Cartesian::vertices::ascii ConservedQuantitiesWriter
       variables const = 3
       time            = 0.0
       repeat          = 0.05
       output          = ./conserved
-      select          = x:0.0,y:0.0,z:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -81,7 +81,6 @@ exahype-project  ElasticWave
       time            = 0.0
       repeat          = 0.05
       output          = ./output/these-files-should-not-be-there
-      select          = x:0.0,y:0.0
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii PrimitivesWriter
@@ -89,7 +88,6 @@ exahype-project  ElasticWave
       time            = 0.0
       repeat          = 0.05
       output          = ./primitive
-      select          = x:0.0,y:0.0
     end plot*/
 
     /*plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
@@ -97,16 +95,15 @@ exahype-project  ElasticWave
       time            = 0.0
       repeat          = 0.05
       output          = ./exact-primitive
-      select          = x:0.0,y:0.0
     end plot*/
 
     /* Do not need the time series for a point in the moment*/
-    plot probe::ascii ProbeWriter
+      plot probe::ascii ProbeWriter
       variables const = 3
       time            = 0.0
       repeat          = 0.01
       output          = ./seismogram
-      select          = {x:6.0,y:5.0,z:5.0}
+      select          = x:6.0,y:5.0,z:5.0
     end plot
    
   end solver
