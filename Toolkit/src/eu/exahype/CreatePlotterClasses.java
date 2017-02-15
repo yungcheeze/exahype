@@ -221,7 +221,7 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
       }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
-      e.printStackTrace();
+      exc.printStackTrace();
       valid = false;
       // Should throw/pass exception instead.
     }
