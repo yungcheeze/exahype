@@ -15,13 +15,13 @@ void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
 }
 
 bool GRMHD::GRMHDSolver_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
-  // @todo Please implement/augment if required
+  // excsision is probably missing here
   return tarch::la::equals(t,0.0);
 }
 
 void GRMHD::GRMHDSolver_FV::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt, double* Q) {
   // Fortran
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  initialdata_(x, &t, Q);
 }
 
 exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_FV::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {
@@ -53,24 +53,8 @@ void GRMHD::GRMHDSolver_FV::boundaryValues(
     const double* const stateIn,
     double* stateOutside) {
 
-  // TODO: Exact BC
-  stateOutside[ 0] = 0.0;
-  stateOutside[ 1] = 0.0;
-  stateOutside[ 2] = 0.0;
-  stateOutside[ 3] = 0.0;
-  stateOutside[ 4] = 0.0;
-  stateOutside[ 5] = 0.0;
-  stateOutside[ 6] = 0.0;
-  stateOutside[ 7] = 0.0;
-  stateOutside[ 8] = 0.0;
-  stateOutside[ 9] = 0.0;
-  stateOutside[10] = 0.0;
-  stateOutside[11] = 0.0;
-  stateOutside[12] = 0.0;
-  stateOutside[13] = 0.0;
-  stateOutside[14] = 0.0;
-  stateOutside[15] = 0.0;
-  stateOutside[16] = 0.0;
-  stateOutside[17] = 0.0;
-  stateOutside[18] = 0.0;
+  // Question: do we need time integration here?
+  initialdata_(x, &t, stateOutside);
 }
+
+// Question: Are we missing NCP and BgradQ here?

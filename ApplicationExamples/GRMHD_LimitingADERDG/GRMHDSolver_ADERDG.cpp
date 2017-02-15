@@ -13,13 +13,13 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
 }
 
 bool GRMHD::GRMHDSolver_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  // @todo Please implement/augment if required
+  // excision is missing here, probably
   return tarch::la::equals(t,0.0);
 }
 
 void GRMHD::GRMHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran
-  adjustedsolutionvalues_(x, &w, &t, &dt, Q);
+  initialdata_(x, &t, Q);
 }
 
 void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -62,7 +62,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
-     alfenwave_(x, Qgp, &ti);
+     initialdata_(x, &ti, Qgp);
      pdeflux_(F, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];

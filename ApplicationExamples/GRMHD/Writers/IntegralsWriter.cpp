@@ -119,7 +119,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	double ExactPrim[nVar];
 	const double *xpos = x.data();
 	
-	initialdata_(xpos, ExactCons);
+	initialdata_(xpos, &timeStamp, ExactCons);
 	pdecons2prim_(ExactPrim, ExactCons, &err);
 	
 	double localError[nVar];
