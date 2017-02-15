@@ -55,7 +55,7 @@ double kernels::interpolate(
              kernels::basisFunctions[order][ii(2)](xRef[2]) *
              #endif
              u[iGauss * numberOfUnknowns + unknown];
-    assertion3(result == result, offsetOfPatch, sizeOfPatch, iGauss);
+    assertion6(std::isfinite(result), result, unknown, iGauss, numberOfUnknowns, offsetOfPatch[0], sizeOfPatch[0]);
   }
 
   return result;
