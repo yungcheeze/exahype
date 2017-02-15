@@ -60,9 +60,7 @@ exahype::solvers::Solver::Solver(
       _maxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _nextMaxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _timeStepping(timeStepping),
-      _profiler(std::move(profiler)) {
-  assertion(numberOfParameters==0);
-}
+      _profiler(std::move(profiler)) { }
 
 
 std::string exahype::solvers::Solver::getIdentifier() const {
