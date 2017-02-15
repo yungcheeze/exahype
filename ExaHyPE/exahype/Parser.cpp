@@ -165,12 +165,10 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
 //  For debugging purposes
-/*
-  std::cout << "_tokenStream=" << std::endl;
-  for (std::string str : _tokenStream) {
-    std::cout << "["<<str<<"]" << std::endl;
-  }
-*/
+//  std::cout << "_tokenStream=" << std::endl;
+//  for (std::string str : _tokenStream) {
+//    std::cout << "["<<str<<"]" << std::endl;
+//  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -791,7 +789,7 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   token += "," + getTokenAfter("solver", solverNumber + 1, "plot",
                                       plotterNumber + 1, 12);
   #if DIMENSIONS==3
-  token = getTokenAfter("solver",solverNumber + 1, "plot",
+  token += "," + getTokenAfter("solver",solverNumber + 1, "plot",
                                  plotterNumber + 1, 13);
   #endif
 
