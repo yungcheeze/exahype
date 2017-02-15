@@ -54,33 +54,33 @@ COMPILER_LFLAGS=
 #
 #Set compiler and linker flags for the different Debug/Release modes
 ifeq ($(call tolower,$(MODE)),release)
-  # Settings for the Release mode
-  # ----------------------------------------------
-  COMPILER_CFLAGS += 
-  COMPILER_LFLAGS +=
+	# Settings for the Release mode
+	# ----------------------------------------------
+	COMPILER_CFLAGS += 
+	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
-  # Settings for the Debug mode
-  # --------------------------------------------
-  COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
-  COMPILER_LFLAGS +=
+	# Settings for the Debug mode
+	# --------------------------------------------
+	COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
+	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
-  # Settings for the Profile mode
-  # --------------------------------------------
-  COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics -p -pg
-  COMPILER_LFLAGS += -p -pg
+	# Settings for the Profile mode
+	# --------------------------------------------
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics -p -pg
+	COMPILER_LFLAGS += -p -pg
 
 else ifeq ($(call tolower,$(MODE)),asserts)
-  # Settings for the Adderst mode
-  # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -g3 -DTrackGridStatistics
-  COMPILER_LFLAGS += -g3
+	# Settings for the Adderst mode
+	# --------------------------------------------
+	COMPILER_CFLAGS += -DAsserts -g3 -DTrackGridStatistics
+	COMPILER_LFLAGS += -g3
 
 else
-  # Option not recognized
-  # ----------------------------------------------
-  $(error Unknown option '$(MODE)' for variable [MODE])
+	# Option not recognized
+	# ----------------------------------------------
+	$(error Unknown option '$(MODE)' for variable [MODE])
 endif
 
 
@@ -88,43 +88,49 @@ endif
 #
 #Set compiler and linker flags for the different conmpilers
 ifeq ($(call tolower,$(COMPILER)),intel)
-  # Settings for the Intel Compiler
-  # ----------------------------------------------
-  ifdef $(CC)
-  else
-  CC=icpc
-  endif
-  ifdef $(FC)
-  else
-  FC=ifort
-  endif
-  FCOMPILER_CFLAGS  += -r8 -cpp
-  LINK_FORTRAN      += -lifcore
+	# Settings for the Intel Compiler
+	# ----------------------------------------------
+	ifndef $(EXAHYPE_CC)
+	  EXAHYPE_CC=icpc
+	endif
+	ifndef $(CC)
+	  CC=icpc
+	endif
+	ifndef $(EXAHYPE_FC)
+	  EXAHPYE_FC=ifort
+	endif
+	ifndef $(FC)
+	  FC=ifort
+	endif
+	
+	FCOMPILER_CFLAGS  += -r8 -cpp
+	LINK_FORTRAN      += -lifcore
 
-  COMPILER_CFLAGS   +=  -restrict
-  COMPILER_LFLAGS   +=
+	COMPILER_CFLAGS   +=  -restrict
+	COMPILER_LFLAGS   +=
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
-  # Settings for the GNU Compiler
-  # --------------------------------------------
-  ifdef $(CC)
-  else
-  CC=g++
-  endif
-  ifdef $(FC)
-  else
-  FC=gfortran
-  endif
-  FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
-  LINK_FORTRAN      += -lgfortran
+	# Settings for the GNU Compiler
+	# --------------------------------------------
+	ifndef $(EXAHYPE_CC)
+	  EXAHYPE_CC=g++
+	endif
+	ifndef $(CC)
+	  CC=g++
+	endif
+	ifndef $(FC)
+		FC=gfortran
+	endif
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	LINK_FORTRAN      += -lgfortran
 
-  COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
-  COMPILER_LFLAGS   +=
+	COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
+	COMPILER_LFLAGS   +=
 
 else
-  # Option not recognized
-  # ----------------------------------------------
-  $(error Unknown option for variable [COMPILER])
+	# Option not recognized
+	# ----------------------------------------------
+	$(error Unknown option for variable [COMPILER])
 endif
 
 
@@ -133,33 +139,33 @@ endif
 #
 #Set compiler and linker flags for the different architectures
 ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-  # Settings for CPU architectures
-  # ----------------------------------------------
-  COMPILER_CFLAGS +=
-  COMPILER_LFLAGS +=
+	# Settings for CPU architectures
+	# ----------------------------------------------
+	COMPILER_CFLAGS +=
+	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  COMPILER_CFLAGS += -mmic
-  COMPILER_LFLAGS += -mmic -lrt
+	# Settings for the Xeon Phi architecture
+	# --------------------------------------------
+	COMPILER_CFLAGS += -mmic
+	COMPILER_LFLAGS += -mmic -lrt
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  COMPILER_CFLAGS += -xMIC-AVX512 -fma
-  COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+	# Settings for the Xeon Phi architecture
+	# --------------------------------------------
+	COMPILER_CFLAGS += -xMIC-AVX512 -fma
+	COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  COMPILER_CFLAGS += -xCORE-AVX2 -fma
-  COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+	# Settings for the Xeon Phi architecture
+	# --------------------------------------------
+	COMPILER_CFLAGS += -xCORE-AVX2 -fma
+	COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
 
 else
-  # Option not recognized
-  # ----------------------------------------------
-  $(error Unknown option for variable [ARCHITECTURE])
+	# Option not recognized
+	# ----------------------------------------------
+	$(error Unknown option for variable [ARCHITECTURE])
 endif
 
 
@@ -167,30 +173,30 @@ endif
 #
 # Special options for all "non-Debug" builds
 ifneq ($(call tolower,$(MODE)),debug)
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    # Settings for the Intel compiler
-    # ----------------------------------------------
-    ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-    COMPILER_CFLAGS += -O3 -no-ipo -ip
-    COMPILER_LFLAGS +=
-    else
-    COMPILER_CFLAGS += -fast -no-ipo -ip
-    COMPILER_LFLAGS +=
-    endif
+	ifeq ($(call tolower,$(COMPILER)),intel)
+	  # Settings for the Intel compiler
+	  # ----------------------------------------------
+	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	  COMPILER_CFLAGS += -O3 -no-ipo -ip
+	  COMPILER_LFLAGS +=
+	  else
+	  COMPILER_CFLAGS += -fast -no-ipo -ip
+	  COMPILER_LFLAGS +=
+	  endif
 
-    #Special options
-    ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-      COMPILER_CFLAGS += -xHost
-      COMPILER_LFLAGS +=
-    endif
+	  #Special options
+	  ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+	    COMPILER_CFLAGS += -xHost
+	    COMPILER_LFLAGS +=
+	  endif
 
-  else ifeq ($(call tolower,$(COMPILER)),gnu)
-    # Settings for the GNU compiler
-    # --------------------------------------------
+	else ifeq ($(call tolower,$(COMPILER)),gnu)
+	  # Settings for the GNU compiler
+	  # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-    COMPILER_CFLAGS += -O3 -march=native
-    COMPILER_LFLAGS +=
-  endif
+	  COMPILER_CFLAGS += -O3 -march=native
+	  COMPILER_LFLAGS +=
+	endif
 endif
 
 
@@ -259,12 +265,11 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-        ifdef $(CC)
-        else
+	ifndef $(CC)
 		ifeq ($(call tolower,$(COMPILER)),gnu)
-			CC = mpiCC
+			EXAHYPE_CC = mpiCC
 		else
-			CC = mpiicpc
+			EXAHYPE_CC = mpiicpc
 		endif
 	endif
 endif
@@ -289,7 +294,7 @@ endif
 # Linker Settings
 # ---------------
 # By default, I use the compiler command. But you might wanna modify it.
-LL=$(CC)
+LL=$(EXAHYPE_CC)
 
 
 COBJECTS=$(CSOURCES:.cpp=.o)
@@ -317,7 +322,7 @@ buildinfo:
 		"DISTRIBUTEDMEM = $(DISTRIBUTEDMEM)" \
 		"------" \
 		"ARCHITECTURE = $(ARCHITECTURE)" \
-		"CC = $(CC)" \
+		"CC = $(EXAHYPE_CC)" \
 		"BOUNDARYCONDITIONS = $(BOUNDARYCONDITIONS)" \
 		"------" \
 		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
@@ -346,7 +351,7 @@ endif
 
 doFortran:
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90
+	$(EXAHYPE_FC) $(FCOMPILER_CFLAGS) -c typesDef.f90
 endif
 
 ffiles.mk: | doFortran
@@ -391,11 +396,12 @@ header:
 	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
 	@echo ================================
 	@echo
-	@echo ExaHyPE uses environment variables CC and FC for the C++ or
-	@echo Fortran compiler, respectively. If you haven\'t defined CC and 
-	@echo FC yourself, ExaHyPE sets CC to mpiicpc, icpc or g++ depending
-	@echo on the target. If you specify your own compile variables, please
-	@echo specify a valid COMPILER mode nevertheless.
+	@echo ExaHyPE uses environment variables EXAHYPE_CC and EXAHYPE_FC for the 
+	@echo C++ or Fortran compiler, respectively. If you haven\'t defined EXAHYPE_CC
+	@echo and EXAHYPE_FC yourself, ExaHyPE defaults them to mpiicpc, icpc, g++, and 
+	@echo so forth depending on the value of COMPILER. If you specify your own 
+	@echo compilers via EXAHYPE_CC and EXAHYPE_FC, please specify a valid COMPILER 
+	@echo mode nevertheless.
 
 
 build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
@@ -419,10 +425,10 @@ clean:
 
 
 $(COBJECTS): %.o : %.cpp
-	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	$(EXAHYPE_CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90#
-	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
+	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	
