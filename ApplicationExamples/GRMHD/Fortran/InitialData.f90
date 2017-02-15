@@ -11,8 +11,8 @@ SUBROUTINE InitialData(x, t, Q)
 
 	! Call here one of
 	! CALL InitialBlast(x, 0,  Q)
-	Call AlfenWave(x, t, Q)
-	! Call InitialRotor(x, 0, Q)
+	! Call AlfenWave(x, t, Q)
+	Call InitialRotor(x, 0.0, Q)
 	! Call InitialBlast(x, 0, Q)
 	! Call InitialOrsagTang(x, 0 , Q)
 	
@@ -174,11 +174,11 @@ SUBROUTINE InitialRotor(x,t,Q)
     REAL :: rho0, p0, rvel0, rho1, p1, B0, v0
     REAL :: V(nVAR), VV(3), BV(3)
     
-    REAL, PARAMETER :: MHDRotomega = 0.05
+    REAL, PARAMETER :: MHDRotomega = 0.95
     REAL :: EPCenter(2), EPRadius
     
     EPCenter = (/ 0.5, 0.5 /)
-    EPRadius = 0.3
+    EPRadius = 0.1
     
     rho0 = 1.0
     p0   = 1.0
@@ -311,6 +311,8 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     INTEGER :: MAXNEWTON = 50, iNewton
     REAL :: ng = 1.0 / (gamma-1.0)
 
+    PRINT *, 'InitialAccretionDisc3D'
+    
      CALL METRIC_3D ( x, lapse, gp, gm, shift, g_cov, g_contr)
 
      ng     = 1.0/(gamma - 1.0)

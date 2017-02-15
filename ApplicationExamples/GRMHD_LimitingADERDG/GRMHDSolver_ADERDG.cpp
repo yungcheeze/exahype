@@ -9,6 +9,7 @@
 #include "kernels/GaussLegendreQuadrature.h"
 
 const double excision_radius = 1.0;
+  const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
 
 
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
@@ -83,8 +84,15 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
 
 
 bool GRMHD::GRMHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
-  // Disable Limiter for AlfenWave:
-  return true; // TRUE = LIMITER OFF
+  if (QMin[0] < 0.0) return false;
+  if (QMin[4] < 0.0) return false;
+
+  for (int i=0; i<nVar; ++i) {
+    if (!std::isfinite(QMin[i])) return false;
+    if (!std::isfinite(QMax[i])) return false;
+  }
+
+  return true;
 }
 
 

@@ -59,7 +59,7 @@ exahype-project GRMHD
     /* gamma is actually parts of a matrix... */
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
     order const                    = 3
-    maximum-mesh-size              = 0.05
+    maximum-mesh-size              = 0.04
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
@@ -69,11 +69,11 @@ exahype-project GRMHD
     dmp-relaxation-parameter       = 0.0001
     dmp-difference-scaling         = 0.001
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    plot vtk::Legendre::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
       repeat    = 0.00166667
-      output    = ./conserved
+      output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
 
