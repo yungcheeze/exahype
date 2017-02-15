@@ -197,7 +197,7 @@ void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ,
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, NumberOfVariables * sizeof(double));
+  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
 bool Euler::MyEulerSolver::isDummyKRequired() const {
