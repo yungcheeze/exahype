@@ -27,7 +27,7 @@ set -e # <- this is important during the script execution!
 
 for cmd in "$@"; do
 	case $cmd in
-		"exahype"|"bootstrap") # Does git pull, update-peano and update-toolkit
+		"exahype"|"bootstrap"|"all") # Does git pull, update-peano and update-toolkit
 			cdroot; info "Performing standard exahype update"
 			git pull
 			subreq peano toolkit
@@ -67,7 +67,7 @@ for cmd in "$@"; do
 			;;
 		""|"help"|"--help")
 			info "Allows updating parts of this repository"
-			info "Valid commands are: exahype, peano, toolkit, libxsmm"
+			info "Valid commands are: exahype/bootstrap/all, peano, toolkit, libxsmm"
 			info "and all of it's combinations, whitespace seperated"
 			;;
 		*)
