@@ -119,7 +119,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  CC=g++
 	endif
 	ifndef $(FC)
-		FC=gfortran
+	  EXAHYPE_FC=gfortran
 	endif
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
 	LINK_FORTRAN      += -lgfortran
