@@ -27,10 +27,10 @@
 void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 	// This string is used in the --version output to identify compile time constants
 	os << "{{Project}}::{{AbstractSolver}}("
-	   << "nVar=" << nVar << ", "
-	   << "nParam=" << nParams << ", "
-	   << "nDim=" << nDim << ", "
-	   << "order=" << order
+	   << "nVar=" << NumberOfVariables << ", "
+	   << "nParam=" << NumberOfParameters << ", "
+	   << "nDim=" << Dimensions << ", "
+	   << "order=" << Order
 	   << ")";
 }
 

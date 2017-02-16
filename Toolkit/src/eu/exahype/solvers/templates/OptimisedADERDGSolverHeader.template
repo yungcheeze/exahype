@@ -35,6 +35,11 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
     static void matrixb(const double* const Q, const int normalNonZero, double* Bn);
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
+    //TODO JMG
+    //Not implemented
+    bool isDummyKRequired() const override;
+    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

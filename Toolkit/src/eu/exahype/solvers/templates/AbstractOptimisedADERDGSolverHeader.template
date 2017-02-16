@@ -24,10 +24,11 @@ namespace {{Project}}{
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   public:
   
-    static constexpr int nVar    = kernels::aderdg::optimised::getNumberOfVariable();
-    static constexpr int nParams = kernels::aderdg::optimised::getNumberOfParameter();
-    static constexpr int nDim    = kernels::aderdg::optimised::getDimension();
-    static constexpr int order   = kernels::aderdg::optimised::getBasisSize() -1;
+
+    static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
+    static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
+    static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
+    static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
   
     {{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
