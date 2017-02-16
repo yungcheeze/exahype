@@ -20,13 +20,13 @@
  */
 exahype-project  Euler
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/EulerFlowF90
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/EulerFlowF90
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.02
@@ -44,15 +44,15 @@ exahype-project  Euler
   end optimisation
   
   solver ADER-DG MyEulerSolver
-    variables         = 5
-    order             = 3
+    variables const         = 5
+    order const             = 3
     maximum-mesh-size = 0.1
     time-stepping     = global
-    kernel            = generic::fluxes::nonlinear
-    language          = Fortran
+    kernel const            = generic::fluxes::nonlinear
+    language const          = Fortran
     
     plot vtk::Cartesian::vertices::ascii
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.0001
       output    = ./result

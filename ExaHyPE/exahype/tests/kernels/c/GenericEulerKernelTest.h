@@ -26,6 +26,10 @@ namespace c {
 class GenericEulerKernelTest : public tarch::tests::TestCase {
 	
  public:
+  static constexpr int NumberOfVariables  = 5;
+  static constexpr int NumberOfParameters = 0;
+  static constexpr int Order              = 3;
+
   GenericEulerKernelTest();
   virtual ~GenericEulerKernelTest();
 

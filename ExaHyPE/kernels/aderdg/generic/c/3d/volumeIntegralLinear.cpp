@@ -51,11 +51,10 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
         for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
 	  double sum = 0.0;
           for (int m = 0; m < DIMENSIONS; m++) {
-	    sum = sum  +   lFhi[idx_lFhi(m, i, j, k, l)];
-            //lduh[idx_lduh(i, j, k, l)] -=
-            //    weight * lFhi[idx_lFhi(m, i, j, k, l)];
+	    //sum = sum  +   lFhi[idx_lFhi(m, i, j, k, l)];
+            lduh[idx_lduh(i, j, k, l)] -= weight * lFhi[idx_lFhi(m, i, j, k, l)];
           }
-	  lduh[idx_lduh(i, j, k, l)] = -weight *sum;
+	  //lduh[idx_lduh(i, j, k, l)] = -weight *sum;
         }
       }
     }

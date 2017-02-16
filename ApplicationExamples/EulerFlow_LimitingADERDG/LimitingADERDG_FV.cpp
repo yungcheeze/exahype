@@ -3,6 +3,13 @@
 #include "InitialData.h"
 #include "LimitingADERDG_FV_Variables.h"
 
+#include <cstring>
+
+void Euler::LimitingADERDG_FV::init(std::vector<std::string>& cmdlineargs) {
+  // This function is called inside the constructur.
+  // @todo Please implement/augment if required.
+}
+
 void Euler::LimitingADERDG_FV::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
   Fluxes f(F);

@@ -5,7 +5,12 @@ class {{Project}}::{{Solver}}::{{Name}} {
     static constexpr int Size = {{Size}};
     
     {{Name}}() {}
-  
+    
+    
+    void operator = ({{Name}}& value) {
+      std::copy(value.data(),value.data()+Size,_data);
+    }
+    
     double& operator [] (int index) {
       assertion(index>=0 && index < Size);
       return _data[index];

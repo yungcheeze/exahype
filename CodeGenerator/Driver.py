@@ -97,7 +97,8 @@ precision              = 'DP' #l_commandLineArguments.precision
 config = { 
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
-           "nDim"              : dimensions
+           "nDim"              : dimensions,
+           "nPar"              : 0 #TODO JMG add paramters ?
           }
 
 # configure global setup of the code generator

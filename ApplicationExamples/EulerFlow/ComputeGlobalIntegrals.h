@@ -22,16 +22,16 @@ namespace Euler{
 #include "TimeSeriesReductions.h"
 #include "MyEulerSolver.h"
 
-#ifndef __NVAR__
-static const int nVar = Euler::MyEulerSolver::nVar; // shortcut
-#define __NVAR__
+#ifndef __NumberOfVariables__
+static const int NumberOfVariables = Euler::MyEulerSolver::NumberOfVariables; // shortcut
+#define __NumberOfVariables__
 #endif
 
 class Euler::ComputeGlobalIntegrals: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   private:
-    TimeSeriesReductions* conserved[nVar];
-    TimeSeriesReductions* primitives[nVar];
-    TimeSeriesReductions* errors[nVar];
+    TimeSeriesReductions* conserved[NumberOfVariables];
+    TimeSeriesReductions* primitives[NumberOfVariables];
+    TimeSeriesReductions* errors[NumberOfVariables];
     TimeSeriesReductions* statistics;
     double time;
   public:

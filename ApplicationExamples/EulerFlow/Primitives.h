@@ -40,7 +40,7 @@ inline void prim2con(double* Q, const double* V) {
 // skip the cons2prim for debugging
 /*
 inline void cons2prim(double* V, const double* Q) {
-	for(int i=0; i<Euler::MyEulerSolver::nVar; i++)
+	for(int i=0; i<Euler::MyEulerSolver::NumberOfVariables; i++)
 		V[i] = Q[i];
 }
 

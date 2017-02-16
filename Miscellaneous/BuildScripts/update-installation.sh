@@ -16,37 +16,49 @@ abort () { echo -e $@; exit -1; } # fail without name of script
 finish () { echo $@; exit 0; } # finish with message happily
 subreq() { $SCRIPT $@; } # subrequest: Query another command for output
 cdroot() { cd "$GITROOT"; } # the crucial change to the repository root directory
-getappname() { APPNAME="$PAR"; [ -z "$APPNAME" ] && abort "Usage: $0 $CMD <AppName>"; } # set $APPNAME or die
-getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"; } # set APPPATH or die
-cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
+
+cdroot;
 
 set -e # <- this is important during the script execution!
 
 # no arguments provided
 [ $# -eq 0 ] && subreq help
 
+# TODO: The idea was that one can call this script with several parameters
+# and each is then done in order. However, what happens instead is that only
+# the first argument is invoked.
+# Thus the help message is misleading
+
 for cmd in "$@"; do
 	case $cmd in
 		"exahype"|"bootstrap"|"all") # Does git pull, update-peano and update-toolkit
-			cdroot; info "Performing standard exahype update"
+			info "Performing parallel quick standard exahype update"
 			git pull
-			subreq peano toolkit
+			subreq peano &
+			subreq clean-toolkit & 
+			wait
 			# We don't do libxsmm as it's not needed for most applications
 			info "Finished updating ExahyPE (+peano, +toolkit) in $GITROOT"
 			;;
 		"peano") # Updates the Peano subversion repository
-			cdroot; info "Updating Peano"
+			info "Updating Peano"
 			cd Peano
 			exec ./checkout-update-peano.sh
 			info "Finished updating Peano"
 			;;
 		"toolkit") # Compiles the toolkit with ant and javac
-			cdroot; info "Creating Toolkit"
+			info "Creating Toolkit"
 			cd Toolkit
 			exec ./build.sh
 			;;
+		"clean-toolkit") # Workaround for the toolkit build
+			info "Creating a clean toolkit"
+			cd Toolkit
+			rm -r src/eu/exahype/node*
+			exec ./build.sh
+			;;
 		"libxsmm") # Checkout or recompile libxsmm
-			cdroot; info "Cloning or updating Libxsmm"
+			info "Cloning or updating Libxsmm"
 			[[ -e Libxsmm ]] || git clone https://github.com/hfp/libxsmm.git Libxsmm
 			# libxsmm is a large repository, instead of cloning, downloading
 			# https://github.com/hfp/libxsmm/archive/master.zip
@@ -57,7 +69,7 @@ for cmd in "$@"; do
 			exec make generator -j4
 			;;
 		"full-eulerflow") # Update exahype, clean, recompile and run the EulerFlow application
-			cdroot; info "Making a full update and cleaning of the standard EulerFlow application"
+			info "Making a full update and cleaning of the standard EulerFlow application"
 			# this will be no more neccessary once we have out-of-tree builds.
 			StandardApp="EulerFlow"
 			subreq exahype

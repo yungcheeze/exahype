@@ -9,7 +9,10 @@
 #include "C2P-MHD.h"
 #include "InitialDataAdapter.h"
 
-MHDSolver::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
+#include "kernels/GaussLegendreQuadrature.h"
+#include <cmath>
+
+SRMHD::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
 	// open all the reductions
 	assert( 9 == nVar );
 	
@@ -47,13 +50,13 @@ MHDSolver::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
 }
 
 
-MHDSolver::IntegralsWriter::~IntegralsWriter() {
+SRMHD::IntegralsWriter::~IntegralsWriter() {
 	// delete all the TimeSeriesReductions. Not that important
 	// as this is a kind of a Singleton object.
 }
 
 
-void MHDSolver::IntegralsWriter::startPlotting(double time) {
+void SRMHD::IntegralsWriter::startPlotting(double time) {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->initRow(time);
 		primitives[i]->initRow(time);
@@ -63,7 +66,7 @@ void MHDSolver::IntegralsWriter::startPlotting(double time) {
 }
 
 
-void MHDSolver::IntegralsWriter::finishPlotting() {
+void SRMHD::IntegralsWriter::finishPlotting() {
 	for(int i=0; i<nVar; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
@@ -73,7 +76,7 @@ void MHDSolver::IntegralsWriter::finishPlotting() {
 }
 
 
-void MHDSolver::IntegralsWriter::mapQuantities(
+void SRMHD::IntegralsWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -85,11 +88,19 @@ void MHDSolver::IntegralsWriter::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	const double NumberOfLagrangePointsPerAxis = MHDSolver::MHDSolver::order + 1;
+	const double NumberOfLagrangePointsPerAxis = SRMHD::AbstractMHDSolver::Order + 1;
 	//const double NumberOfUnknownsPerGridPoint = nVar;
+	
+	// Gauss-Legendre weights from pos argument
+	double wx = kernels::gaussLegendreWeights[SRMHD::AbstractMHDSolver::Order][pos[0]];
+	double wy = kernels::gaussLegendreWeights[SRMHD::AbstractMHDSolver::Order][pos[1]];
+	double wz = 1;
+	#ifdef Dim3
+	wz = kernels::gaussLegendreWeights[SRMHD::AbstractMHDSolver::Order][pos[2]];
+	#endif
 
 	// volume form for integration
-	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
+	double scaling = tarch::la::volume(sizeOfPatch);
 	statistics->addValue(scaling, 1);
 
 	// reduce the conserved quantities
@@ -115,9 +126,13 @@ void MHDSolver::IntegralsWriter::mapQuantities(
 	
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {
-		localError[i] = abs(V[i] - ExactPrim[i]);
-		errors[i]->addValue( localError[i], scaling );
-
+		localError[i] = std::fabs(V[i] - ExactPrim[i]);
+		//localError[i] = abs(Q[i] - ExactCons[i]);
+		errors[i]->addValue( localError[i], scaling*wx*wy*wz );
+		
+		/*if(i==0) {
+			printf("RHO; t=%e x=(%e,%e) num=%14e exact=%14e error=%e\n", timeStamp, x[0],x[1], V[0], ExactPrim[0], localError[0]);
+		}*/
     // Uncomment for debugging reasons
 //    std::cout << "V_ana["<<i<<"]="<<ExactPrim[i]<<",V_h["<<i<<"]="<<V[i]<< std::endl;
 //    std::cout << "Q_ana["<<i<<"]="<<ExactCons[i]<<",Q_h["<<i<<"]="<<Q[i] <<std::endl;

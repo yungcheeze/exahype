@@ -20,13 +20,13 @@
  */
 exahype-project  Elastic
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/ElasticWaves3D_nonlinearkernel
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/ElasticWaves3D_nonlinearkernel
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 3
+    dimension const                = 3
     width                    = 10.0, 20.0, 20.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 1.0
@@ -48,16 +48,16 @@ exahype-project  Elastic
   end optimisation
   
   solver ADER-DG MyElasticSolver
-    variables         = 12
-    parameters        = 0
-    order             = 3
+    variables const         = 12
+    parameters const        = 0
+    order const             = 3
     maximum-mesh-size = 2.0
     time-stepping     = global
-    kernel            = generic::fluxes::nonlinear
-    language          = C
+    kernel const            = generic::fluxes::nonlinear
+    language const          = C
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 12
+      variables const = 12
       time      = 0.0
       repeat    = 0.05
       output    = ./conserved

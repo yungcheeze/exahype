@@ -18,16 +18,17 @@
  */
 exahype-project MHD
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/SRMHD_LimitingADERDG
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/SRMHD_LimitingADERDG
+  architecture const               = noarch
+  log-file                         = whatever.log
 
   computational-domain
-    dimension                = 3
-    width                    = 10.0, 5.0, 5.0
-    offset                   = 0.0, -5.0,-5.0
-    end-time                 = 10.0
+    dimension const                = 2
+    width                          = 10.0, 10.0
+    offset                         = 0.0, -5.0
+    end-time                       = 10.0
   end computational-domain
   
   shared-memory
@@ -55,19 +56,20 @@ exahype-project MHD
   end optimisation
 
   solver Limiting-ADER-DG MHDSolver
-    variables                = 9
-    order                    = 7
-    maximum-mesh-size        = 0.1
-    time-stepping            = global
-    kernel                   = generic::fluxes::nonlinear
-    language                 = C
-    limiter-kernel           = generic::Godunov 
-    limiter-language         = C
-    dmp-relaxation-parameter = 0.0001
-    dmp-difference-scaling   = 0.001
+    variables const                = rho:1,vel:3,E:1,B:3,constrDaming:1
+    order const                    = 3
+    maximum-mesh-size              = 0.9
+    time-stepping                  = global
+    kernel const                   = generic::fluxes::nonlinear
+    language const                 = C
+
+    limiter-kernel const           = generic::Godunov 
+    limiter-language const         = C
+    dmp-relaxation-parameter       = 0.0001
+    dmp-difference-scaling         = 0.001
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.01
       output    = ./conserved

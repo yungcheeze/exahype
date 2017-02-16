@@ -13,7 +13,50 @@
 
 #include "{{Solver}}.h"
 
+#include <algorithm>
+
 #include "tarch/la/Matrix.h"
+
+class {{Project}}::{{Solver}}::ReadOnlyVariables {
+  private:
+    const double* const _Q;
+  public:
+    static constexpr int SizeVariables  = {{NumberOfVariables}};
+    static constexpr int SizeParameters = {{NumberOfParameters}};
+    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
+    
+    ReadOnlyVariables(const double* const Q) : _Q(Q) {}
+    
+    double operator [] (int index) const {
+      assertion(index>=0 && index < Size);
+      return _Q[index];
+    }
+    
+    double operator () (int index) const {
+      assertion(index>=0 && index < Size);
+      return _Q[index];
+    }
+    
+    const double* data() const {
+      return _Q;
+    }
+    
+    int size() const {
+      return Size;
+    }
+    
+    int variables() const {
+      return SizeVariables;
+    }
+    
+    int parameters() const {
+      return SizeParameters;
+    }
+    
+
+{{VariablesGetters}}
+};
+
 
 class {{Project}}::{{Solver}}::Variables {
   private:
@@ -24,7 +67,18 @@ class {{Project}}::{{Solver}}::Variables {
     static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
   
     Variables(double* Q) : _Q(Q) {}
-  
+    
+    void operator = (Variables& variables) {
+      std::copy(variables.data(),variables.data()+Size,_Q);
+    }
+    
+    void operator = (ReadOnlyVariables& variables) {
+      assertion(variables.variables()==SizeVariables);
+      assertion(variables.parameters()==SizeParameters);
+      assertion(variables.size()==Size);
+      std::copy(variables.data(),variables.data()+Size,_Q);
+    }
+    
     double& operator [] (int index) {
       assertion(index>=0 && index < Size);
       return _Q[index];
@@ -56,48 +110,6 @@ class {{Project}}::{{Solver}}::Variables {
 
 {{VariablesSetters}}
 };
-
-
-class {{Project}}::{{Solver}}::ReadOnlyVariables {
-  private:
-    const double* const _Q;
-  public:
-    static constexpr int SizeVariables  = {{NumberOfVariables}};
-    static constexpr int SizeParameters = {{NumberOfParameters}};
-    static constexpr int Size           = {{NumberOfVariables}}+{{NumberOfParameters}};
-    
-    ReadOnlyVariables(const double* const Q) : _Q(Q) {}
-    
-    double operator [] (int index) const {
-      assertion(index>=0 && index < Size);
-      return _Q[index];
-    }
-    
-    double operator () (int index) const {
-      assertion(index>=0 && index < Size);
-      return _Q[index];
-    }
-    
-    const double* const data() {
-      return _Q;
-    }
-    
-    int size() const {
-      return Size;
-    }
-    
-    int variables() const {
-      return SizeVariables;
-    }
-    
-    int parameters() const {
-      return SizeParameters;
-    }
-    
-
-{{VariablesGetters}}
-};
-
 
 
 class {{Project}}::{{Solver}}::Fluxes {

@@ -32,7 +32,7 @@ class VolumeIntegralGenerator:
     m_context = {}
     
     # name of generated output file
-    m_filename = "volumeIntegral.cpp"
+    m_filename = "volumeIntegral.cpph"
 
 
     def __init__(self, i_context):
@@ -44,7 +44,7 @@ class VolumeIntegralGenerator:
             pass
         else:
             self.generateNonlinearGemms() # generates gemms
-            
+            self.m_context['nDof3D'] = 1 if self.m_context['nDim'] == 2 else self.m_context['nDof']
             # initialize context
             gemmName = 'gemm_'+str(self.m_context['nVar'])+'_'+str(self.m_context['nDof'])+'_'+str(self.m_context['nDof'])
             self.m_context['gemm_x'] = gemmName+'_lduh_x'
@@ -58,7 +58,7 @@ class VolumeIntegralGenerator:
             self.m_context['j_seq'] = range(0,self.m_context['nDof']) if (self.m_context['nDim'] >= 3) else [0]
             
             # render template
-            TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpp.template', self.m_filename, self.m_context)
+            TemplatingUtils.renderAsFile('volumeIntegralNonLinear_cpph.template', self.m_filename, self.m_context)
 
 
     def generateNonlinearGemms(self):
@@ -132,34 +132,35 @@ class VolumeIntegralGenerator:
                                     "gemm")
         l_matmulList.append(l_matmul_y)
 
-        # (3) MATMUL( lFhi_z(:,:,i,j), TRANSPOSE(Kxi) )
-        l_matmul_z = MatmulConfig(  # M
-                                    self.m_context['nVar'],                             \
-                                    # N
-                                    self.m_context['nDof'],                             \
-                                    # K
-                                    self.m_context['nDof'],                             \
-                                    # LDA
-                                    Backend.getSizeWithPadding(self.m_context['nVar']), \
-                                    # LDB
-                                    Backend.getSizeWithPadding(self.m_context['nDof']), \
-                                    # LDC
-                                    self.m_context['nVar']*(self.m_context['nDof']**2),  \
-                                    # alpha 
-                                    1,                                                 \
-                                    # beta
-                                    1,                                                 \
-                                    # alignment A
-                                    0,                                                 \
-                                    # alignment C
-                                    0,                                                 \
-                                    # name
-                                    "lduh_z",                                          \
-                                    # prefetching
-                                    "nopf",                                            \
-                                    # type
-                                    "gemm")
-        l_matmulList.append(l_matmul_z)
+        if(self.m_context['nDim']>=3):
+            # (3) MATMUL( lFhi_z(:,:,i,j), TRANSPOSE(Kxi) )
+            l_matmul_z = MatmulConfig(  # M
+                                        self.m_context['nVar'],                             \
+                                        # N
+                                        self.m_context['nDof'],                             \
+                                        # K
+                                        self.m_context['nDof'],                             \
+                                        # LDA
+                                        Backend.getSizeWithPadding(self.m_context['nVar']), \
+                                        # LDB
+                                        Backend.getSizeWithPadding(self.m_context['nDof']), \
+                                        # LDC
+                                        self.m_context['nVar']*(self.m_context['nDof']**2),  \
+                                        # alpha 
+                                        1,                                                 \
+                                        # beta
+                                        1,                                                 \
+                                        # alignment A
+                                        0,                                                 \
+                                        # alignment C
+                                        0,                                                 \
+                                        # name
+                                        "lduh_z",                                          \
+                                        # prefetching
+                                        "nopf",                                            \
+                                        # type
+                                        "gemm")
+            l_matmulList.append(l_matmul_z)
 
         Backend.generateAssemblerCode("asm_"+self.m_filename, l_matmulList)
 

@@ -15,26 +15,28 @@ namespace kernels {
   namespace aderdg {
     namespace optimised {
 
-      inline int getNumberOfVariable()        {return  {{nVar}};}
-      inline int getNumberOfVariablePadded()  {return  {{nVarPad}};}
+      constexpr int getNumberOfVariable()        {return {{nVar}};}
+      constexpr int getNumberOfVariablePadded()  {return {{nVarPad}};}
       
-      inline int getBasisSize()               {return  {{nDof}};}
-      inline int getBasisSizePadded()         {return  {{nDofPad}};}
+      constexpr int getNumberOfParameter()       {return {{nPar}};}
       
-      inline int getDimension()               {return  {{nDim}};}
+      constexpr int getBasisSize()               {return {{nDof}};}
+      constexpr int getBasisSizePadded()         {return {{nDofPad}};}
+      
+      constexpr int getDimension()               {return {{nDim}};}
 	  
-      inline bool isLinear()                  {return {{isLinearCText}};}
+      constexpr bool isLinear()                  {return {{isLinearCText}};}
 
 {% if isLinear %}  
       //TODO JMG initialize correct size for linear case
 {% else %}
-      inline int getTempSpaceTimeUnknownsSize()     {return {{nVarPad*(nDof**(nDim+1))}};} // == lQh size
-      inline int getTempSpaceTimeFluxUnknownsSize() {return {{nVarPad*(nDof**(nDim+1))*(nDim+1)}};} // == lFh size
+      constexpr int getTempSpaceTimeUnknownsSize()     {return {{nVarPad*(nDof**(nDim+1))}};} // == lQh size
+      constexpr int getTempSpaceTimeFluxUnknownsSize() {return {{nVarPad*(nDof**(nDim+1))*(nDim+1)}};} // == lFh size
 {% endif %}
-      inline int getTempUnknownsSize()              {return {{nVarPad*(nDof**nDim)}};}  // == lQhi size
-      inline int getTempFluxUnknownsSize()          {return {{nVarPad*(nDof**nDim)*(nDim+1)}};} // == lFhi size
-      inline int getBndFaceSize()                   {return {{nVar*bndBlockSize}};} // == FR/FL, QR/QL size
-      inline int getBndTotalSize()                  {return {{2*nDim*nVar*bndBlockSize}};} // == lFbnd/lQbnd size
+      constexpr int getTempUnknownsSize()              {return {{nVarPad*(nDof**nDim)}};}  // == lQhi size
+      constexpr int getTempFluxUnknownsSize()          {return {{nVarPad*(nDof**nDim)*(nDim+1)}};} // == lFhi size
+      constexpr int getBndFaceSize()                   {return {{nVar*bndBlockSize}};} // == FR/FL, QR/QL size
+      constexpr int getBndTotalSize()                  {return {{2*nDim*nVar*bndBlockSize}};} // == lFbnd/lQbnd size
     }
   }
 }

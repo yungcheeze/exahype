@@ -30,5 +30,7 @@ set -e
 
 cd src
 make clean
-make -j${NUMPROCS} all
+make createParser
+make -j${NUMPROCS} compile
+make dist
 

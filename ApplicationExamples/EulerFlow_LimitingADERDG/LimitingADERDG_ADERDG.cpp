@@ -81,11 +81,11 @@ void Euler::LimitingADERDG_ADERDG::adjustedSolutionValues(const double* const x,
 }
 
 void Euler::LimitingADERDG_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, nVar * sizeof(double));
+  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
 void Euler::LimitingADERDG_ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, nVar * sizeof(double));
+  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
 exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {

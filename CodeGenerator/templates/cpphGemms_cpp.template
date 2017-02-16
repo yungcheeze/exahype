@@ -17,6 +17,8 @@
 // picard gemms
 {% if isLinear %}
 {% else %}
-//#include "kernels/aderdg/optimised/asm_picard.c"
+#include "kernels/aderdg/optimised/asm_picard.c"
 {% endif %}
 
+//volume integral gemms
+#include "kernels/aderdg/optimised/asm_volumeIntegral.c"

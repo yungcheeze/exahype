@@ -35,7 +35,7 @@ void Euler::PrimitivesWriter::mapQuantities(
 /**
  * This is the Primitive Variable plotter
  **/
-  //double V[Euler::MyEulerSolver::nVar];
+  //double V[Euler::MyEulerSolver::NumberOfVariables];
   cons2prim(outputQuantities, Q);
 
   //for (int i=0; i<0; i++){ 

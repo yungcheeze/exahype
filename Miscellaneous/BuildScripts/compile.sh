@@ -147,13 +147,17 @@ done
 
 # Workaround for broken dependency build system:
 # Generate well known fortran modules if present
-for fmodule in Parameters.f90 typesDef.f90; do
-	if [ -e $fmodule ]; then
-		echo -e "Precompiling $fmodule as otherwise build fails"
-		FORTFLAGS="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
-		verbose gfortran $FORTFLAGS -c $fmodule
-	fi
-done
+
+# This works, but cannot access the EXAHYPE_CFLAGS or similar. Instead, I made
+# a small change in the Makesystem so Modules compile first. Probably.
+
+#for fmodule in Parameters.f90 typesDef.f90; do
+#	if [ -e $fmodule ]; then
+#		echo -e "Precompiling $fmodule as otherwise build fails"
+#		FORTFLAGS="-fdefault-real-8 -fdefault-double-8 -ffree-line-length-none"
+#		verbose gfortran $FORTFLAGS -c $fmodule
+#	fi
+#done
 
 set -o pipefail # fail if make fails
 

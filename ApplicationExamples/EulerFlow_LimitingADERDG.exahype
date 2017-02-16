@@ -20,14 +20,15 @@
  */
 exahype-project  Euler
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/EulerFlow_LimitingADERDG
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/EulerFlow_LimitingADERDG
+  architecture const               = noarch
+  log-file  = bla.log
 
   computational-domain
-    dimension                = 2
-    width                    = 1.0, 1.0
+    dimension const                = 2
+    width                    = 1.0, 0.3
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -57,19 +58,19 @@ exahype-project  Euler
   end optimisation
 
   solver Limiting-ADER-DG LimitingADERDG
-    variables         = rho:1,j:3,E:1
-    order             = 3
-    maximum-mesh-size = 0.05
+    variables const         = rho:1,j:3,E:1
+    order const             = 3
+    maximum-mesh-size = 0.04
     time-stepping     = global
-    kernel            = generic::fluxes::nonlinear
-    language          = C
-    limiter-kernel    = generic::Godunov 
-    limiter-language  = C
+    kernel const            = generic::fluxes::nonlinear
+    language const          = C
+    limiter-kernel const    = generic::Godunov 
+    limiter-language const  = C
     dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling = 1e-3
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.05
       output    = ./limitingaderg-dg

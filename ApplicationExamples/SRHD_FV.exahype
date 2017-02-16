@@ -8,13 +8,13 @@
  */
 exahype-project  SRHD
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/SRHD_FV
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/SRHD_FV
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 1.0
@@ -39,16 +39,16 @@ exahype-project  SRHD
   end optimisation
 
   solver Finite-Volumes SRHDSolverFV
-    variables          = 5
+    variables const          = 5
     patch-size         = 5
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::Godunov
-    language           = C
+    kernel const             = generic::Godunov
+    language const           = C
 
     /* Apparently, MUSCL doesnt support vtk::Cartesian::vertices */
     plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
@@ -56,7 +56,7 @@ exahype-project  SRHD
     end plot
 
     plot vtk::Cartesian::cells::ascii PrimitivesWriter
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./primitive

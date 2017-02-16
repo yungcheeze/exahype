@@ -188,15 +188,22 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   */
 }
 
+bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, const double* QMax) {
+  return true;
+}
+
 void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, nVar * sizeof(double));
+  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, nVar * sizeof(double));
+  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
 bool Euler::MyEulerSolver::isDummyKRequired() const {
   return false;
 }
 
+void Euler::MyEulerSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+  //TODO KD
+}

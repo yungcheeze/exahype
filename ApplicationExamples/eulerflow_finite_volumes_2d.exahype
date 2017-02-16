@@ -7,13 +7,13 @@
  */
 exahype-project  Euler2d
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/eulerflow_finite_volumes_2d
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./Applications/eulerflow_finite_volumes_2d
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
@@ -27,15 +27,15 @@ exahype-project  Euler2d
   /*
   
   solver ADER-DG MyADERDGSolver
-    variables          = 5
-    order              = 3
+    variables const          = 5
+    order const              = 3
     maximum-mesh-size  = 0.1
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
-    language           = C
+    kernel const             = generic::fluxes::nonlinear
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
@@ -44,15 +44,15 @@ exahype-project  Euler2d
   end solver
 
   solver ADER-DG MyADERDGSolver2
-    variables          = 5
-    order              = 3
+    variables const          = 5
+    order const              = 3
     maximum-mesh-size  = 0.1
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
-    language           = C
+    kernel const             = generic::fluxes::nonlinear
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./solution2
@@ -63,15 +63,15 @@ exahype-project  Euler2d
   */
  
   solver Finite-Volumes MyFiniteVolumesSolver
-    variables          = 5
+    variables const          = 5
     patch-size         = 8
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::MUSCL
-    language           = C
+    kernel const             = generic::MUSCL
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./fv

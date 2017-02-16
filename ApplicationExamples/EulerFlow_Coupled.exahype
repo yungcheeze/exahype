@@ -20,13 +20,13 @@
  */
 exahype-project  Euler
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/EulerFlowCoupled
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/EulerFlowCoupled
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
     end-time                 = 0.012
@@ -55,16 +55,16 @@ exahype-project  Euler
   end optimisation
 
   solver ADER-DG MyADERDG
-    variables         = 5
-    order             = 3
+    variables const         = 5
+    order const             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.15
     time-stepping     = global
-    kernel            = generic::fluxes::nonlinear
-    language          = C
+    kernel const            = generic::fluxes::nonlinear
+    language const          = C
 
     plot vtk::Cartesian::cells::ascii
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.05
       output    = ./aderdg
@@ -74,14 +74,14 @@ exahype-project  Euler
 
  
   solver Finite-Volumes MyFVM
-    variables         = 5
+    variables const         = 5
     patch-size        = 10
     maximum-mesh-size = 0.15
     time-stepping     = global
-    kernel            = generic::MUSCL
-    language          = C
+    kernel const            = generic::MUSCL
+    language const          = C
     plot vtk::Cartesian::cells::ascii
-      variables = 5
+      variables const = 5
       time      = 0.0
       repeat    = 0.05
       output    = ./fvm

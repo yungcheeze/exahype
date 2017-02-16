@@ -7,13 +7,13 @@
  */
 exahype-project  MHDSolver
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./ApplicationExamples/MHD_cpp/
-  architecture               = noarch
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
+  output-directory const           = ./ApplicationExamples/MHD_cpp/
+  architecture const               = noarch
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width = 6.283185307179586, 6.283185307179586
     offset                   = 0.0, 0.0
     end-time                 = 0.8
@@ -46,19 +46,19 @@ exahype-project  MHDSolver
   
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
-    variables          = 9
-    order              = 3
+    variables const          = 9
+    order const              = 3
     /* 27 grid points: 0.2327 */
     maximum-mesh-size  = 0.24
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
+    kernel const             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
-    language           = C
+    language const           = C
     /* choose your iniitial data here. Caveats on whitespace */
     constants = {initialdata:orsagtang}
 
     plot vtk::Cartesian::vertices::ascii
-      variables= 9
+      variables const= 9
       time     = 0.0
       repeat   = 0.05
       output   = ./conserved
@@ -68,7 +68,7 @@ exahype-project  MHDSolver
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
     plot vtk::Cartesian::vertices::ascii
-      variables = 0
+      variables const = 0
       time = 0.0
       repeat = 0.05
       output = ./these-files-should-not-be-there
@@ -76,7 +76,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./primitive
@@ -84,7 +84,7 @@ exahype-project  MHDSolver
     end plot
 
     plot vtk::Cartesian::vertices::ascii
-      variables = 9
+      variables const = 9
       time      = 0.0
       repeat    = 0.05
       output    = ./exact-primitive

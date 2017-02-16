@@ -7,14 +7,14 @@
  */
 exahype-project  Euler2d
 
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
+  peano-kernel-path const          = ./Peano
+  exahype-path const               = ./ExaHyPE
   libxsmm-path               = ../libxsmm
-  output-directory           = ./Applications/optimised_eulerflow2d
-  architecture               = hsw
+  output-directory const           = ./Applications/optimised_eulerflow2d
+  architecture const               = hsw
 
   computational-domain
-    dimension                = 2
+    dimension const                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
@@ -39,15 +39,15 @@ exahype-project  Euler2d
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables          = 5
-    order              = 3
+    variables const          = 5
+    order const              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = optimised::fluxes::nonlinear
-    language           = C
+    kernel const             = optimised::fluxes::nonlinear
+    language const           = C
 
     plot vtk::Cartesian::ascii
-      variables= 5
+      variables const= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./solution

@@ -7,6 +7,11 @@
 #include "Logo.h"
 
 
+
+void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+}
+
+
 bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
   return tarch::la::equals(t,0.0);
 }
@@ -16,38 +21,25 @@ void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
                                                   const double w,
                                                   const double t,
                                                   const double dt, double* Q) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
+  Variables vars(Q);
   
-  tarch::la::Vector<DIMENSIONS,double> myX( x[0], 1.0-x[1] );
+  tarch::la::Vector<DIMENSIONS,double> myX( x[0] - 0.06, 1.0-x[1] - 0.25 ); // translate
   myX *= static_cast<double>(Image.width);
-
-  tarch::la::Vector<DIMENSIONS,int>    myIntX( myX(0), myX(1) );
+  tarch::la::Vector<DIMENSIONS,int>    myIntX( 1.2*myX(0) , 1.2*myX(1) );  // scale
 
   double Energy = 0.1;
 
   if (
-    myIntX(0) < static_cast<int>(Image.width)
+    myIntX(0) > 0 && myIntX(0) < static_cast<int>(Image.width)
     &&
-    myIntX(1) < static_cast<int>(Image.height)
+    myIntX(1) > 0 && myIntX(1) < static_cast<int>(Image.height)
   ) {
-    Energy += (
-        Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+0]
-      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+1]
-      + Image.pixel_data[myIntX(1)*Image.width*3+myIntX(0)*3+2]) / 3.0 / 256.0;
-  }
-  else {
-    Energy += (
-        Image.pixel_data[0]
-      + Image.pixel_data[1]
-      + Image.pixel_data[2]) / 3.0 / 256.0;
+    Energy += 1.0-Image.pixel_data[myIntX(1)*Image.width+myIntX(0)];
   }
 
-  Q[0] = 1.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  Q[4] = Energy;
+  vars.rho() = 1.0;
+  vars.E()   = Energy;
+  vars.j(0,0,0);
 }
 
 
@@ -75,7 +67,7 @@ void EulerFV::MyEulerSolver::eigenvalues(const double* const Q, const int normal
 
 void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
   ReadOnlyVariables vars(Q);
-  Fluxes f(F);
+  Fluxes fluxes(F);
 
   tarch::la::Matrix<3,3,double> I;
   I = 1, 0, 0,
@@ -86,9 +78,9 @@ void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
   const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  f.rho ( vars.j()                                 );
-  f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
-  f.E   ( irho * (vars.E() + p) * vars.j()         );
+  fluxes.rho ( vars.j()                                 );
+  fluxes.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
+  fluxes.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
 
@@ -107,12 +99,8 @@ void EulerFV::MyEulerSolver::boundaryValues(
     const int normalNonZero,
     const double* const stateInside,
     double* stateOutside) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
+  ReadOnlyVariables varsInside(stateInside);
+  Variables         varsOutside(stateOutside);
 
-  stateOutside[0] = stateInside[0];
-  stateOutside[1] = stateInside[1];
-  stateOutside[2] = stateInside[2];
-  stateOutside[3] = stateInside[3];
-  stateOutside[4] = stateInside[4];
+  varsOutside = varsInside;
 }
