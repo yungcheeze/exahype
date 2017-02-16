@@ -17,7 +17,7 @@
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>
+template <bool useSource, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
 void kernels::aderdg::optimised::riemannSolver( 
   double* restrict lFbndL,
   double* restrict lFbndR,
@@ -59,6 +59,7 @@ void kernels::aderdg::optimised::riemannSolver(
     smax = std::max(smax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));
   }
   
+  
   #pragma simd
   for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
     tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);
@@ -73,6 +74,28 @@ void kernels::aderdg::optimised::riemannSolver(
   for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
     lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;
   }
-  std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));
- 
+  std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));   
+  
+  //add source
+  if(useSource) {
+    double Qavg[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
+    for(int n=0; n < {{nVar}}; n++) {
+       Qavg[n] = (QavL[n] + QavR[n]) / 2;
+    }
+    double Bn[{{nVar*nVar}}];
+    PDEmatrixb(Qavg, normalNonZero, Bn); 
+
+    for(int n=0; n<{{nVar}}; n++) {
+      for(int ij=0; ij<{{nDof**(nDim-1)}}; ij++) {
+        double ncp = 0;
+        for(int m=0; m<{{nVar}}; m++) {
+          ncp += Bn[n+{{nVar}}*m] * (lQbndR[ij+{{bndBlockSize}}*m] - lQbndL[ij+{{bndBlockSize}}*m]);
+        }
+        lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp;
+        lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp;
+      }
+      
+    }
+  }
+
 }

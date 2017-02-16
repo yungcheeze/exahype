@@ -25,24 +25,6 @@
 namespace kernels {
   namespace aderdg {
     namespace optimised {
-      /*
-      template <void PDEflux(const double* const Q, double** F)>
-      void picardLoopNonlinear(
-        const double* restrict const luh, 
-        const double dt,
-        const tarch::la::Vector<DIMENSIONS, double>& dx,
-        double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
-        double* restrict lFi,
-        double* restrict S, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
-      );
-      
-      void predictorNonlinear(
-        const double* restrict const lQi, 
-        const double* restrict const lFi,
-        double* restrict lQhi,
-        double* restrict lFhi
-      );
-      */
       
       template <bool useSource, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
       void picardLoopNonlinear(
@@ -76,14 +58,6 @@ namespace kernels {
         const double* restrict const lduh, 
         const double dt
       );
-
-      /*
-      void volumeIntegral( 
-        double* restrict lduh, 
-        const double* restrict const lFhi, 
-        const tarch::la::Vector<DIMENSIONS,double> &dx
-      );
-      */
       
       template <bool useSource>
       void volumeIntegral( 
@@ -115,7 +89,7 @@ namespace kernels {
       const double dt
       );
 
-      template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>
+      template <bool useSource, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
       void riemannSolver( 
         double* restrict lFbndL,
         double* restrict lFbndR,
