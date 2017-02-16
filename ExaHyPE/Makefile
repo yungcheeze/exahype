@@ -139,10 +139,15 @@ endif
 #
 #Set compiler and linker flags for the different architectures
 ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	# Settings for CPU architectures
-	# ----------------------------------------------
-	COMPILER_CFLAGS +=
-	COMPILER_LFLAGS +=
+  # Settings for CPU architectures
+  # ----------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xHost
+    COMPILER_LFLAGS += -xHost
+  else
+    COMPILER_CFLAGS += -march=native
+    COMPILER_LFLAGS += -march=native
+  endif
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
 	# Settings for the Xeon Phi architecture
@@ -151,17 +156,26 @@ else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
 	COMPILER_LFLAGS += -mmic -lrt
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -xMIC-AVX512 -fma
-	COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xMIC-AVX512 -fma
+    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=knl
+    COMPILER_LFLAGS += -march=knl -lrt
+  endif
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -xCORE-AVX2 -fma
-	COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
-
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xCORE-AVX2 -fma
+    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=haswell
+    COMPILER_LFLAGS += -march=haswell -lrt
+  endif
 else
 	# Option not recognized
 	# ----------------------------------------------
@@ -186,7 +200,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 
 	  #Special options
 	  ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	    COMPILER_CFLAGS += -xHost
+	    COMPILER_CFLAGS +=
 	    COMPILER_LFLAGS +=
 	  endif
 
@@ -194,7 +208,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the GNU compiler
 	  # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-	  COMPILER_CFLAGS += -O3 -march=native
+	  COMPILER_CFLAGS += -O3
 	  COMPILER_LFLAGS +=
 	endif
 endif
