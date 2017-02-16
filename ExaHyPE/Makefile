@@ -97,7 +97,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  CC=icpc
 	endif
 	ifndef $(EXAHYPE_FC)
-	  EXAHPYE_FC=ifort
+	  EXAHYPE_FC=ifort
 	endif
 	ifndef $(FC)
 	  FC=ifort
@@ -428,7 +428,7 @@ $(COBJECTS): %.o : %.cpp
 	$(EXAHYPE_CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90#
-	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
+	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	
