@@ -35,7 +35,6 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double dt,
                             const int normalNonZero) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
   constexpr int order              = basisSize - 1;
 
@@ -70,14 +69,15 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
   // whenever needed!
-  std::transform(LL, LL + numberOfVariables - numberOfParameters, LL,
+  // skip parameters
+  std::transform(LL, LL + numberOfVariables, LL,
                  std::abs<double>);
-  std::transform(LR, LR + numberOfVariables - numberOfParameters, LR,
+  std::transform(LR, LR + numberOfVariables, LR,
                  std::abs<double>);
   const double* smax_L =
-      std::max_element(LL, LL + numberOfVariables - numberOfParameters);
+      std::max_element(LL, LL + numberOfVariables);
   const double* smax_R =
-      std::max_element(LR, LR + numberOfVariables - numberOfParameters);
+      std::max_element(LR, LR + numberOfVariables);
   const double smax = std::max(*smax_L, *smax_R);
 
   // @todo, probably: Find space for this on tempStateSizedVectors
@@ -127,8 +127,8 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
       }
       */
 
-      // Avoid diffusion of parameters
-      for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+      // skip parameters
+      for (int k = 0; k < numberOfVariables; k++) {
         FL[idx_FQLR(j, k)] =
             0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
             0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
