@@ -36,14 +36,12 @@ void kernels::aderdg::optimised::riemannSolver(
   double QavR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   
   {% for iVar in i_seq %}
-  #pragma simd
   for(int i=0;i<{{bndBlockSize}};i++) {
     QavL[{{iVar}}] += weights2[i] * lQbndL[{{iVar*bndBlockSize}}+i];
   }
   {% endfor %}
   
   {% for iVar in i_seq %}
-  #pragma simd
   for(int i=0;i<{{bndBlockSize}};i++) {
     QavR[{{iVar}}] += weights2[i] * lQbndR[{{iVar*bndBlockSize}}+i];
   }
