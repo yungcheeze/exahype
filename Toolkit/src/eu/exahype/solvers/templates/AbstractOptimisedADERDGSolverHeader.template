@@ -29,6 +29,11 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
     static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
     static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
+	
+    class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+    {{NamingSchemes}}
   
     {{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
