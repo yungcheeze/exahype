@@ -32,7 +32,7 @@ void ElasticWave::ConservedQuantitiesWriter::mapQuantities(
     double timeStamp
 ) {
   for (int i=0; i< 3; i++){
-    outputQuantities[i] = Q[i+9];
+    outputQuantities[i] = Q[i];
   }
   for (int i=0; i< 3; i++){
     outputQuantities[i+3] = Q[i+9];

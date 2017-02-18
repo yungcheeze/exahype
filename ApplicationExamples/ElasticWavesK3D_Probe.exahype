@@ -61,7 +61,7 @@ exahype-project  ElasticWave
     variables  const  = v:3,s:6
     parameters const  = rho:1,cs:1,cp:1
     order const       = 3
-    maximum-mesh-size = 1.5
+    maximum-mesh-size = 0.15
     time-stepping     = globalfixed
     kernel const      = generic::fluxes::linear
     language const    = C
