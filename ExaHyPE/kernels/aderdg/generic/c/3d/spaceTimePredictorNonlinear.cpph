@@ -223,18 +223,15 @@ void aderPicardLoopNonlinear(SolverType& solver,
       }
     }  // end time dof
 
-    // Zero out lQi and copy parameters
+    // Zero out variables in lQi
     if (numberOfParameters==0) {
       std::memset(lQi, 0, basisSize4 * numberOfVariables * sizeof(double));
     } else {
-      // Copy parameters
       for (int i = 0; i < basisSize; i++) { // i == z
         for (int j = 0; j < basisSize; j++) { // j == y
           for (int k = 0; k < basisSize; k++) { // k == x
             for (int l = 0; l < basisSize; l++) { // l==t
               std::fill_n (lQi + idx_lQi(i, j, k, l, 0), numberOfVariables, 0.0);
-              std::copy_n (luh + idx_luh(i, j, k, numberOfVariables), numberOfParameters, 
-                  lQi + idx_lQi(i, j, k, l, numberOfVariables));
             }
           }
         }

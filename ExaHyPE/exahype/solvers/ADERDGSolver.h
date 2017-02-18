@@ -78,21 +78,21 @@ private:
    * element.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerFace;
+  const int _dofPerFace;
 
   /**
    * The total number of unknowns/basis functions associated with the 2^d faces
    * of an element.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerCellBoundary;
+  const int _dofPerCellBoundary;
 
   /**
    * The total number of unknowns/basis functions associated with the volume of
    * a cell.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerCell;
+  const int _dofPerCell;
 
   /**
    * The total number of volume flux unknowns/basis functions PLUS the number of
@@ -102,14 +102,14 @@ private:
    *
    *
    */
-  const int _fluxUnknownsPerCell;
+  const int _fluxDofPerCell;
 
   /**
    * The total number of space-time unknowns/basis functions associated with the
    * space-time volume of a cell and its time stepping interval.
    * This number includes the unknowns of all state variables.
    */
-  const int _spaceTimeUnknownsPerCell;
+  const int _spaceTimeDofPerCell;
 
   /**
    * The total number of space-time volume flux unknowns/basis functions
@@ -117,13 +117,13 @@ private:
    * space-time volume of a cell and its time stepping interval.
    * This number includes the unknowns of all state variables.
    */
-  const int _spaceTimeFluxUnknownsPerCell;
+  const int _spaceTimeFluxDofPerCell;
 
   /**
    * The size of data required to store cell volume based unknowns and
    * associated parameters.
    */
-  const int _dataPerCell;
+  const int _dataPointsPerCell;
 
   /**
    * Minimum corrector time step size of all
@@ -625,6 +625,17 @@ public:
         cellDescriptionType==CellDescription::Descendant;
   }
 
+  /**
+   * Construct an ADERDGSolver.
+   *
+   * \param identifier             An identifier for this solver.
+   * \param numberOfVariables      the number of variables.
+   * \param numberOfParameters     the number of material parameters.
+   * \param nodesPerCoordinateAxis The 1D basis size, i.e., the order + 1.
+   * \param maximumMeshSize        The maximum mesh size. From hereon, adaptive mesh refinement is used.
+   * \param timeStepping           the timestepping mode.
+   * \param profiler               a profiler.
+   */
   ADERDGSolver(
       const std::string& identifier,
       int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,

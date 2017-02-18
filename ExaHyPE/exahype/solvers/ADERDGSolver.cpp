@@ -307,18 +307,18 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
     : Solver(identifier, Solver::Type::ADERDG, numberOfVariables,
              numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize,
              timeStepping, std::move(profiler)),
-      _unknownsPerFace(numberOfVariables *
+      _dofPerFace(numberOfVariables *
                        power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-      _unknownsPerCell(numberOfVariables *
+      _dofPerCellBoundary(DIMENSIONS_TIMES_TWO * _dofPerFace),
+      _dofPerCell(numberOfVariables *
                        power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(_unknownsPerCell *
+      _fluxDofPerCell(_dofPerCell *
                            (DIMENSIONS + 1)),  // +1 for sources
-      _spaceTimeUnknownsPerCell(numberOfVariables *
+      _spaceTimeDofPerCell(numberOfVariables *
                                 power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell *
+      _spaceTimeFluxDofPerCell(_spaceTimeDofPerCell *
                                     (DIMENSIONS + 1)),  // +1 for sources
-      _dataPerCell((numberOfVariables+numberOfParameters) *
+      _dataPointsPerCell((numberOfVariables+numberOfParameters) *
                    power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _previousMinCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
@@ -351,27 +351,27 @@ double exahype::solvers::ADERDGSolver::getMaximumMeshSize() const {
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerFace() const {
-  return _unknownsPerFace;
+  return _dofPerFace;
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerCellBoundary() const {
-  return _unknownsPerCellBoundary;
+  return _dofPerCellBoundary;
 }
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerCell() const {
-  return _unknownsPerCell;
+  return _dofPerCell;
 }
 
 int exahype::solvers::ADERDGSolver::getFluxUnknownsPerCell() const {
-  return _fluxUnknownsPerCell;
+  return _fluxDofPerCell;
 }
 
 int exahype::solvers::ADERDGSolver::getSpaceTimeUnknownsPerCell() const {
-  return _spaceTimeUnknownsPerCell;
+  return _spaceTimeDofPerCell;
 }
 
 int exahype::solvers::ADERDGSolver::getSpaceTimeFluxUnknownsPerCell() const {
-  return _spaceTimeFluxUnknownsPerCell;
+  return _spaceTimeFluxDofPerCell;
 }
 
 int exahype::solvers::ADERDGSolver::getDataPerFace() const {
@@ -1558,7 +1558,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
     double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    std::copy(newSolution,newSolution+_unknownsPerCell,solution); // Copy (current solution) in old solution field.
+    std::copy(newSolution,newSolution+_dofPerCell,solution); // Copy (current solution) in old solution field.
 
     double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
     double* lFhbnd = exahype::DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
@@ -3122,17 +3122,17 @@ void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_timeStepping:" << exahype::solvers::Solver::toString(_timeStepping); // only solver attributes
   out << ",";
-  out << "_unknownsPerFace:" << _unknownsPerFace;
+  out << "_unknownsPerFace:" << _dofPerFace;
   out << ",";
-  out << "_unknownsPerCellBoundary:" << _unknownsPerCellBoundary;
+  out << "_unknownsPerCellBoundary:" << _dofPerCellBoundary;
   out << ",";
-  out << "_unknownsPerCell:" << _unknownsPerCell;
+  out << "_unknownsPerCell:" << _dofPerCell;
   out << ",";
-  out << "_fluxUnknownsPerCell:" << _fluxUnknownsPerCell;
+  out << "_fluxUnknownsPerCell:" << _fluxDofPerCell;
   out << ",";
-  out << "_spaceTimeUnknownsPerCell:" << _spaceTimeUnknownsPerCell;
+  out << "_spaceTimeUnknownsPerCell:" << _spaceTimeDofPerCell;
   out << ",";
-  out << "_spaceTimeFluxUnknownsPerCell:" << _spaceTimeFluxUnknownsPerCell;
+  out << "_spaceTimeFluxUnknownsPerCell:" << _spaceTimeFluxDofPerCell;
   out << ",";
   out << "_previousMinCorrectorTimeStepSize:" << _previousMinCorrectorTimeStepSize;
   out << ",";
