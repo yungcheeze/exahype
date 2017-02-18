@@ -711,21 +711,48 @@ public:
 
   /**
    * This operation returns the size of data required
+   * to store face area based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS - 1) * DIMENSIONS_TIMES_TWO;
+   */
+  int getDataPerCellBoundary() const;
+
+  /**
+   * This operation returns the size of data required
+   * to store face area based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS - 1);
+   */
+  int getDataPerFace() const;
+  /**
+   * This operation returns the size of data required
    * to store cell volume based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 0);
    */
   int getDataPerCell() const;
   
+  /**
+   * This operation returns the size of data required
+   * to store space-time cell unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
+   */
+  int getSpaceTimeDataPerCell() const;
+
   /**
    * Getter for the size of the array allocated that can be overriden
    * to change the allocated size independently of the solver parameters.
    * For example to add padding forthe optimised kernel
    */
-  virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeUnknownsPerCell()+getUnknownsPerCell();}
+  virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeDataPerCell()+getDataPerCell();} // TODO function should be renamed
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
-  virtual int getTempUnknownsSize()              const {return getUnknownsPerCell();}
+  virtual int getTempUnknownsSize()              const {return getDataPerCell();} // TODO function should be renamed
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
-  virtual int getBndFaceSize()                   const {return getUnknownsPerFace();}
-  virtual int getBndTotalSize()                  const {return getUnknownsPerCellBoundary();}
+  virtual int getBndFaceSize()                   const {return getDataPerFace();} // TODO function should be renamed
+  virtual int getBndTotalSize()                  const {return getDataPerCellBoundary();} // TODO function should be renamed
+  virtual int getBndFluxSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
+  virtual int getBndFluxTotalSize()              const {return getUnknownsPerCellBoundary();} // TODO function should be renamed
   
   virtual bool alignTempArray()                  const {return false;}
 
@@ -752,9 +779,9 @@ public:
   /**
    * @brief Computes the volume flux contribution to the cell update.
    *
-   * @param[inout] lduh Cell-local update DoF.
-   * @param[in]    cellSize   Extent of the cell in each coordinate direction.
-   * @param[dt]    dt   Time step size.
+   * @param[inout] lduh      Cell-local update DoF.
+   * @param[in]    cellSize  Extent of the cell in each coordinate direction.
+   * @param[dt]    dt        Time step size.
    */
   virtual void volumeIntegral(
       double* lduh, const double* const lFhi,
