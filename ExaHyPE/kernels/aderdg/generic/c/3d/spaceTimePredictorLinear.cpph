@@ -204,12 +204,14 @@ void spaceTimePredictorLinear(SolverType& solver,
      }
 
      // Copy parameters
-     for (int j = 0; j < basisSize; j++) {
-       for (int k = 0; k < basisSize; k++) {
-         for (int l = 0; l < basisSize; l++) {
-           for (int n = numberOfVariables/* skip parameters */;
-               n < numberOfVariables + numberOfParameters; n++) {
-             lQi[idx_lQi(i + 1, j, k, l, n)] = lQi[idx_lQi(i, j, k, l, n)];
+     if (numberOfParameters>0) {
+       for (int j = 0; j < basisSize; j++) {
+         for (int k = 0; k < basisSize; k++) {
+           for (int l = 0; l < basisSize; l++) {
+             for (int n = numberOfVariables/* skip parameters */;
+                 n < numberOfVariables + numberOfParameters; n++) {
+               lQi[idx_lQi(i + 1, j, k, l, n)] = lQi[idx_lQi(i, j, k, l, n)];
+             }
            }
          }
        }

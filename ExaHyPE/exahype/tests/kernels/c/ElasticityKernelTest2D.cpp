@@ -329,7 +329,7 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   constexpr int basisSize2 = basisSize*basisSize;
   constexpr int basisSize3 = basisSize2*basisSize;
 
-  double *luh = new double[nVar * basisSize2];
+  double *luh = new double[nData * basisSize2];
   kernels::idx3 idx_luh(basisSize, basisSize, nData);
   kernels::idx3 idx_luh_IN(basisSize, basisSize, nVar);
   kernels::idx3 idx_param_IN(basisSize, basisSize, nPar);
@@ -337,15 +337,10 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   // Assemble luh = concatenate dofs and parameters
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < nVar; k++) {
-        luh[idx_luh(i, j, k)] = exahype::tests::testdata::elasticity::
-            testSpaceTimePredictorLinear::luh_IN[idx_luh_IN(i, j, k)];
-      }
-      for (int k = 0; k < nPar; k++) {
-        luh[idx_luh(i, j, k + nVar)] =
-            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
-                param_IN[idx_param_IN(i, j, k)];
-      }
+      std::copy_n (exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::luh_IN + idx_luh_IN(i, j, 0),
+                   nVar, luh + idx_luh(i, j, 0));
+      std::copy_n (exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::param_IN + idx_param_IN(i, j, 0),
+                   nPar, luh + idx_luh(i, j, nVar));
     }
   }
 
@@ -389,19 +384,6 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
       tempStateSizedVector,
       luh, dx, dt, tempSpaceTimeUnknowns[1]);
 
-  // Check result
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < nVar; k++) {
-        validateNumericalEqualsWithEpsWithParams1(
-            tempUnknowns[idx_lQhi(i, j, k)],
-            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
-                lQhi_OUT[idx_lQhi(i, j, k)],
-            eps, idx_lQhi(i, j, k));
-      }
-    }
-  }
-
   for (int i = 0; i < DIMENSIONS; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -413,6 +395,20 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
                                                                       l)],
               eps, idx_lFhi(i, j, k, l));
         }
+      }
+    }
+  }
+
+  // Check result
+  kernels::idx3 idx_lQhi_OUT(basisSize, basisSize, nVar);
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            tempUnknowns[idx_lQhi(i, j, k)],
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+            lQhi_OUT[idx_lQhi_OUT(i, j, k)],
+            eps, idx_lQhi_OUT(i, j, k));
       }
     }
   }

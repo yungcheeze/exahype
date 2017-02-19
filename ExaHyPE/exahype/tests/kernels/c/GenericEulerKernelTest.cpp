@@ -48,7 +48,7 @@ GenericEulerKernelTest::~GenericEulerKernelTest() {}
 void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
   logWarning("run()","Test testSpaceTimePredictorLinear is failing. Test data might not be correct anymore.");
-  //  testMethod(testSpaceTimePredictorLinear);
+//  testMethod(testSpaceTimePredictorLinear);
   testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);
   testMethod(testVolumeIntegralNonlinear);

@@ -47,7 +47,7 @@ void ElasticityKernelTest::run() {
   _log.info("ElasticityKernelTest::run()", "ElasticityKernelTest is active");
   // TODO(Dominic): Assess
 //  testMethod(testPDEFluxes);
-  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!");
+  logWarning("run()","Test testSpaceTimePredictorLinear is disabled! Test data might be outdated.");
 //  testMethod(testSpaceTimePredictorLinear); // TODO(Dominic): Fix
 //  testMethod(testSpaceTimePredictorNonlinear); // OPTIONAL
   testMethod(testVolumeIntegralLinear);
