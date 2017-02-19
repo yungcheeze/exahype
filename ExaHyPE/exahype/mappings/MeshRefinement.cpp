@@ -98,7 +98,7 @@ void exahype::mappings::MeshRefinement::beginIteration(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
     assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
-  }
+  } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -240,7 +240,7 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    refineFineGridCell |=
+    bool refinementRequested =
         solver->updateStateInEnterCell(
             fineGridCell,
             fineGridVertices,
@@ -250,6 +250,10 @@ void exahype::mappings::MeshRefinement::enterCell(
             coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
+
+    solver->updateNextGridUpdateRequested(refinementRequested);
+
+    refineFineGridCell |= refinementRequested;
   }
 
   // Refine all adjacent vertices if necessary and possible.
@@ -546,7 +550,7 @@ void exahype::mappings::MeshRefinement::prepareSendToMaster(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      solver->sendMeshRefinementFlagsToMaster();
+//      solver->sendMeshRefinementFlagsToMaster(); // TODO(Dominic): implement
   }
 }
 
@@ -557,7 +561,7 @@ void exahype::mappings::MeshRefinement::mergeWithWorker(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      solver->mergeMeshRefinementFlagsWithWorker();
+//      solver->mergeMeshRefinementFlagsWithWorker(); // TODO(Dominic): implement
   }
 }
 

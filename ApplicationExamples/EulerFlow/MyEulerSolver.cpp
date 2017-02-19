@@ -17,6 +17,10 @@
 #include "MyEulerSolver_Variables.h"
 #include "tarch/la/MatrixVectorOperations.h"
 
+#include "peano/utils/Loop.h"
+
+#include "kernels/KernelUtils.h"
+
 #include <memory>
 #include <cstring> // memset
 #include <string>
@@ -56,6 +60,8 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   logInfo("BC", std::string("Applying Boundary Conditions: '")+id+std::string("'"));
   if(id == "outflow") {
   }
+
+  idfunc = MovingGauss2D; // TODO(Dominic): Remove. This will annoy Sven otherwise.
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -128,6 +134,28 @@ Euler::MyEulerSolver::refinementCriterion(
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
   // @todo Please implement
+//  if (dx[0] <= getMaximumMeshSize()/3.)
+//    return exahype::solvers::Solver::RefinementControl::Erase;
+
+  double largestRho  = 0;
+  double smallestRho = std::numeric_limits<double>::max();
+  if (dx[0] > getMaximumMeshSize()/9.) {
+    dfor(i,Order+1) {
+      kernels::idx3 idx_luh(Order+1,Order+1,NumberOfVariables);
+
+      ReadOnlyVariables vars(luh + idx_luh(i(1),i(0),0));
+
+      largestRho  = std::max (largestRho,  vars.rho());
+      smallestRho = std::min (smallestRho, vars.rho());
+    }
+  }
+
+//  std::cout << "largest rho=" << largestRho << std::endl;
+
+  if ((largestRho-smallestRho)/largestRho > 1e-1) {
+    return exahype::solvers::Solver::RefinementControl::Refine;
+  }
+
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 

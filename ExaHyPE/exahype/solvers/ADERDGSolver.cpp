@@ -659,7 +659,7 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
               neighbourCellDescriptionIndices,
               fineGridCell.isAssignedToRemoteRank());
 
-      updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
+      updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent()); // TODO(Dominic): Concurrency problem!
     }
   }
 
@@ -674,6 +674,7 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
         coarseGridCellDescription,
         fineGridCell.getCellDescriptionsIndex());
 
+    // TODO(Dominic): Pass limiter status flag down to the new cell
     addNewDescendantIfAugmentingRequested(
             fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
             coarseGridCellDescription,coarseGridCell.getCellDescriptionsIndex());
@@ -683,12 +684,6 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
   }
 
   return refineFineGridCell;
-}
-
-void exahype::solvers::ADERDGSolver::updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent) {
-  Solver::updateNextGridUpdateRequested(refinementEvent!=CellDescription::RefinementEvent::None
-                                && refinementEvent!=CellDescription::RefinementEvent::ErasingChildrenRequested
-                                && refinementEvent!=CellDescription::RefinementEvent::DeaugmentingChildrenRequested);
 }
 
 bool exahype::solvers::ADERDGSolver::markForRefinement(
@@ -1115,6 +1110,8 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
   const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
+    // TODO(Dominic): Only allow erasing if limiter status is Ok
+
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
     startOrFinishCollectiveRefinementOperations(fineGridCellDescription);
@@ -1326,6 +1323,8 @@ bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpd
                       cellDescription.getSize(),
                       cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
                       cellDescription.getLevel());
+
+    // TODO(Dominic): Set cell description refinement events? Yes or no?
 
     return (refinementControl==RefinementControl::Refine);
   }

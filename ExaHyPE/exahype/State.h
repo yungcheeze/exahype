@@ -217,15 +217,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
-  void switchToPreAMRContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(true);
-    #endif
-    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
-
   void switchToSolutionUpdateContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
@@ -242,6 +233,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+  }
+
+  void switchToPreAMRContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(true);
+    #endif
+    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
 
   void switchToPostAMRContext() {
@@ -302,7 +302,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   /**
    * Indicates that the fused time stepping
    * scheme is used in the runner
-   * instead of the original one.
+   * instead of the standard time stepping.
    */
   static bool fuseADERDGPhases()  {
     return FuseADERDGPhases;

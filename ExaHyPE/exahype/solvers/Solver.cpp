@@ -26,16 +26,6 @@ const int exahype::solvers::Solver::NotFound = -1;
 tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
 int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
 
-
-bool exahype::solvers::Solver::oneSolverRequestedGridUpdate() {
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getGridUpdateRequested()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void exahype::solvers::Solver::waitUntilAllBackgroundTasksHaveTerminated() {
   bool finishedWait = false;
 
@@ -69,7 +59,9 @@ exahype::solvers::Solver::Solver(
       _maxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _nextMaxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _timeStepping(timeStepping),
-      _profiler(std::move(profiler)) { }
+      _profiler(std::move(profiler)),
+      _gridUpdateRequested(false),
+      _nextGridUpdateRequested(false) { }
 
 
 std::string exahype::solvers::Solver::getIdentifier() const {
@@ -117,6 +109,10 @@ double exahype::solvers::Solver::getMaximumMeshSize() const {
   return _maximumMeshSize;
 }
 
+void exahype::solvers::Solver::resetGridUpdateRequestedFlags() {
+  _gridUpdateRequested     = false;
+  _nextGridUpdateRequested = false;
+}
 
 void exahype::solvers::Solver::updateNextGridUpdateRequested(bool nextGridUpdateRequested) {
   _nextGridUpdateRequested |= nextGridUpdateRequested;
@@ -229,6 +225,15 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
 
   assertion1(maxDepth>=0,maxDepth);
   return maxDepth;
+}
+
+bool exahype::solvers::Solver::oneSolverRequestedGridUpdate() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getGridUpdateRequested()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::string exahype::solvers::Solver::toString() const {

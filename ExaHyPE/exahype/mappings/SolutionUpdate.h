@@ -85,9 +85,16 @@ class exahype::mappings::SolutionUpdate {
    * if the limiter domain of the solver has
    * changed.
    *
-   * (Only applicable to LimitingADERDGSolver)
+   * The flag has only a meaning for the LimitingADERDGSolver.
    */
   bool* _limiterDomainHasChanged = nullptr;
+
+
+  /**
+   * Per solver, we hold a status flag indicating
+   * if the solver has requested a grid update.
+   */
+  bool* _gridUpdateRequested = nullptr;
 
   /**
    * Initialises the temporary variables.

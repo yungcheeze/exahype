@@ -160,34 +160,6 @@ private:
    */
   double _minNextPredictorTimeStepSize;
 
-  /**
-   * Flag indicating if a grid update was
-   * requested by this solver.
-   *
-   * This is the state after the
-   * time step size computation.
-   *
-   * <h2>MPI</h2>
-   * This is the state after this rank's
-   * solver has merged its state
-   * with its workers' worker.
-   */
-  bool _gridUpdateRequested;
-
-  /**
-   * Flag indicating if a grid update was
-   * requested by this solver.
-   *
-   * This is the state before the
-   * time step size computation.
-   *
-   * <h2>MPI</h2>
-   * This is the state before this rank's
-   * solver has merged its state
-   * with its workers' solver.
-   */
-  bool _nextGridUpdateRequested;
-
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
 
@@ -196,12 +168,6 @@ private:
    * mergeNeighbours(). Therefore the routine is private.
    */
   void uncompress(exahype::records::ADERDGCellDescription& cellDescription);
-
-  /**
-   * Set the next grid update requested flag to true if the refinementEvent
-   * is neither None,DeaugmentingChildrenRequested, nor ErasingChildrenRequested.
-   */
-  void updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent);
 
   /**
    * TODO(Dominic): Add more docu.

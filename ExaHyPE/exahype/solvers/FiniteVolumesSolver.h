@@ -155,12 +155,6 @@ private:
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
 
-  /**
-   * Set the next grid update requested flag to true if the refinementEvent
-   * is neither None,DeaugmentingChildrenRequested, nor ErasingChildrenRequested.
-   */
-  void updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent);
-
 public:
   /**
     * Returns the ADERDGCellDescription.

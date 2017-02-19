@@ -87,11 +87,13 @@ tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
 
 void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
   assertion(_limiterDomainHasChanged ==nullptr);
+  assertion(_gridUpdateRequested     ==nullptr);
   assertion(_tempUnknowns            ==nullptr);
   assertion(_tempStateSizedVectors   ==nullptr);
 
   int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
   _limiterDomainHasChanged = new bool    [numberOfSolvers];
+  _gridUpdateRequested     = new bool    [numberOfSolvers];
   _tempStateSizedVectors   = new double**[numberOfSolvers];
   _tempUnknowns            = new double**[numberOfSolvers];
 
@@ -121,11 +123,17 @@ void exahype::mappings::SolutionUpdate::prepareSolverFlags() {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _limiterDomainHasChanged[solverNumber] = false;
   }
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    assertion(!exahype::solvers::RegisteredSolvers[solverNumber]->getNextGridUpdateRequested());
+    _gridUpdateRequested[solverNumber] = false;
+  }
 }
 
 void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
   if (_tempStateSizedVectors!=nullptr) {
     assertion(_limiterDomainHasChanged!=nullptr);
+    assertion(_gridUpdateRequested    !=nullptr);
     assertion(_tempUnknowns           !=nullptr);
 
     int solverNumber=0;
@@ -146,8 +154,11 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
     delete[] _tempStateSizedVectors;
     delete[] _tempUnknowns;
     delete[] _limiterDomainHasChanged;
+    delete[] _gridUpdateRequested;
     _tempStateSizedVectors   = nullptr;
     _tempUnknowns            = nullptr;
+    _limiterDomainHasChanged = nullptr;
+    _gridUpdateRequested     = nullptr;
   }
 }
 
@@ -211,7 +222,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
         }
 
-        solver->evaluateRefinementCriterionAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
+        _gridUpdateRequested[i] |=
+            solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                fineGridCell.getCellDescriptionsIndex(),element);
 
         solver->prepareNextNeighbourMerging(
             fineGridCell.getCellDescriptionsIndex(),element,
@@ -237,10 +250,10 @@ void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
-  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    solver->setNextGridUpdateRequested();
+    solver->updateNextGridUpdateRequested(_gridUpdateRequested[solverNumber]);
 
     if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);

@@ -249,7 +249,9 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
           _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
       break;
     }
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
       admissibleTimeStepSize =
                   _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
       int limiterElement =
@@ -263,24 +265,26 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
       limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
       break;
     }
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
-      int limiterElement =
-          _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      admissibleTimeStepSize =
-          _limiter->startNewTimeStep(cellDescriptionsIndex,limiterElement,tempEigenvalues);
-      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-      LimiterPatch& limiterPatch =
-          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-
-      solverPatch.setPreviousCorrectorTimeStepSize(limiterPatch.getPreviousTimeStepSize());
-      solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
-      solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
-
-      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp()+limiterPatch.getTimeStepSize());
-      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for Standard time stepping.
-      break;
-    }
+    // TODO(Dominic): The code below was before. Now we always use the solverPatch time step sizes.
+    // Keep the code a while for reference (19/02/17).
+//    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+//    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
+//      int limiterElement =
+//          _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+//      admissibleTimeStepSize =
+//          _limiter->startNewTimeStep(cellDescriptionsIndex,limiterElement,tempEigenvalues);
+//      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+//      LimiterPatch& limiterPatch =
+//          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+//
+//      solverPatch.setPreviousCorrectorTimeStepSize(limiterPatch.getPreviousTimeStepSize());
+//      solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
+//      solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
+//
+//      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp()+limiterPatch.getTimeStepSize());
+//      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for Standard time stepping.
+//      break;
+//    }
   }
 
   return admissibleTimeStepSize;

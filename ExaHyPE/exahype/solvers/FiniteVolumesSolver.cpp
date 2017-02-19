@@ -240,12 +240,6 @@ bool exahype::solvers::FiniteVolumesSolver::updateStateInEnterCell(
   return false;
 }
 
-void exahype::solvers::FiniteVolumesSolver::updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent) {
-  Solver::updateNextGridUpdateRequested(refinementEvent!=CellDescription::RefinementEvent::None
-                                && refinementEvent!=CellDescription::RefinementEvent::ErasingChildrenRequested
-                                && refinementEvent!=CellDescription::RefinementEvent::DeaugmentingChildrenRequested);
-}
-
 void exahype::solvers::FiniteVolumesSolver::addNewCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
