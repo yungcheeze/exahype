@@ -30,11 +30,12 @@
  #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
- #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
+ #include "exahype/adapters/Merging.h" 
+ #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
 
 
 namespace peano {
