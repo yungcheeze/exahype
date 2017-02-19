@@ -151,14 +151,14 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   bool refineInitialGridInTouchVertexLastTime() const;
 
   /**
-   * TODO(Dominic): Add docu.
+   * Return the merge mode that is currently active.
    */
   records::State::MergeMode getMergeMode() const {
     return _stateData.getMergeMode();
   }
 
   /**
-   * TODO(Dominic): Add docu.
+   * Return the send mode that is currently active.
    */
   records::State::SendMode getSendMode() const {
     return _stateData.getSendMode();
@@ -175,8 +175,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-    // One of the two points where we need to reset this flag (cf. workflow in Runner).
-    _stateData.setLimiterDomainHasChanged(false);
   }
 
   void switchToPredictionAndFusedTimeSteppingInitialisationContext() {
@@ -235,8 +233,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
-    // One of the two points where we need to reset this flag (cf. workflow in Runner).
-    _stateData.setLimiterDomainHasChanged(false);
   }
 
   void switchToTimeStepSizeComputationContext() {
@@ -318,25 +314,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   double getTimeStepSizeWeightForPredictionRerun() const {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
-  }
-
-  /**
-   * Updates the limiterDomainHasChanged value.
-   * The reset of this value to false is performed in
-   *
-   * switchToSolutionUpdateContext
-   * switchToInitialConditionAndTimeStepSizeComputationContext
-   *
-   */
-  void updateLimiterDomainHasChanged(bool state) {
-    _stateData.setLimiterDomainHasChanged(_stateData.getLimiterDomainHasChanged() | state);
-  }
-
-  /**
-   * @deprecated
-   */
-  bool limiterDomainHasChanged() const {
-      return _stateData.getLimiterDomainHasChanged();
   }
 
   #ifdef Parallel

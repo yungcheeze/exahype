@@ -828,6 +828,10 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     updateLimiterDomain(repository);
   }
 
+  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
+    createGrid(repository);
+  }
+
   printTimeStepInfo(1,repository);
 
   /*

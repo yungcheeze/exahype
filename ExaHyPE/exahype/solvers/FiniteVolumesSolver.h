@@ -155,6 +155,12 @@ private:
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
 
+  /**
+   * Set the next grid update requested flag to true if the refinementEvent
+   * is neither None,DeaugmentingChildrenRequested, nor ErasingChildrenRequested.
+   */
+  void updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent);
+
 public:
   /**
     * Returns the ADERDGCellDescription.
@@ -462,7 +468,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -472,7 +478,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -485,6 +491,10 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,

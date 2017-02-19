@@ -84,6 +84,8 @@ class exahype::mappings::SolutionUpdate {
    * Per solver, we hold a status flag indicating
    * if the limiter domain of the solver has
    * changed.
+   *
+   * (Only applicable to LimitingADERDGSolver)
    */
   bool* _limiterDomainHasChanged = nullptr;
 
@@ -105,7 +107,7 @@ class exahype::mappings::SolutionUpdate {
    * Sets the limiter domain has changed flags per
    * solver to false.
    */
-  void prepareLimiterDomainHasChangedFlags();
+  void prepareSolverFlags();
 
   /**
    * Deletes the temporary variables.
@@ -180,8 +182,12 @@ class exahype::mappings::SolutionUpdate {
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Notifies the state that the limiter domain if the limiter
-   * domain of one of the solvers has changed.
+   * For all solvers, overwrite the current
+   * gridUpdateRequested value with the next value.
+   *
+   * Further update the global solver states (next)limiterDomainHasChanged
+   * with values from the temporary variables.
+   *
    * Further deallocates temporary variables.
    */
   void endIteration(exahype::State& solverState);

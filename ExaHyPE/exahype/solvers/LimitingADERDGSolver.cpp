@@ -126,6 +126,8 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
+  setNextGridUpdateRequested();
+
   logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
 
   _limiterDomainHasChanged     = _nextLimiterDomainHasChanged;
@@ -193,7 +195,7 @@ double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
-bool exahype::solvers::LimitingADERDGSolver::enterCell(
+bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -202,13 +204,13 @@ bool exahype::solvers::LimitingADERDGSolver::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->enterCell(
+  return _solver->updateStateInEnterCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
       fineGridPositionOfCell,solverNumber);
 }
 
-bool exahype::solvers::LimitingADERDGSolver::leaveCell(
+bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -217,7 +219,7 @@ bool exahype::solvers::LimitingADERDGSolver::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->leaveCell(
+  return _solver->updateStateInLeaveCell(
           fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
           coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
           fineGridPositionOfCell,solverNumber);
@@ -226,6 +228,13 @@ bool exahype::solvers::LimitingADERDGSolver::leaveCell(
 ///////////////////////////////////
 // CELL-LOCAL
 //////////////////////////////////
+bool exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) {
+  return _solver->evaluateRefinementCriterionAfterSolutionUpdate(cellDescriptionsIndex,element);
+}
+
+
 double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
     const int cellDescriptionsIndex,
     const int element,

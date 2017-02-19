@@ -78,6 +78,12 @@ namespace exahype {
 class exahype::solvers::Solver {
  public:
   /**
+   * Loop over the solver registry and check if one
+   * of the solvers has requested a grid update.
+   */
+  static bool oneSolverRequestedGridUpdate();
+
+  /**
    * Some solvers can deploy data conversion into the background. How this is
    * done is solver-specific. However, we have to wait until all tasks have
    * terminated if we want to modify the heap, i.e. insert new data or remove
@@ -245,6 +251,35 @@ class exahype::solvers::Solver {
    */
   std::unique_ptr<profilers::Profiler> _profiler;
 
+
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state after the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state after this rank's
+   * solver has merged its state
+   * with its workers' worker.
+   */
+  bool _gridUpdateRequested;
+
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state before the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state before this rank's
+   * solver has merged its state
+   * with its workers' solver.
+   */
+  bool _nextGridUpdateRequested;
+
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type,
          int numberOfVariables, int numberOfParameters,
@@ -342,6 +377,34 @@ class exahype::solvers::Solver {
   virtual void toString(std::ostream& out) const;
 
   /**
+   * Indicates if a grid update was requested
+   * by this solver.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getNextGridUpdateRequested() const;
+
+  /**
+   * Indicates if a grid update was requested
+   * by this solver.
+   *
+   * <h2>MPI</h2>
+   *This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getGridUpdateRequested() const;
+
+  /**
+   * Overwrite the _gridUpdateRequested flag
+   * by the _nextGridUpdateRequested flag.
+   * Reset the _nextGridUpdateRequested flag
+   * to false;
+   */
+  void setNextGridUpdateRequested();
+
+  /**
    * Run over all solvers and identify the minimal time stamp.
    */
   virtual double getMinTimeStamp() const = 0;
@@ -386,6 +449,17 @@ class exahype::solvers::Solver {
   virtual void reinitialiseTimeStepData() = 0;
 
   virtual double getMinNextTimeStepSize() const=0;
+
+ public:
+  /**
+   * Update if a grid update was requested by this solver.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  void updateNextGridUpdateRequested(bool gridUpdateRequested);
+ public:
 
   /**
    * Run over all solvers and identify the minimal time stamp.
@@ -469,7 +543,7 @@ class exahype::solvers::Solver {
    * (solution update, predictor comp.) into
    * this hook.
    */
-  virtual bool enterCell(
+  virtual bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -495,7 +569,7 @@ class exahype::solvers::Solver {
    * (solution update, predictor comp.) into
    * this hook.
    */
-  virtual bool leaveCell(
+  virtual bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -508,6 +582,22 @@ class exahype::solvers::Solver {
   /////////////////////////////////////
   // CELL-LOCAL
   /////////////////////////////////////
+  /**
+   * Evaluate the refinement criterion after
+   * a solution update has performed.
+   *
+   * We currently only return true
+   * if a cell requested refinement.
+   * ExaHyPE might then stop the
+   * time stepping and update the mesh
+   * before continuing.
+   *
+   * \return true if a grid update is necessary.
+   */
+  virtual bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
   /**
    * Compute and return a new admissible time step
    * size for the cell description
@@ -906,6 +996,102 @@ class exahype::solvers::Solver {
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
+
+  /*
+   * At the time of sending data to the master,
+   * we have already performed a time step update locally
+   * on the rank. We thus need to communicate the
+   * current min predictor time step size to the master.
+   * The next min predictor time step size is
+   * already reset locally to the maximum double value.
+   *
+   * However on the master's side, we need to
+   * merge the received time step size with
+   * the next min predictor time step size since
+   * the master has not yet performed a time step update
+   * (i.e. called TimeStepSizeComputation::endIteration()).
+   */
+  void exahype::solvers::ADERDGSolver::sendDataToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level){
+    std::vector<double> timeStepDataToReduce(0,4);
+    timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
+    timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
+    timeStepDataToReduce.push_back(_minCellSize);
+    timeStepDataToReduce.push_back(_maxCellSize);
+
+    assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
+    assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
+    if (_timeStepping==TimeStepping::Global) {
+      assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
+                                  tarch::parallel::Node::getInstance().getRank());
+    }
+
+    if (tarch::parallel::Node::getInstance().getRank()!=
+        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+      logDebug("sendDataToMaster(...)","Sending time step data: " <<
+               "data[0]=" << timeStepDataToReduce[0] <<
+               ",data[1]=" << timeStepDataToReduce[1] <<
+               ",data[2]=" << timeStepDataToReduce[2] <<
+               ",data[3]=" << timeStepDataToReduce[3]);
+    }
+
+    DataHeap::getInstance().sendData(
+        timeStepDataToReduce.data(), timeStepDataToReduce.size(),
+        masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+  }
+
+  /**
+   * At the time of the merging,
+   * the workers and the master have already performed
+   * at local update of the next predictor time step size
+   * and of the predictor time stamp.
+   * We thus need to minimise over both quantities.
+   */
+  void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) {
+    std::vector<double> receivedTimeStepData(4);
+
+    if (true || tarch::parallel::Node::getInstance().getRank()==
+        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+      logDebug("mergeWithWorkerData(...)","Receiving time step data [pre] from rank " << workerRank);
+    }
+
+    DataHeap::getInstance().receiveData(
+        receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+    assertion1(receivedTimeStepData.size()==3,receivedTimeStepData.size());
+    assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
+    assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
+    // The master solver has not yet updated its minNextPredictorTimeStepSize.
+    // Thus it does not equal MAX_DOUBLE.
+
+    int index=0;
+    _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
+    _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, receivedTimeStepData[index++] );
+    _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+    _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
+
+    if (tarch::parallel::Node::getInstance().getRank()==
+        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+      logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
+               "data[0]=" << receivedTimeStepData[0] <<
+               ",data[1]=" << receivedTimeStepData[1] <<
+               ",data[2]=" << receivedTimeStepData[2] <<
+               ",data[3]=" << receivedTimeStepData[3] );
+
+      logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
+               "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
+               "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+               ",_nextMinCellSize=" << _nextMinCellSize <<
+               ",_nextMaxCellSize=" << _nextMaxCellSize);
+    }
+  }
 
   /**
    * Send solver data to master rank. Read the data from

@@ -320,8 +320,7 @@ public:
   static bool limiterDomainOfOneSolverHasChanged();
 
   /**
-   * TODO(Dominic): Docu
-   *
+   * Create a limiting ADER-DG solver.
    *
    * <h2>Discrete maximum principle</h2>
    * By default this constructor initialises the maximum relaxation
@@ -399,15 +398,10 @@ public:
   void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
-
   void updateNextMaxCellSize(double maxCellSize) override;
-
   double getNextMinCellSize() const override;
-
   double getNextMaxCellSize() const override;
-
   double getMinCellSize() const override;
-
   double getMaxCellSize() const override;
 
   bool isValidCellDescriptionIndex(
@@ -461,7 +455,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -471,7 +465,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -484,6 +478,10 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,

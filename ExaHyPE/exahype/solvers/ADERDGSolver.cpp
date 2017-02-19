@@ -442,6 +442,8 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _maxCellSize     = _nextMaxCellSize;
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+
+  setNextGridUpdateRequested();
 }
 
 void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
@@ -594,7 +596,7 @@ exahype::solvers::ADERDGSolver::computeSubcellPositionOfCellOrAncestor(
 ///////////////////////////////////
 // CELL-LOCAL MESH REFINEMENT
 ///////////////////////////////////
-bool exahype::solvers::ADERDGSolver::enterCell(
+bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -656,6 +658,8 @@ bool exahype::solvers::ADERDGSolver::enterCell(
               fineGridCellDescription,
               neighbourCellDescriptionIndices,
               fineGridCell.isAssignedToRemoteRank());
+
+      updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
     }
   }
 
@@ -681,6 +685,12 @@ bool exahype::solvers::ADERDGSolver::enterCell(
   return refineFineGridCell;
 }
 
+void exahype::solvers::ADERDGSolver::updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent) {
+  Solver::updateNextGridUpdateRequested(refinementEvent!=CellDescription::RefinementEvent::None
+                                && refinementEvent!=CellDescription::RefinementEvent::ErasingChildrenRequested
+                                && refinementEvent!=CellDescription::RefinementEvent::DeaugmentingChildrenRequested);
+}
+
 bool exahype::solvers::ADERDGSolver::markForRefinement(
     CellDescription& fineGridCellDescription) {
   bool refineFineGridCell = false;
@@ -701,7 +711,9 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
           refinementControl =
               refinementCriterion(
                   solution,fineGridCellDescription.getOffset()+0.5*fineGridCellDescription.getSize(),
-                  fineGridCellDescription.getSize(),fineGridCellDescription.getCorrectorTimeStamp(),fineGridCellDescription.getLevel());
+                  fineGridCellDescription.getSize(),
+                  fineGridCellDescription.getCorrectorTimeStamp()+fineGridCellDescription.getCorrectorTimeStepSize(),
+                  fineGridCellDescription.getLevel());
 
           switch (refinementControl) {
             case exahype::solvers::Solver::RefinementControl::Refine:
@@ -1091,7 +1103,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
       subcellIndex);
 }
 
-bool exahype::solvers::ADERDGSolver::leaveCell(
+bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -1106,6 +1118,8 @@ bool exahype::solvers::ADERDGSolver::leaveCell(
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
     startOrFinishCollectiveRefinementOperations(fineGridCellDescription);
+
+    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
 
     const int coarseGridCellElement =
         tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -1298,6 +1312,25 @@ void exahype::solvers::ADERDGSolver::validateNoNansInADERDGSolver(
     assertion5(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(lFhbnd[i]), fineGridVerticesEnumerator.toString(),
         cellDescription.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+}
+
+bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Type::Cell) {
+    const double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    RefinementControl refinementControl = refinementCriterion(
+                      solution,cellDescription.getOffset()+0.5*cellDescription.getSize(),
+                      cellDescription.getSize(),
+                      cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+                      cellDescription.getLevel());
+
+    return (refinementControl==RefinementControl::Refine);
+  }
+
+  return false;
 }
 
 void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
@@ -2678,12 +2711,13 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
-  std::vector<double> timeStepDataToReduce(0,3);
+  std::vector<double> timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
+  timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
   timeStepDataToReduce.push_back(_minCellSize);
   timeStepDataToReduce.push_back(_maxCellSize);
 
-  assertion1(timeStepDataToReduce.size()==3,timeStepDataToReduce.size());
+  assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
   assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
@@ -2695,7 +2729,8 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     logDebug("sendDataToMaster(...)","Sending time step data: " <<
              "data[0]=" << timeStepDataToReduce[0] <<
              ",data[1]=" << timeStepDataToReduce[1] <<
-             ",data[2]=" << timeStepDataToReduce[2]);
+             ",data[2]=" << timeStepDataToReduce[2] <<
+             ",data[3]=" << timeStepDataToReduce[3]);
   }
 
   DataHeap::getInstance().sendData(
@@ -2715,7 +2750,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(3);
+  std::vector<double> receivedTimeStepData(4);
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -2726,25 +2761,29 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==3,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
   // Thus it does not equal MAX_DOUBLE.
 
-  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[0] );
-  _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[1] );
-  _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
+  int index=0;
+  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, receivedTimeStepData[index++] );
+  _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+  _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
              "data[0]=" << receivedTimeStepData[0] <<
              ",data[1]=" << receivedTimeStepData[1] <<
-             ",data[2]=" << receivedTimeStepData[2] );
+             ",data[2]=" << receivedTimeStepData[2] <<
+             ",data[3]=" << receivedTimeStepData[3] );
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
              "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
+             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
              ",_nextMinCellSize=" << _nextMinCellSize <<
              ",_nextMaxCellSize=" << _nextMaxCellSize);
   }

@@ -160,6 +160,34 @@ private:
    */
   double _minNextPredictorTimeStepSize;
 
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state after the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state after this rank's
+   * solver has merged its state
+   * with its workers' worker.
+   */
+  bool _gridUpdateRequested;
+
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state before the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state before this rank's
+   * solver has merged its state
+   * with its workers' solver.
+   */
+  bool _nextGridUpdateRequested;
+
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
 
@@ -168,6 +196,12 @@ private:
    * mergeNeighbours(). Therefore the routine is private.
    */
   void uncompress(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
+   * Set the next grid update requested flag to true if the refinementEvent
+   * is neither None,DeaugmentingChildrenRequested, nor ErasingChildrenRequested.
+   */
+  void updateNextGridUpdateRequested(CellDescription::RefinementEvent refinementEvent);
 
   /**
    * TODO(Dominic): Add more docu.
@@ -1185,9 +1219,6 @@ public:
     return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
   }
 
-  /**
-   * @todo Dominic, kannst Du mir reinschreiben, was die Routine tut und warum die so heisst? Der Name suggeriert, dass was schiefgehen kann
-   */
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
@@ -1199,7 +1230,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -1209,7 +1240,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -1222,6 +1253,10 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   ///////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   /**
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
