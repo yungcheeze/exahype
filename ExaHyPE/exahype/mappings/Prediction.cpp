@@ -117,7 +117,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
       break;
     }
 
-    const int dataPoints = aderdgSolver->getNumberOfVariables() + aderdgSolver->getNumberOfParameters();
+    const int dataPoints = solver->getNumberOfVariables() + solver->getNumberOfParameters();
 
     if (aderdgSolver!=nullptr) {
       if(aderdgSolver->alignTempArray()) {
