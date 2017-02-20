@@ -558,7 +558,7 @@ void exahype::mappings::MeshRefinement::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+//      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
 //      solver->sendMeshRefinementFlagsToMaster(); // TODO(Dominic): implement
   }
@@ -569,7 +569,7 @@ void exahype::mappings::MeshRefinement::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+//      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
 //      solver->mergeMeshRefinementFlagsWithWorker(); // TODO(Dominic): implement
   }

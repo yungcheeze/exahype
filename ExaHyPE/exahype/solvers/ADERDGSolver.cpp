@@ -2802,7 +2802,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
   int index=0;
   _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, (receivedTimeStepData[index++]) > 0 ? true : false );
   _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
   _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
