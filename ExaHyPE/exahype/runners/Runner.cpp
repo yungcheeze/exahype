@@ -445,8 +445,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
-    repository.switchToPlotAugmentedAMRGrid();
-    repository.iterate(); // TODO(Dominic): Remove
+//    repository.switchToPlotAugmentedAMRGrid();
+//    repository.iterate(); // TODO(Dominic): Remove
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
