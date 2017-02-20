@@ -100,10 +100,10 @@ void GRMHD::GRMHDSolver::matrixb(const double* const Q,const int d,double* Bn) {
   pdematrixb_(Bn, Q, nv);
 }
 
-bool GRMHD::GRMHDSolver::isDummyKRequired() const { 
+bool GRMHD::GRMHDSolver::hasToApplyPointSource() const { 
   return false;
 }
 
-void GRMHD::GRMHDSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void GRMHD::GRMHDSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // whatever
 }

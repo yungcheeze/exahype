@@ -43,7 +43,7 @@ namespace {
                              "volumeUnknownsProlongation",
                              "volumeUnknownsRestriction",
                              "boundaryConditions",
-                             "dummyK_GeneratedCall"}; //TODO KD
+                             "pointSource"}; //TODO KD
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
 
@@ -1394,8 +1394,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  if(isDummyKRequired()) { //disable kernel if not needed
-      dummyK_GeneratedCall(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
+  if(hasToApplyPointSource()) { //disable kernel if not needed
+      pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }
   
@@ -3794,7 +3794,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   );
 }
 
-void exahype::solvers::ADERDGSolver::dummyK_GeneratedCall(
+void exahype::solvers::ADERDGSolver::pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,

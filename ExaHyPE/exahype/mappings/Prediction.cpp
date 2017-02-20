@@ -141,7 +141,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
          //
         _tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*dataPoints, ALIGNMENT);
         
-        if(aderdgSolver->isDummyKRequired()) { //TODO KD
+        if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
            _tempPointForceSources    [solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
         } else {
            _tempPointForceSources    [solverNumber] = nullptr;
@@ -165,7 +165,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
          //
         _tempStateSizedVectors[solverNumber] = new double[dataPoints];
         
-        if(aderdgSolver->isDummyKRequired()) { //TODO KD
+        if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
            _tempPointForceSources    [solverNumber] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
         } else {
            _tempPointForceSources    [solverNumber] = nullptr;
@@ -232,7 +232,7 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
           _mm_free(_tempStateSizedVectors[solverNumber]);
           _tempStateSizedVectors[solverNumber] = nullptr;
           
-          if(aderdgSolver->isDummyKRequired()) { //TODO KD
+          if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
             _mm_free(_tempPointForceSources[solverNumber]);
             _tempPointForceSources[solverNumber] = nullptr;
           }
@@ -259,7 +259,7 @@ void exahype::mappings::Prediction::deleteTemporaryVariables() {
           delete[] _tempStateSizedVectors[solverNumber];
           _tempStateSizedVectors[solverNumber] = nullptr;
           
-          if(aderdgSolver->isDummyKRequired()) { //TODO KD
+          if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
             delete[] _tempPointForceSources[solverNumber];
             _tempPointForceSources[solverNumber] = nullptr;
           }

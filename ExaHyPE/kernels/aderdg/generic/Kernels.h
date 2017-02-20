@@ -213,7 +213,7 @@ void volumeUnknownsRestriction(
     
 //TODO KD    
 template <typename SolverType>
-void dummyK_Kernel(
+void pointSource(
     SolverType& solver,
     const double t,
     const double dt,
@@ -238,7 +238,7 @@ void dummyK_Kernel(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/2d/dummyK_Kernel.cpph"
+#include "kernels/aderdg/generic/c/2d/pointSource.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
@@ -248,7 +248,7 @@ void dummyK_Kernel(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/3d/dummyK_Kernel.cpph"
+#include "kernels/aderdg/generic/c/3d/pointSource.cpph"
 #endif
 
 // Todo: Recasting the code from function templates to class templates

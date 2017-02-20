@@ -28,7 +28,7 @@
 #if DIMENSIONS == 2
 
 template <typename SolverType>
-void kernels::aderdg::generic::c::dummyK_Kernel(
+void kernels::aderdg::generic::c::pointSource(
     SolverType& solver,
     const double t,
     const double dt,
@@ -50,7 +50,7 @@ void kernels::aderdg::generic::c::dummyK_Kernel(
     //           numberOfVariables);
     //loop over all quadrature point
       //do your stuff to get ready to get the value for one quadrature pointer
-      //solver.dummyK_Value(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,0)], &x0);
+      //solver.pointSource(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,0)], &x0);
       //apply the result for this quadrature point
 
 
@@ -76,7 +76,7 @@ int order = basisSize-1;
        x[0] = center[0] + dx[0] * (kernels::gaussLegendreNodes[basisSize-1][j] - 0.5);
 	 
    // get the source vector located at x0 = (x, y) and at tn = t; and at the quadrature nodes tn
-  solver.dummyK_Value(x, tn, dt, &pointForceSources[idx_pointForceSources(n,i,j,0)], &x0[0]);
+  solver.pointSource(x, tn, dt, &pointForceSources[idx_pointForceSources(n,i,j,0)], &x0[0]);
        
  // position the source inside the dG cell
   const tarch::la::Vector<DIMENSIONS, double> _x(x0[0], x0[1]);

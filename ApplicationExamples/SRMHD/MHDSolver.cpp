@@ -138,11 +138,11 @@ void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, d
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
-bool SRMHD::MHDSolver::isDummyKRequired() const {
+bool SRMHD::MHDSolver::hasToApplyPointSource() const {
   return false;
 }
 
-void SRMHD::MHDSolver::dummyK_Value(double const*, double, double, double*, double*) {
+void SRMHD::MHDSolver::pointSource(double const*, double, double, double*, double*) {
   // whatever
 }
 

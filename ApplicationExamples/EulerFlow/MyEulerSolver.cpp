@@ -228,10 +228,10 @@ void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZer
   std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
-bool Euler::MyEulerSolver::isDummyKRequired() const {
+bool Euler::MyEulerSolver::hasToApplyPointSource() const {
   return false;
 }
 
-void Euler::MyEulerSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void Euler::MyEulerSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   //TODO KD
 }

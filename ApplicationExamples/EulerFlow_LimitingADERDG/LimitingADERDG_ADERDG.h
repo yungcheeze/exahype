@@ -109,8 +109,8 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
     
     void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
     void matrixb(const double* const Q,const int d,double* Bn);
-    bool isDummyKRequired() const override;
-    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    bool hasToApplyPointSource() const override;
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     
     /**
      * Evaluate the refinement criterion within a cell.
