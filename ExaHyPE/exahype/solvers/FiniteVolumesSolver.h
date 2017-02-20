@@ -436,6 +436,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void zeroTimeStepSizes() override;
+
   /**
    * Roll back the time step data to the
    * ones of the previous time step.
@@ -462,7 +464,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -472,7 +474,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -485,10 +487,16 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   /**
    * Rolls the solver time step data back to the

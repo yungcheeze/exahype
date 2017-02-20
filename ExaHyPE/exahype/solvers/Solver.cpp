@@ -26,7 +26,6 @@ const int exahype::solvers::Solver::NotFound = -1;
 tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
 int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
 
-
 void exahype::solvers::Solver::waitUntilAllBackgroundTasksHaveTerminated() {
   bool finishedWait = false;
 
@@ -60,7 +59,9 @@ exahype::solvers::Solver::Solver(
       _maxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _nextMaxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _timeStepping(timeStepping),
-      _profiler(std::move(profiler)) { }
+      _profiler(std::move(profiler)),
+      _gridUpdateRequested(false),
+      _nextGridUpdateRequested(false) { }
 
 
 std::string exahype::solvers::Solver::getIdentifier() const {
@@ -106,6 +107,30 @@ int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
 
 double exahype::solvers::Solver::getMaximumMeshSize() const {
   return _maximumMeshSize;
+}
+
+void exahype::solvers::Solver::resetGridUpdateRequestedFlags() {
+  _gridUpdateRequested     = false;
+  _nextGridUpdateRequested = false;
+}
+
+void exahype::solvers::Solver::updateNextGridUpdateRequested(bool nextGridUpdateRequested) {
+  _nextGridUpdateRequested |= nextGridUpdateRequested;
+}
+
+
+bool exahype::solvers::Solver::getNextGridUpdateRequested() const {
+  return _nextGridUpdateRequested;
+}
+
+
+bool exahype::solvers::Solver::getGridUpdateRequested() const {
+  return _gridUpdateRequested;
+}
+
+void exahype::solvers::Solver::setNextGridUpdateRequested() {
+  _gridUpdateRequested     = _nextGridUpdateRequested;
+  _nextGridUpdateRequested = false;
 }
 
 
@@ -202,6 +227,15 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
   return maxDepth;
 }
 
+bool exahype::solvers::Solver::oneSolverRequestedGridUpdate() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getGridUpdateRequested()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::string exahype::solvers::Solver::toString() const {
   std::ostringstream stringstr;
   toString(stringstr);
@@ -225,3 +259,83 @@ void exahype::solvers::Solver::toString(std::ostream& out) const {
   out << "_timeStepping:" << toString(_timeStepping);
   out <<  ")";
 }
+
+#ifdef Parallel
+/*
+ * At the time of sending data to the master,
+ * we have already performed a time step update locally
+ * on the rank. We thus need to communicate the
+ * current min predictor time step size to the master.
+ * The next min predictor time step size is
+ * already reset locally to the maximum double value.
+ *
+ * However on the master's side, we need to
+ * merge the received time step size with
+ * the next min predictor time step size since
+ * the master has not yet performed a time step update
+ * (i.e. called TimeStepSizeComputation::endIteration()).
+ */
+void exahype::solvers::Solver::sendRefinementFlagsToMaster(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level){
+  std::vector<double> timeStepDataToReduce(0,1);
+  timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
+
+  assertion1(timeStepDataToReduce.size()==1,timeStepDataToReduce.size());
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendRefinementFlagsToMaster(...)","Sending time step data: " <<
+             "data[0]=" << timeStepDataToReduce[0]);
+  }
+
+  DataHeap::getInstance().sendData(
+      timeStepDataToReduce.data(), timeStepDataToReduce.size(),
+      masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+/**
+ * At the time of the merging,
+ * the workers and the master have already performed
+ * at local update of the next predictor time step size
+ * and of the predictor time stamp.
+ * We thus need to minimise over both quantities.
+ */
+void exahype::solvers::Solver::mergeWithWorkerRefinementFlags(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> receivedTimeStepData(1);
+
+  if (true || tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithWorkerData(...)","Receiving refinement flags [pre] from rank " << workerRank);
+  }
+
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
+
+  int index=0;
+  _nextGridUpdateRequested = std::min( _nextGridUpdateRequested, receivedTimeStepData[index++] );
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
+             "data[0]=" << receivedTimeStepData[0] <<
+             ",data[1]=" << receivedTimeStepData[1] <<
+             ",data[2]=" << receivedTimeStepData[2] <<
+             ",data[3]=" << receivedTimeStepData[3] );
+
+    logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
+             "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
+             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+             ",_nextMinCellSize=" << _nextMinCellSize <<
+             ",_nextMaxCellSize=" << _nextMaxCellSize);
+  }
+}
+#endif

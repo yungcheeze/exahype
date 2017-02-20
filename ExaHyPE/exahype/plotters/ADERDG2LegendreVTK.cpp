@@ -230,7 +230,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
   if (_writtenUnknowns>0) {
     assertion(_vertexWriter!=nullptr);
     dfor(i,_order+1) {
-      tarch::la::Vector<2, double> p;
+      tarch::la::Vector<DIMENSIONS, double> p;
 
       //p = offsetOfPatch + tarch::la::multiplyComponents( i.convertScalar<double>(), sizeOfPatch) * (1.0/_order);
 
