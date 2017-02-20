@@ -343,7 +343,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  int gridSetupIterationsToRun = 3;
+  int gridSetupIterationsToRun = 4;
   while (gridSetupIterationsToRun>0) {
     repository.iterate();
     gridSetupIterations++;
@@ -351,18 +351,18 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
       gridSetupIterationsToRun--;
     }
-    else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
-      gridSetupIterationsToRun=3;  // we need at least 3 sweeps to recover from ongoing balancing
-    }
-    else if ( !repository.getState().isGridBalanced()  ) {
-      gridSetupIterationsToRun=1;  // one additional step to get adjacency right
-    }
     else if ( exahype::solvers::Solver::oneSolverRequestedGridUpdate()  ) {
       /*
        * TODO(Dominic): We might not need a few of the other checks anymore after I
        * have introduced the grid refinement requested flag.
       */
-      gridSetupIterationsToRun=3;  // two steps to realise an erasing; one additional step to get adjacency right
+      gridSetupIterationsToRun=10;  // two steps to realise an erasing; one additional step to get adjacency right
+    }
+    else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
+      gridSetupIterationsToRun=4;  // we need at least 3 sweeps to recover from ongoing balancing
+    }
+    else if ( !repository.getState().isGridBalanced()  ) {
+      gridSetupIterationsToRun=1;  // one additional step to get adjacency right
     }
     else {
       gridSetupIterationsToRun--;
@@ -430,6 +430,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
     repository.getState().switchToPreAMRContext();
     createGrid(repository);
+//    repository.iterate(10);
     /*
      * Set ADER-DG corrector time stamp and finite volumes time stamp.
      * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
@@ -444,6 +445,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
+
+    repository.switchToPlotAugmentedAMRGrid();
+    repository.iterate(); // TODO(Dominic): Remove
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
@@ -843,17 +847,19 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // refinement criterion. We enforce that the
   // limiter is only active on the finest mesh level
   // by mesh refinement.
-//  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
-//    repository.getState().switchToPreAMRContext();
-//    repository.switchToMerging();
-//    repository.iterate();
-//
-//    createGrid(repository);
-//
-//    repository.getState().switchToPostAMRContext();
-//    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
-//    repository.iterate();
-//  }
+  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
+    logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
+
+    repository.getState().switchToPreAMRContext();
+    repository.switchToMerging();
+    repository.iterate();
+
+    createGrid(repository);
+
+    repository.getState().switchToPostAMRContext();
+    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.iterate();
+  }
 
   printTimeStepInfo(1,repository);
 

@@ -47,7 +47,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 
   if(_id) id=_id; else logInfo("ID", "Loading default Initial Data");
   if(_bc) id=_bc; else logInfo("BC", "Loading default Boundary Conditions");
-  
+
   logInfo("ID", std::string("Loading Initial data: '")+id+std::string("'"));
   if(id == "ShuVortex") idfunc = ShuVortex2D;
   if(id == "MovingGauss2D") idfunc = MovingGauss2D;
@@ -133,13 +133,10 @@ Euler::MyEulerSolver::refinementCriterion(
     const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
-  // @todo Please implement
-//  if (dx[0] <= getMaximumMeshSize()/3.)
-//    return exahype::solvers::Solver::RefinementControl::Erase;
-
-  double largestRho  = 0;
-  double smallestRho = std::numeric_limits<double>::max();
   if (dx[0] > getMaximumMeshSize()/9.) {
+    double largestRho  = -std::numeric_limits<double>::max();
+    double smallestRho =  std::numeric_limits<double>::max();
+
     dfor(i,Order+1) {
       kernels::idx3 idx_luh(Order+1,Order+1,NumberOfVariables);
 
@@ -148,13 +145,15 @@ Euler::MyEulerSolver::refinementCriterion(
       largestRho  = std::max (largestRho,  vars.rho());
       smallestRho = std::min (smallestRho, vars.rho());
     }
+
+    if ((largestRho-smallestRho)/largestRho > 0.9e-1) {
+      return exahype::solvers::Solver::RefinementControl::Refine;
+    }
   }
 
-//  std::cout << "largest rho=" << largestRho << std::endl;
-
-  if ((largestRho-smallestRho)/largestRho > 1e-1) {
-    return exahype::solvers::Solver::RefinementControl::Refine;
-  }
+//  if (dx[0] <= getMaximumMeshSize()/3.) {
+//    return exahype::solvers::Solver::RefinementControl::Erase;
+//  }
 
   return exahype::solvers::Solver::RefinementControl::Keep;
 }

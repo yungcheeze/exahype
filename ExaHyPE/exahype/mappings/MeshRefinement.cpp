@@ -97,6 +97,10 @@ void exahype::mappings::MeshRefinement::beginIteration(
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+    solver->zeroTimeStepSizes();
+//    logInfo("beginIteration(...)","solver->getMinTimeStamp()="<<solver->getMinTimeStamp()); // TODO(Dominic): remove
+
     assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
   } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
 
@@ -252,8 +256,12 @@ void exahype::mappings::MeshRefinement::enterCell(
             solverNumber);
 
     solver->updateNextGridUpdateRequested(refinementRequested);
-
     refineFineGridCell |= refinementRequested;
+
+    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+    }
   }
 
   // Refine all adjacent vertices if necessary and possible.
@@ -285,7 +293,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    eraseFineGridCell &=
+    bool erasingRequested =
         solver->updateStateInLeaveCell(
             fineGridCell,
             fineGridVertices,
@@ -295,6 +303,8 @@ void exahype::mappings::MeshRefinement::leaveCell(
             coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
+    solver->updateNextGridUpdateRequested(erasingRequested);
+    eraseFineGridCell &= erasingRequested;
   }
 
   // We assume that the solvers have all removed
