@@ -2794,7 +2794,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
