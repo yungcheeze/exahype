@@ -163,6 +163,18 @@ case $CMD in
 		cdroot; cd $SCRIPTDIR;
 		cat cheat-sheet.txt
 		;;
+	"check") # Tell which build flags we currently have in ENV
+		echo "ExaHyPE Makefile specific:"
+		echo "COMPILER:  ${COMPILER:=-not set-}"
+		echo "CC:        ${CC:=-not set-}"
+		echo "MODE:      ${MODE:=-not set-}"
+		echo "SHAREDMEM: ${SHAREDMEM:=-not set-}"
+		echo "DISTRIBUTEDMEM: ${DISTRIBUTEDMEM:=-not set -}"
+		echo "Exa Build tool specific:"
+		echo "CLEAN:     ${CLEAN:=-not-set-}"
+		echo "SKIP_TOOLKIT: ${SKIP_TOOLKIT:=-not set-}"
+		env | grep -iE '(exa|sim)' | grep -vE '^PWD|^OLDPWD'
+		;;
 	"git") # passes commands to git
 		cdroot; info "ExaHyPE Git Repository at $GITROOT"
 		exec git $@

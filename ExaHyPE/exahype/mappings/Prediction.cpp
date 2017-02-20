@@ -117,9 +117,9 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
       break;
     }
 
-    const int dataPoints = solver->getNumberOfVariables() + solver->getNumberOfParameters();
-
     if (aderdgSolver!=nullptr) {
+      const int dataPoints = aderdgSolver->getNumberOfVariables() + aderdgSolver->getNumberOfParameters();
+
       if(aderdgSolver->alignTempArray()) {
         _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
         for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear

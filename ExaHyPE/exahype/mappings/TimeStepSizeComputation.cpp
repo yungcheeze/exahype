@@ -307,6 +307,8 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
                 fineGridCell.getCellDescriptionsIndex(),element,
                 _tempEigenValues[solverNumber]);
 
+//        logInfo("enterCell(...)","admissibleTimeStepSize="<<admissibleTimeStepSize); // TODO(Dominic): remove
+
         if (!exahype::State::fuseADERDGPhases()) {
           reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
         }
