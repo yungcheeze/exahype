@@ -102,29 +102,15 @@ void kernels::aderdg::generic::c::dummyK_Kernel(
 
             for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
                 unknown++) {
-              //dfor(ii, order + 1) {  // Gauss-Legendre node indices
-              //int iGauss = peano::utils::dLinearisedWithoutLookup(ii, order + 1);
-              //double value = kernels::basisFunctions[order][ii(0)](xRef(0)) *
-              //  kernels::basisFunctions[order][ii(1)](xRef(1)) *
-              //  kernels::basisFunctions[order][ii(2)](xRef(2)) *
-              //   pointForceSources[idx_pointForceSources(n,i,j,k,unknown)];
-              //value /= ((kernels::gaussLegendreWeights[order][ii(0)])*
-              //         (kernels::gaussLegendreWeights[order][ii(1)])*
-              //         (kernels::gaussLegendreWeights[order][ii(2)]));
-
-              //pointForceSources[idx_pointForceSources(n,i,j,k,unknown)] = value;
-
-
-
-              //}  // dfor
+              
 
               double value = kernels::basisFunctions[order][i](xRef(2)) *
                   kernels::basisFunctions[order][j](xRef(1)) *
                   kernels::basisFunctions[order][k](xRef(0)) *
                   pointForceSources[idx_pointForceSources(n,i,j,k,unknown)];
-              value /= ((kernels::gaussLegendreWeights[order][i])*
-                  (kernels::gaussLegendreWeights[order][j])*
-                  (kernels::gaussLegendreWeights[order][k]));
+              value /= ((kernels::gaussLegendreWeights[order][i])*dx[2]*
+                  (kernels::gaussLegendreWeights[order][j])*dx[1]*
+                  (kernels::gaussLegendreWeights[order][k])*dx[0]);
 
               pointForceSources[idx_pointForceSources(n,i,j,k,unknown)] = value;
 
