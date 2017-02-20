@@ -33,11 +33,12 @@
  #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
- #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
+ #include "exahype/adapters/Merging.h" 
+ #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
 
 
 
@@ -80,11 +81,12 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionRecomputationAndTimeStepSizeComputation> _gridWithSolutionRecomputationAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdate> _gridWithSolutionUpdate;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepSizeComputation> _gridWithTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot2d> _gridWithPredictionAndPlot2d;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Merging> _gridWithMerging;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation;
 
   
    exahype::records::RepositoryState               _repositoryState;
@@ -106,11 +108,12 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measureSolutionUpdateCPUTime;
-    tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlot2dCPUTime;
+    tarch::timing::Measurement _measureMergingCPUTime;
+    tarch::timing::Measurement _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
@@ -129,11 +132,12 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measureSolutionUpdateCalendarTime;
-    tarch::timing::Measurement _measurePostAMRDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlot2dCalendarTime;
+    tarch::timing::Measurement _measureMergingCalendarTime;
+    tarch::timing::Measurement _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
 
 
   public:
@@ -196,11 +200,12 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation();    
     virtual void switchToNeighbourDataMerging();    
     virtual void switchToSolutionUpdate();    
-    virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();    
     virtual void switchToTimeStepSizeComputation();    
     virtual void switchToPrediction();    
     virtual void switchToPredictionAndPlot();    
     virtual void switchToPredictionAndPlot2d();    
+    virtual void switchToMerging();    
+    virtual void switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
@@ -219,11 +224,12 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterSolutionUpdate() const;
-    virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterPredictionAndPlot() const;
     virtual bool isActiveAdapterPredictionAndPlot2d() const;
+    virtual bool isActiveAdapterMerging() const;
+    virtual bool isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
 
      
     #ifdef Parallel

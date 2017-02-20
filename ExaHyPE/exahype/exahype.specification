@@ -224,15 +224,6 @@ adapter:
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: PostProcessing
 
-// Additional adapters for AMR in 4 phase time stepping
-adapter:
-  name: PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Sending
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
-
 adapter:
   name: TimeStepSizeComputation
   merge-with-user-defined-mapping: PreProcessing 
@@ -252,7 +243,7 @@ adapter:
   name: PredictionAndPlot
   merge-with-user-defined-mapping: PreProcessing 
   merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: Sending
   merge-with-user-defined-mapping: PostProcessing // Sending does send face data
@@ -266,3 +257,18 @@ adapter:
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
   merge-with-user-defined-mapping: Sending    // Sending does send face data
   merge-with-user-defined-mapping: PostProcessing
+  
+// Additional adapters for AMR in 4 phase time stepping
+adapter:
+  name: Merging
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Merging 
+  merge-with-user-defined-mapping: PostProcessing
+  
+adapter:
+  name: DropMPIMetadataMessagesAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending      // Only send time step data
+  merge-with-user-defined-mapping: PostProcessing    

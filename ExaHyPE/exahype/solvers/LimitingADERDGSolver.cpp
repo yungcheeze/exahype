@@ -126,10 +126,17 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
+  setNextGridUpdateRequested();
+
   logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
 
   _limiterDomainHasChanged     = _nextLimiterDomainHasChanged;
   _nextLimiterDomainHasChanged = false;
+}
+
+void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
+  _solver->zeroTimeStepSizes();
+  _limiter->zeroTimeStepSizes();
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
@@ -193,7 +200,7 @@ double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
-bool exahype::solvers::LimitingADERDGSolver::enterCell(
+bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -202,13 +209,13 @@ bool exahype::solvers::LimitingADERDGSolver::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->enterCell(
+  return _solver->updateStateInEnterCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
       fineGridPositionOfCell,solverNumber);
 }
 
-bool exahype::solvers::LimitingADERDGSolver::leaveCell(
+bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -217,7 +224,7 @@ bool exahype::solvers::LimitingADERDGSolver::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->leaveCell(
+  return _solver->updateStateInLeaveCell(
           fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
           coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
           fineGridPositionOfCell,solverNumber);
@@ -226,6 +233,13 @@ bool exahype::solvers::LimitingADERDGSolver::leaveCell(
 ///////////////////////////////////
 // CELL-LOCAL
 //////////////////////////////////
+bool exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) {
+  return _solver->evaluateRefinementCriterionAfterSolutionUpdate(cellDescriptionsIndex,element);
+}
+
+
 double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
     const int cellDescriptionsIndex,
     const int element,
@@ -240,7 +254,9 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
           _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
       break;
     }
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
       admissibleTimeStepSize =
                   _solver->startNewTimeStep(cellDescriptionsIndex,element,tempEigenvalues);
       int limiterElement =
@@ -254,27 +270,37 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
       limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
       break;
     }
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
-    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
-      int limiterElement =
-          _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      admissibleTimeStepSize =
-          _limiter->startNewTimeStep(cellDescriptionsIndex,limiterElement,tempEigenvalues);
-      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-      LimiterPatch& limiterPatch =
-          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-
-      solverPatch.setPreviousCorrectorTimeStepSize(limiterPatch.getPreviousTimeStepSize());
-      solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
-      solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
-
-      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp()+limiterPatch.getTimeStepSize());
-      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for Standard time stepping.
-      break;
-    }
+    // TODO(Dominic): The code below was before. Now we always use the solverPatch time step sizes.
+    // Keep the code a while for reference (19/02/17).
+//    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled:
+//    case exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell: {
+//      int limiterElement =
+//          _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+//      admissibleTimeStepSize =
+//          _limiter->startNewTimeStep(cellDescriptionsIndex,limiterElement,tempEigenvalues);
+//      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+//      LimiterPatch& limiterPatch =
+//          _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+//
+//      solverPatch.setPreviousCorrectorTimeStepSize(limiterPatch.getPreviousTimeStepSize());
+//      solverPatch.setCorrectorTimeStamp(limiterPatch.getTimeStamp());
+//      solverPatch.setCorrectorTimeStepSize(limiterPatch.getTimeStepSize());
+//
+//      solverPatch.setPredictorTimeStamp(limiterPatch.getTimeStamp()+limiterPatch.getTimeStepSize());
+//      solverPatch.setPredictorTimeStepSize(limiterPatch.getTimeStepSize()); // TODO(Dominic): Reassess this for Standard time stepping.
+//      break;
+//    }
   }
 
   return admissibleTimeStepSize;
+}
+
+void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) {
+  _solver->zeroTimeStepSizes(cellDescriptionsIndex,solverElement);
+  const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,solverElement);
+  if (limiterElement!=exahype::solvers::Solver::NotFound) {
+    _limiter->zeroTimeStepSizes(cellDescriptionsIndex,limiterElement);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
