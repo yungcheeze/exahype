@@ -91,17 +91,20 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    int numberOfStateSizedVectors  = 0; // TODO(Dominic): Check if we need number of parameters too
+    const int dataPoints = solver->getNumberOfVariables()+solver->getNumberOfParameters();
+
+    int numberOfStateSizedVectors  = 0;
     int numberOfStateSizedMatrices = 0;
     int numberOfFaceUnknowns       = 0;
     int lengthOfFaceUnknowns       = 0;
+
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
         numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
-            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getUnknownsPerFace() + eventual padding
+            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getDataPerFace() + eventual padding
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme.
@@ -109,7 +112,7 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getBndFaceSize(), // == getDataPerFace() + eventual padding
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
@@ -122,9 +125,9 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     _tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
       _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors*solver->getNumberOfVariables()];
+      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * dataPoints];
       for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + solver->getNumberOfVariables();
+        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + dataPoints;
       }
     }
     //

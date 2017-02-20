@@ -174,6 +174,9 @@ class exahype::runners::Runner {
    *
    * For the parallel case, I've changed from stationary into balanced which is
    * a slight generalisation. See Peano guidebook.
+   *
+   * TODO(Dominic): We might not need a few of the other checks anymore after I
+   * have introduced the grid refinement requested flag.
    */
   void createGrid(exahype::repositories::Repository& repository);
 

@@ -19,6 +19,7 @@ void kernels::aderdg::generic::c::solutionAdjustment(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
+  constexpr int order              = basisSize-1;
 
   idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters);
   
@@ -33,16 +34,10 @@ void kernels::aderdg::generic::c::solutionAdjustment(
       x[1] = center[1] + dx[1] * (qi - 0.5);
 
       const double weight =  // Gauss weight
-          kernels::gaussLegendreWeights[basisSize - 1][i] *
-          kernels::gaussLegendreWeights[basisSize - 1][j];
+          kernels::gaussLegendreWeights[order][i] *
+          kernels::gaussLegendreWeights[order][j];
 
-      // !!
-      // TODO(Dominic): For refactoring purposes. Remove old indexing method.
-      const int nodeIndex = i + basisSize * j;
-      const int dofStartIndex = nodeIndex * numberOfVariables;
-      assertion(dofStartIndex==idx_luh(j,i,0)); 
-      // !!
-      solver.adjustedSolutionValues(x, weight, t, dt, &luh[idx_luh(i,j,0)]);
+      solver.adjustedSolutionValues(x, weight, t, dt, luh + idx_luh(i,j,0));
     }
   }
 }

@@ -17,6 +17,10 @@
 #include "MyEulerSolver_Variables.h"
 #include "tarch/la/MatrixVectorOperations.h"
 
+#include "peano/utils/Loop.h"
+
+#include "kernels/KernelUtils.h"
+
 #include <memory>
 #include <cstring> // memset
 #include <string>
@@ -43,7 +47,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 
   if(_id) id=_id; else logInfo("ID", "Loading default Initial Data");
   if(_bc) id=_bc; else logInfo("BC", "Loading default Boundary Conditions");
-  
+
   logInfo("ID", std::string("Loading Initial data: '")+id+std::string("'"));
   if(id == "ShuVortex") idfunc = ShuVortex2D;
   if(id == "MovingGauss2D") idfunc = MovingGauss2D;
@@ -56,6 +60,8 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   logInfo("BC", std::string("Applying Boundary Conditions: '")+id+std::string("'"));
   if(id == "outflow") {
   }
+
+//  idfunc = MovingGauss2D; TODO(Dominic): Use this function for the dyn amr test.
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -127,7 +133,29 @@ Euler::MyEulerSolver::refinementCriterion(
     const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
-  // @todo Please implement
+//  double largestRho  = -std::numeric_limits<double>::max();
+//  double smallestRho =  std::numeric_limits<double>::max();
+//
+//  kernels::idx3 idx_luh(Order+1,Order+1,NumberOfVariables);
+//  dfor(i,Order+1) {
+//    ReadOnlyVariables vars(luh + idx_luh(i(1),i(0),0));
+//
+//    largestRho  = std::max (largestRho,  vars.rho());
+//    smallestRho = std::min (smallestRho, vars.rho());
+//  }
+//
+////  if ((largestRho-smallestRho)/largestRho > 0.9e-1) { // This doesn't work with the erasing
+//  if (largestRho > 0.65) {
+//    if (dx[0] > getMaximumMeshSize()/9.) {
+//      return exahype::solvers::Solver::RefinementControl::Refine;
+//    } else {
+//      return exahype::solvers::Solver::RefinementControl::Keep;
+//    }
+//  }
+//
+//  if (dx[0] < getMaximumMeshSize()/3.)
+//    return exahype::solvers::Solver::RefinementControl::Erase;
+
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 

@@ -87,11 +87,13 @@ tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
 
 void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
   assertion(_limiterDomainHasChanged ==nullptr);
+  assertion(_gridUpdateRequested     ==nullptr);
   assertion(_tempUnknowns            ==nullptr);
   assertion(_tempStateSizedVectors   ==nullptr);
 
   int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
   _limiterDomainHasChanged = new bool    [numberOfSolvers];
+  _gridUpdateRequested     = new bool    [numberOfSolvers];
   _tempStateSizedVectors   = new double**[numberOfSolvers];
   _tempUnknowns            = new double**[numberOfSolvers];
 
@@ -110,22 +112,28 @@ void exahype::mappings::SolutionUpdate::prepareTemporaryVariables() {
       _tempUnknowns[solverNumber] = nullptr;
     } else {
       _tempStateSizedVectors[solverNumber] = nullptr;
-      _tempUnknowns     [solverNumber] = nullptr;
+      _tempUnknowns         [solverNumber] = nullptr;
     }
 
     ++solverNumber;
   }
 }
 
-void exahype::mappings::SolutionUpdate::prepareLimiterDomainHasChangedFlags() {
+void exahype::mappings::SolutionUpdate::prepareSolverFlags() {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _limiterDomainHasChanged[solverNumber] = false;
+  }
+
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    assertion(!exahype::solvers::RegisteredSolvers[solverNumber]->getNextGridUpdateRequested());
+    _gridUpdateRequested[solverNumber] = false;
   }
 }
 
 void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
   if (_tempStateSizedVectors!=nullptr) {
     assertion(_limiterDomainHasChanged!=nullptr);
+    assertion(_gridUpdateRequested    !=nullptr);
     assertion(_tempUnknowns           !=nullptr);
 
     int solverNumber=0;
@@ -146,9 +154,11 @@ void exahype::mappings::SolutionUpdate::deleteTemporaryVariables() {
     delete[] _tempStateSizedVectors;
     delete[] _tempUnknowns;
     delete[] _limiterDomainHasChanged;
+    delete[] _gridUpdateRequested;
     _tempStateSizedVectors   = nullptr;
     _tempUnknowns            = nullptr;
     _limiterDomainHasChanged = nullptr;
+    _gridUpdateRequested     = nullptr;
   }
 }
 
@@ -167,7 +177,7 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
   _tempUnknowns(nullptr),
   _limiterDomainHasChanged(nullptr) {
   prepareTemporaryVariables();
-  prepareLimiterDomainHasChangedFlags();
+  prepareSolverFlags();
 }
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
@@ -212,6 +222,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
           _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
         }
 
+        _gridUpdateRequested[i] |=
+            solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                fineGridCell.getCellDescriptionsIndex(),element);
+
         solver->prepareNextNeighbourMerging(
             fineGridCell.getCellDescriptionsIndex(),element,
             fineGridVertices,fineGridVerticesEnumerator);
@@ -227,19 +241,22 @@ void exahype::mappings::SolutionUpdate::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   prepareTemporaryVariables();
-  prepareLimiterDomainHasChangedFlags();
+  prepareSolverFlags();
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 void exahype::mappings::SolutionUpdate::endIteration(
-    exahype::State& solverState) { // TODO(Dominic): Can't stay here
+    exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
-  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+    solver->updateNextGridUpdateRequested(_gridUpdateRequested[solverNumber]);
+
     if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto* limitingADERDGSolver =
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber]);
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->updateNextLimiterDomainHasChanged(_limiterDomainHasChanged[solverNumber]);
 
       logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainHasChanged());

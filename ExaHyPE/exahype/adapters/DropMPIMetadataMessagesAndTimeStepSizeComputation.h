@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_DropMPIMetadataMessagesAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_DropMPIMetadataMessagesAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -28,7 +28,7 @@
 
 namespace exahype {
       namespace adapters {
-        class PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation;
+        class DropMPIMetadataMessagesAndTimeStepSizeComputation;
       } 
 }
 
@@ -40,7 +40,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation {
+class exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation {
   private:
     typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
     typedef mappings::PreProcessing Mapping1;
@@ -64,16 +64,16 @@ class exahype::adapters::PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputatio
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    DropMPIMetadataMessagesAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation(const PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation& masterThread);
+    DropMPIMetadataMessagesAndTimeStepSizeComputation(const DropMPIMetadataMessagesAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    virtual ~DropMPIMetadataMessagesAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const DropMPIMetadataMessagesAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

@@ -161,31 +161,55 @@ double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
+/**
+ * \note We need to consider material parameters in
+ * lQhbndFine and lQhbndCoarse.
+ */
 void faceUnknownsProlongation(
     double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
     const double* lFhbndCoarse, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * lQhbndFine and lQhbndCoarse.
+ */
 void faceUnknownsRestriction(
     double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
     const double* lFhbndFine, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * luhCoarse and luhFine.
+ */
 void volumeUnknownsProlongation(
     double* luhFine, const double* luhCoarse, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * luhCoarse and luhFine.
+ */
 void volumeUnknownsRestriction(
     double* luhCoarse, const double* luhFine, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
     
 //TODO KD    
 template <typename SolverType>

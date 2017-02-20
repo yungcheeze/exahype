@@ -269,7 +269,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       _parser.getDomainSize(),
       _parser.getOffset());
 
-  logDebug(
+  logInfo(
       "createRepository(...)",
       "create computational domain at " << _parser.getOffset() <<
       " of width/size " << _parser.getDomainSize() <<
@@ -343,7 +343,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  int gridSetupIterationsToRun = 3;
+  int gridSetupIterationsToRun = 4;
   while (gridSetupIterationsToRun>0) {
     repository.iterate();
     gridSetupIterations++;
@@ -351,8 +351,15 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
       gridSetupIterationsToRun--;
     }
+    else if ( exahype::solvers::Solver::oneSolverRequestedGridUpdate()  ) {
+      /*
+       * TODO(Dominic): We might not need a few of the other checks anymore after I
+       * have introduced the grid refinement requested flag.
+      */
+      gridSetupIterationsToRun=4;  // two steps to realise an erasing; one additional step to get adjacency right
+    }
     else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
-      gridSetupIterationsToRun=3;  // we need at least 3 sweeps to recover from ongoing balancing
+      gridSetupIterationsToRun=4;  // we need at least 3 sweeps to recover from ongoing balancing
     }
     else if ( !repository.getState().isGridBalanced()  ) {
       gridSetupIterationsToRun=1;  // one additional step to get adjacency right
@@ -437,6 +444,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
+
+//    repository.switchToPlotAugmentedAMRGrid();
+//    repository.iterate(); // TODO(Dominic): Remove
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
@@ -821,11 +831,33 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.switchToTimeStepSizeComputation();
   repository.iterate();
 
-  // We mimic the flow of the fused time stepping scheme here.
-  // Updating the limiter domain is thus done after the time step
+  // We mimic the flow of the fused time stepping scheme here
+  // a little. Updating the limiter domain is thus done after the time step
   // size computation.
   if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
     updateLimiterDomain(repository);
+  }
+
+  // We mimic the flow of the fused time stepping scheme here
+  // a little. Updating grid is thus done after the time step
+  // size computation.
+  //
+  // We further consider the limiter status in our mesh
+  // refinement criterion. We enforce that the
+  // limiter is only active on the finest mesh level
+  // by mesh refinement.
+  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
+    logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
+
+    repository.getState().switchToPreAMRContext();
+    repository.switchToMerging();
+    repository.iterate();
+
+    createGrid(repository);
+
+    repository.getState().switchToPostAMRContext();
+    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.iterate();
   }
 
   printTimeStepInfo(1,repository);
@@ -834,14 +866,6 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
-   *
-   * TODO(Dominic): Limiting: There is an issue with the prediction in
-   * the limiting context. Since we overwrite the update here again.
-   * A rollback is thus not possible anymore.
-   * The only way out of here would be to store an old and new
-   * ADER-DG solution similar to the finite volumes solver. This is the reason
-   * why we currently only offer the limiting for
-   * the non-fused time stepping variant.
    */
   repository.getState().switchToPredictionContext();
   if (plot) {

@@ -86,11 +86,12 @@ class exahype::repositories::Repository {
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToSolutionUpdate() = 0;    
-    virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToPredictionAndPlot2d() = 0;    
+    virtual void switchToMerging() = 0;    
+    virtual void switchToDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
@@ -109,11 +110,12 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterSolutionUpdate() const = 0;
-    virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
+    virtual bool isActiveAdapterMerging() const = 0;
+    virtual bool isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
 
 
     /**

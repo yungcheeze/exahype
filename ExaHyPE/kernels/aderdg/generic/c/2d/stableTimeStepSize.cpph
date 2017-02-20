@@ -49,12 +49,6 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   double dt = std::numeric_limits<double>::max();
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
-      // !!
-      // TODO(Dominic): For refactoring purposes. Remove old indexing method.
-      const int nodeIndex = i + basisSize * j;
-      const int dofStartIndex = nodeIndex * numberOfVariables;
-      assertion(dofStartIndex==idx_luh(j,i,0));
-      // !!
 
       double denominator = 0.0;
       for (int d = 0; d < DIMENSIONS; d++) {
