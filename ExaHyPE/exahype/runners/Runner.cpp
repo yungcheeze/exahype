@@ -269,7 +269,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       _parser.getDomainSize(),
       _parser.getOffset());
 
-  logDebug(
+  logInfo(
       "createRepository(...)",
       "create computational domain at " << _parser.getOffset() <<
       " of width/size " << _parser.getDomainSize() <<
