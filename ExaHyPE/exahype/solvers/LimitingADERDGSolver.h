@@ -375,6 +375,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void zeroTimeStepSizes() override;
+
   bool getLimiterDomainHasChanged() {
     return _limiterDomainHasChanged;
   }
@@ -487,6 +489,7 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
     _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);

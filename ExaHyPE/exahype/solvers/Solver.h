@@ -489,6 +489,9 @@ class exahype::solvers::Solver {
    * At the time of the call of this
    * function, a new next time step size
    * has already been computed.
+   *
+   * TODO(Dominic): Need something like this for each cell description if
+   * we do fused time stepping?
    */
   virtual void reinitialiseTimeStepData() = 0;
 
@@ -600,6 +603,14 @@ class exahype::solvers::Solver {
       const int element) = 0;
 
   /**
+   * Zeroes all the time step sizes.
+   * This method is used by the adaptive mesh refinement mapping.
+   * After the mesh refinement, we need to recompute
+   * the time step sizes.
+   */
+  virtual void zeroTimeStepSizes() = 0;
+
+  /**
    * Compute and return a new admissible time step
    * size for the cell description
    * \p element in the array at address
@@ -633,6 +644,18 @@ class exahype::solvers::Solver {
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) = 0;
+
+  /**
+   * Zeroes all the time step sizes.
+   * This method is used by the adaptive mesh refinement mapping.
+   * After the mesh refinement, we need to recompute
+   * the time step sizes.
+   *
+   * \note We do not overwrite _minNextTimeStepSize or an
+   * equivalent value since this would erase the time
+   * step size of the fixed time stepping schemes ("globalfixed" etc.)
+   */
+  virtual void zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) = 0;
 
   /**
    * Impose initial conditions.

@@ -262,6 +262,14 @@ private:
   void startOrFinishCollectiveRefinementOperations(
       CellDescription& fineGridCellDescription);
 
+  /**
+   * In case, we change the children to a descendant
+   * or erase them from the grid, we first restrict
+   * volume data up to the parent and further
+   * copy the corrector and predictor time stamps.
+   *
+   * TODO(Dominic): More docu.
+   */
   bool eraseCellDescriptionIfNecessary(
       const int cellDescriptionsIndex,
       const int fineGridCellElement,
@@ -319,6 +327,9 @@ private:
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
    *
+   * Further copy the corrector and predictor time stamp and
+   * time step sizes.
+   *
    * \note This method makes only sense for virtual shells
    * in the current AMR concept.
    */
@@ -328,10 +339,13 @@ private:
       const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex);
 
   /**
-   * Restricts Volume data from \p cellDescriptio to
+   * Restricts Volume data from \p cellDescription to
    * a parent cell description if the fine grid cell associated with
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
+   *
+   * \note !!! Currently, we minimise over the time step
+   * sizes of the children. Not sure if this makes sense. TODO(Dominic)
    *
    * \note This method makes only sense for real cells.
    * in the current AMR concept.
@@ -1077,6 +1091,11 @@ public:
   void startNewTimeStep() override;
 
   /**
+   * Zero predictor and corrector time step size.
+   */
+  void zeroTimeStepSizes() override;
+
+  /**
    * Roll back the time step data to the
    * ones of the previous time step.
    */
@@ -1253,6 +1272,7 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   /**
    * If we use the original time stepping

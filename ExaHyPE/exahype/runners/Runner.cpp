@@ -356,7 +356,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
        * TODO(Dominic): We might not need a few of the other checks anymore after I
        * have introduced the grid refinement requested flag.
       */
-      gridSetupIterationsToRun=10;  // two steps to realise an erasing; one additional step to get adjacency right
+      gridSetupIterationsToRun=4;  // two steps to realise an erasing; one additional step to get adjacency right
     }
     else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
       gridSetupIterationsToRun=4;  // we need at least 3 sweeps to recover from ongoing balancing
@@ -430,7 +430,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
     repository.getState().switchToPreAMRContext();
     createGrid(repository);
-//    repository.iterate(10);
     /*
      * Set ADER-DG corrector time stamp and finite volumes time stamp.
      * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.

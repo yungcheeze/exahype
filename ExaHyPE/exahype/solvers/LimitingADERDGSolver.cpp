@@ -134,6 +134,11 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextLimiterDomainHasChanged = false;
 }
 
+void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
+  _solver->zeroTimeStepSizes();
+  _limiter->zeroTimeStepSizes();
+}
+
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
   _solver->rollbackToPreviousTimeStep();
   _limiter->rollbackToPreviousTimeStep();
@@ -288,6 +293,14 @@ double exahype::solvers::LimitingADERDGSolver::startNewTimeStep(
   }
 
   return admissibleTimeStepSize;
+}
+
+void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) {
+  _solver->zeroTimeStepSizes(cellDescriptionsIndex,solverElement);
+  const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,solverElement);
+  if (limiterElement!=exahype::solvers::Solver::NotFound) {
+    _limiter->zeroTimeStepSizes(cellDescriptionsIndex,limiterElement);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(

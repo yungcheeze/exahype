@@ -149,6 +149,14 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   setNextGridUpdateRequested();
 }
 
+/**
+ * Zero predictor and corrector time step size.
+ */
+void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes() {
+  _minTimeStepSize = 0;
+  assertionEquals(_minNextTimeStepSize,std::numeric_limits<double>::max());
+}
+
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
@@ -424,6 +432,14 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
   }
 
   return std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Cell) {
+    cellDescription.setTimeStepSize(0.0);
+  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep(

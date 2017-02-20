@@ -436,6 +436,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void zeroTimeStepSizes() override;
+
   /**
    * Roll back the time step data to the
    * ones of the previous time step.
@@ -493,6 +495,8 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   /**
    * Rolls the solver time step data back to the

@@ -446,8 +446,13 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   setNextGridUpdateRequested();
 }
 
+void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
+  _minCorrectorTimeStepSize = 0;
+  _minPredictorTimeStepSize = 0;
+}
+
 void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
-//  _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize; // TODO(Dominic): Should not necessary.
+  //  _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize; // TODO(Dominic): Should not necessary.
   _minPredictorTimeStamp    = _minCorrectorTimeStamp+_minCorrectorTimeStepSize;
   _minCorrectorTimeStamp    = _minPredictorTimeStamp;
   _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
@@ -641,6 +646,7 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
     // marking for refinement
     refineFineGridCell |= markForRefinement(fineGridCellDescription);
 
+    // actions requiring adjacency info
     if (multiscalelinkedcell::adjacencyInformationIsConsistent(
         indicesAdjacentToFineGridVertices)) {
       const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionIndices =
@@ -658,12 +664,12 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
               fineGridCellDescription,
               neighbourCellDescriptionIndices,
               fineGridCell.isAssignedToRemoteRank());
-
-      updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent()); // TODO(Dominic): Concurrency problem!
     }
   }
 
   // Coarse grid cell based adaptive mesh refinement operations.
+  // Add new cells to the grid andd veto erasing or deaugmenting childre
+  // requests if there are cells on the fine level.
   int coarseGridCellElement =
       tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
   if (coarseGridCellElement!=exahype::solvers::Solver::NotFound) {
@@ -916,7 +922,7 @@ void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
     const int fineGridCellDescriptionsIndex) {
   int coarseGridCellParentElement = tryGetElement(coarseGridCellDescription.getParentIndex(),
                                                   coarseGridCellDescription.getSolverNumber());
-  int fineGridCellElement         = tryGetElement(fineGridCellDescriptionsIndex,
+  int fineGridCellElement = tryGetElement(fineGridCellDescriptionsIndex,
                                           coarseGridCellDescription.getSolverNumber());
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound &&
       coarseGridCellParentElement!=exahype::solvers::Solver::NotFound) {
@@ -1096,6 +1102,11 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
       luhFine,luhCoarse,
       levelCoarse,levelFine,
       subcellIndex);
+
+  fineGridCellDescription.setCorrectorTimeStamp(coarseGridCellDescription.getCorrectorTimeStamp());
+  fineGridCellDescription.setPredictorTimeStamp(coarseGridCellDescription.getPredictorTimeStamp());
+  fineGridCellDescription.setCorrectorTimeStepSize(coarseGridCellDescription.getCorrectorTimeStepSize());
+  fineGridCellDescription.setPredictorTimeStepSize(coarseGridCellDescription.getPredictorTimeStepSize());
 }
 
 bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
@@ -1115,8 +1126,6 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
     startOrFinishCollectiveRefinementOperations(fineGridCellDescription);
-
-    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
 
     const int coarseGridCellElement =
         tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -1201,6 +1210,9 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
         coarseGridCellDescription,
         fineGridCellDescription,
         fineGridPositionOfCell);
+    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
+    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
+
     // erase cell description // or change to descendant
     fineGridCellDescription.setType(CellDescription::Erased);
     ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
@@ -1217,6 +1229,9 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
         coarseGridCellDescription,
         fineGridCellDescription,
         fineGridPositionOfCell);
+    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
+    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
+
     // erase cell description // or change to descendant
     fineGridCellDescription.setType(CellDescription::EmptyDescendant);
     ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
@@ -1254,6 +1269,11 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
       luhCoarse,luhFine,
       levelCoarse,levelFine,
       subcellIndex);
+
+
+
+  // TODO(Dominic): What to do in this case?
+
 }
 
 ////////////////////////////////////////
@@ -1457,16 +1477,30 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
   return std::numeric_limits<double>::max();
 }
 
+void exahype::solvers::ADERDGSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Cell) {
+    cellDescription.setCorrectorTimeStepSize(0.0);
+    cellDescription.setPredictorTimeStepSize(0.0);
+  }
+}
+
 void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-//  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): Should not be necessary: Prove by induction
-  cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize());
-  cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
-  cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+  if (cellDescription.getType()==CellDescription::Cell) {
+    //  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): Should not be necessary: Prove by induction
+//    logInfo("reconstructStandardTimeSteppingData(...)","cellDescription.getCorrectorTimeStamp()="<<cellDescription.getCorrectorTimeStamp());
+//    logInfo("reconstructStandardTimeSteppingData(...)","cellDescription.getCorrectorTimeStepSize()="<<cellDescription.getCorrectorTimeStepSize()); TODO(Dominic): remove
 
-  assertionEquals(cellDescription.getCorrectorTimeStamp(),cellDescription.getPredictorTimeStamp());
-  assertionEquals(cellDescription.getCorrectorTimeStepSize(),cellDescription.getPredictorTimeStepSize());
+    cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize());
+    cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
+    cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+
+    assertionEquals(cellDescription.getCorrectorTimeStamp(),cellDescription.getPredictorTimeStamp());
+    assertionEquals(cellDescription.getCorrectorTimeStepSize(),cellDescription.getPredictorTimeStepSize());
+  }
 }
 
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
