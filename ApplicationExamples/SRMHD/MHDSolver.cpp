@@ -23,7 +23,24 @@ void SRMHD::MHDSolver::init(std::vector<std::string>& cmdargs){ //, exahype::Par
 void SRMHD::MHDSolver::flux(const double* const Q, double** F) {
   // Caveats: Fortran accepts a uniform array of size (nVar*nDim), however C passes an array of pointers.
   // This Fortran interface works only if F is a continous array and F[1]==F[nDim+1] etc!
-  pdeflux_(F[0], Q);
+  
+  //ensure F is contiguous
+  //TODO SvenK, remove when Fortran fixed
+  const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
+  double f[3 * nVar]; //third dimension unused
+  for(int i=0; i<nVar;i++) {
+    f[i] = F[0][i];
+  }
+  for(int i=0; i<nVar;i++) {
+    f[i+9] = F[1][i];
+  }
+  pdeflux_(&f[0], Q);
+  for(int i=0; i<nVar;i++) {
+    F[0][i] = f[i];
+  }
+  for(int i=0; i<nVar;i++) {
+    F[1][i] =  f[i+9];
+  }
 }
 
 
@@ -50,7 +67,9 @@ void SRMHD::MHDSolver::adjustedSolutionValues(const double* const x,const double
 }
 
 void SRMHD::MHDSolver::source(const double* const Q, double* S) {
-  pdesource_(S, Q);
+  //pdesource_(S, Q);
+  const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
+  std::memset(S, 0, nVar * sizeof(double)); //no source
 }
 
 
