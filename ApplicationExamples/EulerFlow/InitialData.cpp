@@ -12,7 +12,6 @@
  **/
 
 #include "InitialData.h"
-#include "PastaMatrix.h"
 #include "Primitives.h"
 #include "MyEulerSolver.h"
 
@@ -21,6 +20,7 @@
 #include <stdlib.h>
 
 #include "tarch/logging/Log.h"
+#include "tarch/la/Vector.h"
 
 #include "MyEulerSolver.h"
 
@@ -76,18 +76,20 @@ void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
  * to give an analytic result.
  **/
 void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
-  Pasta::vec2 xvec(x);
-  Pasta::vec2 v0({0.5, 0});
-  // Pasta::vec2 v0({ 0.0, 0 });
-  Pasta::vec2 x0({0.5, 0.5});
+  using namespace tarch::la;
+  typedef Vector<2,double> vec2d;
+
+  vec2d xvec(x[0], x[1]);
+  vec2d v0(0.5, 0);
+  vec2d x0(0.5, 0.5);
   double width = 0.20;
 
   double V[Euler::MyEulerSolver::NumberOfVariables];
   V[0] = 0.5 +
-         0.3 * exp(-(xvec - x0 - v0 * t).norm() /
-                   pow(width, DIMENSIONS));  // rho
-  V[1] = v0(0);
-  V[2] = v0(1);
+         0.3 * exp(-norm2(xvec - x0 - v0 * t) /
+                   pow(width, DIMENSIONS));
+  V[1] = v0[0];
+  V[2] = v0[1];
   V[3] = 0.;
   V[4] = 1.;  // pressure
   prim2con(Q, V);
@@ -113,12 +115,15 @@ void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
  * whole grid. I am not sure why this happens, it seems to be an error.
  **/
 void DiffusingGauss(const double* const x, double* Q, double /*t*/) {
+  using namespace tarch::la;
+  typedef Vector<DIMENSIONS,double> vecNd;
+
 #if DIMENSIONS == 2
-  Pasta::vec2 xvec(x);
-  Pasta::vec2 x0({0.5, 0.5});
+  vecNd xvec(x[0],x[1]);
+  vecNd x0(0.5, 0.5);
 #elif DIMENSIONS == 3
-  Pasta::vec3 xvec(x);
-  Pasta::vec3 x0({0.5, 0.5, 0.5});
+  vecNd xvec(x[0],x[1],x[2]);
+  vecNd x0(0.5, 0.5, 0.5);
 #else
 #error DIMENSIONS must be 2 or 3
 #endif
@@ -131,5 +136,5 @@ void DiffusingGauss(const double* const x, double* Q, double /*t*/) {
   Q[2] = 0.;
   Q[3] = 0.;
   Q[4] = 1. / (eos_gamma - 1) +
-         exp(-(xvec - x0).norm() / pow(width, DIMENSIONS)) * 2;
+         exp(-norm2(xvec - x0) / pow(width, DIMENSIONS)) * 2;
 }
