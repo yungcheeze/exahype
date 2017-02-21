@@ -18,13 +18,13 @@ Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver) :
 	primitives.add(1, "velx");
 	primitives.add(2, "vely");
 	primitives.add(3, "velz");
-	primitives.add(4, "presss");
+	primitives.add(4, "press");
 	
 	errors.add(0, "rho");
 	errors.add(1, "velx");
 	errors.add(2, "vely");
 	errors.add(3, "velz");
-	errors.add(4, "presss");
+	errors.add(4, "press");
 
 	// here, we plot all variables.
 	assert( conserved.size() <= NumberOfVariables );
