@@ -4,6 +4,18 @@
 !!! Based on srhd3dfortran/PDE.f90.
 !!!
 
+! To avoid needless copying, these preprocessor rules allow
+! neat naming conventions
+#define rho       V(1)
+#define vx        V(2)
+#define vy        V(3)
+#define vz        V(4)
+#define p         V(5)
+#define bx        V(6)
+#define by        V(7)
+#define bz        V(8)
+#define cleaning  V(9)
+
 SUBROUTINE PDEEigenvalues(Lambda,Q,nv) 
   USE Parameters, ONLY : nVar, nDim , gamma
   USE, INTRINSIC :: ISO_C_BINDING 
@@ -13,24 +25,20 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   REAL, INTENT(OUT) :: Lambda(nVar)  
   ! Local variables  
   INTEGER :: iErr
-  REAL :: rho,vx,vy,vz,p
   REAL :: cs2, cs, c0, v2, w, gamma1, vn, den, u, c
   REAL :: ex, ey, ez, b2, e2, a2, ca2, vf1, vf2, vel(nDim)
-  REAL :: bx, by, bz
   REAL :: V(nVar)
+  
+  ! MUST be 1 as Divergence cleaning factor is 1.
+  ! they travel with speed 1
+  Lambda = 1
+  RETURN
+
 
   ! These are not the exact eigenvalues, instead of Lambda(1..9)
   ! we compute only two eigenvalues: Approximate magnetosonics
 
   CALL PDECons2Prim(V,Q,iErr)
-  rho    = V(1)
-  vx     = V(2)
-  vy     = V(3)
-  vz     = V(4)
-  p      = V(5)
-  bx     = V(6)
-  by     = V(7)
-  bz     = V(8)
 
   ex     = - (vy*bz - vz*by)
   ey     = - (vz*bx - vx*bz)
@@ -81,39 +89,26 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   Lambda(7) = 0.0
   Lambda(8) = 0.0
   Lambda(9) = 0.0
-  
-  ! MUST be 1 as Divergence cleaning factor is 1.
-  ! they travel with speed 1
-  Lambda = 1
 
 END SUBROUTINE PDEEigenvalues
  
 
 
-SUBROUTINE PDEFlux(F,Q) 
+SUBROUTINE PDEFlux(Fx,Fy,Fz,Q) 
   USE Parameters, ONLY : nVar, nDim, gamma, DivCleaning_a
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
   REAL, INTENT(IN)  :: Q(nVar) 
-  REAL, INTENT(OUT) :: F(nVar,nDim) 
+  REAL, INTENT(OUT) :: Fx(nVar), Fy(nvar), Fz(nVar)
   ! Local variables  
-  REAL :: rho,vx,vy,vz,p
   REAL :: v2,lf,w,ww,wwx,wwy,wwz,gamma1
-  REAL :: ex,ey,ez,b2,e2,uem,bx,by,bz
+  REAL :: ex,ey,ez,b2,e2,uem
   REAL :: V(nVar)
   INTEGER :: iErr
   
   CALL PDECons2Prim(V,Q,iErr)
   gamma1 = gamma/(gamma-1.0)
-  rho    = V(1)
-  vx     = V(2)
-  vy     = V(3)
-  vz     = V(4)
-  p      = V(5)
-  bx     = V(6)
-  by     = V(7)
-  bz     = V(8)
 
   ex     = - (vy*bz - vz*by)
   ey     = - (vz*bx - vx*bz)
@@ -131,36 +126,36 @@ SUBROUTINE PDEFlux(F,Q)
   wwz    = ww*vz
 
   !
-  F(1, 1) = vx*rho*lf
-  F(2, 1) = wwx*vx - bx*bx - ex*ex + p + uem
-  F(3, 1) = wwx*vy - bx*by - ex*ey
-  F(4, 1) = wwx*vz - bx*bz - ex*ez 
-  F(5, 1) = wwx + (ey*bz - ez*by) 
-  F(6, 1) = V(9)
-  F(7, 1) = -ez
-  F(8, 1) = ey  
-  F(9, 1) = DivCleaning_a**2*bx
+  Fx(1) = vx*rho*lf
+  Fx(2) = wwx*vx - bx*bx - ex*ex + p + uem
+  Fx(3) = wwx*vy - bx*by - ex*ey
+  Fx(4) = wwx*vz - bx*bz - ex*ez 
+  Fx(5) = wwx + (ey*bz - ez*by) 
+  Fx(6) = V(9)
+  Fx(7) = -ez
+  Fx(8) = ey  
+  Fx(9) = DivCleaning_a**2*bx
   !
-  F(1, 2) = vy*rho*lf
-  F(2, 2) = wwy*vx - by*bx - ey*ex 
-  F(3, 2) = wwy*vy - by*by - ey*ey + p + uem
-  F(4, 2) = wwy*vz - by*bz - ey*ez 
-  F(5, 2) = wwy + (ez*bx - ex*bz) 
-  F(6, 2) = ez 
-  F(7, 2) = V(9) 
-  F(8, 2) = -ex   
-  F(9, 2) = DivCleaning_a**2*by
+  Fy(1) = vy*rho*lf
+  Fy(2) = wwy*vx - by*bx - ey*ex 
+  Fy(3) = wwy*vy - by*by - ey*ey + p + uem
+  Fy(4) = wwy*vz - by*bz - ey*ez 
+  Fy(5) = wwy + (ez*bx - ex*bz) 
+  Fy(6) = ez 
+  Fy(7) = V(9) 
+  Fy(8) = -ex   
+  Fy(9) = DivCleaning_a**2*by
   !
   IF ( nDim > 2 ) then
-    F(1, 3) = vz*rho*lf
-    F(2, 3) = wwz*vx - bz*bx - ez*ex 
-    F(3, 3) = wwz*vy - bz*by - ez*ey 
-    F(4, 3) = wwz*vz - bz*bz - ez*ez + p + uem
-    F(5, 3) = wwz + (ex*by - ey*bx) 
-    F(6, 3) = -ey  
-    F(7, 3) = ex   
-    F(8, 3) = V(9)   
-    F(9, 3) = DivCleaning_a**2*bz
+    Fz(1) = vz*rho*lf
+    Fz(2) = wwz*vx - bz*bx - ez*ex 
+    Fz(3) = wwz*vy - bz*by - ez*ey 
+    Fz(4) = wwz*vz - bz*bz - ez*ez + p + uem
+    Fz(5) = wwz + (ex*by - ey*bx) 
+    Fz(6) = -ey  
+    Fz(7) = ex   
+    Fz(8) = V(9)   
+    Fz(9) = DivCleaning_a**2*bz
   ENDIF
   !
 END SUBROUTINE PDEFlux 
