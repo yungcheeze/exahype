@@ -130,7 +130,7 @@ void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, d
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
-/*
+
 bool SRMHD::MHDSolver::hasToApplyPointSource() const {
   return false;
 }
@@ -138,7 +138,7 @@ bool SRMHD::MHDSolver::hasToApplyPointSource() const {
 void SRMHD::MHDSolver::pointSource(double const*, double, double, double*, double*) {
   // whatever
 }
-*/
+
 
 bool SRMHD::MHDSolver::physicalAdmissibilityDetection(double const*, double const*) {
   // why do we need this function?
