@@ -13,8 +13,9 @@ exahype-project  SRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
+  libxsmm-path      const          = ./Libxsmm
   output-directory const           = ./ApplicationExamples/SRMHD/
-  architecture const               = noarch
+  architecture const               = hsw
   log-file                         = whatever.log
 
 
@@ -24,7 +25,7 @@ exahype-project  SRMHD
     offset                   = 0.0, 0.0
     end-time                 = 2.1
   end computational-domain
-
+/*
   shared-memory
     identifier               = dummy
     cores                    = 1
@@ -47,14 +48,14 @@ exahype-project  SRMHD
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
   end optimisation
-  
+*/  
   solver ADER-DG MHDSolver
     /* for field (=variables) descriptions, see code */
     variables const          = 9
     order const              = 3
     maximum-mesh-size  = 0.013
     time-stepping      = global
-    kernel const             = generic::fluxes::nonlinear
+    kernel const             = optimised::fluxes::nonlinear
     /* we are using the new Fortran interface */
     language const           = C
 
