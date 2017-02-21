@@ -12,67 +12,68 @@
 #include "kernels/GaussLegendreQuadrature.h"
 #include <cmath>
 
-SRMHD::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) {
+SRMHD::IntegralsWriter::IntegralsWriter(MHDSolver&  solver) :
+	conserved("output/conserved-"),
+	primitives("output/primitive-"),
+	errors("output/error-"),
+	statistics("output/volume.asc")
+{
 	// open all the reductions
-	assert( 9 == nVar );
-	
-	conserved[0] = new TimeSeriesReductions("output/dens.asc");
-	conserved[1] = new TimeSeriesReductions("output/sconx.asc");
-	conserved[2] = new TimeSeriesReductions("output/scony.asc");
-	conserved[3] = new TimeSeriesReductions("output/sconz.asc");
-	conserved[4] = new TimeSeriesReductions("output/ener.asc");
-	conserved[5] = new TimeSeriesReductions("output/bx.asc");
-	conserved[6] = new TimeSeriesReductions("output/by.asc");
-	conserved[7] = new TimeSeriesReductions("output/bz.asc");
-	conserved[8] = new TimeSeriesReductions("output/psi.asc");
+
+	conserved.add(0, "dens");
+	conserved.add(1, "sconx");
+	conserved.add(2, "scony");
+	conserved.add(3, "sconz");
+	conserved.add(4, "ener");
+	conserved.add(5, "bx");
+	conserved.add(6, "by");
+	conserved.add(7, "bz");
+	conserved.add(8, "psi");
 		
-	primitives[0] = new TimeSeriesReductions("output/rho.asc"); // V[0]=Q[0]
-	primitives[1] = new TimeSeriesReductions("output/velx.asc");
-	primitives[2] = new TimeSeriesReductions("output/vely.asc");
-	primitives[3] = new TimeSeriesReductions("output/velz.asc");
-	primitives[4] = new TimeSeriesReductions("output/press.asc");
-	primitives[5] = new TimeSeriesReductions("output/prim-bx.asc");
-	primitives[6] = new TimeSeriesReductions("output/prim-by.asc");
-	primitives[7] = new TimeSeriesReductions("output/prim-bz.asc");
-	primitives[8] = new TimeSeriesReductions("output/prim-psi.asc");
+	primitives.add(0, "rho"); // V[0]=Q[0]
+	primitives.add(1, "velx");
+	primitives.add(2, "vely");
+	primitives.add(3, "velz");
+	primitives.add(4, "press");
+	primitives.add(5, "bx");
+	primitives.add(6, "by");
+	primitives.add(7, "bz");
+	primitives.add(8, "psi");
 	
-	errors[0] = new TimeSeriesReductions("output/error-rho.asc");
-	errors[1] = new TimeSeriesReductions("output/error-velx.asc");
-	errors[2] = new TimeSeriesReductions("output/error-vely.asc");
-	errors[3] = new TimeSeriesReductions("output/error-velz.asc");
-	errors[4] = new TimeSeriesReductions("output/error-press.asc");
-	errors[5] = new TimeSeriesReductions("output/error-bx.asc");
-	errors[6] = new TimeSeriesReductions("output/error-by.asc");
-	errors[7] = new TimeSeriesReductions("output/error-bz.asc");
-	errors[8] = new TimeSeriesReductions("output/error-psi.asc");
-	
-	statistics = new TimeSeriesReductions("output/volform.asc");
+	errors.add(0, "rho");
+	errors.add(1, "velx");
+	errors.add(2, "vely");
+	errors.add(3, "velz");
+	errors.add(4, "press");
+	errors.add(5, "bx");
+	errors.add(6, "by");
+	errors.add(7, "bz");
+	errors.add(8, "psi");
+
+	// here, we plot all variables.
+	assert( conserved.size() <= nVar );
+	assert( primitives.size() <= nVar );
+	assert( errors.size() <= nVar );
 }
 
 
 SRMHD::IntegralsWriter::~IntegralsWriter() {
-	// delete all the TimeSeriesReductions. Not that important
-	// as this is a kind of a Singleton object.
 }
 
 
 void SRMHD::IntegralsWriter::startPlotting(double time) {
-	for(int i=0; i<nVar; i++) {
-		conserved[i]->initRow(time);
-		primitives[i]->initRow(time);
-		errors[i]->initRow(time);
-	}
-	statistics->initRow(time);
+	conserved.startRow(time);
+	primitives.startRow(time);
+	errors.startRow(time);
+	statistics.startRow(time);
 }
 
 
 void SRMHD::IntegralsWriter::finishPlotting() {
-	for(int i=0; i<nVar; i++) {
-		conserved[i]->writeRow();
-		primitives[i]->writeRow();
-		errors[i]->writeRow();
-	}
-	statistics->writeRow();
+	conserved.finishRow();
+	primitives.finishRow();
+	errors.finishRow();
+	statistics.finishRow();
 }
 
 
@@ -100,19 +101,17 @@ void SRMHD::IntegralsWriter::mapQuantities(
 	#endif
 
 	// volume form for integration
-	double scaling = tarch::la::volume(sizeOfPatch);
-	statistics->addValue(scaling, 1);
+	double scaling = wx*wy*wz*tarch::la::volume(sizeOfPatch);
+	statistics.addValue(scaling, 1);
 
 	// reduce the conserved quantities
-	for (int i=0; i<nVar; i++)
-		conserved[i]->addValue( Q[i], scaling );
+	conserved.addValue(Q, scaling);
 
 	// reduce the primitive quantities
 	double V[nVar];
 	int err;
 	pdecons2prim_(V, Q, &err);
-	for(int i=0; i<nVar; i++)
-		primitives[i]->addValue( V[i], scaling );
+	primitives.addValue(V, scaling);
 
 	// now do the convergence test, as we have exact initial data
 	double ExactCons[nVar];
@@ -126,9 +125,11 @@ void SRMHD::IntegralsWriter::mapQuantities(
 	
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {
-		localError[i] = std::fabs(V[i] - ExactPrim[i]);
+		localError[i] = std::abs(V[i] - ExactPrim[i]);
 		//localError[i] = abs(Q[i] - ExactCons[i]);
-		errors[i]->addValue( localError[i], scaling*wx*wy*wz );
+	}
+
+	errors.addValue(localError, scaling);
 		
 		/*if(i==0) {
 			printf("RHO; t=%e x=(%e,%e) num=%14e exact=%14e error=%e\n", timeStamp, x[0],x[1], V[0], ExactPrim[0], localError[0]);
@@ -136,7 +137,6 @@ void SRMHD::IntegralsWriter::mapQuantities(
     // Uncomment for debugging reasons
 //    std::cout << "V_ana["<<i<<"]="<<ExactPrim[i]<<",V_h["<<i<<"]="<<V[i]<< std::endl;
 //    std::cout << "Q_ana["<<i<<"]="<<ExactCons[i]<<",Q_h["<<i<<"]="<<Q[i] <<std::endl;
-	}
 }
 
 

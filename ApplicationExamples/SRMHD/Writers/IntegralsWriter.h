@@ -21,10 +21,10 @@ namespace SRMHD{
 class SRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   static const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
-  TimeSeriesReductions* conserved[nVar];
-  TimeSeriesReductions* primitives[nVar];
-  TimeSeriesReductions* errors[nVar];
-  TimeSeriesReductions* statistics;
+  reductions::MultipleReductionsWriter conserved;
+  reductions::MultipleReductionsWriter primitives;
+  reductions::MultipleReductionsWriter errors;
+  reductions::ReductionsWriter statistics;
 
   IntegralsWriter(MHDSolver&  solver);
   virtual ~IntegralsWriter();
