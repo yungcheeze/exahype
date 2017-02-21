@@ -1022,102 +1022,31 @@ class exahype::solvers::Solver {
       const int                                    level) = 0;
 
 
-  // TODO(Dominic): Grid Update Requested
-//  /*
-//   * At the time of sending data to the master,
-//   * we have already performed a time step update locally
-//   * on the rank. We thus need to communicate the
-//   * current min predictor time step size to the master.
-//   * The next min predictor time step size is
-//   * already reset locally to the maximum double value.
-//   *
-//   * However on the master's side, we need to
-//   * merge the received time step size with
-//   * the next min predictor time step size since
-//   * the master has not yet performed a time step update
-//   * (i.e. called TimeStepSizeComputation::endIteration()).
-//   */
-//  void exahype::solvers::ADERDGSolver::sendDataToMaster(
-//      const int                                    masterRank,
-//      const tarch::la::Vector<DIMENSIONS, double>& x,
-//      const int                                    level){
-//    std::vector<double> timeStepDataToReduce(0,4);
-//    timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
-//    timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
-//    timeStepDataToReduce.push_back(_minCellSize);
-//    timeStepDataToReduce.push_back(_maxCellSize);
-//
-//    assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
-//    assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
-//    if (_timeStepping==TimeStepping::Global) {
-//      assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
-//                                  tarch::parallel::Node::getInstance().getRank());
-//    }
-//
-//    if (tarch::parallel::Node::getInstance().getRank()!=
-//        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//      logDebug("sendDataToMaster(...)","Sending time step data: " <<
-//               "data[0]=" << timeStepDataToReduce[0] <<
-//               ",data[1]=" << timeStepDataToReduce[1] <<
-//               ",data[2]=" << timeStepDataToReduce[2] <<
-//               ",data[3]=" << timeStepDataToReduce[3]);
-//    }
-//
-//    DataHeap::getInstance().sendData(
-//        timeStepDataToReduce.data(), timeStepDataToReduce.size(),
-//        masterRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//  }
-//
-//  /**
-//   * At the time of the merging,
-//   * the workers and the master have already performed
-//   * at local update of the next predictor time step size
-//   * and of the predictor time stamp.
-//   * We thus need to minimise over both quantities.
-//   */
-//  void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
-//      const int                                    workerRank,
-//      const tarch::la::Vector<DIMENSIONS, double>& x,
-//      const int                                    level) {
-//    std::vector<double> receivedTimeStepData(4);
-//
-//    if (true || tarch::parallel::Node::getInstance().getRank()==
-//        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//      logDebug("mergeWithWorkerData(...)","Receiving time step data [pre] from rank " << workerRank);
-//    }
-//
-//    DataHeap::getInstance().receiveData(
-//        receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//
-//    assertion1(receivedTimeStepData.size()==3,receivedTimeStepData.size());
-//    assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
-//    assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
-//    // The master solver has not yet updated its minNextPredictorTimeStepSize.
-//    // Thus it does not equal MAX_DOUBLE.
-//
-//    int index=0;
-//    _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-//    _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, receivedTimeStepData[index++] );
-//    _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
-//    _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
-//
-//    if (tarch::parallel::Node::getInstance().getRank()==
-//        tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//      logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
-//               "data[0]=" << receivedTimeStepData[0] <<
-//               ",data[1]=" << receivedTimeStepData[1] <<
-//               ",data[2]=" << receivedTimeStepData[2] <<
-//               ",data[3]=" << receivedTimeStepData[3] );
-//
-//      logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
-//               "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
-//               "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
-//               ",_nextMinCellSize=" << _nextMinCellSize <<
-//               ",_nextMaxCellSize=" << _nextMaxCellSize);
-//    }
-//  }
+  /*
+   * At the time of sending data to the master,
+   * we have already performed set the next
+   * grid update requested flag locally.
+   * We thus need to communicate the
+   * current grid update requested flag to the master.
+   *
+   * However on the master's side, we need to
+   * merge the received time step size with
+   * the next min predictor time step size since
+   * the master has not yet set his new flag yet.
+   */
+  void sendGridUpdateFlagsToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /**
+   * Merge the _nextGridUpdateRequested with the flag
+   * received from the worker.
+   */
+  void mergeWithWorkerGridUpdateFlags(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
 
   /**
    * Send solver data to master rank. Read the data from

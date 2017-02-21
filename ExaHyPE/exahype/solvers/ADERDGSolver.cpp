@@ -2801,10 +2801,10 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   // Thus it does not equal MAX_DOUBLE.
 
   int index=0;
-  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, (receivedTimeStepData[index++]) > 0 ? true : false );
-  _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
-  _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
+  _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested      |= (receivedTimeStepData[index++]) > 0 ? true : false;
+  _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+  _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
