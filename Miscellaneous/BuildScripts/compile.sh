@@ -23,6 +23,7 @@
 buildscripts="$(dirname "$0")"
 
 verbose() { echo -e $@; $@; }
+has() { type $@ &>/dev/null; } # a way to check if command is available
 
 # path names for our script
 DEFAULT_APPNAME="${PWD##*/}"
@@ -40,6 +41,23 @@ DEFAULT_MODE="Asserts"
 # options controlling how this script works
 DEFAULT_CLEAN="None"
 DEFAULT_SKIP_TOOLKIT="No"
+DEFAULT_MAKE_NPROC="$(has nproc && nproc || echo 1)"
+
+# Allow to store information how to compile on specific machines
+HOST_INFO_FILE="$HOME/.hostname"
+if [[ -e "$HOST_INFO_FILE" ]]; then
+	CLUSTERNAME="$(< $HOST_INFO_FILE)"
+	CLUSTERCONFIG="$buildscripts/../ClusterConfigs/${CLUSTERNAME}.cfg"
+	if [[ -e $CLUSTERCONFIG ]]; then
+		echo "Loading cluster configuration for $CLUSTERNAME"
+		source $CLUSTERCONFIG
+		has module && module list
+	else
+		echo "Cluster $CLUSTERNAME detected, but no ClusterConfig present."
+		# echo "Create one at $CLUSTERCONFIG if you like."
+	fi
+fi
+
 
 # all default variables can be overwritten by specifying them as
 # environment variables
@@ -51,6 +69,7 @@ APPDIRNAME=${APPDIRNAME:=$DEFAULT_APPDIRNAME}
 ABSCODEDIR=${ABSCODEDIR:=$DEFAULT_ABSCODEDIR}
 CLEAN=${CLEAN:=$DEFAULT_CLEAN}
 SKIP_TOOLKIT=${SKIP_TOOLKIT:=$DEFAULT_SKIP_TOOLKIT}
+MAKE_NPROC=${MAKE_NPROC:=$DEFAULT_MAKE_NPROC}
 
 # go to ExaHyPE-Engine root directory (used to be Code/ in former days)
 verbose cd "$ABSCODEDIR" || { echo -e "Cannot compile $APPNAME as there is no ABSCODEDIR=$ABSCODEDIR"; exit -1; }
@@ -161,7 +180,7 @@ done
 
 set -o pipefail # fail if make fails
 
-verbose make -j $(nproc) || {
+verbose make -j $MAKE_NPROC || {
 	echo -e "Make failed!";
 	$buildscripts/whoopsie-paster.sh
 	exit -1;
