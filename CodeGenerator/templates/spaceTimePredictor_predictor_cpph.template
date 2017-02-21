@@ -28,8 +28,12 @@ void kernels::aderdg::optimised::predictorNonlinear(
   // Immediately compute the time - averaged space - time polynomials
 
 
-  std::memset(lQhi, 0, {{nDof**nDim*nVarPad}} * sizeof(double));
-  std::memset(lFhi, 0, {{(nDim+1)*nDof**nDim*nVarPad}} * sizeof(double));
+  std::memset(lQhi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
+  std::memset(lFhi, 0, {{nDim*(nDof**nDim)*nVarPad}} * sizeof(double));
+  
+  if(useSource) {
+    std::memset(lShi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
+  } 
 
   for (int i = 0; i < {{nDof3D}}; i++) {
     for (int j = 0; j < {{nDof}}; j++) {
