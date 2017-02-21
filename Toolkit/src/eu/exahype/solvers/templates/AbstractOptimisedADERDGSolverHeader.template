@@ -24,7 +24,10 @@ namespace {{Project}}{
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   public:
   
-
+    //change to enable source terms/matrixb
+    static constexpr bool useSource  = false;
+    static constexpr bool useMatrixb = false;
+  
     static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
     static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
     static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
@@ -50,7 +53,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
-    //padded array size
+    //padded array size, override default ADERDGSolver values
     int getTempSpaceTimeUnknownsSize()     const {return kernels::aderdg::optimised::getTempSpaceTimeUnknownsSize();    }
     int getTempSpaceTimeFluxUnknownsSize() const {return kernels::aderdg::optimised::getTempSpaceTimeFluxUnknownsSize();}
     int getTempUnknownsSize()              const {return kernels::aderdg::optimised::getTempUnknownsSize();             }
