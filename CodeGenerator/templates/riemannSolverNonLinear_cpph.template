@@ -77,22 +77,26 @@ void kernels::aderdg::optimised::riemannSolver(
   //add source
   if(useSource) {
     double Qavg[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
-    for(int n=0; n < {{nVar}}; n++) {
+    #pragma simd
+    for(int n=0; n < {{nVarPad}}; n++) {
        Qavg[n] = (QavL[n] + QavR[n]) / 2;
     }
-    double Bn[{{nVar*nVar}}];
+    double Bn[{{nVar*nVar}}] __attribute__((aligned(ALIGNMENT))); //cannot use padding to match user function implementation
     PDEmatrixb(Qavg, normalNonZero, Bn); 
-
+    
     for(int n=0; n<{{nVar}}; n++) {
-      for(int ij=0; ij<{{nDof**(nDim-1)}}; ij++) {
-        double ncp = 0;
-        for(int m=0; m<{{nVar}}; m++) {
-          ncp += Bn[n+{{nVar}}*m] * (lQbndR[ij+{{bndBlockSize}}*m] - lQbndL[ij+{{bndBlockSize}}*m]);
+      double ncp[{{bndBlockSize}}] __attribute__((aligned(ALIGNMENT)))= {0.};
+      for(int m=0; m<{{nVar}}; m++) {
+        #pragma simd
+        for(int ij=0; ij<{{bndBlockSize}}; ij++) {
+          ncp[ij] += Bn[n+{{nVar}}*m] * (lQbndR[ij+{{bndBlockSize}}*m] - lQbndL[ij+{{bndBlockSize}}*m]);
         }
-        lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp;
-        lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp;
       }
-      
+      #pragma simd
+      for(int ij=0; ij<{{bndBlockSize}}; ij++) {
+        lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[ij];
+        lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp[ij];
+      }
     }
   }
 
