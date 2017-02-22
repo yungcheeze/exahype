@@ -35,34 +35,7 @@ void GRMHD::GRMHDSolver::eigenvalues(const double* const Q,const int d,double* l
 
 
 void GRMHD::GRMHDSolver::flux(const double* const Q,double** F) {
-  //pdeflux_(F[0], Q);
-  
-  //ensure F is contiguous
-  //TODO SvenK, remove when Fortran fixed
-  constexpr int nVar = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
-  double tmp[nVar*3];
-
-  for(int i=0; i<nVar; i++) {
-    tmp[i] = F[0][i];
-  }
-  for(int i=0; i<nVar; i++) {
-    tmp[i+nVar] = F[1][i];
-  }
-  for(int i=0; i<nVar; i++) {
-    tmp[i+nVar*2] = F[2][i];
-  }
-  
-  pdeflux_(&tmp[0], Q);
-  
-  for(int i=0; i<nVar; i++) {
-    F[0][i] =  tmp[i];
-  }
-  for(int i=0; i<nVar; i++) {
-    F[1][i] = tmp[i+nVar];
-  }
-  for(int i=0; i<nVar; i++) {
-    F[2][i] = tmp[i+nVar*2];
-  }
+  pdeflux_(F[0], F[1], (DIMENSIONS==3) ? F[2] : nullptr, Q);
 }
 
 
@@ -80,25 +53,21 @@ void GRMHD::GRMHDSolver::boundaryValues(const double* const x,const double t,con
   const int basisSize = order + 1;
   const int nDim = DIMENSIONS;
 
-  double Qgp[nVar];
+  double Qgp[nVar], F[nDim][nVar];
+
   std::memset(stateOut, 0, nVar * sizeof(double));
   std::memset(fluxOut, 0, nVar * sizeof(double));
-
-  double F[3 * nVar]; // Fortran needs continous storage!
-                      // Use always 3 dimensions here since the kernels works with those internally; see nDim in PDE.f90;
-                      
-  kernels::idx2 F_idx(nDim, nVar);
-
+  
   for(int i=0; i < basisSize; i++)  { // i == time
      const double weight = kernels::gaussLegendreWeights[order][i];
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
      initialdata_(x, &ti, Qgp);
-     pdeflux_(F, Qgp);
+     pdeflux_(F[0], F[1], (nDim==3)?F[2]:nullptr, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];
-        fluxOut[m] += weight * F[F_idx(d, m)];
+        fluxOut[m] += weight * F[d][m];
      }
   }
 }

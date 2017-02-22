@@ -1,14 +1,14 @@
 ! GRMHD PDE.f90
 ! Trento (EQNTYPE4)
 
-SUBROUTINE PDEFlux(FTensDim,Q) 
+SUBROUTINE PDEFlux(f,g,hz,Q)
   USE Parameters, ONLY : nVar, nDim, gamma, DivCleaning_a
   USE iso_c_binding
   IMPLICIT NONE
-  REAL :: f(nVar), g(nVar), h(nVar), Q(nVar), V(nVar)  
+  REAL :: f(nVar), g(nVar), h(nVar), hz(nVar), Q(nVar), V(nVar)
   REAL, PARAMETER :: epsilon = 1e-14 
   INTENT(IN)  :: Q
-  REAL, INTENT(OUT) :: FTensDim(nVar,nDim) ! Tensor fluxes F, dimension agnostic (cf FTens(nVar,3))
+  INTENT(OUT) :: f, g, hz
   ! Local Variables 
   REAL :: alpha
   INTEGER :: i, iErr, ii, jj, mm, kk, ll, iDim
@@ -145,10 +145,8 @@ SUBROUTINE PDEFlux(FTensDim,Q)
   h(1:5)   = lapse*h(1:5) - shift(3)*Q(1:5)
   !
   
-  FTensDim(:,1) = f
-  FTensDim(:,2) = g
   IF (nDim == 3) THEN
-    FTensDim(:,3) = h
+    hz(:) = h(:)
   ENDIF
   
 END SUBROUTINE PDEFlux

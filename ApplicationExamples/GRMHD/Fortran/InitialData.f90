@@ -16,8 +16,8 @@ SUBROUTINE InitialData(x, t, Q)
 	! Call InitialBlast(x, 0.0, Q)
 	! Call InitialOrsagTang(x, 0.0 , Q)
 	
-	! CALL InitialAccretionDisc(x, 0.0,  Q)
-	CALL InitialAccretionDisc3D(x, 0.0, Q)
+	CALL InitialAccretionDisc(x, 0.0,  Q)
+	! CALL InitialAccretionDisc3D(x, 0.0, Q)
 END SUBROUTINE InitialData
 
 

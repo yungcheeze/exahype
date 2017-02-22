@@ -40,7 +40,7 @@ void GRMHD::GRMHDSolver::eigenvalues(const double* const Q, const int dIndex, do
 }
 
 void GRMHD::GRMHDSolver::flux(const double* const Q, double** F) {
-  pdeflux_(&F[0][0], Q); // ALERT: continous stuff issue
+  pdeflux_(F[0], F[1], (DIMENSIONS==3)?F[2]:nullptr, Q);
 }
 
 
