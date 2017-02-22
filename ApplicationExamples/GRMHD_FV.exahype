@@ -66,18 +66,18 @@ exahype-project GRMHD
     kernel const                   = generic::Godunov
     language const                 = C
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.00666667
+      repeat    = 0.00590278
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Legendre::vertices::ascii IntegralsWriter
+    plot vtk::Cartesian::cells::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.00666667
+      repeat = 0.00590278
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
