@@ -27,6 +27,17 @@ void kernels::aderdg::optimised::predictorNonlinear(
 ) {
   // Immediately compute the time - averaged space - time polynomials
 
+#ifdef __INTEL_COMPILER
+  __assume_aligned(lQi, ALIGNMENT);
+  __assume_aligned(lFi, ALIGNMENT);
+  __assume_aligned(lQhi, ALIGNMENT);
+  __assume_aligned(lFhi, ALIGNMENT);
+  __assume_aligned(weights1, ALIGNMENT);
+  if(useSource) {
+    __assume_aligned(lSi, ALIGNMENT);
+    __assume_aligned(lShi, ALIGNMENT);
+  }
+#endif  
 
   std::memset(lQhi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
   std::memset(lFhi, 0, {{nDim*(nDof**nDim)*nVarPad}} * sizeof(double));
@@ -38,34 +49,46 @@ void kernels::aderdg::optimised::predictorNonlinear(
   for (int i = 0; i < {{nDof3D}}; i++) {
     for (int j = 0; j < {{nDof}}; j++) {
       for (int k = 0; k < {{nDof}}; k++) {
-        for (int n = 0; n < {{nVar}}; n++) {
-          // Matrix-Vector Products
-          for (int m = 0; m < {{nDof}}; m++) {
+        
+        // Matrix-Vector Products
+        for (int m = 0; m < {{nDof}}; m++) {
+          #pragma simd
+          for (int n = 0; n < {{nVar}}; n++) {
             // Fortran: lQhi(:,k,j,i) = lQi(:,:,k,j,i) * wGPN(:)
-            lQhi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] +=
-                lQi[n+{{nVarPad}}*(m+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*i)))] * weights1[m];
-
+            lQhi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] += weights1[m] *
+                lQi[n+{{nVarPad}}*(m+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*i)))];
+          }
+          #pragma simd
+          for (int n = 0; n < {{nVar}}; n++) {
             // Fortran: lFhi_x(:,k,j,i) = lFh(:,1,k,j,i,:) * wGPN(:)
-            lFhi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] +=
-                lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] * weights1[m];
-
+            lFhi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] += weights1[m] *
+                lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))];
+          }  
+          #pragma simd
+          for (int n = 0; n < {{nVar}}; n++) {
             // Fortran: lFhi_y(:,j,k,i) = lFh(:,2,:k,j,i,:) * wGPN(:)
-            lFhi[n+{{nVarPad}}*(j+{{nDof}}*(k+{{nDof}}*i))+{{1*nVarPad*(nDof**nDim)}}] +=
-                lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] * weights1[m];
-            
-            {% if nDim == 3%}
+            lFhi[n+{{nVarPad}}*(j+{{nDof}}*(k+{{nDof}}*i))+{{1*nVarPad*(nDof**nDim)}}] += weights1[m] *
+                lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))+{{1*(nDof**nDim)*nDof*nVarPad}}];
+          }  
+          {% if nDim == 3%}
+          #pragma simd
+          for (int n = 0; n < {{nVar}}; n++) {
             // Fortran: lFhi_z(:,i,k,j) = lFh(:,3,k,j,i,:) * wGPN(:)
-            lFhi[n+{{nVarPad}}*(i+{{nDof3D}}*(k+{{nDof}}*j))+{{2*nVarPad*(nDof**nDim)}}] +=
-                lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] * weights1[m];
-            {% endif %}
+            lFhi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad*(nDof**nDim)}}] += weights1[m] *
+                lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))+{{2*(nDof**nDim)*nDof*nVarPad}}];
+          }
+          {% endif %}
             
+          if(useSource) { //branch optimised away at compile time
             // Fortran: lFhi_S(:,k,j,i) = lSh(:,k,j,i,:) * wGPN(:)
-            if(useSource) { //branch optimised away at compile time
-              lShi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] +=
-                lSi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))] * weights1[m];
+            #pragma simd
+            for (int n = 0; n < {{nVar}}; n++) {
+              lShi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] += weights1[m] *
+                lSi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))];
             }
           }
         }
+      
       }
     }
   }
