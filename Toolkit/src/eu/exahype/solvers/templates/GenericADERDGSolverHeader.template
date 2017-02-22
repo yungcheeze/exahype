@@ -118,9 +118,9 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
     
     void matrixb(const double* const Q,const int d,double* Bn);
     
-    bool isDummyKRequired() const override;
+    bool hasToApplyPointSource() const override;
     
-    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     
     /**
      * Evaluate the refinement criterion within a cell.

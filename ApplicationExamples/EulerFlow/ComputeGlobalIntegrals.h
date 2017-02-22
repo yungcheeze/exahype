@@ -18,7 +18,6 @@ namespace Euler{
   class MyEulerSolver;
 }
 
-/* I hope these modifications are not overwritten... */
 #include "TimeSeriesReductions.h"
 #include "MyEulerSolver.h"
 
@@ -29,11 +28,10 @@ static const int NumberOfVariables = Euler::MyEulerSolver::NumberOfVariables; //
 
 class Euler::ComputeGlobalIntegrals: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   private:
-    TimeSeriesReductions* conserved[NumberOfVariables];
-    TimeSeriesReductions* primitives[NumberOfVariables];
-    TimeSeriesReductions* errors[NumberOfVariables];
-    TimeSeriesReductions* statistics;
-    double time;
+    reductions::MultipleReductionsWriter conserved;
+    reductions::MultipleReductionsWriter primitives;
+    reductions::MultipleReductionsWriter errors;
+    reductions::ReductionsWriter statistics;
   public:
   ComputeGlobalIntegrals(MyEulerSolver&  solver);
   virtual ~ComputeGlobalIntegrals();

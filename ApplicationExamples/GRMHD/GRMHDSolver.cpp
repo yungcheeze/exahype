@@ -35,7 +35,34 @@ void GRMHD::GRMHDSolver::eigenvalues(const double* const Q,const int d,double* l
 
 
 void GRMHD::GRMHDSolver::flux(const double* const Q,double** F) {
-  pdeflux_(F[0], Q);
+  //pdeflux_(F[0], Q);
+  
+  //ensure F is contiguous
+  //TODO SvenK, remove when Fortran fixed
+  constexpr int nVar = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
+  double tmp[nVar*3];
+
+  for(int i=0; i<nVar; i++) {
+    tmp[i] = F[0][i];
+  }
+  for(int i=0; i<nVar; i++) {
+    tmp[i+nVar] = F[1][i];
+  }
+  for(int i=0; i<nVar; i++) {
+    tmp[i+nVar*2] = F[2][i];
+  }
+  
+  pdeflux_(&tmp[0], Q);
+  
+  for(int i=0; i<nVar; i++) {
+    F[0][i] =  tmp[i];
+  }
+  for(int i=0; i<nVar; i++) {
+    F[1][i] = tmp[i+nVar];
+  }
+  for(int i=0; i<nVar; i++) {
+    F[2][i] = tmp[i+nVar*2];
+  }
 }
 
 
@@ -100,10 +127,10 @@ void GRMHD::GRMHDSolver::matrixb(const double* const Q,const int d,double* Bn) {
   pdematrixb_(Bn, Q, nv);
 }
 
-bool GRMHD::GRMHDSolver::isDummyKRequired() const { 
+bool GRMHD::GRMHDSolver::hasToApplyPointSource() const { 
   return false;
 }
 
-void GRMHD::GRMHDSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void GRMHD::GRMHDSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // whatever
 }

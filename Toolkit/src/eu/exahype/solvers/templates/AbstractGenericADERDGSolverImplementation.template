@@ -134,9 +134,9 @@ void {{Project}}::Abstract{{Solver}}::volumeUnknownsRestriction(double* luhCoars
 
 
 
-// TODO KD
-void {{Project}}::Abstract{{Solver}}::dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
-{{BeforeDummyK}}
-  kernels::aderdg::generic::c::dummyK_Kernel<{{Solver}}>(*static_cast<{{Solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
-{{AfterDummyK}}
+
+void {{Project}}::Abstract{{Solver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
+{{BeforePointSource}}
+  kernels::aderdg::generic::c::pointSource<{{Solver}}>(*static_cast<{{Solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
+{{AfterPointSource}}
 }

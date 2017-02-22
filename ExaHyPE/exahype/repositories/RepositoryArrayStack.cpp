@@ -48,6 +48,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithPlotAndADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionRerun(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusSpreading(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithLimiterStatusSpreadingFusedTimeStepping(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusMergingAndSpreadingMPI(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusMergingMPI(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithReinitialisation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -97,6 +98,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithPlotAndADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionRerun(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusSpreading(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithLimiterStatusSpreadingFusedTimeStepping(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusMergingAndSpreadingMPI(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusMergingMPI(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithReinitialisation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -158,6 +160,7 @@ void exahype::repositories::RepositoryArrayStack::restart(
   _gridWithPlotAndADERDGTimeStep.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPredictionRerun.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithLimiterStatusSpreading.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithLimiterStatusSpreadingFusedTimeStepping.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithLimiterStatusMergingAndSpreadingMPI.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithLimiterStatusMergingMPI.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithReinitialisation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
@@ -204,6 +207,7 @@ void exahype::repositories::RepositoryArrayStack::terminate() {
   _gridWithPlotAndADERDGTimeStep.terminate();
   _gridWithPredictionRerun.terminate();
   _gridWithLimiterStatusSpreading.terminate();
+  _gridWithLimiterStatusSpreadingFusedTimeStepping.terminate();
   _gridWithLimiterStatusMergingAndSpreadingMPI.terminate();
   _gridWithLimiterStatusMergingMPI.terminate();
   _gridWithReinitialisation.terminate();
@@ -282,6 +286,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
       case exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep: watch.startTimer(); _gridWithPlotAndADERDGTimeStep.iterate(); watch.stopTimer(); _measurePlotAndADERDGTimeStepCPUTime.setValue( watch.getCPUTime() ); _measurePlotAndADERDGTimeStepCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPredictionRerun: watch.startTimer(); _gridWithPredictionRerun.iterate(); watch.stopTimer(); _measurePredictionRerunCPUTime.setValue( watch.getCPUTime() ); _measurePredictionRerunCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading: watch.startTimer(); _gridWithLimiterStatusSpreading.iterate(); watch.stopTimer(); _measureLimiterStatusSpreadingCPUTime.setValue( watch.getCPUTime() ); _measureLimiterStatusSpreadingCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterLimiterStatusSpreadingFusedTimeStepping: watch.startTimer(); _gridWithLimiterStatusSpreadingFusedTimeStepping.iterate(); watch.stopTimer(); _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.setValue( watch.getCPUTime() ); _measureLimiterStatusSpreadingFusedTimeSteppingCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterLimiterStatusMergingAndSpreadingMPI: watch.startTimer(); _gridWithLimiterStatusMergingAndSpreadingMPI.iterate(); watch.stopTimer(); _measureLimiterStatusMergingAndSpreadingMPICPUTime.setValue( watch.getCPUTime() ); _measureLimiterStatusMergingAndSpreadingMPICalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterLimiterStatusMergingMPI: watch.startTimer(); _gridWithLimiterStatusMergingMPI.iterate(); watch.stopTimer(); _measureLimiterStatusMergingMPICPUTime.setValue( watch.getCPUTime() ); _measureLimiterStatusMergingMPICalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterReinitialisation: watch.startTimer(); _gridWithReinitialisation.iterate(); watch.stopTimer(); _measureReinitialisationCPUTime.setValue( watch.getCPUTime() ); _measureReinitialisationCalendarTime.setValue( watch.getCalendarTime() ); break;
@@ -336,6 +341,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  void exahype::repositories::RepositoryArrayStack::switchToPlotAndADERDGTimeStep() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep); }
  void exahype::repositories::RepositoryArrayStack::switchToPredictionRerun() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictionRerun); }
  void exahype::repositories::RepositoryArrayStack::switchToLimiterStatusSpreading() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading); }
+ void exahype::repositories::RepositoryArrayStack::switchToLimiterStatusSpreadingFusedTimeStepping() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterLimiterStatusSpreadingFusedTimeStepping); }
  void exahype::repositories::RepositoryArrayStack::switchToLimiterStatusMergingAndSpreadingMPI() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterLimiterStatusMergingAndSpreadingMPI); }
  void exahype::repositories::RepositoryArrayStack::switchToLimiterStatusMergingMPI() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterLimiterStatusMergingMPI); }
  void exahype::repositories::RepositoryArrayStack::switchToReinitialisation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterReinitialisation); }
@@ -362,6 +368,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPlotAndADERDGTimeStep() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPredictionRerun() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictionRerun; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterLimiterStatusSpreading() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterLimiterStatusSpreadingFusedTimeStepping() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterLimiterStatusSpreadingFusedTimeStepping; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterLimiterStatusMergingAndSpreadingMPI() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterLimiterStatusMergingAndSpreadingMPI; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterLimiterStatusMergingMPI() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterLimiterStatusMergingMPI; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterReinitialisation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterReinitialisation; }
@@ -461,6 +468,7 @@ void exahype::repositories::RepositoryArrayStack::logIterationStatistics(bool lo
    if (logAllAdapters || _measurePlotAndADERDGTimeStepCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PlotAndADERDGTimeStep \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getAccumulatedValue() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getValue()  << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.getAccumulatedValue() << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.getValue() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.toString() << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.toString() );
    if (logAllAdapters || _measurePredictionRerunCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PredictionRerun \t |  " << _measurePredictionRerunCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionRerunCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionRerunCPUTime.getValue()  << " \t |  " << _measurePredictionRerunCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionRerunCalendarTime.getValue() << " \t |  " << _measurePredictionRerunCPUTime.toString() << " \t |  " << _measurePredictionRerunCalendarTime.toString() );
    if (logAllAdapters || _measureLimiterStatusSpreadingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| LimiterStatusSpreading \t |  " << _measureLimiterStatusSpreadingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.getValue()  << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.getValue() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.toString() << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.toString() );
+   if (logAllAdapters || _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| LimiterStatusSpreadingFusedTimeStepping \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.getValue()  << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCalendarTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCalendarTime.getValue() << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.toString() << " \t |  " << _measureLimiterStatusSpreadingFusedTimeSteppingCalendarTime.toString() );
    if (logAllAdapters || _measureLimiterStatusMergingAndSpreadingMPICPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| LimiterStatusMergingAndSpreadingMPI \t |  " << _measureLimiterStatusMergingAndSpreadingMPICPUTime.getNumberOfMeasurements() << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICPUTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICPUTime.getValue()  << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICalendarTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICalendarTime.getValue() << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICPUTime.toString() << " \t |  " << _measureLimiterStatusMergingAndSpreadingMPICalendarTime.toString() );
    if (logAllAdapters || _measureLimiterStatusMergingMPICPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| LimiterStatusMergingMPI \t |  " << _measureLimiterStatusMergingMPICPUTime.getNumberOfMeasurements() << " \t |  " << _measureLimiterStatusMergingMPICPUTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusMergingMPICPUTime.getValue()  << " \t |  " << _measureLimiterStatusMergingMPICalendarTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusMergingMPICalendarTime.getValue() << " \t |  " << _measureLimiterStatusMergingMPICPUTime.toString() << " \t |  " << _measureLimiterStatusMergingMPICalendarTime.toString() );
    if (logAllAdapters || _measureReinitialisationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| Reinitialisation \t |  " << _measureReinitialisationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureReinitialisationCPUTime.getAccumulatedValue() << " \t |  " << _measureReinitialisationCPUTime.getValue()  << " \t |  " << _measureReinitialisationCalendarTime.getAccumulatedValue() << " \t |  " << _measureReinitialisationCalendarTime.getValue() << " \t |  " << _measureReinitialisationCPUTime.toString() << " \t |  " << _measureReinitialisationCalendarTime.toString() );
@@ -489,6 +497,7 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measurePlotAndADERDGTimeStepCPUTime.erase();
    _measurePredictionRerunCPUTime.erase();
    _measureLimiterStatusSpreadingCPUTime.erase();
+   _measureLimiterStatusSpreadingFusedTimeSteppingCPUTime.erase();
    _measureLimiterStatusMergingAndSpreadingMPICPUTime.erase();
    _measureLimiterStatusMergingMPICPUTime.erase();
    _measureReinitialisationCPUTime.erase();
@@ -513,6 +522,7 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measurePlotAndADERDGTimeStepCalendarTime.erase();
    _measurePredictionRerunCalendarTime.erase();
    _measureLimiterStatusSpreadingCalendarTime.erase();
+   _measureLimiterStatusSpreadingFusedTimeSteppingCalendarTime.erase();
    _measureLimiterStatusMergingAndSpreadingMPICalendarTime.erase();
    _measureLimiterStatusMergingMPICalendarTime.erase();
    _measureReinitialisationCalendarTime.erase();

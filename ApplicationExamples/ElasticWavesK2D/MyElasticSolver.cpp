@@ -248,12 +248,12 @@ void Elastic::MyElasticSolver::matrixb(const double* const Q,const int normalNon
 
 //TODO KD
 // tell the user what it is
-bool Elastic::MyElasticSolver::isDummyKRequired() const { 
+bool Elastic::MyElasticSolver::hasToApplyPointSource() const { 
   return true;
 }
 
 //TODO KD
-void Elastic::MyElasticSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void Elastic::MyElasticSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   //TODO KD // @todo Please implement/augment if required and set bool function
 
    double pi = 3.14159265359;

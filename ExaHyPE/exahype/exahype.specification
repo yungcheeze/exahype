@@ -191,6 +191,12 @@ adapter:
   merge-with-user-defined-mapping: LimiterStatusSpreading
 
 adapter: 
+  name: LimiterStatusSpreadingFusedTimeStepping
+  merge-with-user-defined-mapping: DropIncomingMPIMessages
+  merge-with-user-defined-mapping: Merging // merge time step data and limiter domain has changed attribute of solvers
+  merge-with-user-defined-mapping: LimiterStatusSpreading
+
+adapter: 
   name: LimiterStatusMergingAndSpreadingMPI
   merge-with-user-defined-mapping: LimiterStatusMergingAndSpreadingMPI
 
@@ -234,15 +240,15 @@ adapter:
 adapter:
   name: Prediction
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
-  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
+  merge-with-user-defined-mapping: Prediction     // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Sending
   merge-with-user-defined-mapping: PostProcessing // Sending does send face data
 
 adapter:
   name: PredictionAndPlot
   merge-with-user-defined-mapping: PreProcessing 
-  merge-with-user-defined-mapping: Merging // Merging does only merge time step data
+  merge-with-user-defined-mapping: Merging        // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: Sending
@@ -271,4 +277,4 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending      // Only send time step data
-  merge-with-user-defined-mapping: PostProcessing    
+  merge-with-user-defined-mapping: PostProcessing

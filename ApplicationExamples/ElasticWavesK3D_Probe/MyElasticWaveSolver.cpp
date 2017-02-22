@@ -272,12 +272,12 @@ void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int n
 
 //TODO KD
 // tell the user what it is
-bool ElasticWave::MyElasticWaveSolver::isDummyKRequired() const { 
+bool ElasticWave::MyElasticWaveSolver::hasToApplyPointSource() const { 
   return true;
 }
 
 //TODO KD
-void ElasticWave::MyElasticWaveSolver::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void ElasticWave::MyElasticWaveSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   //TODO KD // @todo Please implement/augment if required and set bool function
   double pi = 3.14159265359;
   double sigma = 0.1149;

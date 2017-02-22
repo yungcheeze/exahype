@@ -22,22 +22,25 @@ namespace kernels {
     namespace optimised {
       namespace converter {
 
-        constexpr int getLuhArraySize()    { return {{(nDof**nDim)*nVar}};}
+        constexpr int getLuhArraySize()        { return {{(nDof**nDim)*nVar}};}
 
-        constexpr int getBndGenArraySize() { return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};}
+        constexpr int getBndGenArraySize()     { return {{2 * nDim * (nDof ** (nDim-1)) * nVar}};}
+        constexpr int getBndOptArraySize()     { return {{2 * nDim * bndBlockSize * nVar}};}
+		
+        constexpr int getBndFaceGenArraySize() { return {{(nDof ** (nDim-1)) * nVar}};}
+        constexpr int getBndFaceOptArraySize() { return {{bndBlockSize * nVar}};}
 
-        constexpr int getBndOptArraySize() { return {{2 * nDim * bndBlockSize * nVar}};}
+        constexpr int getFhiGenArraySize()     { return {{(nDof ** nDim) * nVar * (nDim+1)}};}
+        constexpr int getFhiOptArraySize()     { return {{(nDof ** nDim) * nVarPad * (nDim+1)}};}
 
-        constexpr int getFhiGenArraySize() { return {{(nDof ** nDim) * nVar * (nDim+1)}};}
-
-        constexpr int getFhiOptArraySize() { return {{(nDof ** nDim) * nVarPad * (nDim+1)}};}
-
-        constexpr int getQhiGenArraySize() { return {{(nDof ** nDim) * nVar}};}
-
-        constexpr int getQhiOptArraySize() { return {{(nDof ** nDim) * nVarPad}};}
+        constexpr int getQhiGenArraySize()     { return {{(nDof ** nDim) * nVar}};}
+        constexpr int getQhiOptArraySize()     { return {{(nDof ** nDim) * nVarPad}};}
 
         void Bnd_optimised2generic(const double* const opt, double* gen);
         void Bnd_generic2optimised(const double* const gen, double* opt);
+		
+        void BndFace_optimised2generic(const double* const opt, double* gen);
+        void BndFace_generic2optimised(const double* const gen, double* opt);
 
         void Fhi_optimised2generic(const double* const opt, double* gen);
         void Fhi_generic2optimised(const double* const gen, double* opt);

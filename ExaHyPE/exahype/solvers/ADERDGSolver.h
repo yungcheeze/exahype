@@ -789,7 +789,7 @@ public:
   virtual bool usePaddedData_nDoF() const {return false;}
   
   //TODO KD
-  virtual bool isDummyKRequired() const {return false;}
+  virtual bool hasToApplyPointSource() const {return false;}
   
   /**
    * @brief Adds the solution update to the solution.
@@ -1033,7 +1033,7 @@ public:
   ///@}
   
   //TODO KD
-  virtual void dummyK_GeneratedCall(
+  virtual void pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,

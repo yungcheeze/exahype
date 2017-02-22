@@ -23,7 +23,11 @@ void SRMHD::MHDSolver::init(std::vector<std::string>& cmdargs){ //, exahype::Par
 void SRMHD::MHDSolver::flux(const double* const Q, double** F) {
   // Caveats: Fortran accepts a uniform array of size (nVar*nDim), however C passes an array of pointers.
   // This Fortran interface works only if F is a continous array and F[1]==F[nDim+1] etc!
-  pdeflux_(F[0], Q);
+  
+  // Allow non-continous storage:
+  const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
+  const int nDim = DIMENSIONS;
+  pdeflux_(F[0], F[1], (nDim==3) ? F[2] : nullptr, Q);
 }
 
 
@@ -50,7 +54,9 @@ void SRMHD::MHDSolver::adjustedSolutionValues(const double* const x,const double
 }
 
 void SRMHD::MHDSolver::source(const double* const Q, double* S) {
-  pdesource_(S, Q);
+  //pdesource_(S, Q);
+  const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
+  std::memset(S, 0, nVar * sizeof(double)); //no source
 }
 
 
@@ -91,34 +97,20 @@ void SRMHD::MHDSolver::boundaryValues(const double* const x,const double t, cons
   std::memset(stateOut, 0, nVar * sizeof(double));
   std::memset(fluxOut, 0, nVar * sizeof(double));
 
-  double F[3 * nVar]; // Fortran needs continous storage!
-                      // Use always 3 dimensions here since the kernels works with those internally; see nDim in PDE.f90;
-
-
-  kernels::idx2 F_idx(nDim, nVar);
+  double F[nDim][nVar];
 
   // Integrate solution in gauss points (Qgp) in time
-  /*
-  if (faceIndex==2 || faceIndex==3) {     
-     for(int m=0; m < nVar; m++) {
-        stateOut[m] = stateIn[m];
-        fluxOut[m]  = fluxIn[m];
-     }
-     return;
-  }
-  */
-
   for(int i=0; i < basisSize; i++)  { // i == time
      const double weight = kernels::gaussLegendreWeights[order][i];
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
      alfenwave_(x, Qgp, &ti);
-     pdeflux_(F, Qgp);
+     pdeflux_(F[0], F[1], (nDim==3) ? F[2] : nullptr, Qgp);
      for(int m=0; m < nVar; m++) {
   //if(m==checkm) printf("fluxOut[%d] += %.20e\n", m, weight * F[normalNonZero][m]);
         stateOut[m] += weight * Qgp[m];
-        fluxOut[m] += weight * F[F_idx(normalNonZero, m)];
+        fluxOut[m] += weight * F[normalNonZero][m];
      }
   }
 
@@ -138,13 +130,15 @@ void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, d
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
-bool SRMHD::MHDSolver::isDummyKRequired() const {
+
+bool SRMHD::MHDSolver::hasToApplyPointSource() const {
   return false;
 }
 
-void SRMHD::MHDSolver::dummyK_Value(double const*, double, double, double*, double*) {
+void SRMHD::MHDSolver::pointSource(double const*, double, double, double*, double*) {
   // whatever
 }
+
 
 bool SRMHD::MHDSolver::physicalAdmissibilityDetection(double const*, double const*) {
   // why do we need this function?

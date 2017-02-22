@@ -37,8 +37,8 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
 
     //TODO JMG
     //Not implemented
-    bool isDummyKRequired() const override;
-    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    bool hasToApplyPointSource() const override;
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
 };
 

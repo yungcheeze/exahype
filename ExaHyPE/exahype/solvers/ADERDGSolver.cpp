@@ -43,7 +43,7 @@ namespace {
                              "volumeUnknownsProlongation",
                              "volumeUnknownsRestriction",
                              "boundaryConditions",
-                             "dummyK_GeneratedCall"}; //TODO KD
+                             "pointSource"}; //TODO KD
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
 
@@ -1394,8 +1394,8 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  if(isDummyKRequired()) { //disable kernel if not needed
-      dummyK_GeneratedCall(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
+  if(hasToApplyPointSource()) { //disable kernel if not needed
+      pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }
   
@@ -2794,17 +2794,17 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
   // Thus it does not equal MAX_DOUBLE.
 
   int index=0;
-  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextGridUpdateRequested      = std::min( _nextGridUpdateRequested, (receivedTimeStepData[index++]) > 0 ? true : false );
-  _nextMinCellSize              = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
-  _nextMaxCellSize              = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
+  _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested      |= (receivedTimeStepData[index++]) > 0 ? true : false;
+  _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+  _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -3794,7 +3794,7 @@ void exahype::solvers::ADERDGSolver::pullUnknownsFromByteStream(exahype::records
   );
 }
 
-void exahype::solvers::ADERDGSolver::dummyK_GeneratedCall(
+void exahype::solvers::ADERDGSolver::pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,

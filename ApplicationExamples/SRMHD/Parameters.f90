@@ -14,7 +14,7 @@
     ! computational-domain / dimension       ->  goes to ->  nDim
     !
 
-    INTEGER, PARAMETER             :: nDim = 3                            ! The number of space dimensions that we actually want to simulate  
+    INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate  
     INTEGER, PARAMETER             :: nVar = 9                            ! The number of variables of the PDE system  
     
     
