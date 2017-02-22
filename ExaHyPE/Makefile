@@ -355,7 +355,7 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> cfiles.mk
-	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))  
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
