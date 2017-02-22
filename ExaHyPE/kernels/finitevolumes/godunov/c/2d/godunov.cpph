@@ -38,6 +38,7 @@ double riemannSolver(
     double* F, const double* qL, const double* qR, int normalNonZero, 
     double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int basisSize          = SolverType::PatchSize;
   
   double* sL = tempStateSizedVectors[0]; 
   double* sR = tempStateSizedVectors[1];
@@ -59,6 +60,32 @@ double riemannSolver(
   double* FR[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
   solver.flux(qL, FL);
   solver.flux(qR, FR);
+  
+  /*
+  // Q: Does the NCP contribute to the riemannsolver at first order Godunov?
+  
+  double Qavg[numberOfVariables+numberOfParameters];
+  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+     Qavg[k] = (qL[k] + qR[k]) / 2;
+  }
+  
+  double Bn[numberOfVariables*numberOfVariables];
+  double ncp[numberOfVariables];
+  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  solver.matrixb(Qavg, normalNonZero, Bn); // Bn is nVar x nVar matrix
+  
+  // The summation of the NCP is done here as in ADERDG. I don't know
+  // if this is correct at all. Also don't know if the memory qR, qL
+  // is the same as in the riemannSolverNonlinear.cpph where I have it from.
+  idx2 idx_FLR(basisSize, numberOfVariables);
+  idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
+  for(int l=0; l < numberOfVariables; l++) {
+    ncp[l] = 0;
+    for(int m=0; m < numberOfVariables; m++) {
+      ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
+    }
+  }
+  */
 
   for (int i = 0; i < numberOfVariables; i++) {
     F[i] = 0.5 * (FL[normalNonZero][i] + FR[normalNonZero][i]) +
@@ -278,17 +305,22 @@ double solutionUpdate(
   // Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
+
+  double gradQ[basisSize * basisSize * DIMENSIONS * numberOfVariables];
+  std::memset(gradQ, 0.0, basisSize * basisSize * DIMENSIONS * numberOfVariables * sizeof(double));
   
   // x edges 
   double* Fn = tempStateSizedVectors[0];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
+      double *qL = luh + idx(j, k, 0);
+      double *qR = luh + idx(j, k+1, 0);
       double s_max_x = 
           riemannSolver<SolverType>(
               solver,
               Fn, 
-              luh + idx(j, k, 0),
-              luh + idx(j, k+1, 0), 
+              qL,
+              qR, 
               0, tempStateSizedVectors + 1);
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
@@ -298,6 +330,8 @@ double solutionUpdate(
       for (int l=0; l<numberOfVariables; ++l) {
         luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
         luh_new[idx(j, k+1, l)] += dt / cellSize[0] * Fn[l];
+        // todo: please review this derivative
+        gradQ[idx_gradQ(j, k, /*x*/0, l)] += (qR[l] - qL[l]) / dx[0];
       }
     }
   }
@@ -305,12 +339,14 @@ double solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
+      double *qL = luh + idx(j, k, 0);
+      double *qR = luh + idx(j+1, k, 0);
       double s_max_y =
         riemannSolver<SolverType>(
           solver,
           Fn, 
-          luh + idx(j, k, 0),
-          luh + idx(j+1, k, 0), 
+          qL,
+          qR, 
           1, tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
@@ -318,6 +354,8 @@ double solutionUpdate(
       for (int l=0; l<numberOfVariables; ++l) {
         luh_new[idx(j, k, l)]   -= dt / cellSize[1] * Fn[l];  
         luh_new[idx(j+1, k, l)] += dt / cellSize[1] * Fn[l];
+        // todo: please review this derivative
+        gradQ[idx_gradQ(j, k, /*y*/1, l)] += (qR[l] - qL[l]) / dx[1];
       }
     }
   }
@@ -326,11 +364,16 @@ double solutionUpdate(
 
   // 5. Add the source terms 
   double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+  double BGradQ[numberOfVariables];
   
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
       solver.source(&luh[idx(j, k, 0)], source);
+      // todo: Review whether array access is fine
+      solver.ncp(&luh[idx(j, k, 0)], &gradQ[idx_gradQ(j, k, 0, 0)], BGradQ);
+      
       for (int l = 0; l < numberOfVariables; l++) {
+        source[l] -= BGradQ[l];
         luh_new[idx(j, k, l)] += dt * source[l];
       }
     }
