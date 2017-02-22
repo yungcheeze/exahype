@@ -298,9 +298,9 @@ double solutionUpdate(
   
   constexpr int patchBegin=1;
   constexpr int patchEnd=basisSize;
-  constexpr int basisSize2=basisSize + 2;
+  constexpr int basisSizep2=basisSize + 2;
   
-  idx3 idx(basisSize2, basisSize2, numberOfVariables+numberOfParameters);
+  idx3 idx(basisSizep2, basisSizep2, numberOfVariables+numberOfParameters);
   
   const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
   
@@ -308,9 +308,9 @@ double solutionUpdate(
   double dt_max_allowed = std::numeric_limits<double>::max();
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
-  double gradQ[basisSize2 * basisSize2 * DIMENSIONS * numberOfVariables];
-  idx4 idx_gradQ(basisSize2, basisSize2, DIMENSIONS, numberOfVariables);
-  std::memset(gradQ, 0.0, basisSize2 * basisSize2 * DIMENSIONS * numberOfVariables * sizeof(double));
+  double gradQ[basisSizep2 * basisSizep2 * DIMENSIONS * numberOfVariables];
+  idx4 idx_gradQ(basisSizep2, basisSizep2, DIMENSIONS, numberOfVariables);
+  std::fill_n(gradQ, basisSizep2 * basisSizep2 * DIMENSIONS * numberOfVariables, 0.0);
   
   // x edges 
   double* Fn = tempStateSizedVectors[0];
@@ -334,7 +334,7 @@ double solutionUpdate(
         luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
         luh_new[idx(j, k+1, l)] += dt / cellSize[0] * Fn[l];
         // todo: please review this derivative
-        gradQ[idx_gradQ(j, k, /*x*/0, l)] += (qR[l] - qL[l]) / dx[0];
+//        gradQ[idx_gradQ(j, k, /*x*/0, l)] += (qR[l] - qL[l]) / dx[0]; // TODO(Dominic): This is not indexed correctly. Assertion is failing.
       }
     }
   }
@@ -358,7 +358,7 @@ double solutionUpdate(
         luh_new[idx(j, k, l)]   -= dt / cellSize[1] * Fn[l];  
         luh_new[idx(j+1, k, l)] += dt / cellSize[1] * Fn[l];
         // todo: please review this derivative
-        gradQ[idx_gradQ(j, k, /*y*/1, l)] += (qR[l] - qL[l]) / dx[1];
+//        gradQ[idx_gradQ(j, k, /*y*/1, l)] += (qR[l] - qL[l]) / dx[1];
       }
     }
   }
