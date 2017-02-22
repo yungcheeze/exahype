@@ -59,3 +59,13 @@ void GRMHD::GRMHDSolver::boundaryValues(
   // Exact ID, not time integration
   initialaccretiondisc_(x, &t, stateOutside);
 }
+
+void GRMHD::GRMHDSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+  pdencp_(BgradQ, Q, gradQ);
+}
+
+void GRMHD::GRMHDSolver::matrixb(const double* const Q,const int d,double* Bn) {
+  double nv[3] = {0.};
+  nv[d] = 1;
+  pdematrixb_(Bn, Q, nv);
+}

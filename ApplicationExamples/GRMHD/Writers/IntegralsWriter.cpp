@@ -120,7 +120,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	pdecons2prim_(ExactPrim, ExactCons, &err);
 	
 	double localError[nVar];
-	for(int i=0; i<numReduced; i++) {
+	for(int i=0; i<nVar; i++) {
 		localError[i] = std::fabs(V[i] - ExactPrim[i]);
 		//localError[i] = abs(Q[i] - ExactCons[i]);
 	}
