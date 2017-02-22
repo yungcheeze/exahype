@@ -297,8 +297,10 @@ double solutionUpdate(
   constexpr int basisSize          = SolverType::PatchSize;
   
   constexpr int patchBegin=1;
-  const int     patchEnd=basisSize;
-  idx3 idx(basisSize+2, basisSize+2, numberOfVariables+numberOfParameters);
+  constexpr int patchEnd=basisSize;
+  constexpr int basisSize2=basisSize + 2;
+  
+  idx3 idx(basisSize2, basisSize2, numberOfVariables+numberOfParameters);
   
   const double cellSize[2] = {dx[0]/basisSize, dx[1]/basisSize};
   
@@ -306,9 +308,9 @@ double solutionUpdate(
   double dt_max_allowed = std::numeric_limits<double>::max();
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
-  double gradQ[basisSize * basisSize * DIMENSIONS * numberOfVariables];
-  idx4 idx_gradQ(basisSize, basisSize, DIMENSIONS, numberOfVariables);
-  std::memset(gradQ, 0.0, basisSize * basisSize * DIMENSIONS * numberOfVariables * sizeof(double));
+  double gradQ[basisSize2 * basisSize2 * DIMENSIONS * numberOfVariables];
+  idx4 idx_gradQ(basisSize2, basisSize2, DIMENSIONS, numberOfVariables);
+  std::memset(gradQ, 0.0, basisSize2 * basisSize2 * DIMENSIONS * numberOfVariables * sizeof(double));
   
   // x edges 
   double* Fn = tempStateSizedVectors[0];
@@ -371,10 +373,10 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd+1; k++) {
       solver.source(&luh[idx(j, k, 0)], source);
       // todo: Review whether array access is fine
-      //solver.ncp(&luh[idx(j, k, 0)], &gradQ[idx_gradQ(j, k, 0, 0)], BGradQ);
+      solver.ncp(&luh[idx(j, k, 0)], &gradQ[idx_gradQ(j, k, 0, 0)], BGradQ);
       
       for (int l = 0; l < numberOfVariables; l++) {
-//        source[l] -= BGradQ[l];
+        source[l] -= BGradQ[l];
         luh_new[idx(j, k, l)] += dt * source[l];
       }
     }
