@@ -35,7 +35,7 @@ namespace c {
 template <typename SolverType>
 double riemannSolver(
     SolverType& solver,
-    double* F, const double* qL, const double* qR, int normalNonZero, 
+    double* fL, double *fR, const double* qL, const double* qR, int normalNonZero, 
     double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -56,10 +56,10 @@ double riemannSolver(
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
-  double* FR[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
-  solver.flux(qL, FL);
-  solver.flux(qR, FR);
+  double* FL2[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
+  double* FR2[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
+  solver.flux(qL, FL2);
+  solver.flux(qR, FR2);
   
   double Qavg[numberOfVariables+numberOfParameters];
   for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
@@ -79,9 +79,10 @@ double riemannSolver(
   }
 
   for (int i = 0; i < numberOfVariables; i++) {
-    F[i] = 0.5 * (FL[normalNonZero][i] + FR[normalNonZero][i]) +
-           0.5 * s_max * (qL[i] - qR[i]) +
-           0.5 * ncp[i];
+    fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
+            0.5 * s_max * (qL[i] - qR[i]);
+    fR[i] = fL[i] - 0.5 * ncp[i];
+    fL[i] = fL[i] + 0.5 * ncp[i];
   }
 
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
@@ -300,7 +301,8 @@ double solutionUpdate(
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
   // x edges 
-  double* Fn = tempStateSizedVectors[0];
+  double* fL = tempStateSizedVectors[0];
+  double  fR[numberOfVariables];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
       const double *qL = luh + idx(j, k, 0);
@@ -308,9 +310,8 @@ double solutionUpdate(
       double s_max_x = 
           riemannSolver<SolverType>(
               solver,
-              Fn, 
-              qL,
-              qR, 
+              fL, fR,
+              qL, qR, 
               0, tempStateSizedVectors + 1);
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
@@ -318,8 +319,8 @@ double solutionUpdate(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * Fn[l];  
-        luh_new[idx(j, k+1, l)] += dt / cellSize[0] * Fn[l];
+        luh_new[idx(j, k, l)]   -= dt / cellSize[0] * fL[l];
+        luh_new[idx(j, k+1, l)] += dt / cellSize[0] * fR[l];
       }
     }
   }
@@ -332,16 +333,15 @@ double solutionUpdate(
       double s_max_y =
         riemannSolver<SolverType>(
           solver,
-          Fn, 
-          qL,
-          qR, 
+          fL, fR,
+          qL, qR, 
           1, tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * Fn[l];  
-        luh_new[idx(j+1, k, l)] += dt / cellSize[1] * Fn[l];
+        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * fL[l];  
+        luh_new[idx(j+1, k, l)] += dt / cellSize[1] * fR[l];
       }
     }
   }
