@@ -307,14 +307,15 @@ double solutionUpdate(
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
   double gradQ[basisSize * basisSize * DIMENSIONS * numberOfVariables];
+  idx4 idx_gradQ(basisSize, basisSize, DIMENSIONS, numberOfVariables);
   std::memset(gradQ, 0.0, basisSize * basisSize * DIMENSIONS * numberOfVariables * sizeof(double));
   
   // x edges 
   double* Fn = tempStateSizedVectors[0];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
-      double *qL = luh + idx(j, k, 0);
-      double *qR = luh + idx(j, k+1, 0);
+      const double *qL = luh + idx(j, k, 0);
+      const double *qR = luh + idx(j, k+1, 0);
       double s_max_x = 
           riemannSolver<SolverType>(
               solver,
@@ -339,8 +340,8 @@ double solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
-      double *qL = luh + idx(j, k, 0);
-      double *qR = luh + idx(j+1, k, 0);
+      const double *qL = luh + idx(j, k, 0);
+      const double *qR = luh + idx(j+1, k, 0);
       double s_max_y =
         riemannSolver<SolverType>(
           solver,
@@ -370,10 +371,10 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd+1; k++) {
       solver.source(&luh[idx(j, k, 0)], source);
       // todo: Review whether array access is fine
-      solver.ncp(&luh[idx(j, k, 0)], &gradQ[idx_gradQ(j, k, 0, 0)], BGradQ);
+      //solver.ncp(&luh[idx(j, k, 0)], &gradQ[idx_gradQ(j, k, 0, 0)], BGradQ);
       
       for (int l = 0; l < numberOfVariables; l++) {
-        source[l] -= BGradQ[l];
+//        source[l] -= BGradQ[l];
         luh_new[idx(j, k, l)] += dt * source[l];
       }
     }
