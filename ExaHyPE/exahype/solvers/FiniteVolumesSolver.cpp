@@ -160,14 +160,14 @@ void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes() {
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _minTimeStamp            = _minTimeStepSize-_previousMinTimeStepSize;
+      _minTimeStamp            = _minTimeStamp-_previousMinTimeStepSize;
       _minTimeStepSize         = _previousMinTimeStepSize;
 
       _previousMinTimeStepSize = std::numeric_limits<double>::max();
       _minNextTimeStepSize     = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
-      _minTimeStamp             = _minTimeStepSize-_previousMinTimeStepSize;
+      _minTimeStamp             = _minTimeStamp-_previousMinTimeStepSize;
       _minTimeStepSize          = _previousMinTimeStepSize;
       break;
   }
@@ -1211,10 +1211,11 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
   // The master solver has not yet updated its minNextTimeStepSize.
   // Thus it does not yet equal MAX_DOUBLE.
 
-  _minNextTimeStepSize = std::min( _minNextTimeStepSize, receivedTimeStepData[0] );
-  _minNextTimeStepSize = std::min( _minNextTimeStepSize, receivedTimeStepData[0] );
-  _nextMinCellSize     = std::min( _nextMinCellSize, receivedTimeStepData[1] );
-  _nextMaxCellSize     = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
+  int index=0;
+  _minNextTimeStepSize      = std::min( _minNextTimeStepSize, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  _nextMinCellSize          = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+  _nextMaxCellSize          = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1225,10 +1226,10 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
              ",data[3]=" << receivedTimeStepData[3] );
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
-             "_minNextTimeStepSize=" << _minNextTimeStepSize <<
-             "_minNextTimeStepSize=" << _minNextTimeStepSize <<
-             ",_nextMinCellSize=" << _nextMinCellSize <<
-             ",_nextMaxCellSize=" << _nextMaxCellSize);
+             "_minNextTimeStepSize="     << _minNextTimeStepSize <<
+             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+             ",_nextMinCellSize="        << _nextMinCellSize <<
+             ",_nextMaxCellSize="        << _nextMaxCellSize);
   }
 }
 
