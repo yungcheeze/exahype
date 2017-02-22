@@ -24,6 +24,7 @@
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
+ #include "exahype/adapters/LimiterStatusSpreadingFusedTimeStepping.h" 
  #include "exahype/adapters/LimiterStatusMergingAndSpreadingMPI.h" 
  #include "exahype/adapters/LimiterStatusMergingMPI.h" 
  #include "exahype/adapters/Reinitialisation.h" 

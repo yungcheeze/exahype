@@ -253,12 +253,34 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  /**
+   * Merge and synchronise the time step sizes over different
+   * ranks.
+   *
+   * TODO Time step size merging might not be necessary.
+   */
   void switchToLimiterStatusSpreadingContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
+  /**
+   * Additionally drop face data.
+   *
+   * Merge and synchronise the time step sizes over different
+   * ranks.
+   *
+   * TODO Time step size merging might not be necessary.
+   */
+  void switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
+#ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+#endif
+    _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
