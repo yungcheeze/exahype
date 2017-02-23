@@ -112,10 +112,9 @@ void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
-  _solver->rollbackToPreviousTimeStep();
-
-  _nextMinCellSize = std::numeric_limits<double>::max();
-  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+//  _solver->rollbackToPreviousTimeStep(); // TODO(Dominic): Revision
+//  _nextMinCellSize = std::numeric_limits<double>::max();
+//  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
 void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
@@ -221,7 +220,7 @@ void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(const int cellDes
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int solverElement) {
-  _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement);
+//  _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement); // TODO(Dominic): Revision
 }
 
 void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
@@ -813,6 +812,12 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
               _solver->getNodesPerCoordinateAxis(),
               _limiter->getGhostLayerWidth(),
               solverSolution);
+
+
+//          if (exahype::State::fuseADERDGPhases()) {
+//            _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
+//          }
+
           break;
       }
       break;
@@ -822,13 +827,13 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
       // Copy time step data from the solver patch
-      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
+      //      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize()); TODO(Dominic): Revision
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp()-solverPatch.getPreviousCorrectorTimeStepSize());
+      limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
 
-      assertionEquals1(limiterPatch->getPreviousTimeStepSize(),solverPatch.getPreviousCorrectorTimeStepSize(),cellDescriptionsIndex);
-      assertionEquals1(limiterPatch->getTimeStamp(),solverPatch.getCorrectorTimeStamp(),cellDescriptionsIndex);
-      assertionEquals1(limiterPatch->getTimeStepSize(),solverPatch.getCorrectorTimeStepSize(),cellDescriptionsIndex);
+//      assertionEquals1(limiterPatch->getPreviousTimeStepSize(),solverPatch.getPreviousCorrectorTimeStepSize(),cellDescriptionsIndex);
+//      assertionEquals1(limiterPatch->getTimeStamp(),solverPatch.getCorrectorTimeStamp(),cellDescriptionsIndex);
+//      assertionEquals1(limiterPatch->getTimeStepSize(),solverPatch.getCorrectorTimeStepSize(),cellDescriptionsIndex); TODO(Dominic): Revision
 
       // 1. Evolve solution to desired  time step again
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
@@ -845,6 +850,11 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
           _solver->getNodesPerCoordinateAxis(),
           _limiter->getGhostLayerWidth(),
           solverSolution);
+
+      //          if (exahype::State::fuseADERDGPhases()) {
+      //            _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
+      //          }
+
       break;
     case SolverPatch::LimiterStatus::Troubled:
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
@@ -852,9 +862,9 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
       // Copy time step data from the solver patch
-      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
+      //      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize()); TODO(Dominic): Revision
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp()-solverPatch.getPreviousCorrectorTimeStepSize());
+      limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
 
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
                                tempStateSizedArrays,tempUnknowns,
@@ -869,6 +879,13 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
           _solver->getNodesPerCoordinateAxis(),
           _limiter->getGhostLayerWidth(),
           solverSolution);
+
+
+      // if (exahype::State::fuseADERDGPhases()) {
+      //   _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
+                                                                               // TODO(Dominic): Need to store extra time step size on patch: nextPredictorTimeStepSize.
+      // }
+
       break;
   }
 }
