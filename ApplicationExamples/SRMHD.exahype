@@ -109,6 +109,7 @@ exahype-project  SRMHD
       output    = ./relative-errors-conserved
       select    = x:0.0,y:0.0
     end plot
-  end solver
 */
+  end solver
+
 end exahype-project

@@ -65,12 +65,6 @@ public class GenericADERDG implements Solver {
     content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
     content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
-    
-    String namingSchemes = "";
-    for (String name : _namingSchemeNames) {
-      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
-    }
-    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
 
     writer.write(content);
   }

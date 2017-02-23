@@ -31,11 +31,10 @@ static const int NumberOfVariables = Euler::MyEulerSolver::NumberOfVariables; //
 
 class Euler::ComputeGlobalIntegralsLegendre: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   private:
-    TimeSeriesReductions* conserved[NumberOfVariables];
-    TimeSeriesReductions* primitives[NumberOfVariables];
-    TimeSeriesReductions* errors[NumberOfVariables];
-    TimeSeriesReductions* statistics;
-    double time;
+    reductions::MultipleReductionsWriter conserved;
+    reductions::MultipleReductionsWriter primitives;
+    reductions::MultipleReductionsWriter errors;
+    reductions::ReductionsWriter statistics;
   public:
   ComputeGlobalIntegralsLegendre(MyEulerSolver&  solver);
   virtual ~ComputeGlobalIntegralsLegendre();

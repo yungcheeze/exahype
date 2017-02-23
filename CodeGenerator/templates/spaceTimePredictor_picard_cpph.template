@@ -234,7 +234,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               #pragma simd
               for (int n = 0; n < {{nVar}}; n++) {
                 lSi[n+shift] -= BGradQ[n];
-                rhs[n+{{nVarPad}}*(l+{{nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i)))] += updateSize * lSi[n+shift];
+                rhs[n+shift] += updateSize * lSi[n+shift];
               }
             }
           }

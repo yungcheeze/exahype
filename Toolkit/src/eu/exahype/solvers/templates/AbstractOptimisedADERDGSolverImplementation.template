@@ -36,7 +36,6 @@ void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  bool useSource = false;
   if(useSource) {
 #if DIMENSIONS==2
     constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
@@ -69,7 +68,6 @@ void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  bool useSource = false;
   if(useSource) {
 #if DIMENSIONS==2
     constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
@@ -94,11 +92,10 @@ void {{Project}}::{{AbstractSolver}}::surfaceIntegral(double* lduh,const double*
 
 
 void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) {
-  bool useSource = false;
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  if(useSource) {
+  if(useMatrixb) {
     kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );
   } else {
     kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );

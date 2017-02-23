@@ -526,7 +526,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
           numberOfStepsToRun,
           _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
         );
-        recomputePredictorIfNecessary(repository);
         printTimeStepInfo(numberOfStepsToRun,repository);
       } else {
         runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
@@ -669,6 +668,47 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
   logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
+void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","start to update limiter domain");
+  repository.getState().switchToLimiterStatusSpreadingContext();
+  repository.switchToLimiterStatusSpreadingFusedTimeStepping();
+  repository.iterate();
+
+  /**
+   * We need to gather information from all neighbours
+   * of a cell before we can determine the unified
+   * limiter status value of the cell.
+   *
+   * We thus need two extra iterations to send and receive
+   * the limiter status of remote neighbours.
+   */
+  #ifdef Parallel
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","merge limiter status of remote neighbours");
+  repository.switchToLimiterStatusMergingAndSpreadingMPI();
+  repository.iterate();
+  repository.switchToLimiterStatusMergingMPI();
+  repository.iterate();
+  #endif
+
+  repository.getState().switchToReinitialisationContext();
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
+  repository.switchToReinitialisation();
+  repository.iterate();
+
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
+  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+  repository.iterate();
+
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
+}
+
+void exahype::runners::Runner::recomputePredictorAfterLimiterDomainOrGridUpdate(exahype::repositories::Repository& repository) {
+  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+  repository.iterate();
+}
+
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository) {
   double currentMinTimeStamp    = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
@@ -790,6 +830,38 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 
+  bool limiterDomainOrGridUpdate = false;
+  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+    updateLimiterDomainFusedTimeStepping(repository);
+    limiterDomainOrGridUpdate = true;
+  }
+
+  // We consider the limiter status in our mesh
+  // refinement criterion. We enforce that the
+  // limiter is only active on the finest mesh level
+  // by additional mesh refinement.
+  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
+    logInfo("runOneTimeStampWithFusedAlgorithmicSteps(...)","update grid");
+
+    repository.getState().switchToPreAMRContext();
+    repository.switchToMerging();
+    repository.iterate();
+
+    createGrid(repository);
+
+    repository.getState().switchToPostAMRContext();
+    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.iterate();
+
+    limiterDomainOrGridUpdate = true;
+  }
+
+  if (limiterDomainOrGridUpdate) {
+    recomputePredictorAfterLimiterDomainOrGridUpdate(repository);
+  }
+  else {
+    recomputePredictorIfNecessary(repository);
+  }
   // reduction/broadcast barrier
 }
 
