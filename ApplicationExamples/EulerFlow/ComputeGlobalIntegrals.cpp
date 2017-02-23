@@ -93,7 +93,7 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 
 	double localError[NumberOfVariables];
 	for(int i=0; i<NumberOfVariables; i++) {
-		localError[i] = abs(V[i] - ExactPrim[i]);
+		localError[i] = std::abs(V[i] - ExactPrim[i]);
 	}
 	errors.addValue(localError, scaling);
 }
