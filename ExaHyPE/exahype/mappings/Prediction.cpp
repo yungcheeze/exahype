@@ -118,8 +118,6 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
     }
 
     if (aderdgSolver!=nullptr) {
-      const int dataPoints = aderdgSolver->getNumberOfVariables() + aderdgSolver->getNumberOfParameters();
-
       if(aderdgSolver->alignTempArray()) {
         _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
         for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
@@ -139,7 +137,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
         //
         _tempFluxUnknowns[solverNumber]      = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempFluxUnknownsSize(), ALIGNMENT);
          //
-        _tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*dataPoints, ALIGNMENT);
+        _tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempStateSizedVectorsSize(), ALIGNMENT);
         
         if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
            _tempPointForceSources    [solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
@@ -163,7 +161,7 @@ void exahype::mappings::Prediction::prepareTemporaryVariables() {
         //
         _tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getTempFluxUnknownsSize()]; 
          //
-        _tempStateSizedVectors[solverNumber] = new double[dataPoints];
+        _tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getTempStateSizedVectorsSize()];
         
         if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
            _tempPointForceSources    [solverNumber] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];

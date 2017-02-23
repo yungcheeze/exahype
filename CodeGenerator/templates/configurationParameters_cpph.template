@@ -37,6 +37,7 @@ namespace kernels {
       constexpr int getTempFluxUnknownsSize()          {return {{nVarPad*(nDof**nDim)*(nDim+1)}};} // == lFhi size
       constexpr int getBndFaceSize()                   {return {{nVar*bndBlockSize}};} // == FR/FL, QR/QL size
       constexpr int getBndTotalSize()                  {return {{2*nDim*nVar*bndBlockSize}};} // == lFbnd/lQbnd size
+      constexpr int getTempStateSizedVectorsSize()     {return {{nVarWithParPad}};} // == lFbnd/lQbnd size
     }
   }
 }

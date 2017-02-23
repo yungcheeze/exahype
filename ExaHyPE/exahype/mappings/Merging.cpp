@@ -91,8 +91,6 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    const int dataPoints = solver->getNumberOfVariables()+solver->getNumberOfParameters();
-
     int numberOfStateSizedVectors  = 0;
     int numberOfStateSizedMatrices = 0;
     int numberOfFaceUnknowns       = 0;
@@ -125,9 +123,9 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     _tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
       _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * dataPoints];
+      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * aderdgSolver->getTempStateSizedVectorsSize()];
       for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + dataPoints;
+        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + aderdgSolver->getTempStateSizedVectorsSize();
       }
     }
     //

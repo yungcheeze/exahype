@@ -778,6 +778,7 @@ public:
   virtual int getBndTotalSize()                  const {return getDataPerCellBoundary();} // TODO function should be renamed
   virtual int getBndFluxSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
   virtual int getBndFluxTotalSize()              const {return getUnknownsPerCellBoundary();} // TODO function should be renamed
+  virtual int getTempStateSizedVectorsSize()     const {return getNumberOfVariables()+getNumberOfParameters();} //dataPoints
   
   virtual bool alignTempArray()                  const {return false;}
 
