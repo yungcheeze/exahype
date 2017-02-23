@@ -123,9 +123,9 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
     _tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
       _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * aderdgSolver->getTempStateSizedVectorsSize()];
+      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * static_cast<exahype::solvers::ADERDGSolver*>(solver)->getTempStateSizedVectorsSize()];
       for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + aderdgSolver->getTempStateSizedVectorsSize();
+        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + static_cast<exahype::solvers::ADERDGSolver*>(solver)->getTempStateSizedVectorsSize();
       }
     }
     //
