@@ -373,6 +373,10 @@ public:
     _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
   }
 
+  /**
+   * We always override the limiter time step
+   * data by the ADER-DG one before a solution update.
+   */
   void startNewTimeStep() override;
 
   void zeroTimeStepSizes() override;
@@ -534,25 +538,11 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Adds a limiter patch to the initially troubled cells, their
-   * neighbours, and their neighbour's neighbours.
-   * Further imposes finite volumes boundary conditions onto the limiter
-   * solution in cells with limiter status Troubled and NeighbourIsTroubled and
-   * then projects this solution onto the DG solver space for those cells.
-   * Finally, projects the ADER-DG initial conditions onto
-   * the FV limiter space for cells with limiter status
-   * NeighbourIsNeighbourOfTroubledCell.
-   */
-  void initialiseLimiter(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
-
-  /**
    * This method assumes the ADERDG solver's cell-local limiter status has
    * already been determined.
+   *
+   * Before performing an update with the limiter,
+   * set the ADER-DG time step sizes.
    *
    * \see determineLimiterStatusAfterLimiterStatusSpreading(...)
    */
