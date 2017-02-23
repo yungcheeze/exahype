@@ -62,6 +62,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     int getBndTotalSize()                  const {return kernels::aderdg::optimised::getBndTotalSize();                 }
     int getBndFluxSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
     int getBndFluxTotalSize()              const {return kernels::aderdg::optimised::getBndTotalSize();                 }
+    int getTempStateSizedVectorsSize()     const {return kernels::aderdg::optimised::getTempStateSizedVectorsSize();    }
     
     bool alignTempArray()                  const {return true;}
     

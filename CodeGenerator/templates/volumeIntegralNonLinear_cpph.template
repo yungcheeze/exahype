@@ -30,6 +30,8 @@ void kernels::aderdg::optimised::volumeIntegral(
   memset(lduh, 0, sizeof(lduh)*{{nVar*(nDof**nDim)}});
 
 #ifdef __INTEL_COMPILER
+  __assume_aligned(lFhi, ALIGNMENT);
+  __assume_aligned(weights3, ALIGNMENT);
   if(useSource) {
     __assume_aligned(lShi, ALIGNMENT);
   }
