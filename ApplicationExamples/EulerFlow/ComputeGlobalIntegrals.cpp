@@ -71,6 +71,9 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
 	statistics.addValue(scaling, 1);
+	
+	// NOTE: This is *not* the correct scaling for the ADERDG scheme.
+	// Instead, you should use the GlobalIntegralsLegendre plotter.
 
 	// reduce the conserved quantities
 	conserved.addValue(Q, scaling);

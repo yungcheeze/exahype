@@ -67,17 +67,18 @@ void Euler::ComputeGlobalIntegralsLegendre::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-  // volume form for integration
-  double scaling = tarch::la::volume(sizeOfPatch);
-  statistics.addValue(scaling, 1);
+	// volume form for integration
+	double scaling = tarch::la::volume(sizeOfPatch);
+	statistics.addValue(scaling, 1);
 
-  // Gauss-Legendre weights from pos argument
-  double wx = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[0]];
-  double wy = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[1]];
-  double wz = 1;
-  #ifdef Dim3
-  wz = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[2]];
-  #endif
+	// Gauss-Legendre weights from pos argument
+	double wx = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[0]];
+	double wy = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[1]];
+	double wz = 1;
+	#ifdef Dim3
+	wz = kernels::gaussLegendreWeights[Euler::MyEulerSolver::Order][pos[2]];
+	#endif
+	scaling *= wx*wy*wz;
 
 	// reduce the conserved quantities
 	conserved.addValue(Q, scaling);
