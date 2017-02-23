@@ -87,8 +87,10 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch);
 	statistics.addValue(scaling, 1);
-	
-#ifdef IAMINTHEADERDGSOLUTION
+
+	// ALERT: Use this only when using the plotter as Legendre plotter for ADERDG
+	//        ie. not for the GRMHD_FV application.
+
 	// Gauss-Legendre weights from pos argument
 	double wx = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[0]];
 	double wy = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[1]];
@@ -98,7 +100,6 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	#endif
 	
 	scaling *= wx*wy*wz;
-#endif
 
 	// reduce the conserved quantities
 	conserved.addValue(Q, scaling);
