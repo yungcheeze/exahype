@@ -18,16 +18,14 @@
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 #include "kernels/aderdg/optimised/CpphGemms.h"
 
-#include "kernels/DGMatrices.h" //TODO JMG remove after dudx implemented
-
-template <bool useSource, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
+template <bool useSource, bool useNCP, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
         const tarch::la::Vector<DIMENSIONS, double>& dx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
-        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
 ) {
 
 
@@ -40,15 +38,18 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(s_m, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
-  if(useSource) {
+  if(useSource || useNCP) {
     __assume_aligned(lSi, ALIGNMENT);
+  }
+  if(useNCP) {
     __assume_aligned(gradQ, ALIGNMENT);
     __assume_aligned(BGradQ, ALIGNMENT);
   }
+  
 #endif
 
-  // 0. Ensure padded BGradQ as a zero padding
-  if(useSource) {
+  // 0. Ensure padded BGradQ has a zero padding
+  if(useNCP) {
     std::memset(BGradQ, 0, {{nVarPad}} * sizeof(double));
   }
   
@@ -104,7 +105,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       // Copy rhs0 -> rhs for slice at i
       std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);
       
-      if(useSource) { //optimised away at compile time
+      if(useNCP) { //optimised away at compile time
         std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVar*nDim}} * sizeof(double));
       }
       
@@ -134,16 +135,22 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
-          if(useSource) {
-            for (int l = 0; l < {{nDof}}; l++) {
+          if(useNCP) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
+            /* for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
-            }
+            } */
           }          
         }
       }
@@ -172,16 +179,24 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
-          if(useSource) {
+          if(useNCP) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVar}}]);
+            /*
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
+            */
           }
         }
       }
@@ -211,32 +226,44 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
-          if(useSource) {
+          if(useNCP) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVar}}]);
+            /*
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
+            */
           }
         }
       }
       {% endif %}
 
-      if(useSource) {
+      if(useSource || useNCP) {
         for(int jkl = 0; jkl < {{nDof**nDim}}; jkl++) { //zyx
           const double updateSize = weights1[i] * weights3[jkl] * dt;
 
-          // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-          PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*jkl)], BGradQ);
-
+          if(useNCP) {
+            // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
+            PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*jkl)], BGradQ);
+          }
+          
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
           #pragma simd
           for (int n = 0; n < {{nVarPad}}; n++) { //BgradQ is zero padded
-            lSi[n+shift] -= BGradQ[n];
+            if(useNCP) {
+              lSi[n+shift] -= BGradQ[n];
+            }
             rhs[n+shift] += updateSize * lSi[n+shift];
           }
         }
