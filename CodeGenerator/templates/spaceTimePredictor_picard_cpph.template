@@ -20,14 +20,14 @@
 
 #include "kernels/DGMatrices.h" //TODO JMG remove after dudx implemented
 
-template <bool useSource, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
+template <bool useSource, bool useNCP, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
         const tarch::la::Vector<DIMENSIONS, double>& dx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
-        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+        double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
 ) {
 
 
@@ -40,15 +40,18 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(F0, ALIGNMENT);
   __assume_aligned(s_m, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
-  if(useSource) {
+  if(useSource || useNCP) {
     __assume_aligned(lSi, ALIGNMENT);
+  }
+  if(useNCP) {
     __assume_aligned(gradQ, ALIGNMENT);
     __assume_aligned(BGradQ, ALIGNMENT);
   }
+  
 #endif
 
-  // 0. Ensure padded BGradQ as a zero padding
-  if(useSource) {
+  // 0. Ensure padded BGradQ has a zero padding
+  if(useNCP) {
     std::memset(BGradQ, 0, {{nVarPad}} * sizeof(double));
   }
   
@@ -104,7 +107,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       // Copy rhs0 -> rhs for slice at i
       std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);
       
-      if(useSource) { //optimised away at compile time
+      if(useNCP) { //optimised away at compile time
         std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVar*nDim}} * sizeof(double));
       }
       
@@ -134,7 +137,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
-          if(useSource) {
+          if(useNCP) {
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
@@ -172,7 +175,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
-          if(useSource) {
+          if(useNCP) {
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
@@ -211,7 +214,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
             s_m[it] = -updateSize * Kxi[it];
           }
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
-          if(useSource) {
+          if(useNCP) {
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
@@ -226,17 +229,21 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       }
       {% endif %}
 
-      if(useSource) {
+      if(useSource || useNCP) {
         for(int jkl = 0; jkl < {{nDof**nDim}}; jkl++) { //zyx
           const double updateSize = weights1[i] * weights3[jkl] * dt;
 
-          // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-          PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*jkl)], BGradQ);
-
+          if(useNCP) {
+            // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
+            PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*jkl)], BGradQ);
+          }
+          
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
           #pragma simd
           for (int n = 0; n < {{nVarPad}}; n++) { //BgradQ is zero padded
-            lSi[n+shift] -= BGradQ[n];
+            if(useNCP) {
+              lSi[n+shift] -= BGradQ[n];
+            }
             rhs[n+shift] += updateSize * lSi[n+shift];
           }
         }

@@ -26,6 +26,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   
     //change to enable source terms/matrixb
     static constexpr bool useSource  = false;
+    static constexpr bool useNCP     = false;
     static constexpr bool useMatrixb = false;
   
     static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
