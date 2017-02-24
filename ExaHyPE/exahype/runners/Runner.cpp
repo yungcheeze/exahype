@@ -681,6 +681,8 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
 
+
+
   logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
 }
 
@@ -866,19 +868,19 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
 void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
+//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
 
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
-  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update solution");
+//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update solution");
 
   repository.getState().switchToSolutionUpdateContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
-  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
+//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
