@@ -90,8 +90,6 @@ private:
   int _boundaryFaceMerges;
   #endif
 
-  TemporaryVariables _temporaryVariables;
-
   #ifdef Parallel
   /**
    * Iterates over the received metadata and every time

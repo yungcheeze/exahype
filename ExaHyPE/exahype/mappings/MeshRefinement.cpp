@@ -560,10 +560,10 @@ void exahype::mappings::MeshRefinement::prepareSendToMaster(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-//      solver->sendGridUpdateFlagsToMaster(
-//          tarch::parallel::NodePool::getInstance().getMasterRank(),
-//          verticesEnumerator.getCellCenter(),
-//          verticesEnumerator.getLevel());
+      solver->sendGridUpdateFlagsToMaster(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          verticesEnumerator.getCellCenter(),
+          verticesEnumerator.getLevel());
   }
 }
 
@@ -582,10 +582,10 @@ void exahype::mappings::MeshRefinement::mergeWithMaster(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-//    solver->mergeWithWorkerGridUpdateFlags(
-//        worker,
-//        fineGridVerticesEnumerator.getCellCenter(),
-//        fineGridVerticesEnumerator.getLevel());
+    solver->mergeWithWorkerGridUpdateFlags(
+        worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
   }
 }
 

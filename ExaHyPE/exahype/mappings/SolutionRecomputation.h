@@ -27,10 +27,6 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
-#include "exahype/mappings/Prediction.h"
-#include "exahype/mappings/Merging.h"
-#include "exahype/mappings/SolutionUpdate.h"
-
 namespace exahype {
 namespace mappings {
 class SolutionRecomputation;

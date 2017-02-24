@@ -30,10 +30,6 @@
 
 #include "peano/utils/UserInterface.h"
 
-#include <algorithm>
-#include <mm_malloc.h> //g++
-#include <cstring> //memset
-
 peano::CommunicationSpecification
 exahype::mappings::Prediction::communicationSpecification() {
   return peano::CommunicationSpecification(

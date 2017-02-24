@@ -99,10 +99,9 @@ void exahype::mappings::Reinitialisation::endIteration(
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->rollbackToPreviousTimeStep();
 
-      if (!exahype::State::fuseADERDGPhases()) {
-        limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback();
+      if (exahype::State::fuseADERDGPhases()) {
+        limitingADERDGSolver->rollbackToPreviousTimeStep();
       }
     }
   }
@@ -137,12 +136,6 @@ void exahype::mappings::Reinitialisation::enterCell(
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
-
-          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element); // Loads back the old corrector time step size.
-          if (!exahype::State::fuseADERDGPhases()) {
-            limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(
-                fineGridCell.getCellDescriptionsIndex(),element);
-          }
 
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
