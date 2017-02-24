@@ -169,13 +169,28 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         new peano::datatraversal::autotuning::OracleForOnePhaseDummy()
     );
     break;
-  case Parser::MulticoreOracleType::Autotuning:
+  case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
     logInfo("initSharedMemoryConfiguration()",
-        "use autotuning shared memory oracle");
+        "use learning autotuning shared memory oracle and allow restarts");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(
           tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
           true
+        ));
+    break;
+  case Parser::MulticoreOracleType::AutotuningWithoutLearning:
+    logInfo("initSharedMemoryConfiguration()",
+        "use autotuning shared memory oracle configuration but disable machine learning algorithm");
+    peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(false,false));
+    break;
+  case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
+    logInfo("initSharedMemoryConfiguration()",
+        "use autotuning shared memory oracle but disable search restarts");
+    peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(
+          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
+          false
         ));
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
@@ -223,7 +238,8 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
   switch (_parser.getMulticoreOracleType()) {
   case Parser::MulticoreOracleType::Dummy:
     break;
-  case Parser::MulticoreOracleType::Autotuning:
+  case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
+  case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
   case Parser::MulticoreOracleType::GrainSizeSampling:
   #ifdef Parallel
     if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1) {
