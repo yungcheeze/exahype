@@ -107,6 +107,11 @@ class DGMatrixGenerator:
         # we multiply always from the left -> no transpose
         l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
         l_matrices['dudx'] = l_lineariseddudx
+        
+        # dudx_t
+        dudx_T = np.transpose(dudx)
+        l_lineariseddudx_T  = np.concatenate((dudx_T,l_padMatrix),axis=0).flatten('F')
+        l_matrices['dudx_T'] = l_lineariseddudx_T
 
         # tmp memory for *s*caled *m*atrices
         s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)
@@ -161,6 +166,7 @@ class DGMatrixGenerator:
                            'extern double *Kxi_T;\n'    \
                            'extern double *iK1;\n'      \
                            'extern double *dudx;\n'     \
+                           'extern double *dudx_T;\n'     \
                            'extern double *s_m;\n'      \
                            'extern double *s_v;\n'      \
                            'extern double *tmp_bnd;\n'  \
@@ -182,6 +188,7 @@ class DGMatrixGenerator:
                            'double* kernels::aderdg::optimised::Kxi_T;\n'   \
                            'double* kernels::aderdg::optimised::iK1;\n'     \
                            'double* kernels::aderdg::optimised::dudx;\n'    \
+                           'double* kernels::aderdg::optimised::dudx_T;\n'    \
                            'double* kernels::aderdg::optimised::s_m;\n'     \
                            'double* kernels::aderdg::optimised::s_v;\n'     \
                            'double* kernels::aderdg::optimised::tmp_bnd;\n' \

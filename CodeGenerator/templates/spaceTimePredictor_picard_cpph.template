@@ -136,7 +136,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           }
           {{gemm_rhs_x}}(&lFi[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad*nDof}}*(k+{{nDof}}*(j+{{nDof3D}}*i))]);
           if(useNCP) {
-            for (int l = 0; l < {{nDof}}; l++) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
+            /* for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
@@ -144,7 +150,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
-            }
+            } */
           }          
         }
       }
@@ -174,6 +180,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           }
           {{gemm_rhs_y}}(&lFi[{{1*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof*nDof}}*(j+{{nDof3D}}*i))]);
           if(useNCP) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVar}}]);
+            /*
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
@@ -183,6 +196,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                 }
               }
             }
+            */
           }
         }
       }
@@ -213,6 +227,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
           }
           {{gemm_rhs_z}}(&lFi[{{2*(nDof**nDim)*nDof*nVarPad}}+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))], &s_m[0], &rhs[{{nVarPad}}*(k+{{nDof}}*(j+{{nDof*nDof}}*i))]);
           if(useNCP) {
+            const double invDx = 1.0 / dx[0];
+            #pragma simd //TODO JMG move this on an upper level
+            for(int it=0;it<{{nDof*nDofPad}};it++) {
+              s_m[it] = invDx * dudx_T[it];
+            }
+            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &s_m[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVar}}]);
+            /*
             for (int l = 0; l < {{nDof}}; l++) {
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
@@ -222,6 +243,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                 }
               }
             }
+            */
           }
         }
       }
