@@ -293,8 +293,23 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent double correctorTimeStamp;
 
   /**
+   * The time stamp the correction phase was working with
+   * in the previous iteration.
+   */
+  parallelise persistent double previousCorrectorTimeStamp;
+  
+  /**
+   * The corrector time stamp this cell description was working
+   * with before the previous iteration.
+   * 
+   * This variable is necessary for performing rollbacks for the
+   * fused time stepping + limiting.
+   */
+  parallelise persistent double previousPreviousCorrectorTimeStamp;
+  
+  /**
    * The corrector time step size this cell description was working
-   * with in the previous iteration.
+   * with before the previous iteration.
    * 
    * This variable is necessary for performing rollbacks for the
    * fused time stepping + limiting.
