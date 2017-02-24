@@ -65,10 +65,231 @@ namespace exahype {
      * All the registered solvers. Has to be declared extern in C++ standard as
      * it is instantiated in the corresponding cpp file.
      */
-    // TODO: std::vector<std::unique_ptr<Solver>> ?!
     extern std::vector<Solver*> RegisteredSolvers;
-}  // namespace solvers
-}  // namespace exahype
+
+    class PredictionTemporaryVariables;
+    class MergingTemporaryVariables;
+    class SolutionUpdateTemporaryVariables;
+    class TimeStepSizeComputationTemporaryVariables;
+
+    /**
+     * Initialises temporary variables
+     * used for the Prediction and SolutionRecomputation
+     * mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    static void initialiseTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used for the Prediction and SolutionRecomputation
+     * mapping.
+     */
+    static void deleteTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises temporary variables
+     * used in the Merging and SolutionRecomputation
+     * mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    static void initialiseTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used in the Merging and SolutionRecomputation
+     * mapping.
+     */
+    static void deleteTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises temporary variables
+     * used in the SolutionUpdate and SolutionRecomputation mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    static void initialiseTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used in the SolutionUpdate and SolutionRecomputation mapping.
+     */
+    static void deleteTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises the temporary variables
+     * used in the TimeStepSizeComputation mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    static void initialiseTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes the temporary variables
+     * used in the TimeStepSizeComputation mapping.
+     */
+    static void deleteTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+
+
+    class SolverFlags;
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    static void initialiseSolverFlags(SolverFlags& solverFlags);
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    static void prepareSolverFlags(SolverFlags& solverFlags);
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    static void deleteSolverFlags(SolverFlags& solverFlags);
+  }
+}
+
+class exahype::solvers::PredictionTemporaryVariables { // TODO(Dominic): Realise per solver.
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of space-time predictor
+   * sized variables.
+   */
+  double*** _tempSpaceTimeUnknowns = nullptr;
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of space-time
+   * volume flux sized variables.
+   */
+  double*** _tempSpaceTimeFluxUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of solution
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+   */
+  double** _tempUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of volume flux
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+   */
+  double** _tempFluxUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing state sized values,
+   * i.e. the state, eigenvalues etc.
+   */
+  double** _tempStateSizedVectors = nullptr;
+
+  //TODO KD describe what it is
+  double** _tempPointForceSources = nullptr;
+};
+
+class exahype::solvers::MergingTemporaryVariables {
+  /**
+   * Temporary variable per solver for storing
+   * space-time face unknowns.
+   */
+  //  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
+
+  /**
+   * Temporary variable per solver for storing
+   * face unknowns.
+   */
+  double***  _tempFaceUnknowns = nullptr;
+
+  /**
+   * Temporary variables per solver for storing state sized (=number of variables)
+   * quantities like eigenvalues or averaged states.
+   */
+  double*** _tempStateSizedVectors = nullptr;
+
+  /**
+   * Temporary variable per solver for storing square matrices
+   * of the size number of variables times number of variables.
+   */
+  double*** _tempStateSizedSquareMatrices = nullptr;
+};
+
+
+class exahype::solvers::SolutionUpdateTemporaryVariables {
+  /**
+   * An array of 5 pointers to arrays of a length that equals the
+   * number of variables per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempStateSizedVectors = nullptr;
+
+  /**
+   * An array of pointers to arrays of a length that equals the
+   * number of solution unknowns per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempUnknowns = nullptr;
+};
+
+class exahype::solvers::TimeStepSizeComputationTemporaryVariables {
+  double** _tempEigenValues = nullptr;
+};
+
+class exahype::solvers::SolverFlags {
+  /**
+   * Per solver, we hold a status flag indicating
+   * if the limiter domain of the solver has
+   * changed.
+   *
+   * The flag has only a meaning for the LimitingADERDGSolver.
+   */
+  bool* _limiterDomainHasChanged = nullptr;
+
+  /**
+   * Per solver, we hold a status flag indicating
+   * if the solver has requested a grid update.
+   */
+  bool* _gridUpdateRequested = nullptr;
+
+};
+
+
+
 
 /**
  * Describes one solver.

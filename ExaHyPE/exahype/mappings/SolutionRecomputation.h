@@ -91,11 +91,11 @@ class exahype::mappings::SolutionRecomputation {
    */
   exahype::State _localState;
 
-  Prediction::TemporaryVariables     _predictionTemporaryVariables;
+  exahype::solvers::PredictionTemporaryVariables     _predictionTemporaryVariables;
 
-  Merging::TemporaryVariables        _mergingTemporaryVariables;
+  exahype::solvers::MergingTemporaryVariables        _mergingTemporaryVariables;
 
-  SolutionUpdate::TemporaryVariables _solutionUpdateTemporaryVariables;
+  exahype::solvers::SolutionUpdateTemporaryVariables _solutionUpdateTemporaryVariables;
 
 //  /**
 //   * An array of 5 pointers to arrays of a length that equals the

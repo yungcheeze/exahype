@@ -62,45 +62,13 @@ namespace exahype {
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
 class exahype::mappings::Merging {
-public:
-  typedef struct TemporaryVariables {
-    /**
-       * Temporary variable per solver for storing
-       * space-time face unknowns.
-       */
-    //  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
-
-      /**
-       * Temporary variable per solver for storing
-       * face unknowns.
-       */
-      double***  _tempFaceUnknowns = nullptr;
-
-      /**
-       * Temporary variables per solver for storing state sized (=number of variables)
-       * quantities like eigenvalues or averaged states.
-       */
-      double*** _tempStateSizedVectors = nullptr;
-
-      /**
-       * Temporary variable per solver for storing square matrices
-       * of the size number of variables times number of variables.
-       */
-      double*** _tempStateSizedSquareMatrices = nullptr;
-  } TemporaryVariables;
-
-  /**
-   * Initialises temporary variables.
-   */
-  static void initialiseTemporaryVariables(exahype::mappings::Merging::TemporaryVariables& temporaryVariables);
-
-  /**
-   * Free memory allocated for temporary variables.
-   */
-  static void deleteTemporaryVariables(exahype::mappings::Merging::TemporaryVariables& temporaryVariables);
-
-
 private:
+  /**
+   * A bunch of temporary variables to perform neighbour data
+   * merging for every solver on a patch.
+   */
+  exahype::solvers::MergingTemporaryVariables _temporaryVariables;
+
   /**
    * Logging device for the trace macros.
    */

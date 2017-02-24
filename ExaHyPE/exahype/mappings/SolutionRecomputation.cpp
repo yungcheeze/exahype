@@ -84,15 +84,15 @@ tarch::logging::Log exahype::mappings::SolutionRecomputation::_log(
     "exahype::mappings::SolutionRecomputation");
 
 void exahype::mappings::SolutionRecomputation::initialiseTemporaryVariables() {
-  exahype::mappings::Prediction::initialiseTemporaryVariables(_predictionTemporaryVariables);
-  exahype::mappings::Merging::initialiseTemporaryVariables(_mergingTemporaryVariables);
-  exahype::mappings::SolutionUpdate::initialiseTemporaryVariables(_solutionUpdateTemporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_predictionTemporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_mergingTemporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
-  exahype::mappings::Prediction::deleteTemporaryVariables(_predictionTemporaryVariables);
-  exahype::mappings::Merging::deleteTemporaryVariables(_mergingTemporaryVariables);
-  exahype::mappings::SolutionUpdate::deleteTemporaryVariables(_solutionUpdateTemporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_predictionTemporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_mergingTemporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 exahype::mappings::SolutionRecomputation::SolutionRecomputation()
@@ -181,8 +181,8 @@ void exahype::mappings::SolutionRecomputation::enterCell(
           limitingADERSolver->recomputeSolution(
               fineGridCell.getCellDescriptionsIndex(),
               element,
-              _solutionUpdateTemporaryVariables._tempStateSizedVectors[i],
-              _solutionUpdateTemporaryVariables._tempUnknowns[i],
+              _solutionUpdateTemporaryVariables,
+              _predictionTemporaryVariables,
               fineGridVertices,
               fineGridVerticesEnumerator);
 
