@@ -461,39 +461,52 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
-//    repository.switchToPlotAugmentedAMRGrid();
-//    repository.iterate(); // TODO(Dominic): Remove
+    //    repository.switchToPlotAugmentedAMRGrid();
+    //    repository.iterate(); For debugging purposes
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
     repository.iterate();
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
-    // TODO(Dominic):
     if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
       initSolverTimeStepData();
-
       updateLimiterDomain(repository);
     }
 
-    /*
-     * Compute current first predictor based on current time step size.
-     * Set current time step size as old time step size of next iteration.
-     * Compute the current time step size of the next iteration.
-     */
-    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
     bool plot = exahype::plotters::isAPlotterActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-    if (plot) {
-//      #if DIMENSIONS==2
-//      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
-//      #else
-      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-//      #endif
+
+    if (exahype::State::fuseADERDGPhases()) {
+      repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+      if (plot) {
+        //      #if DIMENSIONS==2
+        //      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
+        //      #else
+        repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
+        //      #endif
+      } else {
+        repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+      }
+      repository.iterate();
     } else {
-      repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+      /*
+       * Compute current first predictor based on current time step size.
+       * Set current time step size as old time step size of next iteration.
+       * Compute the current time step size of the next iteration.
+       */
+      repository.getState().switchToPredictionContext();
+      if (plot) {
+        //    #if DIMENSIONS==2
+        //    repository.switchToPredictionAndPlot2d();
+        //    #else
+        repository.switchToPredictionAndPlot();
+        //    #endif
+      } else {
+        repository.switchToPrediction();   // Cell onto faces
+      }
+      repository.iterate();
     }
-    repository.iterate();
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
     /*
@@ -583,7 +596,9 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG: {
         auto* aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-        assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0);
+        if (!exahype::State::fuseADERDGPhases()) {
+          assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0); // TOOD(Dominic): Revision
+        }
         assertion1(std::isfinite(aderdgSolver->getMinPredictorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
@@ -604,7 +619,9 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
       case exahype::solvers::Solver::Type::LimitingADERDG: {
         // ADER-DG
         auto* aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
-        assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0);
+        if (!exahype::State::fuseADERDGPhases()) {
+          assertionEquals(aderdgSolver->getPreviousMinCorrectorTimeStepSize(),0.0); // TODDO(Dominic): Revision
+        }
         assertion1(std::isfinite(aderdgSolver->getMinPredictorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertion1(std::isfinite(aderdgSolver->getMinCorrectorTimeStepSize()),aderdgSolver->getMinPredictorTimeStepSize());
         assertionEquals(aderdgSolver->getMinCorrectorTimeStamp(),0.0);
@@ -693,11 +710,9 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
   repository.iterate();
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
-  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
-
-
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
 }
@@ -742,6 +757,12 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
                 "\tADER-DG prediction: dt_min         =" << static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
+        logInfo("startNewTimeStep(...)",
+                "\tADER-DG prev2 correction*: dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousPreviousMinCorrectorTimeStepSize());
+        logInfo("startNewTimeStep(...)",
+                 "\tADER-DG prev correction*:  t_min   =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStamp());
+        logInfo("startNewTimeStep(...)",
+                "\tADER-DG prev correction*:  dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStepSize());
         logInfo("startNewTimeStep(...)",
                 "\tADER-DG correction: t_min         =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getMinCorrectorTimeStamp());
         logInfo("startNewTimeStep(...)",
@@ -829,21 +850,20 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 
-  bool limiterDomainOrGridUpdate = false;
   if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
     updateLimiterDomainFusedTimeStepping(repository);
-    limiterDomainOrGridUpdate = true;
   }
 
   // We consider the limiter status in our mesh
   // refinement criterion. We enforce that the
   // limiter is only active on the finest mesh level
   // by additional mesh refinement.
+  bool gridUpdate = false;
   while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
     logInfo("runOneTimeStampWithFusedAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
-    repository.switchToMerging();
+    repository.switchToTimeStepDataMergingAndDropIncomingMPIMessages(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
     repository.iterate();
 
     createGrid(repository);
@@ -852,16 +872,17 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
     repository.iterate();
 
-    limiterDomainOrGridUpdate = true;
+    gridUpdate = true;
   }
 
-  if (limiterDomainOrGridUpdate) {
+  if (gridUpdate) {
     recomputePredictorAfterLimiterDomainOrGridUpdate(repository);
   }
   else {
     recomputePredictorIfNecessary(repository);
   }
-  // reduction/broadcast barrier
+
+  // ---- reduction/broadcast barrier ----
 }
 
 void exahype::runners::Runner::recomputePredictorIfNecessary(
@@ -921,7 +942,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
-    repository.switchToMerging();
+    repository.switchToTimeStepDataMerging();
     repository.iterate();
 
     createGrid(repository);

@@ -112,13 +112,9 @@ void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
-//  _solver->rollbackToPreviousTimeStep(); // TODO(Dominic): Revision
-//  _nextMinCellSize = std::numeric_limits<double>::max();
+  _solver->rollbackToPreviousTimeStep();
+//  _nextMinCellSize = std::numeric_limits<double>::max(); // TODO(Dominic): Revision
 //  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
-}
-
-void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
-  _solver->reconstructStandardTimeSteppingDataAfterRollback();
 }
 
 void exahype::solvers::LimitingADERDGSolver::reinitialiseTimeStepData() {
@@ -220,13 +216,7 @@ void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes(const int cellDes
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int solverElement) {
-//  _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement); // TODO(Dominic): Revision
-}
-
-void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
-    const int cellDescriptionsIndex,
-    const int solverElement) const {
-  _solver->reconstructStandardTimeSteppingDataAfterRollback(cellDescriptionsIndex,solverElement);
+  _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement);
 }
 
 void exahype::solvers::LimitingADERDGSolver::setInitialConditions(
@@ -671,6 +661,11 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
+  if (exahype::State::fuseADERDGPhases() &&
+      solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
+    _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,element);
+  }
+
   SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getLimiterStatus();
   SolverPatch::LimiterStatus limiterStatus         = determineLimiterStatus(solverPatch);
 
@@ -758,8 +753,8 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
 
 void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
         const int cellDescriptionsIndex, const int element,
-         double** tempStateSizedArrays,
-         double** tempUnknowns,
+        exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
+        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
@@ -778,12 +773,12 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       assertion(limiterElement==exahype::solvers::Solver::NotFound);
       // do nothing
       break;
+    ///
+    ///
     case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: // TODO(Dominic): Add to docu: Here, were just went back one time step to supply the NT neighbours with old limiter unknowns.
       switch (previousLimiterStatus) {
         case SolverPatch::LimiterStatus::Ok:
         case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-          // TODO(Dominic): Old code. Keep a while for reference.
-          //          _solver->addUpdateToSolution(solverPatch,fineGridVertices,fineGridVerticesEnumerator); // It must always be addUpdateToSolution here since we do not want to use compute the surface integral again
           _solver->swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
 
           assertion(limiterElement!=exahype::solvers::Solver::NotFound);
@@ -798,8 +793,33 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
               _limiter->getGhostLayerWidth(),
               limiterSolution);
           break;
-        case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
-        case SolverPatch::LimiterStatus::Troubled:
+        case SolverPatch::LimiterStatus::NeighbourIsTroubledCell: // TODO(Dominic): Update docu
+          _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
+
+          limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+          limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
+          solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
+          // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
+          kernels::limiter::generic::c::projectOnDGSpace(
+              limiterSolution,_solver->getNumberOfVariables(),
+              _solver->getNodesPerCoordinateAxis(),
+              _limiter->getGhostLayerWidth(),
+              solverSolution);
+
+
+//          if (exahype::State::fuseADERDGPhases() &&   // TODO(Dominic): Do we need to recompute the limiter here too?
+//              solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
+//            _solver->performPredictionAndVolumeIntegral(
+//                solverPatch,
+//                predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
+//                predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
+//                predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
+//                predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
+//                predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
+//                predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+//          }
+          break;
+        case SolverPatch::LimiterStatus::Troubled: // TODO(Dominic): Update docu
           _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
 
           limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
@@ -813,32 +833,40 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
               _limiter->getGhostLayerWidth(),
               solverSolution);
 
-
-//          if (exahype::State::fuseADERDGPhases()) {
-//            _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
-//          }
-
+          if (exahype::State::fuseADERDGPhases() &&   // TODO(Dominic): Do we need to recompute the limiter here too?
+              solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
+            _solver->performPredictionAndVolumeIntegral(
+                solverPatch,
+                predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
+                predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
+                predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
+                predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
+                predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
+                predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+          }
           break;
       }
       break;
+    ////
+    ////
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
 
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
       // Copy time step data from the solver patch
-      //      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize()); TODO(Dominic): Revision
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp()-solverPatch.getPreviousCorrectorTimeStepSize());
+      limiterPatch->setTimeStamp(solverPatch.getPreviousCorrectorTimeStamp());
       limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
-
-//      assertionEquals1(limiterPatch->getPreviousTimeStepSize(),solverPatch.getPreviousCorrectorTimeStepSize(),cellDescriptionsIndex);
-//      assertionEquals1(limiterPatch->getTimeStamp(),solverPatch.getCorrectorTimeStamp(),cellDescriptionsIndex);
-//      assertionEquals1(limiterPatch->getTimeStepSize(),solverPatch.getCorrectorTimeStepSize(),cellDescriptionsIndex); TODO(Dominic): Revision
 
       // 1. Evolve solution to desired  time step again
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
-                               tempStateSizedArrays,tempUnknowns,
+                               solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
+                               solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
                                fineGridVertices,fineGridVerticesEnumerator);
+
+      // Overwrite with current data from the solver patch
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       // 2. Project FV solution on ADER-DG space
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
@@ -851,24 +879,38 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
           _limiter->getGhostLayerWidth(),
           solverSolution);
 
-      //          if (exahype::State::fuseADERDGPhases()) {
-      //            _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
-      //          }
+      if (exahype::State::fuseADERDGPhases() &&
+          solverPatch.getPredictorTimeStepSize() > 0)  {// We want to skip the initial limiter domain setup
+        _solver->performPredictionAndVolumeIntegral(
+            solverPatch,
+            predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
+            predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
+            predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
+            predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
+            predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
+            predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+      }
 
       break;
+    ////
+    ////
     case SolverPatch::LimiterStatus::Troubled:
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
 
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
-      // Copy time step data from the solver patch
-      //      limiterPatch->setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize()); TODO(Dominic): Revision
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp()-solverPatch.getPreviousCorrectorTimeStepSize());
+      // Copy previous time step data from the solver patch
+      limiterPatch->setTimeStamp(solverPatch.getPreviousCorrectorTimeStamp());
       limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
 
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
-                               tempStateSizedArrays,tempUnknowns,
+                               solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
+                               solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
                                fineGridVertices,fineGridVerticesEnumerator);
+
+      // Overwrite with current data from the solver patch
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
       solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
@@ -881,10 +923,17 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
           solverSolution);
 
 
-      // if (exahype::State::fuseADERDGPhases()) {
-      //   _solver->performPredictionAndVolumeIntegral(cellDescriptionsIndex,) // TODO(Dominic): Allocate temporary variables for this mapping as well.
-                                                                               // TODO(Dominic): Need to store extra time step size on patch: nextPredictorTimeStepSize.
-      // }
+//      if (exahype::State::fuseADERDGPhases() &&
+//          solverPatch.getPredictorTimeStepSize() > 0)  {// We want to skip the initial limiter domain setup
+//        _solver->performPredictionAndVolumeIntegral(
+//            solverPatch,
+//            predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
+//            predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
+//            predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
+//            predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
+//            predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
+//            predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+//      }
 
       break;
   }

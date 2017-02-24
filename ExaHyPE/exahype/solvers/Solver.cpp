@@ -17,6 +17,13 @@
 
 #include "tarch/multicore/Lock.h"
 
+#include <algorithm>
+#include <mm_malloc.h> //g++
+#include <cstring> //memset
+
+#include "LimitingADERDGSolver.h"
+#include "ADERDGSolver.h"
+#include "FiniteVolumesSolver.h"
 
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 

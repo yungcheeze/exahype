@@ -126,8 +126,32 @@ private:
   const int _dataPointsPerCell;
 
   /**
+   * Minimum corrector time stamp of all cell descriptions
+   * 2 iterations ago
+   */
+  double _previousPreviousMinCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of all
+   * cell descriptions in the iteration before the
+   * previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
+   */
+  double _previousPreviousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _previousMinCorrectorTimeStamp;
+
+  /**
    * Minimum corrector time step size of all
    * cell descriptions in the previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the minCorrectorTimeStepSize during a rollback.
    */
   double _previousMinCorrectorTimeStepSize;
 
@@ -1097,8 +1121,42 @@ public:
   void zeroTimeStepSizes() override;
 
   /**
-   * Roll back the time step data to the
-   * ones of the previous time step.
+   * !!! Only for fused time stepping !!!
+   *
+   * Rolls the solver time step data back to the
+   * previous time step for a cell description.
+   * Note that the newest time step
+   * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep();
 
@@ -1156,25 +1214,29 @@ public:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
-  void setMinCorrectorTimeStamp(double minCorectorTimeStamp);
-
-  double getMinCorrectorTimeStamp() const;
-
-  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
-
-  double getMinPredictorTimeStamp() const;
-
-  void setMinCorrectorTimeStepSize(double minCorrectorTimeStepSize);
-
-  double getMinCorrectorTimeStepSize() const;
-
   void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
-
   double getMinPredictorTimeStepSize() const;
 
-  double getPreviousMinCorrectorTimeStepSize() const;
+  void setMinPredictorTimeStamp(double value);
+  double getMinPredictorTimeStamp() const;
+
+  void setMinCorrectorTimeStamp(double value);
+  double getMinCorrectorTimeStamp() const;
+
+  void setMinCorrectorTimeStepSize(double value);
+  double getMinCorrectorTimeStepSize() const;
+
+  void setPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousMinCorrectorTimeStamp() const;
 
   void setPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousPreviousMinCorrectorTimeStamp() const;
 
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
@@ -1193,11 +1255,22 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
+    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
+
+    setPreviousPreviousMinCorrectorTimeStamp(value);
+    setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
+  }
+
+  void initFusedSolverTimeStepSizes() {
+    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
   }
 
   bool isValidCellDescriptionIndex(
@@ -1288,17 +1361,49 @@ public:
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const;
 
   /**
+   * !!! Only for fused time stepping !!!
+   *
    * Rolls the solver time step data back to the
    * previous time step for a cell description.
    * Note that the newest time step
    * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
-   * Similar to reconstructStandardTimeSteppingData for roll backs
+   * TODO(Dominic): Remove; not necessary
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,
@@ -1317,19 +1422,6 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
-
-  /*
-   * Simply adds the update degrees of freedom
-   * to the solution degrees of freedom.
-   * Does not compute the surface integral.
-   *
-   * \deprecated We will not store the update field anymore
-   * but a previous solution.
-   */
-  void addUpdateToSolution(
-      CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   /**
    * Computes the surface integral contributions to the

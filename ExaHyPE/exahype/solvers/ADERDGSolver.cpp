@@ -394,14 +394,26 @@ void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
     CellDescription& p) const {
   switch (_timeStepping) {
     case TimeStepping::Global:
+      p.setPreviousPreviousCorrectorTimeStepSize(_previousPreviousMinCorrectorTimeStepSize);
+
+      p.setPreviousCorrectorTimeStamp(_previousMinCorrectorTimeStamp);
+      p.setPreviousCorrectorTimeStepSize(_previousMinCorrectorTimeStepSize);
+
       p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
       p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
+
       p.setPredictorTimeStamp(_minPredictorTimeStamp);
       p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
       break;
     case TimeStepping::GlobalFixed:
+      p.setPreviousPreviousCorrectorTimeStepSize(_previousPreviousMinCorrectorTimeStepSize);
+
+      p.setPreviousCorrectorTimeStamp(_previousMinCorrectorTimeStamp);
+      p.setPreviousCorrectorTimeStepSize(_previousMinCorrectorTimeStepSize);
+
       p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
       p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
+
       p.setPredictorTimeStamp(_minPredictorTimeStamp);
       p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
       break;
@@ -417,22 +429,32 @@ void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
 void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize;
-
+      // n-2
+      _previousPreviousMinCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+      _previousPreviousMinCorrectorTimeStamp    = _previousMinCorrectorTimeStamp;
+      // n-1
+      _previousMinCorrectorTimeStamp            = _minCorrectorTimeStamp;
+      _previousMinCorrectorTimeStepSize         = _minCorrectorTimeStepSize;
+      // n
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
-
+      // n+1
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
       _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
 
       _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
-      _previousMinCorrectorTimeStepSize = _minCorrectorTimeStepSize;
-
+      // n-2
+      _previousPreviousMinCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+      _previousPreviousMinCorrectorTimeStamp    = _previousMinCorrectorTimeStamp;
+      // n-1
+      _previousMinCorrectorTimeStamp            = _minCorrectorTimeStamp;
+      _previousMinCorrectorTimeStepSize         = _minCorrectorTimeStepSize;
+      // n
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
-
+      // n+1
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
       _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
       break;
@@ -474,24 +496,63 @@ void exahype::solvers::ADERDGSolver::reinitialiseTimeStepData() {
 }
 
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
+
+  //  logInfo("rollbackToPreviousTimeStep(...)", // for  debugging purposes
+
+//  logInfo("rollbackToPreviousTimeStep(...)",
+//          "\n[pre]"
+//          << "\n,previousPreviousMinCorrectorTimeStepSize="<<_previousPreviousMinCorrectorTimeStepSize
+//          << "\n,previousMinCorrectorTimeStepSize="<<_previousMinCorrectorTimeStepSize
+//          << "\n,previousMinCorrectorTimeStamp="<<_previousMinCorrectorTimeStamp
+//          << "\n,minCorrectorTimeStamp="<<_minCorrectorTimeStamp
+//          << "\n,minCorrectorTimeStepSize="<<_minCorrectorTimeStepSize
+//          <<" \n,minPredictorTimeStamp="<<_minPredictorTimeStamp
+//          << "\n,minPredictorTimeStepSize="<<_minPredictorTimeStepSize
+//    );
+
+
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _minNextPredictorTimeStepSize     = std::numeric_limits<double>::max();
+      _minNextPredictorTimeStepSize             = std::numeric_limits<double>::max();
 
-      _minPredictorTimeStamp    = _minCorrectorTimeStamp;
-      _minPredictorTimeStepSize = _minCorrectorTimeStepSize;
-      _minCorrectorTimeStamp    = _minCorrectorTimeStamp-_previousMinCorrectorTimeStepSize;
-      _minCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+      _minPredictorTimeStamp                    = _minCorrectorTimeStamp;
+      _minPredictorTimeStepSize                 = _minCorrectorTimeStepSize;
 
-      _previousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
+      _minCorrectorTimeStamp                    = _previousMinCorrectorTimeStamp;
+      _minCorrectorTimeStepSize                 = _previousMinCorrectorTimeStepSize;
+
+      _previousMinCorrectorTimeStamp            = _previousPreviousMinCorrectorTimeStamp;
+      _previousMinCorrectorTimeStepSize         = _previousPreviousMinCorrectorTimeStepSize;
+
+      _previousPreviousMinCorrectorTimeStamp    = std::numeric_limits<double>::max();
+      _previousPreviousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
-      _minPredictorTimeStamp    = _minCorrectorTimeStamp;
-      _minPredictorTimeStepSize = _minCorrectorTimeStepSize;
-      _minCorrectorTimeStamp    = _minCorrectorTimeStamp-_previousMinCorrectorTimeStepSize;
-      _minCorrectorTimeStepSize = _previousMinCorrectorTimeStepSize;
+      _minPredictorTimeStamp                    = _minCorrectorTimeStamp;
+      _minPredictorTimeStepSize                 = _minCorrectorTimeStepSize;
+
+      _minCorrectorTimeStamp                    = _previousMinCorrectorTimeStamp;
+      _minCorrectorTimeStepSize                 = _previousMinCorrectorTimeStepSize;
+
+      _previousMinCorrectorTimeStamp            = _previousPreviousMinCorrectorTimeStamp;
+      _previousMinCorrectorTimeStepSize         = _previousPreviousMinCorrectorTimeStepSize;
+
+      _previousPreviousMinCorrectorTimeStamp    = std::numeric_limits<double>::max();
+      _previousPreviousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
       break;
   }
+
+//  logInfo("rollbackToPreviousTimeStep(...)", // for  debugging purposes
+//          "\n[post]"
+//          << "\n,previousPreviousMinCorrectorTimeStepSize="<<_previousPreviousMinCorrectorTimeStepSize
+//          << "\n,previousMinCorrectorTimeStepSize="<<_previousMinCorrectorTimeStepSize
+//          << "\n,previousMinCorrectorTimeStamp="<<_previousMinCorrectorTimeStamp
+//          << "\n,minCorrectorTimeStamp="<<_minCorrectorTimeStamp
+//          << "\n,minCorrectorTimeStepSize="<<_minCorrectorTimeStepSize
+//          <<" \n,minPredictorTimeStamp="<<_minPredictorTimeStamp
+//          << "\n,minPredictorTimeStepSize="<<_minPredictorTimeStepSize
+//  );
+
 
 //  _minCellSize     = _nextMinCellSize;
 //  _maxCellSize     = _nextMaxCellSize; // TODO(Dominic): What to do with these fields?
@@ -499,11 +560,11 @@ void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
-void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
-  _minPredictorTimeStamp    = _minCorrectorTimeStamp;    // corrector time stamp is now the previous corrector time stamp
-  _minPredictorTimeStepSize = _minCorrectorTimeStepSize; // corrector time step size is now the previous corrector time step size
-
-  _previousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
+void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() { // TODO(Dominic): Need rollback only for fused time stepping
+//  _minPredictorTimeStamp            = _minCorrectorTimeStamp;    // corrector time stamp is now the previous corrector time stamp
+//  _minPredictorTimeStepSize         = _minCorrectorTimeStepSize; // corrector time step size is now the previous corrector time step size
+//  _previousMinCorrectorTimeStepSize = _previousPreviousMinCorrectorTimeStepSize;
+//  _previousPreviousMinCorrectorTimeStepSize = std::numeric_limits<double>::max();
 }
 
 void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(
@@ -567,8 +628,32 @@ double exahype::solvers::ADERDGSolver::getPreviousMinCorrectorTimeStepSize() con
   return _previousMinCorrectorTimeStepSize;
 }
 
+void exahype::solvers::ADERDGSolver::setPreviousMinCorrectorTimeStamp(double value) {
+  _previousMinCorrectorTimeStamp = value;
+}
+
+double exahype::solvers::ADERDGSolver::getPreviousMinCorrectorTimeStamp() const {
+  return _previousMinCorrectorTimeStamp;
+}
+
 void exahype::solvers::ADERDGSolver::setPreviousMinCorrectorTimeStepSize(double value) {
   _previousMinCorrectorTimeStepSize = value;
+}
+
+void exahype::solvers::ADERDGSolver::setPreviousPreviousMinCorrectorTimeStepSize(double value) {
+  _previousPreviousMinCorrectorTimeStepSize = value;
+}
+
+double exahype::solvers::ADERDGSolver::getPreviousPreviousMinCorrectorTimeStepSize() const {
+  return _previousPreviousMinCorrectorTimeStepSize;
+}
+
+void exahype::solvers::ADERDGSolver::setPreviousPreviousMinCorrectorTimeStamp(double value) {
+  _previousPreviousMinCorrectorTimeStamp = value;
+}
+
+double exahype::solvers::ADERDGSolver::getPreviousPreviousMinCorrectorTimeStamp() const {
+  return _previousPreviousMinCorrectorTimeStamp;
 }
 
 int exahype::solvers::ADERDGSolver::tryGetElement(
@@ -1464,9 +1549,19 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     // Note that these local quantities might
     // be overwritten again by the synchronisation
     // happening in the next time step.
+    // n-2
+    cellDescription.setPreviousPreviousCorrectorTimeStamp(cellDescription.getPreviousCorrectorTimeStamp());
+    cellDescription.setPreviousPreviousCorrectorTimeStepSize(cellDescription.getPreviousCorrectorTimeStepSize());
+
+    // n-1
+    cellDescription.setPreviousCorrectorTimeStamp(cellDescription.getCorrectorTimeStamp());
     cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+
+    // n
     cellDescription.setCorrectorTimeStamp(cellDescription.getPredictorTimeStamp());
     cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+
+    // n+1
     cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStamp() +
                             admissibleTimeStepSize);
     cellDescription.setPredictorTimeStepSize(admissibleTimeStepSize);
@@ -1503,27 +1598,27 @@ void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData(const i
   }
 }
 
+
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int element) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-  cellDescription.setPredictorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+  // n+1
   cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp());
+  cellDescription.setPredictorTimeStepSize(cellDescription.getCorrectorTimeStepSize());
+
+  // n
+  cellDescription.setCorrectorTimeStamp(cellDescription.getPreviousCorrectorTimeStamp());
   cellDescription.setCorrectorTimeStepSize(cellDescription.getPreviousCorrectorTimeStepSize());
-  cellDescription.setCorrectorTimeStamp(
-      cellDescription.getCorrectorTimeStamp()-cellDescription.getPreviousCorrectorTimeStepSize());
 
-  cellDescription.setPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
-}
+  // n-1
+  cellDescription.setPreviousCorrectorTimeStamp(cellDescription.getPreviousPreviousCorrectorTimeStamp());
+  cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getPreviousPreviousCorrectorTimeStepSize());
 
-void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
-    const int cellDescriptionsIndex,
-    const int element) const {
-  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-
-  cellDescription.setPredictorTimeStamp(cellDescription.getCorrectorTimeStamp());       // corrector time stamp is now the previous corrector time stamp
-  cellDescription.setPredictorTimeStepSize(cellDescription.getCorrectorTimeStepSize()); // corrector time step size is now the previous corrector time step size
+  // n-2
+  cellDescription.setPreviousPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
+  cellDescription.setPreviousPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
 }
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
@@ -1558,54 +1653,6 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       assertion3(std::isfinite(luh[i]),cellDescription.toString(),"setInitialConditions(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
-}
-
-/*
- * Simply adds the update degrees of freedom
- * to the solution degrees of freedom.
- * Does not compute the surface integral.
- */
-void exahype::solvers::ADERDGSolver::addUpdateToSolution(
-    CellDescription& cellDescription,
-    exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  // reset helper variables
-  exahype::Cell::resetNeighbourMergeHelperVariables(
-        cellDescription,fineGridVertices,fineGridVerticesEnumerator);
-
-  if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
-      cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
-
-    for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"addUpdateToSolution(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
-    for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lduh[i]),cellDescription.toString(),"addUpdateToSolution",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
-    solutionUpdate(luh,lduh,cellDescription.getCorrectorTimeStepSize());
-
-    if (hasToAdjustSolution(
-        cellDescription.getOffset()+0.5*cellDescription.getSize(),
-        cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
-        cellDescription.getCorrectorTimeStepSize())) {
-      solutionAdjustment(
-          luh,
-          cellDescription.getOffset()+0.5*cellDescription.getSize(),
-          cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
-          cellDescription.getCorrectorTimeStepSize());
-    }
-
-    for (int i=0; i<getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(luh[i]),cellDescription.toString(),"addUpdateToSolution(...)",i);
-    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-  }
-  assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
 }
 
 void exahype::solvers::ADERDGSolver::updateSolution(

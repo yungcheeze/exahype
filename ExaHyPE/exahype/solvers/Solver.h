@@ -86,14 +86,14 @@ namespace exahype {
      * solvers in exahype::solvers::RegisteredSolvers
      * are not copied for every thread.
      */
-    static void initialiseTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+    void initialiseTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
 
     /**
      * Deletes temporary variables
      * used for the Prediction and SolutionRecomputation
      * mapping.
      */
-    static void deleteTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+    void deleteTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
 
     /**
      * Initialises temporary variables
@@ -109,14 +109,14 @@ namespace exahype {
      * solvers in exahype::solvers::RegisteredSolvers
      * are not copied for every thread.
      */
-    static void initialiseTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+    void initialiseTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
 
     /**
      * Deletes temporary variables
      * used in the Merging and SolutionRecomputation
      * mapping.
      */
-    static void deleteTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+    void deleteTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
 
     /**
      * Initialises temporary variables
@@ -131,13 +131,13 @@ namespace exahype {
      * solvers in exahype::solvers::RegisteredSolvers
      * are not copied for every thread.
      */
-    static void initialiseTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+    void initialiseTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
 
     /**
      * Deletes temporary variables
      * used in the SolutionUpdate and SolutionRecomputation mapping.
      */
-    static void deleteTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+    void deleteTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
 
     /**
      * Initialises the temporary variables
@@ -152,13 +152,13 @@ namespace exahype {
      * solvers in exahype::solvers::RegisteredSolvers
      * are not copied for every thread.
      */
-    static void initialiseTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+    void initialiseTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
 
     /**
      * Deletes the temporary variables
      * used in the TimeStepSizeComputation mapping.
      */
-    static void deleteTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+    void deleteTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
 
 
     class SolverFlags;
@@ -167,23 +167,24 @@ namespace exahype {
      * Sets the limiter domain has changed flags per
      * solver to false.
      */
-    static void initialiseSolverFlags(SolverFlags& solverFlags);
+    void initialiseSolverFlags(SolverFlags& solverFlags);
 
     /**
      * Sets the limiter domain has changed flags per
      * solver to false.
      */
-    static void prepareSolverFlags(SolverFlags& solverFlags);
+    void prepareSolverFlags(SolverFlags& solverFlags);
 
     /**
      * Sets the limiter domain has changed flags per
      * solver to false.
      */
-    static void deleteSolverFlags(SolverFlags& solverFlags);
+    void deleteSolverFlags(SolverFlags& solverFlags);
   }
 }
 
 class exahype::solvers::PredictionTemporaryVariables { // TODO(Dominic): Realise per solver.
+public:
   /**
    * Per solver, temporary variables for storing degrees of freedom of space-time predictor
    * sized variables.
@@ -220,6 +221,7 @@ class exahype::solvers::PredictionTemporaryVariables { // TODO(Dominic): Realise
 };
 
 class exahype::solvers::MergingTemporaryVariables {
+public:
   /**
    * Temporary variable per solver for storing
    * space-time face unknowns.
@@ -247,6 +249,7 @@ class exahype::solvers::MergingTemporaryVariables {
 
 
 class exahype::solvers::SolutionUpdateTemporaryVariables {
+public:
   /**
    * An array of 5 pointers to arrays of a length that equals the
    * number of variables per solver.
@@ -267,10 +270,12 @@ class exahype::solvers::SolutionUpdateTemporaryVariables {
 };
 
 class exahype::solvers::TimeStepSizeComputationTemporaryVariables {
+public:
   double** _tempEigenValues = nullptr;
 };
 
 class exahype::solvers::SolverFlags {
+public:
   /**
    * Per solver, we hold a status flag indicating
    * if the limiter domain of the solver has

@@ -399,8 +399,6 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reconstructStandardTimeSteppingDataAfterRollback();
-
   void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
@@ -516,13 +514,6 @@ public:
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int solverElement);
-
-  /**
-   * Similar to reconstructStandardTimeSteppingData for roll backs
-   */
-  void reconstructStandardTimeSteppingDataAfterRollback(
-      const int cellDescriptionsIndex,
-      const int solverElement) const;
 
   /**
    * TODO(Dominic): I need the whole limiter recomputation
@@ -668,7 +659,7 @@ public:
    * |New Status | Action                                                                                                                                      |
    * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
    * |O          | Do nothing. Solver solution has been evolved correctly before.                                                                              |
-   * |T/NT       | Evolve FV solver project result onto the ADER-DG space.                                                                                     |
+   * |T/NT       | Evolve FV solver project result onto the ADER-DG space. Recompute the space-time predictor if not initial recomputation.                                                                                  |
    * |NNT        | Evolve solver and project its solution onto the limiter solution space. (We had to do a rollback beforehand in the reinitialisation phase.) |
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
@@ -692,8 +683,8 @@ public:
   void recomputeSolution(
       const int cellDescriptionsIndex,
       const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
+      exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
+      exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
