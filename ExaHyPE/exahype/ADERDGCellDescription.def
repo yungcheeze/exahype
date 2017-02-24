@@ -296,7 +296,16 @@ class exahype::records::ADERDGCellDescription {
    * The corrector time step size this cell description was working
    * with in the previous iteration.
    * 
-   * This variable is necessary for performing rollbacks.
+   * This variable is necessary for performing rollbacks for the
+   * fused time stepping + limiting.
+   */
+  parallelise persistent double previousPreviousCorrectorTimeStepSize;
+  
+  /**
+   * The corrector time step size this cell description was working
+   * with in the previous iteration.
+   * 
+   * This variable is necessary for performing rollbacks during the limiting.
    */
   parallelise persistent double previousCorrectorTimeStepSize;
   
