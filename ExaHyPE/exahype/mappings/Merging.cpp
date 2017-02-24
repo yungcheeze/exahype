@@ -78,15 +78,15 @@ exahype::mappings::Merging::descendSpecification() {
 tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
 
-void exahype::mappings::Merging::prepareTemporaryVariables() {
-  assertion(_tempStateSizedVectors       ==nullptr);
-  assertion(_tempStateSizedSquareMatrices==nullptr);
-  assertion(_tempFaceUnknowns            ==nullptr);
+void exahype::mappings::Merging::initialiseTemporaryVariables(exahype::mappings::Merging::TemporaryVariables& temporaryVariables) {
+  assertion(temporaryVariables._tempStateSizedVectors       ==nullptr);
+  assertion(temporaryVariables._tempStateSizedSquareMatrices==nullptr);
+  assertion(temporaryVariables._tempFaceUnknowns            ==nullptr);
 
   int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  _tempStateSizedVectors        = new double**[numberOfSolvers];
-  _tempStateSizedSquareMatrices = new double**[numberOfSolvers];
-  _tempFaceUnknowns             = new double**[numberOfSolvers];
+  temporaryVariables._tempStateSizedVectors        = new double**[numberOfSolvers];
+  temporaryVariables._tempStateSizedSquareMatrices = new double**[numberOfSolvers];
+  temporaryVariables._tempFaceUnknowns             = new double**[numberOfSolvers];
 //    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
 
   int solverNumber=0;
@@ -128,33 +128,33 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         break;
     }
 
-    _tempStateSizedVectors[solverNumber] = nullptr;
+    temporaryVariables._tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
-      _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * lengthOfStateSizedVectors];
+      temporaryVariables._tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
+      temporaryVariables._tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * lengthOfStateSizedVectors];
       for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + lengthOfStateSizedVectors;
+        temporaryVariables._tempStateSizedVectors[solverNumber][i] = temporaryVariables._tempStateSizedVectors[solverNumber][i-1] + lengthOfStateSizedVectors;
       }
     }
     //
-    _tempStateSizedSquareMatrices[solverNumber] = nullptr;
+    temporaryVariables._tempStateSizedSquareMatrices[solverNumber] = nullptr;
     if (numberOfStateSizedMatrices>0) {
-      _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
-      _tempStateSizedSquareMatrices[solverNumber][0] =
+      temporaryVariables._tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
+      temporaryVariables._tempStateSizedSquareMatrices[solverNumber][0] =
           new double[numberOfStateSizedMatrices* solver->getNumberOfVariables() * solver->getNumberOfVariables()];
       for (int i=1; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
-        _tempStateSizedSquareMatrices[solverNumber][i] =
-            _tempStateSizedSquareMatrices[solverNumber][i-1] +
+        temporaryVariables._tempStateSizedSquareMatrices[solverNumber][i] =
+            temporaryVariables. _tempStateSizedSquareMatrices[solverNumber][i-1] +
             solver->getNumberOfVariables() * solver->getNumberOfVariables();
       }
     }
     //
-    _tempFaceUnknowns[solverNumber] = nullptr;
+    temporaryVariables._tempFaceUnknowns[solverNumber] = nullptr;
     if (numberOfFaceUnknowns>0) {
-      _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
-      _tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns](); //initialized to 0 to ensure padding is initialized if existing
+      temporaryVariables._tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
+      temporaryVariables._tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns](); //initialized to 0 to ensure padding is initialized if existing
       for (int i=1; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-        _tempFaceUnknowns[solverNumber][i] = _tempFaceUnknowns[solverNumber][i-1] + lengthOfFaceUnknowns;
+        temporaryVariables._tempFaceUnknowns[solverNumber][i] = temporaryVariables._tempFaceUnknowns[solverNumber][i-1] + lengthOfFaceUnknowns;
       }
     }
 
@@ -162,9 +162,9 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
   }
 }
 
-void exahype::mappings::Merging::deleteTemporaryVariables() {
-  if (_tempStateSizedVectors!=nullptr) {
-    assertion(_tempStateSizedSquareMatrices!=nullptr);
+void exahype::mappings::Merging::deleteTemporaryVariables(exahype::mappings::Merging::TemporaryVariables& temporaryVariables) {
+  if (temporaryVariables._tempStateSizedVectors!=nullptr) {
+    assertion(temporaryVariables._tempStateSizedSquareMatrices!=nullptr);
 
     int solverNumber=0;
     for (auto solver : exahype::solvers::RegisteredSolvers) {
@@ -184,21 +184,21 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
       }
 
       if (numberOfStateSizedVectors>0) {
-        delete[] _tempStateSizedVectors[solverNumber][0];
-        delete[] _tempStateSizedVectors[solverNumber];
-        _tempStateSizedVectors[solverNumber] = nullptr;
+        delete[] temporaryVariables._tempStateSizedVectors[solverNumber][0];
+        delete[] temporaryVariables._tempStateSizedVectors[solverNumber];
+        temporaryVariables._tempStateSizedVectors[solverNumber] = nullptr;
       }
       //
       if (numberOfStateSizedMatrices>0) {
-        delete[] _tempStateSizedSquareMatrices[solverNumber][0];
-        delete[] _tempStateSizedSquareMatrices[solverNumber];
-        _tempStateSizedSquareMatrices[solverNumber] = nullptr;
+        delete[] temporaryVariables._tempStateSizedSquareMatrices[solverNumber][0];
+        delete[] temporaryVariables._tempStateSizedSquareMatrices[solverNumber];
+        temporaryVariables._tempStateSizedSquareMatrices[solverNumber] = nullptr;
       }
       //
       if (numberOfFaceUnknowns>0) {
-        delete[] _tempFaceUnknowns[solverNumber][0];
-        delete[] _tempFaceUnknowns[solverNumber];
-        _tempFaceUnknowns[solverNumber] = nullptr;
+        delete[] temporaryVariables._tempFaceUnknowns[solverNumber][0];
+        delete[] temporaryVariables._tempFaceUnknowns[solverNumber];
+        temporaryVariables._tempFaceUnknowns[solverNumber] = nullptr;
       }
       //
       // _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; // todo
@@ -206,13 +206,13 @@ void exahype::mappings::Merging::deleteTemporaryVariables() {
       ++solverNumber;
     }
 
-    delete[] _tempStateSizedVectors;
-    delete[] _tempStateSizedSquareMatrices;
-    delete[] _tempFaceUnknowns;
+    delete[] temporaryVariables._tempStateSizedVectors;
+    delete[] temporaryVariables._tempStateSizedSquareMatrices;
+    delete[] temporaryVariables._tempFaceUnknowns;
 //    delete[] _tempSpaceTimeFaceUnknownsArray; todo
-    _tempStateSizedVectors        = nullptr;
-    _tempStateSizedSquareMatrices = nullptr;
-    _tempFaceUnknowns             = nullptr;
+    temporaryVariables._tempStateSizedVectors        = nullptr;
+    temporaryVariables._tempStateSizedSquareMatrices = nullptr;
+    temporaryVariables._tempFaceUnknowns             = nullptr;
 //    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
   }
 }
@@ -228,21 +228,18 @@ exahype::mappings::Merging::Merging()
 }
 
 exahype::mappings::Merging::~Merging() {
-  deleteTemporaryVariables();
+  deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState),
-  _tempFaceUnknowns(nullptr),
-  _tempStateSizedVectors(nullptr),
-  _tempStateSizedSquareMatrices(nullptr)
   #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
   #endif
   {
-  prepareTemporaryVariables();
+  initialiseTemporaryVariables();
 }
 #endif
 
@@ -250,7 +247,7 @@ void exahype::mappings::Merging::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  prepareTemporaryVariables();
+  initialiseTemporaryVariables(_temporaryVariables);
 
   _localState = solverState;
 
@@ -277,7 +274,7 @@ void exahype::mappings::Merging::endIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
-  deleteTemporaryVariables();
+  deleteTemporaryVariables(_temporaryVariables);
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
   logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
@@ -315,9 +312,9 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             if (element2>=0 && element1>=0) {
               solver->mergeNeighbours(
                   cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2,
-                  _tempFaceUnknowns[solverNumber],
-                  _tempStateSizedVectors[solverNumber],
-                  _tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
+                  _temporaryVariables._tempFaceUnknowns[solverNumber],
+                  _temporaryVariables._tempStateSizedVectors[solverNumber],
+                  _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]); // todo uncomment
             }
 
             #ifdef Debug // TODO(Dominic)
@@ -345,9 +342,9 @@ void exahype::mappings::Merging::touchVertexFirstTime(
 
             if (element1 >= 0) {
               solver->mergeWithBoundaryData(cellDescriptionsIndex1,element1,pos1,pos2,
-                                            _tempFaceUnknowns[solverNumber],
-                                            _tempStateSizedVectors[solverNumber],
-                                            _tempStateSizedSquareMatrices[solverNumber]);
+                                            _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                            _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
               #ifdef Debug
               _boundaryFaceMerges++;
@@ -355,9 +352,9 @@ void exahype::mappings::Merging::touchVertexFirstTime(
             }
             if (element2 >= 0){
               solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1,
-                                            _tempFaceUnknowns[solverNumber],
-                                            _tempStateSizedVectors[solverNumber],
-                                            _tempStateSizedSquareMatrices[solverNumber]);
+                                            _temporaryVariables._tempFaceUnknowns[solverNumber],
+                                            _temporaryVariables._tempStateSizedVectors[solverNumber],
+                                            _temporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
               #ifdef Debug
               _boundaryFaceMerges++;
               #endif
@@ -465,9 +462,9 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
       solver->mergeWithNeighbourData(
           fromRank,receivedMetadata[solverNumber].getU(),
           destCellDescriptionIndex,element,src,dest,
-          _tempFaceUnknowns[solverNumber],
-          _tempStateSizedVectors[solverNumber],
-          _tempStateSizedSquareMatrices[solverNumber],
+          _temporaryVariables._tempFaceUnknowns[solverNumber],
+          _temporaryVariables._tempStateSizedVectors[solverNumber],
+          _temporaryVariables._tempStateSizedSquareMatrices[solverNumber],
           x,level);
     } else {
       logDebug(

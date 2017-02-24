@@ -89,51 +89,43 @@ namespace exahype {
  * (erasing,joins).
  */
 class exahype::mappings::Prediction {
- private:
-  /**
-   * Logging device for the trace macros.
-   */
-  static tarch::logging::Log _log;
+public:
+  typedef struct TemporaryVariables {
+    /**
+     * Per solver, temporary variables for storing degrees of freedom of space-time predictor
+     * sized variables.
+     */
+    double*** _tempSpaceTimeUnknowns = nullptr;
+    /**
+     * Per solver, temporary variables for storing degrees of freedom of space-time
+     * volume flux sized variables.
+     */
+    double*** _tempSpaceTimeFluxUnknowns = nullptr;
 
-  void performPredictionAndVolumeIntegral(
-      exahype::solvers::ADERDGSolver* solver,
-      exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+    /**
+     * Per solver, temporary variables for storing degrees of freedom of solution
+     * sized variables.
+     *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+     */
+    double** _tempUnknowns = nullptr;
 
-  /**
-   * Per solver, temporary variables for storing degrees of freedom of space-time predictor
-   * sized variables.
-   */
-  double*** _tempSpaceTimeUnknowns = nullptr;
-  /**
-   * Per solver, temporary variables for storing degrees of freedom of space-time
-   * volume flux sized variables.
-   */
-  double*** _tempSpaceTimeFluxUnknowns = nullptr;
+    /**
+     * Per solver, temporary variables for storing degrees of freedom of volume flux
+     * sized variables.
+     *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+     */
+    double** _tempFluxUnknowns = nullptr;
 
-  /**
-   * Per solver, temporary variables for storing degrees of freedom of solution
-   * sized variables.
-   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
-   */
-  double** _tempUnknowns = nullptr;
+    /**
+     * Per solver, temporary variables for storing state sized values,
+     * i.e. the state, eigenvalues etc.
+     */
+    double** _tempStateSizedVectors = nullptr;
 
-  /**
-   * Per solver, temporary variables for storing degrees of freedom of volume flux
-   * sized variables.
-   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
-   */
-  double** _tempFluxUnknowns = nullptr;
+    //TODO KD describe what it is
+    double** _tempPointForceSources = nullptr;
+  } TemporaryVariables;
 
-  /**
-   * Per solver, temporary variables for storing state sized values,
-   * i.e. the state, eigenvalues etc.
-   */
-  double** _tempStateSizedVectors = nullptr;
-  
-  //TODO KD describe what it is
-  double** _tempPointForceSources = nullptr;
 
   /**
    * Initialises the temporary variables.
@@ -147,7 +139,7 @@ class exahype::mappings::Prediction {
    * solvers in exahype::solvers::RegisteredSolvers
    * are not copied for every thread.
    */
-  void prepareTemporaryVariables();
+  static void initialiseTemporaryVariables(TemporaryVariables& temporaryVariables);
 
   /**
    * Deletes the temporary variables.
@@ -157,7 +149,22 @@ class exahype::mappings::Prediction {
    * solvers in exahype::solvers::RegisteredSolvers
    * are not copied for every thread.
    */
-  void deleteTemporaryVariables();
+  static void deleteTemporaryVariables(TemporaryVariables& temporaryVariables);
+
+private:
+  /**
+   * Logging device for the trace macros.
+   */
+  static tarch::logging::Log _log;
+
+  void performPredictionAndVolumeIntegral(
+      exahype::solvers::ADERDGSolver* solver,
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+
+  TemporaryVariables _temporaryVariables;
 
  public:
   static peano::MappingSpecification touchVertexLastTimeSpecification();
