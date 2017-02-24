@@ -26,7 +26,7 @@ namespace kernels {
   namespace aderdg {
     namespace optimised {
       
-      template <bool useSource, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
+      template <bool useSource, bool useNCP, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
       void picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
@@ -36,7 +36,7 @@ namespace kernels {
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
       );
       
-      template <bool useSource>
+      template <bool useSourceOrNCP>
       void predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,

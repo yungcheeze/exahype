@@ -101,13 +101,12 @@ class DGMatrixGenerator:
         l_linearisediK1 = np.concatenate((iK1,l_padMatrix),axis=0).flatten('F')
         l_matrices['iK1'] = l_linearisediK1
 
-        # dudx (only needed for Cauchy-Kovalevski)
-        if(self.m_numerics == 'linear'):
-            MM   = aderdg.assembleMassMatrix(self.m_xGPN, self.m_wGPN, self.m_order)
-            dudx = aderdg.assembleDiscreteDerivativeOperator(MM,Kxi)
-            # we multiply always from the left -> no transpose
-            l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
-            l_matrices['dudx'] = l_lineariseddudx
+        # dudx
+        MM   = aderdg.assembleMassMatrix(self.m_xGPN, self.m_wGPN, self.m_order)
+        dudx = aderdg.assembleDiscreteDerivativeOperator(MM,Kxi)
+        # we multiply always from the left -> no transpose
+        l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
+        l_matrices['dudx'] = l_lineariseddudx
 
         # tmp memory for *s*caled *m*atrices
         s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)

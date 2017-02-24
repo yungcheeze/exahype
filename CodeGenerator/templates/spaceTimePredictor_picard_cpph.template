@@ -18,8 +18,6 @@
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 #include "kernels/aderdg/optimised/CpphGemms.h"
 
-#include "kernels/DGMatrices.h" //TODO JMG remove after dudx implemented
-
 template <bool useSource, bool useNCP, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
@@ -143,7 +141,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
@@ -181,7 +179,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
@@ -220,7 +218,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
                   gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += 1.0 / dx[0] *
-                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * kernels::dudx[{{nDof-1}}][l][m];
+                      lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
