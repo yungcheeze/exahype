@@ -356,7 +356,11 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
   if (token.compare("dummy") == 0) {
     result = MulticoreOracleType::Dummy;
   } else if (token.compare("autotuning") == 0) {
-    result = MulticoreOracleType::Autotuning;
+    result = MulticoreOracleType::AutotuningWithRestartAndLearning;
+  } else if (token.compare("autotuning-without-learning") == 0) {
+    result = MulticoreOracleType::AutotuningWithoutLearning;
+  } else if (token.compare("autotuning-without-restart") == 0) {
+    result = MulticoreOracleType::AutotuningWithLearningButWithoutRestart;
   } else if (token.compare("sampling") == 0) {
     result = MulticoreOracleType::GrainSizeSampling;
   } else {
