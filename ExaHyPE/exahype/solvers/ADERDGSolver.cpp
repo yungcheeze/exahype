@@ -1790,7 +1790,7 @@ void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& 
   std::fill_n(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).begin(),
               getBndTotalSize(), 0.0);
   std::fill_n(DataHeap::getInstance().getData(cellDescription.getFluctuation()).begin(),
-              getBndTotalSize(), 0.0);
+              getBndFluxTotalSize(), 0.0);
 
   #if defined(Debug) || defined(Asserts)
   double* Q = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
@@ -1799,6 +1799,10 @@ void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& 
 
   for(int i=0; i<getBndTotalSize(); ++i) {
     assertion2(tarch::la::equals(Q[i],0.0),i,Q[i]);
+  }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
+
+
+  for(int i=0; i<getBndFluxTotalSize(); ++i) {
     assertion2(tarch::la::equals(F[i],0.0),i,F[i]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 }
@@ -2915,7 +2919,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
         extrapolatedPredictor, getBndTotalSize(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
     DataHeap::getInstance().sendData(
-        fluctuations, getBndTotalSize(), masterRank, x, level,
+        fluctuations, getBndFluxTotalSize(), masterRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
   } else {
     sendEmptyDataToMaster(masterRank,x,level);
@@ -3144,7 +3148,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
         extrapolatedPredictor, getBndTotalSize(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
     DataHeap::getInstance().sendData(
-        fluctuations, getBndTotalSize(), workerRank, x, level,
+        fluctuations, getBndFluxTotalSize(), workerRank, x, level,
         peano::heap::MessageType::MasterWorkerCommunication);
 
     logDebug("sendDataToWorker(...)","Sent face data of solver " <<
