@@ -56,8 +56,9 @@ exahype::repositories::RepositorySTDStack::RepositorySTDStack(
   _gridWithPrediction(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlot(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlot2d(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
-  _gridWithMerging(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithTimeStepDataMerging(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithTimeStepDataMergingAndDropIncomingMPIMessages(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositorySTDStack(...)" );
@@ -102,8 +103,9 @@ exahype::repositories::RepositorySTDStack::RepositorySTDStack(
   _gridWithPrediction(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlot(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlot2d(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
-  _gridWithMerging(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithTimeStepDataMerging(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithTimeStepDataMergingAndDropIncomingMPIMessages(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositorySTDStack(Geometry&)" );
@@ -164,8 +166,9 @@ void exahype::repositories::RepositorySTDStack::restart(
   _gridWithPrediction.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPredictionAndPlot.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPredictionAndPlot2d.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
-  _gridWithMerging.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithTimeStepDataMerging.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithTimeStepDataMergingAndDropIncomingMPIMessages.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
 
 
   _solverState.restart();
@@ -211,8 +214,9 @@ void exahype::repositories::RepositorySTDStack::terminate() {
   _gridWithPrediction.terminate();
   _gridWithPredictionAndPlot.terminate();
   _gridWithPredictionAndPlot2d.terminate();
-  _gridWithMerging.terminate();
   _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation.terminate();
+  _gridWithTimeStepDataMerging.terminate();
+  _gridWithTimeStepDataMergingAndDropIncomingMPIMessages.terminate();
 
 
   logTraceOut( "terminate()" );
@@ -290,8 +294,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
       case exahype::records::RepositoryState::UseAdapterPrediction: watch.startTimer(); _gridWithPrediction.iterate(); watch.stopTimer(); _measurePredictionCPUTime.setValue( watch.getCPUTime() ); _measurePredictionCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPredictionAndPlot: watch.startTimer(); _gridWithPredictionAndPlot.iterate(); watch.stopTimer(); _measurePredictionAndPlotCPUTime.setValue( watch.getCPUTime() ); _measurePredictionAndPlotCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPredictionAndPlot2d: watch.startTimer(); _gridWithPredictionAndPlot2d.iterate(); watch.stopTimer(); _measurePredictionAndPlot2dCPUTime.setValue( watch.getCPUTime() ); _measurePredictionAndPlot2dCalendarTime.setValue( watch.getCalendarTime() ); break;
-      case exahype::records::RepositoryState::UseAdapterMerging: watch.startTimer(); _gridWithMerging.iterate(); watch.stopTimer(); _measureMergingCPUTime.setValue( watch.getCPUTime() ); _measureMergingCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation: watch.startTimer(); _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation.iterate(); watch.stopTimer(); _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.setValue( watch.getCPUTime() ); _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterTimeStepDataMerging: watch.startTimer(); _gridWithTimeStepDataMerging.iterate(); watch.stopTimer(); _measureTimeStepDataMergingCPUTime.setValue( watch.getCPUTime() ); _measureTimeStepDataMergingCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterTimeStepDataMergingAndDropIncomingMPIMessages: watch.startTimer(); _gridWithTimeStepDataMergingAndDropIncomingMPIMessages.iterate(); watch.stopTimer(); _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.setValue( watch.getCPUTime() ); _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime.setValue( watch.getCalendarTime() ); break;
 
       case exahype::records::RepositoryState::Terminate:
         assertionMsg( false, "this branch/state should never be reached" ); 
@@ -345,8 +350,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
  void exahype::repositories::RepositorySTDStack::switchToPrediction() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPrediction); }
  void exahype::repositories::RepositorySTDStack::switchToPredictionAndPlot() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictionAndPlot); }
  void exahype::repositories::RepositorySTDStack::switchToPredictionAndPlot2d() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictionAndPlot2d); }
- void exahype::repositories::RepositorySTDStack::switchToMerging() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterMerging); }
  void exahype::repositories::RepositorySTDStack::switchToDropMPIMetadataMessagesAndTimeStepSizeComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation); }
+ void exahype::repositories::RepositorySTDStack::switchToTimeStepDataMerging() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterTimeStepDataMerging); }
+ void exahype::repositories::RepositorySTDStack::switchToTimeStepDataMergingAndDropIncomingMPIMessages() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterTimeStepDataMergingAndDropIncomingMPIMessages); }
 
 
 
@@ -372,8 +378,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterPrediction() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPrediction; }
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterPredictionAndPlot() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictionAndPlot; }
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterPredictionAndPlot2d() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictionAndPlot2d; }
- bool exahype::repositories::RepositorySTDStack::isActiveAdapterMerging() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterMerging; }
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation; }
+ bool exahype::repositories::RepositorySTDStack::isActiveAdapterTimeStepDataMerging() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterTimeStepDataMerging; }
+ bool exahype::repositories::RepositorySTDStack::isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterTimeStepDataMergingAndDropIncomingMPIMessages; }
 
 
 
@@ -472,8 +479,9 @@ void exahype::repositories::RepositorySTDStack::logIterationStatistics(bool logA
    if (logAllAdapters || _measurePredictionCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| Prediction \t |  " << _measurePredictionCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionCPUTime.getValue()  << " \t |  " << _measurePredictionCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionCalendarTime.getValue() << " \t |  " << _measurePredictionCPUTime.toString() << " \t |  " << _measurePredictionCalendarTime.toString() );
    if (logAllAdapters || _measurePredictionAndPlotCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PredictionAndPlot \t |  " << _measurePredictionAndPlotCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionAndPlotCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlotCPUTime.getValue()  << " \t |  " << _measurePredictionAndPlotCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlotCalendarTime.getValue() << " \t |  " << _measurePredictionAndPlotCPUTime.toString() << " \t |  " << _measurePredictionAndPlotCalendarTime.toString() );
    if (logAllAdapters || _measurePredictionAndPlot2dCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PredictionAndPlot2d \t |  " << _measurePredictionAndPlot2dCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionAndPlot2dCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlot2dCPUTime.getValue()  << " \t |  " << _measurePredictionAndPlot2dCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlot2dCalendarTime.getValue() << " \t |  " << _measurePredictionAndPlot2dCPUTime.toString() << " \t |  " << _measurePredictionAndPlot2dCalendarTime.toString() );
-   if (logAllAdapters || _measureMergingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| Merging \t |  " << _measureMergingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureMergingCPUTime.getAccumulatedValue() << " \t |  " << _measureMergingCPUTime.getValue()  << " \t |  " << _measureMergingCalendarTime.getAccumulatedValue() << " \t |  " << _measureMergingCalendarTime.getValue() << " \t |  " << _measureMergingCPUTime.toString() << " \t |  " << _measureMergingCalendarTime.toString() );
    if (logAllAdapters || _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| DropMPIMetadataMessagesAndTimeStepSizeComputation \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.getValue()  << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime.getValue() << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.toString() << " \t |  " << _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime.toString() );
+   if (logAllAdapters || _measureTimeStepDataMergingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| TimeStepDataMerging \t |  " << _measureTimeStepDataMergingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureTimeStepDataMergingCPUTime.getAccumulatedValue() << " \t |  " << _measureTimeStepDataMergingCPUTime.getValue()  << " \t |  " << _measureTimeStepDataMergingCalendarTime.getAccumulatedValue() << " \t |  " << _measureTimeStepDataMergingCalendarTime.getValue() << " \t |  " << _measureTimeStepDataMergingCPUTime.toString() << " \t |  " << _measureTimeStepDataMergingCalendarTime.toString() );
+   if (logAllAdapters || _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| TimeStepDataMergingAndDropIncomingMPIMessages \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.getNumberOfMeasurements() << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.getAccumulatedValue() << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.getValue()  << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime.getAccumulatedValue() << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime.getValue() << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.toString() << " \t |  " << _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime.toString() );
 
 }
 
@@ -501,8 +509,9 @@ void exahype::repositories::RepositorySTDStack::clearIterationStatistics() {
    _measurePredictionCPUTime.erase();
    _measurePredictionAndPlotCPUTime.erase();
    _measurePredictionAndPlot2dCPUTime.erase();
-   _measureMergingCPUTime.erase();
    _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime.erase();
+   _measureTimeStepDataMergingCPUTime.erase();
+   _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime.erase();
 
    _measureMeshRefinementCalendarTime.erase();
    _measurePlotAugmentedAMRGridCalendarTime.erase();
@@ -526,7 +535,8 @@ void exahype::repositories::RepositorySTDStack::clearIterationStatistics() {
    _measurePredictionCalendarTime.erase();
    _measurePredictionAndPlotCalendarTime.erase();
    _measurePredictionAndPlot2dCalendarTime.erase();
-   _measureMergingCalendarTime.erase();
    _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime.erase();
+   _measureTimeStepDataMergingCalendarTime.erase();
+   _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime.erase();
 
 }

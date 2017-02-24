@@ -35,8 +35,9 @@
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
- #include "exahype/adapters/Merging.h" 
  #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/TimeStepDataMerging.h" 
+ #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h" 
 
 
 namespace peano {

@@ -264,17 +264,26 @@ adapter:
   merge-with-user-defined-mapping: Sending    // Sending does send face data
   merge-with-user-defined-mapping: PostProcessing
   
-// Additional adapters for AMR in 4 phase time stepping
-adapter:
-  name: Merging
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Merging 
-  merge-with-user-defined-mapping: PostProcessing
-  
+// Additional adapters for AMR
 adapter:
   name: DropMPIMetadataMessagesAndTimeStepSizeComputation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending      // Only send time step data
+  merge-with-user-defined-mapping: PostProcessing
+  
+// Additional adapters for AMR in 4 phase time stepping
+adapter:
+  name: TimeStepDataMerging
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Merging 
+  merge-with-user-defined-mapping: PostProcessing
+  
+// Additional adapters for AMR in fused time stepping
+adapter:
+  name: TimeStepDataMergingAndDropIncomingMPIMessages
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: DropIncomingMPIMessages
+  merge-with-user-defined-mapping: Merging 
   merge-with-user-defined-mapping: PostProcessing
