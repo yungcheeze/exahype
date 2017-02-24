@@ -1829,15 +1829,17 @@ void exahype::solvers::ADERDGSolver::prolongateFaceDataToDescendant(
       const int faceIndex = 2*d + ((subcellPosition.subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
 
       const int numberOfFaceDof = getBndFaceSize();
+      const int numberOfFluxDof = getBndFluxSize();
 
       double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
-      double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
       const double* lQhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
+
+      double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+          (faceIndex * numberOfFluxDof);
       const double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
+          (faceIndex * numberOfFluxDof);
 
       faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,
                                lFhbndCoarse, levelCoarse, levelFine,
@@ -1908,15 +1910,17 @@ void exahype::solvers::ADERDGSolver::restrictData(
       #endif
 
       const int numberOfFaceDof = getBndFaceSize();
+      const int numberOfFluxDof = getBndFluxSize();
 
       const double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
-      const double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
       double* lQhbndCoarse = DataHeap::getInstance().getData(parentCellDescription.getExtrapolatedPredictor()).data() +
           (faceIndex * numberOfFaceDof);
+
+      const double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+          (faceIndex * numberOfFluxDof);
       double* lFhbndCoarse = DataHeap::getInstance().getData(parentCellDescription.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
+          (faceIndex * numberOfFluxDof);
 
       faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,
                               levelCoarse, levelFine,
@@ -2520,9 +2524,11 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     const double* lQhbnd = DataHeap::getInstance().getData(
         cellDescription.getExtrapolatedPredictor()).data() +
         (faceIndex * numberOfFaceDof);
+
+    const int numberOfFluxDof = getBndFluxSize();
     const double* lFhbnd = DataHeap::getInstance().getData(
         cellDescription.getFluctuation()).data() +
-        (faceIndex * numberOfFaceDof);
+        (faceIndex * numberOfFluxDof);
 
     logDebug(
         "sendDataToNeighbour(...)",
@@ -2552,7 +2558,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         lQhbnd, numberOfFaceDof, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
     DataHeap::getInstance().sendData(
-        lFhbnd, numberOfFaceDof, toRank, x, level,
+        lFhbnd, numberOfFluxDof, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
