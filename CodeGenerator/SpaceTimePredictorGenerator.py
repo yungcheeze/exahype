@@ -27,7 +27,7 @@ class SpaceTimePredictorGenerator:
 
     # name of generated output file
     m_filename_picard       = 'picard.cpph'
-    m_filename_predictor    = 'predictor.cpp'
+    m_filename_predictor    = 'predictor.cpph'
     m_filename_extrapolator = 'extrapolatedPredictor.cpp'
     
     m_filename_asm_picard   = 'asm_picard' 
@@ -48,7 +48,7 @@ class SpaceTimePredictorGenerator:
         self.m_context['gemm_lqh']   = gemmName+'_lqh'
         
         TemplatingUtils.renderAsFile('spaceTimePredictor_picard_cpph.template', self.m_filename_picard, self.m_context)
-        TemplatingUtils.renderAsFile('spaceTimePredictor_predictor_cpp.template', self.m_filename_predictor, self.m_context)
+        TemplatingUtils.renderAsFile('spaceTimePredictor_predictor_cpph.template', self.m_filename_predictor, self.m_context)
         TemplatingUtils.renderAsFile('spaceTimePredictor_extrapolator_cpp.template', self.m_filename_extrapolator, self.m_context)
         self.generateGemms()
 
@@ -65,7 +65,7 @@ class SpaceTimePredictorGenerator:
                                     # LDB
                                     self.m_context['nDofPad'], \
                                     # LDC
-                                    self.m_context['nVarPad'],    \
+                                    self.m_context['nVarPad'], \
                                     # alpha
                                     1,                         \
                                     # beta

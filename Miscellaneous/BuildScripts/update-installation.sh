@@ -35,7 +35,7 @@ for cmd in "$@"; do
 			info "Performing parallel quick standard exahype update"
 			git pull
 			subreq peano &
-			subreq toolkit & 
+			subreq clean-toolkit & 
 			wait
 			# We don't do libxsmm as it's not needed for most applications
 			info "Finished updating ExahyPE (+peano, +toolkit) in $GITROOT"
@@ -49,6 +49,12 @@ for cmd in "$@"; do
 		"toolkit") # Compiles the toolkit with ant and javac
 			info "Creating Toolkit"
 			cd Toolkit
+			exec ./build.sh
+			;;
+		"clean-toolkit") # Workaround for the toolkit build
+			info "Creating a clean toolkit"
+			cd Toolkit
+			rm -r src/eu/exahype/node*
 			exec ./build.sh
 			;;
 		"libxsmm") # Checkout or recompile libxsmm
@@ -73,7 +79,7 @@ for cmd in "$@"; do
 			;;
 		""|"help"|"--help")
 			info "Allows updating parts of this repository"
-			info "Valid commands are: exahype, peano, toolkit, libxsmm"
+			info "Valid commands are: exahype/bootstrap/all, peano, toolkit, libxsmm"
 			info "and all of it's combinations, whitespace seperated"
 			;;
 		*)

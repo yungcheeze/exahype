@@ -36,9 +36,10 @@ namespace c {
 //                              double* lambda),
 //          void PDEFlux(const double* const Q, double** F)>
 template <typename SolverType>
-double riemannSolver(SolverType& solver, double* F, const double* qL, const double* qR,
+double riemannSolver(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
                      int normalNonZero,double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
   
   double* sL = tempStateSizedVectors[0]; 
   double* sR = tempStateSizedVectors[1];
@@ -56,14 +57,33 @@ double riemannSolver(SolverType& solver, double* F, const double* qL, const doub
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
-  double* FR[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
-  solver.flux(qL, FL);
-  solver.flux(qR, FR);
+  double* FL3[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
+  double* FR3[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
+  solver.flux(qL, FL3);
+  solver.flux(qR, FR3);
+  
+  double Qavg[numberOfVariables+numberOfParameters];
+  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+     Qavg[k] = (qL[k] + qR[k]) / 2;
+  }
+  
+  double Bn[numberOfVariables*numberOfVariables];
+  double ncp[numberOfVariables];
+  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  solver.matrixb(Qavg, normalNonZero, Bn);
+  
+  for(int l=0; l < numberOfVariables; l++) {
+    ncp[l] = 0;
+    for(int m=0; m < numberOfVariables; m++) {
+      ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
+    }
+  }
 
   for (int i = 0; i < numberOfVariables; i++) {
-    F[i] = 0.5 * (FL[normalNonZero][i] + FR[normalNonZero][i]) +
-           0.5 * s_max * (qL[i] - qR[i]);
+    fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
+            0.5 * s_max * (qL[i] - qR[i]);
+    fR[i] = fL[i] - 0.5 * ncp[i];
+    fL[i] = fL[i] + 0.5 * ncp[i];
   }
 
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
@@ -402,14 +422,15 @@ double solutionUpdate(
   double dt_max_allowed = std::numeric_limits<double>::max();
   
   // x edges 
-  double* Fn = tempStateSizedVectors[0];
+  double *fL = tempStateSizedVectors[0];
+  double  fR[numberOfVariables];
   for (int i = patchBegin; i < patchEnd+1; i++) {
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
     const double s_max_x = 
         riemannSolver<SolverType>(
             solver,
-            Fn, 
+            fL, fR,
             luh + idx(i,j, k, 0),
             luh + idx(i,j, k+1, 0), 
             0/*x-axis*/, tempStateSizedVectors + 1);
@@ -419,8 +440,8 @@ double solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i,j, k, l)]   -= dt / cellSize[0] * Fn[l];  
-      luh_new[idx(i,j, k+1, l)] += dt / cellSize[0] * Fn[l];
+      luh_new[idx(i,j, k, l)]   -= dt / cellSize[0] * fL[l];  
+      luh_new[idx(i,j, k+1, l)] += dt / cellSize[0] * fR[l];
     }
   }
   }
@@ -433,7 +454,7 @@ double solutionUpdate(
     const double s_max_y =
       riemannSolver<SolverType>(
         solver,
-        Fn, 
+        fL, fR,
         luh + idx(i, j, k,0),
         luh + idx(i, j+1, k,0), 
         1/*y-axis*/, tempStateSizedVectors + 1);
@@ -441,8 +462,8 @@ double solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i, j, k,l)]   -= dt / cellSize[1] * Fn[l];  
-      luh_new[idx(i, j+1, k,l)] += dt / cellSize[1] * Fn[l];
+      luh_new[idx(i, j, k,l)]   -= dt / cellSize[1] * fL[l];  
+      luh_new[idx(i, j+1, k,l)] += dt / cellSize[1] * fR[l];
     }
   }
   }
@@ -455,7 +476,7 @@ double solutionUpdate(
     const double s_max_z =
       riemannSolver<SolverType>(
         solver,
-        Fn, 
+        fL, fR,
         luh + idx(i, j,k,0),
         luh + idx(i+1, j,k,0), 
         2/*z-axis*/, tempStateSizedVectors + 1);
@@ -463,8 +484,8 @@ double solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[2] / s_max_z);
     
     for (int l=0; l<numberOfVariables; ++l) {
-      luh_new[idx(i, j,k,l)]   -= dt / cellSize[2] * Fn[l];  
-      luh_new[idx(i+1, j,k,l)] += dt / cellSize[2] * Fn[l];
+      luh_new[idx(i, j,k,l)]   -= dt / cellSize[2] * fL[l];  
+      luh_new[idx(i+1, j,k,l)] += dt / cellSize[2] * fR[l];
     }
   }
   }
@@ -480,6 +501,7 @@ double solutionUpdate(
   for (int k = patchBegin; k < patchEnd+1; k++) {
     solver.source(&luh[idx(i,j,k,0)], source);
     for (int l = 0; l < numberOfVariables; l++) {
+      // No BgradQ contribution as this is first order, cf. 2D godunov.
       luh_new[idx(i,j,k,l)] += dt * source[l];
     }
   }

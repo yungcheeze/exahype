@@ -1,0 +1,103 @@
+{# /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/ #}
+
+#include <cstring>
+#include <cmath>
+#include "kernels/aderdg/optimised/Kernels.h"
+#include "kernels/aderdg/optimised/DGMatrices.h"
+#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+
+template <bool useSource, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
+void kernels::aderdg::optimised::riemannSolver( 
+  double* restrict lFbndL,
+  double* restrict lFbndR,
+  const double* restrict const lQbndL,
+  const double* restrict const lQbndR,
+  const double dt,
+  const int normalNonZero
+) {
+
+#ifdef __INTEL_COMPILER
+  __assume_aligned(tmp_bnd, ALIGNMENT);
+  __assume_aligned(weights2, ALIGNMENT);
+#endif
+
+  double QavL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
+  double QavR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
+  
+  {% for iVar in i_seq %}
+  for(int i=0;i<{{bndBlockSize}};i++) {
+    QavL[{{iVar}}] += weights2[i] * lQbndL[{{iVar*bndBlockSize}}+i];
+  }
+  {% endfor %}
+  
+  {% for iVar in i_seq %}
+  for(int i=0;i<{{bndBlockSize}};i++) {
+    QavR[{{iVar}}] += weights2[i] * lQbndR[{{iVar*bndBlockSize}}+i];
+  }
+  {% endfor %}
+  
+  double lambdaL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+  PDEEigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);
+  double lambdaR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+  PDEEigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);
+  
+  double smax = 0.;
+  for (int ivar = 0; ivar < {{nVar}}; ivar++) {
+    smax = std::max(smax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));
+  }
+  
+  
+  #pragma simd
+  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
+    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);
+  }
+  
+  #pragma simd
+  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
+    lFbndL[i] += lFbndR[i];
+  }
+  
+  #pragma simd
+  for(int i=0; i<{{nVar*bndBlockSize}}; i++) {
+    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;
+  }
+  std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));   
+  
+  //add source
+  if(useSource) {
+    double Qavg[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
+    #pragma simd
+    for(int n=0; n < {{nVarPad}}; n++) {
+       Qavg[n] = (QavL[n] + QavR[n]) / 2;
+    }
+    double Bn[{{nVar*nVar}}] __attribute__((aligned(ALIGNMENT))); //cannot use padding to match user function implementation
+    PDEmatrixb(Qavg, normalNonZero, Bn); 
+    
+    for(int n=0; n<{{nVar}}; n++) {
+      double ncp[{{bndBlockSize}}] __attribute__((aligned(ALIGNMENT)))= {0.};
+      for(int m=0; m<{{nVar}}; m++) {
+        #pragma simd
+        for(int ij=0; ij<{{bndBlockSize}}; ij++) {
+          ncp[ij] += Bn[n+{{nVar}}*m] * (lQbndR[ij+{{bndBlockSize}}*m] - lQbndL[ij+{{bndBlockSize}}*m]);
+        }
+      }
+      #pragma simd
+      for(int ij=0; ij<{{bndBlockSize}}; ij++) {
+        lFbndR[ij+{{bndBlockSize}}*n] -= 0.5*ncp[ij];
+        lFbndL[ij+{{bndBlockSize}}*n] += 0.5*ncp[ij];
+      }
+    }
+  }
+
+}

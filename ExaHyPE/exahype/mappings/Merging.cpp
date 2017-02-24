@@ -91,17 +91,22 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
 
   int solverNumber=0;
   for (auto solver : exahype::solvers::RegisteredSolvers) {
-    int numberOfStateSizedVectors  = 0; // TODO(Dominic): Check if we need number of parameters too
+    int numberOfStateSizedVectors  = 0;
     int numberOfStateSizedMatrices = 0;
     int numberOfFaceUnknowns       = 0;
+
+    int lengthOfStateSizedVectors  = 0;
     int lengthOfFaceUnknowns       = 0;
+
     switch (solver->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
         numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
         numberOfStateSizedMatrices = 3; // See riemannSolverLinear
         numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
         lengthOfFaceUnknowns       =
-            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getUnknownsPerFace() + eventual padding
+            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getDataPerFace() + eventual padding
+        lengthOfStateSizedVectors       =
+             static_cast<exahype::solvers::ADERDGSolver*>(solver)->getTempStateSizedVectorsSize(); // variables + parameters
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         // Needs the same temporary variables as the normal ADER-DG scheme.
@@ -109,22 +114,26 @@ void exahype::mappings::Merging::prepareTemporaryVariables() {
         numberOfStateSizedMatrices = 3;
         numberOfFaceUnknowns       = 3;
         lengthOfFaceUnknowns       = std::max(
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getBndFaceSize(), // == getDataPerFace() + eventual padding
             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
+        lengthOfStateSizedVectors       =
+             static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getTempStateSizedVectorsSize(); // variables + parameters; same for both solvers
         break;
       case exahype::solvers::Solver::Type::FiniteVolumes:
         numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
         lengthOfFaceUnknowns =
             static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
+        lengthOfStateSizedVectors       =
+            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getTempStateSizedVectorsSize(); // variables + parameters
         break;
     }
 
     _tempStateSizedVectors[solverNumber] = nullptr;
     if (numberOfStateSizedVectors>0) {
       _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors*solver->getNumberOfVariables()];
+      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors * lengthOfStateSizedVectors];
       for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + solver->getNumberOfVariables();
+        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + lengthOfStateSizedVectors;
       }
     }
     //
@@ -571,7 +580,6 @@ void exahype::mappings::Merging::receiveDataFromMaster(
     const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // TODO(Dominic): Add to docu. Order must be inverted here too.
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     for (auto& solver : exahype::solvers::RegisteredSolvers) {

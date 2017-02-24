@@ -10,14 +10,14 @@ SUBROUTINE InitialData(x, t, Q)
 	REAL, INTENT(OUT)              :: Q(nVar)        ! 
 
 	! Call here one of
-	! CALL InitialBlast(x, 0,  Q)
+	! CALL InitialBlast(x, 0.0,  Q)
 	! Call AlfenWave(x, t, Q)
-	Call InitialRotor(x, 0.0, Q)
-	! Call InitialBlast(x, 0, Q)
-	! Call InitialOrsagTang(x, 0 , Q)
+	! Call InitialRotor(x, 0.0, Q)
+	! Call InitialBlast(x, 0.0, Q)
+	! Call InitialOrsagTang(x, 0.0 , Q)
 	
 	! CALL InitialAccretionDisc(x, 0.0,  Q)
-	! CALL InitialAccretionDisc3D(x, 0, Q)
+	CALL InitialAccretionDisc3D(x, 0.0, Q)
 END SUBROUTINE InitialData
 
 
@@ -160,7 +160,8 @@ END SUBROUTINE InitialOrsagTang
 
 SUBROUTINE InitialRotor(x,t,Q)
     ! GRMHD Rotor initial data in conserved variables (Q)
-    ! Domain: -0.5 .. 0.5  (square domain)
+    ! Needs Limiting, otherwise crash.
+    ! Domain: 0.0 .. 1.0 square
 
     USE, INTRINSIC :: ISO_C_BINDING
     USE Parameters, ONLY : nVar, nDim
@@ -311,7 +312,6 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     INTEGER :: MAXNEWTON = 50, iNewton
     REAL :: ng = 1.0 / (gamma-1.0)
 
-    PRINT *, 'InitialAccretionDisc3D'
     
      CALL METRIC_3D ( x, lapse, gp, gm, shift, g_cov, g_contr)
 

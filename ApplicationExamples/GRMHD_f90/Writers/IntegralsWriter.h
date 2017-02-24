@@ -21,11 +21,10 @@ namespace GRMHD{
 class GRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
   static const int nVar = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
-  static const int numReduced = 9;
-  TimeSeriesReductions* conserved[numReduced];
-  TimeSeriesReductions* primitives[numReduced];
-  TimeSeriesReductions* errors[numReduced];
-  TimeSeriesReductions* statistics;
+  MultipleReductionsWriter conserved;
+  MultipleReductionsWriter primitives;
+  MultipleReductionsWriter errors;
+  ReductionsWriter statistics;
 
   IntegralsWriter(GRMHDSolver&  solver);
   virtual ~IntegralsWriter();

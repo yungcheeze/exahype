@@ -153,7 +153,7 @@ def generateComputeKernels():
     volumeIntegralGenerator.generateCode()
     surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(generateContext(m_config))
     surfaceIntegralGenerator.generateCode()
-    riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
+    riemannGenerator = RiemannGenerator.RiemannGenerator(generateContext(m_config))
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()

@@ -13,19 +13,30 @@
 
 // Solve the volume integral 
 
+#include <cstring>
+
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
-#include <cstring>
-#include "asm_volumeIntegral.c"
+#include "kernels/aderdg/optimised/CpphGemms.h"
 
+template <bool useSource>
 void kernels::aderdg::optimised::volumeIntegral( 
   double* restrict lduh, 
-  const double* restrict const lFhi, 
+  const double* restrict const lFhi,
+  const double* restrict const lShi, //nullptr if not used
   const tarch::la::Vector<DIMENSIONS,double> &dx
 ) {
   memset(lduh, 0, sizeof(lduh)*{{nVar*(nDof**nDim)}});
 
+#ifdef __INTEL_COMPILER
+  __assume_aligned(lFhi, ALIGNMENT);
+  __assume_aligned(weights3, ALIGNMENT);
+  if(useSource) {
+    __assume_aligned(lShi, ALIGNMENT);
+  }
+#endif
+  
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
 {% for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
 {% for i in i_seq%}
@@ -40,6 +51,17 @@ void kernels::aderdg::optimised::volumeIntegral(
 {% endif %}  
 {% endfor%}
 {% endfor%}
+
+// source
+  if(useSource) {
+    for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) {
+      // Fortran: lduh(:,k,j,i) += w * lShi(:,k,j,i)
+      #pragma simd
+      for (int n = 0; n < {{nVar}}; n++) {
+        lduh[n+{{nVar}}*ijk] += weights3[ijk] * lShi[n+{{nVarPad}}*ijk]; //weights3[ijk] = weights1[i] * weights1[j] * (dim==3 ? weights1[k]: 1)
+      }
+    }
+  }
   //TODO JMG source
 }
 

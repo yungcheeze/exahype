@@ -72,19 +72,19 @@ void kernels::aderdg::optimised::boundaryConditions(
     for (int ii = 0; ii < {{nDof}}; ii++) {  // loop over dof
       x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::aderdg::optimised::gaussLegendreNodes[{{nDof-1}}][ii] - 0.5); 
 {% for iVar in iVar_range_0_nVar %}
-    f_in[{{iVar}}] = fluxIn[{{iVar*blockSize}}+ii*{{nDof}}+jj];
+    f_in[{{iVar}}] = fluxIn[{{iVar*blockSize}}+jj*{{nDof}}+ii];
 {% endfor %}
 {% for iVar in iVar_range_0_nVar %}
-    q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+ii*{{nDof}}+jj];
+    q_in[{{iVar}}] = stateIn[{{iVar*blockSize}}+jj*{{nDof}}+ii];
 {% endfor %}
     PDEboundaryValues(x,t,dt,faceIndex,normalNonZero,
                             &f_in[0],&q_in[0],
                             &f_out[0],&q_out[0]);
 {% for iVar in iVar_range_0_nVar %}
-    fluxOut[{{iVar*blockSize}}+ii*{{nDof}}+jj] = f_out[{{iVar}}];
+    fluxOut[{{iVar*blockSize}}+jj*{{nDof}}+ii] = f_out[{{iVar}}];
 {% endfor %}
 {% for iVar in iVar_range_0_nVar %}
-    stateOut[{{iVar*blockSize}}+ii*{{nDof}}+jj] = q_out[{{iVar}}];
+    stateOut[{{iVar*blockSize}}+jj*{{nDof}}+ii] = q_out[{{iVar}}];
 {% endfor %}  
     }
   }

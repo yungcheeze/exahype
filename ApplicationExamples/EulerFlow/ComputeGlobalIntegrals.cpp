@@ -2,57 +2,54 @@
 #include "Primitives.h"
 #include "InitialData.h"
 
-Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver)
+Euler::ComputeGlobalIntegrals::ComputeGlobalIntegrals(MyEulerSolver&  solver) :
+	conserved("output/conserved-"),
+	primitives("output/primitive-"),
+	errors("output/error-"),
+	statistics("output/volume.asc")
 {
-	// open all the reductions
-	assert( 5 == NumberOfVariables );
+	conserved.add(0, "dens");
+	conserved.add(1, "sconx");
+	conserved.add(2, "scony");
+	conserved.add(3, "sconz");
+	conserved.add(4, "ener");
 	
-	conserved[0] = new TimeSeriesReductions("output/dens.asc");
-	conserved[1] = new TimeSeriesReductions("output/sconx.asc");
-	conserved[2] = new TimeSeriesReductions("output/scony.asc");
-	conserved[3] = new TimeSeriesReductions("output/sconz.asc");
-	conserved[4] = new TimeSeriesReductions("output/ener.asc");
+	primitives.add(0, "rho"); // V[0]=Q[0]
+	primitives.add(1, "velx");
+	primitives.add(2, "vely");
+	primitives.add(3, "velz");
+	primitives.add(4, "press");
 	
-	primitives[0] = new TimeSeriesReductions("output/rho.asc"); // V[0]=Q[0]
-	primitives[1] = new TimeSeriesReductions("output/velx.asc");
-	primitives[2] = new TimeSeriesReductions("output/vely.asc");
-	primitives[3] = new TimeSeriesReductions("output/velz.asc");
-	primitives[4] = new TimeSeriesReductions("output/press.asc");
-	
-	errors[0] = new TimeSeriesReductions("output/error-rho.asc");
-	errors[1] = new TimeSeriesReductions("output/error-velx.asc");
-	errors[2] = new TimeSeriesReductions("output/error-vely.asc");
-	errors[3] = new TimeSeriesReductions("output/error-velz.asc");
-	errors[4] = new TimeSeriesReductions("output/error-press.asc");
-	
-	statistics = new TimeSeriesReductions("output/volform.asc");
+	errors.add(0, "rho");
+	errors.add(1, "velx");
+	errors.add(2, "vely");
+	errors.add(3, "velz");
+	errors.add(4, "press");
+
+	// here, we plot all variables.
+	assert( conserved.size() <= NumberOfVariables );
+	assert( primitives.size() <= NumberOfVariables );
+	assert( errors.size() <= NumberOfVariables );
 }
 
 
 Euler::ComputeGlobalIntegrals::~ComputeGlobalIntegrals() {
-	// delete all reductions.
-	// @todo  the deletes are missing here
 }
 
 
 void Euler::ComputeGlobalIntegrals::startPlotting(double time) {
-	this->time = time;
-	for(int i=0; i<NumberOfVariables; i++) {
-		conserved[i]->initRow(time);
-		primitives[i]->initRow(time);
-		errors[i]->initRow(time);
-	}
-	statistics->initRow(time);
+	conserved.startRow(time);
+	primitives.startRow(time);
+	errors.startRow(time);
+	statistics.startRow(time);
 }
 
 
 void Euler::ComputeGlobalIntegrals::finishPlotting() {
-	for(int i=0; i<NumberOfVariables; i++) {
-		conserved[i]->writeRow();
-		primitives[i]->writeRow();
-		errors[i]->writeRow();
-	}
-	statistics->writeRow();
+	conserved.finishRow();
+	primitives.finishRow();
+	errors.finishRow();
+	statistics.finishRow();
 }
 
 
@@ -73,31 +70,32 @@ void Euler::ComputeGlobalIntegrals::mapQuantities(
 
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch* (1.0/NumberOfLagrangePointsPerAxis));
-	statistics->addValue(scaling, 1);
+	statistics.addValue(scaling, 1);
+	
+	// NOTE: This is *not* the correct scaling for the ADERDG scheme.
+	// Instead, you should use the GlobalIntegralsLegendre plotter.
 
 	// reduce the conserved quantities
-	for (int i=0; i<NumberOfVariables; i++)
-		conserved[i]->addValue( Q[i], scaling );
+	conserved.addValue(Q, scaling);
 
 	// reduce the primitive quantities
 	double V[NumberOfVariables];
 	cons2prim(V, Q);
-	for(int i=0; i<NumberOfVariables; i++)
-		primitives[i]->addValue( V[i], scaling );
+	primitives.addValue(V, scaling);
 
 	// now do the convergence test, as we have exact initial data
 	double ExactCons[NumberOfVariables];
 	double ExactPrim[NumberOfVariables];
 	const double *xpos = x.data();
 	
-	idfunc(xpos, ExactCons, time); // Sven, this returns the conserved quantities
+	idfunc(xpos, ExactCons, timeStamp);
 	cons2prim(ExactPrim, ExactCons);
 
 	double localError[NumberOfVariables];
 	for(int i=0; i<NumberOfVariables; i++) {
-		localError[i] = abs(V[i] - ExactPrim[i]);
-		errors[i]->addValue( localError[i], scaling );
+		localError[i] = std::abs(V[i] - ExactPrim[i]);
 	}
+	errors.addValue(localError, scaling);
 }
 
 

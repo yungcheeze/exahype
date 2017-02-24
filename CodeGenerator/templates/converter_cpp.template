@@ -33,6 +33,22 @@ void kernels::aderdg::optimised::converter::Bnd_generic2optimised(const double* 
   }
 }
 
+void kernels::aderdg::optimised::converter::BndFace_optimised2generic(const double* const opt, double* gen) {
+  for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
+    for(int l=0; l<{{nVar}}; l++) {
+      gen[l+{{nVar}}*j] = opt[j+{{bndBlockSize}}*l];
+    }
+  }    
+}
+
+void kernels::aderdg::optimised::converter::BndFace_generic2optimised(const double* const gen, double* opt) {
+  for(int j=0; j<{{nDof**(nDim-1)}}; j++) {
+    for(int l=0; l<{{nVar}}; l++) {
+      opt[j+{{bndBlockSize}}*l] = gen[l+{{nVar}}*j];
+    }
+  }    
+}
+
 {% if noVarPadding %}
 void kernels::aderdg::optimised::converter::Fhi_optimised2generic(const double* const opt, double* gen) {
   const int size = getFhiOptArraySize();

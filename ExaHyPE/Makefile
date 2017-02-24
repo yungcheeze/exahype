@@ -97,7 +97,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  CC=icpc
 	endif
 	ifndef $(EXAHYPE_FC)
-	  EXAHPYE_FC=ifort
+	  EXAHYPE_FC=ifort
 	endif
 	ifndef $(FC)
 	  FC=ifort
@@ -119,7 +119,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  CC=g++
 	endif
 	ifndef $(FC)
-		FC=gfortran
+	  EXAHYPE_FC=gfortran
 	endif
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
 	LINK_FORTRAN      += -lgfortran
@@ -139,10 +139,15 @@ endif
 #
 #Set compiler and linker flags for the different architectures
 ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	# Settings for CPU architectures
-	# ----------------------------------------------
-	COMPILER_CFLAGS +=
-	COMPILER_LFLAGS +=
+  # Settings for CPU architectures
+  # ----------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xHost
+    COMPILER_LFLAGS += -xHost
+  else
+    COMPILER_CFLAGS += -march=native
+    COMPILER_LFLAGS += -march=native
+  endif
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
 	# Settings for the Xeon Phi architecture
@@ -151,17 +156,26 @@ else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
 	COMPILER_LFLAGS += -mmic -lrt
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -xMIC-AVX512 -fma
-	COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xMIC-AVX512 -fma
+    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=knl
+    COMPILER_LFLAGS += -march=knl -lrt
+  endif
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -xCORE-AVX2 -fma
-	COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
-
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xCORE-AVX2 -fma
+    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=haswell
+    COMPILER_LFLAGS += -march=haswell -lrt
+  endif
 else
 	# Option not recognized
 	# ----------------------------------------------
@@ -186,7 +200,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 
 	  #Special options
 	  ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	    COMPILER_CFLAGS += -xHost
+	    COMPILER_CFLAGS +=
 	    COMPILER_LFLAGS +=
 	  endif
 
@@ -194,7 +208,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the GNU compiler
 	  # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-	  COMPILER_CFLAGS += -O3 -march=native
+	  COMPILER_CFLAGS += -O3
 	  COMPILER_LFLAGS +=
 	endif
 endif
@@ -341,7 +355,7 @@ cfiles.mk:
 	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(EXAHYPE_PATH) -name '*.cpp'  -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> cfiles.mk
-	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -L $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))  
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 endif
@@ -428,7 +442,7 @@ $(COBJECTS): %.o : %.cpp
 	$(EXAHYPE_CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90#
-	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -c $< -o $@
+	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@
 
 # Fortran module dependency: fallback .mod to default fortran compile rule and include generated dependency list
 	

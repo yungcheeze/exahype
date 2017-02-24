@@ -105,10 +105,10 @@ bool Euler::LimitingADERDG_ADERDG::physicalAdmissibilityDetection(const double* 
   return true;
 }
 
-bool Euler::LimitingADERDG_ADERDG::isDummyKRequired() const {
+bool Euler::LimitingADERDG_ADERDG::hasToApplyPointSource() const {
   return false;
 }
 
-void Euler::LimitingADERDG_ADERDG::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void Euler::LimitingADERDG_ADERDG::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // do nothing
 }

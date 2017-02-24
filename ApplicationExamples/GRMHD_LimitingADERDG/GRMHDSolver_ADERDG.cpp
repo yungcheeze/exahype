@@ -107,11 +107,11 @@ void GRMHD::GRMHDSolver_ADERDG::matrixb(const double* const Q,const int d,double
   pdematrixb_(Bn, Q, nv);
 }
 
-bool GRMHD::GRMHDSolver_ADERDG::isDummyKRequired() const { 
+bool GRMHD::GRMHDSolver_ADERDG::hasToApplyPointSource() const { 
   return false;
 }
 
 
-void GRMHD::GRMHDSolver_ADERDG::dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+void GRMHD::GRMHDSolver_ADERDG::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
   // ...
 }

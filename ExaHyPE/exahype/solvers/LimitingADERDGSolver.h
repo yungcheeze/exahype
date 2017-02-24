@@ -320,8 +320,7 @@ public:
   static bool limiterDomainOfOneSolverHasChanged();
 
   /**
-   * TODO(Dominic): Docu
-   *
+   * Create a limiting ADER-DG solver.
    *
    * <h2>Discrete maximum principle</h2>
    * By default this constructor initialises the maximum relaxation
@@ -374,7 +373,13 @@ public:
     _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
   }
 
+  /**
+   * We always override the limiter time step
+   * data by the ADER-DG one before a solution update.
+   */
   void startNewTimeStep() override;
+
+  void zeroTimeStepSizes() override;
 
   bool getLimiterDomainHasChanged() {
     return _limiterDomainHasChanged;
@@ -399,15 +404,10 @@ public:
   void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
-
   void updateNextMaxCellSize(double maxCellSize) override;
-
   double getNextMinCellSize() const override;
-
   double getNextMaxCellSize() const override;
-
   double getMinCellSize() const override;
-
   double getMaxCellSize() const override;
 
   bool isValidCellDescriptionIndex(
@@ -461,7 +461,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -471,7 +471,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -484,11 +484,16 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
 
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
     _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
@@ -533,25 +538,11 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Adds a limiter patch to the initially troubled cells, their
-   * neighbours, and their neighbour's neighbours.
-   * Further imposes finite volumes boundary conditions onto the limiter
-   * solution in cells with limiter status Troubled and NeighbourIsTroubled and
-   * then projects this solution onto the DG solver space for those cells.
-   * Finally, projects the ADER-DG initial conditions onto
-   * the FV limiter space for cells with limiter status
-   * NeighbourIsNeighbourOfTroubledCell.
-   */
-  void initialiseLimiter(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
-
-  /**
    * This method assumes the ADERDG solver's cell-local limiter status has
    * already been determined.
+   *
+   * Before performing an update with the limiter,
+   * set the ADER-DG time step sizes.
    *
    * \see determineLimiterStatusAfterLimiterStatusSpreading(...)
    */
