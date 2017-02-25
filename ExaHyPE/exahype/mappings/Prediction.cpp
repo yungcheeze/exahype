@@ -87,8 +87,7 @@ exahype::mappings::Prediction::~Prediction() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Prediction::Prediction(
-    const Prediction& masterThread) :  {
+exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
   initialiseTemporaryVariables(_temporaryVariables);
 }
 
