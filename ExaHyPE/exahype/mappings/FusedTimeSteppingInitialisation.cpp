@@ -93,6 +93,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
   if (aderdgSolver!=nullptr) {
     assertion(aderdgSolver->getMinPredictorTimeStepSize()>0);
 
+    aderdgSolver->setMinPredictorTimeStamp(aderdgSolver->getMinPredictorTimeStepSize());
     aderdgSolver->setMinCorrectorTimeStepSize(aderdgSolver->getMinPredictorTimeStepSize());
   }
 }
@@ -117,7 +118,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
           static_cast<exahype::solvers::ADERDGSolver*>(solver)->getCellDescription(cellDescriptionsIndex,element);
       cellDescription.setPreviousCorrectorTimeStepSize(0.0);
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
-//      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
       } break;
     case exahype::solvers::Solver::Type::LimitingADERDG: {
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription =

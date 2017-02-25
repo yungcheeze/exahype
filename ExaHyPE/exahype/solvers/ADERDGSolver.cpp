@@ -439,8 +439,8 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
       // n+1
+      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minPredictorTimeStepSize;
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
-      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
 
       _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
       break;
@@ -455,8 +455,8 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
       _minCorrectorTimeStamp    = _minPredictorTimeStamp;
       _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
       // n+1
+      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minPredictorTimeStepSize;
       _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
-      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
       break;
   }
 
@@ -1562,8 +1562,7 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
 
     // n+1
-    cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStamp() +
-                            admissibleTimeStepSize);
+    cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStamp() + cellDescription.getPredictorTimeStepSize());
     cellDescription.setPredictorTimeStepSize(admissibleTimeStepSize);
 
     return admissibleTimeStepSize;
