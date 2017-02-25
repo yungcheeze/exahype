@@ -186,10 +186,10 @@ void exahype::mappings::SolutionRecomputation::enterCell(
               fineGridVerticesEnumerator);
 
           if (exahype::State::fuseADERDGPhases()) {
-            limitingADERSolver->recomputeSolution(
+            limitingADERSolver->recomputePredictor(
                 fineGridCell.getCellDescriptionsIndex(),
                 element,
-                _solutionUpdateTemporaryVariables,
+                _predictionTemporaryVariables,
                 fineGridVertices,
                 fineGridVerticesEnumerator);
           }
