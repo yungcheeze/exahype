@@ -658,8 +658,8 @@ public:
    *
    * |New Status | Action                                                                                                                                      |
    * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
-   * |O          | Do nothing. Solver solution has been evolved correctly before.                                                                              |
-   * |T/NT       | Evolve FV solver project result onto the ADER-DG space. Recompute the space-time predictor if not initial recomputation.                                                                                  |
+   * |O          | Do nothing. Solver solution has been evolved correctly before. DG solution is correct.                                                                             |
+   * |T/NT       | Evolve FV solver. Project result onto the ADER-DG space. Recompute the space-time predictor if not initial recomputation.                                                                                  |
    * |NNT        | Evolve solver and project its solution onto the limiter solution space. (We had to do a rollback beforehand in the reinitialisation phase.) |
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
@@ -684,9 +684,36 @@ public:
       const int cellDescriptionsIndex,
       const int element,
       exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
-      exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  /**
+   * !!! Only for fused time stepping !!!
+   *
+   * Recompute the predictor in particular cells.
+   *
+   * We perform the following actions based on the
+   * new and old limiter status:
+   *
+   * |New Status | Old Status | Action                                                                                                                                      |
+   * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
+   * |O/NNTT     | O/NT/NNT   | Do nothing. Underlying DG solution has not changed.
+   * |           | T          | Recompute predictor. Cell was skipped before in predictor computation
+   * |           |            | since it is marked T. See mapping Prediction::enterCell.
+   * |T/NT       | *          | Recompute predictor. DG solution has been recomputed.
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * We do not overwrite the old limiter status set in this method.
+   * We compute the new limiter status based on the merged limiter statuses associated
+   * with the faces.
+   */
+  void recomputePredictor(
+      const int cellDescriptionsIndex,
+        const int element,
+        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   void preProcess(
       const int cellDescriptionsIndex,

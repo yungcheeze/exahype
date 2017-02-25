@@ -182,9 +182,17 @@ void exahype::mappings::SolutionRecomputation::enterCell(
               fineGridCell.getCellDescriptionsIndex(),
               element,
               _solutionUpdateTemporaryVariables,
-              _predictionTemporaryVariables,
               fineGridVertices,
               fineGridVerticesEnumerator);
+
+          if (exahype::State::fuseADERDGPhases()) {
+            limitingADERSolver->recomputeSolution(
+                fineGridCell.getCellDescriptionsIndex(),
+                element,
+                _solutionUpdateTemporaryVariables,
+                fineGridVertices,
+                fineGridVerticesEnumerator);
+          }
 
           // It is important that we update the cell-wise limiter status only after the recomputation since we use
           // the previous and current limiter status in the recomputation.
