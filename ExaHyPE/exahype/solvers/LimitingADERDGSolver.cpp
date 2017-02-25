@@ -920,7 +920,6 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictor(
         }
         break;
       case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
-      case SolverPatch::LimiterStatus::Troubled:
         _solver->performPredictionAndVolumeIntegral(
             solverPatch,
             predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
@@ -929,6 +928,9 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictor(
             predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
             predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
             predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+        break;
+      case SolverPatch::LimiterStatus::Troubled:
+        // do nothing
         break;
     }
   }

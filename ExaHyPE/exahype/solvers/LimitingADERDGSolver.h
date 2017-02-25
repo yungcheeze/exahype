@@ -700,7 +700,8 @@ public:
    * |O/NNTT     | O/NT/NNT   | Do nothing. Underlying DG solution has not changed.
    * |           | T          | Recompute predictor. Cell was skipped before in predictor computation
    * |           |            | since it is marked T. See mapping Prediction::enterCell.
-   * |T/NT       | *          | Recompute predictor. DG solution has been recomputed.
+   * |NT         | *          | Recompute predictor. DG solution has been recomputed.
+   * |T          | *          | Not necesssary to compute predictor
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    *
