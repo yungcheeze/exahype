@@ -56,75 +56,19 @@ class SolutionUpdate;
  * @author Dominic Charrier Tobias Weinzierl
  */
 class exahype::mappings::SolutionUpdate {
- private:
+private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
   /**
-   * An array of 5 pointers to arrays of a length that equals the
-   * number of variables per solver.
-   *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
+   * A bunch of temporary variables for performing a solution
+   * update.
    */
-  double*** _tempStateSizedVectors = nullptr;
+  exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
 
-  /**
-   * An array of pointers to arrays of a length that equals the
-   * number of solution unknowns per solver.
-   *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
-   */
-  double*** _tempUnknowns = nullptr;
-
-  /**
-   * Per solver, we hold a status flag indicating
-   * if the limiter domain of the solver has
-   * changed.
-   *
-   * The flag has only a meaning for the LimitingADERDGSolver.
-   */
-  bool* _limiterDomainHasChanged = nullptr;
-
-
-  /**
-   * Per solver, we hold a status flag indicating
-   * if the solver has requested a grid update.
-   */
-  bool* _gridUpdateRequested = nullptr;
-
-  /**
-   * Initialises the temporary variables.
-   *
-   * \note We parallelise over the domain
-   * (mapping is copied for each thread) and
-   * over the solvers registered on a cell.
-   *
-   * \note We need to initialise the temporary variables
-   * in this mapping and not in the solvers since the
-   * solvers in exahype::solvers::RegisteredSolvers
-   * are not copied for every thread.
-   */
-  void prepareTemporaryVariables();
-
-  /**
-   * Sets the limiter domain has changed flags per
-   * solver to false.
-   */
-  void prepareSolverFlags();
-
-  /**
-   * Deletes the temporary variables.
-   *
-   * \note We need to initialise the temporary variables
-   * in this mapping and not in the solvers since the
-   * solvers in exahype::solvers::RegisteredSolvers
-   * are not copied for every thread.
-   */
-  void deleteTemporaryVariables();
+  exahype::solvers::SolverFlags _solverFlags;
 
  public:
   /**

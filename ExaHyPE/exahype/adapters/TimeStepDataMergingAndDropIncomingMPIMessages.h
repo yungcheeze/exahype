@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
-#define EXAHYPE_ADAPTERS_PredictionAndFusedTimeSteppingInitialisation_H_
+#ifndef EXAHYPE_ADAPTERS_TimeStepDataMergingAndDropIncomingMPIMessages_H_
+#define EXAHYPE_ADAPTERS_TimeStepDataMergingAndDropIncomingMPIMessages_H_
 
 
 #include "tarch/logging/Log.h"
@@ -19,17 +19,15 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/DropIncomingMPIMessages.h"
  #include "exahype/mappings/Merging.h"
- #include "exahype/mappings/Prediction.h"
- #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
- #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictionAndFusedTimeSteppingInitialisation;
+        class TimeStepDataMergingAndDropIncomingMPIMessages;
       } 
 }
 
@@ -41,21 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
+class exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::Merging Mapping1;
-    typedef mappings::Prediction Mapping2;
-    typedef mappings::FusedTimeSteppingInitialisation Mapping3;
-    typedef mappings::Sending Mapping4;
-    typedef mappings::PostProcessing Mapping5;
+    typedef mappings::DropIncomingMPIMessages Mapping1;
+    typedef mappings::Merging Mapping2;
+    typedef mappings::PostProcessing Mapping3;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2Merging;
-     Mapping2  _map2Prediction;
-     Mapping3  _map2FusedTimeSteppingInitialisation;
-     Mapping4  _map2Sending;
-     Mapping5  _map2PostProcessing;
+     Mapping1  _map2DropIncomingMPIMessages;
+     Mapping2  _map2Merging;
+     Mapping3  _map2PostProcessing;
 
 
   public:
@@ -67,16 +61,16 @@ class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictionAndFusedTimeSteppingInitialisation();
+    TimeStepDataMergingAndDropIncomingMPIMessages();
 
     #if defined(SharedMemoryParallelisation)
-    PredictionAndFusedTimeSteppingInitialisation(const PredictionAndFusedTimeSteppingInitialisation& masterThread);
+    TimeStepDataMergingAndDropIncomingMPIMessages(const TimeStepDataMergingAndDropIncomingMPIMessages& masterThread);
     #endif
 
-    virtual ~PredictionAndFusedTimeSteppingInitialisation();
+    virtual ~TimeStepDataMergingAndDropIncomingMPIMessages();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictionAndFusedTimeSteppingInitialisation& workerThread);
+    void mergeWithWorkerThread(const TimeStepDataMergingAndDropIncomingMPIMessages& workerThread);
     #endif
 
     void createInnerVertex(

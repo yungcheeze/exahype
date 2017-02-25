@@ -304,6 +304,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext() {
+   #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+  }
+
   //
   void setStabilityConditionOfOneSolverWasViolated(bool state) {
     _stateData.setStabilityConditionOfOneSolverWasViolated(state);

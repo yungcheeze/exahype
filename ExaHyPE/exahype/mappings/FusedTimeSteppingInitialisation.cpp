@@ -93,6 +93,7 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
   if (aderdgSolver!=nullptr) {
     assertion(aderdgSolver->getMinPredictorTimeStepSize()>0);
 
+    aderdgSolver->setMinPredictorTimeStamp(aderdgSolver->getMinPredictorTimeStepSize());
     aderdgSolver->setMinCorrectorTimeStepSize(aderdgSolver->getMinPredictorTimeStepSize());
   }
 }
@@ -117,15 +118,16 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
           static_cast<exahype::solvers::ADERDGSolver*>(solver)->getCellDescription(cellDescriptionsIndex,element);
       cellDescription.setPreviousCorrectorTimeStepSize(0.0);
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
-//      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
       } break;
     case exahype::solvers::Solver::Type::LimitingADERDG: {
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
           getSolver().get()->getCellDescription(cellDescriptionsIndex,element);
-      cellDescription.setPreviousCorrectorTimeStepSize(0.0);
+      cellDescription.setPreviousPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
-//      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
       } break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
       // do nothing
@@ -297,7 +299,24 @@ exahype::mappings::FusedTimeSteppingInitialisation::~FusedTimeSteppingInitialisa
 
 void exahype::mappings::FusedTimeSteppingInitialisation::endIteration(
     exahype::State& state) {
-  // do nothing
+  if (exahype::State::fuseADERDGPhases()) {
+    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      switch (solver->getType()) {
+        case solvers::Solver::Type::LimitingADERDG:
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->initFusedSolverTimeStepSizes();
+
+          break;
+        case solvers::Solver::Type::ADERDG:
+          // do nothing
+          break;
+        case solvers::Solver::Type::FiniteVolumes:
+          // do nothing
+          break;
+      }
+    }
+  }
 }
 
 #if defined(SharedMemoryParallelisation)
