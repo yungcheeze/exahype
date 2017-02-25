@@ -661,11 +661,6 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
-  if (exahype::State::fuseADERDGPhases() &&
-      solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
-    _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,element);
-  }
-
   SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getLimiterStatus();
   SolverPatch::LimiterStatus limiterStatus         = determineLimiterStatus(solverPatch);
 
