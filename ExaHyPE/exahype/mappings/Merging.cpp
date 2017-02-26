@@ -94,7 +94,7 @@ exahype::mappings::Merging::~Merging() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
-  _localState(masterThread._localState),
+  _localState(masterThread._localState)
   #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
