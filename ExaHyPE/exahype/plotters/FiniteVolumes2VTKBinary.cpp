@@ -125,10 +125,11 @@ void exahype::plotters::FiniteVolumes2VTKBinary::finishPlotting() {
     #endif
                    << "-" << _fileCounter << ".vtk";
 
-    // See issue #47 for discussion whether to quit program on failure:
-    // _patchWriter should raise/throw the C++ Exception or return something in case
-    // of failure.
-    _patchWriter->writeToFile(snapshotFileName.str());
+    const bool hasBeenSuccessful =
+      _patchWriter->writeToFile(snapshotFileName.str());
+    if (!hasBeenSuccessful) {
+      exit(-1);
+    }
   }
 
   if (_cellDataWriter!=nullptr)       delete _cellDataWriter;

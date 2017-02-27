@@ -175,10 +175,11 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
     #endif
                      << "-" << _fileCounter << ".vtk";
 
-    // See issue #47 for discussion whether to quit program on failure:
-    // _patchWriter should raise/throw the C++ Exception or return something in case
-    // of failure.
-    _gridWriter->writeToFile(snapshotFileName.str());
+    const bool hasBeenSuccessful =
+      _gridWriter->writeToFile(snapshotFileName.str());
+    if (!hasBeenSuccessful) {
+      exit(-1);
+    }
   }
 
   if (_vertexDataWriter!=nullptr)    delete _vertexDataWriter;
@@ -189,13 +190,13 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
   if (_cellTimeStampDataWriter!=nullptr)   delete _cellTimeStampDataWriter;
   if (_gridWriter!=nullptr)          delete _gridWriter;
 
-  _vertexDataWriter     = nullptr;
-  _cellDataWriter       = nullptr;
-  _vertexWriter         = nullptr;
-  _cellWriter           = nullptr;
+  _vertexDataWriter           = nullptr;
+  _cellDataWriter             = nullptr;
+  _vertexWriter               = nullptr;
+  _cellWriter                 = nullptr;
   _vertexTimeStampDataWriter  = nullptr;
   _cellTimeStampDataWriter    = nullptr;
-  _gridWriter           = nullptr;
+  _gridWriter                 = nullptr;
 }
 
 
