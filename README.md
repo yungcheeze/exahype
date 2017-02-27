@@ -75,7 +75,11 @@ java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.spec
 I assume that the ExaHyPE release repository is checked out to ~/git/ExaHyPE-Release. 
 
 1) Update the guidebook
-- Change into the directory holding your guidebook and build the pdf.
+- Change into the directory holding your guidebook and build with
+  make release
+  
+  The release target builds the PDF without annotations.
+
 - Copy the PDF over:
   cp guidebook.pdf ~/git/ExaHyPE-Release
 
