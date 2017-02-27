@@ -145,7 +145,18 @@ void exahype::plotters::FiniteVolumes2VTK::finishPlotting() {
     #ifdef Parallel
                    << "-rank-" << tarch::parallel::Node::getInstance().getRank()
     #endif
-                   << "-" << _fileCounter << ".vtk";
+                   << "-" << _fileCounter;
+
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        snapshotFileName << ".vtk"; break;
+      case PlotterType::ASCIIVTK:
+        snapshotFileName << ".vtk"; break;
+      case PlotterType::BinaryVTU:
+        snapshotFileName << ".vtu"; break;
+      case PlotterType::ASCIIVTU:
+        snapshotFileName << ".vtu"; break;
+    }
 
     const bool hasBeenSuccessful =
       _patchWriter->writeToFile(snapshotFileName.str());
