@@ -26,6 +26,11 @@ namespace exahype {
     class ADERDG2CartesianVerticesVTKBinary;
     class ADERDG2CartesianCellsVTKAscii;
     class ADERDG2CartesianCellsVTKBinary;
+
+    class ADERDG2CartesianVerticesVTUAscii;
+    class ADERDG2CartesianVerticesVTUBinary;
+    class ADERDG2CartesianCellsVTUAscii;
+    class ADERDG2CartesianCellsVTUBinary;
   }
 }
 
@@ -33,9 +38,16 @@ namespace exahype {
  * Common VTK class. Usually not used directly but through one of the subclasses.
  */
 class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter::Device {
+ protected:
+   enum class PlotterType {
+     BinaryVTK,
+     ASCIIVTK,
+     BinaryVTU,
+     ASCIIVTU
+   };
  private:
   int           _fileCounter;
-  const bool    _isBinary;
+  const PlotterType _plotterType;
   const bool    _plotCells;
   std::string   _filename;
   int           _order;
@@ -73,7 +85,7 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
     double timeStamp
   );
  public:
-  ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells);
+  ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType, bool plotCells);
   virtual ~ADERDG2CartesianVTK();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -117,5 +129,32 @@ class exahype::plotters::ADERDG2CartesianCellsVTKBinary: public exahype::plotter
     ADERDG2CartesianCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
 };
 
+
+class exahype::plotters::ADERDG2CartesianVerticesVTUAscii: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianVerticesVTUBinary: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianCellsVTUAscii: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianCellsVTUBinary: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
 
 #endif
