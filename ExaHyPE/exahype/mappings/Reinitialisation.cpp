@@ -48,7 +48,7 @@ peano::MappingSpecification
 exahype::mappings::Reinitialisation::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
