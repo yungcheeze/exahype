@@ -123,8 +123,7 @@ void SWE::MySWESolver::matrixb(const double* const Q, const int d, double* Bn)
   Bn[14]= 0.0;
   Bn[15]= 0.0;    
 
-  if(d==0) Bn[idx_Bn(3,1)]=grav*Q[0]; //g*h
-  if(d==1) Bn[idx_Bn(3,2)]=grav*Q[0]; //g*h
+  Bn[idx_Bn(3,d+1)]=grav*Q[0]; //g*h
 }
 
 exahype::solvers::Solver::RefinementControl SWE::MySWESolver::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
