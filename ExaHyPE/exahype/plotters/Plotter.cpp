@@ -17,7 +17,7 @@
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
-#include "exahype/plotters/FiniteVolumes2VTKAscii.h"
+#include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
@@ -155,6 +155,30 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+      if (_identifier.compare( ADERDG2CartesianVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
+      }
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
@@ -172,14 +196,21 @@ exahype::plotters::Plotter::Plotter(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-/*
-      else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKBinary();
+      if (_identifier.compare( FiniteVolumes2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTKBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2ProbeAscii();
+      if (_identifier.compare( FiniteVolumes2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTUAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-*/
+      if (_identifier.compare( FiniteVolumes2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTUBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
       /**

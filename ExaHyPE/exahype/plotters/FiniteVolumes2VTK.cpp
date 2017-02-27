@@ -11,12 +11,18 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "FiniteVolumes2VTKAscii.h"
 #include "ADERDG2CartesianVTK.h"
 
 #include "tarch/parallel/Node.h"
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
+#include "FiniteVolumes2VTK.h"
+
+#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
+
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
 // Should thus be placed in kernel module or the solver
@@ -25,12 +31,14 @@
 #include "kernels/DGMatrices.h"
 #include "peano/utils/Loop.h"
 
-tarch::logging::Log exahype::plotters::FiniteVolumes2VTKAscii::_log("exahype::plotters::FiniteVolumes2VTKAscii");
+tarch::logging::Log exahype::plotters::FiniteVolumes2VTK::_log("exahype::plotters::FiniteVolumes2VTK");
 
-exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(
+exahype::plotters::FiniteVolumes2VTK::FiniteVolumes2VTK(
     exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
-    const int ghostLayerWidth):
+    const int ghostLayerWidth,
+    PlotterType plotterType):
   Device(postProcessing),
+  _plotterType(plotterType),
   _fileCounter(-1),
   _numberOfCellsPerAxis(-1),
   _ghostLayerWidth(ghostLayerWidth),
@@ -43,12 +51,7 @@ exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(
 }
 
 
-std::string exahype::plotters::FiniteVolumes2VTKAscii::getIdentifier() {
-  return ADERDG2CartesianCellsVTKAscii::getIdentifier();
-}
-
-
-void exahype::plotters::FiniteVolumes2VTKAscii::init(
+void exahype::plotters::FiniteVolumes2VTK::init(
   const std::string& filename,
   int                numberOfCellsPerAxis,
   int                unknowns,
@@ -84,15 +87,34 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
 }
 
 
-void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
+void exahype::plotters::FiniteVolumes2VTK::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
 
   if (_writtenUnknowns>0) {
-    _patchWriter =
-        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        _patchWriter =
+            new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+                new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
+        break;
+      case PlotterType::ASCIIVTK:
+        _patchWriter =
+            new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+                new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+        break;
+      case PlotterType::BinaryVTU:
+        _patchWriter =
+            new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+                new tarch::plotter::griddata::unstructured::vtk::VTUBinaryFileWriter());
+        break;
+      case PlotterType::ASCIIVTU:
+        _patchWriter =
+            new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+                new tarch::plotter::griddata::unstructured::vtk::VTUTextFileWriter());
+        break;
+    }
 
     _gridWriter          = _patchWriter->createSinglePatchWriter();
     _timeStampDataWriter = _patchWriter->createCellDataWriter("time", 1);
@@ -107,7 +129,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
 }
 
 
-void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
+void exahype::plotters::FiniteVolumes2VTK::finishPlotting() {
   _postProcessing->finishPlotting();
   if ( _writtenUnknowns>0 ) {
     assertion( _patchWriter!=nullptr );
@@ -144,11 +166,11 @@ void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
 }
 
 
-exahype::plotters::FiniteVolumes2VTKAscii::~FiniteVolumes2VTKAscii() {
+exahype::plotters::FiniteVolumes2VTK::~FiniteVolumes2VTK() {
 }
 
 
-void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(const int cellDescriptionsIndex, const int element) {
+void exahype::plotters::FiniteVolumes2VTK::plotPatch(const int cellDescriptionsIndex, const int element) {
   auto& cellDescription =
       exahype::solvers::FiniteVolumesSolver::getCellDescription(
           cellDescriptionsIndex,element);
@@ -163,7 +185,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(const int cellDescript
   }
 }
 
-void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
+void exahype::plotters::FiniteVolumes2VTK::plotPatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp) {
@@ -219,4 +241,59 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     delete[] sourceValue;
     delete[] value;
   }
+}
+
+
+exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int ghostLayerWidth
+):
+  exahype::plotters::FiniteVolumes2VTK(postProcessing,ghostLayerWidth,PlotterType::ASCIIVTK) {
+}
+
+
+std::string exahype::plotters::FiniteVolumes2VTKAscii::getIdentifier() {
+  return ADERDG2CartesianCellsVTKAscii::getIdentifier();
+}
+
+
+exahype::plotters::FiniteVolumes2VTKBinary::FiniteVolumes2VTKBinary(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int ghostLayerWidth
+):
+  exahype::plotters::FiniteVolumes2VTK(postProcessing,ghostLayerWidth,PlotterType::BinaryVTK) {
+}
+
+
+std::string exahype::plotters::FiniteVolumes2VTKBinary::getIdentifier() {
+  return ADERDG2CartesianCellsVTKBinary::getIdentifier();
+}
+
+
+
+
+
+exahype::plotters::FiniteVolumes2VTUAscii::FiniteVolumes2VTUAscii(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int ghostLayerWidth
+):
+  exahype::plotters::FiniteVolumes2VTK(postProcessing,ghostLayerWidth,PlotterType::ASCIIVTU) {
+}
+
+
+std::string exahype::plotters::FiniteVolumes2VTUAscii::getIdentifier() {
+  return ADERDG2CartesianCellsVTUAscii::getIdentifier();
+}
+
+
+exahype::plotters::FiniteVolumes2VTUBinary::FiniteVolumes2VTUBinary(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int ghostLayerWidth
+):
+  exahype::plotters::FiniteVolumes2VTK(postProcessing,ghostLayerWidth,PlotterType::BinaryVTU) {
+}
+
+
+std::string exahype::plotters::FiniteVolumes2VTUBinary::getIdentifier() {
+  return ADERDG2CartesianCellsVTUBinary::getIdentifier();
 }
