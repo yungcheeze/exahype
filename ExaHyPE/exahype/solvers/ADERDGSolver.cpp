@@ -1617,7 +1617,7 @@ void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep(
 
   // n-2
   cellDescription.setPreviousPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
-  cellDescription.setPreviousPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max());
+  cellDescription.setPreviousPreviousCorrectorTimeStepSize(std::numeric_limits<double>::max()); // TODO(Dominic): get rid of the last time level.
 }
 
 void exahype::solvers::ADERDGSolver::setInitialConditions(
@@ -1725,12 +1725,6 @@ void exahype::solvers::ADERDGSolver::rollbackSolution(
 
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell &&
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
-// TODO(Dominic): Old code. Keep a while for reference.
- //    double* luh    = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-//    double* lduh   = exahype::DataHeap::getInstance().getData(cellDescription.getUpdate()).data();
-//
-//    solutionUpdate(luh,lduh,-cellDescription.getCorrectorTimeStepSize()); // Be aware of the "-".
-
     swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
   }
   assertion(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
