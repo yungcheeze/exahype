@@ -78,8 +78,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         #pragma simd
         for (int n = 0; n < {{nVar}}; n++) {
 {% for m in nDof_seq %}
-          rhs_0[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D*m}})))] =
-                weight * F0[{{m}}] * luh[n+{{nVar}}*(k+{{nDof}}*(j+{{nDof}}*i))];
+          rhs_0[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D*m}})))] = weight * F0[{{m}}] * luh[n+{{nVar}}*(k+{{nDof}}*(j+{{nDof}}*i))];
 {% endfor %}
         }
       }
@@ -102,9 +101,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         double* F[{{nDim}}];
         F[0] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)];
         F[1] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{1*(nDof**nDim)*nDof*nVarPad}}];
-        {% if nDim == 3 %}
+{% if nDim == 3 %}
         F[2] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{2*(nDof**nDim)*nDof*nVarPad}}];
-        {% endif %}
+{% endif %}
         PDEflux(Q, F);
         if(useSource) { //optimised away at compile time
           PDEsource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
@@ -115,7 +114,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       std::copy(&rhs_0[i*{{(nDof**nDim)*nVarPad}}], &rhs_0[i*{{(nDof**nDim)*nVarPad}}]+{{(nDof**nDim)*nVarPad}}, &rhs[i*{{(nDof**nDim)*nVarPad}}]);
       
       if(useNCP) { //optimised away at compile time
-        std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVar*nDim}} * sizeof(double));
+        std::memset(gradQ, 0, {{(nDof**nDim)*nDof*nVarPad*nDim}} * sizeof(double));
       }
       
 
@@ -156,7 +155,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             } 
             */
-            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVar*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
+            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
           }          
         }
       }
@@ -197,12 +196,12 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
             */
-            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVar}}]);
+            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
           }
         }
       }
       
-      {% if nDim==3 %}
+{% if nDim==3 %}
       // z direction (independent from the x and y derivatives)
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
@@ -239,19 +238,25 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
             */
-            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVar}}]);
+            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
           }
         }
       }
-      {% endif %}
-
+{% endif %}
+      
       if(useSource || useNCP) {
         for(int jkl = 0; jkl < {{nDof**nDim}}; jkl++) { //zyx
           const double updateSize = weights1[i] * weights3[jkl] * dt;
 
           if(useNCP) {
             // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-            PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQ[{{nVar*nDim}}*(i+{{nDof}}*jkl)], BGradQ);
+            double gradQNoPad[{{nVar*nDim}}]; //remove padding to use the same user function as generic kernel
+            std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVar}}], &gradQNoPad[0]); //x
+            std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVarPad}}], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{nVarPad+nVar}}], &gradQNoPad[{{nVar}}]); //y
+{% if nDim==3 %}
+            std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad}}],&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
+{% endif %}
+            PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
           }
           
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
