@@ -237,12 +237,12 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
       case PlotterType::BinaryVTU:
         snapshotFileName << ".vtu";
         _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
         break;
       case PlotterType::ASCIIVTU:
         snapshotFileName << ".vtu";
         _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
         break;
     }
 
