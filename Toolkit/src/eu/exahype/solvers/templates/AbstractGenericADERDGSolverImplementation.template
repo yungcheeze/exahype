@@ -37,7 +37,7 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  kernels::aderdg::generic::{{Language}}::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+  {{spaceTimePredictor}}
 {{AfterSpaceTimePredictor}}
 }
 
@@ -53,7 +53,7 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  kernels::aderdg::generic::{{Language}}::volumeIntegral{{NonlinearOrLinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  {{volumeIntegral}}
 {{AfterVolumeIntegral}}
 }
 
@@ -71,7 +71,7 @@ void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  kernels::aderdg::generic::{{Language}}::riemannSolver{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  {{riemannSolver}}
 {{AfterRiemannSolver}}
 }
 

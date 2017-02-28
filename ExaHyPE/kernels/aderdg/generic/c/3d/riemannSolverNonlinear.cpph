@@ -31,7 +31,7 @@ namespace c {
  * We don't need to consider material parameters
  * in FL,FR,tempStateSizedSquareMatrices,
  */
-template <typename SolverType>
+template <bool useMatrixb, typename SolverType>
 void riemannSolverNonlinear(SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,

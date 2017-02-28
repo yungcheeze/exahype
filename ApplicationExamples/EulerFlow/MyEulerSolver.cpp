@@ -82,13 +82,6 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
-}
-
 void Euler::MyEulerSolver::eigenvalues(const double* const Q,
                                        const int normalNonZeroIndex,
                                        double* lambda) {
@@ -220,8 +213,27 @@ bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, co
   return true;
 }
 
+bool Euler::MyEulerSolver::useSource(){
+  return true;
+}
+
+void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+  Variables source(S);
+  source.rho()=0;
+  source.E()=0;
+  source.j(0,0,0);
+}
+
+bool Euler::MyEulerSolver::useNCP(){
+  return true;
+}
+
 void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
   std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
+}
+
+bool Euler::MyEulerSolver::useMatrixb(){
+  return true;
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {

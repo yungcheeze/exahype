@@ -228,7 +228,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 
   std::fill(lShi, lShi + 320, 0.0);
 
-  kernels::aderdg::generic::c::volumeIntegralNonlinear(
+  kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(
       lduh, lFhi, dx[0],
       5,   // getNumberOfVariables(),
       0,   // getNumberOfParameters()
@@ -492,7 +492,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     }
   }
 
-  kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -722,7 +722,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lFhbnd = new double[6 * nData*basisSize2];  // nData * nDOFy * nDOF_z * 6
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true, true, GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,

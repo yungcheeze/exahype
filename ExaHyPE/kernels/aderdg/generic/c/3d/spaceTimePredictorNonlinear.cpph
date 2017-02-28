@@ -474,7 +474,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <typename SolverType>
+template <bool useSource, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
