@@ -36,7 +36,7 @@ void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  if(useSource || useNCP) {
+  if(useSource() || useNCP()) {
 #if DIMENSIONS==2
     constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
     constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
@@ -44,8 +44,8 @@ void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
     constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
     constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
-    if(useSource) {
-      if(useNCP) { //useSource && useNCP
+    if(useSource()) {
+      if(useNCP()) { //useSource && useNCP
         kernels::aderdg::optimised::picardLoopNonlinear<true, true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
       } else { //useSource && !useNCP
         kernels::aderdg::optimised::picardLoopNonlinear<true, false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], nullptr, nullptr); //lSi, gradQ, BGradQ
@@ -75,7 +75,7 @@ void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  if(useSource || useNCP) {
+  if(useSource() || useNCP()) {
 #if DIMENSIONS==2
     constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #else
@@ -102,7 +102,7 @@ void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  if(useMatrixb) {
+  if(useMatrixb()) {
     kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );
   } else {
     kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );

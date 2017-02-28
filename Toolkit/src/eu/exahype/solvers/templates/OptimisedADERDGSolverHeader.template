@@ -24,6 +24,10 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
   public:  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
+    bool useSource() override;
+    bool useNCP() override;
+    bool useMatrixb() override;
+    
     void init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}});
     static void flux(const double* const Q, double** F);
     static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
