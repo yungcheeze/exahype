@@ -126,6 +126,8 @@ void exahype::plotters::FiniteVolumes2VTK::startPlotting( double time ) {
   }
 
   _postProcessing->startPlotting( time );
+
+  _time = time;
 }
 
 
@@ -153,9 +155,15 @@ void exahype::plotters::FiniteVolumes2VTK::finishPlotting() {
       case PlotterType::ASCIIVTK:
         snapshotFileName << ".vtk"; break;
       case PlotterType::BinaryVTU:
-        snapshotFileName << ".vtu"; break;
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename);
+        break;
       case PlotterType::ASCIIVTU:
-        snapshotFileName << ".vtu"; break;
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename);
+        break;
     }
 
     const bool hasBeenSuccessful =

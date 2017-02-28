@@ -214,6 +214,8 @@ void exahype::plotters::ADERDG2CartesianVTK::startPlotting( double time ) {
   }
 
   _postProcessing->startPlotting( time );
+
+  _time = time;
 }
 
 
@@ -239,13 +241,21 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
 
     switch (_plotterType) {
       case PlotterType::BinaryVTK:
-        snapshotFileName << ".vtk"; break;
+        snapshotFileName << ".vtk";
+        break;
       case PlotterType::ASCIIVTK:
-        snapshotFileName << ".vtk"; break;
+        snapshotFileName << ".vtk";
+        break;
       case PlotterType::BinaryVTU:
-        snapshotFileName << ".vtu"; break;
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename);
+        break;
       case PlotterType::ASCIIVTU:
-        snapshotFileName << ".vtu"; break;
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename);
+        break;
     }
 
     const bool hasBeenSuccessful =

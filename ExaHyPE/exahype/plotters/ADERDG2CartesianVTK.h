@@ -17,6 +17,7 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
+#include "tarch/plotter/griddata/VTUTimeSeriesWriter.h"
 
 namespace exahype {
   namespace plotters {
@@ -54,6 +55,16 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
   int           _solverUnknowns;
   int           _writtenUnknowns;
   std::string   _select;
+
+  /**
+   * Is obviously only used if we use vtu instead of the vtk legacy format.
+   */
+  tarch::plotter::griddata::VTUTimeSeriesWriter _timeSeriesWriter;
+
+  /**
+   * To memorise the time argument from startPlotter(). We need it when we close the plotter for the time series.
+   */
+  double _time;
 
 
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
