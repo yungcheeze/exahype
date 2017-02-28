@@ -305,7 +305,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     REAL :: r, zz, urc, vc2, tc, pc,tt, c1, c2, urr, f
     REAL :: df, dt, ut, LF, vr, vtheta, vphi, rho, p, VV_cov(3), g_cov(3,3), g_contr(3,3)
     REAL :: gp, gm, shift(3), lapse, gammaij(6), betaru, g_tt, phi, theta, vx, vy, vz
-    
+    REAL :: detgamma    
     ! PARAMETERS:
     REAL :: rhoc = 0.0625  ! Critical radius
     REAL :: rc = 8.0
@@ -395,7 +395,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
 
        detgamma= gammaij(1)*( gammaij(4)*gammaij(6)-gammaij(5)*gammaij(5)) &
                - gammaij(2)*( gammaij(2)*gammaij(6)-gammaij(5)*gammaij(3)) &
-               - gammaij(3)*( gammaij(2)*gammaij(5)-gammaij(3)*gammaij(4))
+               + gammaij(3)*( gammaij(2)*gammaij(5)-gammaij(3)*gammaij(4))
 
        detgamma = sqrt(detgamma)
 

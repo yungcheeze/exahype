@@ -283,7 +283,8 @@ ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 		ifeq ($(call tolower,$(COMPILER)),gnu)
 			EXAHYPE_CC = mpiCC
 		else
-			EXAHYPE_CC = mpiicpc
+#			EXAHYPE_CC = mpiicpc
+			EXAHYPE_CC = mpicc
 		endif
 	endif
 endif
