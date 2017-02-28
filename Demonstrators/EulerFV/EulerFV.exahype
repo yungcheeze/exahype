@@ -38,7 +38,7 @@ exahype-project EulerFV
     time-stepping     = global
     kernel const      = generic::Godunov
     language const    = C
-    plot vtk::Cartesian::cells::ascii EulerWriter
+    plot vtu::Cartesian::cells::ascii EulerWriter
       variables const = 5
       time            = 0.0
       repeat          = 0.01

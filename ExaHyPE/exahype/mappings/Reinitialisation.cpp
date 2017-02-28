@@ -48,7 +48,7 @@ peano::MappingSpecification
 exahype::mappings::Reinitialisation::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
@@ -93,17 +93,6 @@ void exahype::mappings::Reinitialisation::beginIteration(
 
 void exahype::mappings::Reinitialisation::endIteration(
     exahype::State& solverState) {
-  // TODO(Dominic): Assess
-
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
-      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
-      limitingADERDGSolver->rollbackToPreviousTimeStep();
-    }
-  }
-
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
   logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
   logInfo("endIteration(...)","boundary face merges: " << _boundaryFaceMerges);
@@ -134,8 +123,6 @@ void exahype::mappings::Reinitialisation::enterCell(
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
-
-          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
 
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
