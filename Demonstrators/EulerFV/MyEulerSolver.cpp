@@ -104,3 +104,7 @@ void EulerFV::MyEulerSolver::boundaryValues(
 
   varsOutside = varsInside;
 }
+
+
+void EulerFV::MyEulerSolver::matrixb(double const*, int, double*) {
+}
