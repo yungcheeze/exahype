@@ -312,6 +312,21 @@ FOBJECTS=$(FSOURCES:.f90=.o)
 FMODULEOBJECTS=$(FMODULESOURCES:.f90=.o)
 FOBJECTS+=$(FMODULEOBJECTS)
 
+
+# 
+# Project-wise Settings
+# ---------------------
+# Projects can easily hook in with the variables
+#
+#  PROJECT_CFLAGS   (eg. for additional include paths)
+#  PROJECT_LFLAGS   (eg. for additional dynamic links)
+#  PROJECT_LINK     (eg. for additional objects/archives, ia. static links)
+#
+# As everywhere in GNU Make, these variables can be passed as arguments to make,
+#  > make PROJECT_CFLAGS=-I/my/initial/data/code/ PROJECT_LINK=/my/initial/data/code.a
+# or set as environment variables.
+#
+
 all: wellsortedbuild
 
 # try this for serial making. Parallel make of header, buildinfo and build
@@ -406,7 +421,7 @@ header:
 
 
 build:  $(FOBJECTS) $(COBJECTS)
-	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+	$(LL) $(COBJECTS) $(FOBJECTS) $(PROJECT_LINK) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument
