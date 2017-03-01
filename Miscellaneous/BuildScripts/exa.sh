@@ -47,44 +47,31 @@ abort () { echo -e $@; exit -1; } # fail without name of script
 finish () { echo $@; exit 0; } # finish with message happily
 subreq() { $SCRIPT $@; } # subrequest: Query another command for output
 cdroot() { cd "$GITROOT"; } # the crucial change to the repository root directory
-getappname() { APPNAME="$PAR"; [ -z "$APPNAME" ] && abort "Usage: $0 $CMD <AppName>"; } # set $APPNAME or die
-getapppath() { APPPATH="$(subreq find-appdir "$APPNAME")" || abort "Failure: $APPPATH"; } # set APPPATH or die
-cdapp() { cdroot; getappname; getapppath; cd $APPPATH/$APPNAME || abort "Could not go to app"; } # change to application directory
+getappname() {  # set $APPNAME or die
+	APPNAME="$PAR";
+	if [ -z "$APPNAME" ]; then
+		# Appname not given as argument. Try instead to obtain it from PWD.
+		### TODO: Allow a call to APPNAME="$(subreq find reverse-pwd)"
+		###       but it's not yet working.
+		abort "Usage: $0 $CMD <AppName>";
+	fi
+}
+cdapp() { cdroot; getappname; cd $(subreq find appdir "$APPNAME") || abort "Could not go to app"; } # change to application directory
+
+# some paths to the exa helper scripts
+BuildScripts=$GITROOT/Miscellaneous/BuildScripts # == $SCRIPTDIR
+Postprocesing=$GITROOT/Miscellaneous/Postprocessing
 
 case $CMD in
 	"update") # Update the repository or dependencies. Use "--help" for help.
-		exec $SCRIPTDIR/update-installation.sh $@
+		exec $BuildScripts/update-installation.sh $@
 		;;
-	"list-apps") # Lists all ExaHyPE applications available. Use "find-app" for full path.
-		cdroot; info "Listing available Applications:"
-		find ApplicationExamples/* -type d -exec basename {} \;
-		;;
-	"find-app") # Gives the full path from ExaHyPE root to an application
-		# this is trivial since we have no more {Applications, ApplicationExamples} directories
-		cdroot; getappname
-		ls -d ApplicationExamples/$APPNAME || fail "Application '$APPNAME' not found"
-		;;
-	"find-specfile") # Gives the full path from ExaHyPE root to an application specfile
-		# this is trivial since we have no more {Applications, ApplicationExamples} directories
-		cdroot; getappname
-		ls -f ApplicationExamples/$APPNAME.exahype || fail "Application '$APPNAME' not found";
-		exit 0
-		;;
-	"find-appdir") # Gives directory where app lives inside
-		cdroot; getappname
-		ls -d Applications/$APPNAME &>/dev/null && finish "Applications/"
-		ls -d ApplicationExamples/$APPNAME &>/dev/null && finish "ApplicationExamples/"
-		fail "Could not find Application '$APPNAME' somewhere"
-		;;
-	"find-binary") # Gives path to the executable, even if not present
-		cdroot; getappname; getapppath
-		SPECFILE="$(subreq find-specfile "$APPNAME")" || abort "Specfile Failure: $SPECFILE"
-		PROJECTNAME=$(grep '^exahype-project' ${SPECFILE} | awk '{ print $2; }')
-		echo $APPPATH/$APPNAME/ExaHyPE-$PROJECTNAME
+	"find") # Locate apps, spec files, compiled files, etc.
+		exec $BuildScripts/find-app.sh $@
 		;;
 	"toolkit") # Run the toolkit for an application, without compiling
 		cdroot; getappname
-		SPECFILE="$(subreq find-specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"
+		SPECFILE="$(subreq find specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"
 		info "Running ExaHyPE.jar on $SPECFILE"
 		java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $SPECFILE
 		;;
@@ -115,7 +102,7 @@ case $CMD in
 		;;
 	"build-init") # Initialize an out of tree build, ie. dont sync. Parameters: <AppName> <BuildName>
 		cdroot; getappname; buildName=$2
-		SPECFILE="$(subreq find-specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
+		SPECFILE="$(subreq find specfile $APPNAME)" || abort "Could not find specfile: $SPECFILE"
 		exec $SCRIPTDIR/setup-out-of-tree.sh $SPECFILE $buildName
 		;;
 	"build-setup") # Setup an out of tree build, ie. init and sync. Parameters: <AppName> <BuildName>
@@ -185,13 +172,13 @@ case $CMD in
 		fail "Calculation not yet implemented"
 		;;
 	"player") # Calls the 'exaplayer' plotting toolkit. Use "--help" for help.
-		exec $GITROOT/Miscellaneous/Postprocessing/exaplayer.py $@
+		exec $Postprocessing/exaplayer.py $@
 		;;
 	"reader") # Calls the 'exareader' data conversion toolkit. Use "--help" for help.
-		exec $GITROOT/Miscellaneous/Postprocessing/exareader.py $@
+		exec $Postprocessing/exareader.py $@
 		;;
 	"slicer") # Calls the 'exaslicer' VTK slicing toolkit. Use "--help" for help.
-		exec $GITROOT/Miscellaneous/Postprocessing/exaslicer.py $@
+		exec $Postprocessing/exaslicer.py $@
 		;;
 	"run") # quickly start an application inside it's directory. Cleans VTK files before.
 		cdapp
@@ -199,15 +186,15 @@ case $CMD in
 		rm -f *.vtk *.log-file
 		export EXAHYPE_SKIP_TESTS=TRUE
 		ROOT=$(subreq root)
-		BINARY=$(subreq find-binary $APPNAME) && [[ -e "$ROOT/$BINARY" ]] || fail "Could not find binary ($BINARY)"
-		SPECFILE=$(subreq find-specfile $APPNAME)
+		BINARY=$(subreq find binary $APPNAME) && [[ -e "$ROOT/$BINARY" ]] || fail "Could not find binary ($BINARY)"
+		SPECFILE=$(subreq find specfile $APPNAME)
 		# the directory handling of this tool is really awkward.
 		# Would prefer relative directories here.
 		reducedbuf="stdbuf -oL -eL" # for quicker output, no 4k buffering
 		$reducedbuf $ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | $reducedbuf tee -a run.log
 		;;
 	"sim") # lightweight simulation managament
-		exec $GITROOT/Miscellaneous/BuildScripts/sim.sh $@
+		exec $BuildScripts/sim.sh $@
 		;;
 	""|"help") # prints out help about the exa toolkit
 		me=$(basename "$0")
