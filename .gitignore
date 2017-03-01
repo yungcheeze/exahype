@@ -48,6 +48,8 @@ buildinfo.h
 
 # Output
 *.vtk
+*.vtu
+*.pvd
 *.log-file
 
 # Any kind of archives
