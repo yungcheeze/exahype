@@ -213,8 +213,8 @@ bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, co
   return true;
 }
 
-bool Euler::MyEulerSolver::useSource(){
-  return true;
+bool Euler::MyEulerSolver::useSource() const {
+  return false;
 }
 
 void Euler::MyEulerSolver::source(const double* const Q, double* S) {
@@ -224,23 +224,23 @@ void Euler::MyEulerSolver::source(const double* const Q, double* S) {
   source.j(0,0,0);
 }
 
-bool Euler::MyEulerSolver::useNCP(){
-  return true;
+bool Euler::MyEulerSolver::useNCP() const {
+  return false;
 }
 
 void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
   std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
-bool Euler::MyEulerSolver::useMatrixb(){
-  return true;
+bool Euler::MyEulerSolver::useMatrixb() const {
+  return false;
 }
 
 void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
   std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
-bool Euler::MyEulerSolver::hasToApplyPointSource() const {
+bool Euler::MyEulerSolver::usePointSource() const {
   return false;
 }
 
