@@ -37,7 +37,7 @@ void Euler::FirstEulerSolver::flux(const double* const Q, double** F) {
 
 
 
-void Euler::FirstEulerSolver::source(const double* const Q, double* S) {
+void Euler::FirstEulerSolver::algebraicSource(const double* const Q, double* S) {
   // Number of variables = 5 + 0
   // @todo Please implement
   S[0] = 0.0;

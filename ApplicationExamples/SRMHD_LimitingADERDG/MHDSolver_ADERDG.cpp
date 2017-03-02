@@ -95,7 +95,7 @@ void MHD::MHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const d
   }
 }
 
-void MHD::MHDSolver_ADERDG::source(const double* const Q, double* S) {
+void MHD::MHDSolver_ADERDG::algebraicSource(const double* const Q, double* S) {
   pdesource_(S, Q);
 }
 
@@ -111,12 +111,12 @@ void MHD::MHDSolver_ADERDG::boundaryValues(const double* const x,const double t,
   bcfunc(x, &t, &dt, &faceIndex, nv, fluxIn, stateIn, fluxOut, stateOut);
 }
 
-void MHD::MHDSolver_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void MHD::MHDSolver_ADERDG::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   constexpr int nVar = 9;
   std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void MHD::MHDSolver_ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void MHD::MHDSolver_ADERDG::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   constexpr int nVar = 9;
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
@@ -134,7 +134,13 @@ bool MHD::MHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const Q
   return true;
 }
 
-bool MHD::MHDSolver_ADERDG::hasToApplyPointSource() const {
+bool MHD::MHDSolver_ADERDG::useAlgebraicSource() const {return true;}
+
+bool MHD::MHDSolver_ADERDG::useNonConservativeProduct() const {return true;}
+
+bool MHD::MHDSolver_ADERDG::useCoefficientMatrix() const {return true;}
+
+bool MHD::MHDSolver_ADERDG::usePointSource() const {
   return false;
 }
 

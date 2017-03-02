@@ -217,7 +217,7 @@ bool Euler::MyEulerSolver::useSource() const {
   return false;
 }
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
@@ -228,7 +228,7 @@ bool Euler::MyEulerSolver::useNCP() const {
   return false;
 }
 
-void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void Euler::MyEulerSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
@@ -236,7 +236,7 @@ bool Euler::MyEulerSolver::useMatrixb() const {
   return false;
 }
 
-void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void Euler::MyEulerSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 

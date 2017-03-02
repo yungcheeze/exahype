@@ -72,7 +72,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;

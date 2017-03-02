@@ -53,7 +53,7 @@ void SRMHD::MHDSolver::adjustedSolutionValues(const double* const x,const double
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
-void SRMHD::MHDSolver::source(const double* const Q, double* S) {
+void SRMHD::MHDSolver::algebraicSource(const double* const Q, double* S) {
   //pdesource_(S, Q);
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(S, 0, nVar * sizeof(double)); //no source
@@ -120,18 +120,24 @@ void SRMHD::MHDSolver::boundaryValues(const double* const x,const double t, cons
 }
 
 
-void SRMHD::MHDSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void SRMHD::MHDSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void SRMHD::MHDSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
 
 
-bool SRMHD::MHDSolver::hasToApplyPointSource() const {
+bool SRMHD::MHDSolver::useAlgebraicSource() const {return true;}
+
+bool SRMHD::MHDSolver::useNonConservativeProduct() const {return true;}
+
+bool SRMHD::MHDSolver::useCoefficientMatrix() const {return true;}
+
+bool SRMHD::MHDSolver::usePointSource() const {
   return false;
 }
 
