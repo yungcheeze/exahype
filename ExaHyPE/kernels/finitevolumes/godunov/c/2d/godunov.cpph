@@ -69,7 +69,7 @@ double riemannSolver(
   double Bn[numberOfVariables*numberOfVariables];
   double ncp[numberOfVariables];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  solver.matrixb(Qavg, normalNonZero, Bn);
+  solver.coefficientMatrix(Qavg, normalNonZero, Bn);
   
   for(int l=0; l < numberOfVariables; l++) {
     ncp[l] = 0;
@@ -353,7 +353,7 @@ double solutionUpdate(
   
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin; k < patchEnd+1; k++) {
-      solver.source(&luh[idx(j, k, 0)], source);
+      solver.algebraicSource(&luh[idx(j, k, 0)], source);
       
       for (int l = 0; l < numberOfVariables; l++) {
         // in Godunov 1st order, we have piecewise constant data and thus
