@@ -1479,7 +1479,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  if(hasToApplyPointSource()) { //disable kernel if not needed
+  if(usePointSource()) { //disable kernel if not needed
       pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }

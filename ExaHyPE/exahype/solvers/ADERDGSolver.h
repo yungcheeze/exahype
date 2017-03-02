@@ -814,7 +814,7 @@ public:
   virtual bool usePaddedData_nDoF() const {return false;}
   
   //TODO KD
-  virtual bool hasToApplyPointSource() const {return false;}
+  virtual bool usePointSource() const {return false;}
   
   /**
    * @brief Adds the solution update to the solution.

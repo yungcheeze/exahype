@@ -24,9 +24,10 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
   public:  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
-    bool useSource() override;
-    bool useNCP() override;
-    bool useMatrixb() override;
+    bool useSource()      const override;
+    bool useNCP()         const override;
+    bool useMatrixb()     const override;
+    bool usePointSource() const override;
     
     void init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}});
     static void flux(const double* const Q, double** F);
@@ -41,7 +42,6 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
 
     //TODO JMG
     //Not implemented
-    bool hasToApplyPointSource() const override;
     void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
 };

@@ -103,7 +103,7 @@ void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* 
 
 //TODO KD
 // tell the user what it is
-bool {{Project}}::{{Solver}}::hasToApplyPointSource() const { 
+bool {{Project}}::{{Solver}}::usePointSource() { 
   return false;
 }
 

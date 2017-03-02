@@ -33,9 +33,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
     //default useX implementation, can be overriden in the user solver
-    virtual bool useSource() {return true;}
-    virtual bool useNCP()    {return true;}
-    virtual bool useMatrixb(){return true;}
+    virtual bool useSource()  const {return true;}
+    virtual bool useNCP()     const {return true;}
+    virtual bool useMatrixb() const {return true;}
     
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
