@@ -60,7 +60,7 @@ bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const
 }
 
 
-bool {Project}}::{{Solver}}::useSource() {
+bool {Project}}::{{Solver}}::useSource() const {
   // Enable or disable Source
   return true;
 }
@@ -74,7 +74,7 @@ void {{Project}}::{{Solver}}::source(const double* const Q,double* S) {
 }
 
 
-bool {Project}}::{{Solver}}::useNCP() {
+bool {Project}}::{{Solver}}::useNCP() const {
   // Enable or disable NCP
   return true;
 }
@@ -88,7 +88,7 @@ void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const grad
 }
 
 
-bool {Project}}::{{Solver}}::useMatrixb() {
+bool {Project}}::{{Solver}}::useMatrixb() const {
   // Enable or disable matrixb
   return true;
 }
@@ -103,7 +103,7 @@ void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* 
 
 //TODO KD
 // tell the user what it is
-bool {{Project}}::{{Solver}}::usePointSource() { 
+bool {{Project}}::{{Solver}}::usePointSource() const { 
   return false;
 }
 
