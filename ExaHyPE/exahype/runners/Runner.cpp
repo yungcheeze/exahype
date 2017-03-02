@@ -717,7 +717,7 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
   logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
 }
 
-void exahype::runners::Runner::recomputePredictorAfterLimiterDomainOrGridUpdate(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {
   repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
   repository.switchToPredictionAndFusedTimeSteppingInitialisation();
   repository.iterate();
@@ -744,7 +744,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
     nextMinTimeStepSize =
         std::min(nextMinTimeStepSize, p->getMinNextTimeStepSize());
 
-    #if defined(Debug) || defined(Asserts)
+    #if true || defined(Debug) || defined(Asserts)
     switch(p->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
         logInfo("startNewTimeStep(...)",
@@ -876,7 +876,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
   }
 
   if (gridUpdate) {
-    recomputePredictorAfterLimiterDomainOrGridUpdate(repository);
+    recomputePredictorAfterGridUpdate(repository);
   }
   else {
     recomputePredictorIfNecessary(repository);

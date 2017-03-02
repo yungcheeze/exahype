@@ -151,7 +151,7 @@ class SpaceTimePredictorGenerator:
                                     # LDB
                                     self.m_context['nDofPad'], \
                                     # LDC
-                                    self.m_context['nVar'] * self.m_context['nDim'] * self.m_context['nDof'], \
+                                    self.m_context['nVarPad'] * self.m_context['nDim'] * self.m_context['nDof'], \
                                     # alpha
                                     1,                         \
                                     # beta
@@ -159,7 +159,7 @@ class SpaceTimePredictorGenerator:
                                     # alignment A
                                     1,                         \
                                     # alignment C
-                                    0,                         \
+                                    1,                         \
                                     # name
                                     "gradQ_x",                   \
                                     # prefetching
@@ -178,7 +178,7 @@ class SpaceTimePredictorGenerator:
                                     # LDB
                                     self.m_context['nDofPad'], \
                                     # LDC
-                                    self.m_context['nVar'] * self.m_context['nDim'] * (self.m_context['nDof'] ** 2), \
+                                    self.m_context['nVarPad'] * self.m_context['nDim'] * (self.m_context['nDof'] ** 2), \
                                     # alpha
                                     1,                         \
                                     # beta
@@ -186,7 +186,7 @@ class SpaceTimePredictorGenerator:
                                     # alignment A
                                     1,                         \
                                     # alignment C
-                                    0,                         \
+                                    1,                         \
                                     # name
                                     "gradQ_y",                   \
                                     # prefetching
@@ -206,7 +206,7 @@ class SpaceTimePredictorGenerator:
                                         # LDB
                                         self.m_context['nDofPad'], \
                                         # LDC
-                                        self.m_context['nVar'] * self.m_context['nDim'] * (self.m_context['nDof'] ** 3), \
+                                        self.m_context['nVarPad'] * self.m_context['nDim'] * (self.m_context['nDof'] ** 3), \
                                         # alpha
                                         1,                         \
                                         # beta
@@ -214,7 +214,7 @@ class SpaceTimePredictorGenerator:
                                         # alignment A
                                         1,                         \
                                         # alignment C
-                                        0,                         \
+                                        1,                         \
                                         # name
                                         "gradQ_z",                   \
                                         # prefetching

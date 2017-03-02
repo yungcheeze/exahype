@@ -8,7 +8,7 @@
 #include "Writers/TimeSeriesReductions.h"
 #include "Fortran/C2P-GRMHD.h"
 #include "Fortran/InitialData.h"
-
+#include "Fortran/MassAccretionRate.h"
 #include "kernels/GaussLegendreQuadrature.h"
 #include <cmath>
 
@@ -16,7 +16,8 @@ GRMHD::IntegralsWriter::IntegralsWriter(GRMHDSolver&  solver) :
 	conserved("output/cons-"),
 	primitives("output/prim-"),
 	errors("output/error-"),
-	statistics("output/volform.asc")
+	statistics("output/volform.asc"),
+	masschange("output/massdt.asc")
 {
 	conserved.add(0, "dens");
 	conserved.add(1, "sconx");
@@ -61,6 +62,7 @@ void GRMHD::IntegralsWriter::startPlotting(double time) {
 	primitives.startRow(time);
 	errors.startRow(time);
 	statistics.startRow(time);
+	masschange.startRow(time);
 }
 
 
@@ -69,6 +71,7 @@ void GRMHD::IntegralsWriter::finishPlotting() {
 	primitives.finishRow();
 	errors.finishRow();
 	statistics.finishRow();
+	masschange.finishRow();
 }
 
 
@@ -101,6 +104,22 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	
 	scaling *= wx*wy*wz;
 
+	// Mass Accretion Rate
+
+	// We start to compute the accretion rate at the r_excision
+	double rmin = 1;
+	// And we stop integration at some specific detector (r_max)
+	double rmax = 1.5;
+	double r = norm2(x);
+
+	if(r > rmin && r < rmax) {
+	  double mdot;
+	  massaccretionrate_(Q, &mdot);
+	  masschange.addValue(mdot, scaling);
+	}
+
+
+	
 	// reduce the conserved quantities
 	conserved.addValue(Q, scaling);
 

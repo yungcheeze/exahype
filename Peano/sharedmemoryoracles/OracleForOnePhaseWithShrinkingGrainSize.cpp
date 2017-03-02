@@ -302,15 +302,26 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry( DatabaseEntry& prototype, int newProblemSize ):
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry( const DatabaseEntry& prototype, int newProblemSize ):
   DatabaseEntry(newProblemSize) {
   assertion(prototype._biggestProblemSize<newProblemSize);
   if (prototype._currentGrainSize < prototype._biggestProblemSize) {
-    // We do not compute it once bug directly integrate it into the code to
-    // avoid dominating truncation errors
-    // int scaleUp = newProblemSize / prototype._biggestProblemSize;
-    _currentGrainSize = prototype._currentGrainSize * newProblemSize / prototype._biggestProblemSize;
-    _searchDelta      = prototype._searchDelta      * newProblemSize / prototype._biggestProblemSize;
+    // These are all integers and it should be possible to  determine all
+    // settings through integer arithmetics if we do not determine a rescaling
+    // factor (integer) once and then add it but first multiply and then
+    // divide. However, if we do so, we quickly run into integer overflows:
+    //     _currentGrainSize = prototype._currentGrainSize * newProblemSize / prototype._biggestProblemSize;
+    //     _searchDelta      = prototype._searchDelta      * newProblemSize / prototype._biggestProblemSize;
+    //
+    // So we have to work with first computing the ratio though it might introduce truncation errors:
+    int scaleUp = newProblemSize / prototype._biggestProblemSize;
+    if (scaleUp==0) {
+      scaleUp = 1;
+    }
+
+    _currentGrainSize = prototype._currentGrainSize * scaleUp;
+    _searchDelta      = prototype._searchDelta      * scaleUp;
+
   }
 
   if (_searchDelta==0) {
@@ -362,8 +373,9 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  rightString) {
-  std::string leftToken = "";
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  inputLine) {
+  std::string leftToken    = "";
+  std::string rightString  = inputLine;
   std::string methodTrace;
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
@@ -406,11 +418,11 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
       _biggestProblemSize = 65536;
       logError( "DatabaseEntry(std::string)", "unable to parse file entries w.r.t. biggest problem size" );
     }
+    logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Restart entry " << toString() << ". Corrupted line: " << inputLine );
     _currentGrainSize     = _biggestProblemSize;
     _currentMeasurement   = tarch::timing::Measurement( 0.0 );
     _previousMeasuredTime = _TimingMax;
     _searchDelta          = 0;
-    logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Restart entry " << toString() );
     restart();
   }
 }

@@ -99,8 +99,8 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
     const SolutionUpdate& masterThread) {
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
-  initialiseSolverFlags(_solverFlags);
-  prepareSolverFlags(_solverFlags);
+  exahype::solvers::initialiseSolverFlags(_solverFlags);
+  exahype::solvers::prepareSolverFlags(_solverFlags);
 }
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
@@ -163,10 +163,10 @@ void exahype::mappings::SolutionUpdate::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
-  initialiseSolverFlags(_solverFlags);
-  prepareSolverFlags(_solverFlags);
+  exahype::solvers::initialiseSolverFlags(_solverFlags);
+  exahype::solvers::prepareSolverFlags(_solverFlags);
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }

@@ -89,18 +89,18 @@ exahype::mappings::Merging::Merging()
 }
 
 exahype::mappings::Merging::~Merging() {
-  deleteTemporaryVariables(_temporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
-  _localState(masterThread._localState),
+  _localState(masterThread._localState)
   #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
   #endif
   {
-  initialiseTemporaryVariables();
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 #endif
 
@@ -108,7 +108,7 @@ void exahype::mappings::Merging::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
   _localState = solverState;
 
@@ -135,7 +135,7 @@ void exahype::mappings::Merging::endIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
-  deleteTemporaryVariables(_temporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
   logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);

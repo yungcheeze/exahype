@@ -7,7 +7,6 @@
 
 #include "LimitingADERDGSolver.h"
 
-#include "tarch/multicore/Lock.h"
 #include "kernels/limiter/generic/Limiter.h"
 
 namespace exahype {
@@ -661,11 +660,6 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
-  if (exahype::State::fuseADERDGPhases() &&
-      solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
-    _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,element);
-  }
-
   SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getLimiterStatus();
   SolverPatch::LimiterStatus limiterStatus         = determineLimiterStatus(solverPatch);
 
@@ -686,8 +680,13 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
       limiterPatch = &_limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
       limiterPatch->setType(LimiterPatch::Type::Erased);
       _limiter->ensureNoUnnecessaryMemoryIsAllocated(*limiterPatch);
+
+     tarch::multicore::Lock lock(_heapSemaphore);
+
       LimiterHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).erase(
           LimiterHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).begin()+limiterElement);
+
+      lock.free();
     }
     break;
   case SolverPatch::LimiterStatus::Troubled:
@@ -712,6 +711,8 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
       if (limiterElement==exahype::solvers::Solver::NotFound) {
         assertion(previousLimiterStatus==SolverPatch::LimiterStatus::Ok);
 
+        tarch::multicore::Lock lock(_heapSemaphore);
+
         // TODO(Dominic): Use solver patch's cell type
         // TODO(Dominic): This is some sort of mesh refinement.
         // In AMR settings, we need to add ancestor and descendant cells
@@ -723,6 +724,8 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
             solverPatch.getParentIndex(),
             solverPatch.getSize(),
             solverPatch.getOffset());
+
+        lock.free();
 
         limiterElement = _limiter->tryGetElement(
             fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
