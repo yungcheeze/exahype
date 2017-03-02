@@ -287,7 +287,6 @@ ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 			EXAHYPE_CC = mpiCC
 		else
 #			EXAHYPE_CC = mpiicpc
-			EXAHYPE_CC = mpicc
 		endif
 	endif
 endif
