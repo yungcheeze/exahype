@@ -334,7 +334,9 @@ all: wellsortedbuild
 # has not finished yet but the main.cpp code is already compiling.
 
 wellsortedbuild: header buildinfo ffiles.mk cfiles.mk
-	$(MAKE) $(FMODULEOBJECTS)
+ifneq ($(FMODULEOBJECTS),)
+		$(MAKE) $(FMODULEOBJECTS)
+endif
 	$(MAKE) build
 
 
