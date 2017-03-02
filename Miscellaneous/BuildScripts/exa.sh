@@ -40,10 +40,11 @@ alias pop='set -- "${@:2}"'
 
 pop # pop first parameter
 
+err() { >&2 echo $@; }
 verbose() { info $@; $@; } # only used for debugging
-info () { echo -e $ME: $@; } # print error/info message with name of script
+info () { err $ME: $@; } # print error/info message with name of script
 fail () { info $@; exit -1; } # exit after errormessage with name of script
-abort () { echo -e $@; exit -1; } # fail without name of script
+abort () { err $@; exit -1; } # fail without name of script
 finish () { echo $@; exit 0; } # finish with message happily
 subreq() { $SCRIPT $@; } # subrequest: Query another command for output
 cdroot() { cd "$GITROOT"; } # the crucial change to the repository root directory
@@ -151,16 +152,22 @@ case $CMD in
 		cat cheat-sheet.txt
 		;;
 	"check") # Tell which build flags we currently have in ENV
-		echo "ExaHyPE Makefile specific:"
-		echo "COMPILER:  ${COMPILER:=-not set-}"
-		echo "CC:        ${CC:=-not set-}"
-		echo "MODE:      ${MODE:=-not set-}"
-		echo "SHAREDMEM: ${SHAREDMEM:=-not set-}"
-		echo "DISTRIBUTEDMEM: ${DISTRIBUTEDMEM:=-not set -}"
-		echo "Exa Build tool specific:"
-		echo "CLEAN:     ${CLEAN:=-not-set-}"
-		echo "SKIP_TOOLKIT: ${SKIP_TOOLKIT:=-not set-}"
+		err "ExaHyPE Makefile specific:"
+		err "COMPILER:  ${COMPILER:=-not set-}"
+		err "CC:        ${CC:=-not set-}"
+		err "MODE:      ${MODE:=-not set-}"
+		err "SHAREDMEM: ${SHAREDMEM:=-not set-}"
+		err "DISTRIBUTEDMEM: ${DISTRIBUTEDMEM:=-not set -}"
+		err
+		err "Exa Build tool specific:"
+		err "CLEAN:     ${CLEAN:=-not-set-}"
+		err "SKIP_TOOLKIT: ${SKIP_TOOLKIT:=-not set-}"
 		env | grep -iE '(exa|sim)' | grep -vE '^PWD|^OLDPWD'
+		err
+		err "Machine readable:"
+		
+		quoteenv() { perl -e 'foreach $k (sort(keys(%ENV))) { print "export $k=\"$ENV{$k}\"\n"; }'; }
+		quoteenv | grep -iE '^export (COMPILER|CC|MODE|SHAREDMEM|DISTRIBUTEDMEM|CLEAN|SKIP_TOOLKIT)'
 		;;
 	"git") # passes commands to git
 		cdroot; info "ExaHyPE Git Repository at $GITROOT"

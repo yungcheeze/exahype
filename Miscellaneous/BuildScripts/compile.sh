@@ -97,22 +97,6 @@ export SHAREDMEM=${SHAREDMEM:=$DEFAULT_SHAREDMEM}
 export DISTRIBUTEDMEM=${DISTRIBUTEDMEM:=$DEFAULT_DISTRIBUTEDMEM}
 export MODE=${MODE:=$DEFAULT_MODE}
 
-# Allow to store information how to compile a specific application
-APP_INFO_FILE="$ABSAPPDIR/$APPNAME/projectpaths.cfg"
-if [[ -e "$APP_INFO_FILE" ]]; then
-	echo "Loading application specific configuration from $APP_INFO_FILE"
-	source $APP_INFO_FILE
-	# the app config file is supposed to set stuff like:
-	export PROJECT_CFLAGS="${PROJECT_CFLAGS:=}"
-	export PROJECT_LFLAGS="${PROJECT_LFLAGS:=}"
-	export PROJECT_LINK="${PROJECT_LINK:=}"
-	echo " PROJECT_CFLAGS = $PROJECT_CFLAGS"
-	echo " PROJECT_LFLAGS = $PROJECT_LFLAGS"
-	echo " PROJECT_LINK = $PROJECT_LINK"
-	
-else
-	echo "No application specific configuration ($APP_INFO_FILE) found."
-fi
 # you can amend on this
 export TBB_INC=/usr/include/tbb
 MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
@@ -143,6 +127,23 @@ else
 fi
 
 cd -
+
+# Allow to store information how to compile a specific application
+APP_INFO_FILE="projectpaths.cfg"
+if [[ -e "$APP_INFO_FILE" ]]; then
+	echo "Loading application specific configuration from $APP_INFO_FILE"
+	source $APP_INFO_FILE
+	# the app config file is supposed to set stuff like:
+	export PROJECT_CFLAGS="${PROJECT_CFLAGS:=}"
+	export PROJECT_LFLAGS="${PROJECT_LFLAGS:=}"
+	export PROJECT_LINK="${PROJECT_LINK:=}"
+	echo " PROJECT_CFLAGS = $PROJECT_CFLAGS"
+	echo " PROJECT_LFLAGS = $PROJECT_LFLAGS"
+	echo " PROJECT_LINK = $PROJECT_LINK"
+	
+else
+	echo "No application specific configuration ($APP_INFO_FILE) found."
+fi
 
 # plausability check
 [[ -e Makefile ]] || { echo -e "Could not find Makefile in $PWD. Probably the toolkit failed."; exit -1; }
