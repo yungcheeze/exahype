@@ -50,7 +50,7 @@ void GenericEulerKernelTest::flux(const double *Q, double **F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::source(const double *Q, double *S) {
+void GenericEulerKernelTest::algebraicSource(const double *Q, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -76,7 +76,7 @@ void GenericEulerKernelTest::eigenvalues(const double *const Q,
   lambda[4] = u_n + c;
 }
 
-void GenericEulerKernelTest::ncp(const double *const Q,
+void GenericEulerKernelTest::nonConservativeProduct(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
   // Arbitrary BS
@@ -102,7 +102,7 @@ void GenericEulerKernelTest::ncp(const double *const Q,
   }
 }  // ncp
 
-void GenericEulerKernelTest::matrixb(const double *const Q,
+void GenericEulerKernelTest::coefficientMatrix(const double *const Q,
                                          const int normalNonZero, double *Bn) {
   std::memset(Bn, 0, 5 * 5 * sizeof(double));
 
