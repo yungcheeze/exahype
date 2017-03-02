@@ -84,7 +84,7 @@ void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void EulerFV::MyEulerSolver::source(const double* const Q, double* S) {
+void EulerFV::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
@@ -106,5 +106,5 @@ void EulerFV::MyEulerSolver::boundaryValues(
 }
 
 
-void EulerFV::MyEulerSolver::matrixb(double const*, int, double*) {
+void EulerFV::MyEulerSolver::coefficientMatrix(double const*, int, double*) {
 }

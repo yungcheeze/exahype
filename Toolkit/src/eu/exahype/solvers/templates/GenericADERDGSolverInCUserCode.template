@@ -37,15 +37,6 @@ void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
 }
 
 
-void {{Project}}::{{Solver}}::source(const double* const Q,double* S) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-{{Source}}
-}
-
-
 void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
@@ -69,7 +60,26 @@ bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const
 }
 
 
-void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+bool {Project}}::{{Solver}}::useAlgebraicSource() const {
+  // Enable or disable Source
+  return true;
+}
+
+void {{Project}}::{{Solver}}::algebraicSource(const double* const Q,double* S) {
+  // Dimensions             = {{Dimensions}}
+  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  
+  // @todo Please implement/augment if required
+{{Source}}
+}
+
+
+bool {Project}}::{{Solver}}::useNonConservativeProduct() const {
+  // Enable or disable NCP
+  return true;
+}
+
+void {{Project}}::{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
 
@@ -78,7 +88,12 @@ void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const grad
 }
 
 
-void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* Bn) {
+bool {Project}}::{{Solver}}::useCoefficientMatrix() const {
+  // Enable or disable matrixb
+  return true;
+}
+
+void {{Project}}::{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
   
@@ -88,7 +103,7 @@ void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* 
 
 //TODO KD
 // tell the user what it is
-bool {{Project}}::{{Solver}}::hasToApplyPointSource() const { 
+bool {{Project}}::{{Solver}}::usePointSource() const { 
   return false;
 }
 

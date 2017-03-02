@@ -70,7 +70,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 #endif
 }
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;

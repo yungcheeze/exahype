@@ -42,7 +42,7 @@ void GRMHD::GRMHDSolver_FV::flux(const double* const Q, double** F) {
 }
 
 
-void GRMHD::GRMHDSolver_FV::source(const double* const Q, double* S) {
+void GRMHD::GRMHDSolver_FV::algebraicSource(const double* const Q, double* S) {
   pdesource_(S, Q);
 }
 

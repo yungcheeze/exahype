@@ -227,7 +227,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-DIPCM_AVAILABLE\n");
       }
       if (_likwidLib != null) {
-        _writer.write("PROJECT_LFLAGS+=-L" + _likwidLib + " -llikwid\n");
+        _writer.write("PROJECT_LFLAGS+=$(LIKWID_LIB)");
       }
       if (_ipcmLib != null) {
         _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");

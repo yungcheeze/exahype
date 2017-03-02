@@ -39,7 +39,7 @@ void GRMHD::GRMHDSolver::flux(const double* const Q,double** F) {
 }
 
 
-void GRMHD::GRMHDSolver::source(const double* const Q,double* S) {
+void GRMHD::GRMHDSolver::algebraicSource(const double* const Q,double* S) {
   pdesource_(S, Q);
 }
 
@@ -85,18 +85,24 @@ bool GRMHD::GRMHDSolver::physicalAdmissibilityDetection(const double* const QMin
 }
 
 
-void GRMHD::GRMHDSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
 }
 
 
-void GRMHD::GRMHDSolver::matrixb(const double* const Q,const int d,double* Bn) {
+void GRMHD::GRMHDSolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   double nv[3] = {0.};
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);
 }
 
-bool GRMHD::GRMHDSolver::hasToApplyPointSource() const { 
+bool GRMHD::GRMHDSolver::useAlgebraicSource() const {return true;}
+
+bool GRMHD::GRMHDSolver::useNonConservativeProduct() const {return true;}
+
+bool GRMHD::GRMHDSolver::useCoefficientMatrix() const {return true;}
+
+bool GRMHD::GRMHDSolver::usePointSource() const { 
   return false;
 }
 

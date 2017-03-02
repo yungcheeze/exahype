@@ -72,7 +72,7 @@ void SWE::MySWESolver::flux(const double* const Q,double** F) {
 }
 
 
-void SWE::MySWESolver::source(const double* const Q,double* S) {
+void SWE::MySWESolver::algebraicSource(const double* const Q,double* S) {
   // Dimensions             = 2
   // Number of variables    = 4 (#unknowns + #parameters)
   
@@ -124,7 +124,7 @@ bool SWE::MySWESolver::physicalAdmissibilityDetection(const double* const QMin,c
 }
 
 
-void SWE::MySWESolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void SWE::MySWESolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 2
   // Number of variables    = 3 (#unknowns + #parameters)
   idx2 idx_gradQ(DIMENSIONS,NumberOfVariables);
@@ -137,7 +137,7 @@ void SWE::MySWESolver::ncp(const double* const Q,const double* const gradQ,doubl
 }
 
 
-void SWE::MySWESolver::matrixb(const double* const Q,const int d,double* Bn) {
+void SWE::MySWESolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // Dimensions             = 2
   // Number of variables    = 3 (#unknowns + #parameters)
   idx2 idx_Bn(NumberOfVariables,NumberOfVariables);  
@@ -162,7 +162,13 @@ void SWE::MySWESolver::matrixb(const double* const Q,const int d,double* Bn) {
   Bn[idx_Bn(3,d+1)]=grav*Q[0];
 }
 
-bool SWE::MySWESolver::hasToApplyPointSource() const 
+bool SWE::MySWESolver::useAlgebraicSource() const {return true;}
+
+bool SWE::MySWESolver::useNonConservativeProduct() const {return true;}
+
+bool SWE::MySWESolver::useCoefficientMatrix() const {return true;}
+
+bool SWE::MySWESolver::usePointSource() const 
 {
    return false;
 }

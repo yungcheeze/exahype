@@ -28,10 +28,15 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
-{{NamingSchemes}}
+{{NamingSchemes}}    
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
+    //default useX implementation, can be overriden in the user solver
+    virtual bool useAlgebraicSource()        const {return true;}
+    virtual bool useNonConservativeProduct() const {return true;}
+    virtual bool useCoefficientMatrix()      const {return true;}
+    
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;

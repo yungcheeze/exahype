@@ -65,7 +65,7 @@ void AcousticWave::MyAcousticWaveSolver::flux(const double* const Q,double** F) 
 }
 
 
-void AcousticWave::MyAcousticWaveSolver::source(const double* const Q,double* S) {
+void AcousticWave::MyAcousticWaveSolver::algebraicSource(const double* const Q,double* S) {
   // Dimensions             = 3
   // Number of variables    = 4 (#unknowns + #parameters)
   
@@ -96,7 +96,7 @@ void AcousticWave::MyAcousticWaveSolver::boundaryValues(const double* const x,co
 }
 
 
-void AcousticWave::MyAcousticWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void AcousticWave::MyAcousticWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 3
   // Number of variables    = 4 (#unknowns + #parameters)
 
@@ -198,7 +198,7 @@ void AcousticWave::MyAcousticWaveSolver::ncp(const double* const Q,const double*
 }
 
     
-void AcousticWave::MyAcousticWaveSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+void AcousticWave::MyAcousticWaveSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
   // Dimensions             = 3
   // Number of variables    = 4 (#unknowns + #parameters)
   

@@ -55,7 +55,7 @@ void SRHD::SRHDSolverFV::flux(const double* const Q, double** F) {
 }
 
 
-void SRHD::SRHDSolverFV::source(const double* const Q, double* S) {
+void SRHD::SRHDSolverFV::algebraicSource(const double* const Q, double* S) {
   S[0] = 0.;
   S[1] = 0.;
   S[2] = 0.;
