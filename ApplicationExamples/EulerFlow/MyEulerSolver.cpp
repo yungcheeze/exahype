@@ -213,7 +213,7 @@ bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, co
   return true;
 }
 
-bool Euler::MyEulerSolver::useSource() const {
+bool Euler::MyEulerSolver::useAlgebraicSource() const {
   return false;
 }
 
@@ -224,7 +224,7 @@ void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   source.j(0,0,0);
 }
 
-bool Euler::MyEulerSolver::useNCP() const {
+bool Euler::MyEulerSolver::useNonConservativeProduct() const {
   return false;
 }
 
@@ -232,7 +232,7 @@ void Euler::MyEulerSolver::nonConservativeProduct(const double* const Q, const d
   std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
-bool Euler::MyEulerSolver::useMatrixb() const {
+bool Euler::MyEulerSolver::useCoefficientMatrix() const {
   return false;
 }
 
