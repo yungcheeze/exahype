@@ -31,7 +31,7 @@ namespace c {
  * We don't need to consider material parameters
  * in FL,FR,tempStateSizedSquareMatrices,
  */
-template <bool useMatrixb, typename SolverType>
+template <bool useCoefficientMatrix, typename SolverType>
 void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double* const QL,
                             const double* const QR,
@@ -90,8 +90,8 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   double* Bn  = tempStateSizedSquareMatrices[0];
   double* ncp = tempStateSizedVectors[4];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  if(useMatrixb) {
-    solver.matrixb(Qavg, normalNonZero, Bn); // Bn is nVar x nVar matrix
+  if(useCoefficientMatrix) {
+    solver.coefficientMatrix(Qavg, normalNonZero, Bn); // Bn is nVar x nVar matrix
   }
 
   // We now compute the numerical flux. Note that the scheme is at the moment
@@ -105,7 +105,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
     idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
     for (int j = 0; j < basisSize; j++) {
       
-      if(useMatrixb) {
+      if(useCoefficientMatrix) {
         // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
         for(int l=0; l < numberOfVariables; l++) {
           ncp[l] = 0;
@@ -144,7 +144,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
         FL[idx_FLR(j, k)] =
             0.5 * (FR[idx_FLR(j, k)] + FL[idx_FLR(j, k)]) -
             0.5 * smax * (QR[idx_QLR(j, k)] - QL[idx_QLR(j, k)]);
-        if(useMatrixb) {
+        if(useCoefficientMatrix) {
           FR[idx_FLR(j, k)] = FL[idx_FLR(j, k)] - 0.5 * ncp[k];
           FL[idx_FLR(j, k)] = FL[idx_FLR(j, k)] + 0.5 * ncp[k];
         } else {

@@ -59,7 +59,7 @@ namespace kernels {
         const double dt
       );
       
-      template <bool useSource>
+      template <bool useSourceOrNCP>
       void volumeIntegral( 
         double* restrict lduh, 
         const double* restrict const lFhi,
@@ -89,7 +89,7 @@ namespace kernels {
       const double dt
       );
 
-      template <bool useSource, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
+      template <bool useCoefficientMatrix, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
       void riemannSolver( 
         double* restrict lFbndL,
         double* restrict lFbndR,

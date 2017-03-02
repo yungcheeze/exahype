@@ -60,12 +60,12 @@ bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const
 }
 
 
-bool {Project}}::{{Solver}}::useSource() const {
+bool {Project}}::{{Solver}}::useAlgebraicSource() const {
   // Enable or disable Source
   return true;
 }
 
-void {{Project}}::{{Solver}}::source(const double* const Q,double* S) {
+void {{Project}}::{{Solver}}::algebraicSource(const double* const Q,double* S) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
   
@@ -74,12 +74,12 @@ void {{Project}}::{{Solver}}::source(const double* const Q,double* S) {
 }
 
 
-bool {Project}}::{{Solver}}::useNCP() const {
+bool {Project}}::{{Solver}}::useNonConservativeProduct() const {
   // Enable or disable NCP
   return true;
 }
 
-void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void {{Project}}::{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
 
@@ -88,12 +88,12 @@ void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const grad
 }
 
 
-bool {Project}}::{{Solver}}::useMatrixb() const {
+bool {Project}}::{{Solver}}::useCoefficientMatrix() const {
   // Enable or disable matrixb
   return true;
 }
 
-void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* Bn) {
+void {{Project}}::{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
   

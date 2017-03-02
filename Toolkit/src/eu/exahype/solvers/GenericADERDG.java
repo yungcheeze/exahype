@@ -315,26 +315,26 @@ public class GenericADERDG implements Solver {
         content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}","kernels::aderdg::generic::c::spaceTimePredictorLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
       } else {
         content = content.replaceAll("\\{\\{volumeIntegral\\}\\}",
-            "if(useSource() || useNCP()) {\n"
+            "if(useAlgebraicSource() || useNonConservativeProduct()) {\n"
         + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n"
         + "  } else {\n"
         + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n" 
         + "  }");
         content = content.replaceAll("\\{\\{riemannSolver\\}\\}",
-            "if(useMatrixb()) {\n"
+            "if(useCoefficientMatrix()) {\n"
         + "    kernels::aderdg::generic::c::riemannSolverNonlinear<true,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n"
         + "  } else {\n"
         + "    kernels::aderdg::generic::c::riemannSolverNonlinear<false,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n" 
         + "  }");
         content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}",
-            "if(useSource()) {\n"
-        + "    if(useNCP()) {\n"
+            "if(useAlgebraicSource()) {\n"
+        + "    if(useNonConservativeProduct()) {\n"
         + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
         + "    } else {\n"
         + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
         + "    }\n"
         + "  } else {\n"
-        + "    if(useNCP()) {\n"
+        + "    if(useNonConservativeProduct()) {\n"
         + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
         + "    } else {\n"
         + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"

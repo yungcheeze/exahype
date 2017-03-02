@@ -135,7 +135,7 @@ void solutionAdjustment(SolverType& solver, double* luh,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <bool useMatrixb, typename SolverType>
+template <bool useCoefficientMatrix, typename SolverType>
 void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,

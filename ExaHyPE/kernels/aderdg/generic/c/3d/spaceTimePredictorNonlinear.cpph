@@ -111,7 +111,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
             double* S = lFi + idx_lFi(i, j, k, l, 3, 0);
             solver.flux(Q, F);
             if(useSource) {
-              solver.source(Q, S);
+              solver.algebraicSource(Q, S);
             }
           }
         }
@@ -223,7 +223,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
               if(useNCP) {
                 // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-                solver.ncp(&lQi[idx_lQi(j, k, l, i, 0)], &gradQ[idx_gradQ(j, k, l, i, 0, 0)], BGradQ);
+                solver.nonConservativeProduct(&lQi[idx_lQi(j, k, l, i, 0)], &gradQ[idx_gradQ(j, k, l, i, 0, 0)], BGradQ);
               }
 
               // TODO: numberOfVariables - numberOfParameters would do

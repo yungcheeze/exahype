@@ -31,7 +31,7 @@ namespace c {
  * We don't need to consider material parameters
  * in FL,FR,tempStateSizedSquareMatrices,
  */
-template <bool useMatrixb, typename SolverType>
+template <bool useCoefficientMatrix, typename SolverType>
 void riemannSolverNonlinear(SolverType& solver,
     double* FL, double* FR, const double* const QL,
     const double* const QR,
@@ -93,8 +93,8 @@ void riemannSolverNonlinear(SolverType& solver,
   double* Bn  = tempStateSizedSquareMatrices[0];
   double* ncp = tempStateSizedVectors[4];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  if(useMatrixb) {
-    solver.matrixb(Qavg, normalNonZero, Bn);
+  if(useCoefficientMatrix) {
+    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
   }
   
 
@@ -109,7 +109,7 @@ void riemannSolverNonlinear(SolverType& solver,
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         
-        if(useMatrixb) {
+        if(useCoefficientMatrix) {
           // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
           for(int l=0; l < numberOfVariables; l++) {
             ncp[l] = 0;
@@ -129,7 +129,7 @@ void riemannSolverNonlinear(SolverType& solver,
               0.5 * (FR[idx_FLR(i, j, k)] + FL[idx_FLR(i, j, k)]) -
               0.5 * smax * (QR[idx_QLR(i, j, k)] - QL[idx_QLR(i, j, k)]);
           
-          if(useMatrixb) {
+          if(useCoefficientMatrix) {
             FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] - 0.5 * ncp[k];
             FL[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] + 0.5 * ncp[k];
           } else {

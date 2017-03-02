@@ -101,7 +101,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
     /**
      * Enable or disable the use of the source method in the kernels
      */
-    bool useSource() const override;
+    bool useAlgebraicSource() const override;
     
     /**
      * Compute the Algebraic Sourceterms.
@@ -110,12 +110,12 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      *                 as C array (already allocated).
      * \param[inout] S the source point as C array (already allocated).
      */
-    void source(const double* const Q,double* S);
+    void algebraicSource(const double* const Q,double* S);
     
     /**
      * Enable or disable the use of the ncp method in the kernels
      */
-    bool useNCP() const override;
+    bool useNonConservativeProduct() const override;
     
    /**
      * Non Conservative Product
@@ -126,16 +126,16 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * Dim x NumberOfVariables.
      * 
      */
-    void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
     
     /**
      * Matrix B of the Non Conservative Product
      *
      * Enable or disable the use of the matrixb method in the kernels
      */
-    bool useMatrixb() const override;
+    bool useCoefficientMatrix() const override;
     
-    void matrixb(const double* const Q,const int d,double* Bn);
+    void coefficientMatrix(const double* const Q,const int d,double* Bn);
     
     bool usePointSource() const override;
     
