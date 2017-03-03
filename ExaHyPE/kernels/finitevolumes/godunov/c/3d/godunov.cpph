@@ -499,7 +499,7 @@ double solutionUpdate(
   for (int i = patchBegin; i < patchEnd+1; i++) {
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin; k < patchEnd+1; k++) {
-    solver.algebraicSource(&luh[idx(i,j,k,0)], source);
+    solver.source(&luh[idx(i,j,k,0)], source);
     for (int l = 0; l < numberOfVariables; l++) {
       // No BgradQ contribution as this is first order, cf. 2D godunov.
       luh_new[idx(i,j,k,l)] += dt * source[l];

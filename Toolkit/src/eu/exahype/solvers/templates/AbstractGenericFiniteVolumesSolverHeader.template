@@ -41,6 +41,32 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 
     static void constantsToString(std::ostream& os);
+    
+    
+    
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual bool useAdjustSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) const {return false;}
+
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {};
+
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {};
+
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual void source(const double* const Q,double* S) {};    
 };
 
 
