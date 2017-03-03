@@ -42,12 +42,12 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * \param[in]    dt        the width of the time interval.
      * \return true if the solution has to be adjusted.
      */
-    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
+    bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
     
     /**
      * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
      *
-     * \note Use this function and ::hasToAdjustSolution to set initial conditions.
+     * \note Use this function and ::useAdjustSolution to set initial conditions.
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
@@ -97,49 +97,6 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int dir,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
-     
-    /**
-     * Enable or disable the use of the source method in the kernels
-     */
-    bool useAlgebraicSource() const override;
-    
-    /**
-     * Compute the Algebraic Sourceterms.
-     *
-     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-     *                 as C array (already allocated).
-     * \param[inout] S the source point as C array (already allocated).
-     */
-    void algebraicSource(const double* const Q,double* S);
-    
-    /**
-     * Enable or disable the use of the ncp method in the kernels
-     */
-    bool useNonConservativeProduct() const override;
-    
-   /**
-     * Non Conservative Product
-     *
-     * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
-     * use the ADER-DG kernels for nonlinear PDEs. If you use 
-     * the kernels for linear PDEs, it is a tensor with dimensions
-     * Dim x NumberOfVariables.
-     * 
-     */
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    
-    /**
-     * Matrix B of the Non Conservative Product
-     *
-     * Enable or disable the use of the matrixb method in the kernels
-     */
-    bool useCoefficientMatrix() const override;
-    
-    void coefficientMatrix(const double* const Q,const int d,double* Bn);
-    
-    bool usePointSource() const override;
-    
-    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     
     /**
      * Evaluate the refinement criterion within a cell.
@@ -156,16 +113,6 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * \return One of exahype::solvers::Solver::RefinementControl::{Erase,Keep,Refine}.
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-    
-    /**
-     * Evaluate the physical admissibility detection (PAD) criterion within a cell.
-     *
-     *
-     * \param[in] QMin the minimum value per variable.
-     * \param[in] QMax the maximum value per variable.
-     * \return true if the bounds are physically admissible.
-     */
-    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const override;
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

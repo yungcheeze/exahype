@@ -321,7 +321,7 @@ public class GenericADERDG implements Solver {
         + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n" 
         + "  }");
         content = content.replaceAll("\\{\\{riemannSolver\\}\\}",
-            "if(useCoefficientMatrix()) {\n"
+            "if(useNonConservativeProduct()) {\n"
         + "    kernels::aderdg::generic::c::riemannSolverNonlinear<true,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n"
         + "  } else {\n"
         + "    kernels::aderdg::generic::c::riemannSolverNonlinear<false,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n" 

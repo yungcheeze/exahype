@@ -81,7 +81,7 @@ namespace kernels {
       );
 
       template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)> 
-      void solutionAdjustment(
+      void adjustSolution(
       double* luh,
       const tarch::la::Vector<DIMENSIONS,double>& center,
       const tarch::la::Vector<DIMENSIONS,double>& dx,
@@ -122,7 +122,7 @@ namespace kernels {
   }
 }
 
-#include "kernels/aderdg/optimised/solutionAdjustment.cpph"
+#include "kernels/aderdg/optimised/adjustSolution.cpph"
 
 #include "kernels/aderdg/optimised/stableTimeStepSize.cpph"
 

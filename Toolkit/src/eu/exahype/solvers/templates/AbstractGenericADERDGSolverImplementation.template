@@ -94,7 +94,7 @@ double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const l
 
 
 
-void {{Project}}::Abstract{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
 {{BeforeSolutionAdjustment}}
   kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
 {{AfterSolutionAdjustment}}

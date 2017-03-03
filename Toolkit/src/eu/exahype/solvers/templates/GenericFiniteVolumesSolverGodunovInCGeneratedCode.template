@@ -23,8 +23,8 @@ void {{Project}}::{{Solver}}::solutionUpdate(double* luhNew,const double* luh,do
   maxAdmissibleDt = kernels::finitevolumes::godunov::c::solutionUpdate<{{Solver}}>(*this,luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt,getNumberOfVariables(),getNodesPerCoordinateAxis());
 }
 
-void {{Project}}::{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  kernels::finitevolumes::godunov::c::solutionAdjustment<{{Solver}}>(*this,luh,center,dx,t,dt,getNumberOfVariables(),getNodesPerCoordinateAxis());
+void {{Project}}::{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+  kernels::finitevolumes::godunov::c::adjustSolution<{{Solver}}>(*this,luh,center,dx,t,dt,getNumberOfVariables(),getNodesPerCoordinateAxis());
 }
 
 void {{Project}}::{{Solver}}::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {

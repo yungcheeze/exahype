@@ -1635,12 +1635,12 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    if (hasToAdjustSolution(
+    if (useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
         cellDescription.getCorrectorTimeStamp(),
         cellDescription.getCorrectorTimeStepSize())) {
-      solutionAdjustment(
+      adjustSolution(
           luh,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
@@ -1695,12 +1695,12 @@ void exahype::solvers::ADERDGSolver::updateSolution(
 
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
     
-    if (hasToAdjustSolution(
+    if (useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
         cellDescription.getCorrectorTimeStamp(),
         cellDescription.getCorrectorTimeStepSize())) {
-      solutionAdjustment(
+      adjustSolution(
           newSolution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),

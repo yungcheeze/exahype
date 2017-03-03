@@ -6,7 +6,7 @@ void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{Solver
   // @todo Please implement/augment if required
 }
 
-bool {{Project}}::{{Solver}}::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+bool {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
   return tarch::la::equals(t,0.0);
 }
@@ -51,63 +51,4 @@ void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double 
 exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
   // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
-
-bool {{Project}}::{{Solver}}::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
-  // @todo Please implement/augment if required
-  return true;
-}
-
-
-bool {{Project}}::{{Solver}}::useAlgebraicSource() const {
-  // Enable or disable Source
-  return true;
-}
-
-void {{Project}}::{{Solver}}::algebraicSource(const double* const Q,double* S) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-{{Source}}
-}
-
-
-bool {{Project}}::{{Solver}}::useNonConservativeProduct() const {
-  // Enable or disable NCP
-  return true;
-}
-
-void {{Project}}::{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-
-  // @todo Please implement/augment if required
-{{NonConservativeProduct}}
-}
-
-
-bool {{Project}}::{{Solver}}::useCoefficientMatrix() const {
-  // Enable or disable matrixb
-  return true;
-}
-
-void {{Project}}::{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-{{MatrixB}}
-}
-
-//TODO KD
-// tell the user what it is
-bool {{Project}}::{{Solver}}::usePointSource() const { 
-  return false;
-}
-
-//TODO KD
-void {{Project}}::{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  //TODO KD // @todo Please implement/augment if required and set bool function
 }

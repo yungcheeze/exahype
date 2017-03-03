@@ -331,7 +331,7 @@ public:
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
    */
-  virtual void solutionAdjustment(
+  virtual void adjustSolution(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
@@ -348,7 +348,7 @@ public:
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
    */
-  virtual bool hasToAdjustSolution(
+  virtual bool useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,

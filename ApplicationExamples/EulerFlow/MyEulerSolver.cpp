@@ -100,9 +100,9 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
   eigs.j(u_n,u_n,u_n);
 }
 
-bool Euler::MyEulerSolver::hasToAdjustSolution(
+bool Euler::MyEulerSolver::useAdjustSolution(
     const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) const {
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     return true;
@@ -207,43 +207,4 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   stateOut[3] = stateIn[3];
   stateOut[4] = stateIn[4];
   */
-}
-
-bool Euler::MyEulerSolver::isPhysicallyAdmissible(const double* QMin, const double* QMax) const {
-  return true;
-}
-
-bool Euler::MyEulerSolver::useAlgebraicSource() const {
-  return false;
-}
-
-void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
-}
-
-bool Euler::MyEulerSolver::useNonConservativeProduct() const {
-  return false;
-}
-
-void Euler::MyEulerSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
-}
-
-bool Euler::MyEulerSolver::useCoefficientMatrix() const {
-  return false;
-}
-
-void Euler::MyEulerSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
-}
-
-bool Euler::MyEulerSolver::usePointSource() const {
-  return false;
-}
-
-void Euler::MyEulerSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  //TODO KD
 }

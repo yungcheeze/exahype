@@ -32,11 +32,78 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
-    //default useX implementation, can be overriden in the user solver
-    virtual bool useAlgebraicSource()        const {return true;}
-    virtual bool useNonConservativeProduct() const {return true;}
-    virtual bool useCoefficientMatrix()      const {return true;}
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    virtual bool useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const  {return false;}
+
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    virtual bool useAlgebraicSource()        const {return false;}
+
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    virtual bool usePointSource()            const {return false;}
+
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    virtual bool useNonConservativeProduct() const {return false;}
     
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual void algebraicSource(const double* const Q,double* S) {}
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {}
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {}
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {}
+       
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual void adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {}
+
+
+    /**
+     * Default implementation. Please overwrite.
+     *
+     * See superclass for function's semantics.
+     */
+    virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const { return true; }
+
+
+
+    void pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; 
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -44,12 +111,11 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
     void boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
-    void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
+    void adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
     void faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
-    void pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; //TODO KD
 
     static void constantsToString(std::ostream& os);
 };
