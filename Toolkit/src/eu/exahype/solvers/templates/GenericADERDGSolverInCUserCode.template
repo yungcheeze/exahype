@@ -60,7 +60,7 @@ bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const
 }
 
 
-bool {Project}}::{{Solver}}::useAlgebraicSource() const {
+bool {{Project}}::{{Solver}}::useAlgebraicSource() const {
   // Enable or disable Source
   return true;
 }
@@ -74,7 +74,7 @@ void {{Project}}::{{Solver}}::algebraicSource(const double* const Q,double* S) {
 }
 
 
-bool {Project}}::{{Solver}}::useNonConservativeProduct() const {
+bool {{Project}}::{{Solver}}::useNonConservativeProduct() const {
   // Enable or disable NCP
   return true;
 }
@@ -88,7 +88,7 @@ void {{Project}}::{{Solver}}::nonConservativeProduct(const double* const Q,const
 }
 
 
-bool {Project}}::{{Solver}}::useCoefficientMatrix() const {
+bool {{Project}}::{{Solver}}::useCoefficientMatrix() const {
   // Enable or disable matrixb
   return true;
 }
