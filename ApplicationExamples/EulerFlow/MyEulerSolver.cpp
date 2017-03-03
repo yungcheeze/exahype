@@ -110,7 +110,7 @@ bool Euler::MyEulerSolver::hasToAdjustSolution(
   return false;
 }
 
-void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
+void Euler::MyEulerSolver::adjustSolution(const double* const x,
                                                   const double w,const double t,const double dt, double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
@@ -209,7 +209,7 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   */
 }
 
-bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, const double* QMax) {
+bool Euler::MyEulerSolver::isPhysicallyAdmissible(const double* QMin, const double* QMax) const {
   return true;
 }
 

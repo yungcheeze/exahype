@@ -1076,7 +1076,7 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) { return true; }
+  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const =0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

@@ -34,7 +34,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
      * within the time interval [t,t+dt].
      *
-     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     * \note Use this function and ::adjustSolution to set initial conditions.
      *
      * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
@@ -56,7 +56,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
      *                         as C array (already allocated).
      */
-    void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
+    void adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q);
     
     /**
      * Compute the flux tensor.
@@ -147,7 +147,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * \note Instead of a variables array at a single quadrature point we give
      * you all NumberOfVariables*(Order+1)^DIMENSIONS solution degrees of freedom.
      *
-     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     * \note Use this function and ::adjustSolution to set initial conditions.
      *
      * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
@@ -165,7 +165,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      * \param[in] QMax the maximum value per variable.
      * \return true if the bounds are physically admissible.
      */
-    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const override;
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

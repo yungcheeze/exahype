@@ -589,7 +589,7 @@ void solutionAdjustment(
         const double qr = (2.0*(i-patchBegin)+1.0)/(2.0*basisSize); //linspace; 
         x[0] = center[0] + dx[0] * (qr - 0.5);
         // read initial condition
-        solver.adjustedSolutionValues(x, 0, t, dt, luh+idx_luh(k,j,i,0));
+        solver.adjustSolution(x, 0, t, dt, luh+idx_luh(k,j,i,0));
       }
     }
   }

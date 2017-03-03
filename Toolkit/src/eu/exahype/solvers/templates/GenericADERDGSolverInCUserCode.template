@@ -11,7 +11,7 @@ bool {{Project}}::{{Solver}}::hasToAdjustSolution(const tarch::la::Vector<DIMENS
   return tarch::la::equals(t,0.0);
 }
 
-void {{Project}}::{{Solver}}::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{Project}}::{{Solver}}::adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = {{Dimensions}}
   // Number of variables    = {{Elements}} (#unknowns + #parameters)
   
@@ -54,7 +54,7 @@ exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementC
 }
 
 
-bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+bool {{Project}}::{{Solver}}::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
   // @todo Please implement/augment if required
   return true;
 }

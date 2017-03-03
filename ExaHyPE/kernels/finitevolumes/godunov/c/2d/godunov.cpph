@@ -433,7 +433,7 @@ void solutionAdjustment(
       x[1] = center[1] + dx[1] * (qs - 0.5);
 
       // read initial condition
-      solver.adjustedSolutionValues(x, 0, t, dt, luh+idx_luh(j,i,0));
+      solver.adjustSolution(x, 0, t, dt, luh+idx_luh(j,i,0));
     }
   }
 }
