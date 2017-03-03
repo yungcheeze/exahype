@@ -6,9 +6,9 @@ void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{Solver
   // @todo Please implement/augment if required
 }
 
-bool {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0);
+  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
 void {{Project}}::{{Solver}}::adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {

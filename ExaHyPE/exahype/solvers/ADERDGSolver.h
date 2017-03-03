@@ -42,12 +42,6 @@ namespace exahype {
  */
 class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
 public:
-  enum class AdjustSolutionValue {
-    No,
-    PointWisely,
-    PatchWisely
-  };
-
   /**
    * Set to 0 if no floating point compression is used.
    */
@@ -970,6 +964,12 @@ public:
       const double t,
       const double dt) = 0;
 
+  enum class AdjustSolutionValue {
+    No,
+    PointWisely,
+    PatchWisely
+  };
+
   /**
    * This hook can be used to trigger solution adjustments within the
    * region corresponding to \p cellCentre and \p dx
@@ -989,7 +989,7 @@ public:
    * \param[in]    dt        the width of the time interval.
    * \return true if the solution has to be adjusted.
    */
-  virtual bool useAdjustSolution(
+  virtual AdjustSolutionValue useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
@@ -1024,6 +1024,7 @@ public:
 
   virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) = 0;
 
+
   /**
    * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
    *
@@ -1036,7 +1037,13 @@ public:
    * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
    *                         as C array (already allocated).
    */
-  void adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q);
+  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
+  virtual void adjustPatchSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt,
+      double* luh) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
