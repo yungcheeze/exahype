@@ -98,7 +98,7 @@ void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la
 {{BeforeSolutionAdjustment}}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
-      assertionMsg(false, "may not be entered" );
+      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
       kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
