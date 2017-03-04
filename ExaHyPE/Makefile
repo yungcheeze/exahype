@@ -90,17 +90,15 @@ endif
 ifeq ($(call tolower,$(COMPILER)),intel)
 	# Settings for the Intel Compiler
 	# ----------------------------------------------
-	ifndef $(EXAHYPE_CC)
-	  EXAHYPE_CC=icpc
-	endif
-	ifndef $(CC)
+	ifndef EXAHYPE_CC
 	  CC=icpc
+	else
+	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
-	  EXAHYPE_FC=ifort
-	endif
-	ifndef $(FC)
+	ifndef EXAHYPE_FC
 	  FC=ifort
+	else
+	  FC=$(EXAHYPE_FC)
 	endif
 	
 	FCOMPILER_CFLAGS  += -r8 -cpp
@@ -112,14 +110,15 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
 	# --------------------------------------------
-	ifndef $(EXAHYPE_CC)
-	  EXAHYPE_CC=g++
-	endif
-	ifndef $(CC)
+	ifndef EXAHYPE_CC
 	  CC=g++
+	else
+	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(FC)
-	  EXAHYPE_FC=gfortran
+	ifndef $(EXAHYPE_FC)
+	  FC=gfortran
+	else
+	  FC=$(EXAHYPE_FC)
 	endif
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
 	LINK_FORTRAN      += -lgfortran
@@ -282,11 +281,11 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-	ifndef $(CC)
+	ifndef EXAHYPE_CC
 		ifeq ($(call tolower,$(COMPILER)),gnu)
-			EXAHYPE_CC = mpiCC
+			CC = mpiCC
 		else
-			EXAHYPE_CC = mpiicpc
+			CC = mpiicpc
 		endif
 	endif
 endif
@@ -303,7 +302,7 @@ endif
 # Linker Settings
 # ---------------
 # By default, I use the compiler command. But you might wanna modify it.
-LL=$(EXAHYPE_CC)
+LL=$(CC)
 
 
 COBJECTS=$(CSOURCES:.cpp=.o)
@@ -350,7 +349,7 @@ buildinfo:
 		"DISTRIBUTEDMEM = $(DISTRIBUTEDMEM)" \
 		"------" \
 		"ARCHITECTURE = $(ARCHITECTURE)" \
-		"CC = $(EXAHYPE_CC)" \
+		"CC = $(CC)" \
 		"BOUNDARYCONDITIONS = $(BOUNDARYCONDITIONS)" \
 		"------" \
 		"EXAHYPE_PATH = $(EXAHYPE_PATH)" \
@@ -437,7 +436,7 @@ clean:
 
 
 $(COBJECTS): %.o : %.cpp
-	$(EXAHYPE_CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90
-	$(EXAHYPE_FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@
+	$(FC) $(PROJECT_CFLAGS) $(FCOMPILER_CFLAGS) -I$(PROJECT_PATH) -c $< -o $@
