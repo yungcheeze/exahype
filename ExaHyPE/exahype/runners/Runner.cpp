@@ -55,6 +55,8 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "tarch/multicore/MulticoreDefinitions.h"
+
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
@@ -166,7 +168,21 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     logInfo("initSharedMemoryConfiguration()",
         "use dummy shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new peano::datatraversal::autotuning::OracleForOnePhaseDummy()
+      new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
+         true, //   bool useMultithreading                  = true,
+         0, //   int  grainSizeOfUserDefinedRegions      = 0,
+         peano::datatraversal::autotuning::OracleForOnePhaseDummy::SplitVertexReadsOnRegularSubtree::Split,
+         true, //  bool pipelineDescendProcessing          = false,
+         true,  //   bool pipelineAscendProcessing           = false,
+         27, //   int  smallestProblemSizeForAscendDescend  = tarch::la::aPowI(DIMENSIONS,3*3*3*3/2),
+         3, //   int  grainSizeForAscendDescend          = 3,
+         1, //   int  smallestProblemSizeForEnterLeaveCell = tarch::la::aPowI(DIMENSIONS,9/2),
+         1, //   int  grainSizeForEnterLeaveCell         = 2,
+         1, //   int  smallestProblemSizeForTouchFirstLast = tarch::la::aPowI(DIMENSIONS,3*3*3*3+1),
+         1, //   int  grainSizeForTouchFirstLast         = 64,
+         1, //   int  smallestProblemSizeForSplitLoadStore = tarch::la::aPowI(DIMENSIONS,3*3*3),
+         1  //   int  grainSizeForSplitLoadStore         = 8,
+      )
     );
     break;
   case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
@@ -237,6 +253,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
   case Parser::MulticoreOracleType::Dummy:
+  case Parser::MulticoreOracleType::AutotuningWithoutLearning:
     break;
   case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
