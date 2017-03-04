@@ -279,6 +279,22 @@ int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
 }
 
 
+int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
+  double boundingBox = _parser.getBoundingBoxSize()(0);
+  double hMax        = exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers();
+
+  int    result      = 1;
+  double currenthMax = std::numeric_limits<double>::max();
+  while (currenthMax>hMax) {
+    currenthMax = boundingBox / threePowI(result);
+    result++;
+  }
+
+  logDebug( "getCoarsestGridLevelOfAllSolvers()", "regular grid depth of " << result << " creates grid with h_max=" << currenthMax );
+  return std::max(3,result);
+}
+
+
 exahype::repositories::Repository* exahype::runners::Runner::createRepository() const {
   // Geometry is static as we need it survive the whole simulation time.
   static peano::geometry::Hexahedron geometry(
@@ -350,39 +366,13 @@ int exahype::runners::Runner::run() {
 }
 
 void exahype::runners::Runner::createGrid(exahype::repositories::Repository& repository) {
-#ifdef Parallel
-  const bool UseStationaryCriterion = tarch::parallel::Node::getInstance().getNumberOfNodes()==1;
-#else
-  const bool UseStationaryCriterion = true;
-#endif
-
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  int gridSetupIterationsToRun = 4;
-  while (gridSetupIterationsToRun>0) {
+  while ( repository.getState().continueToConstructGrid() ) {
     repository.iterate();
     gridSetupIterations++;
-
-    if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
-      gridSetupIterationsToRun--;
-    }
-    else if ( exahype::solvers::Solver::oneSolverRequestedGridUpdate()  ) {
-      /*
-       * TODO(Dominic): We might not need a few of the other checks anymore after I
-       * have introduced the grid refinement requested flag.
-      */
-      gridSetupIterationsToRun=4;  // two steps to realise an erasing; one additional step to get adjacency right
-    }
-    else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
-      gridSetupIterationsToRun=4;  // we need at least 3 sweeps to recover from ongoing balancing
-    }
-    else if ( !repository.getState().isGridBalanced()  ) {
-      gridSetupIterationsToRun=1;  // one additional step to get adjacency right
-    }
-    else {
-      gridSetupIterationsToRun--;
-    }
+    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("createGrid()",
@@ -819,6 +809,12 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   #endif
 
   #endif
+
+  if (solvers::Solver::getMinSolverTimeStampOfAllSolvers()>std::numeric_limits<double>::max()/100.0) {
+    logError("runAsMaster(...)","quit simulation as solver seems to explode" );
+    exit(-1);
+  }
+
   #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
   #endif
