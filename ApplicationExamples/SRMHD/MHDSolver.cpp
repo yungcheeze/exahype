@@ -133,19 +133,3 @@ void SRMHD::MHDSolver::coefficientMatrix(const double* const Q, const int normal
 bool SRMHD::MHDSolver::useAlgebraicSource() const {return true;}
 
 bool SRMHD::MHDSolver::useNonConservativeProduct() const {return true;}
-
-bool SRMHD::MHDSolver::useCoefficientMatrix() const {return true;}
-
-bool SRMHD::MHDSolver::usePointSource() const {
-  return false;
-}
-
-void SRMHD::MHDSolver::pointSource(double const*, double, double, double*, double*) {
-  // whatever
-}
-
-
-bool SRMHD::MHDSolver::physicalAdmissibilityDetection(double const*, double const*) {
-  // why do we need this function?
-  return false;
-}
