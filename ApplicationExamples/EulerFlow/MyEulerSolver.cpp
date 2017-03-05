@@ -103,7 +103,7 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
+  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
 
@@ -161,15 +161,10 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
 
     // Compute flux and
     // extract normal flux in a lazy fashion.
-    double f[5];
-    double g[5];
-    double* F[DIMENSIONS];
-    F[0] = f;
-    F[1] = g;
-  #if DIMENSIONS == 3
-    double h[5];
-    F[2] = h;
-  #endif
+    double fi[DIMENSIONS][NumberOfVariables], *F[DIMENSIONS];
+    for(int d=0; d<DIMENSIONS; d++) F[d] = fi[d];
+    // it could also be done "more effective" with something like
+    // fi[normalNonZero] = reinterpret_cast<double[5]>(fluxOut);
     F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
     flux(stateOut, F);
 
