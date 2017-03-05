@@ -53,7 +53,7 @@ void SRHD::SRHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
-void SRHD::SRHDSolver_ADERDG::source(const double* const Q, double* S){
+void SRHD::SRHDSolver_ADERDG::algebraicSource(const double* const Q, double* S){
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -87,12 +87,12 @@ void SRHD::SRHDSolver_ADERDG::boundaryValues(const double* const x,const double 
   stateOut[4] = stateIn[4];
 }
 
-void SRHD::SRHDSolver_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void SRHD::SRHDSolver_ADERDG::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   constexpr int nVar = 5;
   std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void SRHD::SRHDSolver_ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void SRHD::SRHDSolver_ADERDG::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   constexpr int nVar = 5;
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }

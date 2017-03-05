@@ -75,7 +75,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 #endif
 }
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -203,11 +203,11 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   */
 }
 
-void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void Euler::MyEulerSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
 	std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void Euler::MyEulerSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
 	std::memset(Bn, 0, nVar * sizeof(double));
 }
 

@@ -105,7 +105,7 @@ void ElasticWave::MyElasticWaveSolver::flux(const double* const Q,double** F) {
 }
 
 
-void ElasticWave::MyElasticWaveSolver::source(const double* const Q,double* S) {
+void ElasticWave::MyElasticWaveSolver::algebraicSource(const double* const Q,double* S) {
   // Dimensions             = 3
   // Number of variables    = 12 (#unknowns + #parameters)
   
@@ -195,7 +195,7 @@ bool ElasticWave::MyElasticWaveSolver::physicalAdmissibilityDetection(const doub
 }
 
 
-void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void ElasticWave::MyElasticWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 3
   // Number of variables    = 12 (#unknowns + #parameters)
 
@@ -250,7 +250,7 @@ void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* c
 }
 
 
-void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int d,double* Bn) {
+void ElasticWave::MyElasticWaveSolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // Dimensions             = 3
   // Number of variables    = 12 (#unknowns + #parameters)
   
@@ -404,7 +404,13 @@ void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int d
 
 //TODO KD
 // tell the user what it is
-bool ElasticWave::MyElasticWaveSolver::hasToApplyPointSource() const { 
+bool ElasticWave::MyElasticWaveSolver::useAlgebraicSource() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::useNonConservativeProduct() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::useCoefficientMatrix() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::usePointSource() const { 
   return true;
 }
 

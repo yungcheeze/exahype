@@ -66,7 +66,7 @@ exahype::solvers::Solver::RefinementControl AcousticWave::MyAcousticWaveSolver::
 // }
 
 
-// void ScalarWave::MyScalarWaveSolver::source(const double* const Q,double* S) {
+// void ScalarWave::MyScalarWaveSolver::algebraicSource(const double* const Q,double* S) {
 //   // Dimensions             = 3
 //   // Number of variables    = 4 (#unknowns + #parameters)
   
@@ -97,7 +97,7 @@ void AcousticWave::MyAcousticWaveSolver::boundaryValues(const double* const x,co
 }
 
 
-// void ScalarWave::MyScalarWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+// void ScalarWave::MyScalarWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
 //   // Dimensions             = 3
 //   // Number of variables    = 4 (#unknowns + #parameters)
 
@@ -109,7 +109,7 @@ void AcousticWave::MyAcousticWaveSolver::boundaryValues(const double* const x,co
 // }
 
     
-// void ScalarWave::MyScalarWaveSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+// void ScalarWave::MyScalarWaveSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
 //   // Dimensions             = 3
 //   // Number of variables    = 4 (#unknowns + #parameters)
   

@@ -17,7 +17,7 @@
 #include "kernels/aderdg/optimised/DGMatrices.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 
-template <bool useSource, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
+template <bool useCoefficientMatrix, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
 void kernels::aderdg::optimised::riemannSolver( 
   double* restrict lFbndL,
   double* restrict lFbndR,
@@ -75,7 +75,7 @@ void kernels::aderdg::optimised::riemannSolver(
   std::memcpy(lFbndR, lFbndL, {{nVar*bndBlockSize}} * sizeof(double));   
   
   //add source
-  if(useSource) {
+  if(useCoefficientMatrix) {
     double Qavg[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
     #pragma simd
     for(int n=0; n < {{nVarPad}}; n++) {

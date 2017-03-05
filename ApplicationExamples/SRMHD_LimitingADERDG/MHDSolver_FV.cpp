@@ -39,7 +39,7 @@ void MHD::MHDSolver_FV::flux(const double* const Q,double** F) {
 }
 
 
-void MHD::MHDSolver_FV::source(const double* const Q,double* S) {
+void MHD::MHDSolver_FV::algebraicSource(const double* const Q,double* S) {
   pdesource_(S, Q);
 }
 
@@ -68,13 +68,13 @@ const double* const stateIn,double* stateOut) {
 }
 
 
-//void MHD::MHDSolver_FV::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+//void MHD::MHDSolver_FV::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
 //  constexpr int nVar = 9;
 //  std::memset(BgradQ, 0, nVar * sizeof(double));
 //}
 //
 //
-//void MHD::MHDSolver_FV::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+//void MHD::MHDSolver_FV::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
 //  constexpr int nVar = 9;
 //  std::memset(Bn, 0, nVar * nVar * sizeof(double));
 //}
