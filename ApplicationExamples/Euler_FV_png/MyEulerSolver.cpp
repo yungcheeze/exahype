@@ -124,3 +124,13 @@ void Euler::MyEulerSolver::boundaryValues(
 
   varsOutside = varsInside;
 }
+
+void Euler::MyEulerSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+	// this is never called
+}
+
+void Euler::MyEulerSolver::matrixb(const double* const Q,const int d,double* Bn) {
+	for(int i=0; i < NumberOfVariables*NumberOfVariables; i++) {
+		Bn[i] = 0.0;
+	}
+}
