@@ -82,13 +82,6 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
-}
-
 void Euler::MyEulerSolver::eigenvalues(const double* const Q,
                                        const int normalNonZeroIndex,
                                        double* lambda) {
@@ -107,17 +100,14 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
   eigs.j(u_n,u_n,u_n);
 }
 
-bool Euler::MyEulerSolver::hasToAdjustSolution(
-    const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
-  // @todo Please implement
-  if (tarch::la::equals(t, 0.0)) {
-    return true;
-  }
-  return false;
+
+exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  // @todo Please implement/augment if required
+  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
+
+void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
                                                   const double w,const double t,const double dt, double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
@@ -171,15 +161,10 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
 
     // Compute flux and
     // extract normal flux in a lazy fashion.
-    double f[5];
-    double g[5];
-    double* F[DIMENSIONS];
-    F[0] = f;
-    F[1] = g;
-  #if DIMENSIONS == 3
-    double h[5];
-    F[2] = h;
-  #endif
+    double fi[DIMENSIONS][NumberOfVariables], *F[DIMENSIONS];
+    for(int d=0; d<DIMENSIONS; d++) F[d] = fi[d];
+    // it could also be done "more effective" with something like
+    // fi[normalNonZero] = reinterpret_cast<double[5]>(fluxOut);
     F[normalNonZero] = fluxOut; // This replaces the double pointer at pos normalNonZero by fluxOut.
     flux(stateOut, F);
 
@@ -214,24 +199,4 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   stateOut[3] = stateIn[3];
   stateOut[4] = stateIn[4];
   */
-}
-
-bool Euler::MyEulerSolver::physicalAdmissibilityDetection(const double* QMin, const double* QMax) {
-  return true;
-}
-
-void Euler::MyEulerSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
-}
-
-void Euler::MyEulerSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
-}
-
-bool Euler::MyEulerSolver::hasToApplyPointSource() const {
-  return false;
-}
-
-void Euler::MyEulerSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  //TODO KD
 }

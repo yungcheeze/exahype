@@ -58,7 +58,6 @@ if [[ -e "$HOST_INFO_FILE" ]]; then
 	fi
 fi
 
-
 # all default variables can be overwritten by specifying them as
 # environment variables
 
@@ -85,6 +84,7 @@ echo -e " ABSAPPDIR = $ABSAPPDIR"
 echo -e " ABSCODEDIR = $ABSCODEDIR"
 echo -e " APPDIRNAME = $APPDIRNAME"
 echo -e " CLEAN = $CLEAN"
+echo -e " CLUSTERNAME = ${CLUSTERNAME:=-not set-}"
 
 [[ -e "$APPDIRNAME/$SPECFILE" ]] || { echo -e "Cannot find specfile $APPDIRNAME/$SPECFILE in $PWD"; exit -1; }
 PROJECTNAME=$(grep '^exahype-project' "$APPDIRNAME/$SPECFILE" | awk '{ print $2; }')
@@ -99,7 +99,7 @@ export MODE=${MODE:=$DEFAULT_MODE}
 
 # you can amend on this
 export TBB_INC=/usr/include/tbb
-MPI_LDFLAGS="$(mpicc -showme:link)"
+MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
 export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
 
 #echo -e " COMPILER=$COMPILER"
@@ -127,6 +127,23 @@ else
 fi
 
 cd -
+
+# Allow to store information how to compile a specific application
+APP_INFO_FILE="projectpaths.cfg"
+if [[ -e "$APP_INFO_FILE" ]]; then
+	echo "Loading application specific configuration from $APP_INFO_FILE"
+	source $APP_INFO_FILE
+	# the app config file is supposed to set stuff like:
+	export PROJECT_CFLAGS="${PROJECT_CFLAGS:=}"
+	export PROJECT_LFLAGS="${PROJECT_LFLAGS:=}"
+	export PROJECT_LINK="${PROJECT_LINK:=}"
+	echo " PROJECT_CFLAGS = $PROJECT_CFLAGS"
+	echo " PROJECT_LFLAGS = $PROJECT_LFLAGS"
+	echo " PROJECT_LINK = $PROJECT_LINK"
+	
+else
+	echo "No application specific configuration ($APP_INFO_FILE) found."
+fi
 
 # plausability check
 [[ -e Makefile ]] || { echo -e "Could not find Makefile in $PWD. Probably the toolkit failed."; exit -1; }

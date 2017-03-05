@@ -22,7 +22,7 @@
 exahype-project Euler
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./Demonstrators/EulerFV
+  output-directory const           = ./ApplicationExamples/Euler_FV_png
 
   computational-domain
     dimension const         = 2
@@ -30,6 +30,12 @@ exahype-project Euler
     offset                   = 0.0, 0.0
     end-time                 = 1.00
   end computational-domain
+ 
+  shared-memory
+    identifier               = dummy
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+  end shared-memory
  
   solver Finite-Volumes MyEulerSolver
     variables const   = rho:1,j:3,E:1
@@ -41,7 +47,7 @@ exahype-project Euler
     plot vtk::Cartesian::cells::ascii EulerWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.01
+      repeat          = 0.0001
       output          = ./variables
     end plot
   end solver

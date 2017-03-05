@@ -25,7 +25,8 @@ class GRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPos
   reductions::MultipleReductionsWriter primitives;
   reductions::MultipleReductionsWriter errors;
   reductions::ReductionsWriter statistics;
-
+  reductions::ReductionsWriter masschange;
+  
   IntegralsWriter(GRMHDSolver&  solver);
   virtual ~IntegralsWriter();
   void startPlotting(double time) override;

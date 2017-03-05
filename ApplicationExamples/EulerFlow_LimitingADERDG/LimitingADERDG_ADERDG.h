@@ -136,7 +136,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * \param[in] QMax the maximum value per variable.
      * \return true if the bounds are physically admissible.
      */
-    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+    bool isPhysicallyAdmissibile(const double* const QMin,const double* const QMax) const override;
 };
 
 #endif // __LimitingADERDG_ADERDG_CLASS_HEADER__

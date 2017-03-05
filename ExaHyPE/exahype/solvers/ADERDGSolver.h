@@ -126,8 +126,32 @@ private:
   const int _dataPointsPerCell;
 
   /**
+   * Minimum corrector time stamp of all cell descriptions
+   * 2 iterations ago
+   */
+  double _previousPreviousMinCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of all
+   * cell descriptions in the iteration before the
+   * previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
+   */
+  double _previousPreviousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _previousMinCorrectorTimeStamp;
+
+  /**
    * Minimum corrector time step size of all
    * cell descriptions in the previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the minCorrectorTimeStepSize during a rollback.
    */
   double _previousMinCorrectorTimeStepSize;
 
@@ -790,7 +814,7 @@ public:
   virtual bool usePaddedData_nDoF() const {return false;}
   
   //TODO KD
-  virtual bool hasToApplyPointSource() const {return false;}
+  virtual bool usePointSource() const {return false;}
   
   /**
    * @brief Adds the solution update to the solution.
@@ -934,11 +958,17 @@ public:
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
    */
-  virtual void solutionAdjustment(
+  virtual void adjustSolution(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
+
+  enum class AdjustSolutionValue {
+    No,
+    PointWisely,
+    PatchWisely
+  };
 
   /**
    * This hook can be used to trigger solution adjustments within the
@@ -950,12 +980,70 @@ public:
    *           This time step size was computed based on the old solution.
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
+   *
+   * \note Use this function and ::adjustSolution to set initial conditions.
+   *
+   * \param[in]    centre    The centre of the cell.
+   * \param[in]    dx        The extent of the cell.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \return true if the solution has to be adjusted.
    */
-  virtual bool hasToAdjustSolution(
+  virtual AdjustSolutionValue useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
-      const double dt) = 0;
+      const double dt) const = 0;
+
+  virtual bool useAlgebraicSource()        const = 0;
+  virtual bool useNonConservativeProduct() const = 0;
+
+  /**
+   * Compute the Algebraic Sourceterms.
+   *
+   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+   *                 as C array (already allocated).
+   * \param[inout] S the source point as C array (already allocated).
+   */
+  virtual void algebraicSource(const double* const Q,double* S) = 0;
+
+  /**
+    * Non Conservative Product
+    *
+    * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
+    * use the ADER-DG kernels for nonlinear PDEs. If you use
+    * the kernels for linear PDEs, it is a tensor with dimensions
+    * Dim x NumberOfVariables.
+    *
+    */
+  virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
+
+
+  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
+
+
+  virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) = 0;
+
+
+  /**
+   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+   *
+   * \note Use this function and ::useAdjustSolution to set initial conditions.
+   *
+   * \param[in]    x         the physical coordinate on the face.
+   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+   *                         as C array (already allocated).
+   */
+  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
+  virtual void adjustPatchSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt,
+      double* luh) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -1052,7 +1140,7 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) { return true; }
+  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const =0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time
@@ -1097,8 +1185,42 @@ public:
   void zeroTimeStepSizes() override;
 
   /**
-   * Roll back the time step data to the
-   * ones of the previous time step.
+   * !!! Only for fused time stepping !!!
+   *
+   * Rolls the solver time step data back to the
+   * previous time step for a cell description.
+   * Note that the newest time step
+   * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep();
 
@@ -1156,25 +1278,29 @@ public:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
-  void setMinCorrectorTimeStamp(double minCorectorTimeStamp);
-
-  double getMinCorrectorTimeStamp() const;
-
-  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
-
-  double getMinPredictorTimeStamp() const;
-
-  void setMinCorrectorTimeStepSize(double minCorrectorTimeStepSize);
-
-  double getMinCorrectorTimeStepSize() const;
-
   void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
-
   double getMinPredictorTimeStepSize() const;
 
-  double getPreviousMinCorrectorTimeStepSize() const;
+  void setMinPredictorTimeStamp(double value);
+  double getMinPredictorTimeStamp() const;
+
+  void setMinCorrectorTimeStamp(double value);
+  double getMinCorrectorTimeStamp() const;
+
+  void setMinCorrectorTimeStepSize(double value);
+  double getMinCorrectorTimeStepSize() const;
+
+  void setPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousMinCorrectorTimeStamp() const;
 
   void setPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousPreviousMinCorrectorTimeStamp() const;
 
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
@@ -1193,11 +1319,22 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
+    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
+
+    setPreviousPreviousMinCorrectorTimeStamp(value);
+    setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
+  }
+
+  void initFusedSolverTimeStepSizes() {
+    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
   }
 
   bool isValidCellDescriptionIndex(
@@ -1288,17 +1425,49 @@ public:
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const;
 
   /**
+   * !!! Only for fused time stepping !!!
+   *
    * Rolls the solver time step data back to the
    * previous time step for a cell description.
    * Note that the newest time step
    * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
-   * Similar to reconstructStandardTimeSteppingData for roll backs
+   * TODO(Dominic): Remove; not necessary
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,
@@ -1317,19 +1486,6 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
-
-  /*
-   * Simply adds the update degrees of freedom
-   * to the solution degrees of freedom.
-   * Does not compute the surface integral.
-   *
-   * \deprecated We will not store the update field anymore
-   * but a previous solution.
-   */
-  void addUpdateToSolution(
-      CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   /**
    * Computes the surface integral contributions to the

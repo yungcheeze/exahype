@@ -131,7 +131,7 @@ elasticwaves3d::MyElasticSolver::refinementCriterion(
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-void elasticwaves3d::MyElasticSolver::ncp(const double* const Q,
+void elasticwaves3d::MyElasticSolver::nonConservativeProduct(const double* const Q,
                                           const double* const gradQ,
                                           double* BgradQ) {
   // Dimensions             = 3
@@ -166,7 +166,7 @@ void elasticwaves3d::MyElasticSolver::ncp(const double* const Q,
   BgradQ[26] = 0.0;
 }
 
-void elasticwaves3d::MyElasticSolver::matrixb(const double* const Q,
+void elasticwaves3d::MyElasticSolver::coefficientMatrix(const double* const Q,
                                               const int normalNonZero,
                                               double* Bn) {
   // Number of variables    = 9 (#unknowns + #parameters)

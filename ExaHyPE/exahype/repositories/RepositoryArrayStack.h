@@ -38,8 +38,9 @@
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
- #include "exahype/adapters/Merging.h" 
  #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/TimeStepDataMerging.h" 
+ #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h" 
 
 
 
@@ -87,8 +88,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot> _gridWithPredictionAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlot2d> _gridWithPredictionAndPlot2d;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Merging> _gridWithMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation> _gridWithDropMPIMetadataMessagesAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepDataMerging> _gridWithTimeStepDataMerging;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages> _gridWithTimeStepDataMergingAndDropIncomingMPIMessages;
 
   
    exahype::records::RepositoryState               _repositoryState;
@@ -115,8 +117,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measurePredictionCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlot2dCPUTime;
-    tarch::timing::Measurement _measureMergingCPUTime;
     tarch::timing::Measurement _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measureTimeStepDataMergingCPUTime;
+    tarch::timing::Measurement _measureTimeStepDataMergingAndDropIncomingMPIMessagesCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
@@ -140,8 +143,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measurePredictionCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlot2dCalendarTime;
-    tarch::timing::Measurement _measureMergingCalendarTime;
     tarch::timing::Measurement _measureDropMPIMetadataMessagesAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measureTimeStepDataMergingCalendarTime;
+    tarch::timing::Measurement _measureTimeStepDataMergingAndDropIncomingMPIMessagesCalendarTime;
 
 
   public:
@@ -209,8 +213,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToPrediction();    
     virtual void switchToPredictionAndPlot();    
     virtual void switchToPredictionAndPlot2d();    
-    virtual void switchToMerging();    
     virtual void switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();    
+    virtual void switchToTimeStepDataMerging();    
+    virtual void switchToTimeStepDataMergingAndDropIncomingMPIMessages();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
@@ -234,8 +239,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterPrediction() const;
     virtual bool isActiveAdapterPredictionAndPlot() const;
     virtual bool isActiveAdapterPredictionAndPlot2d() const;
-    virtual bool isActiveAdapterMerging() const;
     virtual bool isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterTimeStepDataMerging() const;
+    virtual bool isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const;
 
      
     #ifdef Parallel

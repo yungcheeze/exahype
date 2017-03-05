@@ -67,7 +67,7 @@ void Elastic::MyElasticSolver::flux(const double* const Q, double** F) {
   h[11] = 0.0;
 }
 
-void Elastic::MyElasticSolver::source(const double* const Q, double* S) {
+void Elastic::MyElasticSolver::algebraicSource(const double* const Q, double* S) {
   // Number of variables = 12 + 0
   // @todo Please implement
   S[0] = 0.0;
