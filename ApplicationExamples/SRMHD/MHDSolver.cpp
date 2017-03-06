@@ -39,24 +39,22 @@ void SRMHD::MHDSolver::eigenvalues(const double* const Q, const int normalNonZer
 }
 
 
-
-bool SRMHD::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
-  //printf("hasToAdjustSolution at t=%e\n", t);
-  return (t < 1e-10);
+exahype::solvers::ADERDGSolver::AdjustSolutionValue SRMHD::MHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  return tarch::la::equals(t,0.0) ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
 
-
-void SRMHD::MHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void SRMHD::MHDSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran call:
   //printf("adjustedSolutionValues at t=%e\n", t);
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
-void SRMHD::MHDSolver::source(const double* const Q, double* S) {
+void SRMHD::MHDSolver::algebraicSource(const double* const Q, double* S) {
   //pdesource_(S, Q);
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(S, 0, nVar * sizeof(double)); //no source
+  // IMPORTANT: Here we have no more constraint damping contribution to source!
 }
 
 
@@ -119,28 +117,19 @@ void SRMHD::MHDSolver::boundaryValues(const double* const x,const double t, cons
   //printf("FOut[%d]=%e == Fin[%d]=%e\n", statem, fluxOut[statem], statem, fluxIn[statem]);
 }
 
-
-void SRMHD::MHDSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+/*
+void SRMHD::MHDSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(BgradQ, 0, nVar * sizeof(double));
 }
 
-void SRMHD::MHDSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void SRMHD::MHDSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   const int nVar = SRMHD::AbstractMHDSolver::NumberOfVariables;
   std::memset(Bn, 0, nVar * nVar * sizeof(double));
 }
+*/
 
 
-bool SRMHD::MHDSolver::hasToApplyPointSource() const {
-  return false;
-}
+bool SRMHD::MHDSolver::useAlgebraicSource() const {return true;}
 
-void SRMHD::MHDSolver::pointSource(double const*, double, double, double*, double*) {
-  // whatever
-}
-
-
-bool SRMHD::MHDSolver::physicalAdmissibilityDetection(double const*, double const*) {
-  // why do we need this function?
-  return false;
-}
+bool SRMHD::MHDSolver::useNonConservativeProduct() const {return true;}

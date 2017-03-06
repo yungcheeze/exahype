@@ -45,7 +45,7 @@ void MHDSolver::MHDSolver::adjustedSolutionValues(const double* const x,const do
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
-void MHDSolver::MHDSolver::source(const double* const Q, double* S) {
+void MHDSolver::MHDSolver::algebraicSource(const double* const Q, double* S) {
   pdesource_(S, Q);
 }
 
@@ -91,11 +91,11 @@ void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, 
 }
 
 
-//void MHDSolver::MHDSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+//void MHDSolver::MHDSolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
 //	std::memset(BgradQ, 0, nVar * sizeof(double));
 //}
 //
-//void MHDSolver::MHDSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+//void MHDSolver::MHDSolver::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
 // std::memset(Bn, 0, nVar * nVar * sizeof(double));
 //}
 

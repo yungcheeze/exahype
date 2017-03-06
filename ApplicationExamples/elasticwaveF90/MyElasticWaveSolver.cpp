@@ -94,7 +94,7 @@ exahype::solvers::Solver::RefinementControl ElasticWave::MyElasticWaveSolver::re
 // }
 
 
-// void ElasticWave::MyElasticWaveSolver::source(const double* const Q,double* S) {
+// void ElasticWave::MyElasticWaveSolver::algebraicSource(const double* const Q,double* S) {
 //   // Dimensions             = 3
 //   // Number of variables    = 9 (#unknowns + #parameters)
   
@@ -140,7 +140,7 @@ void ElasticWave::MyElasticWaveSolver::boundaryValues(const double* const x,cons
 }
 
 
-// void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+// void ElasticWave::MyElasticWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
 //   // Dimensions             = 3
 //   // Number of variables    = 9 (#unknowns + #parameters)
 
@@ -157,7 +157,7 @@ void ElasticWave::MyElasticWaveSolver::boundaryValues(const double* const x,cons
 // }
 
     
-// void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+// void ElasticWave::MyElasticWaveSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
 //   // Dimensions             = 3
 //   // Number of variables    = 9 (#unknowns + #parameters)
   

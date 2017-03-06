@@ -1479,7 +1479,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(luh[i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  if(hasToApplyPointSource()) { //disable kernel if not needed
+  if(usePointSource()) { //disable kernel if not needed
       pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }
@@ -1635,17 +1635,21 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None) {
     double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    if (hasToAdjustSolution(
+    if (
+      useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
-        cellDescription.getCorrectorTimeStepSize())) {
-      solutionAdjustment(
-          luh,
-          cellDescription.getOffset()+0.5*cellDescription.getSize(),
-          cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp(),
-          cellDescription.getCorrectorTimeStepSize());
+        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+        cellDescription.getCorrectorTimeStepSize()
+      )
+      !=AdjustSolutionValue::No
+    ) {
+        adjustSolution(
+            luh,
+            cellDescription.getOffset()+0.5*cellDescription.getSize(),
+            cellDescription.getSize(),
+            cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+            cellDescription.getCorrectorTimeStepSize());
     }
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
@@ -1695,16 +1699,20 @@ void exahype::solvers::ADERDGSolver::updateSolution(
 
     solutionUpdate(newSolution,lduh,cellDescription.getCorrectorTimeStepSize());
     
-    if (hasToAdjustSolution(
+    if (
+      useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
-        cellDescription.getCorrectorTimeStepSize())) {
-      solutionAdjustment(
+        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+        cellDescription.getCorrectorTimeStamp()
+      )
+      !=AdjustSolutionValue::No
+    ) {
+      adjustSolution(
           newSolution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
+          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
           cellDescription.getCorrectorTimeStepSize());
     }
 

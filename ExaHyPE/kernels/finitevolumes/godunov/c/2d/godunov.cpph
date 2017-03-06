@@ -66,23 +66,25 @@ double riemannSolver(
      Qavg[k] = (qL[k] + qR[k]) / 2;
   }
   
-  double Bn[numberOfVariables*numberOfVariables];
-  double ncp[numberOfVariables];
-  idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  solver.matrixb(Qavg, normalNonZero, Bn);
+  if (solver.useNonConservativeProduct()) {
+    double Bn[numberOfVariables*numberOfVariables];
+    double ncp[numberOfVariables];
+    idx2 idx_Bn(numberOfVariables, numberOfVariables);
+    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
   
-  for(int l=0; l < numberOfVariables; l++) {
-    ncp[l] = 0;
-    for(int m=0; m < numberOfVariables; m++) {
-      ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
+    for(int l=0; l < numberOfVariables; l++) {
+      ncp[l] = 0;
+      for(int m=0; m < numberOfVariables; m++) {
+        ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
+     }
     }
-  }
 
-  for (int i = 0; i < numberOfVariables; i++) {
-    fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
-            0.5 * s_max * (qL[i] - qR[i]);
-    fR[i] = fL[i] - 0.5 * ncp[i];
-    fL[i] = fL[i] + 0.5 * ncp[i];
+    for (int i = 0; i < numberOfVariables; i++) {
+      fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
+              0.5 * s_max * (qL[i] - qR[i]);
+      fR[i] = fL[i] - 0.5 * ncp[i];
+      fL[i] = fL[i] + 0.5 * ncp[i];
+    }
   }
 
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
@@ -433,7 +435,7 @@ void solutionAdjustment(
       x[1] = center[1] + dx[1] * (qs - 0.5);
 
       // read initial condition
-      solver.adjustedSolutionValues(x, 0, t, dt, luh+idx_luh(j,i,0));
+      solver.adjustSolution(x, 0, t, dt, luh+idx_luh(j,i,0));
     }
   }
 }

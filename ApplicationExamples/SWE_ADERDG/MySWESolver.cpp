@@ -17,15 +17,17 @@ void SWE::MySWESolver::init(std::vector<std::string>& cmdlineargs) {
   static tarch::logging::Log _log("MySWESolver::init");
 }
 
-bool SWE::MySWESolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  return tarch::la::equals(t,0.0);
+SWE::MySWESolver::AdjustSolutionValue SWE::MySWESolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  return tarch::la::equals(t,0.0) ? SWE::MySWESolver::AdjustSolutionValue::PointWisely : SWE::MySWESolver::AdjustSolutionValue::No;
 }
 
-void SWE::MySWESolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
-  if (tarch::la::equals(t, 0.0)) {
-    initialData(x,Q);
-  } 
+
+void SWE::MySWESolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+  assertion(tarch::la::equals(t, 0.0));
+
+  initialData(x,Q);
 }
+
 
 void SWE::MySWESolver::eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda) {
   // Dimensions             = 2
@@ -72,17 +74,6 @@ void SWE::MySWESolver::flux(const double* const Q,double** F) {
 }
 
 
-void SWE::MySWESolver::source(const double* const Q,double* S) {
-  // Dimensions             = 2
-  // Number of variables    = 4 (#unknowns + #parameters)
-  
-  S[0] = 0.0;
-  S[1] = 0.0; 
-  S[2] = 0.0; 
-  S[3] = 0.0;
-
-}
-
 void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int dir,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut)
  {
   // Dimensions             = 2
@@ -117,27 +108,12 @@ exahype::solvers::Solver::RefinementControl SWE::MySWESolver::refinementCriterio
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-
-bool SWE::MySWESolver::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
-  // @todo Please implement/augment if required
-  return true;
+bool SWE::MySWESolver::useNonConservativeProduct() const 
+{
+   return true;
 }
 
-
-void SWE::MySWESolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
-  // Dimensions             = 2
-  // Number of variables    = 3 (#unknowns + #parameters)
-  idx2 idx_gradQ(DIMENSIONS,NumberOfVariables);
-
-  BgradQ[0] = 0.0;
-  BgradQ[1] = grav*Q[0]*gradQ[idx_gradQ(0,3)];
-  BgradQ[2] = grav*Q[0]*gradQ[idx_gradQ(1,3)]; 
-  BgradQ[3] = 0.0;
-
-}
-
-
-void SWE::MySWESolver::matrixb(const double* const Q,const int d,double* Bn) {
+void SWE::MySWESolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
   // Dimensions             = 2
   // Number of variables    = 3 (#unknowns + #parameters)
   idx2 idx_Bn(NumberOfVariables,NumberOfVariables);  
@@ -161,11 +137,18 @@ void SWE::MySWESolver::matrixb(const double* const Q,const int d,double* Bn) {
 
   Bn[idx_Bn(3,d+1)]=grav*Q[0];
 }
+ 
+void SWE::MySWESolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+  // Dimensions             = 2
+  // Number of variables    = 3 (#unknowns + #parameters)
+  idx2 idx_gradQ(DIMENSIONS,NumberOfVariables);
 
-bool SWE::MySWESolver::hasToApplyPointSource() const 
-{
-   return false;
+  BgradQ[0] = 0.0;
+  BgradQ[1] = grav*Q[0]*gradQ[idx_gradQ(0,3)];
+  BgradQ[2] = grav*Q[0]*gradQ[idx_gradQ(1,3)]; 
+  BgradQ[3] = 0.0;
+
 }
 
-void SWE::MySWESolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
- }
+
+

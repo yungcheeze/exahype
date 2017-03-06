@@ -54,7 +54,7 @@ void SRHD::SRHDSolver::adjustedSolutionValues(const double* const x,const double
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
-void SRHD::SRHDSolver::source(const double* const Q, double* S){
+void SRHD::SRHDSolver::algebraicSource(const double* const Q, double* S){
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;

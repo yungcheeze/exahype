@@ -38,8 +38,8 @@ exahype-project  SWE
     time-stepping     = globalfixed
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-    plot vtk::Cartesian::cells::ascii ConservedWriter
-      variables const = 4
+    plot vtu::Cartesian::cells::ascii ConservedWriter
+      variables const = 5
       time            = 0.0
       repeat          = 0.01
       output          = ./conserved

@@ -466,12 +466,12 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
       ) {
     double* solution = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
-    if (hasToAdjustSolution(
+    if (useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize())) {
-      solutionAdjustment(
+      adjustSolution(
           solution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
@@ -511,12 +511,12 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
                cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
 
-  if (hasToAdjustSolution(
+  if (useAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
       cellDescription.getSize(),
       cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
       cellDescription.getTimeStepSize())) {
-    solutionAdjustment(
+    adjustSolution(
         newSolution,
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
