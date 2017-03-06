@@ -41,11 +41,6 @@ class SWE::MySWESolver : public SWE::AbstractMySWESolver {
     bool useNonConservativeProduct() const override;
 
     virtual bool useSource()                 const {return false;}
-    
-    /**
-     * We overwrite the empty default here. See implementation file.
-     */
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
 
     /**
      * We overwrite the empty default here. See implementation file.

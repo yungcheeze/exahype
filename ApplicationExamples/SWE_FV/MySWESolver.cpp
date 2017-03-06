@@ -44,7 +44,7 @@ void SWE::MySWESolver::eigenvalues(const double* const Q,const int normalNonZero
   eigs.h() = u_n + c ;
   eigs.hu()= u_n -c;
   eigs.hv()= u_n ;
-  eigs.b() = 0.0;
+  eigs.b() = 0.0; // @todo Das muss auch ohne gehen, tut's aber im MOment nicht
 }
 
 
@@ -59,12 +59,12 @@ void SWE::MySWESolver::flux(const double* const Q,double** F) {
   f[0] = vars.hu();
   f[1] = vars.hu()*vars.hu()*ih + 0.5*grav*vars.h()*vars.h();
   f[2] = vars.hu()*vars.hv()*ih;
-  f[3] = 0.0;
+  f[3] = 0.0; // @todo Das muss auch ohne gehen, tut's aber im MOment nicht
 
   g[0] = vars.hv();
   g[1] = vars.hu()*vars.hv()*ih;
   g[2] = vars.hv()*vars.hv()*ih + 0.5*grav*vars.h()*vars.h();
-  g[3] = 0.0;
+  g[3] = 0.0; // @todo Das muss auch ohne gehen, tut's aber im MOment nicht
 }
 
 
@@ -84,18 +84,8 @@ void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const
 }
 
 bool SWE::MySWESolver::useNonConservativeProduct() const {
+  // @todo umbauen
   return false;
-   // @todo umbauen
-}
-
-void SWE::MySWESolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ)
-{
-  idx2 idx_gradQ(DIMENSIONS, NumberOfVariables);
-
-  BgradQ[0] = 0.0;
-  BgradQ[1] = grav*Q[0]*gradQ[idx_gradQ(0,3)]; //g*h*bx
-  BgradQ[2] = grav*Q[0]*gradQ[idx_gradQ(1,3)]; //g*h*by
-  BgradQ[3] = 0.0;
 }
 
 void SWE::MySWESolver::coefficientMatrix(const double* const Q, const int d, double* Bn)

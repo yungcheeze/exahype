@@ -59,11 +59,6 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {};
-
-    /**
-     * Please overwrite in user's solver. See superclass for documentation.
-     */
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {};
 
     /**
