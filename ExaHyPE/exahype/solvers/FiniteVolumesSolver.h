@@ -357,9 +357,13 @@ public:
       const double t,
       const double dt) const = 0;
 
+  virtual bool useNonConservativeProduct() const = 0;
+  virtual bool useSource()                 const = 0;
+
   virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
   virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
   virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
+
 
   /**
    * Compute the source.

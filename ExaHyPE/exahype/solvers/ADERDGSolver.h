@@ -813,9 +813,7 @@ public:
   virtual bool usePaddedData_nVar() const {return false;}
   virtual bool usePaddedData_nDoF() const {return false;}
   
-  //TODO KD
-  virtual bool usePointSource() const {return false;}
-  
+
   /**
    * @brief Adds the solution update to the solution.
    *
@@ -996,6 +994,7 @@ public:
       const double dt) const = 0;
 
   virtual bool useAlgebraicSource()        const = 0;
+  virtual bool usePointSource()            const = 0;
   virtual bool useNonConservativeProduct() const = 0;
 
   /**

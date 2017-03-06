@@ -53,6 +53,9 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
       const double t,
       const double dt) const {return false;}
 
+    virtual bool useSource()                 const { return false; }
+    virtual bool useNonConservativeProduct() const { return false; }
+
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
