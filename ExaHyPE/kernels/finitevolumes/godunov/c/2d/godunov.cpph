@@ -60,14 +60,24 @@ double riemannSolver(
   double* FR2[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
   solver.flux(qL, FL2);
   solver.flux(qR, FR2);
-  
-  double Qavg[numberOfVariables+numberOfParameters];
+
+  double ncp[numberOfVariables];
+  idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[idx_gradQ.size];
+  std::fill_n(gradQ, idx_gradQ.size, 0.0);
+
+  //double Qavg[numberOfVariables+numberOfParameters];
   for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
      Qavg[k] = (qL[k] + qR[k]) / 2;
+     gradQ[normalNonZero][k] = qL[k] - qR[k];
   }
-  
+ 
+  // determine BgradQ from ncp
+  solver.ncp(Qavg, gradQ, ncp);
+
+  /*
+  // Determine BgradQ from matrixb
   double Bn[numberOfVariables*numberOfVariables];
-  double ncp[numberOfVariables];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
   solver.matrixb(Qavg, normalNonZero, Bn);
   
@@ -77,6 +87,7 @@ double riemannSolver(
       ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
     }
   }
+  */
 
   for (int i = 0; i < numberOfVariables; i++) {
     fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
