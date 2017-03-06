@@ -493,21 +493,20 @@ double solutionUpdate(
   }
   }
 
-  // TODO(guera): Early exit if dt > dt_max_allowed?!
-
   // 5. Add the source terms 
-  double* source = tempStateSizedVectors[0]; // temp var; state sized vector
-  
-  for (int i = patchBegin; i < patchEnd+1; i++) {
-  for (int j = patchBegin; j < patchEnd+1; j++) {
-  for (int k = patchBegin; k < patchEnd+1; k++) {
-    solver.source(&luh[idx(i,j,k,0)], source);
-    for (int l = 0; l < numberOfVariables; l++) {
-      // No BgradQ contribution as this is first order, cf. 2D godunov.
-      luh_new[idx(i,j,k,l)] += dt * source[l];
+  if (solver.useSource()) {
+    double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+    for (int i = patchBegin; i < patchEnd+1; i++) {
+    for (int j = patchBegin; j < patchEnd+1; j++) {
+    for (int k = patchBegin; k < patchEnd+1; k++) {
+      solver.source(&luh[idx(i,j,k,0)], source);
+      for (int l = 0; l < numberOfVariables; l++) {
+        // No BgradQ contribution as this is first order, cf. 2D godunov.
+        luh_new[idx(i,j,k,l)] += dt * source[l];
+      }
     }
-  }
-  }
+    }
+    }
   }
   
   return dt_max_allowed;

@@ -12,6 +12,12 @@
 
 #include "exahype/solvers/ADERDGSolver.h"
 
+/**
+ * We include Peano's assertion collection here.
+ */
+#include "tarch/Assertions.h"
+
+
 {{ProfilerInclude}}
 
 namespace {{Project}}{
@@ -59,7 +65,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void algebraicSource(const double* const Q,double* S) {}
+    virtual void algebraicSource(const double* const Q,double* S) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    }
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -67,7 +75,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {}
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    }
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -75,7 +85,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {}
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    }
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -83,7 +95,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {}
+    virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    }
        
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -91,13 +105,19 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {}
+    virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    }
+    
+    
     virtual void adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt,
-      double* luh) {}
+      double* luh) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      }
 
 
     /**

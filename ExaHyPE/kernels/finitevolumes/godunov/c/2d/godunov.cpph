@@ -348,21 +348,21 @@ double solutionUpdate(
     }
   }
 
-  // TODO(guera): Early exit if dt > dt_max_allowed?!
-
   // 5. Add the source terms 
-  double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+  if (solver.useSource()) {
+    double* source = tempStateSizedVectors[0]; // temp var; state sized vector
   
-  for (int j = patchBegin; j < patchEnd+1; j++) {
-    for (int k = patchBegin; k < patchEnd+1; k++) {
-      solver.source(&luh[idx(j, k, 0)], source);
+    for (int j = patchBegin; j < patchEnd+1; j++) {
+      for (int k = patchBegin; k < patchEnd+1; k++) {
+        solver.source(&luh[idx(j, k, 0)], source);
       
-      for (int l = 0; l < numberOfVariables; l++) {
-        // in Godunov 1st order, we have piecewise constant data and thus
-        // no contribution from BgradQ (solver.cnp) to the solution, cf.
-        // http://dx.doi.org/10.1016/j.apnum.2016.02.001  (eq 36),
-        // term \delta Q/\delta x is vanishing.
-        luh_new[idx(j, k, l)] += dt * source[l];
+        for (int l = 0; l < numberOfVariables; l++) {
+          // in Godunov 1st order, we have piecewise constant data and thus
+          // no contribution from BgradQ (solver.cnp) to the solution, cf.
+          // http://dx.doi.org/10.1016/j.apnum.2016.02.001  (eq 36),
+          // term \delta Q/\delta x is vanishing.
+          luh_new[idx(j, k, l)] += dt * source[l];
+        }
       }
     }
   }
