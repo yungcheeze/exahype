@@ -166,5 +166,5 @@ void SWE::initialData(const double* const x,double* Q) {
  //SteadyRunUpLinear(x,Q);
  //RunUpLinear(x,Q);
  //SteadyRunUpShelf(x,Q);
- RunUpShelf(x,Q);
+  DamBreakProblem(x,Q);
 }
