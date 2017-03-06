@@ -751,7 +751,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
     nextMinTimeStepSize =
         std::min(nextMinTimeStepSize, p->getMinNextTimeStepSize());
 
-    #if true || defined(Debug) || defined(Asserts)
+    #if defined(Debug) || defined(Asserts)
     switch(p->getType()) {
       case exahype::solvers::Solver::Type::ADERDG:
         logInfo("startNewTimeStep(...)",
