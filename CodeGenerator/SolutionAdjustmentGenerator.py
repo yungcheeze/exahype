@@ -33,7 +33,7 @@ class SolutionAdjustmentGenerator:
     m_context = {}
 
     # name of generated output file
-    m_filename = 'solutionAdjustment.cpph'
+    m_filename = 'adjustSolution.cpph'
 
 
     def __init__(self, i_context):
