@@ -1639,7 +1639,7 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
+        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
         cellDescription.getCorrectorTimeStepSize()
       )
       !=AdjustSolutionValue::No
@@ -1648,7 +1648,7 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
             luh,
             cellDescription.getOffset()+0.5*cellDescription.getSize(),
             cellDescription.getSize(),
-            cellDescription.getCorrectorTimeStamp(),
+            cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
             cellDescription.getCorrectorTimeStepSize());
     }
 
@@ -1703,8 +1703,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
       useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp(),
-        cellDescription.getCorrectorTimeStepSize()
+        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+        cellDescription.getCorrectorTimeStamp()
       )
       !=AdjustSolutionValue::No
     ) {
@@ -1712,7 +1712,7 @@ void exahype::solvers::ADERDGSolver::updateSolution(
           newSolution,
           cellDescription.getOffset()+0.5*cellDescription.getSize(),
           cellDescription.getSize(),
-          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(), // TODO(Dominic): Bug in LimiterADERDG after initial rollback this is wrong
+          cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
           cellDescription.getCorrectorTimeStepSize());
     }
 
