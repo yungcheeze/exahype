@@ -79,13 +79,13 @@ double riemannSolver(SolverType& solver, double* fL, double *fR, const double* q
         ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
       }
     }
+  }
 
-    for (int i = 0; i < numberOfVariables; i++) {
-      fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-      fR[i] = fL[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
-    }
+  for (int i = 0; i < numberOfVariables; i++) {
+    fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
+            0.5 * s_max * (qL[i] - qR[i]);
+    fR[i] = fL[i] - 0.5 * ncp[i];
+    fL[i] = fL[i] + 0.5 * ncp[i];
   }
 
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral

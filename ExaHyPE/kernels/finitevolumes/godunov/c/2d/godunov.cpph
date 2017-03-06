@@ -40,8 +40,10 @@ double riemannSolver(
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   
-  double* sL = tempStateSizedVectors[0]; 
-  double* sR = tempStateSizedVectors[1];
+  //double* sL = tempStateSizedVectors[0]; 
+  //double* sR = tempStateSizedVectors[1];
+  double sL[numberOfVariables]; 
+  double sR[numberOfVariables];
 
   solver.eigenvalues(qL, normalNonZero, sL);
   solver.eigenvalues(qR, normalNonZero, sR);
@@ -56,8 +58,16 @@ double riemannSolver(
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double* FL2[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
-  double* FR2[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
+  double FL2a[numberOfVariables];
+  double FL2b[numberOfVariables];
+  double FR2a[numberOfVariables];
+  double FR2b[numberOfVariables];
+  
+  //double* FL2[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
+  //double* FR2[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
+  double* FL2[2] = {FL2a,FL2b}; // dim a numberOfVariables
+  double* FR2[2] = {FR2a,FR2b}; // dim a numberOfVariables
+  
   solver.flux(qL, FL2);
   solver.flux(qR, FR2);
   
@@ -78,13 +88,13 @@ double riemannSolver(
         ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
      }
     }
+  }
 
-    for (int i = 0; i < numberOfVariables; i++) {
-      fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
+  for (int i = 0; i < numberOfVariables; i++) {
+    fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
               0.5 * s_max * (qL[i] - qR[i]);
-      fR[i] = fL[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
-    }
+    fR[i] = fL[i] - 0.5 * ncp[i];
+    fL[i] = fL[i] + 0.5 * ncp[i];
   }
 
   return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
@@ -306,6 +316,7 @@ double solutionUpdate(
 //  double* fL = tempStateSizedVectors[0]; @todo pleaes remove the root of all evil
   double  fL[numberOfVariables];
   double  fR[numberOfVariables];
+  double  fx[numberOfVariables];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
       const double *qL = luh + idx(j, k, 0);
@@ -315,7 +326,9 @@ double solutionUpdate(
               solver,
               fL, fR,
               qL, qR, 
-              0, tempStateSizedVectors + 1);
+              0, 0 );
+              
+//              tempStateSizedVectors + 1);
       // TODO(guera): Improve. I'm quite sure this is not the correct/best
       // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
       dt_max_allowed = std::min(
@@ -338,7 +351,8 @@ double solutionUpdate(
           solver,
           fL, fR,
           qL, qR, 
-          1, tempStateSizedVectors + 1);
+          1, 0 );
+      //tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
@@ -351,7 +365,8 @@ double solutionUpdate(
 
   // 5. Add the source terms 
   if (solver.useSource()) {
-    double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+    //double* source = tempStateSizedVectors[0]; // temp var; state sized vector
+    double  source[numberOfVariables];
   
     for (int j = patchBegin; j < patchEnd+1; j++) {
       for (int k = patchBegin; k < patchEnd+1; k++) {
