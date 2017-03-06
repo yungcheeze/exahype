@@ -303,7 +303,8 @@ double solutionUpdate(
   static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
   // x edges 
-  double* fL = tempStateSizedVectors[0];
+//  double* fL = tempStateSizedVectors[0]; @todo pleaes remove the root of all evil
+  double  fL[numberOfVariables];
   double  fR[numberOfVariables];
   for (int j = patchBegin; j < patchEnd+1; j++) {
     for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
