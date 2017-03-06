@@ -15,7 +15,7 @@ Makefile
 # like "MyEulerSolver.h" or "EulerSolver_Plotter0.h" or
 # the binaries "ExaHyPE-Euler"
 # Remove them if they are too generic
-*Solver.h
+Abstract*
 *_Plotter*.h
 *_Plotter*.cpp
 ExaHyPE-*
