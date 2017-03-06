@@ -37,15 +37,16 @@ exahype-project  SWE
   end computational-domain
 
   solver Finite-Volumes MySWESolver
-    variables const   = h:1,hu:1,hv:1,b:1
+    variables const   = h:1,hu:1,hv:1
+    parameters const  = b:1
     patch-size const   = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 10.0
-    time-stepping     = global
+    time-stepping     = globalfixed
     kernel const      = generic::Godunov
     language const    = C
-    plot vtk::Cartesian::cells::ascii ConservedWriter
-      variables const = 4
+    plot vtu::Cartesian::cells::ascii ConservedWriter
+      variables const = 5
       time            = 0.0
       repeat          = 0.1
       output          = ./conserved

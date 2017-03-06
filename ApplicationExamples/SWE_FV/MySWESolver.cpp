@@ -83,9 +83,9 @@ void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const
   stateOut[normalNonZero+1]=-stateIn[normalNonZero+1];
 }
 
-bool SWE::MySWESolver::useNonConservativeProduct() const
-{
-	return true;
+bool SWE::MySWESolver::useNonConservativeProduct() const {
+  return false;
+   // @todo umbauen
 }
 
 void SWE::MySWESolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ)

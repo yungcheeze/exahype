@@ -39,7 +39,7 @@ exahype-project  SWE
     kernel const      = generic::fluxes::nonlinear
     language const    = C
     plot vtu::Cartesian::cells::ascii ConservedWriter
-      variables const = 4
+      variables const = 5
       time            = 0.0
       repeat          = 0.01
       output          = ./conserved
