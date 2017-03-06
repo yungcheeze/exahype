@@ -17,11 +17,11 @@ void SWE::MySWESolver::init(std::vector<std::string>& cmdlineargs) {
 
 }
 
-bool SWE::MySWESolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+bool SWE::MySWESolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   return tarch::la::equals(t,0.0);
 }
 
-void SWE::MySWESolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void SWE::MySWESolver::adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     initialData(x,Q);
   } 
@@ -67,15 +67,6 @@ void SWE::MySWESolver::flux(const double* const Q,double** F) {
   g[3] = 0.0;
 }
 
-void SWE::MySWESolver::algebraicSource(const double* const Q,double* S) {
-  // Dimensions             = 2
-  // Number of variables    = 3 (#unknowns + #parameters)
-  
-  S[0] = 0.0;
-  S[1] = 0.0;
-  S[2] = 0.0;
-  S[3] = 0.0;
-}
 
 void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut)
  {
@@ -90,6 +81,11 @@ void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const
 
   //for WALL BCs
   stateOut[normalNonZero+1]=-stateIn[normalNonZero+1];
+}
+
+bool SWE::MySWESolver::useNonConservativeProduct() const
+{
+	return true;
 }
 
 void SWE::MySWESolver::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ)

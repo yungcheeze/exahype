@@ -108,8 +108,36 @@ exahype::solvers::Solver::RefinementControl SWE::MySWESolver::refinementCriterio
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+bool SWE::MySWESolver::useNonConservativeProduct() const 
+{
+   return true;
+}
 
- /*
+void SWE::MySWESolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  // Dimensions             = 2
+  // Number of variables    = 3 (#unknowns + #parameters)
+  idx2 idx_Bn(NumberOfVariables,NumberOfVariables);  
+
+  Bn[0] = 0.0;
+  Bn[1] = 0.0;
+  Bn[2] = 0.0;
+  Bn[3] = 0.0;
+  Bn[4] = 0.0;
+  Bn[5] = 0.0;
+  Bn[6] = 0.0;
+  Bn[7] = 0.0;
+  Bn[8] = 0.0;
+  Bn[9] = 0.0;
+  Bn[10]= 0.0;
+  Bn[11]= 0.0;
+  Bn[12]= 0.0;
+  Bn[13]= 0.0;
+  Bn[14]= 0.0;
+  Bn[15]= 0.0;
+
+  Bn[idx_Bn(3,d+1)]=grav*Q[0];
+}
+ 
 void SWE::MySWESolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 2
   // Number of variables    = 3 (#unknowns + #parameters)
@@ -121,4 +149,6 @@ void SWE::MySWESolver::nonConservativeProduct(const double* const Q,const double
   BgradQ[3] = 0.0;
 
 }
-*/
+
+
+

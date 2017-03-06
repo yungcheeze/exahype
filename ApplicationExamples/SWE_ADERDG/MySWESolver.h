@@ -113,6 +113,12 @@ class SWE::MySWESolver: public SWE::AbstractMySWESolver {
      * \return One of exahype::solvers::Solver::RefinementControl::{Erase,Keep,Refine}.
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+
+    bool useNonConservativeProduct() const override;
+
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+
+    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
 };
 
 #endif // __MySWESolver_CLASS_HEADER__
