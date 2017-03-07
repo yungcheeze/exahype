@@ -12,6 +12,13 @@
 
 #include "Abstract{{Solver}}.h"
 
+
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
+
 {{ProfilerInclude}}
 {{ParserInclude}}
 
@@ -20,6 +27,11 @@ namespace {{Project}}{
 }
 
 class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
+  private:
+    /**
+     * Log device
+     */
+    static tarch::logging::Log _log;
   public:
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
