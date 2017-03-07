@@ -103,7 +103,7 @@ double riemannSolver(
     }
   }
 
-  return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
+  return s_max;
 }
 
 /** 
@@ -315,7 +315,7 @@ double solutionUpdate(
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
   // clear array -> not sure whether this is required
-  memset(luh_new,0.0,patchSize*patchSize*numberOfVariables);
+//  memset(luh_new,0.0,patchSize*patchSize*numberOfVariables);
 
   // Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
