@@ -334,22 +334,6 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
   CompressedDataHeap::getInstance().setName("compressed-data");
 }
 
-int exahype::solvers::ADERDGSolver::getNumberOfVariables() const {
-  return _numberOfVariables;
-}
-
-int exahype::solvers::ADERDGSolver::getNumberOfParameters() const {
-  return _numberOfParameters;
-}
-
-int exahype::solvers::ADERDGSolver::getNodesPerCoordinateAxis() const {
-  return _nodesPerCoordinateAxis;
-}
-
-double exahype::solvers::ADERDGSolver::getMaximumMeshSize() const {
-  return _maximumMeshSize;
-}
-
 int exahype::solvers::ADERDGSolver::getUnknownsPerFace() const {
   return _dofPerFace;
 }

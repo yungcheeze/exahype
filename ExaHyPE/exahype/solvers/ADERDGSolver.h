@@ -688,26 +688,6 @@ public:
   // Disallow copy and assignment
   ADERDGSolver(const ADERDGSolver& other) = delete;
   ADERDGSolver& operator=(const ADERDGSolver& other) = delete;
-  /**
-   * Returns the maximum extent a mesh cell is allowed to have
-   * in all coordinate directions.
-   * This maximum mesh size is used both as a
-   * constraint on the AMR as well as to set up the initial
-   * grid. If you return the extent of the computational domain in
-   * each coordinate direction or larger values,
-   * you indicate that this solver is not active in the domain.
-   */
-  double getMaximumMeshSize() const;
-
-  /**
-   * Returns the number of state variables.
-   */
-  int getNumberOfVariables() const;
-
-  /**
-   * Returns the number of parameters, e.g.,material constants etc.
-   */
-  int getNumberOfParameters() const;
 
   /**
    * This operation returns the number of space time
@@ -751,12 +731,6 @@ public:
    */
   int getUnknownsPerFace() const;
 
-  /**
-   * If you use a higher order method, then this operation returns the
-   * polynomial degree plus one. If you use a Finite Volume method, it
-   * returns the number of cells within a patch per coordinate axis.
-   */
-  int getNodesPerCoordinateAxis() const;
 
   /**
    * This operation returns the size of data required
