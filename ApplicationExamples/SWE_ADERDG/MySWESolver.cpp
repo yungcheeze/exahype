@@ -46,6 +46,9 @@ void SWE::MySWESolver::eigenvalues(const double* const Q,const int normalNonZero
   eigs.h() = u_n + c ;
   eigs.hu()= u_n -c;
   eigs.hv()= u_n ;
+
+  // @todo Raus
+  eigs.b()= 0.0 ;
 }
 
 
@@ -121,7 +124,7 @@ exahype::solvers::Solver::RefinementControl SWE::MySWESolver::refinementCriterio
 
 
 bool SWE::MySWESolver::useNonConservativeProduct() const {
-   return true;
+  return true;
 }
 
 

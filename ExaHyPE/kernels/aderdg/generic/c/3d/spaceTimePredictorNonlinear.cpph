@@ -113,6 +113,15 @@ void aderPicardLoopNonlinear(SolverType& solver,
             if(useSource) {
               solver.algebraicSource(Q, S);
             }
+            else if (useNCP) {
+              assertion(numberOfVariables>=0);
+              assertion(numberOfParameters>=0);
+              // A trivial memset did fail here for whatever reason
+              // memset(S,0.0,numberOfVariables+numberOfParameters);
+              for (int i=0; i<numberOfVariables+numberOfParameters; i++) {
+                S[i] = 0.0;
+              }
+            }
           }
         }
       }
@@ -280,9 +289,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
     }
 
     // 5. Exit condition
-    // TODO(guera): Stability of sum? -> Kahan, reduction?
-    // TODO(guera): Is there something like kernels::tol?
-    // TODO(guera): Dangerous!
     constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize4 * (numberOfVariables+numberOfParameters); i++) {

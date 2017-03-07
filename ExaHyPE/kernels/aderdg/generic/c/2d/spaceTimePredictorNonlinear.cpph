@@ -108,6 +108,15 @@ void aderPicardLoopNonlinear(SolverType& solver,
           if(useSource) {
             solver.algebraicSource(Q, S);
           }
+          else if (useNCP) {
+            assertion(numberOfVariables>=0);
+            assertion(numberOfParameters>=0);
+            // A trivial memset did fail here for whatever reason
+            // memset(S,0.0,numberOfVariables+numberOfParameters);
+            for (int i=0; i<numberOfVariables+numberOfParameters; i++) {
+              S[i] = 0.0;
+            }
+          }
         }
       }
 
@@ -160,7 +169,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
               rhs[idx_rhs(i, l, k, m)] -= updateSize * lFi[idx_lFi(i, n, k, 1, m)] *
                                           kernels::Kxi[order][n][l];
               if(useNCP) {
-              gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
+                gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
                                           lQi[idx_lQi(n, k, i, m)] *
                                           kernels::dudx[order][l][n]; /* l,n: transpose */
               }
@@ -185,8 +194,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
             }
             
 
+            // TODO: numberOfVariables - numberOfParameters would do
             for (int m = 0; m < numberOfVariables; m++) {
-              //if(m==0) printf("iter %d: BGradQ[%d,%d][%d] = %f\n", iter, k, l,m, BGradQ[m]);
               if(useNCP) {
                 S[m] -= BGradQ[m]; // <-- adding the BGradQ to the Source was missing!
               }
@@ -195,7 +204,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
           }
         }
       }
-      
     }  // end time dof
 
 
@@ -259,9 +267,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
      */
 
     // 5. Exit condition
-    // TODO(guera): Stability of sum? -> Kahan, reduction?
-    // TODO(guera): Is there something like kernels::tol?
-    // TODO(guera): Dangerous!
     constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize3 * (numberOfVariables+numberOfParameters); i++) {
