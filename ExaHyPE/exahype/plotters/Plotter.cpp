@@ -189,24 +189,11 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreDivergenceVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreDivergenceCellsVTKAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2LegendreDivergenceCellsVTKAscii(postProcessing);
-      }
-      if (_identifier.compare( ADERDG2LegendreDivergenceCellsVTKBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2LegendreDivergenceCellsVTKBinary(postProcessing);
-      }
-
       if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreDivergenceVerticesVTUAscii(postProcessing);
       }
       if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreDivergenceVerticesVTUBinary(postProcessing);
-      }
-      if (_identifier.compare( ADERDG2LegendreDivergenceCellsVTUAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2LegendreDivergenceCellsVTUAscii(postProcessing);
-      }
-      if (_identifier.compare( ADERDG2LegendreDivergenceCellsVTUBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2LegendreDivergenceCellsVTUBinary(postProcessing);
       }
 
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {

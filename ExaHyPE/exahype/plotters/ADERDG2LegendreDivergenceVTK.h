@@ -26,13 +26,9 @@ namespace exahype {
 
     class ADERDG2LegendreDivergenceVerticesVTKAscii;
     class ADERDG2LegendreDivergenceVerticesVTKBinary;
-    class ADERDG2LegendreDivergenceCellsVTKAscii;
-    class ADERDG2LegendreDivergenceCellsVTKBinary;
 
     class ADERDG2LegendreDivergenceVerticesVTUAscii;
     class ADERDG2LegendreDivergenceVerticesVTUBinary;
-    class ADERDG2LegendreDivergenceCellsVTUAscii;
-    class ADERDG2LegendreDivergenceCellsVTUBinary;
   }
 }
 
@@ -50,7 +46,6 @@ class exahype::plotters::ADERDG2LegendreDivergenceVTK: public exahype::plotters:
  private:
   int           _fileCounter;
   const PlotterType _plotterType;
-  const bool    _plotCells;
   std::string   _filename;
   int           _order;
   int           _solverUnknowns;
@@ -77,9 +72,7 @@ class exahype::plotters::ADERDG2LegendreDivergenceVTK: public exahype::plotters:
   tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*                _cellWriter;
 
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexTimeStampDataWriter;
-  tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
-  tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
 
   void writeTimeStampDataToPatch( double timeStamp, int vertexIndex, int cellIndex );
 
@@ -91,20 +84,12 @@ class exahype::plotters::ADERDG2LegendreDivergenceVTK: public exahype::plotters:
     double timeStamp
   );
 
-  void plotCellData(
-    int firstCellIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
-    double timeStamp
-  );
-
   std::pair<int,int> plotLegendrePatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch
   );
  public:
-  ADERDG2LegendreDivergenceVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType isBinary, bool plotCells);
+  ADERDG2LegendreDivergenceVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType isBinary);
   virtual ~ADERDG2LegendreDivergenceVTK();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -135,20 +120,6 @@ class exahype::plotters::ADERDG2LegendreDivergenceVerticesVTKBinary: public exah
 };
 
 
-class exahype::plotters::ADERDG2LegendreDivergenceCellsVTKAscii: public exahype::plotters::ADERDG2LegendreDivergenceVTK {
-  public:
-    static std::string getIdentifier();
-    ADERDG2LegendreDivergenceCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
-};
-
-
-class exahype::plotters::ADERDG2LegendreDivergenceCellsVTKBinary: public exahype::plotters::ADERDG2LegendreDivergenceVTK {
-  public:
-    static std::string getIdentifier();
-    ADERDG2LegendreDivergenceCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
-};
-
-
 class exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUAscii: public exahype::plotters::ADERDG2LegendreDivergenceVTK {
   public:
     static std::string getIdentifier();
@@ -160,20 +131,6 @@ class exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUBinary: public exah
   public:
     static std::string getIdentifier();
     ADERDG2LegendreDivergenceVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
-};
-
-
-class exahype::plotters::ADERDG2LegendreDivergenceCellsVTUAscii: public exahype::plotters::ADERDG2LegendreDivergenceVTK {
-  public:
-    static std::string getIdentifier();
-    ADERDG2LegendreDivergenceCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
-};
-
-
-class exahype::plotters::ADERDG2LegendreDivergenceCellsVTUBinary: public exahype::plotters::ADERDG2LegendreDivergenceVTK {
-  public:
-    static std::string getIdentifier();
-    ADERDG2LegendreDivergenceCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
 };
 
 

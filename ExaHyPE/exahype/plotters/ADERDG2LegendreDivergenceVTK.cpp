@@ -36,7 +36,7 @@ std::string exahype::plotters::ADERDG2LegendreDivergenceVerticesVTKAscii::getIde
 
 
 exahype::plotters::ADERDG2LegendreDivergenceVerticesVTKAscii::ADERDG2LegendreDivergenceVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTK,false) {
+    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTK) {
 }
 
 
@@ -46,30 +46,8 @@ std::string exahype::plotters::ADERDG2LegendreDivergenceVerticesVTKBinary::getId
 
 
 exahype::plotters::ADERDG2LegendreDivergenceVerticesVTKBinary::ADERDG2LegendreDivergenceVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTK,false) {
+    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTK) {
 }
-
-
-
-std::string exahype::plotters::ADERDG2LegendreDivergenceCellsVTKAscii::getIdentifier() {
-  return "vtk::Legendre::cells::div::ascii";
-}
-
-
-exahype::plotters::ADERDG2LegendreDivergenceCellsVTKAscii::ADERDG2LegendreDivergenceCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTK,true) {
-}
-
-
-std::string exahype::plotters::ADERDG2LegendreDivergenceCellsVTKBinary::getIdentifier() {
- return "vtk::Legendre::cells::div::binary";
-}
-
-
-exahype::plotters::ADERDG2LegendreDivergenceCellsVTKBinary::ADERDG2LegendreDivergenceCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTK,true) {
-}
-
 
 
 std::string exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier() {
@@ -78,7 +56,7 @@ std::string exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUAscii::getIde
 
 
 exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUAscii::ADERDG2LegendreDivergenceVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTU,false) {
+    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTU) {
 }
 
 
@@ -88,44 +66,21 @@ std::string exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUBinary::getId
 
 
 exahype::plotters::ADERDG2LegendreDivergenceVerticesVTUBinary::ADERDG2LegendreDivergenceVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTU,false) {
+    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTU) {
 }
 
 
 
-std::string exahype::plotters::ADERDG2LegendreDivergenceCellsVTUAscii::getIdentifier() {
-  return "vtu::Legendre::cells::div::ascii";
-}
 
-
-exahype::plotters::ADERDG2LegendreDivergenceCellsVTUAscii::ADERDG2LegendreDivergenceCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::ASCIIVTU,true) {
-}
-
-
-std::string exahype::plotters::ADERDG2LegendreDivergenceCellsVTUBinary::getIdentifier() {
- return "vtu::Legendre::cells::div::binary";
-}
-
-
-exahype::plotters::ADERDG2LegendreDivergenceCellsVTUBinary::ADERDG2LegendreDivergenceCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreDivergenceVTK(postProcessing,PlotterType::BinaryVTU,true) {
-}
-
-
-
-exahype::plotters::ADERDG2LegendreDivergenceVTK::ADERDG2LegendreDivergenceVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType, bool plotCells):
+exahype::plotters::ADERDG2LegendreDivergenceVTK::ADERDG2LegendreDivergenceVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType):
   Device(postProcessing),
   _fileCounter(-1),
   _plotterType(plotterType),
-  _plotCells(plotCells),
   _gridWriter(nullptr),
   _vertexWriter(nullptr),
   _cellWriter(nullptr),
   _vertexTimeStampDataWriter(nullptr),
-  _cellTimeStampDataWriter(nullptr),
-  _vertexDataWriter(nullptr),
-  _cellDataWriter(nullptr) {
+  _vertexDataWriter(nullptr) {
 }
 
 
@@ -186,17 +141,8 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::startPlotting( double time
     _vertexWriter                = _gridWriter->createVertexWriter();
     _cellWriter                  = _gridWriter->createCellWriter();
 
-    if (_plotCells) {
-      _cellDataWriter          = _gridWriter->createCellDataWriter("Q", _writtenUnknowns);
-      _vertexDataWriter        = nullptr;
-      _cellTimeStampDataWriter = _gridWriter->createCellDataWriter("time", 1);
-    }
-    else {
-      _cellDataWriter          = nullptr;
-      _vertexDataWriter        = _gridWriter->createVertexDataWriter("Q", _writtenUnknowns);
-      _vertexTimeStampDataWriter = _gridWriter->createVertexDataWriter("time", 1);
-    }
-
+    _vertexDataWriter        = _gridWriter->createVertexDataWriter("Q", _writtenUnknowns);
+    _vertexTimeStampDataWriter = _gridWriter->createVertexDataWriter("time", 1);
 
     assertion( _gridWriter!=nullptr );
     assertion( _vertexWriter!=nullptr );
@@ -218,9 +164,7 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::finishPlotting() {
     _vertexWriter->close();
     _cellWriter->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
-    if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
     if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
-    if (_cellTimeStampDataWriter!=nullptr)   _cellTimeStampDataWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
@@ -249,19 +193,15 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::finishPlotting() {
   }
 
   if (_vertexDataWriter!=nullptr)    delete _vertexDataWriter;
-  if (_cellDataWriter!=nullptr)      delete _cellDataWriter;
   if (_vertexWriter!=nullptr)        delete _vertexWriter;
   if (_cellWriter!=nullptr)          delete _cellWriter;
   if (_vertexTimeStampDataWriter!=nullptr) delete _vertexTimeStampDataWriter;
-  if (_cellTimeStampDataWriter!=nullptr)   delete _cellTimeStampDataWriter;
   if (_gridWriter!=nullptr)          delete _gridWriter;
 
   _vertexDataWriter           = nullptr;
-  _cellDataWriter             = nullptr;
   _vertexWriter               = nullptr;
   _cellWriter                 = nullptr;
   _vertexTimeStampDataWriter  = nullptr;
-  _cellTimeStampDataWriter    = nullptr;
   _gridWriter                 = nullptr;
 }
 
@@ -275,13 +215,6 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::writeTimeStampDataToPatch(
     dfor(i,_order+1) {
       _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
       vertexIndex++;
-    }
-  }
-
-  if (_writtenUnknowns>0 && _cellTimeStampDataWriter!=nullptr) {
-    dfor(i,_order) {
-      _cellTimeStampDataWriter->plotCell(cellIndex, timeStamp);
-      cellIndex++;
     }
   }
 }
@@ -392,58 +325,6 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::plotVertexData(
 }
 
 
-void exahype::plotters::ADERDG2LegendreDivergenceVTK::plotCellData(
-  int firstCellIndex,
-  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double* u,
-  double timeStamp
-) {
-  assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
-
-  double* interpoland = new double[_solverUnknowns];
-  double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
-
-  dfor(i,_order) {
-    // This is inefficient but works. We could look it up directly from the arrays
-    tarch::la::Vector<DIMENSIONS, double> p;
-    for (int d=0; d<DIMENSIONS; d++) {
-      p(d) = offsetOfPatch(d) + (kernels::gaussLegendreNodes[_order][i(d)]+kernels::gaussLegendreNodes[_order][i(d)+1]) * sizeOfPatch(d)/2.0;
-    }
-    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = kernels::interpolate(
-        offsetOfPatch.data(),
-        sizeOfPatch.data(),
-        p.data(), // das ist die Position
-        _solverUnknowns,
-        unknown,
-        _order,
-        u
-      );
-    }
-
-    assertion(sizeOfPatch(0)==sizeOfPatch(1));
-    _postProcessing->mapQuantities(
-      offsetOfPatch,
-      sizeOfPatch,
-      p,
-      i,
-      interpoland,
-      value,
-      timeStamp
-    );
-
-    if (_writtenUnknowns>0) {
-      _cellDataWriter->plotCell(firstCellIndex, value, _writtenUnknowns );
-    }
-
-    firstCellIndex++;
-  }
-
-  if (interpoland!=nullptr)  delete[] interpoland;
-  if (value!=nullptr)        delete[] value;
-}
-
 void exahype::plotters::ADERDG2LegendreDivergenceVTK::plotPatch(const int cellDescriptionsIndex, const int element) {
   auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
@@ -476,11 +357,6 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::plotPatch(
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first, vertexAndCellIndex.second );
 
-    if (_plotCells) {
-      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
-    }
-    else {
-      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
-    }
+    plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
   }
 }
