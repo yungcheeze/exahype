@@ -7,50 +7,80 @@
 // ========================
 #include "SphereIntegrals.h"
 
+#include "AbstractGRMHDSolver.h"
+#include "kernels/DGBasisFunctions.h" // kernels::interpolate
+#include <cmath> // std::sin, std::cos
+#include "peano/utils/Loop.h" // dfor; not yet used
+using namespace tarch::la;
+using namespace std;
+typedef Vector<DIMENSIONS, double> dvec;
 
-GRMHD::SphereIntegrals::SphereIntegrals() : exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(){
+
+GRMHD::SphereIntegrals::SphereIntegrals() :
+	exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(),
+	spherewriter("output/sphere-stuff.asc")
+{
   // @TODO Please insert your code here.
 }
 
 
-void GRMHD::SphereIntegrals::plotPatch(
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-    double timeStamp) {
-	using namespace tarch::la;
+void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, double* u, double timeStamp) {
+	// First comment: This is for 3D. This will not work in 2D as the GRMHD AccretionDisk2D itself
+	// uses spherical coordinates. We assume cartesian coordinates here in the simulation domain.
+	const int nVar  = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
+	const int order = GRMHD::AbstractGRMHDSolver::Order;
 
 	// Compute on a sphere:
 	const double rSphere = 2.1;
-/*
-	// determine if the sphere goes throught the current cell
-	// TODO: Determine geometry with offsetOfPatch...
-	double rCellMin = min(offsetOfPatch);
-	double rCellMax = max(offsetOfPatch + sizeOfPatch);
+	// index of the quantity you want to compute, in u
+	const int uIndex = 0;
 	
-	if(rCellMin < r && rCellMax > r) {
-		// the sphere goes throught our cell.
-		
-		// now: determine the grid points on the sphere.
-		// then interpolate using kernels::interpolate
-		// from #include kernels/DGBasisFunctions.h
-		
-		// then think about an integration measure.
-		
-		// In the end, write it out to a reduction file.
-		
-		// For debugging purposes, we should write out this 
-		// test at to an ASCII file to ensure whether it works.
-		
+	// How much points to compute
+	const int ntheta = 10;
+	const int nphi = ntheta;
+
+	// determine if the sphere goes throught the current cell
+	// TODO: Determine whether offsetOfPatch is the lower left or center or whatever position in cell.
+	//       In any way, the following will work probably in x,y,z > 0, no more.
+	//double rCellMin = min(offsetOfPatch);
+	//double rCellMax = max(offsetOfPatch + sizeOfPatch);
+	//if(rCellMin < r && rCellMax > r) {
+	
+	// actually we should do the same checks also for theta and phi.
+	// The following dumb approach is only suitable when ntheta*nphi is small.
+	
+	const double scaling = 1./(2.*M_PI*ntheta) * 1./(2.*M_PI*nphi);
+	dvec ip; // integration point
+	for(int itheta=0; itheta<ntheta; itheta++) {
+		for(int iphi=0; iphi<nphi; iphi++) {
+			// compute the position of this integration point
+			ip(0) = rSphere * sin(2*M_PI*itheta/ntheta) * cos(2*M_PI*iphi/nphi);
+			ip(1) = rSphere * sin(2*M_PI*itheta/ntheta) * sin(2*M_PI*iphi/nphi);
+			ip(2) = rSphere * cos(2*M_PI*itheta/ntheta);
+			
+			// check if it is inside the current cell
+			bool isinside = true;
+			for(int d=0; d<DIMENSIONS; d++) {
+				isinside = isinside && offsetOfPatch(d) < ip(d) && ip(d) < (offsetOfPatch(d)+sizeOfPatch(d));
+			}
+			
+			if(isinside) {
+				double val = kernels::interpolate(offsetOfPatch.data(), sizeOfPatch.data(), ip.data(), nVar, uIndex, order, u);
+				spherewriter.addValue(val, scaling);
+			}
+		}
 	}
-*/
+
+	// For debugging purposes, we should write out this 
+	// test at to an ASCII file to ensure whether it works.
 }
 
 
 void GRMHD::SphereIntegrals::startPlotting( double time) {
-  // @TODO Please insert your code here.
+  spherewriter.startRow(time);
 }
 
 
 void GRMHD::SphereIntegrals::finishPlotting() {
-  // @TODO Please insert your code here.
+  spherewriter.finishRow();
 }

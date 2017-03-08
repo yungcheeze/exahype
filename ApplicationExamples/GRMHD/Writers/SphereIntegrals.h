@@ -8,6 +8,8 @@
 #define SphereIntegrals_CLASS_HEADER_
 
 #include "exahype/plotters/ADERDG2UserDefined.h"
+#include "Writers/TimeSeriesReductions.h"
+
 
 namespace GRMHD {
   class SphereIntegrals;
@@ -15,6 +17,8 @@ namespace GRMHD {
 
 class GRMHD::SphereIntegrals : public exahype::plotters::ADERDG2UserDefined {
  public:
+  reductions::ReductionsWriter spherewriter;
+
   /**
    * Constructor.
    * 

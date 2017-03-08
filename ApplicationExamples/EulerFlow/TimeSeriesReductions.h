@@ -155,6 +155,7 @@ public:
 
     void openFile() {
 	static tarch::logging::Log _log("ReductionsWriter");
+	logInfo("openFile()", "Trying to open file '" << filename << "' in the ReductionsWriter"); // this is strange. When not touching the string, it gets removed...
 	const char* fn = filename.c_str();
 	asc = fopen(fn, "w");
 	if(asc == NULL) {
