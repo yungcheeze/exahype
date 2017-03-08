@@ -48,6 +48,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   constexpr int basisSize3         = basisSize2 * basisSize;
   constexpr int order              = basisSize - 1;
   
+  assertion(numberOfVariables>=0);
+  assertion(numberOfParameters>=0);
+  
   idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters); // idx_luh(y,x,nVar)
   
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters); // idx_lQi(y,x,t,nVar+nPar)
@@ -109,13 +112,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
             solver.algebraicSource(Q, S);
           }
           else if (useNCP) {
-            assertion(numberOfVariables>=0);
-            assertion(numberOfParameters>=0);
-            // A trivial memset did fail here for whatever reason
-            // memset(S,0.0,numberOfVariables+numberOfParameters);
-            for (int i=0; i<numberOfVariables+numberOfParameters; i++) {
-              S[i] = 0.0;
-            }
+            std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double)); //initialize S
           }
         }
       }
