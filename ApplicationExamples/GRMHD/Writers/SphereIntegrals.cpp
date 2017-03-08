@@ -17,7 +17,7 @@ void GRMHD::SphereIntegrals::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-	using tarch::la;
+	using namespace tarch::la;
 
 	// Compute on a sphere:
 	const double rSphere = 2.1;
