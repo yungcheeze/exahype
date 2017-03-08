@@ -5,21 +5,43 @@ SUBROUTINE MassAccretionRate(Q,masschange)
   REAL :: Q(nVar), masschange
   INTENT(IN)  :: Q
   INTENT(OUT) :: masschange
+
   ! Local variable declaration
-  REAL :: Prim(nVar), Buf(nVar)
-  REAL :: rho,vx,vy,vz,p,bx,by,bz,ex,ey,ez,cs,c0
   REAL :: v2,b2,e2,lf,w,ww,uem,gamma1
-  REAL :: lapse, gp, gm, dcs, dc0, eel
-  REAL :: g_contr(3,3), g_cov(3,3)
-  REAl :: shift(3), vf(3), vf_cov(3), Ev(3), Bv(3), ExB(3)
-  REAL :: A(3,3), devG(3,3), G(3,3), temp(3,3), Id(3,3), detA, eh, S, evv, T, falpha
-  REAL :: alphas, alphal, rhos, rhol, us, vs, ul, vl, es, el
-  REAL :: EE(3),BB(3),vv(3),detvEB, vxE(3), vxB(3)
-  REAL :: psi, BV_contr(3), Qv_contr(3), QB_contr(3), vxB_contr(3), vb_conv(3), b2_cov, vb_cov
-  INTEGER :: i
+  REAL :: lapse, g_contr(3,3), g_cov(3,3), gp
+  REAl :: shift(3), vf(3), vf_cov(3), ur_contr(3),V(nVar)
+  INTEGER :: i, iErr
 
   ! TODO: Alejandro
 
-  masschange = 0.0
+  CALL PDECons2Prim(V,Q,iErr)
+
+  !gammaij = V(14:19)
+  g_cov(1,1) = V(14)
+  g_cov(1,2) = V(15)
+  g_cov(1,3) = V(16)
+  g_cov(2,2) = V(17)
+  g_cov(2,3) = V(18)
+  g_cov(3,3) = V(19)
+  g_cov(2,1) = V(15)
+  g_cov(3,1) = V(16)
+  g_cov(3,2) = V(18)
+
+  ! Compute the inverse of the 3-metric
+  CALL MatrixInverse3x3(g_cov,g_contr,gp)
+
+  vf_cov = V(2:4)
+  ! v_i --> v^i From covariant to contravariant
+  vf     = MATMUL(g_contr,vf_cov)
+  gp = SQRT(gp)
+  lapse = V(10)
+  shift = V(11:13)
+
+  ! u^i = v^i - beta^i/alpha
+  !thinking in spherical simmetry
+  
+  ur_contr = vf(1)  - shift(1)/lapse
+  masschange = lapse *gp* Q(1) * ur_contr(1)
+  
   
 END SUBROUTINE MassAccretionRate

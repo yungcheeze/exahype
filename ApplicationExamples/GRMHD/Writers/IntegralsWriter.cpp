@@ -107,9 +107,9 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	// Mass Accretion Rate
 
 	// We start to compute the accretion rate at the r_excision
-	double rmin = 1;
+	double rmin = 2.1;
 	// And we stop integration at some specific detector (r_max)
-	double rmax = 1.5;
+	double rmax = 2.2;
 	double r = norm2(x);
 
 	if(r > rmin && r < rmax) {
