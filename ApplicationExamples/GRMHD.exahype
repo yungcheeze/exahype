@@ -79,6 +79,15 @@ exahype-project GRMHD
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
+
+    plot user::defined SphereIntegrals
+      variables const = 0
+      time = 0.0
+      repeat = 0.000129329
+      output = ./global-sphere-integrals
+      select    = x:0.0,y:0.0
+    end plot
+
   end solver
 
 
