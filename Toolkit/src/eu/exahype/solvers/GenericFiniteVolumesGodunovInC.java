@@ -157,31 +157,7 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
    */
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-    String content = IOUtils.convertRessourceContentToString(
-        "eu/exahype/solvers/templates/GenericFiniteVolumesSolverGodunovInCGeneratedCode.template");
-    
-      content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-      content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-      //
-      String profilerInclude                     = "";
-      String solverConstructorSignatureExtension = "";
-      String solverConstructorArgumentExtension  = "";
-      if (_enableProfiler) {
-          profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-          solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-          solverConstructorArgumentExtension  += ", std::move(profiler)";
-      }
-      if (_hasConstants) {
-          solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
-      }
-      content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-      content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-      content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
-      //
-      content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-      content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-      
-      writer.write(content);
+   // do nothing
   }
   
   @Override
