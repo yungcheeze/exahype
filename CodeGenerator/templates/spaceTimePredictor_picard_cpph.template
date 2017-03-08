@@ -91,6 +91,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
     std::copy(&lQi[0], &lQi[0]+{{nDof**(nDim+1)*nVarPad}}, lQi_old);
+    
+    if(useNCP && !useSource) { //initialize lShi to 0 if used for ncp but not initialized by source terms
+      std::memset(lSi, 0, {{(nDof**nDim)*nDof*nVarPad}} * sizeof(double));
+    }
 
     for (int i = 0; i < {{nDof}}; i++) {  // time DOF
     

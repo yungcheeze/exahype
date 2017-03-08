@@ -117,7 +117,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
               solver.algebraicSource(Q, S);
             }
             else if (useNCP) {
-              std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double));
+              std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double)); //initialize S
             }
           }
         }
