@@ -139,8 +139,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {
-		localError[i] = std::fabs(V[i] - ExactPrim[i]);
-		//localError[i] = abs(Q[i] - ExactCons[i]);
+		localError[i] = std::abs(V[i] - ExactPrim[i]);
 	}
 	
 	errors.addValue(localError, scaling);

@@ -10,15 +10,13 @@
 #include "kernels/GaussLegendreQuadrature.h"
 
 
-const double excision_radius = 1.0;
 
 void GRMHD::GRMHDSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver::useAdjustSolution(
-	const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt
-  ) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  const double excision_radius = 1.0;
   bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
   //bool insideExcisionBall = false;
   bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
