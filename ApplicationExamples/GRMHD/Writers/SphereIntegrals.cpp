@@ -17,7 +17,32 @@ void GRMHD::SphereIntegrals::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
-  // @TODO Please insert your code here.
+	using tarch::la;
+
+	// Compute on a sphere:
+	const double rSphere = 2.1;
+/*
+	// determine if the sphere goes throught the current cell
+	// TODO: Determine geometry with offsetOfPatch...
+	double rCellMin = min(offsetOfPatch);
+	double rCellMax = max(offsetOfPatch + sizeOfPatch);
+	
+	if(rCellMin < r && rCellMax > r) {
+		// the sphere goes throught our cell.
+		
+		// now: determine the grid points on the sphere.
+		// then interpolate using kernels::interpolate
+		// from #include kernels/DGBasisFunctions.h
+		
+		// then think about an integration measure.
+		
+		// In the end, write it out to a reduction file.
+		
+		// For debugging purposes, we should write out this 
+		// test at to an ASCII file to ensure whether it works.
+		
+	}
+*/
 }
 
 
