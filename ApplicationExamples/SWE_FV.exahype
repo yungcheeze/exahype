@@ -40,7 +40,7 @@ exahype-project  SWE
     variables const   = h:1,hu:1,hv:1
     parameters const  = b:1
     patch-size const   = 3
-    maximum-mesh-size = 0.1
+    maximum-mesh-size = 0.05
     time-stepping     = global
     kernel const      = generic::Godunov
     language const    = C

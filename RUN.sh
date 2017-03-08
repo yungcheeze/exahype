@@ -32,3 +32,4 @@ cd ApplicationExamples/EulerFlow && make clean && make -j $(nproc)
 ./ExaHyPE-EulerFlow ../EulerFlow.exahype
 
 
+
