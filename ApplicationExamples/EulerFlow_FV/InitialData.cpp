@@ -42,7 +42,7 @@ void Euler::sodShockTube(const double* const x,double* Q) {
  *  Circular shaped pressure jump at centre of domain.
  */
 void Euler::explosionProblem(const double* const x,double* Q) {
-  MyEulerSolver::Variables vars(Q);
+  AbstractMyEulerSolver::Variables vars(Q);
 
   vars.j(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) < 0.1) {
@@ -91,7 +91,7 @@ void Euler::sodShockTube(const double* const x,double* Q) {
 
 
 void Euler::explosionProblem(const double* const x,double* Q) {
-  MyEulerSolver::Variables vars(Q);
+  AbstractMyEulerSolver::Variables vars(Q);
 
   vars.j(0.0,0.0,0.0);
   if((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) + (x[2] -0.5) *(x[2] -0.5) < 0.1) {
