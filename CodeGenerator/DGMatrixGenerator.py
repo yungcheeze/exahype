@@ -101,13 +101,23 @@ class DGMatrixGenerator:
         l_linearisediK1 = np.concatenate((iK1,l_padMatrix),axis=0).flatten('F')
         l_matrices['iK1'] = l_linearisediK1
 
-        # dudx (only needed for Cauchy-Kovalevski)
-        if(self.m_numerics == 'linear'):
-            MM   = aderdg.assembleMassMatrix(self.m_xGPN, self.m_wGPN, self.m_order)
-            dudx = aderdg.assembleDiscreteDerivativeOperator(MM,Kxi)
-            # we multiply always from the left -> no transpose
-            l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
-            l_matrices['dudx'] = l_lineariseddudx
+        # dudx
+        MM   = aderdg.assembleMassMatrix(self.m_xGPN, self.m_wGPN, self.m_order)
+        dudx = aderdg.assembleDiscreteDerivativeOperator(MM,Kxi)
+        # we multiply always from the left -> no transpose
+        l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
+        l_matrices['dudx'] = l_lineariseddudx
+        
+        # dudx_t
+        dudx_T = np.transpose(dudx)
+        l_lineariseddudx_T  = np.concatenate((dudx_T,l_padMatrix),axis=0).flatten('F')
+        l_matrices['dudx_T'] = l_lineariseddudx_T
+        
+        # tmp memory for 1/dx*dudx_T
+        # nDof * nDofPad
+        l_nEntries  = Backend.getSizeWithPadding(self.m_config['nDof']) * self.m_config['nDof']
+        tmp_nDof_nDofPad = np.zeros((1,l_nEntries))
+        l_matrices['tmp_nDof_nDofPad'] = tmp_nDof_nDofPad.flatten('F')
 
         # tmp memory for *s*caled *m*atrices
         s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)
@@ -162,6 +172,8 @@ class DGMatrixGenerator:
                            'extern double *Kxi_T;\n'    \
                            'extern double *iK1;\n'      \
                            'extern double *dudx;\n'     \
+                           'extern double *dudx_T;\n'   \
+                           'extern double *tmp_nDof_nDofPad;\n'  \
                            'extern double *s_m;\n'      \
                            'extern double *s_v;\n'      \
                            'extern double *tmp_bnd;\n'  \
@@ -183,6 +195,8 @@ class DGMatrixGenerator:
                            'double* kernels::aderdg::optimised::Kxi_T;\n'   \
                            'double* kernels::aderdg::optimised::iK1;\n'     \
                            'double* kernels::aderdg::optimised::dudx;\n'    \
+                           'double* kernels::aderdg::optimised::dudx_T;\n'  \
+                           'double* kernels::aderdg::optimised::tmp_nDof_nDofPad;\n'  \
                            'double* kernels::aderdg::optimised::s_m;\n'     \
                            'double* kernels::aderdg::optimised::s_v;\n'     \
                            'double* kernels::aderdg::optimised::tmp_bnd;\n' \

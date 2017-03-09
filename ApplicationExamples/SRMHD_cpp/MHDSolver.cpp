@@ -479,7 +479,7 @@ void MHDSolver::MHDSolver::adjustedSolutionValues(const double* const x,const do
   AlfvenWave(x, Q, t);
 }
 
-void MHDSolver::MHDSolver::source(const double* const Q, double* S) {
+void MHDSolver::MHDSolver::algebraicSource(const double* const Q, double* S) {
   // TODO: pass this to Fortran.
   for(int i=0; i < MHD_VARIABLES; i++) {
     S[i] = 0.0;

@@ -9,6 +9,8 @@
 
 debug tarch -1 black
 debug peano -1 black
+debug exahype -1 black
+debug multiscalelinkedcell -1 black
 info tarch -1 black
 info peano -1 black
 info peano::utils::UserInterface -1 white

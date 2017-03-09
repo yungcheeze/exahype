@@ -85,7 +85,7 @@ void ElasticWave::MyElasticWaveSolver::flux(const double* const Q,double** F) {
 }
 
 
-void ElasticWave::MyElasticWaveSolver::source(const double* const Q,double* S) {
+void ElasticWave::MyElasticWaveSolver::algebraicSource(const double* const Q,double* S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -146,7 +146,7 @@ void ElasticWave::MyElasticWaveSolver::boundaryValues(const double* const x,cons
 }
 
 
-void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void ElasticWave::MyElasticWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
   ReadOnlyVariables vars(Q);
@@ -199,7 +199,7 @@ void ElasticWave::MyElasticWaveSolver::ncp(const double* const Q,const double* c
 }
 
     
-void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+void ElasticWave::MyElasticWaveSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
   ReadOnlyVariables vars(Q);
   
   //  std::cout << "matrixb " << vars.rho() << "," << vars.cs() << "," << vars.cp() << std::endl;
@@ -272,7 +272,13 @@ void ElasticWave::MyElasticWaveSolver::matrixb(const double* const Q,const int n
 
 //TODO KD
 // tell the user what it is
-bool ElasticWave::MyElasticWaveSolver::hasToApplyPointSource() const { 
+bool ElasticWave::MyElasticWaveSolver::useAlgebraicSource() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::useNonConservativeProduct() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::useCoefficientMatrix() const {return true;}
+
+bool ElasticWave::MyElasticWaveSolver::usePointSource() const { 
   return true;
 }
 

@@ -16,8 +16,8 @@ SUBROUTINE InitialData(x, t, Q)
 	! Call InitialBlast(x, 0.0, Q)
 	! Call InitialOrsagTang(x, 0.0 , Q)
 	
-	CALL InitialAccretionDisc(x, 0.0,  Q)
-	! CALL InitialAccretionDisc3D(x, 0.0, Q)
+	! CALL InitialAccretionDisc(x, 0.0,  Q)
+	CALL InitialAccretionDisc3D(x, 0.0, Q)
 END SUBROUTINE InitialData
 
 
@@ -305,7 +305,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     REAL :: r, zz, urc, vc2, tc, pc,tt, c1, c2, urr, f
     REAL :: df, dt, ut, LF, vr, vtheta, vphi, rho, p, VV_cov(3), g_cov(3,3), g_contr(3,3)
     REAL :: gp, gm, shift(3), lapse, gammaij(6), betaru, g_tt, phi, theta, vx, vy, vz
-    
+    REAL :: detgamma    
     ! PARAMETERS:
     REAL :: rhoc = 0.0625  ! Critical radius
     REAL :: rc = 8.0
@@ -376,8 +376,6 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        rho = rhoc*(tt/tc)**ng
        p   = rho*tt
        !
-       BV(1:3) = 0.
-       !
        lapse = lapse
        !
        !shift_contr = MATMUL(g_contr,shift)  !shift is controvariant. See fluxes....
@@ -388,6 +386,28 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        gammaij(4) = g_cov(2,2)
        gammaij(5) = g_cov(2,3)
        gammaij(6) = g_cov(3,3)
+
+       !If hydro (Clasical) Michel accretion                                                    
+
+       !BV(1:3) = 0.                                                                            
+
+       ! MHD  Michel accretion                                                                  
+
+       detgamma= gammaij(1)*( gammaij(4)*gammaij(6)-gammaij(5)*gammaij(5)) &
+               - gammaij(2)*( gammaij(2)*gammaij(6)-gammaij(5)*gammaij(3)) &
+               + gammaij(3)*( gammaij(2)*gammaij(5)-gammaij(3)*gammaij(4))
+
+       detgamma = sqrt(detgamma)
+
+       ! B0 = (2.2688/M)*(sqrt(b^2/rho0)), here sqrt(b^2/rho0)=4.0                              
+
+       B0 = 2.2688*2.0
+
+       BV(1:3) = B0*x(1:3)/(detgamma * r*r*r)
+       !---------------------------------------------------------------------- 
+
+
+
 
        V(1:9) = (/ rho, VV_cov(1:3), p, BV(1:3), 0. /)
        V(10:19) = (/ lapse, shift(1:3), gammaij(1:6) /)

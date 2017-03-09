@@ -53,7 +53,7 @@ exahype::solvers::Solver::RefinementControl ScalarWave::MyScalarWaveSolver::refi
 // }
 
 
-// void ScalarWave::MyScalarWaveSolver::source(const double* const Q,double* S) {
+// void ScalarWave::MyScalarWaveSolver::algebraicSource(const double* const Q,double* S) {
 //   // Dimensions             = 3
 //   // Number of variables    = 1 (#unknowns + #parameters)
   
@@ -75,7 +75,7 @@ void ScalarWave::MyScalarWaveSolver::boundaryValues(const double* const x,const 
 }
 
 
-// void ScalarWave::MyScalarWaveSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+// void ScalarWave::MyScalarWaveSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
 //   // Dimensions             = 3
 //   // Number of variables    = 1 (#unknowns + #parameters)
 
@@ -84,7 +84,7 @@ void ScalarWave::MyScalarWaveSolver::boundaryValues(const double* const x,const 
 // }
 
     
-// void ScalarWave::MyScalarWaveSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+// void ScalarWave::MyScalarWaveSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
 //   // Dimensions             = 3
 //   // Number of variables    = 1 (#unknowns + #parameters)
   

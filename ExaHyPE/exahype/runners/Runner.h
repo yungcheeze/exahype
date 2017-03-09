@@ -151,7 +151,7 @@ class exahype::runners::Runner {
    * This is different from the default predictor rerun since we do not
    * drop incoming MPI face data here.
    */
-  void recomputePredictorAfterLimiterDomainOrGridUpdate(exahype::repositories::Repository& repository);
+  void recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.
@@ -199,6 +199,7 @@ class exahype::runners::Runner {
    * that will be populated by a solver.
    */
   int getCoarsestGridLevelOfAllSolvers() const;
+  int getFinestGridLevelOfAllSolvers() const;
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();
