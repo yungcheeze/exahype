@@ -15,6 +15,8 @@ using namespace tarch::la;
 using namespace std;
 typedef Vector<DIMENSIONS, double> dvec;
 
+#include "Fortran/MassAccretionRate.h"
+
 
 GRMHD::SphereIntegrals::SphereIntegrals() :
 	exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(),
@@ -31,23 +33,22 @@ void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& si
 	const int order = GRMHD::AbstractGRMHDSolver::Order;
 
 	// Compute on a sphere:
-	const double rSphere = 2.1;
-	// index of the quantity you want to compute, in u
-	const int uIndex = 0;
+	const double rSphere = 1.1;
 	
 	// How much points to compute
 	const int ntheta = 10;
 	const int nphi = ntheta;
 
-	// determine if the sphere goes throught the current cell
-	// TODO: Determine whether offsetOfPatch is the lower left or center or whatever position in cell.
-	//       In any way, the following will work probably in x,y,z > 0, no more.
-	//double rCellMin = min(offsetOfPatch);
-	//double rCellMax = max(offsetOfPatch + sizeOfPatch);
-	//if(rCellMin < r && rCellMax > r) {
+	// Here, we just determine the cartesian positions of all coordinates on the sphere.
+	// This is dumb and inefficient, and there should be intelligent checks instead to
+	// reduce the loops.
 	
-	// actually we should do the same checks also for theta and phi.
-	// The following dumb approach is only suitable when ntheta*nphi is small.
+	// Comment 2: Michael mentioned there are much more intelligent ways, ie. with gauss
+	// points on the sphere and so.
+	
+	// Comment 3: This should be tested with integration of a constant field (value 1) which
+	// should give the value 4*M_PI*rSphere. Also, this should be tested with the EulerFlow
+	// standard Gauss test to see whether we get a nice curve.
 	
 	const double scaling = 1./(2.*M_PI*ntheta) * 1./(2.*M_PI*nphi);
 	dvec ip; // integration point
@@ -65,8 +66,19 @@ void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& si
 			}
 			
 			if(isinside) {
-				double val = kernels::interpolate(offsetOfPatch.data(), sizeOfPatch.data(), ip.data(), nVar, uIndex, order, u);
-				spherewriter.addValue(val, scaling);
+				// for the time being, interpolate all quantities
+				double intp[nVar];
+				for(int k=0; k<nVar; k++) {
+					intp[k] = kernels::interpolate(offsetOfPatch.data(), sizeOfPatch.data(), ip.data(), nVar, k, order, u);
+				}
+
+				// map the interpolated values to something
+				double masschange;
+				massaccretionrate_(intp, &masschange);
+
+				// reduce the scalar field on the sphere.
+				// the "sum" entry in the reductions ASCII file is the integral value.
+				spherewriter.addValue(masschange, scaling);
 			}
 		}
 	}
