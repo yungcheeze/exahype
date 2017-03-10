@@ -9,7 +9,7 @@
 
 #include "AbstractGRMHDSolver.h"
 #include "kernels/DGBasisFunctions.h" // kernels::interpolate
-#include <cmath> // std::sin, std::cos
+#include <cmath> // std::sin, std::cos, std::sqrt
 #include "peano/utils/Loop.h" // dfor; not yet used
 using namespace tarch::la;
 using namespace std;
@@ -18,7 +18,7 @@ typedef Vector<DIMENSIONS, double> dvec;
 #include "Fortran/MassAccretionRate.h"
 
 
-GRMHD::SphereIntegrals::SphereIntegrals() :
+GRMHD::SphereIntegrals::SphereIntegrals( ) :
 	exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(),
 	spherewriter("output/sphere-stuff.asc")
 {
@@ -74,9 +74,20 @@ void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& si
 
 				// map the interpolated values to something
 				double masschange;
-				massaccretionrate_(intp, &masschange);
-
+				double vx;
+				double vy;
+				double vz;								
+				double ur;
+				massaccretionrate_(intp, &masschange, &vx, &vy, &vz);
 				// reduce the scalar field on the sphere.
+
+				ur = sin(2*M_PI*itheta/ntheta) * cos(2*M_PI*iphi/nphi)*vx
+				   + sin(2*M_PI*itheta/ntheta) * sin(2*M_PI*iphi/nphi)*vy
+				   + cos(2*M_PI*itheta/ntheta)*vz
+				  - ((2.0/rSphere)/(1.0+2.0/rSphere))/sqrt(1.0/(1.0+2.0/rSphere));
+
+                                masschange = rSphere * rSphere * masschange*ur;
+				
 				// the "sum" entry in the reductions ASCII file is the integral value.
 				spherewriter.addValue(masschange, scaling);
 			}

@@ -114,7 +114,12 @@ void GRMHD::IntegralsWriter::mapQuantities(
 
 	if(r > rmin && r < rmax) {
 	  double mdot;
-	  massaccretionrate_(Q, &mdot);
+	  double vx;
+      	  double vy;
+	  double vz;
+			  
+
+	  massaccretionrate_(Q, &mdot, &vx, &vy, &vz);
 	  masschange.addValue(mdot, scaling);
 	}
 
