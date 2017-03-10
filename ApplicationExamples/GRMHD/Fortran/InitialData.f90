@@ -301,7 +301,7 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     ! Local variables
     
     REAL :: rho0, p0, eta, B0, hh, tempaa, tempab, tempac, va2, vax
-    REAL :: V(nVar), BV(3), VV(3), Pi = ACOS(-1.0)
+    REAL :: V(nVar), BV(3), BV_contr(3), VV(3), Pi = ACOS(-1.0)
     REAL :: r, zz, urc, vc2, tc, pc,tt, c1, c2, urr, f
     REAL :: df, dt, ut, LF, vr, vtheta, vphi, rho, p, VV_cov(3), g_cov(3,3), g_contr(3,3)
     REAL :: gp, gm, shift(3), lapse, gammaij(6), betaru, g_tt, phi, theta, vx, vy, vz
@@ -403,9 +403,9 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
 
        B0 = 2.2688*2.0
 
-       BV(1:3) = B0*x(1:3)/(detgamma * r*r*r)
        !---------------------------------------------------------------------- 
-
+       BV_contr = B0*x(1:3)/(detgamma * r*r*r)
+       BV = MATMUL(g_cov,BV_contr)
 
 
 
