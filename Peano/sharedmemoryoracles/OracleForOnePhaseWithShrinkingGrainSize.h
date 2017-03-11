@@ -132,8 +132,17 @@ peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
  * @author Tobias Weinzierl
  */
 class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano::datatraversal::autotuning::OracleForOnePhase {
+  public:
+    enum class SelectNextStudiedMeasureTraceStrategy {
+      Randomised,
+      Cyclic,
+      RandomisedWithHigherPrioritiesForSmallProblemSizes
+    };
   private:
     static tarch::logging::Log                           _log;
+
+    static const double                                  _MaxAccuracy;
+    static const double                                  _WideningFactor;
 
     /**
      * We cannot write std::numeric_limit<double>::max() into a file as most
@@ -146,6 +155,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * @see parallelSectionHasTerminated()
      */
     static const double                                  _InitialRelativeAccuracy;
+
+    static bool                                          _hasLearnedSinceLastQuery;
 
     /**
      * We never do optimise all traces. We only do it with one trace at a time.
@@ -160,6 +171,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      */
     const bool                                           _learn;
     const bool                                           _restart;
+    const SelectNextStudiedMeasureTraceStrategy          _selectNextStudiedMeasureTraceStrategy;
 
     /**
      * Per method trace, we hold multiple problem analyses. See rationale
@@ -490,7 +502,11 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart);
+    OracleForOnePhaseWithShrinkingGrainSize(
+      bool learn,
+      bool restart,
+      SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy = SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes
+    );
 
     /**
      * Nop
@@ -580,6 +596,13 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     void activateOracle() override;
 
     peano::datatraversal::autotuning::OracleForOnePhase* createNewOracle() const override;
+
+    /**
+     * Ask weather any oracle has learned. Afterwards reset an internal state.
+     * So the next time you call this operation, you know whether something
+     * had been learned in-between.
+     */
+    static bool hasLearnedSinceLastQuery();
 };
 
 

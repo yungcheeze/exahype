@@ -14,13 +14,22 @@ tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSiz
 
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_TimingMax( 65536.0 );
+const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MaxAccuracy( 1.0 );
+const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 0.9 );
 
 
+bool  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_hasLearnedSinceLastQuery( false );
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart):
+
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
+  bool learn,
+  bool restart,
+  SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy
+):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
   _learn(learn && tarch::multicore::Core::getInstance().getNumberOfThreads()>1),
   _restart(restart),
+  _selectNextStudiedMeasureTraceStrategy(selectNextStudiedMeasureTraceStrategy),
   _measurements() {
 }
 
@@ -99,14 +108,14 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart() {
   bool widenedEntry = false;
   for (auto& p: _measurements[_activeMethodTrace]) {
-    const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()<1.0;
+    const bool widenThisEntry = p._currentMeasurement.getAccuracy()!=0.0 && p._currentMeasurement.getAccuracy()<_MaxAccuracy;
     if (widenThisEntry) {
-      p._currentMeasurement.increaseAccuracy(0.9);
+      p._currentMeasurement.increaseAccuracy( _WideningFactor );
+      widenedEntry = true;
     }
-    widenedEntry |= widenThisEntry;
   }
   if (!widenedEntry && _restart) {
-    logInfo( "widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart(...)", "restart all measurements of " << toString(_activeMethodTrace) );
+    logInfo( "widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart(...)", "restart some measurements of " << toString(_activeMethodTrace) );
     for (auto& p: _measurements[_activeMethodTrace]) {
       if (rand()%100==0) {
         p.restart();
@@ -137,41 +146,70 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
   assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
   assertion( !_measurements.empty() );
 
-  const bool randomiseSelection   = true;
-
-  // We just make it big enough to run through every variant twice if we use a deterministic scheme.
+  // We just make it big enough to run through every variant if we used a deterministic scheme.
   int remainingTriesToFindSearchingTrace = (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
-  if (randomiseSelection) {
-    _activeMethodTrace             = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
 
-    while ( _measurements.count(_activeMethodTrace)==0 ) {
-      _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
-      if (
-        remainingTriesToFindSearchingTrace>0
-        &&
-        _measurements.count(_activeMethodTrace)==1
-        &&
-        isStableDatabaseEntrySet(_activeMethodTrace)
-      ) {
+  switch (_selectNextStudiedMeasureTraceStrategy) {
+    case SelectNextStudiedMeasureTraceStrategy::Randomised:
+      _activeMethodTrace             = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
+
+      while ( _measurements.count(_activeMethodTrace)==0 ) {
+        _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
+        if (
+          remainingTriesToFindSearchingTrace>0
+          &&
+          _measurements.count(_activeMethodTrace)==1
+          &&
+          isStableDatabaseEntrySet(_activeMethodTrace)
+        ) {
+          remainingTriesToFindSearchingTrace--;
+          logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) );
+          _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
+        }
+      }
+      break;
+
+    case SelectNextStudiedMeasureTraceStrategy::Cyclic:
+      do {
+        _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( static_cast<int>(_activeMethodTrace) + 1 );
+        if (_activeMethodTrace>=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
+          _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( 0 );
+        }
         remainingTriesToFindSearchingTrace--;
-        logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) );
-        _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
       }
-    }
-  }
-  else {
-    do {
-      _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( static_cast<int>(_activeMethodTrace) + 1 );
-      if (_activeMethodTrace>=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
-        _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( 0 );
+      while (
+        _measurements.count(_activeMethodTrace)==0
+        ||
+        ( remainingTriesToFindSearchingTrace>0 && isStableDatabaseEntrySet(_activeMethodTrace))
+      );
+      break;
+
+    case SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes:
+      {
+        _activeMethodTrace                               = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
+        static int maxProblemSizeOfLastMethodTraceChoice = 1;
+
+        while ( _measurements.count(_activeMethodTrace)==0 ) {
+          _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
+          if (
+            remainingTriesToFindSearchingTrace>0
+            &&
+            _measurements.count(_activeMethodTrace)==1
+            &&
+            (
+              isStableDatabaseEntrySet(_activeMethodTrace)
+              ||
+              _measurements[_activeMethodTrace].back()._biggestProblemSize > maxProblemSizeOfLastMethodTraceChoice
+            )
+          ) {
+            remainingTriesToFindSearchingTrace--;
+            logDebug( "changeMeasuredMethodTrace()", "skip " << toString(_activeMethodTrace) << " with internal max size=" << maxProblemSizeOfLastMethodTraceChoice);
+            _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
+          }
+        }
+        maxProblemSizeOfLastMethodTraceChoice = (maxProblemSizeOfLastMethodTraceChoice + _measurements[_activeMethodTrace].back()._biggestProblemSize) / 2;
       }
-      remainingTriesToFindSearchingTrace--;
-    }
-    while (
-      _measurements.count(_activeMethodTrace)==0
-      ||
-      ( remainingTriesToFindSearchingTrace>0 && isStableDatabaseEntrySet(_activeMethodTrace))
-    );
+      break;
   }
 
   assertion(_measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0);
@@ -180,7 +218,11 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
   assertion(_activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
   assertion(_measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0);
 
-  logDebug( "changeMeasuredMethodTrace()", "next active method trace " << toString(_activeMethodTrace) );
+  logInfo(
+    "changeMeasuredMethodTrace()", "next active method trace " << toString(_activeMethodTrace) << " after " <<
+    ((int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)-remainingTriesToFindSearchingTrace) <<
+    " search iterations to identify next analysed method trace"
+  );
 }
 
 
@@ -199,8 +241,6 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     _previousMeasuredTime  = _currentMeasurement.getValue();
     _currentMeasurement.erase();
     _currentMeasurement.increaseAccuracy(2.0);
-
-    logInfo( "learn()", "continue with " << toString() );
   }
   else {
     logInfo( "learn()", "parameter choice for " << toString() << " does not scale" );
@@ -221,7 +261,13 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     else {
       _searchDelta /= 2;
     }
+  }
 
+  if (_currentGrainSize>_biggestProblemSize/2) {
+    _searchDelta = 0;
+    logInfo( "learn()", "stop search for " << toString() << " as it searches in non-scaling regime");
+  }
+  else {
     logInfo( "learn()", "continue with " << toString() );
   }
 
@@ -321,7 +367,6 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 
     _currentGrainSize = prototype._currentGrainSize * scaleUp;
     _searchDelta      = prototype._searchDelta      * scaleUp;
-
   }
 
   if (_searchDelta==0) {
@@ -338,32 +383,21 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::restart() {
   assertion1( _currentGrainSize>0, toString() );
 
-  const int oldCurrentGrainSize = _currentGrainSize;
-
-  int newCurrentGrainSize = 1;
-
   if (
     _biggestProblemSize>tarch::multicore::Core::getInstance().getNumberOfThreads()
     &&
-    _currentGrainSize<_biggestProblemSize/2
+    _currentGrainSize<_biggestProblemSize/4
   ) {
-    // do not loose all the concurrency in one restart
-    newCurrentGrainSize = _currentGrainSize * 2;
-  }
-  else if (
-    _biggestProblemSize>tarch::multicore::Core::getInstance().getNumberOfThreads()
-  ) {
-    // do not loose all the concurrency in one restart
-    newCurrentGrainSize = _biggestProblemSize / 2;
+    _searchDelta        = _currentGrainSize;
+    _currentGrainSize   = _currentGrainSize * 2;
   }
   else {
-    newCurrentGrainSize = (_biggestProblemSize + _currentGrainSize)/2;
+    _searchDelta        = _biggestProblemSize/2;
+    _currentGrainSize   = _biggestProblemSize;
   }
 
-  _currentGrainSize     = newCurrentGrainSize;
   _currentMeasurement   = tarch::timing::Measurement( 0.0 );
   _previousMeasuredTime = _TimingMax;
-  _searchDelta          = newCurrentGrainSize - oldCurrentGrainSize;
 
   if (_searchDelta<=0) {
     _searchDelta = _currentGrainSize/2;
@@ -482,7 +516,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle() const {
-  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart);
+  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart,_selectNextStudiedMeasureTraceStrategy);
 }
 
 
@@ -552,6 +586,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
 
       if (oneMeasurementDidLearn) {
         clearAllMeasurementsBesidesActiveOne();
+        _hasLearnedSinceLastQuery = true;
       }
     }
 
@@ -560,4 +595,12 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
       widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart();
     }
   }
+}
+
+
+
+bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery() {
+  bool result = _hasLearnedSinceLastQuery;
+  _hasLearnedSinceLastQuery = false;
+  return result;
 }

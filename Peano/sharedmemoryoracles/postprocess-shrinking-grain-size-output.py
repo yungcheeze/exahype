@@ -23,6 +23,29 @@ class Analysis(Enum):
   Scales             = 5
 
 
+AdapterNames = []
+
+def readAdapterNumbers( filename ):
+  if not filename.endswith( "specification" ):
+    print "WARNING: Peano specification files usually end with \"specification\"" 
+
+  inputFile = open(filename, "r" )
+
+  runIntoAdapter = False
+  for line in inputFile:  
+    if re.search( "adapter:", line ):
+      runIntoAdapter = True
+    elif re.search( "name:", line ) and runIntoAdapter:
+      adapterName = line.split( "name:") [-1]
+      AdapterNames.append( adapterName )
+    else:
+      runIntoAdapter = False
+      
+
+  print "finished to read specification file " + filename
+  
+  
+
 def processMeasurement(adapter):
   searchPattern = "adapter=" + str(adapter) + ","
 
@@ -110,13 +133,16 @@ def processMeasurement(adapter):
 # ========
 #
 #    
-if (len(sys.argv)<2):
-  print "usage: python ../postprocess-shrinking-grain-size-output.py outputfiles\n"
+if (len(sys.argv)<3):
+  print "usage: python ../postprocess-shrinking-grain-size-output.py Peano-specification-file output-files\n"
   print "\n"
   print "       You can hand over multiple output files in one rush\n"
   quit()
+  
+readAdapterNumbers( sys.argv[1] )
 
-for i in range(1,len(sys.argv)):
+for i in range(2,len(sys.argv)):
+  print "process data file " + sys.argv[i]
   htmlOverview = open( sys.argv[i] + ".html",  "w" )
   htmlOverview.write( "<h1>" + sys.argv[i] + "</h1>" );
 
@@ -141,7 +167,12 @@ for i in range(1,len(sys.argv)):
   htmlOverview.write( "<p>All individual timings are normalised by the number of entries handled, i.e. they do specify time per grid entity. We thus may not compare them directly to the total runtime.</p>" );
 
   for adapter in range(oraclesForSteering,totalNumberOfOracles):
-    htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
+    if adapter-oraclesForSteering>=len(AdapterNames):
+      print "ERROR: No name available for adapter no " + str(adapter-oraclesForSteering)
+      print "ERROR: Available adapters are " + str(AdapterNames)
+      htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
+    else:
+      htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + ": " + AdapterNames[adapter-oraclesForSteering] + "</h3>" );
     processMeasurement(adapter)
     htmlOverview.write( "<p>The serial runtime is not reliable: It tracks only timinigs if the code fragment is not parallelised and the search for a grain size still is switched on. The longer your code runs, the more `invalid' this figure becomes. However, large entries indicate that you have heavy-weight serial part in your code.</p>" );
   
