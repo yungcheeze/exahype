@@ -47,6 +47,14 @@ int exahype::runners::Runner::runAsWorker(
               repository.iterate();
               logInfo("startNewTimeStep(...)",
                 "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+
+              #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)
+              if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
+                static int dumpCounter = -1;
+                dumpCounter++;
+                peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
+              }
+              #endif
             }
             break;
           case exahype::repositories::Repository::Terminate:
