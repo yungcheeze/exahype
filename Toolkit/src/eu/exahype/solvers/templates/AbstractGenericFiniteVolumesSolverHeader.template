@@ -12,6 +12,14 @@
 
 #include "exahype/Parser.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
+
+/**
+ * We include Peano's assertion collection here.
+ */
+#include "tarch/Assertions.h"
+
+
+
 {{ProfilerInclude}}
 
 namespace {{Project}}{
@@ -42,8 +50,6 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
 
     static void constantsToString(std::ostream& os);
     
-    
-    
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
@@ -59,12 +65,16 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {};
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    };
 
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual void source(const double* const Q,double* S) {};    
+    virtual void source(const double* const Q,double* S) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    };    
 };
 
 

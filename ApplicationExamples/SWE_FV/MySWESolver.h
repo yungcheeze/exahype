@@ -10,6 +10,11 @@
 // ========================
 #include "exahype/Parser.h"
 
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
 
 #include <ostream>
 

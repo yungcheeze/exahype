@@ -2,6 +2,10 @@
 
 #include "{{Solver}}_Variables.h"
 
+
+tarch::logging::Log {{Project}}::{{Solver}}::_log( "{{Project}}::{{Solver}}" );
+
+
 void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
   // @todo Please implement/augment if required
 }
@@ -13,7 +17,7 @@ exahype::solvers::ADERDGSolver::AdjustSolutionValue {{Project}}::{{Solver}}::use
 
 void {{Project}}::{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{AdjustedSolutionValues}}
@@ -21,7 +25,7 @@ void {{Project}}::{{Solver}}::adjustPointSolution(const double* const x,const do
 
 void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Eigenvalues}}
@@ -30,18 +34,18 @@ void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,doub
 
 void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Flux}}
 }
 
 
-void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
+void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
 
   // @todo Please implement/augment if required
 {{BoundaryValues}}

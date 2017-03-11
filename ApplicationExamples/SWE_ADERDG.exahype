@@ -13,7 +13,7 @@
  
 /**
 
- 2D SWE with ADERDG.
+ 2D SWE with ADER-DG.
 
  */
 exahype-project  SWE
@@ -28,20 +28,21 @@ exahype-project  SWE
     dimension const          = 2
     width                    = 10.0, 10.0
     offset                   = 0.0, 0.0
-    end-time                 = 5.0
+    end-time                 = 4.0
   end computational-domain
 
    solver ADER-DG MySWESolver
     variables const   = h:1,hu:1,hv:1,b:1
+   // parameters const  = b:1
     order const       = 3
     maximum-mesh-size = 0.15
-    time-stepping     = globalfixed
+    time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
     plot vtu::Cartesian::cells::ascii ConservedWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.01
+      repeat          = 0.1
       output          = ./conserved
       select          = x:0.0,y:0.0
     end plot

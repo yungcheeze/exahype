@@ -499,17 +499,23 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   std::copy(newSolution,newSolution+_dataPerPatch+_ghostDataPerPatch,solution); // Copy (current solution) in old solution field.
 
-//  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
       cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
-  if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
+  if ( tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
                cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
+
+  assertion( !std::isnan(admissibleTimeStepSize) );
+  assertion( !std::isinf(admissibleTimeStepSize) );
+  assertion( admissibleTimeStepSize<std::numeric_limits<double>::max() );
+
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
   if (useAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -522,9 +528,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getSize(),
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize());
-  }
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution"); // TODO(Dominic): Comment back in
+    validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
+  }
 }
 
 

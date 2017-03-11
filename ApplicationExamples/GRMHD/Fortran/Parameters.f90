@@ -14,8 +14,15 @@
     ! computational-domain / dimension       ->  goes to ->  nDim
     !
 
-    INTEGER, PARAMETER             :: nDim = 3                            ! The number of space dimensions that we actually want to simulate  
-    INTEGER, PARAMETER             :: nVar = 19                           ! The number of variables of the PDE system  
+    ! Here, we obtain DIMENSIONS from the C++ preprocessor
+#if defined(Dim3)
+    INTEGER, PARAMETER             :: nDim = 3                   ! The number of space dimensions
+#elif defined(Dim2)
+    INTEGER, PARAMETER             :: nDim = 2                   ! The number of space dimensions
+#else
+#error "DIMENSIONS not set. Please run the C preprocessor with the ExaHyPE Makesystem"
+#endif
+    INTEGER, PARAMETER             :: nVar = 19                  ! The number of variables of the PDE system  
     
     
     ! And even more parameters
@@ -24,10 +31,8 @@
     REAL, PARAMETER                :: gamma = 4.0/3.0
       
     ! Divergence cleaning.
-    ! Vasco: 0.5
-    ! Michael D: Dont use it!
-
     ! 1.0 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
-    REAL, PARAMETER :: DivCleaning_a = 1.0  ! Vasco: 0.5, Michael D: No.
+    ! Note that currently we don't add the contribution to the source.
+    REAL, PARAMETER :: DivCleaning_a = 1.0
 
   END MODULE Parameters  

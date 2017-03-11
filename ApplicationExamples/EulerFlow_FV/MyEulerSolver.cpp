@@ -10,22 +10,15 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // do nothing
 }
 
-bool Euler::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
   // @todo Please implement
-  if ( tarch::la::equals(t,0.0) ) {
-    // Tell kernel that you want to set initial conditions 
-    return true;
-  }
-  else {
-    // @todo Please implement
-    return false; 
-  }
+  return tarch::la::equals(t,0.0); // ? exahype::solvers::Solver::AdjustSolutionValue::Pointwisely : exahype::solvers::Solver::AdjustSolutionValue::No;
 }
 
-void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,
-                                                  const double w,
-                                                  const double t,
-                                                  const double dt, double* Q) {
+void Euler::MyEulerSolver::adjustSolution(const double* const x,
+                                               const double w,
+                                               const double t,
+                                               const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     initialData(x,Q);
   } 
@@ -71,13 +64,6 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
-
-void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
-}
 
 void Euler::MyEulerSolver::boundaryValues(
     const double* const x,

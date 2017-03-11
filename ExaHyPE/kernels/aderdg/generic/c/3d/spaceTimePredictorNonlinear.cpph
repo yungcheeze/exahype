@@ -47,7 +47,10 @@ void aderPicardLoopNonlinear(SolverType& solver,
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize4         = basisSize2 * basisSize2;
   constexpr int order              = basisSize - 1;
-
+  
+  assertion(numberOfVariables>=0);
+  assertion(numberOfParameters>=0);
+  
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
   
   idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
@@ -112,6 +115,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
             solver.flux(Q, F);
             if(useSource) {
               solver.algebraicSource(Q, S);
+            }
+            else if (useNCP) {
+              std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double)); //initialize S
             }
           }
         }
@@ -280,9 +286,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
     }
 
     // 5. Exit condition
-    // TODO(guera): Stability of sum? -> Kahan, reduction?
-    // TODO(guera): Is there something like kernels::tol?
-    // TODO(guera): Dangerous!
     constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize4 * (numberOfVariables+numberOfParameters); i++) {

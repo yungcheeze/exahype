@@ -27,9 +27,9 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 2.0, 2.0, 2.0
+    width                          = 5.0, 5.0, 5.0
     offset                         = 0.0, 0.0, 0.0
-    end-time                       = 2.1
+    end-time                       = 10.1
   end computational-domain
   
   shared-memory
@@ -67,7 +67,7 @@ exahype-project GRMHD
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.00666667
+      repeat    = 0.666667
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
@@ -75,10 +75,19 @@ exahype-project GRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.00666667
+      repeat = 0.666667
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
+
+    plot user::defined SphereIntegrals
+      variables const = 0
+      time = 0.0
+      repeat = 0.00129329
+      output = ./global-sphere-integrals
+      select    = x:0.0,y:0.0
+    end plot
+
   end solver
 
 

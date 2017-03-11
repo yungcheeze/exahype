@@ -2,6 +2,10 @@
 
 #include "{{Solver}}_Variables.h"
 
+
+tarch::logging::Log {{Project}}::{{Solver}}::_log( "{{Project}}::{{Solver}}" );
+
+
 void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
   // @todo Please implement/augment if required
 }
@@ -13,7 +17,7 @@ bool {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIO
 
 void {{Project}}::{{Solver}}::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{AdjustedSolutionValues}}
@@ -27,7 +31,7 @@ exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementC
 
 void {{Project}}::{{Solver}}::eigenvalues(const double* const Q, const int dIndex, double* lambda) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Eigenvalues}}
@@ -35,7 +39,7 @@ void {{Project}}::{{Solver}}::eigenvalues(const double* const Q, const int dInde
 
 void {{Project}}::{{Solver}}::flux(const double* const Q, double** F) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Flux}}
@@ -50,7 +54,7 @@ void {{Project}}::{{Solver}}::boundaryValues(
     const double* const stateInside,
     double* stateOutside) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
 
   // @todo Please implement/augment if required
 {{BoundaryValues}}

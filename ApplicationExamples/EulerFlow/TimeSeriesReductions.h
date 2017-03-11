@@ -63,9 +63,9 @@ inline double ADERDGVolume(const int order, const tarch::la::Vector<DIMENSIONS, 
  **/
 class TimeSeriesReductions {
 public:
-    enum index                          { tidx=0    , time=1, l1=2   , l2=3   , max=4, min=5, avg=6, nelem=7     , LEN=8 };
-    const char * const colnames[LEN]  = {"plotindex","time" ,"l1norm","l2norm","max" ,"min" ,"avg" ,"numelements", };
-    const char * const colformat[LEN] = {"%.0f\t"   ,"%e\t" ,"%e\t"  ,"%e\t"  ,"%e\t","%e\t","%e\t","%.0f\t"     , };
+    enum index                          { tidx=0    , time=1, l1=2   , l2=3   , max=4, min=5, avg=6, sum=7 , nelem=8     , LEN=9 };
+    const char * const colnames[LEN]  = {"plotindex","time" ,"l1norm","l2norm","max" ,"min" ,"avg" , "sum" , "numelements", };
+    const char * const colformat[LEN] = {"%.0f\t"   ,"%e\t" ,"%e\t"  ,"%e\t"  ,"%e\t","%e\t","%e\t", "%e\t", "%.0f\t"     , };
     double data[LEN];
     //int avgcnt; // now moved to nelem for MPI_Send primitive. If you don't want it, add another
     // const bool const colmask[LEN] = { PRINT, SKIP, PRINT, PRINT, ...} with PRINT=true, SKIP=false or so.
@@ -85,6 +85,7 @@ public:
 	data[max] = 0.0;
 	data[min] = std::numeric_limits<double>::max();
 	data[avg] = 0.0;
+	data[sum] = 0.0;
 	data[nelem] = 0.0;
     }
 
@@ -96,6 +97,7 @@ public:
         data[max] = std::max( data[max], val);
         data[min] = std::min( data[min], val);
         data[avg] += val;
+	data[sum] += val * dx;
         data[nelem] += 1.0; // double, unfortunately
     }
 
@@ -105,6 +107,7 @@ public:
         data[max] = std::max( data[max], input[max] );
         data[min] = std::min( data[min], input[min] );
         data[avg] += input[avg];
+	data[sum] += input[sum];
 	data[nelem] += input[nelem];
     }
 
@@ -155,6 +158,7 @@ public:
 
     void openFile() {
 	static tarch::logging::Log _log("ReductionsWriter");
+	logInfo("openFile()", "Trying to open file '" << filename << "' in the ReductionsWriter"); // this is strange. When not touching the string, it gets removed...
 	const char* fn = filename.c_str();
 	asc = fopen(fn, "w");
 	if(asc == NULL) {
