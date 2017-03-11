@@ -1,17 +1,20 @@
-SUBROUTINE MassAccretionRate(Q,masschange)
-  USE Parameters, ONLY: gamma, nVar, nDim
+SUBROUTINE MassAccretionRate(Q,masschange,vx,vy,vz)
+  USE Parameters, ONLY: nVar, nDim
   IMPLICIT NONE
   ! Argument list declaration
-  REAL :: Q(nVar), masschange
+  REAL :: Q(nVar), vx,vy,vz, masschange
   INTENT(IN)  :: Q
   INTENT(OUT) :: masschange
+ 
+  
 
   ! Local variable declaration
   REAL :: v2,b2,e2,lf,w,ww,uem,gamma1
   REAL :: lapse, g_contr(3,3), g_cov(3,3), gp
-  REAl :: shift(3), vf(3), vf_cov(3), ur_contr(3),V(nVar)
+  REAl :: shift(3),vf(3), vf_cov(3), ur_contr(3),V(nVar)
   INTEGER :: i, iErr
-
+  REAl :: vr_contr, betar_contr, lapse_sphe, theta, phi,r
+  
   ! TODO: Alejandro
 
   CALL PDECons2Prim(V,Q,iErr)
@@ -33,15 +36,35 @@ SUBROUTINE MassAccretionRate(Q,masschange)
   vf_cov = V(2:4)
   ! v_i --> v^i From covariant to contravariant
   vf     = MATMUL(g_contr,vf_cov)
+  vx=vf(1)
+  vy=vf(2)
+  vz=vf(3)
+  
   gp = SQRT(gp)
   lapse = V(10)
   shift = V(11:13)
 
+  ! Computing the vector transformation
+
+!  theta = ATAN2( sqrt(x(1)*x(1)+x(2)*x(2)), x(3) )
+!  phi   = ATAN2( x(2), x(1) )
+
+
+  ! Quantities in spherical simmetry
+!  r= SQRT(x(1)*x(1) +  x(2)*x(2) +  x(3)*x(3))
+!  vr_contr = SIN(theta)*COS(phi)*vf(1) + SIN(theta)*SIN(phi)*vf(2) + COS(phi)*vf(2)
+!  betar_contr = 2.0/r
+!  betar_contr = betar_contr /(1.0+2.0/r)
+!  lapse_sphe  = SQRT(1.0/(1.0+2.0/r))
+
+  ! r-component of cuadri-velocity
   ! u^i = v^i - beta^i/alpha
-  !thinking in spherical simmetry
   
-  ur_contr = vf(1)  - shift(1)/lapse
-  masschange = lapse *gp* Q(1) * ur_contr(1)
-  
-  
+!  ur_contr = vr_contr  - betar_contr/lapse_sphe
+
+  !  masschange = lapse_sphe *gp* Q(1) * ur_contr(1)
+
+  masschange = Q(1) !r*r*Q(0) * ur_contr(1)
+
+    
 END SUBROUTINE MassAccretionRate

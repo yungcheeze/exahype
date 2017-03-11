@@ -966,10 +966,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) const = 0;
+
+  virtual bool usePointSource()            const = 0;
       
 #ifndef OPT_KERNELS //JMG remove virtual with optimized kernel (user function should be implemented and static)
   virtual bool useAlgebraicSource()        const = 0;
-  virtual bool usePointSource()            const = 0;
   virtual bool useNonConservativeProduct() const = 0;
 
   /**
