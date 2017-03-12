@@ -262,7 +262,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     if (
       tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
       &&
-      tarch::multicore::Node::getInstance().getNumberOfThreads()>1
+      tarch::multicore::Core::getInstance().getNumberOfThreads()>1
     ) {
       logInfo("shutdownSharedMemoryConfiguration()",
           "wrote statistics into file " << _parser.getMulticorePropertiesFile()
@@ -272,7 +272,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
           _parser.getMulticorePropertiesFile());
     }
   #else
-    if ( tarch::multicore::Node::getInstance().getNumberOfThreads()>1 ) {
+    if ( tarch::multicore::Core::getInstance().getNumberOfThreads()>1 ) {
       logInfo("shutdownSharedMemoryConfiguration()",
         "wrote statistics into file "
         << _parser.getMulticorePropertiesFile());
