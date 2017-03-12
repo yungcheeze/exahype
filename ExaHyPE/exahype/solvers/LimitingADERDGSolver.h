@@ -399,6 +399,8 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
+  void reconstructStandardTimeSteppingDataAfterRollback();
+
   void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
@@ -514,6 +516,13 @@ public:
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int solverElement);
+
+  /**
+   * TODO(Dominic): Docu
+   */
+  void reconstructStandardTimeSteppingDataAfterRollback(
+      const int cellDescriptionsIndex,
+      const int element) const;
 
   /**
    * TODO(Dominic): I need the whole limiter recomputation

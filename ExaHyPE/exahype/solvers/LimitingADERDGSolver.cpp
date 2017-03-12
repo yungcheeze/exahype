@@ -120,6 +120,10 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseTimeStepData() {
   _solver->reinitialiseTimeStepData();
 }
 
+void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback() {
+  _solver->reconstructStandardTimeSteppingDataAfterRollback();
+}
+
 void exahype::solvers::LimitingADERDGSolver::updateNextMinCellSize(double minCellSize) {
   _solver->updateNextMinCellSize(minCellSize);
 //  _limiter->updateNextMinCellSize(minCellSize); // TODO(Dominic): Revision
@@ -216,6 +220,12 @@ void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep(
     const int cellDescriptionsIndex,
     const int solverElement) {
   _solver->rollbackToPreviousTimeStep(cellDescriptionsIndex,solverElement);
+}
+
+void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingDataAfterRollback(
+      const int cellDescriptionsIndex,
+      const int element) const {
+  _solver->reconstructStandardTimeSteppingDataAfterRollback(cellDescriptionsIndex,element);
 }
 
 void exahype::solvers::LimitingADERDGSolver::setInitialConditions(
@@ -833,18 +843,14 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
       // Copy time step data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getPreviousCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       // 1. Evolve solution to desired  time step again
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
                                solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
                                solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
                                fineGridVertices,fineGridVerticesEnumerator);
-
-      // Overwrite with current data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       // 2. Project FV solution on ADER-DG space
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
@@ -865,18 +871,14 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
 
       limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
-      // Copy previous time step data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getPreviousCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
+      // Copy time step data from the solver patch
+      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
                                solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
                                solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
                                fineGridVertices,fineGridVerticesEnumerator);
-
-      // Overwrite with current data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
 
       limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
       solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
