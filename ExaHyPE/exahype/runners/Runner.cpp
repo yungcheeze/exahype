@@ -566,6 +566,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
       }
 
+      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
+      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
+        static int dumpCounter = -1;
+        dumpCounter++;
+        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
+      }
+      #endif
+
       logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
     }
     if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {

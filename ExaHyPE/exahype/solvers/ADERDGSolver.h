@@ -936,6 +936,9 @@ public:
       const double t,
       const double dt) = 0;
 
+  /**
+   * Adjust solution value specification.
+   */
   enum class AdjustSolutionValue {
     No,
     PointWisely,
@@ -1442,7 +1445,7 @@ public:
       const int element);
 
   /**
-   * TODO(Dominic): Remove; not necessary
+   * TODO(Dominic): Docu
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,

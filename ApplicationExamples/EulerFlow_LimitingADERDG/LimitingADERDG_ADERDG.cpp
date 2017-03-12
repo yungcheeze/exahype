@@ -28,25 +28,16 @@ void Euler::LimitingADERDG_ADERDG::flux(const double* const Q, double** F) {
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
 
-
-void Euler::LimitingADERDG_ADERDG::algebraicSource(const double* const Q, double* S) {
-  Variables s(S);
-  s.rho()=0;
-  s.E()=0;
-  s.j(0,0,0);
-}
-
-
 void Euler::LimitingADERDG_ADERDG::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
 
-  const double GAMMA = 1.4;
-  const double irho = 1./vars.rho();
-  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+  constexpr double GAMMA = 1.4;
+  const     double irho  = 1./vars.rho();
+  const     double p     = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
   double u_n = vars.j(normalNonZeroIndex) * irho;
-  double c  = std::sqrt(GAMMA * p * irho);
+  double c   = std::sqrt(GAMMA * p * irho);
 
   eigs.rho()=u_n - c;
   eigs.E()  =u_n + c;
@@ -69,23 +60,17 @@ void Euler::LimitingADERDG_ADERDG::boundaryValues(const double* const x,const do
 }
 
 
-bool Euler::LimitingADERDG_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) {
-  return tarch::la::equals(t, 0.0);
+exahype::solvers::ADERDGSolver::AdjustSolutionValue Euler::LimitingADERDG_ADERDG::useAdjustSolution
+(const tarch::la::Vector<DIMENSIONS, double> &center,
+ const tarch::la::Vector<DIMENSIONS, double> &dx, double t, double dt) const {
+  return tarch::la::equals(t, 0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void Euler::LimitingADERDG_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void Euler::LimitingADERDG_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q)  {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
   Euler::initialData(x,Q);
-}
-
-void Euler::LimitingADERDG_ADERDG::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
-  std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
-}
-
-void Euler::LimitingADERDG_ADERDG::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
-  std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
 exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
@@ -93,7 +78,7 @@ exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refine
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-bool Euler::LimitingADERDG_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
 
@@ -103,18 +88,4 @@ bool Euler::LimitingADERDG_ADERDG::physicalAdmissibilityDetection(const double* 
   }
 
   return true;
-}
-
-bool Euler::LimitingADERDG_ADERDG::useAlgebraicSource() const {return true;}
-
-bool Euler::LimitingADERDG_ADERDG::useNonConservativeProduct() const {return true;}
-
-bool Euler::LimitingADERDG_ADERDG::useCoefficientMatrix() const {return true;}
-
-bool Euler::LimitingADERDG_ADERDG::usePointSource() const {
-  return false;
-}
-
-void Euler::LimitingADERDG_ADERDG::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  // do nothing
 }
