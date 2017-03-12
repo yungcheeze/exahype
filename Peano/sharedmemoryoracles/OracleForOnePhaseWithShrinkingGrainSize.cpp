@@ -12,8 +12,7 @@
 
 tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_log( "sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize" );
 
-//const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
-const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e2);
+const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MaxAccuracy( 1.0 );
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 0.9 );
 
@@ -47,7 +46,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
     _measurements.insert( std::pair<peano::datatraversal::autotuning::MethodTrace,MethodTraceData >(askingMethod,MethodTraceData()) );
     _measurements[askingMethod].push_back( DatabaseEntry(2) );
     assertion( _measurements.count(askingMethod)==1 );
-    logInfo(
+    logDebug(
       "getDatabaseEntry(int)",
       "inserted trivial entry for " + peano::datatraversal::autotuning::toString(askingMethod)
       << ": " << _measurements[askingMethod].rbegin()->toString()
@@ -59,7 +58,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
       *_measurements[askingMethod].rbegin(),
       _measurements[askingMethod].rbegin()->getBiggestProblemSize()*2
     ));
-    logInfo(
+    logDebug(
       "getDatabaseEntry(int)",
       "inserted new entry for " + peano::datatraversal::autotuning::toString(askingMethod)
       << ": " << _measurements[askingMethod].rbegin()->toString()
@@ -97,9 +96,11 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
   );
 
   if (trackTime) {
-    const int chosenParallelGrainSize = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
+    const int chosenParallelGrainSize     = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
+    //const int EveryXthIsSerialMeasurement = 10;
+    const int EveryXthIsSerialMeasurement = databaseEntry.getBiggestProblemSize() / databaseEntry.getCurrentGrainSize();
     return peano::datatraversal::autotuning::GrainSize(
-      rand()%10==0 ? 0 : chosenParallelGrainSize,
+      rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize,
       trackTime,
       problemSize,
       askingMethod, this
@@ -253,13 +254,13 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isScaling() const {
-  return (_currentGrainSize<_biggestProblemSize && _searchDelta==0)
+  return (_currentGrainSize<=_biggestProblemSize/2 && _searchDelta==0)
       || (_searchDelta>0 && _currentParallelMeasurement.getValue() < _currentSerialMeasurement.getValue() );
 }
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isStudyingScalingSetup() const {
-  return _currentGrainSize<_biggestProblemSize;
+  return _currentGrainSize<=_biggestProblemSize/2;
 }
 
 
@@ -282,7 +283,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
   const double newSpeedup = _currentSerialMeasurement.getValue() / _currentParallelMeasurement.getValue();
 
   if ( newSpeedup > _previousSpeedup ) {
-    logInfo( "learn()", "found better scaling parameter choice/serial runtime for: " << toString() );
+    logInfo( "learn()", "found better scaling parameter choice/serial runtime for " << toString() );
 
     while ( _currentGrainSize - _searchDelta <= 0 && _searchDelta>0 ) {
       _searchDelta /= 2;
@@ -295,7 +296,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     _previousSpeedup       = newSpeedup;
   }
   else {
-    logInfo( "learn()", "parameter choice for " << toString() << " does not scale" );
+    logInfo( "learn()", "parameter choice for " << toString() << " does not scale");
 
     _currentGrainSize     += _searchDelta;
     _previousSpeedup       = 0;
@@ -643,10 +644,9 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
       DatabaseEntry learningEntry(1);
       for (auto& p: _measurements[_activeMethodTrace]) {
         if ( p.isAccurate() && p.isSearching() ) {
-          logInfo( "activateOracle()", "found entry that should learn for trace " << toString(_activeMethodTrace) );
           p.learn();
           if ( !p.isSearching() ) {
-            logInfo( "activateOracle()", "entry fixed, so propagate its data: " << p.toString() );
+            logDebug( "activateOracle()", "entry fixed, so propagate its data: " << p.toString() );
             oneMeasurementDidTerminateSearch = true;
             learningEntry                    = p;
           }
@@ -658,7 +658,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
         ) {
           // propagate data
           p = DatabaseEntry( learningEntry, p.getBiggestProblemSize() );
-          logInfo( "activateOracle()", "have propagated solution from " << learningEntry.toString() << " into " << p.toString() );
+          logDebug( "activateOracle()", "have propagated solution from " << learningEntry.toString() << " into " << p.toString() );
         }
       }
     }
