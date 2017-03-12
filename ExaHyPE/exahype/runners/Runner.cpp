@@ -259,7 +259,11 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
   case Parser::MulticoreOracleType::GrainSizeSampling:
   #ifdef Parallel
-    if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1) {
+    if (
+      tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
+      &&
+      tarch::multicore::Node::getInstance().getNumberOfThreads()>1
+    ) {
       logInfo("shutdownSharedMemoryConfiguration()",
           "wrote statistics into file " << _parser.getMulticorePropertiesFile()
           << ". Dump from all other ranks subpressed to avoid file races"
@@ -268,11 +272,13 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
           _parser.getMulticorePropertiesFile());
     }
   #else
-    logInfo("shutdownSharedMemoryConfiguration()",
+    if ( tarch::multicore::Node::getInstance().getNumberOfThreads()>1 ) {
+      logInfo("shutdownSharedMemoryConfiguration()",
         "wrote statistics into file "
         << _parser.getMulticorePropertiesFile());
-    peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
         _parser.getMulticorePropertiesFile());
+    }
   #endif
     break;
   }
