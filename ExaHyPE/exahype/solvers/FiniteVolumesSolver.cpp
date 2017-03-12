@@ -506,16 +506,15 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
       cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
-  if ( tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
+  // cellDescription.getTimeStepSize() = 0 is an initial condition
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize) );
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize) );
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max() );
+
+  if ( !tarch::la::equals(cellDescription.getTimeStepSize(), 0.0) && tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
                cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
-
-  assertion( !std::isnan(admissibleTimeStepSize) );
-  assertion( !std::isinf(admissibleTimeStepSize) );
-  assertion( admissibleTimeStepSize<std::numeric_limits<double>::max() );
-
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
   if (useAdjustSolution(
       cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -528,9 +527,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getSize(),
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize());
-
-    validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
   }
+
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
 
 
