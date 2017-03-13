@@ -76,6 +76,15 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
 
 
 peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
+  if ( problemSize==1 ) {
+    return peano::datatraversal::autotuning::GrainSize(
+      0,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+  }
+
   assertion( askingMethod != peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
 
   assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
@@ -106,7 +115,7 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
       askingMethod, this
     );
   }
-  else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
+  else if ( _activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling ) {
     return peano::datatraversal::autotuning::GrainSize(
       0,
       false,
