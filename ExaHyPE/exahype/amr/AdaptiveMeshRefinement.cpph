@@ -6,9 +6,6 @@ exahype::amr::augmentationCriterion(
       const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
       neighbourCellDescriptionsIndices) {
-    return exahype::solvers::Solver::AugmentationControl::Default;
-    
-    
     // left,right,front,back,(bottom,top)
 #if DIMENSIONS == 2
     constexpr int neighbourPositions[4] = {3, 5, 1, 7};
