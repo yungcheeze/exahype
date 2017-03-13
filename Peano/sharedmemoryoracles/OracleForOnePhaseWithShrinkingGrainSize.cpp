@@ -46,6 +46,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
     _measurements.insert( std::pair<peano::datatraversal::autotuning::MethodTrace,MethodTraceData >(askingMethod,MethodTraceData()) );
     _measurements[askingMethod].push_back( DatabaseEntry(2) );
     assertion( _measurements.count(askingMethod)==1 );
+    assertion2( _measurements[askingMethod].back().getCurrentGrainSize()>0, _measurements[askingMethod].back().toString(), toString(_activeMethodTrace) );
     logDebug(
       "getDatabaseEntry(int)",
       "inserted trivial entry for " + peano::datatraversal::autotuning::toString(askingMethod)
@@ -53,11 +54,12 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
     );
   }
 
-  while (_measurements[askingMethod].rbegin()->getBiggestProblemSize()<problemSize) {
+  while (_measurements[askingMethod].rbegin()->getBiggestProblemSize()<problemSize*2) {
     _measurements[askingMethod].push_back( DatabaseEntry(
       *_measurements[askingMethod].rbegin(),
       _measurements[askingMethod].rbegin()->getBiggestProblemSize()*2
     ));
+    assertion2( _measurements[askingMethod].back().getCurrentGrainSize()>0, _measurements[askingMethod].back().toString(), toString(_activeMethodTrace) );
     logDebug(
       "getDatabaseEntry(int)",
       "inserted new entry for " + peano::datatraversal::autotuning::toString(askingMethod)
@@ -68,9 +70,14 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
   MethodTraceData::iterator entry = _measurements[askingMethod].begin();
   while (entry->getBiggestProblemSize()<problemSize) {
     entry++;
+    assertion(entry!=_measurements[askingMethod].end());
   }
 
   DatabaseEntry& result = *entry;
+  assertion5(
+    result.getCurrentGrainSize()>0,
+    result.toString(), _measurements[askingMethod].back().toString(), toString(_activeMethodTrace), _measurements[askingMethod].size(),
+    problemSize);
   return result;
 }
 
@@ -105,11 +112,12 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
   );
 
   if (trackTime) {
+    assertion2( databaseEntry.getCurrentGrainSize()>0, databaseEntry.toString(), toString(_activeMethodTrace) );
     const int chosenParallelGrainSize     = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
-    //const int EveryXthIsSerialMeasurement = 10;
     const int EveryXthIsSerialMeasurement = databaseEntry.getBiggestProblemSize() / databaseEntry.getCurrentGrainSize();
+    const bool passedGrainSize            = rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize;
     return peano::datatraversal::autotuning::GrainSize(
-      rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize,
+      passedGrainSize,
       trackTime,
       problemSize,
       askingMethod, this
@@ -158,7 +166,7 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::isStableDatab
     bool result             = true;
 
     for (auto p: _measurements.at(askingMethod)) {
-      result             &= (!p.isSearching());
+      result             &= p.isStable();
     }
 
     return result;
@@ -211,10 +219,14 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
 
     case SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes:
       {
+        const peano::datatraversal::autotuning::MethodTrace oldActiveMethodTrace = _activeMethodTrace;
+
         _activeMethodTrace                               = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
         static int maxProblemSizeOfLastMethodTraceChoice = 1;
 
-        while ( _measurements.count(_activeMethodTrace)==0 ) {
+        // Second statements avoid locking in one trace which is stupid if exactly this
+        // trace is not called anymore as the grid has changed
+        while ( _measurements.count(_activeMethodTrace)==0 || oldActiveMethodTrace==_activeMethodTrace ) {
           _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
           if (
             remainingTriesToFindSearchingTrace>0
@@ -232,7 +244,10 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
             _activeMethodTrace = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
           }
         }
-        maxProblemSizeOfLastMethodTraceChoice = (maxProblemSizeOfLastMethodTraceChoice + _measurements[_activeMethodTrace].back().getBiggestProblemSize()) / 2;
+
+        if ( _measurements.count(_activeMethodTrace)==1 ) {
+          maxProblemSizeOfLastMethodTraceChoice = (maxProblemSizeOfLastMethodTraceChoice + _measurements[_activeMethodTrace].back().getBiggestProblemSize()) / 2;
+        }
       }
       break;
   }
@@ -240,20 +255,17 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
   assertion(_measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0);
   assertion(_activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
 
-  assertion(_activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
-  assertion(_measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0);
-
   logInfo(
     "changeMeasuredMethodTrace()", "next active method trace " << toString(_activeMethodTrace) << " after " <<
     ((int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)-remainingTriesToFindSearchingTrace) <<
-    " search iterations to identify next analysed method trace"
+    " search iterations to identify next analysed method trace. Is already known to oracle=" << ( _measurements.count(_activeMethodTrace)>0 )
   );
 }
 
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isAccurate() const {
-  return _currentParallelMeasurement.isAccurateValue() && _currentSerialMeasurement.isAccurateValue();
+  return _measurementsAreAccurate;
 }
 
 
@@ -264,12 +276,22 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isScaling() const {
   return (_currentGrainSize<=_biggestProblemSize/2 && _searchDelta==0)
-      || (_searchDelta>0 && _currentParallelMeasurement.getValue() < _currentSerialMeasurement.getValue() );
+      || (
+        _searchDelta>0 &&
+        _numberOfParallelMeasurements > 0 &&
+        _numberOfSerialMeasurements > 0 &&
+        (_accumulatedParallelMeasurement/_numberOfParallelMeasurements) < (_accumulatedParallelMeasurement/_numberOfParallelMeasurements)
+      );
 }
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isStudyingScalingSetup() const {
   return _currentGrainSize<=_biggestProblemSize/2;
+}
+
+
+bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isStable() const {
+  return _searchDelta==0 || ( _numberOfParallelMeasurements==0 && _numberOfSerialMeasurements==0 );
 }
 
 
@@ -285,11 +307,11 @@ int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::learn() {
-  assertion( _currentSerialMeasurement.isAccurateValue() );
-  assertion( _currentParallelMeasurement.isAccurateValue() );
   assertion( _searchDelta>0 );
 
-  const double newSpeedup = _currentSerialMeasurement.getValue() / _currentParallelMeasurement.getValue();
+  const double newSpeedup =
+    (_accumulatedSerialMeasurement / _numberOfSerialMeasurements ) /
+    (_accumulatedParallelMeasurement / _numberOfParallelMeasurements );
 
   if ( newSpeedup > _previousSpeedup ) {
     logInfo( "learn()", "found better scaling parameter choice/serial runtime for " << toString() );
@@ -298,21 +320,19 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
       _searchDelta /= 2;
     }
 
-    _currentGrainSize     -= _searchDelta;
-    _currentParallelMeasurement.erase();
-    _currentParallelMeasurement.increaseAccuracy(2.0);
-    _currentSerialMeasurement.increaseAccuracy(2.0);
-    _previousSpeedup       = newSpeedup;
+    if (_searchDelta>0) {
+      _currentGrainSize               -= _searchDelta;
+      _accumulatedParallelMeasurement  = 0.0;
+      _numberOfParallelMeasurements    = 0.0;
+      _accuracy                       /= 2.0;
+      _previousSpeedup                 = newSpeedup;
+      _measurementsAreAccurate         = false;
+    }
   }
   else {
     logInfo( "learn()", "parameter choice for " << toString() << " does not scale");
 
-    _currentGrainSize     += _searchDelta;
-    _previousSpeedup       = 0;
-    _currentParallelMeasurement.erase();
-    _currentParallelMeasurement.increaseAccuracy(2.0);
-    _currentSerialMeasurement.increaseAccuracy(2.0);
-    _previousSpeedup       = 1.0;
+    _currentGrainSize               += _searchDelta;
 
     if ( _biggestProblemSize<=tarch::multicore::Core::getInstance().getNumberOfThreads() ) {
       _searchDelta--;
@@ -325,6 +345,14 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     else {
       _searchDelta /= 2;
     }
+
+    if (_searchDelta>0) {
+      _accumulatedParallelMeasurement  = 0.0;
+      _numberOfParallelMeasurements    = 0.0;
+      _accuracy                       /= 2.0;
+      _previousSpeedup                 = 0.0;
+      _measurementsAreAccurate         = false;
+    }
   }
 
   if (_currentGrainSize>_biggestProblemSize/2) {
@@ -335,7 +363,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     logInfo( "learn()", "continue with " << toString() );
   }
 
-  assertion1(_currentGrainSize>0,  toString() );
+  assertion1( _currentGrainSize>0, toString() );
 }
 
 
@@ -357,35 +385,36 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSecti
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::setValue(int grainSize, double value) {
+  const double oldSerialTime   = _numberOfSerialMeasurements   > 0.0 ? _accumulatedSerialMeasurement   / _numberOfSerialMeasurements   : 0.0;
+  const double oldParallelTime = _numberOfParallelMeasurements > 0.0 ? _accumulatedParallelMeasurement / _numberOfParallelMeasurements : 0.0;
+
   if (grainSize==0) {
-    _currentSerialMeasurement.setValue( value );
+    _accumulatedSerialMeasurement += value;
+    _numberOfSerialMeasurements   += 1.0;
   }
   else {
-    _currentParallelMeasurement.setValue( value );
+    _accumulatedParallelMeasurement += value;
+    _numberOfParallelMeasurements   += 1.0;
   }
+
+  const double newSerialTime   = _numberOfSerialMeasurements   > 0.0 ? _accumulatedSerialMeasurement   / _numberOfSerialMeasurements   : 0.0;
+  const double newParallelTime = _numberOfParallelMeasurements > 0.0 ? _accumulatedParallelMeasurement / _numberOfParallelMeasurements : 0.0;
+
+  _measurementsAreAccurate = _numberOfSerialMeasurements > 10
+                          && _numberOfParallelMeasurements > 10
+                          && ( newSerialTime - oldSerialTime )     * ( newSerialTime - oldSerialTime ) < _accuracy * _accuracy
+                          && ( newParallelTime - oldParallelTime ) * ( newParallelTime - oldParallelTime ) < _accuracy * _accuracy;
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::initAccuracy(double serialComputeTime) {
-  _currentSerialMeasurement.setAccuracy(   serialComputeTime * _InitialRelativeAccuracy );
-  _currentParallelMeasurement.setAccuracy( serialComputeTime * _InitialRelativeAccuracy );
+  _accuracy =  serialComputeTime * _InitialRelativeAccuracy;
 }
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::widenAccuracy() {
-  bool widenThisEntry = false;
-
-  if (_currentSerialMeasurement.getAccuracy()!=0.0 && _currentSerialMeasurement.getAccuracy()<_MaxAccuracy ) {
-    _currentSerialMeasurement.increaseAccuracy( _WideningFactor );
-    widenThisEntry = true;
-  }
-
-  if (_currentParallelMeasurement.getAccuracy()!=0.0 && _currentParallelMeasurement.getAccuracy()<_MaxAccuracy ) {
-    _currentParallelMeasurement.increaseAccuracy( _WideningFactor );
-    widenThisEntry = true;
-  }
-
-  return widenThisEntry;
+  _accuracy /= _WideningFactor;
+  return _accuracy < 1.0;
 }
 
 
@@ -394,20 +423,21 @@ std::string sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::Databa
   msg <<        _biggestProblemSize
       << "," << _currentGrainSize
       << "," << _searchDelta
-      << "," << _currentSerialMeasurement.getAccuracy()
-      << "," << _currentParallelMeasurement.getAccuracy()
-      << "," << _previousSpeedup
-      << "," << _currentSerialMeasurement.toString()
-      << "," << _currentParallelMeasurement.toString()
-      << ")";
+      << "," << (_measurementsAreAccurate ? "is-accurate" : "not-accurate" )
+      << "," << _accuracy
+      << "," << _accumulatedSerialMeasurement
+      << "," << _accumulatedParallelMeasurement
+      << "," << _numberOfSerialMeasurements
+      << "," << _numberOfParallelMeasurements
+      << "," << _previousSpeedup;
   return msg.str();
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics(std::ostream& out, int oracleNumber) const {
   out << "# " << std::endl;
-  out << "# trace=biggest problem size, current grain size, previous measured time, search delta, accuracy, current measurement" << std::endl;
-  out << "# -------------------------------------------------------------------------------------------------------------------" << std::endl;
+  out << "# trace=biggest problem size, current grain size, search delta, is accurate, accuracy, accum serial time, acuum parallel time, no of serial samples, no of parallel samples, previous speedup" << std::endl;
+  out << "# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << std::endl;
   out << "# " << std::endl;
   out << "begin OracleForOnePhaseWithShrinkingGrainSize" << std::endl;
   out << "initial-relative-accuracy=" << _InitialRelativeAccuracy << std::endl;
@@ -439,11 +469,17 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
     _searchDelta = problemSize - problemSize / tarch::multicore::Core::getInstance().getNumberOfThreads();
   }
 
-  _biggestProblemSize         = problemSize;
-  _currentGrainSize           = problemSize - _searchDelta;
-  _currentSerialMeasurement   = tarch::timing::Measurement( 0.0 );
-  _currentParallelMeasurement = tarch::timing::Measurement( 0.0 );
-  _previousSpeedup            = 1.0;
+  _biggestProblemSize             = problemSize;
+  _currentGrainSize               = problemSize - _searchDelta;
+  _measurementsAreAccurate        = false;
+  _accuracy                       = 0.0;
+  _accumulatedSerialMeasurement   = 0.0;
+  _accumulatedParallelMeasurement = 0.0;
+  _numberOfSerialMeasurements     = 0.0;
+  _numberOfParallelMeasurements   = 0.0;
+  _previousSpeedup                = 0.0;
+
+  assertion1( _currentGrainSize>0, toString() );
 }
 
 
@@ -466,6 +502,8 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 
     _currentGrainSize = prototype._currentGrainSize * scaleUp;
     _searchDelta      = prototype._searchDelta      * scaleUp;
+
+    assertion1( _currentGrainSize>0, toString() );
   }
 
   if (_searchDelta==0) {
@@ -480,7 +518,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::isAccuracyInitialised() const {
-  return _currentParallelMeasurement.getAccuracy()>0.0;
+  return _accuracy>0.0;
 }
 
 
@@ -497,25 +535,33 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
   }
   else {
     _searchDelta        = _biggestProblemSize/2;
-    _currentGrainSize   = _biggestProblemSize;
+    _currentGrainSize   = _biggestProblemSize/2;
   }
 
-  _currentSerialMeasurement   = tarch::timing::Measurement( 0.0 );
-  _currentParallelMeasurement = tarch::timing::Measurement( 0.0 );
-  _previousSpeedup            = 1.0;
+  _measurementsAreAccurate        = false;
+  _accuracy                       = 0.0;
+  _accumulatedSerialMeasurement   = 0.0;
+  _accumulatedParallelMeasurement = 0.0;
+  _numberOfSerialMeasurements     = 0.0;
+  _numberOfParallelMeasurements   = 0.0;
+  _previousSpeedup                = 0.0;
 
   if (_searchDelta<=0) {
     _searchDelta = _currentGrainSize/2;
   }
 
+  assertion1( _currentGrainSize>0, toString() );
   logInfo( "restart(...)", "restarted " << toString() );
 }
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  inputLine) {
+
   std::string leftToken    = "";
   std::string rightString  = inputLine;
   std::string methodTrace;
+
+  logDebug( "DatabaseEntry(std::string)", "interpret line " << inputLine );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
@@ -534,33 +580,44 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
-  double serialAccuracy = std::stof(leftToken);
-  logDebug( "DatabaseEntry(std::string)", "serial accuracy is " <<  serialAccuracy << ". Ignore remainder of this line");
+  _measurementsAreAccurate = leftToken.compare("is-accurate")==0;
+  logDebug( "DatabaseEntry(std::string)", "_measurementsAreAccurate is " <<  _measurementsAreAccurate );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
-  double parallelAccuracy = std::stof(leftToken);
-  logDebug( "DatabaseEntry(std::string)", "parallel accuracy is " <<  parallelAccuracy << ". Ignore remainder of this line");
+  _accuracy = std::stof(leftToken);
+  logDebug( "DatabaseEntry(std::string)", "accuracy is " <<  _accuracy);
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
+  _accumulatedSerialMeasurement = std::stof(leftToken);
+  logDebug( "DatabaseEntry(std::string)", "_accumulatedSerialMeasurement is " <<  _accumulatedSerialMeasurement);
+
+  leftToken   = rightString.substr( 0, rightString.find(",") );
+  rightString = rightString.substr( leftToken.size()+1 );
+  _accumulatedParallelMeasurement = std::stof(leftToken);
+  logDebug( "DatabaseEntry(std::string)", "_accumulatedParallelMeasurement is " <<  _accumulatedParallelMeasurement);
+
+  leftToken   = rightString.substr( 0, rightString.find(",") );
+  rightString = rightString.substr( leftToken.size()+1 );
+  _numberOfSerialMeasurements = std::stof(leftToken);
+  logDebug( "DatabaseEntry(std::string)", "_numberOfSerialMeasurements is " <<  _numberOfSerialMeasurements);
+
+  leftToken   = rightString.substr( 0, rightString.find(",") );
+  rightString = rightString.substr( leftToken.size()+1 );
+  _numberOfParallelMeasurements = std::stof(leftToken);
+  logDebug( "DatabaseEntry(std::string)", "_numberOfParallelMeasurements is " <<  _numberOfParallelMeasurements);
+
+  //leftToken   = rightString.substr( 0, rightString.find(",") );
+  //rightString = rightString.substr( leftToken.size()+1 );
   _previousSpeedup = std::stof(leftToken);
-  logDebug( "DatabaseEntry(std::string)", "previous speedup is " <<  _previousSpeedup << ". Ignore remainder of this line");
+  logDebug( "DatabaseEntry(std::string)", "_previousSpeedup is " <<  _previousSpeedup);
 
-  _currentSerialMeasurement.erase();
-  _currentSerialMeasurement.setAccuracy( serialAccuracy );
-
-  _currentParallelMeasurement.erase();
-  _currentParallelMeasurement.setAccuracy( parallelAccuracy );
+  logDebug( "DatabaseEntry(std::string)", "built up entry is " <<  toString() );
 
   bool isValid = _biggestProblemSize>0
               && _currentGrainSize>0
-              && _currentGrainSize<=_biggestProblemSize
-              && _searchDelta>=0
-	            && serialAccuracy>=0.0
-              && parallelAccuracy>=0.0
-              && _previousSpeedup>0.0
-	            ;
+              && _currentGrainSize<=_biggestProblemSize;
 
   if (!isValid) {
     if (_biggestProblemSize<=0) {
@@ -568,11 +625,8 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
       logError( "DatabaseEntry(std::string)", "unable to parse file entries w.r.t. biggest problem size" );
     }
     logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Restart entry " << toString() << ". Corrupted line: " << inputLine );
-    _currentGrainSize           = _biggestProblemSize;
-    _searchDelta                = 0;
-    _currentSerialMeasurement   = tarch::timing::Measurement( 0.0 );
-    _currentParallelMeasurement = tarch::timing::Measurement( 0.0 );
-    _previousSpeedup            = 1.0;
+
+    *this = DatabaseEntry(_biggestProblemSize);
     restart();
   }
 }
@@ -653,6 +707,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
       DatabaseEntry learningEntry(1);
       for (auto& p: _measurements[_activeMethodTrace]) {
         if ( p.isAccurate() && p.isSearching() ) {
+          logInfo( "activateOracle()", "start to learn for trace " << toString(_activeMethodTrace) );
           p.learn();
           if ( !p.isSearching() ) {
             logDebug( "activateOracle()", "entry fixed, so propagate its data: " << p.toString() );
