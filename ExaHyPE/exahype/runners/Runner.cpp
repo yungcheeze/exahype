@@ -779,8 +779,6 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
         logInfo("startNewTimeStep(...)",
-                "\tADER-DG prev2 correction*: dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousPreviousMinCorrectorTimeStepSize());
-        logInfo("startNewTimeStep(...)",
                  "\tADER-DG prev correction*:  t_min   =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStamp());
         logInfo("startNewTimeStep(...)",
                 "\tADER-DG prev correction*:  dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStepSize());
