@@ -129,6 +129,8 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% endif %}
         }
 {% if useDeepProfiler %}
+        profiler->start("spaceTimePredictor_overhead");
+        profiler->stop("spaceTimePredictor_overhead"); 
         profiler->start("spaceTimePredictor");
 {% endif %}
       }

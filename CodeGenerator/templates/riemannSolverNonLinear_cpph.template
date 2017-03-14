@@ -25,6 +25,9 @@ void kernels::aderdg::optimised::riemannSolver(
   const double* restrict const lQbndR,
   const double dt,
   const int normalNonZero
+{% if useDeepProfiler %}
+  , exahype::profilers::Profiler* profiler
+{% endif %}
 ) {
 
 #ifdef __INTEL_COMPILER
@@ -82,7 +85,17 @@ void kernels::aderdg::optimised::riemannSolver(
        Qavg[n] = (QavL[n] + QavR[n]) / 2;
     }
     double Bn[{{nVar*nVar}}] __attribute__((aligned(ALIGNMENT))); //cannot use padding to match user function implementation
+{% if useDeepProfiler %}
+        profiler->stop("riemannSolver");
+        profiler->start("riemannSolver_PDEmatrixb");
+{% endif %}
     PDEmatrixb(Qavg, normalNonZero, Bn); 
+{% if useDeepProfiler %}
+        profiler->stop("riemannSolver_PDEmatrixb");
+        profiler->start("riemannSolver_overhead");
+        profiler->stop("riemannSolver_overhead");
+        profiler->start("riemannSolver");
+{% endif %}
     
     for(int n=0; n<{{nVar}}; n++) {
       double ncp[{{bndBlockSize}}] __attribute__((aligned(ALIGNMENT)))= {0.};

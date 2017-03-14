@@ -104,6 +104,9 @@ namespace kernels {
         const double* restrict const lQbndR,
         const double dt,
         const int normalNonZero
+{% if useDeepProfiler %}
+        , exahype::profilers::Profiler* profiler
+{% endif %}
       );
 
       template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>

@@ -103,9 +103,9 @@ void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
   if(useNonConservativeProduct()) {
-    kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex );
+    kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex{{DeepProfilerArg}});
   } else {
-    kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex );
+    kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex{{DeepProfilerArg}});
   }
 {{AfterRiemannSolver}}
 }
