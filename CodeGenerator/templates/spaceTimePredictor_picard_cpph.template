@@ -26,6 +26,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
+{% if useDeepProfiler %}
+        , exahype::profilers::Profiler* profiler
+{% endif %}
 ) {
 
 
@@ -108,10 +111,26 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim == 3 %}
         F[2] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{2*(nDof**nDim)*nDof*nVarPad}}];
 {% endif %}
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor");
+        profiler->start("spaceTimePredictor_PDEflux");
+{% endif %}
         PDEflux(Q, F);
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor_PDEflux");
+{% endif %}
         if(useSource) { //optimised away at compile time
+{% if useDeepProfiler %}
+          profiler->start("spaceTimePredictor_PDEsource");
+{% endif %}
           PDEsource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
+{% if useDeepProfiler %}
+          profiler->stop("spaceTimePredictor_PDEsource");
+{% endif %}
         }
+{% if useDeepProfiler %}
+        profiler->start("spaceTimePredictor");
+{% endif %}
       }
 
       // Copy rhs0 -> rhs for slice at i
@@ -260,7 +279,15 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim==3 %}
             std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad}}],&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
 {% endif %}
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor");
+            profiler->start("spaceTimePredictor_PDEncp");
+{% endif %}
             PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor_PDEncp");
+            profiler->start("spaceTimePredictor");
+{% endif %}
           }
           
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);

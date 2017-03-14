@@ -17,6 +17,10 @@
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
 
+{% if useDeepProfiler %}
+#include "exahype/profilers/Profiler.h"
+{% endif %}
+
 #ifndef __INTEL_COMPILER
 #include <mm_malloc.h>
 #endif
@@ -34,6 +38,9 @@ namespace kernels {
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source related term, nullptr if not used
+{% if useDeepProfiler %}
+        , exahype::profilers::Profiler* profiler
+{% endif %}
       );
       
       template <bool useSourceOrNCP>

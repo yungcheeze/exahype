@@ -21,7 +21,20 @@ namespace {{Project}}{
 }
 
 class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
-  public:  
+  public: 
+/*
+  static int nbCalled;
+  
+  static double adjPointSolc;
+  static double eigenc;
+  static double fluxc;
+  static double sourcec;
+  static double ncpc;
+  static double matbc;
+  static double boundc;
+*/  
+  
+//    ~{{Solver}}();  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
     bool useAlgebraicSource()        const override;
