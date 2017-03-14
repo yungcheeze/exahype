@@ -45,7 +45,7 @@ int exahype::runners::Runner::runAsWorker(
           case exahype::repositories::Repository::Continue:
             {
               repository.iterate();
-              logInfo("startNewTimeStep(...)",
+              logInfo("runAsWorker(...)",
                 "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
 
               #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)
