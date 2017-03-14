@@ -102,7 +102,7 @@ def processMeasurement(adapter):
       analysis = Analysis.SeemsNotToScale
     elif int(searchDelta)>0  and speedup>1.0:
       analysis = Analysis.MightScale
-    elif int(searchDelta)==0 and speedup<1.0 and speedup>0.0:
+    elif int(searchDelta)==0 and float(currentGrainSize)==float(biggestProblemSize):
       analysis = Analysis.DoesNotScale
     elif int(searchDelta)==0 and speedup>1.0:
       analysis = Analysis.Scales
@@ -112,11 +112,11 @@ def processMeasurement(adapter):
     if analysis==Analysis.SeemsNotToScale:
       colour = "Fuchsia"
     elif analysis==Analysis.MightScale:
-      colour = "LightSkyBlue"
+      colour = "LightGreen"
     elif analysis==Analysis.DoesNotScale:
       colour = "Red"
     elif analysis==Analysis.Scales:
-      colour = "LightGreen"
+      colour = "Green"
     else:
       colour = "White"
 
