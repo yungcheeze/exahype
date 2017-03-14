@@ -93,7 +93,9 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         total_times      = rp.sum_all_adapter_times(times,n_process_counts,n_thread_counts)
         times['Total']   = total_times
         cumulative_times = rp.sum_adapter_times(times,adapters[i],n_process_counts,n_thread_counts)
-        
+       
+        print times
+ 
         if i==0:
             t_ref = cumulative_times['avg_usertime'][0][0]
         
@@ -142,7 +144,8 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
             plot_info[i] = prefix[i] + '-' + plot_info[i]
         plt.savefig('%s/%s.pdf' % ('.','_'.join(plot_info)), bbox_inches='tight')
         print("PDF output written.")
-    plt.show()
+    else:
+        plt.show()
     return
 
 ########################################################################
