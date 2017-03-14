@@ -8,7 +8,7 @@
 #include "Writers/TimeSeriesReductions.h"
 #include "Fortran/C2P-GRMHD.h"
 #include "Fortran/InitialData.h"
-
+#include "Fortran/MassAccretionRate.h"
 #include "kernels/GaussLegendreQuadrature.h"
 #include <cmath>
 
@@ -16,7 +16,8 @@ GRMHD::IntegralsWriter::IntegralsWriter(GRMHDSolver&  solver) :
 	conserved("output/cons-"),
 	primitives("output/prim-"),
 	errors("output/error-"),
-	statistics("output/volform.asc")
+	statistics("output/volform.asc"),
+	masschange("output/massdt.asc")
 {
 	conserved.add(0, "dens");
 	conserved.add(1, "sconx");
@@ -61,6 +62,7 @@ void GRMHD::IntegralsWriter::startPlotting(double time) {
 	primitives.startRow(time);
 	errors.startRow(time);
 	statistics.startRow(time);
+	masschange.startRow(time);
 }
 
 
@@ -69,6 +71,7 @@ void GRMHD::IntegralsWriter::finishPlotting() {
 	primitives.finishRow();
 	errors.finishRow();
 	statistics.finishRow();
+	masschange.finishRow();
 }
 
 
@@ -87,8 +90,10 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	// volume form for integration
 	double scaling = tarch::la::volume(sizeOfPatch);
 	statistics.addValue(scaling, 1);
-	
-#ifdef IAMINTHEADERDGSOLUTION
+
+	// ALERT: Use this only when using the plotter as Legendre plotter for ADERDG
+	//        ie. not for the GRMHD_FV application.
+
 	// Gauss-Legendre weights from pos argument
 	double wx = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[0]];
 	double wy = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[1]];
@@ -98,8 +103,23 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	#endif
 	
 	scaling *= wx*wy*wz;
-#endif
 
+	// Mass Accretion Rate
+
+	// We start to compute the accretion rate at the r_excision
+	double rmin = 1;
+	// And we stop integration at some specific detector (r_max)
+	double rmax = 1.5;
+	double r = norm2(x);
+
+	if(r > rmin && r < rmax) {
+	  double mdot;
+	  massaccretionrate_(Q, &mdot);
+	  masschange.addValue(mdot, scaling);
+	}
+
+
+	
 	// reduce the conserved quantities
 	conserved.addValue(Q, scaling);
 
@@ -114,9 +134,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	double ExactPrim[nVar];
 	const double *xpos = x.data();
 	
-	// ALERT: Doing not the initialdata_ here!
-	//initialdata_(xpos, &timeStamp, ExactCons);
-	initialaccretiondisc_(xpos, &timeStamp, ExactCons);
+	initialdata_(xpos, &timeStamp, ExactCons);
 	pdecons2prim_(ExactPrim, ExactCons, &err);
 	
 	double localError[nVar];

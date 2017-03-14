@@ -16,7 +16,7 @@
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 //#include "kernels/aderdg/optimised/asm_predictor.c"
 
-template <bool useSource>
+template <bool useSourceOrNCP>
 void kernels::aderdg::optimised::predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
@@ -33,7 +33,7 @@ void kernels::aderdg::optimised::predictorNonlinear(
   __assume_aligned(lQhi, ALIGNMENT);
   __assume_aligned(lFhi, ALIGNMENT);
   __assume_aligned(weights1, ALIGNMENT);
-  if(useSource) {
+  if(useSourceOrNCP) {
     __assume_aligned(lSi, ALIGNMENT);
     __assume_aligned(lShi, ALIGNMENT);
   }
@@ -42,7 +42,7 @@ void kernels::aderdg::optimised::predictorNonlinear(
   std::memset(lQhi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
   std::memset(lFhi, 0, {{nDim*(nDof**nDim)*nVarPad}} * sizeof(double));
   
-  if(useSource) {
+  if(useSourceOrNCP) {
     std::memset(lShi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
   } 
 
@@ -79,7 +79,7 @@ void kernels::aderdg::optimised::predictorNonlinear(
           }
           {% endif %}
             
-          if(useSource) { //branch optimised away at compile time
+          if(useSourceOrNCP) { //branch optimised away at compile time
             // Fortran: lFhi_S(:,k,j,i) = lSh(:,k,j,i,:) * wGPN(:)
             #pragma simd
             for (int n = 0; n < {{nVarPad}}; n++) {

@@ -48,6 +48,8 @@ buildinfo.h
 
 # Output
 *.vtk
+*.vtu
+*.pvd
 *.log-file
 
 # Any kind of archives
@@ -83,3 +85,7 @@ Builds/
 
 # Optimised Kernels. They are stored in the wrong place for my feeling.
 ExaHyPE/kernels/aderdg/optimised/
+
+# Softlinks to the ExaHyPE-Astro repository
+AstroApplications
+ExternalLibraries

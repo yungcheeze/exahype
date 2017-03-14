@@ -29,7 +29,7 @@ void Euler::LimitingADERDG_FV::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::LimitingADERDG_FV::source(const double* const Q, double* S) {
+void Euler::LimitingADERDG_FV::algebraicSource(const double* const Q, double* S) {
   Variables s(S);
   s.rho()=0;
   s.E()=0;

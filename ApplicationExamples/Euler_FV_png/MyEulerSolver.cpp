@@ -104,7 +104,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::MyEulerSolver::source(const double* const Q, double* S) {
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   Variables source(S);
   source.rho()=0;
   source.E()=0;
@@ -123,4 +123,14 @@ void Euler::MyEulerSolver::boundaryValues(
   Variables         varsOutside(stateOutside);
 
   varsOutside = varsInside;
+}
+
+void Euler::MyEulerSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+	// this is never called
+}
+
+void Euler::MyEulerSolver::matrixb(const double* const Q,const int d,double* Bn) {
+	for(int i=0; i < NumberOfVariables*NumberOfVariables; i++) {
+		Bn[i] = 0.0;
+	}
 }

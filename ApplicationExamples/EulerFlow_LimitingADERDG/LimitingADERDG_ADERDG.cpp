@@ -29,7 +29,7 @@ void Euler::LimitingADERDG_ADERDG::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::LimitingADERDG_ADERDG::source(const double* const Q, double* S) {
+void Euler::LimitingADERDG_ADERDG::algebraicSource(const double* const Q, double* S) {
   Variables s(S);
   s.rho()=0;
   s.E()=0;
@@ -80,11 +80,11 @@ void Euler::LimitingADERDG_ADERDG::adjustedSolutionValues(const double* const x,
   Euler::initialData(x,Q);
 }
 
-void Euler::LimitingADERDG_ADERDG::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void Euler::LimitingADERDG_ADERDG::nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ) {
   std::memset(BgradQ, 0, NumberOfVariables * sizeof(double));
 }
 
-void Euler::LimitingADERDG_ADERDG::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void Euler::LimitingADERDG_ADERDG::coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn) {
   std::memset(Bn, 0, NumberOfVariables * NumberOfVariables * sizeof(double));
 }
 
@@ -105,7 +105,13 @@ bool Euler::LimitingADERDG_ADERDG::physicalAdmissibilityDetection(const double* 
   return true;
 }
 
-bool Euler::LimitingADERDG_ADERDG::hasToApplyPointSource() const {
+bool Euler::LimitingADERDG_ADERDG::useAlgebraicSource() const {return true;}
+
+bool Euler::LimitingADERDG_ADERDG::useNonConservativeProduct() const {return true;}
+
+bool Euler::LimitingADERDG_ADERDG::useCoefficientMatrix() const {return true;}
+
+bool Euler::LimitingADERDG_ADERDG::usePointSource() const {
   return false;
 }
 

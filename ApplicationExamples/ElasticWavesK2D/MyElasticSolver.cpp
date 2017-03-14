@@ -67,7 +67,7 @@ void Elastic::MyElasticSolver::flux(const double* const Q,double** F) {
 }
 
 
-void Elastic::MyElasticSolver::source(const double* const Q,double* S) {
+void Elastic::MyElasticSolver::algebraicSource(const double* const Q,double* S) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   
@@ -101,7 +101,7 @@ void Elastic::MyElasticSolver::boundaryValues(const double* const x,const double
 }
 
 
-void Elastic::MyElasticSolver::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+void Elastic::MyElasticSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
 
@@ -156,7 +156,7 @@ void Elastic::MyElasticSolver::ncp(const double* const Q,const double* const gra
 }
 
     
-void Elastic::MyElasticSolver::matrixb(const double* const Q,const int normalNonZero,double* Bn) {
+void Elastic::MyElasticSolver::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   
@@ -248,7 +248,13 @@ void Elastic::MyElasticSolver::matrixb(const double* const Q,const int normalNon
 
 //TODO KD
 // tell the user what it is
-bool Elastic::MyElasticSolver::hasToApplyPointSource() const { 
+bool Elastic::MyElasticSolver::useAlgebraicSource() const {return true;}
+
+bool Elastic::MyElasticSolver::useNonConservativeProduct() const {return true;}
+
+bool Elastic::MyElasticSolver::useCoefficientMatrix() const {return true;}
+
+bool Elastic::MyElasticSolver::usePointSource() const { 
   return true;
 }
 

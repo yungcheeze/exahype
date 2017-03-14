@@ -28,6 +28,7 @@ namespace c {
 
 #if DIMENSIONS == 3
 
+template <bool useSourceOrNCP>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              const int numberOfVariables,
@@ -116,7 +117,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
   }
 
   // source
-  {
+  if(useSourceOrNCP) {
     idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
     const int s_offset = 3 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
