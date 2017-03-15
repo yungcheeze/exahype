@@ -128,7 +128,7 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
    </pre>
  *
  *
- * <h2> Troubshooting </h2>
+ * <h2> Troubleshooting </h2>
  *
  * I sometimes run into the situation that the grid is correctly balanced for
  * small(er) grids but that the load balancing degenerates into something
@@ -139,6 +139,20 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
  * fork-off unfortunately leads to the situation that refine instructions
  * along the domain boundary are postponed by one iteration while others
  * run through straight ahead.
+ *
+ *
+ * <h2>Impact on vertical data exchange</h2>
+ *
+ * The hotspot balancing obviously has to exchange data vertically. Otherwise,
+ * it cannot function. It requires worker-master data exchange have to be
+ * enabled. This exchange solely transfers cell counters. It is therefore
+ * sufficient to pass
+
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
+
+ * as arguments.
+ *
  *
  *
  * <h2>Behaviour</h2>
