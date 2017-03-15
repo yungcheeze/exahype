@@ -16,9 +16,7 @@
 #include <cmath>
 #include <limits>
 
-#include "tarch/la/Vector.h"
-
-#define EXAHYPE_CFL_FACTOR 0.9
+#include "tarch/la/Vector.h" 
 
 template <typename SolverType>
 double kernels::aderdg::generic::c::stableTimeStepSize(
@@ -29,6 +27,8 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
+  constexpr int order              = SolverType::Order;
+  constexpr double cflFactor       = 0.9;
   constexpr double PNPM[10]        = {1.0,   0.33,  0.17, 0.1,  0.069,
                                       0.045, 0.038, 0.03, 0.02, 0.015};
   
@@ -38,13 +38,6 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
-        // !!
-        // TODO(Dominic): For refactoring purposes. Remove old indexing method.
-        const int nodeIndex = i + basisSize * j + basisSize * basisSize * k;
-        const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
-        assertion(dofStartIndex==idx_luh(k,j,i,0));
-        // !!
-         
         double denominator = 0.0;
         for (int d = 0; d < DIMENSIONS; d++) {
           solver.eigenvalues(&luh[idx_luh(i,j,k,0)], d, lambda);
@@ -56,7 +49,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
           denominator += maxEigenvalue / dx[d];
         }
 
-        dt = std::min(dt, EXAHYPE_CFL_FACTOR * PNPM[basisSize - 1] / // TODO(Dominic): Move CFL_Factor into solver.
+        dt = std::min(dt, cflFactor * PNPM[order] / 
                               denominator);  // order N = basisSize-1
       }
     }
