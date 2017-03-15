@@ -409,7 +409,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
     
     if (_device==nullptr){
       logError(
-        "checkWetherSolverBecomesActive(double)",
+        "checkWetherPlotterBecomesActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
     }
@@ -421,6 +421,16 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
   } else {
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
+
+  // TODO(Dominic): Remove
+  logInfo(
+    "checkWetherPlotterBecomesActive(double)",
+    "plotter="<< _identifier <<
+    ", active=" << ( isActive() ? "yes" : "no" ) <<
+    ", plotter time=" << _time <<
+    ", solver time=" << currentTimeStamp <<
+    ", device=" << ( (_device==nullptr) ? "null" : "initialised" )
+  );
 
   return isActive();
 }
