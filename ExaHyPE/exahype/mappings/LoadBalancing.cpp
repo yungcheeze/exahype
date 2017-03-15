@@ -5,8 +5,8 @@
 
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeDescendIntoLocalSubtree,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
       true
   );
 }
