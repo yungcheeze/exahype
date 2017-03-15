@@ -55,9 +55,9 @@ exahype::plotters::Plotter::Plotter(
       << " time units with first snapshot at " << _time
       << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-    logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+    logError("Plotter(...)", "plotter's field 'variables' was assigned the negative integer "
+        << _writtenUnknowns );
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
@@ -119,9 +119,9 @@ exahype::plotters::Plotter::Plotter(
     << " time units with first snapshot at " << _time
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-      logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+      logError("Plotter(...)", "plotter's field 'variables' was assigned negative integer "
+        << _writtenUnknowns);
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
