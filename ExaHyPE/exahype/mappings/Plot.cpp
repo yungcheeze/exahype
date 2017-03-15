@@ -299,17 +299,17 @@ void exahype::mappings::Plot::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if ( fineGridCell.isInitialised() ) {
-    for (auto* pPlotter : exahype::plotters::RegisteredPlotters) {
-      int solverNumber=0;
-      for (auto* solver : exahype::solvers::RegisteredSolvers) {
-        if (pPlotter->plotDataFromSolver(solverNumber)) {
+    for (auto* plotter : exahype::plotters::RegisteredPlotters) {
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+        if (plotter->plotDataFromSolver(solverNumber)) {
           int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
           if (element!=exahype::solvers::Solver::NotFound) {
             tarch::multicore::Lock lock(_semaphoreForPlotting);
-            pPlotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
+            plotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
           }
         }
-        ++solverNumber;
       }
     }
   }
