@@ -26,6 +26,9 @@
 bool exahype::State::FuseADERDGPhases = false;
 
 exahype::State::State() : Base() {
+  // @todo Guidebook
+
+  _stateData.setMaxRefinementLevelAllowed(0);
 }
 
 exahype::State::State(const Base::PersistentState& argument) : Base(argument) {
@@ -65,24 +68,17 @@ void exahype::State::endedGridConstructionIteration(int finestGridLevelPossible)
   }
   // Seems that max permitted level has exceeded max grid level. We may assume
   // that there are more MPI ranks than available trees.
-  else if (isGridStationary() &&
-    _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
+  else if (isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
     _stateData.setMaxRefinementLevelAllowed( -3 );
   }
-  else if (nodePoolHasGivenOutRankSizeLastQuery &&
-    _stateData.getMaxRefinementLevelAllowed()>=2) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()-2);
+  else if (nodePoolHasGivenOutRankSizeLastQuery && _stateData.getMaxRefinementLevelAllowed()>=2) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()-2);
   }
   // Nothing has changed in this grid iteration in the grid and we haven't
   // given out new workers. So increase the permitted maximum grid level by
   // one and give another try whether the grid adds more vertices.
-  else if (
-      !(nodePoolHasGivenOutRankSizeLastQuery)
-    && isGridStationary()
-  ) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()+1);
+  else if ( !(nodePoolHasGivenOutRankSizeLastQuery) && isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>=0 ) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()+1);
   }
 }
 
