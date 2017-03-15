@@ -1054,6 +1054,13 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourTypeAsInt);
 
+  #if defined(Asserts) || defined(Debug)
+  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+  const int faceIndex = 2 * normalOfExchangedFace +
+          (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+  #endif
+
   // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
   // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems
   // if one Ancestor is just used for restriction.
@@ -1063,12 +1070,6 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     assertion1(holdsFaceData(neighbourType),neighbourType);
     assertion1(holdsFaceData(cellDescription.getType()),cellDescription.toString());
 
-    #if defined(Asserts) || defined(Debug)
-    const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-    const int faceIndex = 2 * normalOfExchangedFace +
-              (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
-    #endif
     assertion4(!cellDescription.getRiemannSolvePerformed(faceIndex),
         faceIndex,cellDescriptionsIndex,cellDescription.getOffset().toString(),cellDescription.getLevel());
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
