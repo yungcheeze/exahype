@@ -60,8 +60,6 @@ peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
 void boxmg::mappings::CreateGrid::beginIteration(
   boxmg::State&  solverState
 ) {
-  srand(time(NULL));
-
   _numberOfInnerCells = 0;
 }
 
@@ -170,7 +168,7 @@ void boxmg::mappings::CreateGrid::mergeWithMaster(
  * This operation triggers the critical path analysis which consists of two
  * steps:
  *
- * - Determine the critial path
+ * - Determine the critical path
  * - Compute the number of forks along the critical paths
  *
  * If its command from its master is unequal to fork, there's no analysis to
