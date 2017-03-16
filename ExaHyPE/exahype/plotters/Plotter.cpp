@@ -409,7 +409,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlotting
     
     if (_device==nullptr){
       logError(
-        "checkWetherPlotterBecomesActive(double)",
+        "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
     }
@@ -424,7 +424,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlotting
 
   // TODO(Dominic): Remove
   logInfo(
-    "checkWetherPlotterBecomesActive(double)",
+    "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
     "plotter="<< _identifier <<
     ", active=" << ( isActive() ? "yes" : "no" ) <<
     ", plotter time=" << _time <<
