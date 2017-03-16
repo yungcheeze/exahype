@@ -142,6 +142,8 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         for i in range(0,n_root_dir):
             plot_info[i] = '+'.join(adapters[i])
             plot_info[i] = prefix[i] + '-' + plot_info[i]
+            # make sure string is not too loong
+            plot_info[i] = plot_info[i][:int(float(200)/float(n_root_dir))]
         plt.savefig('%s/%s.pdf' % ('.','_'.join(plot_info)), bbox_inches='tight')
         print("PDF output written.")
     else:
