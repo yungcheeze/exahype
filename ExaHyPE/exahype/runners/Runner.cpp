@@ -487,7 +487,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       updateLimiterDomain(repository);
     }
 
-    bool plot = exahype::plotters::isAPlotterActive(
+    bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (exahype::State::fuseADERDGPhases()) {
@@ -538,8 +538,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
       // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
       // see issue #103
-      bool plot = exahype::plotters::isAPlotterActive(
-          solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
+      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
+          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
       if (_parser.getFuseAlgorithmicSteps()) {
         repository.getState().setTimeStepSizeWeightForPredictionRerun(
