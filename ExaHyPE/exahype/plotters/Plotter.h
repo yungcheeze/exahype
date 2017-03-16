@@ -267,6 +267,25 @@ class exahype::plotters::Plotter {
   double getNextPlotTime() const;
 
   std::string toString() const;
+
+  #ifdef Parallel
+  /**
+   * This operation is used for the synchronisation
+   * of a global plotter time stamp over all MPI ranks.
+   */
+  void sendDataToWorker(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /**
+   * Merge with plotter data from master rank.
+   */
+  void mergeWithMasterData(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+  #endif
 };
 
 #endif

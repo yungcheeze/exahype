@@ -29,14 +29,6 @@ void Euler::LimitingADERDG_FV::flux(const double* const Q, double** F) {
 }
 
 
-void Euler::LimitingADERDG_FV::algebraicSource(const double* const Q, double* S) {
-  Variables s(S);
-  s.rho()=0;
-  s.E()=0;
-  s.j(0,0,0);
-}
-
-
 void Euler::LimitingADERDG_FV::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   ReadOnlyVariables vars(Q);
   Variables eigs(lambda);
@@ -54,15 +46,14 @@ void Euler::LimitingADERDG_FV::eigenvalues(const double* const Q, const int norm
 }
 
 
-bool Euler::LimitingADERDG_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
-  if ( tarch::la::equals(t,0.0) ) {
-    return true;
-  }
-  return false; 
+bool Euler::LimitingADERDG_FV::useAdjustSolution(
+    const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) const {
+  return tarch::la::equals(t,0.0); // ? exahype::solvers::Solver::AdjustSolutionValue::PointWisely : exahype::solvers::Solver::AdjustSolutionValue::No;
 }
 
 
-void Euler::LimitingADERDG_FV::adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q) {  
+void Euler::LimitingADERDG_FV::adjustSolution(const double* const x, const double w, const double t, const double dt, double* Q) {
   initialData(x,Q);
 }
 

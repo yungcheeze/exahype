@@ -77,53 +77,7 @@ namespace amr {
       const typename CellDescription::Type type,
       const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
-      neighbourCellDescriptionsIndices) {
-    // left,right,front,back,(bottom,top)
-#if DIMENSIONS == 2
-    constexpr int neighbourPositions[4] = {3, 5, 1, 7};
-#else
-    constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
-#endif
-    bool nextToAncestor = false;
-    bool nextToCell = false;
-
-    for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
-      const int neighbourCellDescriptionIndex =
-          neighbourCellDescriptionsIndices[neighbourPositions[i]];
-      if (CellDescriptionsHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
-        for (CellDescription& pNeighbour : CellDescriptionsHeap::getInstance().getData(
-            neighbourCellDescriptionIndex)) {
-          if (pNeighbour.getSolverNumber() == solverNumber &&
-              pNeighbour.getLevel() == level) {
-            switch (pNeighbour.getType()) {
-              case CellDescription::Ancestor:
-              case CellDescription::EmptyAncestor:
-                nextToAncestor = true;
-                break;
-              case CellDescription::Cell:
-                nextToCell = true;
-                break;
-              default:
-                break;
-            }
-          }
-        }
-      }
-    }
-
-    // NOTE: The order below is important.
-    if (nextToCell && nextToAncestor) {
-      return exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor;
-    }
-    if (nextToAncestor) {
-      return exahype::solvers::Solver::AugmentationControl::NextToAncestor;
-    }
-    if (nextToCell) {
-      return exahype::solvers::Solver::AugmentationControl::NextToCell;
-    }
-    // Erase otherwise.
-    return exahype::solvers::Solver::AugmentationControl::Default;
-  }
+      neighbourCellDescriptionsIndices);
 
   /*
    * Change the erasing request to a change to descendant request if the coarse grid Cell
@@ -354,6 +308,8 @@ namespace amr {
 }  // namespace amr
 }  // namespace exahype
 
+
+#include "AdaptiveMeshRefinement.cpph"
 
 
 #endif /* ADAPTIVEMESHREFINEMENT_H_ */

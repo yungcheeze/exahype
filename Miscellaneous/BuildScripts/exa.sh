@@ -187,6 +187,9 @@ case $CMD in
 	"slicer") # Calls the 'exaslicer' VTK slicing toolkit. Use "--help" for help.
 		exec $Postprocessing/exaslicer.py $@
 		;;
+	"peano-analysis") # Quickly start Peanos Domaincomposition analysis script.
+		exec python $GITROOT/Peano/peano/performanceanalysis/domaindecompositionanalysis.py $@
+		;;
 	"run") # quickly start an application inside it's directory. Cleans VTK files before.
 		cdapp
 		info "Starting $APPNAME with SKIP_TESTS." | tee run.log

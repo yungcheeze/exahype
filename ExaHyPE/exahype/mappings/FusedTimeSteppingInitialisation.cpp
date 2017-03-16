@@ -126,7 +126,6 @@ void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestep
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
           getSolver().get()->getCellDescription(cellDescriptionsIndex,element);
-      cellDescription.setPreviousPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setPredictorTimeStamp(

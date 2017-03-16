@@ -126,22 +126,6 @@ private:
   const int _dataPointsPerCell;
 
   /**
-   * Minimum corrector time stamp of all cell descriptions
-   * 2 iterations ago
-   */
-  double _previousPreviousMinCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of all
-   * cell descriptions in the iteration before the
-   * previous iteration.
-   *
-   * This time step size is necessary for the fused time stepping + limiting
-   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
-   */
-  double _previousPreviousMinCorrectorTimeStepSize;
-
-  /**
    * Minimum corrector time stamp of all cell descriptions.
    */
   double _previousMinCorrectorTimeStamp;
@@ -161,16 +145,16 @@ private:
   double _minCorrectorTimeStamp;
 
   /**
-   * Minimum predictor time stamp of all cell descriptions.
-   * Always equal or larger than the minimum corrector time stamp.
-   */
-  double _minPredictorTimeStamp;
-
-  /**
    * Minimum corrector time step size of
    * all cell descriptions.
    */
   double _minCorrectorTimeStepSize;
+
+  /**
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
 
   /**
    * Minimum predictor time step size of
@@ -936,6 +920,9 @@ public:
       const double t,
       const double dt) = 0;
 
+  /**
+   * Adjust solution value specification.
+   */
   enum class AdjustSolutionValue {
     No,
     PointWisely,
@@ -1271,12 +1258,6 @@ public:
   void setPreviousMinCorrectorTimeStepSize(double value);
   double getPreviousMinCorrectorTimeStepSize() const;
 
-  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
-  double getPreviousPreviousMinCorrectorTimeStepSize() const;
-
-  void setPreviousPreviousMinCorrectorTimeStamp(double value);
-  double getPreviousPreviousMinCorrectorTimeStamp() const;
-
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
   }
@@ -1294,19 +1275,16 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
-    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
 
-    setPreviousPreviousMinCorrectorTimeStamp(value);
     setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
   }
 
   void initFusedSolverTimeStepSizes() {
-    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
@@ -1442,7 +1420,7 @@ public:
       const int element);
 
   /**
-   * TODO(Dominic): Remove; not necessary
+   * TODO(Dominic): Docu
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,

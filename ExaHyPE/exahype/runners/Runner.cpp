@@ -259,7 +259,11 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
   case Parser::MulticoreOracleType::GrainSizeSampling:
   #ifdef Parallel
-    if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1) {
+    if (
+      tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
+      &&
+      tarch::multicore::Core::getInstance().getNumberOfThreads()>1
+    ) {
       logInfo("shutdownSharedMemoryConfiguration()",
           "wrote statistics into file " << _parser.getMulticorePropertiesFile()
           << ". Dump from all other ranks subpressed to avoid file races"
@@ -268,11 +272,13 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
           _parser.getMulticorePropertiesFile());
     }
   #else
-    logInfo("shutdownSharedMemoryConfiguration()",
+    if ( tarch::multicore::Core::getInstance().getNumberOfThreads()>1 ) {
+      logInfo("shutdownSharedMemoryConfiguration()",
         "wrote statistics into file "
         << _parser.getMulticorePropertiesFile());
-    peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
         _parser.getMulticorePropertiesFile());
+    }
   #endif
     break;
   }
@@ -566,6 +572,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
       }
 
+      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
+      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
+        static int dumpCounter = -1;
+        dumpCounter++;
+        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
+      }
+      #endif
+
       logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
     }
     if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
@@ -764,8 +778,6 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
                 "\tADER-DG prediction: dt_min         =" << static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
-        logInfo("startNewTimeStep(...)",
-                "\tADER-DG prev2 correction*: dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousPreviousMinCorrectorTimeStepSize());
         logInfo("startNewTimeStep(...)",
                  "\tADER-DG prev correction*:  t_min   =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStamp());
         logInfo("startNewTimeStep(...)",

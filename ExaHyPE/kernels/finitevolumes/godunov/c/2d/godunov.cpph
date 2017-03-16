@@ -318,7 +318,7 @@ double solutionUpdate(
 
   // Solve Riemann problems
   double dt_max_allowed = std::numeric_limits<double>::max();
-  static const double cflFactor = 0.9; // TODO(Dominic): Move this out.
+  constexpr double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
   // x edges 
 //  double* fL = tempStateSizedVectors[0]; @todo pleaes remove the root of all evil
