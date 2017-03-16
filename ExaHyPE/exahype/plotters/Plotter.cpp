@@ -471,7 +471,7 @@ void exahype::plotters::Plotter::finishedPlotting() {
 }
 
 
-bool exahype::plotters::isAPlotterActive(double currentTimeStamp) {
+bool exahype::plotters::startPlottingIfAPlotterIsActive(double currentTimeStamp) {
   bool result = false;
   for (const auto& p : RegisteredPlotters) {
     result |= p->checkWetherPlotterBecomesActiveAndStartPlottingIfActive(currentTimeStamp);

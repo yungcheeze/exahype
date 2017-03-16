@@ -29,7 +29,7 @@ namespace exahype {
 
     extern std::vector<Plotter*> RegisteredPlotters;
 
-    bool isAPlotterActive(double currentTimeStamp);
+    bool startPlottingIfAPlotterIsActive(double currentTimeStamp);
     void finishedPlotting();
     double getTimeOfNextPlot();
   }
