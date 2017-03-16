@@ -403,13 +403,13 @@ double exahype::plotters::Plotter::getNextPlotTime() const {
 }
 
 
-bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentTimeStamp) {
+bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     _solverTimeStamp = currentTimeStamp;
     
     if (_device==nullptr){
       logError(
-        "checkWetherSolverBecomesActive(double)",
+        "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
     }
@@ -421,6 +421,16 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
   } else {
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
+
+  // TODO(Dominic): Remove
+  logInfo(
+    "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
+    "plotter="<< _identifier <<
+    ", active=" << ( isActive() ? "yes" : "no" ) <<
+    ", plotter time=" << _time <<
+    ", solver time=" << currentTimeStamp <<
+    ", device=" << ( (_device==nullptr) ? "null" : "initialised" )
+  );
 
   return isActive();
 }
@@ -461,10 +471,10 @@ void exahype::plotters::Plotter::finishedPlotting() {
 }
 
 
-bool exahype::plotters::isAPlotterActive(double currentTimeStamp) {
+bool exahype::plotters::startPlottingIfAPlotterIsActive(double currentTimeStamp) {
   bool result = false;
   for (const auto& p : RegisteredPlotters) {
-    result |= p->checkWetherPlotterBecomesActive(currentTimeStamp);
+    result |= p->checkWetherPlotterBecomesActiveAndStartPlottingIfActive(currentTimeStamp);
   }
   return result;
 }

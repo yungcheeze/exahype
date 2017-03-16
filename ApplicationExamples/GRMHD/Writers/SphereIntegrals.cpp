@@ -33,7 +33,7 @@ void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& si
 	const int order = GRMHD::AbstractGRMHDSolver::Order;
 
 	// Compute on a sphere:
-	const double rSphere = 1.1;
+	const double rSphere = 2.1;
 	
 	// How much points to compute
 	const int ntheta = 10;
