@@ -21,6 +21,10 @@
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/parallel/NodePool.h"
 
+#if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)
+#include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
+#endif
+
 int exahype::runners::Runner::runAsWorker(
     exahype::repositories::Repository& repository) {
   int newMasterNode = tarch::parallel::NodePool::getInstance().waitForJob();
