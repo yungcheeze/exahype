@@ -87,7 +87,7 @@ exahype::mappings::Prediction::~Prediction() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::mergeWithWorkerThread(
@@ -97,12 +97,12 @@ void exahype::mappings::Prediction::mergeWithWorkerThread(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::endIteration(
     exahype::State& solverState) {
-  deleteTemporaryVariables(_temporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
