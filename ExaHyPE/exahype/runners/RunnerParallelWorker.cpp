@@ -23,6 +23,7 @@
 
 #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 #endif
 
 int exahype::runners::Runner::runAsWorker(
