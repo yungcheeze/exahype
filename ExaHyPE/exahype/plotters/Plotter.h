@@ -237,7 +237,7 @@ class exahype::plotters::Plotter {
    * Checks whether there should be a plotter according to this class.
    * If it should become open, it is opened
    */
-  bool checkWetherPlotterBecomesActive(double currentTimeStamp);
+  bool checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double currentTimeStamp);
   bool isActive() const;
   bool plotDataFromSolver(int solver) const;
 

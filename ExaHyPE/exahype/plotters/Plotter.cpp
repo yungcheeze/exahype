@@ -403,7 +403,7 @@ double exahype::plotters::Plotter::getNextPlotTime() const {
 }
 
 
-bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentTimeStamp) {
+bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     _solverTimeStamp = currentTimeStamp;
     
@@ -474,7 +474,7 @@ void exahype::plotters::Plotter::finishedPlotting() {
 bool exahype::plotters::isAPlotterActive(double currentTimeStamp) {
   bool result = false;
   for (const auto& p : RegisteredPlotters) {
-    result |= p->checkWetherPlotterBecomesActive(currentTimeStamp);
+    result |= p->checkWetherPlotterBecomesActiveAndStartPlottingIfActive(currentTimeStamp);
   }
   return result;
 }
