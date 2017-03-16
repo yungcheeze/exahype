@@ -107,14 +107,19 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	// Mass Accretion Rate
 
 	// We start to compute the accretion rate at the r_excision
-	double rmin = 1;
+	double rmin = 2.1;
 	// And we stop integration at some specific detector (r_max)
-	double rmax = 1.5;
+	double rmax = 2.2;
 	double r = norm2(x);
 
 	if(r > rmin && r < rmax) {
 	  double mdot;
-	  massaccretionrate_(Q, &mdot);
+	  double vx;
+      	  double vy;
+	  double vz;
+			  
+
+	  massaccretionrate_(Q, &mdot, &vx, &vy, &vz);
 	  masschange.addValue(mdot, scaling);
 	}
 
@@ -139,8 +144,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	
 	double localError[nVar];
 	for(int i=0; i<nVar; i++) {
-		localError[i] = std::fabs(V[i] - ExactPrim[i]);
-		//localError[i] = abs(Q[i] - ExactCons[i]);
+		localError[i] = std::abs(V[i] - ExactPrim[i]);
 	}
 	
 	errors.addValue(localError, scaling);

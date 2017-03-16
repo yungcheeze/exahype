@@ -19,9 +19,6 @@
     INTEGER, PARAMETER             :: nDim = 3                   ! The number of space dimensions
 #elif defined(Dim2)
     INTEGER, PARAMETER             :: nDim = 2                   ! The number of space dimensions
-#else
-#error "DIMENSIONS not set. Please run the C preprocessor with the ExaHyPE Makesystem"
-#endif
     INTEGER, PARAMETER             :: nVar = 19                           ! The number of variables of the PDE system  
     
     
@@ -31,6 +28,7 @@
     REAL, PARAMETER                :: gamma = 4.0/3.0
       
     ! Divergence cleaning.
+
     ! 1.0 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
     ! Note that currently we don't add the contribution to the source.
     REAL, PARAMETER :: DivCleaning_a = 1.0

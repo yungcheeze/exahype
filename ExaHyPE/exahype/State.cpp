@@ -26,6 +26,9 @@
 bool exahype::State::FuseADERDGPhases = false;
 
 exahype::State::State() : Base() {
+  // @todo Guidebook
+
+  _stateData.setMaxRefinementLevelAllowed(0);
 }
 
 exahype::State::State(const Base::PersistentState& argument) : Base(argument) {
@@ -53,36 +56,33 @@ void exahype::State::endedGridConstructionIteration(int finestGridLevelPossible)
   const bool nodePoolHasGivenOutRankSizeLastQuery =
     tarch::parallel::NodePool::getInstance().hasGivenOutRankSizeLastQuery();
 
+  if (nodePoolHasGivenOutRankSizeLastQuery && _stateData.getMaxRefinementLevelAllowed()>=3) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()-3);
+  }
+  // We already thought that we are done but then suddenly the load balancing
+  // decided to balance once more. So reset counter.
+  else if (nodePoolHasGivenOutRankSizeLastQuery && _stateData.getMaxRefinementLevelAllowed()<0) {
+    _stateData.setMaxRefinementLevelAllowed(0);
+  }
   // No more nodes left. Start to enforce refinement
-  if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()>=0) {
+  else if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()>=0) {
     _stateData.setMaxRefinementLevelAllowed(-1);
   }
   // Refinement is enforced. So we decrease counter. Once we underrun -2, grid
   // construction can terminate as all enforced refined went through.
-  else if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()<=-1) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()-1 );
+  else if (_stateData.getMaxRefinementLevelAllowed()<=-1) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()-1 );
   }
   // Seems that max permitted level has exceeded max grid level. We may assume
   // that there are more MPI ranks than available trees.
-  else if (isGridStationary() &&
-    _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
-    _stateData.setMaxRefinementLevelAllowed( -3 );
-  }
-  else if (nodePoolHasGivenOutRankSizeLastQuery &&
-    _stateData.getMaxRefinementLevelAllowed()>=2) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()-2);
+  else if (isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
+    _stateData.setMaxRefinementLevelAllowed( -1 );
   }
   // Nothing has changed in this grid iteration in the grid and we haven't
   // given out new workers. So increase the permitted maximum grid level by
   // one and give another try whether the grid adds more vertices.
-  else if (
-      !(nodePoolHasGivenOutRankSizeLastQuery)
-    && isGridStationary()
-  ) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()+1);
+  else if ( !(nodePoolHasGivenOutRankSizeLastQuery) && isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>=0 ) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()+1);
   }
 }
 

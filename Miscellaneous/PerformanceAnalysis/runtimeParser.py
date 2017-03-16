@@ -128,7 +128,9 @@ def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1
             for r in range(n_runs):
                 file_path = '%s/%s_n%s_t%s_r%d_%s_%s.txt' % (rootdir,prefix,str(process_counts[n]),str(thread_counts[t]),r+1,cc,_mode)
                 result_r = parse_adapter_times(file_path,per_iteration)
-                
+               
+                print "runtimeparser.parse_all_adapter_times(...): found adapters: "+str(result_r)
+ 
                 # We know all adapters after reading the first file and can thus initialise our data structure.
                 if r==0 and t==0 and n==0:
                     for adapter in result_r:
@@ -178,10 +180,10 @@ def parse_adapter_times(file_path,per_iteration=False):
             usertime_index = 6
         
         for line in file_handle:
-            # The trailing white space is important; do not remove it!
-            anchor = '::repositories::RepositorySTDStack::logIterationStatistics() | '
+            anchor = '|'
+            header = '||'
             
-            if anchor in line:
+            if anchor in line and header not in line:
                 segments = line.split('|')
                 adapter = segments[1].strip();
                 result[adapter]             = {}

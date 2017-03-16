@@ -92,7 +92,6 @@ void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables()
 }
 
 exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
-  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)
@@ -164,7 +163,12 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
 
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
-    const double usedTimeStepSize   = aderdgSolver->getMinPredictorTimeStepSize();
+    double usedTimeStepSize         = aderdgSolver->getMinPredictorTimeStepSize();
+
+    if (tarch::la::equals(usedTimeStepSize,0.0)) {
+      usedTimeStepSize = stableTimeStepSize;
+    }
+
     bool useTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
 
     if (useTimeStepSizeWasInstable) {

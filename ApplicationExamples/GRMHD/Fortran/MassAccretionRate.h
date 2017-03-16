@@ -8,7 +8,7 @@
 extern "C" {
 
 // FORTRAN functions called by C
-void massaccretionrate_(double* /* IN */ Q, double* /* OUT */ masschange);
+  void massaccretionrate_( double* /* IN */ Q, double* masschange, double*v1,double*v2,double*v3);
 
 } /* extern "C" */
 #endif /* __MASSACCRETIONRATE_CPP__ */

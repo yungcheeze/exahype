@@ -30,6 +30,12 @@ class FiniteVolumesSolver;
 
 
 
+/**
+ * Abstract base class for any 1st order finite volume solver. It does not make
+ * sense to use this operation for higher order finite volume solvers as those
+ * require additional data structures (and for ncp, e.g., also the
+ * non-conservative product).
+ */
 class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
 public:
   typedef exahype::DataHeap DataHeap;
@@ -357,9 +363,12 @@ public:
       const double t,
       const double dt) const = 0;
 
-  virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
+  virtual bool useNonConservativeProduct() const = 0;
+  virtual bool useSource()                 const = 0;
+
   virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
   virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
+
 
   /**
    * Compute the source.

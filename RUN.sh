@@ -17,7 +17,7 @@ set -e
 
 # Now you are ready to follow compile and run an ExaHyPE application
 # according to the guidebook:
-java -jar Toolkit/dist/ExaHyPE.jar --not-interactive ApplicationExamples/eulerflow2d.exahype
+java -jar Toolkit/dist/ExaHyPE.jar --not-interactive ApplicationExamples/EulerFlow.exahype
 
 # set build parameters
 export CC=Gnu
@@ -30,5 +30,6 @@ cd ApplicationExamples/EulerFlow && make clean && make -j $(nproc)
 
 # run sample application
 ./ExaHyPE-EulerFlow ../EulerFlow.exahype
+
 
 

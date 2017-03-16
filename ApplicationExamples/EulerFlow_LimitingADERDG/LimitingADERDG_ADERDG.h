@@ -13,6 +13,13 @@
 #include "AbstractLimitingADERDG_ADERDG.h"
 
 
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
+
+
 
 
 namespace Euler{
@@ -20,6 +27,11 @@ namespace Euler{
 }
 
 class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG {
+  private:
+    /**
+     * Log device
+     */
+    static tarch::logging::Log _log;
   public:
     LimitingADERDG_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
@@ -34,7 +46,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
      * within the time interval [t,t+dt].
      *
-     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     * \note Use this function and ::adjustSolution to set initial conditions.
      *
      * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
@@ -42,12 +54,12 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * \param[in]    dt        the width of the time interval.
      * \return true if the solution has to be adjusted.
      */
-    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
+    AdjustSolutionValue useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
     
     /**
      * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
      *
-     * \note Use this function and ::hasToAdjustSolution to set initial conditions.
+     * \note Use this function and ::useAdjustSolution to set initial conditions.
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
@@ -56,7 +68,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
      *                         as C array (already allocated).
      */
-    void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
+    void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
     
     /**
      * Compute the flux tensor.
@@ -78,15 +90,6 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
     void eigenvalues(const double* const Q,const int d,double* lambda);
     
     /**
-     * Compute the source.
-     *
-     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-     *                 as C array (already allocated).
-     * \param[inout] S the source point as C array (already allocated).
-     */
-    void source(const double* const Q,double* S);
-    
-    /**
      * Impose boundary conditions at a point on a boundary face
      * within the time interval [t,t+dt].
      *
@@ -105,12 +108,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * \param[inout] FOut      the normal fluxes at point x from outside of the domain
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
-    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int dir,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
-    
-    void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
-    void matrixb(const double* const Q,const int d,double* Bn);
-    bool hasToApplyPointSource() const override;
-    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
     
     /**
      * Evaluate the refinement criterion within a cell.
@@ -118,7 +116,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      * \note Instead of a variables array at a single quadrature point we give
      * you all NumberOfVariables*(Order+1)^DIMENSIONS solution degrees of freedom.
      *
-     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     * \note Use this function and ::adjustSolution to set initial conditions.
      *
      * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
@@ -128,15 +126,8 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
     
-    /**
-     * Evaluate the physical admissibility detection (PAD) criterion within a cell.
-     *
-     *
-     * \param[in] QMin the minimum value per variable.
-     * \param[in] QMax the maximum value per variable.
-     * \return true if the bounds are physically admissible.
-     */
-    bool isPhysicallyAdmissibile(const double* const QMin,const double* const QMax) const override;
+    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const override;
+
 };
 
 #endif // __LimitingADERDG_ADERDG_CLASS_HEADER__

@@ -10,19 +10,20 @@
 #include "kernels/GaussLegendreQuadrature.h"
 
 
-const double excision_radius = 1.0;
 
 void GRMHD::GRMHDSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+  const double excision_radius = 1.0;
   bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
   //bool insideExcisionBall = false;
-  return tarch::la::equals(t,0.0) || insideExcisionBall;
+  bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
+  return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void GRMHD::GRMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void GRMHD::GRMHDSolver::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran
   initialdata_(x, &t, Q);
 }
@@ -79,12 +80,6 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver::refinementCriter
 }
 
 
-bool GRMHD::GRMHDSolver::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
-  // @todo Please implement/augment if required
-  return true;
-}
-
-
 void GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
 }
@@ -96,16 +91,3 @@ void GRMHD::GRMHDSolver::coefficientMatrix(const double* const Q,const int d,dou
   pdematrixb_(Bn, Q, nv);
 }
 
-bool GRMHD::GRMHDSolver::useAlgebraicSource() const {return true;}
-
-bool GRMHD::GRMHDSolver::useNonConservativeProduct() const {return true;}
-
-bool GRMHD::GRMHDSolver::useCoefficientMatrix() const {return true;}
-
-bool GRMHD::GRMHDSolver::usePointSource() const { 
-  return false;
-}
-
-void GRMHD::GRMHDSolver::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  // whatever
-}

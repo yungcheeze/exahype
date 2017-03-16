@@ -499,14 +499,19 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
   std::copy(newSolution,newSolution+_dataPerPatch+_ghostDataPerPatch,solution); // Copy (current solution) in old solution field.
 
-//  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
       cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
-  if (admissibleTimeStepSize * 1.001 < cellDescription.getTimeStepSize()) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
+  // cellDescription.getTimeStepSize() = 0 is an initial condition
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize) );
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize) );
+  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max() );
+
+  if ( !tarch::la::equals(cellDescription.getTimeStepSize(), 0.0) && tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
                cellDescription.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize << ". cell=" <<cellDescription.toString());
   }
@@ -524,7 +529,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution"); // TODO(Dominic): Comment back in
+  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
 
 
@@ -1049,10 +1054,12 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
   CellDescription::Type neighbourType =
       static_cast<CellDescription::Type>(neighbourTypeAsInt);
 
+  #if defined(Asserts) || defined(Debug)
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
   const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+          (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+  #endif
 
   // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
   // Solving Riemann problems at a Ancestor Ancestor boundary might lead to problems

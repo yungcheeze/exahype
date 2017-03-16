@@ -126,22 +126,6 @@ private:
   const int _dataPointsPerCell;
 
   /**
-   * Minimum corrector time stamp of all cell descriptions
-   * 2 iterations ago
-   */
-  double _previousPreviousMinCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of all
-   * cell descriptions in the iteration before the
-   * previous iteration.
-   *
-   * This time step size is necessary for the fused time stepping + limiting
-   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
-   */
-  double _previousPreviousMinCorrectorTimeStepSize;
-
-  /**
    * Minimum corrector time stamp of all cell descriptions.
    */
   double _previousMinCorrectorTimeStamp;
@@ -161,16 +145,16 @@ private:
   double _minCorrectorTimeStamp;
 
   /**
-   * Minimum predictor time stamp of all cell descriptions.
-   * Always equal or larger than the minimum corrector time stamp.
-   */
-  double _minPredictorTimeStamp;
-
-  /**
    * Minimum corrector time step size of
    * all cell descriptions.
    */
   double _minCorrectorTimeStepSize;
+
+  /**
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
 
   /**
    * Minimum predictor time step size of
@@ -688,26 +672,6 @@ public:
   // Disallow copy and assignment
   ADERDGSolver(const ADERDGSolver& other) = delete;
   ADERDGSolver& operator=(const ADERDGSolver& other) = delete;
-  /**
-   * Returns the maximum extent a mesh cell is allowed to have
-   * in all coordinate directions.
-   * This maximum mesh size is used both as a
-   * constraint on the AMR as well as to set up the initial
-   * grid. If you return the extent of the computational domain in
-   * each coordinate direction or larger values,
-   * you indicate that this solver is not active in the domain.
-   */
-  double getMaximumMeshSize() const;
-
-  /**
-   * Returns the number of state variables.
-   */
-  int getNumberOfVariables() const;
-
-  /**
-   * Returns the number of parameters, e.g.,material constants etc.
-   */
-  int getNumberOfParameters() const;
 
   /**
    * This operation returns the number of space time
@@ -751,12 +715,6 @@ public:
    */
   int getUnknownsPerFace() const;
 
-  /**
-   * If you use a higher order method, then this operation returns the
-   * polynomial degree plus one. If you use a Finite Volume method, it
-   * returns the number of cells within a patch per coordinate axis.
-   */
-  int getNodesPerCoordinateAxis() const;
 
   /**
    * This operation returns the size of data required
@@ -813,9 +771,7 @@ public:
   virtual bool usePaddedData_nVar() const {return false;}
   virtual bool usePaddedData_nDoF() const {return false;}
   
-  //TODO KD
-  virtual bool usePointSource() const {return false;}
-  
+
   /**
    * @brief Adds the solution update to the solution.
    *
@@ -964,6 +920,9 @@ public:
       const double t,
       const double dt) = 0;
 
+  /**
+   * Adjust solution value specification.
+   */
   enum class AdjustSolutionValue {
     No,
     PointWisely,
@@ -995,6 +954,9 @@ public:
       const double t,
       const double dt) const = 0;
 
+  virtual bool usePointSource()            const = 0;
+      
+#ifndef OPT_KERNELS //JMG remove virtual with optimized kernel (user function should be implemented and static)
   virtual bool useAlgebraicSource()        const = 0;
   virtual bool useNonConservativeProduct() const = 0;
 
@@ -1044,7 +1006,7 @@ public:
       const double t,
       const double dt,
       double* luh) = 0;
-
+#endif
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
    */
@@ -1296,12 +1258,6 @@ public:
   void setPreviousMinCorrectorTimeStepSize(double value);
   double getPreviousMinCorrectorTimeStepSize() const;
 
-  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
-  double getPreviousPreviousMinCorrectorTimeStepSize() const;
-
-  void setPreviousPreviousMinCorrectorTimeStamp(double value);
-  double getPreviousPreviousMinCorrectorTimeStamp() const;
-
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
   }
@@ -1319,19 +1275,16 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
-    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
 
-    setPreviousPreviousMinCorrectorTimeStamp(value);
     setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
   }
 
   void initFusedSolverTimeStepSizes() {
-    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
@@ -1467,7 +1420,7 @@ public:
       const int element);
 
   /**
-   * TODO(Dominic): Remove; not necessary
+   * TODO(Dominic): Docu
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,

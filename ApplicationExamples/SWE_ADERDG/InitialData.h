@@ -5,6 +5,7 @@ namespace SWE {
 
 void ExpBreakProblem(const double* const x,double* Q);
 void DamBreakProblem(const double* const x,double* Q);
+void SeaAtRestProblem(const double* const x,double* Q);
 void initialData(const double* const x,double* Q);
 
 }

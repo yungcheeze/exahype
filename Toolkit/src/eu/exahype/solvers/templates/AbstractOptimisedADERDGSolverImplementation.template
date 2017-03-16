@@ -131,7 +131,19 @@ double {{Project}}::{{AbstractSolver}}::stableTimeStepSize(const double* const l
 
 void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
 {{BeforeSolutionAdjustment}}
-  kernels::aderdg::optimised::adjustSolution<{{Solver}}::{{Solver}}::adjustSolution>( luh, center, dx, t, dt );
+  switch (useAdjustSolution(center, dx, t, dt)) {
+    case AdjustSolutionValue::No:
+      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      break;
+    case AdjustSolutionValue::PointWisely:
+      kernels::aderdg::optimised::adjustSolution<{{Solver}}::{{Solver}}::adjustPointSolution>( luh, center, dx, t, dt );
+      break;
+    case AdjustSolutionValue::PatchWisely:
+      printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
+      exit(1);
+     //TODO JMG not implemented
+      break;
+  }
 {{AfterSolutionAdjustment}}
 }
 

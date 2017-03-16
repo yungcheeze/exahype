@@ -16,6 +16,7 @@
 #include "exahype/plotters/ADERDG2CartesianVTK.h"
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
+#include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
@@ -54,9 +55,9 @@ exahype::plotters::Plotter::Plotter(
       << " time units with first snapshot at " << _time
       << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-    logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+    logError("Plotter(...)", "plotter's field 'variables' was assigned the negative integer "
+        << _writtenUnknowns );
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
@@ -118,9 +119,9 @@ exahype::plotters::Plotter::Plotter(
     << " time units with first snapshot at " << _time
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-      logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+      logError("Plotter(...)", "plotter's field 'variables' was assigned negative integer "
+        << _writtenUnknowns);
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
@@ -143,6 +144,7 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
       }
+
       if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
       }
@@ -155,6 +157,7 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+
       if (_identifier.compare( ADERDG2CartesianVerticesVTUAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
       }
@@ -179,6 +182,20 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTUBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
       }
+
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUBinary(postProcessing);
+      }
+
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
@@ -392,7 +409,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
     
     if (_device==nullptr){
       logError(
-        "checkWetherSolverBecomesActive(double)",
+        "checkWetherPlotterBecomesActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
     }
@@ -404,6 +421,16 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
   } else {
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
+
+  // TODO(Dominic): Remove
+  logInfo(
+    "checkWetherPlotterBecomesActive(double)",
+    "plotter="<< _identifier <<
+    ", active=" << ( isActive() ? "yes" : "no" ) <<
+    ", plotter time=" << _time <<
+    ", solver time=" << currentTimeStamp <<
+    ", device=" << ( (_device==nullptr) ? "null" : "initialised" )
+  );
 
   return isActive();
 }
@@ -474,3 +501,46 @@ void exahype::plotters::finishedPlotting() {
 std::string exahype::plotters::Plotter::getFileName() const {
   return _filename;
 }
+
+#ifdef Parallel
+void exahype::plotters::Plotter::sendDataToWorker(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> plotterDataToSend(0,1);
+  plotterDataToSend.push_back(_time);
+  assertion1(plotterDataToSend.size()==1,plotterDataToSend.size());
+  assertion1(std::isfinite(plotterDataToSend[0]),plotterDataToSend[0]);
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendDataToWorker(...)","Broadcasting plotter data: " <<
+        " data[0]=" << plotterDataToSend[0]);
+    logDebug("sendDataWorker(...)","_time="<<_time);
+  }
+
+  DataHeap::getInstance().sendData(
+      plotterDataToSend.data(), plotterDataToSend.size(),
+      workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+void exahype::plotters::Plotter::mergeWithMasterData(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> receivedPlotterData(1);
+  DataHeap::getInstance().receiveData(
+      receivedPlotterData.data(),receivedPlotterData.size(),masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+  assertion1(receivedPlotterData.size()==1,receivedPlotterData.size());
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithMasterData(...)","Received plotter data: " <<
+        "data[0]="  << receivedPlotterData[0]);
+  }
+
+  _time = receivedPlotterData[0];
+}
+#endif

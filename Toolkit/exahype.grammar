@@ -153,7 +153,7 @@ Productions
      {without_logfile_with_architecure}
      [begin_token]:token_project [name]:identifier
        paths
-       token_architecture token_equals [architecture_const]:token_const [architecture]:identifier
+       token_architecture [architecture_const]:token_const [architecture_equals]:token_equals  [architecture]:identifier
        computational_domain
        shared_memory?
        distributed_memory?

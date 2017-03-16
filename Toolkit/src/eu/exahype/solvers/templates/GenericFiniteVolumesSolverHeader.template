@@ -15,11 +15,23 @@
 
 #include "Abstract{{Solver}}.h"
 
+
+/**
+ * We use Peano's logging
+ */
+#include "tarch/logging/Log.h"
+
+
 namespace {{Project}}{
   class {{Solver}};
 }
 
 class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
+  private:
+    /**
+     * Log device
+     */
+    static tarch::logging::Log _log;
   public:
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
     
@@ -34,6 +46,8 @@ class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
      * @see FiniteVolumesSolver
      */    
     bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
+    virtual bool useNonConservativeProduct() const {return false;}
+    virtual bool useSource()                 const {return false;}
     
     /**
      * @see FiniteVolumesSolver

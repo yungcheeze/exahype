@@ -423,33 +423,6 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::SolutionUpdate
 }
 
 
-
-void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::TimeStepSizeComputationTemporaryVariables& temporaryVariables) {
-  if (temporaryVariables._tempEigenValues==nullptr) {
-    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    temporaryVariables._tempEigenValues = new double*[numberOfSolvers];
-
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      temporaryVariables._tempEigenValues[solverNumber]  = new double[solver->getNumberOfVariables()]; // TOOD(Dominic): Check if we need number of parameters too
-      ++solverNumber;
-    }
-  }
-}
-
-void exahype::solvers::deleteTemporaryVariables(exahype::solvers::TimeStepSizeComputationTemporaryVariables& temporaryVariables) {
-  if(temporaryVariables._tempEigenValues!=nullptr) {
-    for (unsigned int solverNumber=0;
-        solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-      delete[] temporaryVariables._tempEigenValues[solverNumber];
-      temporaryVariables._tempEigenValues[solverNumber] = nullptr;
-    }
-
-    delete[] temporaryVariables._tempEigenValues;
-    temporaryVariables._tempEigenValues = nullptr;
-  }
-}
-
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   assertion(solverFlags._limiterDomainHasChanged==nullptr);
   assertion(solverFlags._gridUpdateRequested    ==nullptr);
@@ -735,8 +708,8 @@ void exahype::solvers::Solver::sendGridUpdateFlagsToMaster(
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending time step data: " <<
-             "data[0]=" << meshRefinementFlags[0]);
+//    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+//             "data[0]=" << meshRefinementFlags[0]); TODO(Dominic):
   }
 
   DataHeap::getInstance().sendData(
@@ -753,7 +726,7 @@ void exahype::solvers::Solver::mergeWithWorkerGridUpdateFlags(
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank);
+//    logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank); TODO(Dominic):
   }
 
   DataHeap::getInstance().receiveData(
@@ -767,11 +740,11 @@ void exahype::solvers::Solver::mergeWithWorkerGridUpdateFlags(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
-             "data[0]=" << receivedTimeStepData[0]);
-
-    logDebug("mergeWithWorkerData(...)","Updated grid update flags: " <<
-             "_nextGridUpdateRequested=" << _nextGridUpdateRequested);
+//    logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
+//             "data[0]=" << receivedTimeStepData[0]);
+//
+//    logDebug("mergeWithWorkerData(...)","Updated grid update flags: " <<
+//             "_nextGridUpdateRequested=" << _nextGridUpdateRequested); TODO(Dominic):
   }
 }
 #endif
