@@ -31,10 +31,10 @@ void kernels::aderdg::optimised::riemannSolver(
 ) {
 
 #ifdef __INTEL_COMPILER
-  __assume_aligned(tmp_bnd, ALIGNMENT);
   __assume_aligned(weights2, ALIGNMENT);
 #endif
 
+  double tmp_bnd[{{nVar*bndBlockSize}}] __attribute__((aligned(ALIGNMENT)));
   double QavL[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   double QavR[{{nVarPad}}] __attribute__((aligned(ALIGNMENT))) = {0.};
   
