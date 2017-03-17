@@ -354,12 +354,19 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 }
 
 
+void exahype::runners::Runner::initHPCEnvironment() {
+  peano::performanceanalysis::Analysis::getInstance().enable(false);
+}
+
+
 int exahype::runners::Runner::run() {
   exahype::repositories::Repository* repository = createRepository();
 
   initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
   initDataCompression();
+  initHPCEnvironment();
+
 
   int result = 0;
   if ( _parser.isValid() ) {

@@ -132,7 +132,9 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
 
 
   /**
-   * Nop.
+   * @todo DOminic Doku
+   *
+   * - We also now enable the performance measurements.
    */
   void endIteration(exahype::State& solverState);
 #ifdef Parallel
