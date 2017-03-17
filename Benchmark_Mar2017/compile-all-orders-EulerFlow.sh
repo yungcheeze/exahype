@@ -1,4 +1,5 @@
-exe=ExaHyPE-Euler
+exe1=ExaHyPE-Euler
+exe2=ExaHyPE-EulerFlow
 header=AbstractMyEulerSolver.h
 
 sharedmemmode=notbb
@@ -22,7 +23,7 @@ do
     rm *.o
     sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $header
     make -j16 && \
-    mv $exe $exe'-p'$p'-'$sharedmemmode'-mpi'
+    mv $exe1 $exe2'-p'$p'-'$sharedmemmode'-mpi'
 #    sleep 2m
   done
 done
