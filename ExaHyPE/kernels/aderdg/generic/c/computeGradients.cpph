@@ -23,11 +23,12 @@ namespace generic {
 namespace c {
 
 /* A helper to determine basisSize^DIMENSIONS */
-const int basisSizeD(int basisSize) {
-      const int basisX = basisSize;
-      const int basisY = basisSize;
-      const int basisZ = DIMENSIONS == 3 ? basisSize : 1;
-      return basisX * basisY * basisZ;
+inline constexpr int basisSizeD(int basisSize) {
+      //const int basisX = basisSize;
+      //const int basisY = basisSize;
+      //const int basisZ = DIMENSIONS == 3 ? basisSize : 1;
+      //return basisX * basisY * basisZ;
+    return basisSize * basisSize * (DIMENSIONS == 3 ? basisSize : 1);
 }
 
 /**
