@@ -307,7 +307,9 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     REAL :: gp, gm, shift(3), lapse, gammaij(6), betaru, g_tt, phi, theta, vx, vy, vz
     REAL :: detgamma    
     ! PARAMETERS:
-    REAL :: rhoc = 0.0625  ! Critical radius
+    REAL :: rhoc = 0.625  ! Critical radius
+   ! REAL :: rhoc = 0.0625  ! Critical radius
+    
     REAL :: rc = 8.0
     INTEGER :: MAXNEWTON = 50, iNewton
     REAL :: ng = 1.0 / (gamma-1.0)
@@ -323,9 +325,9 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        !IF ( x(1) .LT. 0.1) RETURN
        !IF ( x(2) .LT. 0.1) RETURN
        !IF ( x(3) .LT. 0.1) RETURN
-       IF ( r .LT. 0.5) THEN
+       IF ( r .LT. 0.8) THEN
 		! To avoid division by zero, never used for evolution or BC
-		rho = 1.0
+		rho = 1.0 !1.0
 		VV_cov(1:3) = 0.0
 		p = 1.0
 		BV = 0.0 
@@ -393,23 +395,28 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
 
        ! MHD  Michel accretion                                                                  
 
-       detgamma= gammaij(1)*( gammaij(4)*gammaij(6)-gammaij(5)*gammaij(5)) &
-               - gammaij(2)*( gammaij(2)*gammaij(6)-gammaij(5)*gammaij(3)) &
-               + gammaij(3)*( gammaij(2)*gammaij(5)-gammaij(3)*gammaij(4))
+!       detgamma= gammaij(1)*( gammaij(4)*gammaij(6)-gammaij(5)*gammaij(5)) &
+!               - gammaij(2)*( gammaij(2)*gammaij(6)-gammaij(5)*gammaij(3)) &
+!               + gammaij(3)*( gammaij(2)*gammaij(5)-gammaij(3)*gammaij(4))
+!       detgamma = sqrt(detgamma)
 
-       detgamma = sqrt(detgamma)
+
+
 
        ! B0 = (2.2688/M)*(sqrt(b^2/rho0)), here sqrt(b^2/rho0)=4.0                              
 
        B0 = 2.2688*2.0
 
        !---------------------------------------------------------------------- 
-       BV_contr = B0*x(1:3)/(detgamma * r*r*r)
+       BV_contr = B0*x(1:3)/(sqrt(gp) * r*r*r)
+
+!       BV = BV_contr
+       
        BV = MATMUL(g_cov,BV_contr)
-
-
+       
 
        V(1:9) = (/ rho, VV_cov(1:3), p, BV(1:3), 0. /)
        V(10:19) = (/ lapse, shift(1:3), gammaij(1:6) /)
        CALL PDEPrim2Cons(Q,V)
-END SUBROUTINE InitialAccretionDisc3D
+
+ END SUBROUTINE InitialAccretionDisc3D

@@ -21,6 +21,11 @@
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/parallel/NodePool.h"
 
+#if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)
+#include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
+#endif
+
 int exahype::runners::Runner::runAsWorker(
     exahype::repositories::Repository& repository) {
   int newMasterNode = tarch::parallel::NodePool::getInstance().waitForJob();
@@ -45,7 +50,7 @@ int exahype::runners::Runner::runAsWorker(
           case exahype::repositories::Repository::Continue:
             {
               repository.iterate();
-              logInfo("startNewTimeStep(...)",
+              logInfo("runAsWorker(...)",
                 "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
 
               #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis)

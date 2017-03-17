@@ -1,0 +1,37 @@
+#!/bin/bash
+#@ job_type = parallel
+#@ class = micro
+#@ node = 6
+#@ tasks_per_node = 28
+#@ island_count = 1
+#@ network.MPI = sn_all,not_shared,us 
+#@ energy_policy_tag = EulerFlow_energy_tag
+#@ minimize_time_to_solution = yes
+#@ wall_clock_limit = 01:00:00
+#@ job_name = EulerFlow-28-ranks-per-node
+#@ network.MPI = sn_all,not_shared,us
+#@ notification=complete
+#@ notify_user=tobias.weinzierl@durham.ac.uk
+#@ error =  $(job_name).$(jobid).err
+#@ queue
+. /etc/profile
+. /etc/profile.d/modules.sh
+module load gcc/4.9
+module load tbb
+
+SLURM_ARRAY_TASK_ID=0
+SLURM_JOB_NUM_NODES=6
+SLURM_NTASKS=168
+
+#
+# Important for multithreaded MPI
+#
+export MP_SINGLE_THREAD=no
+
+
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p3-no-output.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
+#mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p3-output.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-output-notbb.out
+
+
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p9-no-output.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-no-output-notbb.out
+#mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p9-output.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-output-notbb.out

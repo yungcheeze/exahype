@@ -74,25 +74,34 @@ void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const
   // Dimensions             = 2
   // Number of variables    = 3+1
 
-  //for OUTFLOW and WALL
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
+  initialData(x,stateOut);	
 
-  fluxOut[0]  = fluxIn[0];
-  fluxOut[1]  = fluxIn[1];
-  fluxOut[2]  = fluxIn[2];
-  fluxOut[3]  = fluxIn[3];
+  //double tempState[4];
+  //initialData(x,tempState);
+  //stateOut[0] = tempState[0];
+  //stateOut[1] = (stateIn[1]/stateIn[0])*tempState[0];
+  //stateOut[2] = (stateIn[2]/stateIn[0])*tempState[0];
+  //stateOut[3] = stateIn[3];
 
-  //for WALL BCs
-//  stateOut[normalNonZero+1]=-stateIn[normalNonZero+1];
+  double f[4];
+  double g[4];
+  double *F[DIMENSIONS];
+  F[0] = f; 
+  F[1] = g;
+  
+  F[normalNonZero]=fluxOut;
+  flux(stateOut,F); 
 
-/*
+
   // Dimensions             = 2
   // Number of variables    = 3 (#unknowns + #parameters)
 
   // Outflow 1
+  //stateOut[0] = stateIn[0];
+  //stateOut[1] = stateIn[1];
+  //stateOut[2] = stateIn[2];
+  //stateOut[3] = stateIn[3]
+
   //fluxOut[0]  = fluxIn[0];
   //fluxOut[1]  = fluxIn[1];
   //fluxOut[2]  = fluxIn[2];
@@ -113,7 +122,6 @@ void SWE::MySWESolver::boundaryValues(const double* const x,const double t,const
   flux(stateOut,F); 
 
   //TODO: make outflow work and implement wall boundaries!
-*/
 }
 
 

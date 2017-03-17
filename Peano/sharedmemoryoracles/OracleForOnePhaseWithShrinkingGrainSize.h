@@ -7,7 +7,6 @@
 #include "tarch/logging/Log.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
 #include "peano/datatraversal/autotuning/MethodTrace.h"
-#include "tarch/timing/Measurement.h"
 
 
 #include <map>
@@ -202,8 +201,12 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
         int                          _biggestProblemSize;
         int                          _currentGrainSize;
         int                          _searchDelta;
-        tarch::timing::Measurement   _currentSerialMeasurement;
-        tarch::timing::Measurement   _currentParallelMeasurement;
+        bool                         _measurementsAreAccurate;
+        double                       _accuracy;
+        double                       _accumulatedSerialMeasurement;
+        double                       _accumulatedParallelMeasurement;
+        double                       _numberOfSerialMeasurements;
+        double                       _numberOfParallelMeasurements;
         double                       _previousSpeedup;
 
       public:
@@ -383,6 +386,12 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
         bool widenAccuracy();
         void initAccuracy(double serialComputeTime);
         bool isAccuracyInitialised() const;
+
+        /**
+         * A stable entry is one that either has terminated its search or
+         * doesn't hold any entries yet.
+         */
+        bool isStable() const;
     };
 
 

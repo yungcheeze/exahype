@@ -71,5 +71,5 @@ void SWE::SeaAtRestProblem(const double* const x,double* Q) {
 #endif
 
 void SWE::initialData(const double* const x,double* Q) {
-  SeaAtRestProblem(x,Q);
+  DamBreakProblem(x,Q);
 }

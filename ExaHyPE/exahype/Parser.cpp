@@ -169,6 +169,9 @@ void exahype::Parser::readFile(const std::string& filename) {
 //  for (std::string str : _tokenStream) {
 //    std::cout << "["<<str<<"]" << std::endl;
 //  }
+//  std::string configuration = getMPIConfiguration();
+//  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+//  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
 }
 
 bool exahype::Parser::isValid() const {

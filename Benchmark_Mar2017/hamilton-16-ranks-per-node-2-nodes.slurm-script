@@ -1,0 +1,18 @@
+#!/bin/csh
+#SBATCH --job-name="Z4-16-ranks-per-node"
+#SBATCH -t 01:00:00
+#SBATCH --exclusive
+#SBATCH -p par6.q
+#SBATCH -N 2
+#SBATCH --ntasks-per-node=16
+#SBATCH --mail-user=tobias.weinzierl@durham.ac.uk
+#SBATCH --mail-type=ALL
+#SBATCH --array=0-0
+module purge
+module load slurm
+module load intel/xe_2015.2
+module load gcc/4.9.1
+module load intel_mpi
+
+mpirun ./ExaHyPE-Z4-notbb-mpi benchmarks/Z4-regular-$SLURM_ARRAY_TASK_ID-hamilton.exahype  > $SLURM_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-notbb.out
+

@@ -164,11 +164,11 @@ adapter:
   name: PlotAndADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: Sending
  
 /**

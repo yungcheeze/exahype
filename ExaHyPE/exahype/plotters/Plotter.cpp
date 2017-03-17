@@ -55,9 +55,9 @@ exahype::plotters::Plotter::Plotter(
       << " time units with first snapshot at " << _time
       << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-    logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+    logError("Plotter(...)", "plotter's field 'variables' was assigned the negative integer "
+        << _writtenUnknowns );
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
@@ -119,9 +119,9 @@ exahype::plotters::Plotter::Plotter(
     << " time units with first snapshot at " << _time
     << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
-  if (  _writtenUnknowns <= 0) {
-      logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
-        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  if (  _writtenUnknowns < 0) {
+      logError("Plotter(...)", "plotter's field 'variables' was assigned negative integer "
+        << _writtenUnknowns);
   }
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
@@ -403,13 +403,13 @@ double exahype::plotters::Plotter::getNextPlotTime() const {
 }
 
 
-bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentTimeStamp) {
+bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     _solverTimeStamp = currentTimeStamp;
     
     if (_device==nullptr){
       logError(
-        "checkWetherSolverBecomesActive(double)",
+        "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
     }
@@ -421,6 +421,16 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActive(double currentT
   } else {
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
+
+  // TODO(Dominic): Remove
+  logInfo(
+    "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
+    "plotter="<< _identifier <<
+    ", active=" << ( isActive() ? "yes" : "no" ) <<
+    ", plotter time=" << _time <<
+    ", solver time=" << currentTimeStamp <<
+    ", device=" << ( (_device==nullptr) ? "null" : "initialised" )
+  );
 
   return isActive();
 }
@@ -461,10 +471,10 @@ void exahype::plotters::Plotter::finishedPlotting() {
 }
 
 
-bool exahype::plotters::isAPlotterActive(double currentTimeStamp) {
+bool exahype::plotters::startPlottingIfAPlotterIsActive(double currentTimeStamp) {
   bool result = false;
   for (const auto& p : RegisteredPlotters) {
-    result |= p->checkWetherPlotterBecomesActive(currentTimeStamp);
+    result |= p->checkWetherPlotterBecomesActiveAndStartPlottingIfActive(currentTimeStamp);
   }
   return result;
 }
@@ -491,3 +501,46 @@ void exahype::plotters::finishedPlotting() {
 std::string exahype::plotters::Plotter::getFileName() const {
   return _filename;
 }
+
+#ifdef Parallel
+void exahype::plotters::Plotter::sendDataToWorker(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> plotterDataToSend(0,1);
+  plotterDataToSend.push_back(_time);
+  assertion1(plotterDataToSend.size()==1,plotterDataToSend.size());
+  assertion1(std::isfinite(plotterDataToSend[0]),plotterDataToSend[0]);
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("sendDataToWorker(...)","Broadcasting plotter data: " <<
+        " data[0]=" << plotterDataToSend[0]);
+    logDebug("sendDataWorker(...)","_time="<<_time);
+  }
+
+  DataHeap::getInstance().sendData(
+      plotterDataToSend.data(), plotterDataToSend.size(),
+      workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+void exahype::plotters::Plotter::mergeWithMasterData(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> receivedPlotterData(1);
+  DataHeap::getInstance().receiveData(
+      receivedPlotterData.data(),receivedPlotterData.size(),masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+  assertion1(receivedPlotterData.size()==1,receivedPlotterData.size());
+
+  if (tarch::parallel::Node::getInstance().getRank()!=
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithMasterData(...)","Received plotter data: " <<
+        "data[0]="  << receivedPlotterData[0]);
+  }
+
+  _time = receivedPlotterData[0];
+}
+#endif

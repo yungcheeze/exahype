@@ -354,12 +354,19 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 }
 
 
+void exahype::runners::Runner::initHPCEnvironment() {
+  peano::performanceanalysis::Analysis::getInstance().enable(false);
+}
+
+
 int exahype::runners::Runner::run() {
   exahype::repositories::Repository* repository = createRepository();
 
   initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
   initDataCompression();
+  initHPCEnvironment();
+
 
   int result = 0;
   if ( _parser.isValid() ) {
@@ -487,7 +494,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       updateLimiterDomain(repository);
     }
 
-    bool plot = exahype::plotters::isAPlotterActive(
+    bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (exahype::State::fuseADERDGPhases()) {
@@ -538,8 +545,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
       // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
       // see issue #103
-      bool plot = exahype::plotters::isAPlotterActive(
-          solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
+      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
+          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
       if (_parser.getFuseAlgorithmicSteps()) {
         repository.getState().setTimeStepSizeWeightForPredictionRerun(
@@ -778,8 +785,6 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
                 "\tADER-DG prediction: dt_min         =" << static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
         break;
       case exahype::solvers::Solver::Type::LimitingADERDG:
-        logInfo("startNewTimeStep(...)",
-                "\tADER-DG prev2 correction*: dt_min  =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousPreviousMinCorrectorTimeStepSize());
         logInfo("startNewTimeStep(...)",
                  "\tADER-DG prev correction*:  t_min   =" << static_cast<exahype::solvers::LimitingADERDGSolver*>(p)->getSolver()->getPreviousMinCorrectorTimeStamp());
         logInfo("startNewTimeStep(...)",
