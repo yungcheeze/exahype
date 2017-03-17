@@ -24,16 +24,14 @@ ln -s ../../Benchmark_Mar2017 benchmarks
 
 cp benchmarks/EulerFlow*.exahype .
 
-source benchmarks/env_supermuc.sh
+source benchmarks/env_supermuc.sh              
 benchmarks/compile-all-orders-EulerFlow.sh
 benchmarks/create-specfiles-for-all-orders.sh
 ```
 Run the experiments
 
 ```
-cp benchmarks/*.load-leveler # or *.slurm .
-
-llsubmit EulerFlow... # or sbatch ...
+llsubmit benchmarks/EulerFlow... # or sbatch ...
 ```
 
 ### 
