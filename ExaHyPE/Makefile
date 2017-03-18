@@ -101,7 +101,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -r8 -cpp
+	FCOMPILER_CFLAGS  += -r8 -fast -cpp
 	LINK_FORTRAN      += -lifcore
 
 	COMPILER_CFLAGS   +=  -restrict
@@ -120,7 +120,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -O3 -cpp
 	LINK_FORTRAN      += -lgfortran
 
 	COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
@@ -130,55 +130,6 @@ else
 	# Option not recognized
 	# ----------------------------------------------
 	$(error Unknown option for variable [COMPILER])
-endif
-
-
-
-# ************************************************
-#
-#Set compiler and linker flags for the different architectures
-ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-  # Settings for CPU architectures
-  # ----------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xHost
-    COMPILER_LFLAGS += -xHost
-  else
-    COMPILER_CFLAGS += -march=native
-    COMPILER_LFLAGS += -march=native
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -mmic
-	COMPILER_LFLAGS += -mmic -lrt
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xMIC-AVX512 -fma
-    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=knl
-    COMPILER_LFLAGS += -march=knl -lrt
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xCORE-AVX2 -fma
-    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=haswell
-    COMPILER_LFLAGS += -march=haswell -lrt
-  endif
-else
-	# Option not recognized
-	# ----------------------------------------------
-	$(error Unknown option for variable [ARCHITECTURE])
 endif
 
 
@@ -211,6 +162,57 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  COMPILER_LFLAGS +=
 	endif
 endif
+
+
+# ************************************************
+#
+#Set compiler and linker flags for the different architectures
+ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+  # Settings for CPU architectures
+  # ----------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xHost
+    COMPILER_LFLAGS += -xHost
+  else
+    COMPILER_CFLAGS += -march=native
+    COMPILER_LFLAGS += -march=native
+  endif
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
+	# Settings for the Xeon Phi architecture
+	# --------------------------------------------
+	COMPILER_CFLAGS += -mmic
+	COMPILER_LFLAGS += -mmic -lrt
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xMIC-AVX512 -fma
+    FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=knl
+    COMPILER_LFLAGS += -march=knl -lrt
+  endif
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xCORE-AVX2 -fma
+	FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=haswell
+    COMPILER_LFLAGS += -march=haswell -lrt
+  endif
+else
+	# Option not recognized
+	# ----------------------------------------------
+	$(error Unknown option for variable [ARCHITECTURE])
+endif
+
 
 
 
