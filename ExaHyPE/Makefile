@@ -12,7 +12,8 @@
 #--------------------------------------------------------------------------------------------------
 # ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-plattfrom
 # COMPILER            Intel             GNU                       Used compiler (and linker)
-# MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level
+# MODE                Release           Debug, PeanoProfile       Verbosity and Debug level
+#                                       Profile, Asserts          
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
@@ -57,6 +58,12 @@ ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
 	COMPILER_CFLAGS += 
+	COMPILER_LFLAGS +=
+
+ifeq ($(call tolower,$(MODE)),peanoprofile)
+	# Settings for the Release mode
+	# ----------------------------------------------
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
 	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
