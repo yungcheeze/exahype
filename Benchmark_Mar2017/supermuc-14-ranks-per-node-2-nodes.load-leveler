@@ -11,7 +11,7 @@
 #@ job_name = EulerFlow-14-ranks-per-node
 #@ network.MPI = sn_all,not_shared,us
 #@ notification=complete
-#@ notify_user=tobias.weinzierl@durham.ac.uk
+#@ notify_user=dominic.e.charrier@durham.ac.uk
 #@ error =  $(job_name).$(jobid).err
 #@ queue
 . /etc/profile

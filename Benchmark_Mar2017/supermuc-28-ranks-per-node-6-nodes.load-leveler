@@ -11,7 +11,7 @@
 #@ job_name = EulerFlow-28-ranks-per-node
 #@ network.MPI = sn_all,not_shared,us
 #@ notification=complete
-#@ notify_user=tobias.weinzierl@durham.ac.uk
+#@ notify_user=dominic.e.charrier@durham.ac.uk
 #@ error =  $(job_name).$(jobid).err
 #@ queue
 . /etc/profile
@@ -19,7 +19,7 @@
 module load gcc/4.9
 module load tbb
 
-SLURM_ARRAY_TASK_ID=0
+SLURM_ARRAY_TASK_ID=1
 SLURM_JOB_NUM_NODES=6
 SLURM_NTASKS=168
 
@@ -29,9 +29,9 @@ SLURM_NTASKS=168
 export MP_SINGLE_THREAD=no
 
 
-mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p3-no-output.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
-#mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p3-output.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-output-notbb.out
 
 
-mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p9-no-output.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-no-output-notbb.out
-#mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-regular-$SLURM_ARRAY_TASK_ID-p9-output.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p9.exahype  > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-no-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p9-notbb-mpi   benchmarks/EulerFlow-output-regular-$SLURM_ARRAY_TASK_ID-p9.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p9-output-notbb.out
