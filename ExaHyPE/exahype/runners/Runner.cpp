@@ -330,27 +330,30 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       " of width/size " << _parser.getDomainSize() <<
       ". bounding box has size " << _parser.getBoundingBoxSize() <<
       ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
-#ifdef Parallel
-  const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
-  assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
-  const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-  assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
 
-  logInfo(
-      "createRepository(...)",
-      "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxSize   = _parser.getBoundingBoxSize();
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxOffset = _parser.getOffset();
+  #ifdef Parallel
+  if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
+    const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
+    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
+    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+
+    logInfo(
+        "createRepository(...)",
+        "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+    boundingBoxSize   *= boundingBoxScaling;
+    boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
+  }
+  #endif
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      _parser.getBoundingBoxSize()*boundingBoxScaling,
-      _parser.getOffset()+boundingBoxShift*_parser.getBoundingBoxSize()
+      boundingBoxSize,
+      boundingBoxOffset
   );
-#else
-  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      _parser.getBoundingBoxSize(),
-      _parser.getOffset()
-  );
-#endif
 }
 
 
