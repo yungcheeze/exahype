@@ -60,7 +60,7 @@ ifeq ($(call tolower,$(MODE)),release)
 	COMPILER_CFLAGS += 
 	COMPILER_LFLAGS +=
 
-ifeq ($(call tolower,$(MODE)),peanoprofile)
+else eifeq ($(call tolower,$(MODE)),peanoprofile)
 	# Settings for the Release mode
 	# ----------------------------------------------
 	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
