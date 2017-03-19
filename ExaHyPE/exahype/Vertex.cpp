@@ -268,7 +268,9 @@ bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
+         adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
          adjacentRanks(destScalar)   == toRank &&
+         adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
          (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
          State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
 }
@@ -296,7 +298,9 @@ bool exahype::Vertex::hasToReceiveMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
+      adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
       adjacentRanks(srcScalar)    == fromRank &&
+      adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        State::isForkingRank(adjacentRanks(destScalar)));
 }
