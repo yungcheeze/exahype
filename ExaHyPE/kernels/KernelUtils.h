@@ -202,7 +202,7 @@ typedef shadow<double> dshadow;
 struct idx2 {
   idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
 
-  int operator()(int i, int j) {
+  int operator()(int i, int j) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     return i * J_ + j;
@@ -220,7 +220,7 @@ struct idx2 {
 struct idx3 {
   idx3(int I, int J, int K, int line = -1) : I_(I), J_(J), K_(K), size(I*J*K), line_(line) {}
 
-  int operator()(int i, int j, int k) {
+  int operator()(int i, int j, int k)  const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -234,7 +234,7 @@ struct idx4 {
   idx4(int I, int J, int K, int L, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), size(I*J*K*L), line_(line) {}
 
-  int operator()(int i, int j, int k, int l) {
+  int operator()(int i, int j, int k, int l) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -249,7 +249,7 @@ struct idx5 {
   idx5(int I, int J, int K, int L, int M, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), M_(M), size(I*J*K*L*M), line_(line) {}
 
-  int operator()(int i, int j, int k, int l, int m) {
+  int operator()(int i, int j, int k, int l, int m) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -266,7 +266,7 @@ struct idx6 {
   idx6(int I, int J, int K, int L, int M, int N, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), M_(M), N_(N), size(I*J*K*L*M*N), line_(line) {}
 
-  int operator()(int i, int j, int k, int l, int m, int n) {
+  int operator()(int i, int j, int k, int l, int m, int n) const  {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
