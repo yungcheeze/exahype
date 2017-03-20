@@ -120,6 +120,11 @@ void exahype::mappings::Merging::beginIteration(
     exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
     DataHeap::getInstance().finishedToSendSynchronousData();
     MetadataHeap::getInstance().finishedToSendSynchronousData();
+    MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty();
+
+    if (! MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty() ) {
+        exit(-1);
+    }
   }
   #endif
 

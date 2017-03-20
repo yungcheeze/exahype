@@ -112,6 +112,10 @@ void exahype::mappings::MeshRefinement::beginIteration(
   DataHeap::getInstance().finishedToSendSynchronousData();
   MetadataHeap::getInstance().finishedToSendSynchronousData();
 
+  if (! MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty() ) {
+      exit(-1);
+  }
+
   exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
   DataHeap::getInstance().startToSendSynchronousData();
