@@ -25,6 +25,10 @@ SUBROUTINE PDEFlux(f,g,hz,Q)
   !FTensDim = 0
   !RETURN
   
+  f = 0
+  g = 0
+  h = 0
+  
   CALL PDECons2Prim(V,Q,iErr)
   !
   gamma1 = gamma/(gamma-1.0)
@@ -146,7 +150,7 @@ SUBROUTINE PDEFlux(f,g,hz,Q)
   !
   
   IF (nDim == 3) THEN
-    hz(:) = h(:)
+    hz = h
   ENDIF
   
 END SUBROUTINE PDEFlux
