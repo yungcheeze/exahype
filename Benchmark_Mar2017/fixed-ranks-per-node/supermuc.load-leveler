@@ -21,7 +21,9 @@ module load tbb
 
 SLURM_ARRAY_TASK_ID=0
 SLURM_JOB_NUM_NODES=1
-SLURM_NTASKS=1
+SLURM_NTASKS=1 # total number of tasks
+
+let tasks=SLURM_NTASKS/SLURM_JOB_NUM_NODES
 
 #
 # Important for multithreaded MPI
@@ -29,7 +31,7 @@ SLURM_NTASKS=1
 export MP_SINGLE_THREAD=no
 
 
-mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype  > $LOADL_JOB_NAME-$SLURM_NTASKS'-ranks-per-node-'$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype  > $LOADL_JOB_NAME-$tasks'-ranks-per-node-'$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
 #mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-output-notbb.out
 
 
