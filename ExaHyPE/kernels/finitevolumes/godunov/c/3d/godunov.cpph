@@ -21,6 +21,9 @@
 #include "tarch/la/Vector.h"
 #include "kernels/KernelUtils.h"
 
+#include <cstdlib>
+
+
 #if DIMENSIONS == 3
 
 namespace kernels {
@@ -49,7 +52,6 @@ double riemannSolver(SolverType& solver, double* fnL, double *fnR, const double*
   //double* sR = tempStateSizedVectors[1];
   double sL[numberOfVariables + numberOfParameters];
   double sR[numberOfVariables + numberOfParameters];
-  
 
   solver.eigenvalues(qL, normalNonZero, sL);
   solver.eigenvalues(qR, normalNonZero, sR);
@@ -76,22 +78,41 @@ double riemannSolver(SolverType& solver, double* fnL, double *fnR, const double*
   solver.flux(qR, FR3);
 
   double ncp[numberOfVariables+numberOfParameters];
+  
+   for(int kk=0; kk<numberOfVariables; kk++) {
+	   if(!std::isfinite(qL[kk]) || !std::isfinite(qR[kk])) {
+		printf("POSA Infinite RS input: QL[%d]=%e QR[%d]=%e\n", kk, qL[kk], kk, qR[kk]);
+	    }
+   }
 
   // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
     double Qavg[numberOfVariables+numberOfParameters];
     /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-    double gradQ[idx_gradQ.size];
+    double gradQ[idx_gradQ.size] = { 0. }; // important!
     for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
        Qavg[k] = (qR[k] + qL[k]) / 2;
-       gradQ[idx_gradQ(normalNonZero,k)] = qL[k] - qR[k]; // important: qR-qL or qL-qR ???
+       gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k]; // sic: qR-qL is correct
     }
     solver.nonConservativeProduct(Qavg, gradQ, ncp);
   }
   
+   for(int kk=0; kk<numberOfVariables; kk++) {
+	   if(!std::isfinite(qL[kk]) || !std::isfinite(qR[kk])) {
+		printf("POSB Infinite RS input: QL[%d]=%e QR[%d]=%e\n", kk, qL[kk], kk, qR[kk]);
+	    }
+   }
+  
   for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
     fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-            0.5 * s_max * (qL[i] - qR[i]); // qL-qR is definetly correct
+            0.5 * s_max * (qL[i] - qR[i]); // sic: qL-qR is correct
+
+    if(!std::isfinite(ncp[i])) {
+	    printf("Infinite NCP i=%d\n", i);
+	   /* for(int kk=0; kk<numberOfVariables; kk++) {
+		printf("QL[%d]=%f QR[%d]=%f\n", kk, qL[kk], kk, qR[kk]);
+	    }*/
+    }
 
     if(solver.useNonConservativeProduct()) {
       fnR[i] = fnL[i] - 0.5 * ncp[i];
@@ -456,6 +477,11 @@ double solutionUpdate(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x); // TODO(Dominic): Ignore this for a while
     
     for (int l=0; l<numberOfVariables; ++l) {
+	if(!std::isfinite(fL[l]) || !std::isfinite(fR[l])) {
+	    printf("Infinite fL, fR, l=%d!\n", l);
+	    abort();
+         }
+	    
       luh_new[idx(i,j, k, l)]   -= dt / cellSize[0] * fL[l];  
       luh_new[idx(i,j, k+1, l)] += dt / cellSize[0] * fR[l];
     }
@@ -515,6 +541,9 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd+1; k++) {
       solver.source(&luh[idx(i,j,k,0)], source);
       for (int l = 0; l < numberOfVariables; l++) {
+	if(!std::isfinite(source[l])) {
+	    printf("Infinite Source contribution!!!\n");
+	}
         // No BgradQ contribution as this is first order, cf. 2D godunov.
         luh_new[idx(i,j,k,l)] += dt * source[l];
       }
