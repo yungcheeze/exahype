@@ -14,6 +14,7 @@ do
   sed -i -r 's,@ tasks_per_node(\s+)=(\s+)([0-9]+),@ tasks_per_node\1=\2'${tasks_i}',g' $newfile
 
   sed -i -r 's,@ node(\s+)=(\s+)([0-9]+),@ node\1=\2'$i',g' $newfile
+  sed -i -r 's,SLURM_JOB_NUM_NODES=([0-9]+),SLURM_JOB_NUM_NODES='$i',g' $newfile
 
   sed -i 's,p3,p3,g' $newfile
 
