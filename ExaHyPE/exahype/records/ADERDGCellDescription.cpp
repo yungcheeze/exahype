@@ -468,12 +468,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[44] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
@@ -628,12 +627,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[44] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
@@ -1338,12 +1336,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[34] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
@@ -1468,12 +1465,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[34] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );
@@ -2147,12 +2143,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[40] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
@@ -2295,12 +2290,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[40] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
@@ -2979,12 +2973,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[32] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
@@ -3103,12 +3096,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[32] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );

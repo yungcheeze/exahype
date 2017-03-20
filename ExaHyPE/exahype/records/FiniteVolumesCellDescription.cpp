@@ -243,12 +243,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[16] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
@@ -319,12 +318,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[16] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
@@ -783,12 +781,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[16] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
@@ -859,12 +856,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[16] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );
@@ -1327,12 +1323,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[14] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
@@ -1397,12 +1392,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[14] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
@@ -1843,12 +1837,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[14] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
@@ -1913,12 +1906,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[14] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );

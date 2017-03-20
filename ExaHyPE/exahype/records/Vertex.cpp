@@ -202,12 +202,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[7] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[10] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -269,12 +268,11 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[10] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[13] );
-            
-            for (int i=1; i<Attributes; i++) {
+            disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
+            for (int i=0; i<Attributes-1; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -734,12 +732,11 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[4] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._x[0])), 		&disp[7] );
-         
-         for (int i=1; i<Attributes; i++) {
+         disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+         for (int i=1; i<Attributes-1; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes; i++) {
+         for (int i=0; i<Attributes-1; i++) {
             disp[i] -= base;
          }
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -792,12 +789,11 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[8] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[9] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[10] );
-         
-         for (int i=1; i<Attributes; i++) {
+         disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+         for (int i=1; i<Attributes-1; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes; i++) {
+         for (int i=0; i<Attributes-1; i++) {
             disp[i] -= base;
          }
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -1225,12 +1221,11 @@ void exahype::records::Vertex::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[5] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[6] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[7] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[8] );
-      
-      for (int i=1; i<Attributes; i++) {
+      disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+      for (int i=1; i<Attributes-1; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes; i++) {
+      for (int i=0; i<Attributes-1; i++) {
          disp[i] -= base;
       }
       MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -1286,12 +1281,11 @@ void exahype::records::Vertex::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[9] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[10] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[11] );
-      
-      for (int i=1; i<Attributes; i++) {
+      disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+      for (int i=1; i<Attributes-1; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes; i++) {
+      for (int i=0; i<Attributes-1; i++) {
          disp[i] -= base;
       }
       MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -1736,12 +1730,11 @@ void exahype::records::VertexPacked::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[3] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[5] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._x[0])), 		&disp[6] );
-   
-   for (int i=1; i<Attributes; i++) {
+   disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+   for (int i=1; i<Attributes-1; i++) {
       assertion1( disp[i] > disp[i-1], i );
    }
-   for (int i=0; i<Attributes; i++) {
+   for (int i=0; i<Attributes-1; i++) {
       disp[i] -= base;
    }
    MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -1791,12 +1784,11 @@ void exahype::records::VertexPacked::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[9] );
-   
-   for (int i=1; i<Attributes; i++) {
+   disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+   for (int i=1; i<Attributes-1; i++) {
       assertion1( disp[i] > disp[i-1], i );
    }
-   for (int i=0; i<Attributes; i++) {
+   for (int i=0; i<Attributes-1; i++) {
       disp[i] -= base;
    }
    MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -2231,12 +2223,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentRanks[0]))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[8] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -2292,12 +2283,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[11] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -2743,12 +2733,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentRanks[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._x[0])), 		&disp[5] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -2795,12 +2784,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[8] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -3228,12 +3216,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[7] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -3289,12 +3276,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[11] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -3736,12 +3722,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._adjacentRanks[0])), 		&disp[5] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -3788,12 +3773,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[8] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -4201,12 +4185,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[5] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -4256,12 +4239,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[9] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -4688,12 +4670,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[1]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[4] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -4737,12 +4718,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[7] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -5156,12 +5136,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentRanks[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[5] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -5211,12 +5190,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[9] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -5644,12 +5622,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentRanks[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._adjacentRanks[0])), 		&disp[3] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -5690,12 +5667,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[6] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -6110,12 +6086,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._x[0]))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._level))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[6] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -6165,12 +6140,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._level))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[9] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -6601,12 +6575,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._x[0])), 		&disp[4] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -6650,12 +6623,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[7] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
@@ -7049,12 +7021,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &ba
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))), 		&disp[3] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
@@ -7098,12 +7069,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._insideOutsideDomain))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[7] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertex[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::FullDatatype );
@@ -7516,12 +7486,11 @@ MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))), &base);
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[1]._persistentRecords._packedRecords0))), 		&disp[2] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::Datatype );
@@ -7559,12 +7528,11 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._CellDescriptionsIndex[0])), 		&disp[5] );
-
-for (int i=1; i<Attributes; i++) {
+disp[Attributes-1] = sizeof(dummyVertexPacked[0]._numberOfAdjacentRefinedCells);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
+for (int i=0; i<Attributes-1; i++) {
 disp[i] -= base;
 }
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &VertexPacked::FullDatatype );
