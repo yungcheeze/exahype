@@ -325,99 +325,99 @@
             
             const int Attributes = 45;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //adjacentToRemoteRank
-               MPI_CHAR,		 //hasToHoldDataForNeighbourCommunication
-               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //type
-               MPI_INT,		 //refinementEvent
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //compressionState
-               MPI_INT,		 //bytesPerDoFInPreviousSolution
-               MPI_INT,		 //bytesPerDoFInSolution
-               MPI_INT,		 //bytesPerDoFInUpdate
-               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
-               MPI_INT,		 //bytesPerDoFInFluctuation
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //adjacentToRemoteRank
+               , MPI_CHAR		 //hasToHoldDataForNeighbourCommunication
+               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //type
+               , MPI_INT		 //refinementEvent
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //compressionState
+               , MPI_INT		 //bytesPerDoFInPreviousSolution
+               , MPI_INT		 //bytesPerDoFInSolution
+               , MPI_INT		 //bytesPerDoFInUpdate
+               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
+               , MPI_INT		 //bytesPerDoFInFluctuation
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //adjacentToRemoteRank
-               1,		 //hasToHoldDataForNeighbourCommunication
-               1,		 //hasToHoldDataForMasterWorkerCommunication
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //parentIndex
-               1,		 //type
-               1,		 //refinementEvent
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //compressionState
-               1,		 //bytesPerDoFInPreviousSolution
-               1,		 //bytesPerDoFInSolution
-               1,		 //bytesPerDoFInUpdate
-               1,		 //bytesPerDoFInExtrapolatedPredictor
-               1,		 //bytesPerDoFInFluctuation
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //adjacentToRemoteRank
+               , 1		 //hasToHoldDataForNeighbourCommunication
+               , 1		 //hasToHoldDataForMasterWorkerCommunication
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //parentIndex
+               , 1		 //type
+               , 1		 //refinementEvent
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //compressionState
+               , 1		 //bytesPerDoFInPreviousSolution
+               , 1		 //bytesPerDoFInSolution
+               , 1		 //bytesPerDoFInUpdate
+               , 1		 //bytesPerDoFInExtrapolatedPredictor
+               , 1		 //bytesPerDoFInFluctuation
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -468,11 +468,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[44] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
@@ -484,99 +485,99 @@
             
             const int Attributes = 45;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //adjacentToRemoteRank
-               MPI_CHAR,		 //hasToHoldDataForNeighbourCommunication
-               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //type
-               MPI_INT,		 //refinementEvent
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //compressionState
-               MPI_INT,		 //bytesPerDoFInPreviousSolution
-               MPI_INT,		 //bytesPerDoFInSolution
-               MPI_INT,		 //bytesPerDoFInUpdate
-               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
-               MPI_INT,		 //bytesPerDoFInFluctuation
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //adjacentToRemoteRank
+               , MPI_CHAR		 //hasToHoldDataForNeighbourCommunication
+               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //type
+               , MPI_INT		 //refinementEvent
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //compressionState
+               , MPI_INT		 //bytesPerDoFInPreviousSolution
+               , MPI_INT		 //bytesPerDoFInSolution
+               , MPI_INT		 //bytesPerDoFInUpdate
+               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
+               , MPI_INT		 //bytesPerDoFInFluctuation
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //adjacentToRemoteRank
-               1,		 //hasToHoldDataForNeighbourCommunication
-               1,		 //hasToHoldDataForMasterWorkerCommunication
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //parentIndex
-               1,		 //type
-               1,		 //refinementEvent
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //compressionState
-               1,		 //bytesPerDoFInPreviousSolution
-               1,		 //bytesPerDoFInSolution
-               1,		 //bytesPerDoFInUpdate
-               1,		 //bytesPerDoFInExtrapolatedPredictor
-               1,		 //bytesPerDoFInFluctuation
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //adjacentToRemoteRank
+               , 1		 //hasToHoldDataForNeighbourCommunication
+               , 1		 //hasToHoldDataForMasterWorkerCommunication
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //parentIndex
+               , 1		 //type
+               , 1		 //refinementEvent
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //compressionState
+               , 1		 //bytesPerDoFInPreviousSolution
+               , 1		 //bytesPerDoFInSolution
+               , 1		 //bytesPerDoFInUpdate
+               , 1		 //bytesPerDoFInExtrapolatedPredictor
+               , 1		 //bytesPerDoFInFluctuation
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -627,11 +628,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[44] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
@@ -1223,79 +1225,79 @@
             
             const int Attributes = 35;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //_packedRecords0
-               MPI_INT,		 //_packedRecords1
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //_packedRecords0
+               , MPI_INT		 //_packedRecords1
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //hasToHoldDataForMasterWorkerCommunication
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //parentIndex
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //_packedRecords0
-               1,		 //_packedRecords1
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //hasToHoldDataForMasterWorkerCommunication
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //parentIndex
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //_packedRecords0
+               , 1		 //_packedRecords1
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1336,11 +1338,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[34] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
@@ -1352,79 +1355,79 @@
             
             const int Attributes = 35;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //_packedRecords0
-               MPI_INT,		 //_packedRecords1
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //_packedRecords0
+               , MPI_INT		 //_packedRecords1
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //hasToHoldDataForMasterWorkerCommunication
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //parentIndex
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //_packedRecords0
-               1,		 //_packedRecords1
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //hasToHoldDataForMasterWorkerCommunication
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //parentIndex
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //_packedRecords0
+               , 1		 //_packedRecords1
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1465,11 +1468,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[34] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );
@@ -2012,91 +2016,91 @@
             
             const int Attributes = 41;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //type
-               MPI_INT,		 //refinementEvent
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //compressionState
-               MPI_INT,		 //bytesPerDoFInPreviousSolution
-               MPI_INT,		 //bytesPerDoFInSolution
-               MPI_INT,		 //bytesPerDoFInUpdate
-               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
-               MPI_INT,		 //bytesPerDoFInFluctuation
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //type
+               , MPI_INT		 //refinementEvent
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //compressionState
+               , MPI_INT		 //bytesPerDoFInPreviousSolution
+               , MPI_INT		 //bytesPerDoFInSolution
+               , MPI_INT		 //bytesPerDoFInUpdate
+               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
+               , MPI_INT		 //bytesPerDoFInFluctuation
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //parentIndex
-               1,		 //type
-               1,		 //refinementEvent
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //compressionState
-               1,		 //bytesPerDoFInPreviousSolution
-               1,		 //bytesPerDoFInSolution
-               1,		 //bytesPerDoFInUpdate
-               1,		 //bytesPerDoFInExtrapolatedPredictor
-               1,		 //bytesPerDoFInFluctuation
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //parentIndex
+               , 1		 //type
+               , 1		 //refinementEvent
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //compressionState
+               , 1		 //bytesPerDoFInPreviousSolution
+               , 1		 //bytesPerDoFInSolution
+               , 1		 //bytesPerDoFInUpdate
+               , 1		 //bytesPerDoFInExtrapolatedPredictor
+               , 1		 //bytesPerDoFInFluctuation
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -2143,11 +2147,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[40] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
@@ -2159,91 +2164,91 @@
             
             const int Attributes = 41;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //type
-               MPI_INT,		 //refinementEvent
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //compressionState
-               MPI_INT,		 //bytesPerDoFInPreviousSolution
-               MPI_INT,		 //bytesPerDoFInSolution
-               MPI_INT,		 //bytesPerDoFInUpdate
-               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
-               MPI_INT,		 //bytesPerDoFInFluctuation
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //type
+               , MPI_INT		 //refinementEvent
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //compressionState
+               , MPI_INT		 //bytesPerDoFInPreviousSolution
+               , MPI_INT		 //bytesPerDoFInSolution
+               , MPI_INT		 //bytesPerDoFInUpdate
+               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
+               , MPI_INT		 //bytesPerDoFInFluctuation
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //parentIndex
-               1,		 //type
-               1,		 //refinementEvent
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //compressionState
-               1,		 //bytesPerDoFInPreviousSolution
-               1,		 //bytesPerDoFInSolution
-               1,		 //bytesPerDoFInUpdate
-               1,		 //bytesPerDoFInExtrapolatedPredictor
-               1,		 //bytesPerDoFInFluctuation
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //parentIndex
+               , 1		 //type
+               , 1		 //refinementEvent
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //compressionState
+               , 1		 //bytesPerDoFInPreviousSolution
+               , 1		 //bytesPerDoFInSolution
+               , 1		 //bytesPerDoFInUpdate
+               , 1		 //bytesPerDoFInExtrapolatedPredictor
+               , 1		 //bytesPerDoFInFluctuation
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -2290,11 +2295,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[40] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
@@ -2866,75 +2872,75 @@
             
             const int Attributes = 33;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //_packedRecords0
-               MPI_INT,		 //_packedRecords1
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //_packedRecords0
+               , MPI_INT		 //_packedRecords1
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //parentIndex
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //_packedRecords0
-               1,		 //_packedRecords1
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //parentIndex
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //_packedRecords0
+               , 1		 //_packedRecords1
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -2973,11 +2979,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[32] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
@@ -2989,75 +2996,75 @@
             
             const int Attributes = 33;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_DOUBLE,		 //previousCorrectorTimeStamp
-               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStepSize
-               MPI_DOUBLE,		 //correctorTimeStamp
-               MPI_DOUBLE,		 //predictorTimeStepSize
-               MPI_DOUBLE,		 //predictorTimeStamp
-               MPI_INT,		 //solution
-               MPI_INT,		 //solutionAverages
-               MPI_INT,		 //solutionCompressed
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //previousSolutionAverages
-               MPI_INT,		 //previousSolutionCompressed
-               MPI_INT,		 //update
-               MPI_INT,		 //updateAverages
-               MPI_INT,		 //updateCompressed
-               MPI_INT,		 //extrapolatedPredictor
-               MPI_INT,		 //extrapolatedPredictorAverages
-               MPI_INT,		 //extrapolatedPredictorCompressed
-               MPI_INT,		 //fluctuation
-               MPI_INT,		 //fluctuationAverages
-               MPI_INT,		 //fluctuationCompressed
-               MPI_INT,		 //solutionMin
-               MPI_INT,		 //solutionMax
-               MPI_INT,		 //limiterStatus
-               MPI_INT,		 //mergedLimiterStatus
-               MPI_INT,		 //_packedRecords0
-               MPI_INT,		 //_packedRecords1
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_DOUBLE		 //previousCorrectorTimeStamp
+               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStepSize
+               , MPI_DOUBLE		 //correctorTimeStamp
+               , MPI_DOUBLE		 //predictorTimeStepSize
+               , MPI_DOUBLE		 //predictorTimeStamp
+               , MPI_INT		 //solution
+               , MPI_INT		 //solutionAverages
+               , MPI_INT		 //solutionCompressed
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //previousSolutionAverages
+               , MPI_INT		 //previousSolutionCompressed
+               , MPI_INT		 //update
+               , MPI_INT		 //updateAverages
+               , MPI_INT		 //updateCompressed
+               , MPI_INT		 //extrapolatedPredictor
+               , MPI_INT		 //extrapolatedPredictorAverages
+               , MPI_INT		 //extrapolatedPredictorCompressed
+               , MPI_INT		 //fluctuation
+               , MPI_INT		 //fluctuationAverages
+               , MPI_INT		 //fluctuationCompressed
+               , MPI_INT		 //solutionMin
+               , MPI_INT		 //solutionMax
+               , MPI_INT		 //limiterStatus
+               , MPI_INT		 //mergedLimiterStatus
+               , MPI_INT		 //_packedRecords0
+               , MPI_INT		 //_packedRecords1
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //parentIndex
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               1,		 //previousCorrectorTimeStamp
-               1,		 //previousCorrectorTimeStepSize
-               1,		 //correctorTimeStepSize
-               1,		 //correctorTimeStamp
-               1,		 //predictorTimeStepSize
-               1,		 //predictorTimeStamp
-               1,		 //solution
-               1,		 //solutionAverages
-               1,		 //solutionCompressed
-               1,		 //previousSolution
-               1,		 //previousSolutionAverages
-               1,		 //previousSolutionCompressed
-               1,		 //update
-               1,		 //updateAverages
-               1,		 //updateCompressed
-               1,		 //extrapolatedPredictor
-               1,		 //extrapolatedPredictorAverages
-               1,		 //extrapolatedPredictorCompressed
-               1,		 //fluctuation
-               1,		 //fluctuationAverages
-               1,		 //fluctuationCompressed
-               1,		 //solutionMin
-               1,		 //solutionMax
-               1,		 //limiterStatus
-               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
-               1,		 //_packedRecords0
-               1,		 //_packedRecords1
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //parentIndex
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , 1		 //previousCorrectorTimeStamp
+               , 1		 //previousCorrectorTimeStepSize
+               , 1		 //correctorTimeStepSize
+               , 1		 //correctorTimeStamp
+               , 1		 //predictorTimeStepSize
+               , 1		 //predictorTimeStamp
+               , 1		 //solution
+               , 1		 //solutionAverages
+               , 1		 //solutionCompressed
+               , 1		 //previousSolution
+               , 1		 //previousSolutionAverages
+               , 1		 //previousSolutionCompressed
+               , 1		 //update
+               , 1		 //updateAverages
+               , 1		 //updateCompressed
+               , 1		 //extrapolatedPredictor
+               , 1		 //extrapolatedPredictorAverages
+               , 1		 //extrapolatedPredictorCompressed
+               , 1		 //fluctuation
+               , 1		 //fluctuationAverages
+               , 1		 //fluctuationCompressed
+               , 1		 //solutionMin
+               , 1		 //solutionMax
+               , 1		 //limiterStatus
+               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
+               , 1		 //_packedRecords0
+               , 1		 //_packedRecords1
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -3096,11 +3103,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
-            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[32] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );
