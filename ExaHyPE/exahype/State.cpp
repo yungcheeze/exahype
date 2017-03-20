@@ -96,7 +96,9 @@ exahype::State::RefinementAnswer exahype::State::mayRefine(
     &&
     isCreationalEvent
   ) {
-    return RefinementAnswer::EnforceRefinement;
+    return RefinementAnswer::Refine;
+    // @todo Dominic
+//    return RefinementAnswer::EnforceRefinement;
   }
   else if ( _stateData.getMaxRefinementLevelAllowed()<0 ) {
     return RefinementAnswer::Refine;
