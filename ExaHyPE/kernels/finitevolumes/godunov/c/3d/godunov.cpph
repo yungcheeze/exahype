@@ -74,20 +74,19 @@ double riemannSolver(SolverType& solver, double* fnL, double *fnR, const double*
 
   solver.flux(qL, FL3);
   solver.flux(qR, FR3);
-  
-  double Qavg[numberOfVariables+numberOfParameters];
-  double ncp[numberOfVariables+numberOfParameters];
-  /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-  double gradQ[idx_gradQ.size];
 
-  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
-     Qavg[k] = (qR[k] + qL[k]) / 2;
-     gradQ[idx_gradQ(normalNonZero,k)] = qL[k] - qR[k]; // important: qR-qL or qL-qR ???
-  }
-  
+  double ncp[numberOfVariables+numberOfParameters];
+
   // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
-     solver.nonConservativeProduct(Qavg, gradQ, ncp);
+    double Qavg[numberOfVariables+numberOfParameters];
+    /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[idx_gradQ.size];
+    for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+       Qavg[k] = (qR[k] + qL[k]) / 2;
+       gradQ[idx_gradQ(normalNonZero,k)] = qL[k] - qR[k]; // important: qR-qL or qL-qR ???
+    }
+    solver.nonConservativeProduct(Qavg, gradQ, ncp);
   }
   
   for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
