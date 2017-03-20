@@ -19,7 +19,7 @@
 module load gcc/4.9
 module load tbb
 
-SLURM_ARRAY_TASK_ID=0
+SLURM_ARRAY_TASK_ID=1
 SLURM_JOB_NUM_NODES=1
 SLURM_NTASKS=1 # total number of tasks
 
@@ -30,8 +30,9 @@ let tasks=SLURM_NTASKS/SLURM_JOB_NUM_NODES
 #
 export MP_SINGLE_THREAD=no
 
+./ExaHyPE-EulerFlow-p3-notbb-mpi
 
-mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype  > $LOADL_JOB_NAME-$tasks'-ranks-per-node-'$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
+mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/fixed-ranks-per-node/EulerFlow-no-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype  > $LOADL_JOB_NAME-$tasks'-ranks-per-node-'$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-no-output-notbb.out
 #mpiexec -n $SLURM_NTASKS ./ExaHyPE-EulerFlow-p3-notbb-mpi   benchmarks/EulerFlow-output-regular-$SLURM_ARRAY_TASK_ID-p3.exahype     > $LOADL_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-p3-output-notbb.out
 
 
