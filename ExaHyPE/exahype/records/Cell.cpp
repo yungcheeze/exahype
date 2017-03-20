@@ -4576,7 +4576,7 @@ for (int i=0; i<Attributes; i++) {
 disp[i] -= base;
 }
 
-assertionEquals(disp[Attributes-1],sizeof(dummyCell[1]._persistentRecords._CellDescriptionsIndex) )
+
 
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
@@ -9098,7 +9098,7 @@ for (int i=0; i<Attributes; i++) {
 disp[i] -= base;
 }
 
-assertionEquals(disp[Attributes-1],sizeof(dummyCell[1]._persistentRecords._CellDescriptionsIndex) )
+
 
 MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
