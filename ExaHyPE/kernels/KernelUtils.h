@@ -200,9 +200,9 @@ typedef shadow<double> dshadow;
 
 
 struct idx2 {
-  idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
+  constexpr idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
 
-  int operator()(int i, int j) const {
+  constexpr int operator()(int i, int j) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     return i * J_ + j;
