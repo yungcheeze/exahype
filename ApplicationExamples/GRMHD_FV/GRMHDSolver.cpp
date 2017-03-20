@@ -21,7 +21,7 @@ void GRMHD::GRMHDSolver::init(std::vector<std::string>& cmdlineargs) {
   logInfo("init()", "FV Godunov + GRMHD starting.");
 }
 
-bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool GRMHD::GRMHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const  {
   using namespace tarch::la;
   // Do excision only in 3D.
   bool insideExcisionBall = norm2(center) < excision_radius;
@@ -30,7 +30,7 @@ bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,
 
 }
 
-void GRMHD::GRMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt, double* Q) {
+void GRMHD::GRMHDSolver::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
   initialdata_(x, &t, Q);
 }
 
