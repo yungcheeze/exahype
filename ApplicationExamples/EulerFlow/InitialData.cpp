@@ -23,11 +23,13 @@
 #include "tarch/la/Vector.h"
 
 #include "MyEulerSolver.h"
+#include "Primitives.h"
 
 using namespace std;
 
 // Storage for idfunc
 InitialDataHandler idfunc;
+
 
 /**
  * This function gives us vacuum values for Euler equations, ie. the trivial
@@ -44,6 +46,19 @@ void Vacuum(const double* x, double* Q, double t = 0.0) {
   Q[2] = velvac;
   Q[3] = velvac;
   Q[4] = epsvac;
+}
+
+/**
+ * Something to test the basic scheme. Advection and so.
+ **/
+void Polynomial(const double* const x, double* Q, double t = 0.0) {
+  double V[Euler::MyEulerSolver::NumberOfVariables];
+  V[0] = std::sin(x[0]/(2*M_PI));
+  V[1] = 1;
+  V[2] = 0;
+  V[3] = 0;
+  V[4] = 1;
+  prim2con(Q,V);
 }
 
 /**
@@ -72,16 +87,25 @@ void ShuVortex2D(const double* const x, double* Q, double t = 0.0) {
 }
 
 /**
- * MovingGauss2D is a moving gaussian matter distribution where it is simple
+ * MovingGauss is a moving gaussian matter distribution where it is simple
  * to give an analytic result.
  **/
-void MovingGauss2D(const double* const x, double* Q, double t = 0.0) {
+void MovingGauss(const double* const x, double* Q, double t = 0.0) {
   using namespace tarch::la;
-  typedef Vector<2,double> vec2d;
+  typedef Vector<DIMENSIONS,double> vec;
 
-  vec2d xvec(x[0], x[1]);
-  vec2d v0(0.5, 0);
-  vec2d x0(0.5, 0.5);
+#if DIMENSIONS == 2
+  vec xvec(x[0], x[1]);
+  vec v0(0.5, 0);
+  vec x0(0.5, 0.5);
+#elif DIMENSIONS == 3
+  vec xvec(x[0], x[1], x[2]);
+  vec v0(0.5, 0.5, 0);
+  vec x0(0.0, 0.0, 0.0);
+#else
+#error DIMENSIONS must be 2 or 3
+#endif
+
   double width = 0.20;
 
   double V[Euler::MyEulerSolver::NumberOfVariables];
