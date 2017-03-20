@@ -94,7 +94,7 @@ class GRMHD::GRMHDSolver : public GRMHD::AbstractGRMHDSolver {
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
     
     
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ); // does not override;
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
     
     virtual void source(const double* const Q, double* S) override;
