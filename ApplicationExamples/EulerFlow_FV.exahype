@@ -28,25 +28,40 @@ exahype-project Euler
   log-file  = we-dont-care.log
 
   computational-domain
-    dimension const          = 2
-    width                    = 1.0, 1.0
-    offset                   = 0.0, 0.0
+    dimension const          = 3
+    width                    = 1.0, 1.0, 1.0
+    offset                   = 0.0, 0.0, 0.0
     end-time                 = 1.0
   end computational-domain
+  
+  shared-memory
+    identifier               = dummy
+    cores                    = 1
+    properties-file          = sharedmemory.properties
+  end shared-memory
  
   solver Finite-Volumes MyEulerSolver
     variables const   = rho:1,j:3,E:1
     patch-size const  = 10
-    maximum-mesh-size = 0.15
+    maximum-mesh-size = 0.4
     time-stepping     = global
     kernel const      = generic::Godunov
     language const    = C
+
     plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 5
       time      = 0.0
-      repeat    = 0.5E-1
-      output    = ./conserved
+      repeat    = 0.5E-10
+      output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::cells::ascii ComputeGlobalIntegrals
+      variables const = 0
+      time            = 0.0
+      repeat          = 0.000001
+      output          = ./output/these-files-should-not-be-there
+      select          = x:0.0,y:0.0
     end plot
   end solver
 end exahype-project
