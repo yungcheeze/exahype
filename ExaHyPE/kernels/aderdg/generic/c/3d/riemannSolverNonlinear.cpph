@@ -96,7 +96,7 @@ void riemannSolverNonlinear(SolverType& solver,
   //double* Bn  = tempStateSizedSquareMatrices[0];
   //double* ncp = tempStateSizedVectors[4];
   //idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  idx2 idx_gradQ(numberOfVariables, DIMENSIONS);
+  const idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
   double gradQ[idx_gradQ.size], ncp[numberOfVariables];
   std::fill_n(gradQ, idx_gradQ.size, 0.0);
   std::fill_n(ncp, numberOfVariables, 0.0);
@@ -118,10 +118,9 @@ void riemannSolverNonlinear(SolverType& solver,
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
 
-        if(useCoefficientMatrix) {
-          // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
+        if(useCoefficientMatrix) { // we don't use matrixB but the NCP call here.
           for(int l=0; l < numberOfVariables; l++) {
-            gradQ[idx_gradQ(l, normalNonZero)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
+            gradQ[idx_gradQ(normalNonZero, l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
 	    Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
 	  }
 	  solver.nonConservativeProduct(Qavg, gradQ, ncp);
