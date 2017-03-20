@@ -114,17 +114,17 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          
          const int Attributes = 4;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //action
-            MPI_INT,		 //numberOfIterations
-            MPI_CHAR,		 //exchangeBoundaryVertices
-            MPI_UB		 // end/displacement flag
+              MPI_INT		 //action
+            , MPI_INT		 //numberOfIterations
+            , MPI_CHAR		 //exchangeBoundaryVertices
+            ,MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
-            1,		 //action
-            1,		 //numberOfIterations
-            1,		 //exchangeBoundaryVertices
-            1		 // end/displacement flag
+              1		 //action
+            , 1		 //numberOfIterations
+            , 1		 //exchangeBoundaryVertices
+            ,1		 // end/displacement flag
          };
          
          MPI_Aint     disp[Attributes];
@@ -134,11 +134,12 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._action))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-         disp[Attributes-1] = sizeof(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices);
-         for (int i=1; i<Attributes-1; i++) {
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[1]._persistentRecords._action))), 		&disp[3] );
+         
+         for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes-1; i++) {
+         for (int i=0; i<Attributes; i++) {
             disp[i] -= base;
          }
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::Datatype );
@@ -150,17 +151,17 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          
          const int Attributes = 4;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //action
-            MPI_INT,		 //numberOfIterations
-            MPI_CHAR,		 //exchangeBoundaryVertices
-            MPI_UB		 // end/displacement flag
+              MPI_INT		 //action
+            , MPI_INT		 //numberOfIterations
+            , MPI_CHAR		 //exchangeBoundaryVertices
+            ,MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
-            1,		 //action
-            1,		 //numberOfIterations
-            1,		 //exchangeBoundaryVertices
-            1		 // end/displacement flag
+              1		 //action
+            , 1		 //numberOfIterations
+            , 1		 //exchangeBoundaryVertices
+            ,1		 // end/displacement flag
          };
          
          MPI_Aint     disp[Attributes];
@@ -170,11 +171,12 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._action))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-         disp[Attributes-1] = sizeof(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices);
-         for (int i=1; i<Attributes-1; i++) {
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[1]._persistentRecords._action))), 		&disp[3] );
+         
+         for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes-1; i++) {
+         for (int i=0; i<Attributes; i++) {
             disp[i] -= base;
          }
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::FullDatatype );
@@ -502,17 +504,17 @@ void exahype::records::RepositoryStatePacked::initDatatype() {
       
       const int Attributes = 4;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //action
-         MPI_INT,		 //numberOfIterations
-         MPI_CHAR,		 //exchangeBoundaryVertices
-         MPI_UB		 // end/displacement flag
+           MPI_INT		 //action
+         , MPI_INT		 //numberOfIterations
+         , MPI_CHAR		 //exchangeBoundaryVertices
+         ,MPI_UB		 // end/displacement flag
       };
       
       int blocklen[Attributes] = {
-         1,		 //action
-         1,		 //numberOfIterations
-         1,		 //exchangeBoundaryVertices
-         1		 // end/displacement flag
+           1		 //action
+         , 1		 //numberOfIterations
+         , 1		 //exchangeBoundaryVertices
+         ,1		 // end/displacement flag
       };
       
       MPI_Aint     disp[Attributes];
@@ -522,11 +524,12 @@ void exahype::records::RepositoryStatePacked::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._action))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-      disp[Attributes-1] = sizeof(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices);
-      for (int i=1; i<Attributes-1; i++) {
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[1]._persistentRecords._action))), 		&disp[3] );
+      
+      for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes-1; i++) {
+      for (int i=0; i<Attributes; i++) {
          disp[i] -= base;
       }
       MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryStatePacked::Datatype );
@@ -538,17 +541,17 @@ void exahype::records::RepositoryStatePacked::initDatatype() {
       
       const int Attributes = 4;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //action
-         MPI_INT,		 //numberOfIterations
-         MPI_CHAR,		 //exchangeBoundaryVertices
-         MPI_UB		 // end/displacement flag
+           MPI_INT		 //action
+         , MPI_INT		 //numberOfIterations
+         , MPI_CHAR		 //exchangeBoundaryVertices
+         ,MPI_UB		 // end/displacement flag
       };
       
       int blocklen[Attributes] = {
-         1,		 //action
-         1,		 //numberOfIterations
-         1,		 //exchangeBoundaryVertices
-         1		 // end/displacement flag
+           1		 //action
+         , 1		 //numberOfIterations
+         , 1		 //exchangeBoundaryVertices
+         ,1		 // end/displacement flag
       };
       
       MPI_Aint     disp[Attributes];
@@ -558,11 +561,12 @@ void exahype::records::RepositoryStatePacked::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._action))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-      disp[Attributes-1] = sizeof(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices);
-      for (int i=1; i<Attributes-1; i++) {
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[1]._persistentRecords._action))), 		&disp[3] );
+      
+      for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes-1; i++) {
+      for (int i=0; i<Attributes; i++) {
          disp[i] -= base;
       }
       MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryStatePacked::FullDatatype );

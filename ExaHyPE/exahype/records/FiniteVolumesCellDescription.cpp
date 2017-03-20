@@ -184,43 +184,43 @@
             
             const int Attributes = 17;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -243,11 +243,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[16] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
@@ -259,43 +260,43 @@
             
             const int Attributes = 17;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -318,11 +319,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[16] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
@@ -722,43 +724,43 @@
             
             const int Attributes = 17;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -781,11 +783,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[16] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
@@ -797,43 +800,43 @@
             
             const int Attributes = 17;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_CHAR		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , MPI_INT		 //faceDataExchangeCounter
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
+               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -856,11 +859,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[16] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );
@@ -1270,39 +1274,39 @@
             
             const int Attributes = 15;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1323,11 +1327,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
@@ -1339,39 +1344,39 @@
             
             const int Attributes = 15;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1392,11 +1397,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
@@ -1784,39 +1790,39 @@
             
             const int Attributes = 15;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1837,11 +1843,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
@@ -1853,39 +1860,39 @@
             
             const int Attributes = 15;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
+                 MPI_INT		 //solverNumber
+               , MPI_DOUBLE		 //timeStepSize
+               , MPI_DOUBLE		 //timeStamp
+               , MPI_DOUBLE		 //previousTimeStepSize
+               , MPI_INT		 //solution
+               , MPI_INT		 //previousSolution
+               , MPI_INT		 //level
+               , MPI_DOUBLE		 //offset
+               , MPI_DOUBLE		 //size
+               , MPI_INT		 //riemannSolvePerformed
+               , MPI_INT		 //isInside
+               , MPI_INT		 //type
+               , MPI_INT		 //parentIndex
+               , MPI_INT		 //refinementEvent
+               ,MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
+                 1		 //solverNumber
+               , 1		 //timeStepSize
+               , 1		 //timeStamp
+               , 1		 //previousTimeStepSize
+               , 1		 //solution
+               , 1		 //previousSolution
+               , 1		 //level
+               , DIMENSIONS		 //offset
+               , DIMENSIONS		 //size
+               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //isInside
+               , 1		 //type
+               , 1		 //parentIndex
+               , 1		 //refinementEvent
+               ,1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
@@ -1906,11 +1913,12 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[14] );
+            
+            for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes-1; i++) {
+            for (int i=0; i<Attributes; i++) {
                disp[i] -= base;
             }
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );
