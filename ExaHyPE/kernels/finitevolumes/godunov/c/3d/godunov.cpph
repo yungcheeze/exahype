@@ -29,14 +29,18 @@ namespace godunov {
 namespace c {
 
 /**
- * A simple Rusanov flux considering pointwise
- * left and right values.
+ * A simple Rusanov flux considering pointwise left and right values.
+ * 
+ * \param[out]   fnL       Flux in normal direction for the left cell
+ * \param[out]   fnR       Flux in normal direction for the right cell
+ * \param[in]    qL        State vectors of the left cell
+ * \param[in]    qR        State vectors of the right cell
+ * \param[in]    normalNonZero   the coordinate direction the face normal is pointing to.
+ * \param        tempStateSizedVectors  A number of vectors which can be used...
+ *
  */ 
-//template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-//                              double* lambda),
-//          void PDEFlux(const double* const Q, double** F)>
 template <typename SolverType>
-double riemannSolver(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
+double riemannSolver(SolverType& solver, double* fnL, double *fnR, const double* qL, const double* qR,
                      int normalNonZero,double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -60,28 +64,25 @@ double riemannSolver(SolverType& solver, double* fL, double *fR, const double* q
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double FL3a[numberOfVariables + numberOfParameters];
-  double FL3b[numberOfVariables + numberOfParameters];
-  double FL3c[numberOfVariables + numberOfParameters];
-  double FR3a[numberOfVariables + numberOfParameters];
-  double FR3b[numberOfVariables + numberOfParameters];
-  double FR3c[numberOfVariables + numberOfParameters];
+  double FL3s[DIMENSIONS][numberOfVariables + numberOfParameters];
+  double FR3s[DIMENSIONS][numberOfVariables + numberOfParameters];
 
   //double* FL3[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
   //double* FR3[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
-  double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
-  double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
+  double* FL3[3] = {FL3s[0],FL3s[1],FL3s[2]}; // dim a numberOfVariables
+  double* FR3[3] = {FR3s[0],FR3s[1],FR3s[2]}; // dim a numberOfVariables
 
   solver.flux(qL, FL3);
   solver.flux(qR, FR3);
   
   double Qavg[numberOfVariables+numberOfParameters];
-  double gradQ[numberOfVariables * DIMENSIONS];
-  double ncp[numberOfVariables];
-  idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double ncp[numberOfVariables+numberOfParameters];
+  constexpr idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[idx_gradQ.size];
+
   for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
      Qavg[k] = (qR[k] + qL[k]) / 2;
-     gradQ[idx_gradQ(k,normalNonZero)] = qR[k] - qL[k]; // important: qR-qL or qL-qR ???
+     gradQ[idx_gradQ(normalNonZero,k)] = qL[k] - qR[k]; // important: qR-qL or qL-qR ???
   }
   
   // determine BgradQ from ncp
@@ -90,13 +91,14 @@ double riemannSolver(SolverType& solver, double* fL, double *fR, const double* q
   }
   
   for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-    fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-            0.5 * s_max * (qR[i] - qL[i]);
-    fR[i] = fL[i];
-    
+    fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
+            0.5 * s_max * (qL[i] - qR[i]); // qL-qR is definetly correct
+
     if(solver.useNonConservativeProduct()) {
-      fR[i] = fR[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
+      fnR[i] = fnL[i] - 0.5 * ncp[i];
+      fnL[i] = fnL[i] + 0.5 * ncp[i];
+    } else {
+      fnR[i] = fnL[i];
     }
   }
   
@@ -434,10 +436,11 @@ double solutionUpdate(
   // Solve Riemann problems
   constexpr double cflFactor = 0.99; // We use a factor closer to 1 here.
   double dt_max_allowed = std::numeric_limits<double>::max();
-  
+
+  double fL[numberOfVariables+numberOfParameters];
+  double fR[numberOfVariables+numberOfParameters];
+
   // x edges 
-  double *fL = tempStateSizedVectors[0];
-  double  fR[numberOfVariables];
   for (int i = patchBegin; i < patchEnd+1; i++) {
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have patchSize+1 faces in each coordinate direction
