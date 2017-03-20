@@ -148,7 +148,11 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the Intel compiler
 	  # ----------------------------------------------
 	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	  COMPILER_CFLAGS += -O3 -no-ipo -ip
+        ifneq ($(call tolower,$(MODE)),asserts)
+	    COMPILER_CFLAGS += -O0 -no-ipo -ip
+	    else
+	    COMPILER_CFLAGS += -O3 -no-ipo -ip
+	    endif
 	  COMPILER_LFLAGS +=
 	  else
 	  COMPILER_CFLAGS += -fast -no-ipo -ip
