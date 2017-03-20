@@ -77,7 +77,7 @@ double riemannSolver(SolverType& solver, double* fnL, double *fnR, const double*
   
   double Qavg[numberOfVariables+numberOfParameters];
   double ncp[numberOfVariables+numberOfParameters];
-  constexpr idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
   double gradQ[idx_gradQ.size];
 
   for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
