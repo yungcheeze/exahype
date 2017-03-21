@@ -130,7 +130,8 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -O3 -cpp
 	LINK_FORTRAN      += -lgfortran
 
-	COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
+	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
+	COMPILER_CFLAGS   += -pedantic -Drestrict=__restrict__ -Wall
 	COMPILER_LFLAGS   +=
 
 else
