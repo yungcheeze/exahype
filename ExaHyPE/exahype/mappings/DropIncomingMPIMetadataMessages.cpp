@@ -112,12 +112,13 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
 
-// TODO(Dominic): This is a bug or needs to be documented.
-// see discussion in SpaceTimePredictor
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
+  #if !defined(PeriodicBC)
+    if (vertex.isBoundary()) return;
+  #endif
 
   dfor2(myDest)
     dfor2(mySrc)

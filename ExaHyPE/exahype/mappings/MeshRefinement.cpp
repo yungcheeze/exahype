@@ -346,14 +346,21 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
-// Keep this for the grid setup
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
+
+  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
+  // Keep this for the grid setup
+  #if !defined(PeriodicBC)
+    if (vertex.isBoundary()) return;
+  #endif
 
   // @todo If this assertion holds, then we should remove firstGridSetupIteration from the state.
+  // Yes, we could initialise it with true, set it to false in endIteration
+  // and reset it in DropIncomingMPIMetadataMessages::beginIteration()
   assertion( !_localState.firstGridSetupIteration() );
-  if (_localState.firstGridSetupIteration()) return; // TODO is reset in end iteration.
+  if (_localState.firstGridSetupIteration()) return; // TODO is set in end iteration.
 
   dfor2(myDest)
     dfor2(mySrc)
@@ -409,6 +416,10 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
+
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
 
   // Keep this for the grid setup
   #if !defined(PeriodicBC)
