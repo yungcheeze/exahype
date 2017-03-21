@@ -137,8 +137,9 @@ int main(int argc, char** argv) {
       assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
       assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
       assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
+      #ifdef Dim3
       assertion1( receivedVertex.getX()(2)==2.0, receivedVertex.toString() );
-
+      #endif
 
       exahype::Vertex receivedVertices[5];
       MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
@@ -146,12 +147,16 @@ int main(int argc, char** argv) {
       assertion3( receivedVertices[0].getLevel()==4,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(0)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[0].getX()(1)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
       assertion3( receivedVertices[0].getX()(2)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
 
       assertion3( receivedVertices[1].getLevel()==5,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[1].getX()(0)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       assertion3( receivedVertices[1].getX()(1)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
       assertion3( receivedVertices[1].getX()(2)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
       logInfo( "run()", "ping-poing test ok" );
     }
   }
