@@ -206,7 +206,7 @@
                assertion1( disp[i] > disp[i-1], i );
             }
             for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
             }
             MPI_Datatype tmpType; 
             MPI_Aint lowerBound, typeExtent; 
@@ -275,7 +275,7 @@
                assertion1( disp[i] > disp[i-1], i );
             }
             for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
             }
             MPI_Datatype tmpType; 
             MPI_Aint lowerBound, typeExtent; 
@@ -742,7 +742,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
             assertion1( disp[i] > disp[i-1], i );
          }
          for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
          }
          MPI_Datatype tmpType; 
          MPI_Aint lowerBound, typeExtent; 
@@ -802,7 +802,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
             assertion1( disp[i] > disp[i-1], i );
          }
          for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
          }
          MPI_Datatype tmpType; 
          MPI_Aint lowerBound, typeExtent; 
@@ -1237,7 +1237,7 @@ void exahype::records::Vertex::initDatatype() {
          assertion1( disp[i] > disp[i-1], i );
       }
       for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
       }
       MPI_Datatype tmpType; 
       MPI_Aint lowerBound, typeExtent; 
@@ -1300,7 +1300,7 @@ void exahype::records::Vertex::initDatatype() {
          assertion1( disp[i] > disp[i-1], i );
       }
       for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
       }
       MPI_Datatype tmpType; 
       MPI_Aint lowerBound, typeExtent; 
@@ -1752,7 +1752,7 @@ void exahype::records::VertexPacked::initDatatype() {
       assertion1( disp[i] > disp[i-1], i );
    }
    for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
    }
    MPI_Datatype tmpType; 
    MPI_Aint lowerBound, typeExtent; 
@@ -1809,7 +1809,7 @@ void exahype::records::VertexPacked::initDatatype() {
       assertion1( disp[i] > disp[i-1], i );
    }
    for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
    }
    MPI_Datatype tmpType; 
    MPI_Aint lowerBound, typeExtent; 
@@ -2251,7 +2251,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2314,7 +2314,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2767,7 +2767,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2821,7 +2821,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3256,7 +3256,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3319,7 +3319,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3768,7 +3768,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3822,7 +3822,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4237,7 +4237,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4294,7 +4294,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4728,7 +4728,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4779,7 +4779,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5200,7 +5200,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5257,7 +5257,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5692,7 +5692,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5740,7 +5740,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6162,7 +6162,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6219,7 +6219,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6657,7 +6657,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6708,7 +6708,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7109,7 +7109,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7160,7 +7160,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7580,7 +7580,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7625,7 +7625,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
