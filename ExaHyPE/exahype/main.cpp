@@ -20,6 +20,7 @@
 #include "peano/peano.h"
 
 #include "exahype/Parser.h"
+#include "exahype/Vertex.h"
 #include "exahype/runners/Runner.h"
 #include "buildinfo.h"
 
@@ -103,6 +104,59 @@ int main(int argc, char** argv) {
     logError("main()", "invalid config file. Quit");
     return -2;
   }
+
+
+
+
+  #ifdef Asserts
+  logInfo( "run()", "start ping-pong test" );
+  exahype::Vertex::initDatatype();
+  exahype::Vertex sendVertex[5];
+
+  if (tarch::parallel::Node::getInstance().getNumberOfNodes()>1) {
+    if (tarch::parallel::Node::getInstance().getRank()==0) {
+      sendVertex[0].setIsParentingRegularPersistentSubgridFlag();
+      sendVertex[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
+      sendVertex[0].send(1,100,false,-1);
+      sendVertex[1].setIsParentingRegularPersistentSubgridFlag();
+      sendVertex[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
+      sendVertex[1].send(1,100,false,-1);
+      sendVertex[2].setIsParentingRegularPersistentSubgridFlag();
+      sendVertex[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
+
+      sendVertex[2].send(1,100,false,-1);
+      logInfo( "run()", "vertex left system" );
+      MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      logInfo( "run()", "vertices left system" );
+    }
+    else {
+      logInfo( "run()", "start to receive vertex " );
+      exahype::Vertex receivedVertex;
+      receivedVertex.receive(0,100,false,-1);
+      logInfo( "run()", "received vertex " << receivedVertex.toString() );
+      assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(2)==2.0, receivedVertex.toString() );
+
+
+      exahype::Vertex receivedVertices[5];
+      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+      logInfo( "run()", "received vertices" );
+      assertion3( receivedVertices[0].getLevel()==4,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[0].getX()(0)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[0].getX()(1)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[0].getX()(2)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+
+      assertion3( receivedVertices[1].getLevel()==5,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[1].getX()(0)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[1].getX()(1)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[1].getX()(2)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      logInfo( "run()", "ping-poing test ok" );
+    }
+  }
+  #endif
+
   
 
   //
