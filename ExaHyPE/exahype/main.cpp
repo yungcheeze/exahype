@@ -115,19 +115,42 @@ int main(int argc, char** argv) {
 
   if (tarch::parallel::Node::getInstance().getNumberOfNodes()==2) {
     if (tarch::parallel::Node::getInstance().getRank()==0) {
-      sendVertex[0].setIsParentingRegularPersistentSubgridFlag();
       sendVertex[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
       sendVertex[0].send(1,100,false,-1);
-      sendVertex[1].setIsParentingRegularPersistentSubgridFlag();
       sendVertex[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
       sendVertex[1].send(1,100,false,-1);
-      sendVertex[2].setIsParentingRegularPersistentSubgridFlag();
       sendVertex[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
 
       sendVertex[2].send(1,100,false,-1);
       logInfo( "run()", "vertex left system" );
       MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
       logInfo( "run()", "vertices left system" );
+
+      exahype::Vertex* heapVertices = new exahype::Vertex[5];
+      MPI_Recv( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+
+      assertion3( heapVertices[0].getLevel()==4,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[0].getX()(0)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[0].getX()(1)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[0].getX()(2)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      assertion3( heapVertices[1].getLevel()==5,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(0)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(1)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[1].getX()(2)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      assertion3( heapVertices[1].getLevel()==6,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(0)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(1)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[1].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      delete[] heapVertices;
     }
     else {
       logInfo( "run()", "start to receive vertex " );
@@ -157,6 +180,20 @@ int main(int argc, char** argv) {
       #ifdef Dim3
       assertion3( receivedVertices[1].getX()(2)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
       #endif
+
+      assertion3( receivedVertices[2].getLevel()==6,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[2].getX()(0)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[2].getX()(1)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( receivedVertices[2].getX()(2)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
+
+      exahype::Vertex* heapVertices = new exahype::Vertex[5];
+      heapVertices[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
+      heapVertices[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
+      heapVertices[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
+      MPI_Send( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      delete[] heapVertices;
       logInfo( "run()", "ping-poing test ok" );
     }
   }
