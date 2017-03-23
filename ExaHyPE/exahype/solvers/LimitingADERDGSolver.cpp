@@ -193,6 +193,30 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
           fineGridPositionOfCell,solverNumber);
 }
 
+bool exahype::solvers::LimitingADERDGSolver::attainedStableState(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const int solverNumber) const {
+  return _solver->attainedStableState(
+      fineGridCell,fineGridVertices,fineGridVerticesEnumerator,solverNumber);
+}
+
+void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) {
+  _solver->finaliseStateUpdates(
+      fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
+      coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
+      fineGridPositionOfCell,solverNumber);
+}
+
 ///////////////////////////////////
 // CELL-LOCAL
 //////////////////////////////////

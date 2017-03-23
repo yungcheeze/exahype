@@ -191,6 +191,12 @@ private:
    * this request if they want to keep their
    * solution or refine even further.
    *
+   * No erasing children request can be set on cell descriptions
+   * of type NewAncestor and NewEmptyAncestor.
+   * This prevents races where a refinement criterion has triggered a
+   * refinement event on the parent cell but does trigger an erasing
+   * event on the children cells.
+   *
    * We further veto erasing events if
    * a child of the parent itself is a parent
    * of cell descriptions of type Descendant/EmptyDescendant.
@@ -252,6 +258,9 @@ private:
       const int fineGridCellDescriptionsIndex);
 
   /*
+   * Starts of finish collective operations from a
+   * fine cell description point of view.
+   *
    * Resets the refinement event of a fine grid cell of type
    * Descendant to None if it was set to Refining.
    * The latter event indicates that the fine grid cells in
@@ -264,8 +273,9 @@ private:
    * the next finer level have all been initialised with
    * type Descendant.
    *
-   * TODO(Dominic): Erasing
-   * TODO(Dominic): Make template function as soon as verified.
+   * If a ...
+   *
+   * \return true if a fine grid cell can be erased.
    */
   void startOrFinishCollectiveRefinementOperations(
       CellDescription& fineGridCellDescription);
@@ -1326,6 +1336,22 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
+  bool attainedStableState(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int solverNumber) const override;
+
+  void finaliseStateUpdates(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) override;
+
   ///////////////////////////////////
   // CELL-LOCAL
   ///////////////////////////////////
@@ -1355,8 +1381,7 @@ public:
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      const std::string&                   methodTraceOfCaller);
+      const std::string& methodTraceOfCaller);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
