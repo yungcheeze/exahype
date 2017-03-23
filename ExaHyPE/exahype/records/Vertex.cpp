@@ -1,8 +1,8 @@
 #include "exahype/records/Vertex.h"
 
-#define Parallel
-#define PersistentRegularSubtrees
-#define Asserts
+//#define Parallel
+//#define PersistentRegularSubtrees
+//#define Asserts
 
 #if defined(Parallel) && defined(PersistentRegularSubtrees) && defined(Asserts)
    exahype::records::Vertex::PersistentRecords::PersistentRecords() {
