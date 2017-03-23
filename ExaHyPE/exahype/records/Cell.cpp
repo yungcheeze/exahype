@@ -100,86 +100,80 @@
       
       void exahype::records::Cell::initDatatype() {
          {
-            Cell dummyCell;
+            Cell dummyCell[2];
             
-            const int Attributes = 3;
+            const int Attributes = 4;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //CellDescriptionsIndex
-               , MPI_CHAR		 //isInside
-               , MPI_INT		 //state
-               
+               MPI_INT,		 //CellDescriptionsIndex
+               MPI_CHAR,		 //isInside
+               MPI_INT,		 //state
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //CellDescriptionsIndex
-               , 1		 //isInside
-               , 1		 //state
-               
+               1,		 //CellDescriptionsIndex
+               1,		 //isInside
+               1,		 //state
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+            disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._state);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
             MPI_Type_commit( &Cell::Datatype );
             
          }
          {
-            Cell dummyCell;
+            Cell dummyCell[2];
             
-            const int Attributes = 5;
+            const int Attributes = 6;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //CellDescriptionsIndex
-               , MPI_CHAR		 //isInside
-               , MPI_INT		 //state
-               , MPI_INT		 //evenFlags
-               , MPI_SHORT		 //accessNumber
-               
+               MPI_INT,		 //CellDescriptionsIndex
+               MPI_CHAR,		 //isInside
+               MPI_INT,		 //state
+               MPI_INT,		 //evenFlags
+               MPI_SHORT,		 //accessNumber
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //CellDescriptionsIndex
-               , 1		 //isInside
-               , 1		 //state
-               , DIMENSIONS		 //evenFlags
-               , DIMENSIONS_TIMES_TWO		 //accessNumber
-               
+               1,		 //CellDescriptionsIndex
+               1,		 //isInside
+               1,		 //state
+               DIMENSIONS,		 //evenFlags
+               DIMENSIONS_TIMES_TWO,		 //accessNumber
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+            disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._accessNumber);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
             MPI_Type_commit( &Cell::FullDatatype );
             
          }
@@ -546,77 +540,71 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
    
    void exahype::records::CellPacked::initDatatype() {
       {
-         CellPacked dummyCellPacked;
+         CellPacked dummyCellPacked[2];
          
-         const int Attributes = 2;
+         const int Attributes = 3;
          MPI_Datatype subtypes[Attributes] = {
-              MPI_INT		 //CellDescriptionsIndex
-            , MPI_INT		 //_packedRecords0
-            
+            MPI_INT,		 //CellDescriptionsIndex
+            MPI_INT,		 //_packedRecords0
+            MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
-              1		 //CellDescriptionsIndex
-            , 1		 //_packedRecords0
-            
+            1,		 //CellDescriptionsIndex
+            1,		 //_packedRecords0
+            1		 // end/displacement flag
          };
          
          MPI_Aint     disp[Attributes];
          
          MPI_Aint base;
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[1] );
-         for (int i=1; i<Attributes; i++) {
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
+         disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+         for (int i=1; i<Attributes-1; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         for (int i=0; i<Attributes-1; i++) {
+            disp[i] -= base;
          }
-         MPI_Datatype tmpType; 
-         MPI_Aint lowerBound, typeExtent; 
-         MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-         MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-         MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+         MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
          MPI_Type_commit( &CellPacked::Datatype );
          
       }
       {
-         CellPacked dummyCellPacked;
+         CellPacked dummyCellPacked[2];
          
-         const int Attributes = 3;
+         const int Attributes = 4;
          MPI_Datatype subtypes[Attributes] = {
-              MPI_INT		 //CellDescriptionsIndex
-            , MPI_SHORT		 //accessNumber
-            , MPI_INT		 //_packedRecords0
-            
+            MPI_INT,		 //CellDescriptionsIndex
+            MPI_SHORT,		 //accessNumber
+            MPI_INT,		 //_packedRecords0
+            MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
-              1		 //CellDescriptionsIndex
-            , DIMENSIONS_TIMES_TWO		 //accessNumber
-            , 1		 //_packedRecords0
-            
+            1,		 //CellDescriptionsIndex
+            DIMENSIONS_TIMES_TWO,		 //accessNumber
+            1,		 //_packedRecords0
+            1		 // end/displacement flag
          };
          
          MPI_Aint     disp[Attributes];
          
          MPI_Aint base;
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-         MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-         for (int i=1; i<Attributes; i++) {
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+         disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+         for (int i=1; i<Attributes-1; i++) {
             assertion1( disp[i] > disp[i-1], i );
          }
-         for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         for (int i=0; i<Attributes-1; i++) {
+            disp[i] -= base;
          }
-         MPI_Datatype tmpType; 
-         MPI_Aint lowerBound, typeExtent; 
-         MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-         MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-         MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+         MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
          MPI_Type_commit( &CellPacked::FullDatatype );
          
       }
@@ -971,98 +959,92 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
    {
-      Cell dummyCell;
+      Cell dummyCell[2];
       
-      const int Attributes = 4;
+      const int Attributes = 5;
       MPI_Datatype subtypes[Attributes] = {
-           MPI_INT		 //CellDescriptionsIndex
-         , MPI_CHAR		 //isInside
-         , MPI_INT		 //state
-         , MPI_CHAR		 //subtreeHoldsWorker
-         
+         MPI_INT,		 //CellDescriptionsIndex
+         MPI_CHAR,		 //isInside
+         MPI_INT,		 //state
+         MPI_CHAR,		 //subtreeHoldsWorker
+         MPI_UB		 // end/displacement flag
       };
       
       int blocklen[Attributes] = {
-           1		 //CellDescriptionsIndex
-         , 1		 //isInside
-         , 1		 //state
-         , 1		 //subtreeHoldsWorker
-         
+         1,		 //CellDescriptionsIndex
+         1,		 //isInside
+         1,		 //state
+         1,		 //subtreeHoldsWorker
+         1		 // end/displacement flag
       };
       
       MPI_Aint     disp[Attributes];
       
       MPI_Aint base;
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-      for (int i=1; i<Attributes; i++) {
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+      disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+      for (int i=1; i<Attributes-1; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      for (int i=0; i<Attributes-1; i++) {
+         disp[i] -= base;
       }
-      MPI_Datatype tmpType; 
-      MPI_Aint lowerBound, typeExtent; 
-      MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-      MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-      MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+      MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
       MPI_Type_commit( &Cell::Datatype );
       
    }
    {
-      Cell dummyCell;
+      Cell dummyCell[2];
       
-      const int Attributes = 8;
+      const int Attributes = 9;
       MPI_Datatype subtypes[Attributes] = {
-           MPI_INT		 //CellDescriptionsIndex
-         , MPI_CHAR		 //isInside
-         , MPI_INT		 //state
-         , MPI_INT		 //evenFlags
-         , MPI_SHORT		 //accessNumber
-         , MPI_INT		 //responsibleRank
-         , MPI_CHAR		 //subtreeHoldsWorker
-         , MPI_CHAR		 //cellIsAForkCandidate
-         
+         MPI_INT,		 //CellDescriptionsIndex
+         MPI_CHAR,		 //isInside
+         MPI_INT,		 //state
+         MPI_INT,		 //evenFlags
+         MPI_SHORT,		 //accessNumber
+         MPI_INT,		 //responsibleRank
+         MPI_CHAR,		 //subtreeHoldsWorker
+         MPI_CHAR,		 //cellIsAForkCandidate
+         MPI_UB		 // end/displacement flag
       };
       
       int blocklen[Attributes] = {
-           1		 //CellDescriptionsIndex
-         , 1		 //isInside
-         , 1		 //state
-         , DIMENSIONS		 //evenFlags
-         , DIMENSIONS_TIMES_TWO		 //accessNumber
-         , 1		 //responsibleRank
-         , 1		 //subtreeHoldsWorker
-         , 1		 //cellIsAForkCandidate
-         
+         1,		 //CellDescriptionsIndex
+         1,		 //isInside
+         1,		 //state
+         DIMENSIONS,		 //evenFlags
+         DIMENSIONS_TIMES_TWO,		 //accessNumber
+         1,		 //responsibleRank
+         1,		 //subtreeHoldsWorker
+         1,		 //cellIsAForkCandidate
+         1		 // end/displacement flag
       };
       
       MPI_Aint     disp[Attributes];
       
       MPI_Aint base;
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[5] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
-      MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
-      for (int i=1; i<Attributes; i++) {
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
+      disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._cellIsAForkCandidate);
+      for (int i=1; i<Attributes-1; i++) {
          assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      for (int i=0; i<Attributes-1; i++) {
+         disp[i] -= base;
       }
-      MPI_Datatype tmpType; 
-      MPI_Aint lowerBound, typeExtent; 
-      MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-      MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-      MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+      MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
       MPI_Type_commit( &Cell::FullDatatype );
       
    }
@@ -1441,86 +1423,80 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-   CellPacked dummyCellPacked;
+   CellPacked dummyCellPacked[2];
    
-   const int Attributes = 3;
+   const int Attributes = 4;
    MPI_Datatype subtypes[Attributes] = {
-        MPI_INT		 //CellDescriptionsIndex
-      , MPI_CHAR		 //subtreeHoldsWorker
-      , MPI_INT		 //_packedRecords0
-      
+      MPI_INT,		 //CellDescriptionsIndex
+      MPI_CHAR,		 //subtreeHoldsWorker
+      MPI_INT,		 //_packedRecords0
+      MPI_UB		 // end/displacement flag
    };
    
    int blocklen[Attributes] = {
-        1		 //CellDescriptionsIndex
-      , 1		 //subtreeHoldsWorker
-      , 1		 //_packedRecords0
-      
+      1,		 //CellDescriptionsIndex
+      1,		 //subtreeHoldsWorker
+      1,		 //_packedRecords0
+      1		 // end/displacement flag
    };
    
    MPI_Aint     disp[Attributes];
    
    MPI_Aint base;
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-   for (int i=1; i<Attributes; i++) {
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+   disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+   for (int i=1; i<Attributes-1; i++) {
       assertion1( disp[i] > disp[i-1], i );
    }
-   for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+   for (int i=0; i<Attributes-1; i++) {
+      disp[i] -= base;
    }
-   MPI_Datatype tmpType; 
-   MPI_Aint lowerBound, typeExtent; 
-   MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-   MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-   MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+   MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
    MPI_Type_commit( &CellPacked::Datatype );
    
 }
 {
-   CellPacked dummyCellPacked;
+   CellPacked dummyCellPacked[2];
    
-   const int Attributes = 5;
+   const int Attributes = 6;
    MPI_Datatype subtypes[Attributes] = {
-        MPI_INT		 //CellDescriptionsIndex
-      , MPI_SHORT		 //accessNumber
-      , MPI_INT		 //responsibleRank
-      , MPI_CHAR		 //subtreeHoldsWorker
-      , MPI_INT		 //_packedRecords0
-      
+      MPI_INT,		 //CellDescriptionsIndex
+      MPI_SHORT,		 //accessNumber
+      MPI_INT,		 //responsibleRank
+      MPI_CHAR,		 //subtreeHoldsWorker
+      MPI_INT,		 //_packedRecords0
+      MPI_UB		 // end/displacement flag
    };
    
    int blocklen[Attributes] = {
-        1		 //CellDescriptionsIndex
-      , DIMENSIONS_TIMES_TWO		 //accessNumber
-      , 1		 //responsibleRank
-      , 1		 //subtreeHoldsWorker
-      , 1		 //_packedRecords0
-      
+      1,		 //CellDescriptionsIndex
+      DIMENSIONS_TIMES_TWO,		 //accessNumber
+      1,		 //responsibleRank
+      1,		 //subtreeHoldsWorker
+      1,		 //_packedRecords0
+      1		 // end/displacement flag
    };
    
    MPI_Aint     disp[Attributes];
    
    MPI_Aint base;
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[2] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-   MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[4] );
-   for (int i=1; i<Attributes; i++) {
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
+   disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+   for (int i=1; i<Attributes-1; i++) {
       assertion1( disp[i] > disp[i-1], i );
    }
-   for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+   for (int i=0; i<Attributes-1; i++) {
+      disp[i] -= base;
    }
-   MPI_Datatype tmpType; 
-   MPI_Aint lowerBound, typeExtent; 
-   MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-   MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-   MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+   MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
    MPI_Type_commit( &CellPacked::FullDatatype );
    
 }
@@ -1872,92 +1848,86 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._state);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 7;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -2332,83 +2302,77 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 2;
+const int Attributes = 3;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[1] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -2756,89 +2720,83 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._state);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -3209,80 +3167,74 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 2;
+const int Attributes = 3;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[1] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -3630,92 +3582,86 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._level);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._accessNumber);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -4086,83 +4032,77 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -4522,104 +4462,98 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 9;
+const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._cellIsAForkCandidate);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -5002,92 +4936,86 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -5443,95 +5371,89 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._state);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 8;
+const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[7] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[7] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -5910,86 +5832,80 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 2;
+const int Attributes = 3;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[1] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -6345,98 +6261,92 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._level);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 8;
+const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -6815,89 +6725,83 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -7249,95 +7153,89 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._level);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 7;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[6] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[6] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -7712,86 +7610,80 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -8155,104 +8047,98 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 10;
+const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -8639,92 +8525,86 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 7;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[6] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -9084,101 +8964,95 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 9;
+const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[8] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[8] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -9561,89 +9435,83 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 6;
+const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[5] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -10003,101 +9871,95 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._level);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 9;
+const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[8] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[8] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -10480,92 +10342,86 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 7;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[6] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -10933,110 +10789,104 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 11;
+const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -11427,98 +11277,92 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 8;
+const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[7] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -11886,107 +11730,101 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 11;
+const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[10] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[10] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -12377,95 +12215,89 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 3;
+const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[2] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 8;
+const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[7] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -12829,107 +12661,101 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 10;
+const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[9] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[9] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -13316,95 +13142,89 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 7;
+const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[6] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }
@@ -13776,113 +13596,107 @@ MPI_Datatype exahype::records::Cell::FullDatatype = 0;
 
 void exahype::records::Cell::initDatatype() {
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 5;
+const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+1,		 //subtreeHoldsWorker
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._subtreeHoldsWorker);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::Datatype );
 MPI_Type_commit( &Cell::Datatype );
 
 }
 {
-Cell dummyCell;
+Cell dummyCell[2];
 
-const int Attributes = 12;
+const int Attributes = 13;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_CHAR		 //isInside
-, MPI_INT		 //state
-, MPI_INT		 //level
-, MPI_INT		 //evenFlags
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_CHAR		 //cellIsAForkCandidate
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_CHAR,		 //isInside
+MPI_INT,		 //state
+MPI_INT,		 //level
+MPI_INT,		 //evenFlags
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_CHAR,		 //cellIsAForkCandidate
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //isInside
-, 1		 //state
-, 1		 //level
-, DIMENSIONS		 //evenFlags
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //cellIsAForkCandidate
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-
+1,		 //CellDescriptionsIndex
+1,		 //isInside
+1,		 //state
+1,		 //level
+DIMENSIONS,		 //evenFlags
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //cellIsAForkCandidate
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._isInside))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._state))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._level))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._evenFlags))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._responsibleRank))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCell._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[11] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[11] );
+disp[Attributes-1] = sizeof(dummyCell[0]._persistentRecords._persistentRegularSubtreeIndex);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Cell::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Cell::FullDatatype );
 MPI_Type_commit( &Cell::FullDatatype );
 
 }
@@ -14277,101 +14091,95 @@ MPI_Datatype exahype::records::CellPacked::FullDatatype = 0;
 
 void exahype::records::CellPacked::initDatatype() {
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 4;
+const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, 1		 //subtreeHoldsWorker
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+1,		 //subtreeHoldsWorker
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[3] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::Datatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::Datatype );
 MPI_Type_commit( &CellPacked::Datatype );
 
 }
 {
-CellPacked dummyCellPacked;
+CellPacked dummyCellPacked[2];
 
-const int Attributes = 9;
+const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-  MPI_INT		 //CellDescriptionsIndex
-, MPI_INT		 //level
-, MPI_SHORT		 //accessNumber
-, MPI_INT		 //responsibleRank
-, MPI_CHAR		 //subtreeHoldsWorker
-, MPI_INT		 //numberOfLoadsFromInputStream
-, MPI_INT		 //numberOfStoresToOutputStream
-, MPI_INT		 //persistentRegularSubtreeIndex
-, MPI_INT		 //_packedRecords0
-
+MPI_INT,		 //CellDescriptionsIndex
+MPI_INT,		 //level
+MPI_SHORT,		 //accessNumber
+MPI_INT,		 //responsibleRank
+MPI_CHAR,		 //subtreeHoldsWorker
+MPI_INT,		 //numberOfLoadsFromInputStream
+MPI_INT,		 //numberOfStoresToOutputStream
+MPI_INT,		 //persistentRegularSubtreeIndex
+MPI_INT,		 //_packedRecords0
+MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-  1		 //CellDescriptionsIndex
-, 1		 //level
-, DIMENSIONS_TIMES_TWO		 //accessNumber
-, 1		 //responsibleRank
-, 1		 //subtreeHoldsWorker
-, 1		 //numberOfLoadsFromInputStream
-, 1		 //numberOfStoresToOutputStream
-, 1		 //persistentRegularSubtreeIndex
-, 1		 //_packedRecords0
-
+1,		 //CellDescriptionsIndex
+1,		 //level
+DIMENSIONS_TIMES_TWO,		 //accessNumber
+1,		 //responsibleRank
+1,		 //subtreeHoldsWorker
+1,		 //numberOfLoadsFromInputStream
+1,		 //numberOfStoresToOutputStream
+1,		 //persistentRegularSubtreeIndex
+1,		 //_packedRecords0
+1		 // end/displacement flag
 };
 
 MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked))), &base);
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._level))), 		&disp[1] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._accessNumber[0]))), 		&disp[2] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._responsibleRank))), 		&disp[3] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[7] );
-MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked._persistentRecords._packedRecords0))), 		&disp[8] );
-for (int i=1; i<Attributes; i++) {
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._persistentRegularSubtreeIndex))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[8] );
+disp[Attributes-1] = sizeof(dummyCellPacked[0]._persistentRecords._packedRecords0);
+for (int i=1; i<Attributes-1; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
-for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+for (int i=0; i<Attributes-1; i++) {
+disp[i] -= base;
 }
-MPI_Datatype tmpType; 
-MPI_Aint lowerBound, typeExtent; 
-MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &CellPacked::FullDatatype );
+MPI_Type_struct( Attributes, blocklen, disp, subtypes, &CellPacked::FullDatatype );
 MPI_Type_commit( &CellPacked::FullDatatype );
 
 }

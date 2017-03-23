@@ -6,7 +6,7 @@
    }
    
    
-   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
@@ -15,6 +15,7 @@
    _hasToHoldDataForMasterWorkerCommunication(hasToHoldDataForMasterWorkerCommunication),
    _faceDataExchangeCounter(faceDataExchangeCounter),
    _parentIndex(parentIndex),
+   _newlyCreated(newlyCreated),
    _type(type),
    _refinementEvent(refinementEvent),
    _level(level),
@@ -60,13 +61,13 @@
    
    
    exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._adjacentToRemoteRank, persistentRecords._hasToHoldDataForNeighbourCommunication, persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords._compressionState, persistentRecords._bytesPerDoFInPreviousSolution, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._adjacentToRemoteRank, persistentRecords._hasToHoldDataForNeighbourCommunication, persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords._newlyCreated, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords._compressionState, persistentRecords._bytesPerDoFInPreviousSolution, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
       
    }
    
    
-   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, adjacentToRemoteRank, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, adjacentToRemoteRank, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, newlyCreated, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
       
    }
    
@@ -172,6 +173,8 @@
       out << ",";
       out << "parentIndex:" << getParentIndex();
       out << ",";
+      out << "newlyCreated:" << getNewlyCreated();
+      out << ",";
       out << "type:" << toString(getType());
       out << ",";
       out << "refinementEvent:" << toString(getRefinementEvent());
@@ -273,6 +276,7 @@
          getHasToHoldDataForMasterWorkerCommunication(),
          getFaceDataExchangeCounter(),
          getParentIndex(),
+         getNewlyCreated(),
          getType(),
          getRefinementEvent(),
          getLevel(),
@@ -321,326 +325,323 @@
       
       void exahype::records::ADERDGCellDescription::initDatatype() {
          {
-            ADERDGCellDescription dummyADERDGCellDescription;
+            ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 44;
+            const int Attributes = 45;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //riemannSolvePerformed
-               , MPI_INT		 //isInside
-               , MPI_CHAR		 //adjacentToRemoteRank
-               , MPI_CHAR		 //hasToHoldDataForNeighbourCommunication
-               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
-               , MPI_INT		 //faceDataExchangeCounter
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //type
-               , MPI_INT		 //refinementEvent
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //compressionState
-               , MPI_INT		 //bytesPerDoFInPreviousSolution
-               , MPI_INT		 //bytesPerDoFInSolution
-               , MPI_INT		 //bytesPerDoFInUpdate
-               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
-               , MPI_INT		 //bytesPerDoFInFluctuation
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //riemannSolvePerformed
+               MPI_INT,		 //isInside
+               MPI_CHAR,		 //adjacentToRemoteRank
+               MPI_CHAR,		 //hasToHoldDataForNeighbourCommunication
+               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
+               MPI_INT,		 //faceDataExchangeCounter
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //type
+               MPI_INT,		 //refinementEvent
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //compressionState
+               MPI_INT,		 //bytesPerDoFInPreviousSolution
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
-               , DIMENSIONS_TIMES_TWO		 //isInside
-               , 1		 //adjacentToRemoteRank
-               , 1		 //hasToHoldDataForNeighbourCommunication
-               , 1		 //hasToHoldDataForMasterWorkerCommunication
-               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
-               , 1		 //parentIndex
-               , 1		 //type
-               , 1		 //refinementEvent
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //compressionState
-               , 1		 //bytesPerDoFInPreviousSolution
-               , 1		 //bytesPerDoFInSolution
-               , 1		 //bytesPerDoFInUpdate
-               , 1		 //bytesPerDoFInExtrapolatedPredictor
-               , 1		 //bytesPerDoFInFluctuation
-               
+               1,		 //solverNumber
+               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
+               DIMENSIONS_TIMES_TWO,		 //isInside
+               1,		 //adjacentToRemoteRank
+               1,		 //hasToHoldDataForNeighbourCommunication
+               1,		 //hasToHoldDataForMasterWorkerCommunication
+               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
+               1,		 //parentIndex
+               1,		 //type
+               1,		 //refinementEvent
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //compressionState
+               1,		 //bytesPerDoFInPreviousSolution
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._adjacentToRemoteRank))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._hasToHoldDataForNeighbourCommunication))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._parentIndex))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._type))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._refinementEvent))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._level))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._offset[0]))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._size[0]))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStamp))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStepSize))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStamp))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStepSize))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStamp))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solution))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionAverages))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionCompressed))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolution))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionAverages))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionCompressed))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._update))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateAverages))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateCompressed))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictor))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorAverages))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuation))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationAverages))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationCompressed))), 		&disp[33] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMin))), 		&disp[34] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMax))), 		&disp[35] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._limiterStatus))), 		&disp[36] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._mergedLimiterStatus[0]))), 		&disp[37] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._compressionState))), 		&disp[38] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[39] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInSolution))), 		&disp[40] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._adjacentToRemoteRank))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasToHoldDataForNeighbourCommunication))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionAverages))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionCompressed))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolution))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionAverages))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionCompressed))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._update))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateAverages))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateCompressed))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictor))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuation))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationAverages))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationCompressed))), 		&disp[33] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[34] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[35] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus))), 		&disp[36] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[37] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._compressionState))), 		&disp[38] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[39] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[40] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescription::Datatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
             MPI_Type_commit( &ADERDGCellDescription::Datatype );
             
          }
          {
-            ADERDGCellDescription dummyADERDGCellDescription;
+            ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 44;
+            const int Attributes = 46;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //riemannSolvePerformed
-               , MPI_INT		 //isInside
-               , MPI_CHAR		 //adjacentToRemoteRank
-               , MPI_CHAR		 //hasToHoldDataForNeighbourCommunication
-               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
-               , MPI_INT		 //faceDataExchangeCounter
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //type
-               , MPI_INT		 //refinementEvent
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //compressionState
-               , MPI_INT		 //bytesPerDoFInPreviousSolution
-               , MPI_INT		 //bytesPerDoFInSolution
-               , MPI_INT		 //bytesPerDoFInUpdate
-               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
-               , MPI_INT		 //bytesPerDoFInFluctuation
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //riemannSolvePerformed
+               MPI_INT,		 //isInside
+               MPI_CHAR,		 //adjacentToRemoteRank
+               MPI_CHAR,		 //hasToHoldDataForNeighbourCommunication
+               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
+               MPI_INT,		 //faceDataExchangeCounter
+               MPI_INT,		 //parentIndex
+               MPI_CHAR,		 //newlyCreated
+               MPI_INT,		 //type
+               MPI_INT,		 //refinementEvent
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //compressionState
+               MPI_INT,		 //bytesPerDoFInPreviousSolution
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
-               , DIMENSIONS_TIMES_TWO		 //isInside
-               , 1		 //adjacentToRemoteRank
-               , 1		 //hasToHoldDataForNeighbourCommunication
-               , 1		 //hasToHoldDataForMasterWorkerCommunication
-               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
-               , 1		 //parentIndex
-               , 1		 //type
-               , 1		 //refinementEvent
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //compressionState
-               , 1		 //bytesPerDoFInPreviousSolution
-               , 1		 //bytesPerDoFInSolution
-               , 1		 //bytesPerDoFInUpdate
-               , 1		 //bytesPerDoFInExtrapolatedPredictor
-               , 1		 //bytesPerDoFInFluctuation
-               
+               1,		 //solverNumber
+               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
+               DIMENSIONS_TIMES_TWO,		 //isInside
+               1,		 //adjacentToRemoteRank
+               1,		 //hasToHoldDataForNeighbourCommunication
+               1,		 //hasToHoldDataForMasterWorkerCommunication
+               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
+               1,		 //parentIndex
+               1,		 //newlyCreated
+               1,		 //type
+               1,		 //refinementEvent
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //compressionState
+               1,		 //bytesPerDoFInPreviousSolution
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._adjacentToRemoteRank))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._hasToHoldDataForNeighbourCommunication))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._parentIndex))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._type))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._refinementEvent))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._level))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._offset[0]))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._size[0]))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStamp))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStepSize))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStamp))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStepSize))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStamp))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solution))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionAverages))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionCompressed))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolution))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionAverages))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionCompressed))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._update))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateAverages))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateCompressed))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictor))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorAverages))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuation))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationAverages))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationCompressed))), 		&disp[33] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMin))), 		&disp[34] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMax))), 		&disp[35] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._limiterStatus))), 		&disp[36] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._mergedLimiterStatus[0]))), 		&disp[37] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._compressionState))), 		&disp[38] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[39] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInSolution))), 		&disp[40] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInUpdate))), 		&disp[41] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[42] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[43] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._adjacentToRemoteRank))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasToHoldDataForNeighbourCommunication))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._newlyCreated))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionAverages))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionCompressed))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolution))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionAverages))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionCompressed))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._update))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateAverages))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateCompressed))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictor))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuation))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationAverages))), 		&disp[33] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationCompressed))), 		&disp[34] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[35] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[36] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus))), 		&disp[37] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[38] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._compressionState))), 		&disp[39] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[40] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[41] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[42] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[43] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[44] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescription::FullDatatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
             MPI_Type_commit( &ADERDGCellDescription::FullDatatype );
             
          }
@@ -875,23 +876,23 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
-      if ((6 >= (8 * sizeof(int)))) {
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      if ((9 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((6 < (8 * sizeof(int))));
+      assertion((9 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _hasToHoldDataForMasterWorkerCommunication(hasToHoldDataForMasterWorkerCommunication),
    _faceDataExchangeCounter(faceDataExchangeCounter),
@@ -928,6 +929,7 @@
       setIsInside(isInside);
       setAdjacentToRemoteRank(adjacentToRemoteRank);
       setHasToHoldDataForNeighbourCommunication(hasToHoldDataForNeighbourCommunication);
+      setNewlyCreated(newlyCreated);
       setType(type);
       setRefinementEvent(refinementEvent);
       setCompressionState(compressionState);
@@ -936,70 +938,70 @@
       setBytesPerDoFInUpdate(bytesPerDoFInUpdate);
       setBytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor);
       setBytesPerDoFInFluctuation(bytesPerDoFInFluctuation);
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
-      if ((6 >= (8 * sizeof(int)))) {
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      if ((9 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((6 < (8 * sizeof(int))));
+      assertion((9 < (8 * sizeof(int))));
       
    }
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
-      if ((6 >= (8 * sizeof(int)))) {
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      if ((9 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((6 < (8 * sizeof(int))));
+      assertion((9 < (8 * sizeof(int))));
       
    }
    
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords.getAdjacentToRemoteRank(), persistentRecords.getHasToHoldDataForNeighbourCommunication(), persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords.getCompressionState(), persistentRecords.getBytesPerDoFInPreviousSolution(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords.getAdjacentToRemoteRank(), persistentRecords.getHasToHoldDataForNeighbourCommunication(), persistentRecords._hasToHoldDataForMasterWorkerCommunication, persistentRecords._faceDataExchangeCounter, persistentRecords._parentIndex, persistentRecords.getNewlyCreated(), persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords.getCompressionState(), persistentRecords.getBytesPerDoFInPreviousSolution(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
-      if ((6 >= (8 * sizeof(int)))) {
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      if ((9 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((6 < (8 * sizeof(int))));
+      assertion((9 < (8 * sizeof(int))));
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, adjacentToRemoteRank, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 >= (8 * sizeof(int)))) {
+   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, adjacentToRemoteRank, hasToHoldDataForNeighbourCommunication, hasToHoldDataForMasterWorkerCommunication, faceDataExchangeCounter, parentIndex, newlyCreated, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+20 < (8 * sizeof(int))));
-      if ((6 >= (8 * sizeof(int)))) {
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      if ((9 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((6 < (8 * sizeof(int))));
+      assertion((9 < (8 * sizeof(int))));
       
    }
    
@@ -1075,6 +1077,8 @@
    out << getFaceDataExchangeCounter(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
       out << "parentIndex:" << getParentIndex();
+      out << ",";
+      out << "newlyCreated:" << getNewlyCreated();
       out << ",";
       out << "type:" << toString(getType());
       out << ",";
@@ -1177,6 +1181,7 @@
          getHasToHoldDataForMasterWorkerCommunication(),
          getFaceDataExchangeCounter(),
          getParentIndex(),
+         getNewlyCreated(),
          getType(),
          getRefinementEvent(),
          getLevel(),
@@ -1225,266 +1230,260 @@
       
       void exahype::records::ADERDGCellDescriptionPacked::initDatatype() {
          {
-            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked;
+            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
             
-            const int Attributes = 34;
+            const int Attributes = 35;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
-               , MPI_INT		 //faceDataExchangeCounter
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //_packedRecords0
-               , MPI_INT		 //_packedRecords1
-               
+               MPI_INT,		 //solverNumber
+               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
+               MPI_INT,		 //faceDataExchangeCounter
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //_packedRecords0
+               MPI_INT,		 //_packedRecords1
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , 1		 //hasToHoldDataForMasterWorkerCommunication
-               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
-               , 1		 //parentIndex
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //_packedRecords0
-               , 1		 //_packedRecords1
-               
+               1,		 //solverNumber
+               1,		 //hasToHoldDataForMasterWorkerCommunication
+               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
+               1,		 //parentIndex
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //_packedRecords0
+               1,		 //_packedRecords1
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._parentIndex))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._level))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._offset[0]))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._size[0]))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStamp))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStepSize))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStamp))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStepSize))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStamp))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solution))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionAverages))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionCompressed))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolution))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionAverages))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionCompressed))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._update))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateAverages))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateCompressed))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictor))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorAverages))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuation))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationAverages))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationCompressed))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMin))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMax))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._limiterStatus))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords0))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords1))), 		&disp[33] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionAverages))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionCompressed))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionAverages))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionCompressed))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._update))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateAverages))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateCompressed))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictor))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuation))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationAverages))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationCompressed))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMin))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMax))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._limiterStatus))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescriptionPacked::Datatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
             MPI_Type_commit( &ADERDGCellDescriptionPacked::Datatype );
             
          }
          {
-            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked;
+            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
             
-            const int Attributes = 34;
+            const int Attributes = 35;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_CHAR		 //hasToHoldDataForMasterWorkerCommunication
-               , MPI_INT		 //faceDataExchangeCounter
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //_packedRecords0
-               , MPI_INT		 //_packedRecords1
-               
+               MPI_INT,		 //solverNumber
+               MPI_CHAR,		 //hasToHoldDataForMasterWorkerCommunication
+               MPI_INT,		 //faceDataExchangeCounter
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //_packedRecords0
+               MPI_INT,		 //_packedRecords1
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , 1		 //hasToHoldDataForMasterWorkerCommunication
-               , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
-               , 1		 //parentIndex
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //_packedRecords0
-               , 1		 //_packedRecords1
-               
+               1,		 //solverNumber
+               1,		 //hasToHoldDataForMasterWorkerCommunication
+               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
+               1,		 //parentIndex
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //_packedRecords0
+               1,		 //_packedRecords1
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._parentIndex))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._level))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._offset[0]))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._size[0]))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStamp))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStepSize))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStamp))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStepSize))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStamp))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solution))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionAverages))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionCompressed))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolution))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionAverages))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionCompressed))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._update))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateAverages))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateCompressed))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictor))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorAverages))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuation))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationAverages))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationCompressed))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMin))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMax))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._limiterStatus))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords0))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords1))), 		&disp[33] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._hasToHoldDataForMasterWorkerCommunication))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionAverages))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionCompressed))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionAverages))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionCompressed))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._update))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateAverages))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateCompressed))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictor))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuation))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationAverages))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationCompressed))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMin))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMax))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._limiterStatus))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[33] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescriptionPacked::FullDatatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );
             MPI_Type_commit( &ADERDGCellDescriptionPacked::FullDatatype );
             
          }
@@ -1725,11 +1724,12 @@
    }
    
    
-   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
    _parentIndex(parentIndex),
+   _newlyCreated(newlyCreated),
    _type(type),
    _refinementEvent(refinementEvent),
    _level(level),
@@ -1775,13 +1775,13 @@
    
    
    exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._parentIndex, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords._compressionState, persistentRecords._bytesPerDoFInPreviousSolution, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._parentIndex, persistentRecords._newlyCreated, persistentRecords._type, persistentRecords._refinementEvent, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords._compressionState, persistentRecords._bytesPerDoFInPreviousSolution, persistentRecords._bytesPerDoFInSolution, persistentRecords._bytesPerDoFInUpdate, persistentRecords._bytesPerDoFInExtrapolatedPredictor, persistentRecords._bytesPerDoFInFluctuation) {
       
    }
    
    
-   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, newlyCreated, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
       
    }
    
@@ -1874,6 +1874,8 @@
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
       out << "parentIndex:" << getParentIndex();
+      out << ",";
+      out << "newlyCreated:" << getNewlyCreated();
       out << ",";
       out << "type:" << toString(getType());
       out << ",";
@@ -1972,6 +1974,7 @@
          getRiemannSolvePerformed(),
          getIsInside(),
          getParentIndex(),
+         getNewlyCreated(),
          getType(),
          getRefinementEvent(),
          getLevel(),
@@ -2020,302 +2023,299 @@
       
       void exahype::records::ADERDGCellDescription::initDatatype() {
          {
-            ADERDGCellDescription dummyADERDGCellDescription;
+            ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 40;
+            const int Attributes = 41;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //riemannSolvePerformed
-               , MPI_INT		 //isInside
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //type
-               , MPI_INT		 //refinementEvent
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //compressionState
-               , MPI_INT		 //bytesPerDoFInPreviousSolution
-               , MPI_INT		 //bytesPerDoFInSolution
-               , MPI_INT		 //bytesPerDoFInUpdate
-               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
-               , MPI_INT		 //bytesPerDoFInFluctuation
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //riemannSolvePerformed
+               MPI_INT,		 //isInside
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //type
+               MPI_INT,		 //refinementEvent
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //compressionState
+               MPI_INT,		 //bytesPerDoFInPreviousSolution
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
-               , DIMENSIONS_TIMES_TWO		 //isInside
-               , 1		 //parentIndex
-               , 1		 //type
-               , 1		 //refinementEvent
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //compressionState
-               , 1		 //bytesPerDoFInPreviousSolution
-               , 1		 //bytesPerDoFInSolution
-               , 1		 //bytesPerDoFInUpdate
-               , 1		 //bytesPerDoFInExtrapolatedPredictor
-               , 1		 //bytesPerDoFInFluctuation
-               
+               1,		 //solverNumber
+               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
+               DIMENSIONS_TIMES_TWO,		 //isInside
+               1,		 //parentIndex
+               1,		 //type
+               1,		 //refinementEvent
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //compressionState
+               1,		 //bytesPerDoFInPreviousSolution
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._parentIndex))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._type))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._refinementEvent))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._level))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStamp))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStepSize))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStamp))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStepSize))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStamp))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solution))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionAverages))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionCompressed))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolution))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionAverages))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionCompressed))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._update))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateAverages))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateCompressed))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictor))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorAverages))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuation))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationAverages))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationCompressed))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMin))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMax))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._limiterStatus))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._mergedLimiterStatus[0]))), 		&disp[33] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._compressionState))), 		&disp[34] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[35] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInSolution))), 		&disp[36] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionAverages))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionCompressed))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolution))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionAverages))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionCompressed))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._update))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateAverages))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateCompressed))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictor))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuation))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationAverages))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationCompressed))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[33] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._compressionState))), 		&disp[34] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[35] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[36] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescription::Datatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::Datatype );
             MPI_Type_commit( &ADERDGCellDescription::Datatype );
             
          }
          {
-            ADERDGCellDescription dummyADERDGCellDescription;
+            ADERDGCellDescription dummyADERDGCellDescription[2];
             
-            const int Attributes = 40;
+            const int Attributes = 42;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //riemannSolvePerformed
-               , MPI_INT		 //isInside
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //type
-               , MPI_INT		 //refinementEvent
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //compressionState
-               , MPI_INT		 //bytesPerDoFInPreviousSolution
-               , MPI_INT		 //bytesPerDoFInSolution
-               , MPI_INT		 //bytesPerDoFInUpdate
-               , MPI_INT		 //bytesPerDoFInExtrapolatedPredictor
-               , MPI_INT		 //bytesPerDoFInFluctuation
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //riemannSolvePerformed
+               MPI_INT,		 //isInside
+               MPI_INT,		 //parentIndex
+               MPI_CHAR,		 //newlyCreated
+               MPI_INT,		 //type
+               MPI_INT,		 //refinementEvent
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //compressionState
+               MPI_INT,		 //bytesPerDoFInPreviousSolution
+               MPI_INT,		 //bytesPerDoFInSolution
+               MPI_INT,		 //bytesPerDoFInUpdate
+               MPI_INT,		 //bytesPerDoFInExtrapolatedPredictor
+               MPI_INT,		 //bytesPerDoFInFluctuation
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
-               , DIMENSIONS_TIMES_TWO		 //isInside
-               , 1		 //parentIndex
-               , 1		 //type
-               , 1		 //refinementEvent
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //compressionState
-               , 1		 //bytesPerDoFInPreviousSolution
-               , 1		 //bytesPerDoFInSolution
-               , 1		 //bytesPerDoFInUpdate
-               , 1		 //bytesPerDoFInExtrapolatedPredictor
-               , 1		 //bytesPerDoFInFluctuation
-               
+               1,		 //solverNumber
+               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
+               DIMENSIONS_TIMES_TWO,		 //isInside
+               1,		 //parentIndex
+               1,		 //newlyCreated
+               1,		 //type
+               1,		 //refinementEvent
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //compressionState
+               1,		 //bytesPerDoFInPreviousSolution
+               1,		 //bytesPerDoFInSolution
+               1,		 //bytesPerDoFInUpdate
+               1,		 //bytesPerDoFInExtrapolatedPredictor
+               1,		 //bytesPerDoFInFluctuation
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._parentIndex))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._type))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._refinementEvent))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._level))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStamp))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStepSize))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._correctorTimeStamp))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStepSize))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._predictorTimeStamp))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solution))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionAverages))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionCompressed))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolution))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionAverages))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._previousSolutionCompressed))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._update))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateAverages))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._updateCompressed))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictor))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorAverages))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuation))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationAverages))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._fluctuationCompressed))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMin))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._solutionMax))), 		&disp[31] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._limiterStatus))), 		&disp[32] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._mergedLimiterStatus[0]))), 		&disp[33] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._compressionState))), 		&disp[34] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[35] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInSolution))), 		&disp[36] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInUpdate))), 		&disp[37] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[38] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[39] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._newlyCreated))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionAverages))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionCompressed))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolution))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionAverages))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._previousSolutionCompressed))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._update))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateAverages))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._updateCompressed))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictor))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuation))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationAverages))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fluctuationCompressed))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMin))), 		&disp[31] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solutionMax))), 		&disp[32] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._limiterStatus))), 		&disp[33] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[34] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._compressionState))), 		&disp[35] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInPreviousSolution))), 		&disp[36] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInSolution))), 		&disp[37] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInUpdate))), 		&disp[38] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInExtrapolatedPredictor))), 		&disp[39] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation))), 		&disp[40] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescription[0]._persistentRecords._bytesPerDoFInFluctuation);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescription::FullDatatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescription::FullDatatype );
             MPI_Type_commit( &ADERDGCellDescription::FullDatatype );
             
          }
@@ -2550,12 +2550,12 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 < (8 * sizeof(int))));
       if ((6 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2566,7 +2566,7 @@
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
    _solverNumber(solverNumber),
    _parentIndex(parentIndex),
    _level(level),
@@ -2599,6 +2599,7 @@
    _mergedLimiterStatus(mergedLimiterStatus) {
       setRiemannSolvePerformed(riemannSolvePerformed);
       setIsInside(isInside);
+      setNewlyCreated(newlyCreated);
       setType(type);
       setRefinementEvent(refinementEvent);
       setCompressionState(compressionState);
@@ -2607,12 +2608,12 @@
       setBytesPerDoFInUpdate(bytesPerDoFInUpdate);
       setBytesPerDoFInExtrapolatedPredictor(bytesPerDoFInExtrapolatedPredictor);
       setBytesPerDoFInFluctuation(bytesPerDoFInFluctuation);
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 < (8 * sizeof(int))));
       if ((6 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2623,12 +2624,12 @@
    }
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 < (8 * sizeof(int))));
       if ((6 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2640,13 +2641,13 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords._parentIndex, persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords.getCompressionState(), persistentRecords.getBytesPerDoFInPreviousSolution(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords.getRiemannSolvePerformed(), persistentRecords.getIsInside(), persistentRecords._parentIndex, persistentRecords.getNewlyCreated(), persistentRecords.getType(), persistentRecords.getRefinementEvent(), persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._previousCorrectorTimeStamp, persistentRecords._previousCorrectorTimeStepSize, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._solution, persistentRecords._solutionAverages, persistentRecords._solutionCompressed, persistentRecords._previousSolution, persistentRecords._previousSolutionAverages, persistentRecords._previousSolutionCompressed, persistentRecords._update, persistentRecords._updateAverages, persistentRecords._updateCompressed, persistentRecords._extrapolatedPredictor, persistentRecords._extrapolatedPredictorAverages, persistentRecords._extrapolatedPredictorCompressed, persistentRecords._fluctuation, persistentRecords._fluctuationAverages, persistentRecords._fluctuationCompressed, persistentRecords._solutionMin, persistentRecords._solutionMax, persistentRecords._limiterStatus, persistentRecords._mergedLimiterStatus, persistentRecords.getCompressionState(), persistentRecords.getBytesPerDoFInPreviousSolution(), persistentRecords.getBytesPerDoFInSolution(), persistentRecords.getBytesPerDoFInUpdate(), persistentRecords.getBytesPerDoFInExtrapolatedPredictor(), persistentRecords.getBytesPerDoFInFluctuation()) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 < (8 * sizeof(int))));
       if ((6 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2657,14 +2658,14 @@
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
-      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 >= (8 * sizeof(int)))) {
+   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, parentIndex, newlyCreated, type, refinementEvent, level, offset, size, previousCorrectorTimeStamp, previousCorrectorTimeStepSize, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, solution, solutionAverages, solutionCompressed, previousSolution, previousSolutionAverages, previousSolutionCompressed, update, updateAverages, updateCompressed, extrapolatedPredictor, extrapolatedPredictorAverages, extrapolatedPredictorCompressed, fluctuation, fluctuationAverages, fluctuationCompressed, solutionMin, solutionMax, limiterStatus, mergedLimiterStatus, compressionState, bytesPerDoFInPreviousSolution, bytesPerDoFInSolution, bytesPerDoFInUpdate, bytesPerDoFInExtrapolatedPredictor, bytesPerDoFInFluctuation) {
+      if ((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
          std::cerr << "to your data type spec to guide DaStGen how many bits (no-of-bits) a data type has on your machine. DaStGen then can split up the bitfields into several attributes. " << std::endl; 
       }
-      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+18 < (8 * sizeof(int))));
+      assertion((DIMENSIONS_TIMES_TWO+DIMENSIONS_TIMES_TWO+19 < (8 * sizeof(int))));
       if ((6 >= (8 * sizeof(int)))) {
          std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
          std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2734,6 +2735,8 @@
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
       out << "parentIndex:" << getParentIndex();
+      out << ",";
+      out << "newlyCreated:" << getNewlyCreated();
       out << ",";
       out << "type:" << toString(getType());
       out << ",";
@@ -2832,6 +2835,7 @@
          getRiemannSolvePerformed(),
          getIsInside(),
          getParentIndex(),
+         getNewlyCreated(),
          getType(),
          getRefinementEvent(),
          getLevel(),
@@ -2880,254 +2884,248 @@
       
       void exahype::records::ADERDGCellDescriptionPacked::initDatatype() {
          {
-            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked;
+            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
             
-            const int Attributes = 32;
+            const int Attributes = 33;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //_packedRecords0
-               , MPI_INT		 //_packedRecords1
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //_packedRecords0
+               MPI_INT,		 //_packedRecords1
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , 1		 //parentIndex
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //_packedRecords0
-               , 1		 //_packedRecords1
-               
+               1,		 //solverNumber
+               1,		 //parentIndex
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //_packedRecords0
+               1,		 //_packedRecords1
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._parentIndex))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._level))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._offset[0]))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._size[0]))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStamp))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStepSize))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStamp))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStepSize))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStamp))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solution))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionAverages))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionCompressed))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolution))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionAverages))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionCompressed))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._update))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateAverages))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateCompressed))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictor))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorAverages))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuation))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationAverages))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationCompressed))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMin))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMax))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._limiterStatus))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords0))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords1))), 		&disp[31] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionAverages))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionCompressed))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionAverages))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionCompressed))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._update))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateAverages))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateCompressed))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictor))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuation))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationAverages))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationCompressed))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMin))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMax))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._limiterStatus))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescriptionPacked::Datatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::Datatype );
             MPI_Type_commit( &ADERDGCellDescriptionPacked::Datatype );
             
          }
          {
-            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked;
+            ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
             
-            const int Attributes = 32;
+            const int Attributes = 33;
             MPI_Datatype subtypes[Attributes] = {
-                 MPI_INT		 //solverNumber
-               , MPI_INT		 //parentIndex
-               , MPI_INT		 //level
-               , MPI_DOUBLE		 //offset
-               , MPI_DOUBLE		 //size
-               , MPI_DOUBLE		 //previousCorrectorTimeStamp
-               , MPI_DOUBLE		 //previousCorrectorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStepSize
-               , MPI_DOUBLE		 //correctorTimeStamp
-               , MPI_DOUBLE		 //predictorTimeStepSize
-               , MPI_DOUBLE		 //predictorTimeStamp
-               , MPI_INT		 //solution
-               , MPI_INT		 //solutionAverages
-               , MPI_INT		 //solutionCompressed
-               , MPI_INT		 //previousSolution
-               , MPI_INT		 //previousSolutionAverages
-               , MPI_INT		 //previousSolutionCompressed
-               , MPI_INT		 //update
-               , MPI_INT		 //updateAverages
-               , MPI_INT		 //updateCompressed
-               , MPI_INT		 //extrapolatedPredictor
-               , MPI_INT		 //extrapolatedPredictorAverages
-               , MPI_INT		 //extrapolatedPredictorCompressed
-               , MPI_INT		 //fluctuation
-               , MPI_INT		 //fluctuationAverages
-               , MPI_INT		 //fluctuationCompressed
-               , MPI_INT		 //solutionMin
-               , MPI_INT		 //solutionMax
-               , MPI_INT		 //limiterStatus
-               , MPI_INT		 //mergedLimiterStatus
-               , MPI_INT		 //_packedRecords0
-               , MPI_INT		 //_packedRecords1
-               
+               MPI_INT,		 //solverNumber
+               MPI_INT,		 //parentIndex
+               MPI_INT,		 //level
+               MPI_DOUBLE,		 //offset
+               MPI_DOUBLE,		 //size
+               MPI_DOUBLE,		 //previousCorrectorTimeStamp
+               MPI_DOUBLE,		 //previousCorrectorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStepSize
+               MPI_DOUBLE,		 //correctorTimeStamp
+               MPI_DOUBLE,		 //predictorTimeStepSize
+               MPI_DOUBLE,		 //predictorTimeStamp
+               MPI_INT,		 //solution
+               MPI_INT,		 //solutionAverages
+               MPI_INT,		 //solutionCompressed
+               MPI_INT,		 //previousSolution
+               MPI_INT,		 //previousSolutionAverages
+               MPI_INT,		 //previousSolutionCompressed
+               MPI_INT,		 //update
+               MPI_INT,		 //updateAverages
+               MPI_INT,		 //updateCompressed
+               MPI_INT,		 //extrapolatedPredictor
+               MPI_INT,		 //extrapolatedPredictorAverages
+               MPI_INT,		 //extrapolatedPredictorCompressed
+               MPI_INT,		 //fluctuation
+               MPI_INT,		 //fluctuationAverages
+               MPI_INT,		 //fluctuationCompressed
+               MPI_INT,		 //solutionMin
+               MPI_INT,		 //solutionMax
+               MPI_INT,		 //limiterStatus
+               MPI_INT,		 //mergedLimiterStatus
+               MPI_INT,		 //_packedRecords0
+               MPI_INT,		 //_packedRecords1
+               MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-                 1		 //solverNumber
-               , 1		 //parentIndex
-               , 1		 //level
-               , DIMENSIONS		 //offset
-               , DIMENSIONS		 //size
-               , 1		 //previousCorrectorTimeStamp
-               , 1		 //previousCorrectorTimeStepSize
-               , 1		 //correctorTimeStepSize
-               , 1		 //correctorTimeStamp
-               , 1		 //predictorTimeStepSize
-               , 1		 //predictorTimeStamp
-               , 1		 //solution
-               , 1		 //solutionAverages
-               , 1		 //solutionCompressed
-               , 1		 //previousSolution
-               , 1		 //previousSolutionAverages
-               , 1		 //previousSolutionCompressed
-               , 1		 //update
-               , 1		 //updateAverages
-               , 1		 //updateCompressed
-               , 1		 //extrapolatedPredictor
-               , 1		 //extrapolatedPredictorAverages
-               , 1		 //extrapolatedPredictorCompressed
-               , 1		 //fluctuation
-               , 1		 //fluctuationAverages
-               , 1		 //fluctuationCompressed
-               , 1		 //solutionMin
-               , 1		 //solutionMax
-               , 1		 //limiterStatus
-               , DIMENSIONS_TIMES_TWO		 //mergedLimiterStatus
-               , 1		 //_packedRecords0
-               , 1		 //_packedRecords1
-               
+               1,		 //solverNumber
+               1,		 //parentIndex
+               1,		 //level
+               DIMENSIONS,		 //offset
+               DIMENSIONS,		 //size
+               1,		 //previousCorrectorTimeStamp
+               1,		 //previousCorrectorTimeStepSize
+               1,		 //correctorTimeStepSize
+               1,		 //correctorTimeStamp
+               1,		 //predictorTimeStepSize
+               1,		 //predictorTimeStamp
+               1,		 //solution
+               1,		 //solutionAverages
+               1,		 //solutionCompressed
+               1,		 //previousSolution
+               1,		 //previousSolutionAverages
+               1,		 //previousSolutionCompressed
+               1,		 //update
+               1,		 //updateAverages
+               1,		 //updateCompressed
+               1,		 //extrapolatedPredictor
+               1,		 //extrapolatedPredictorAverages
+               1,		 //extrapolatedPredictorCompressed
+               1,		 //fluctuation
+               1,		 //fluctuationAverages
+               1,		 //fluctuationCompressed
+               1,		 //solutionMin
+               1,		 //solutionMax
+               1,		 //limiterStatus
+               DIMENSIONS_TIMES_TWO,		 //mergedLimiterStatus
+               1,		 //_packedRecords0
+               1,		 //_packedRecords1
+               1		 // end/displacement flag
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._parentIndex))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._level))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._offset[0]))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._size[0]))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStamp))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStepSize))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._correctorTimeStamp))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStepSize))), 		&disp[9] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._predictorTimeStamp))), 		&disp[10] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solution))), 		&disp[11] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionAverages))), 		&disp[12] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionCompressed))), 		&disp[13] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolution))), 		&disp[14] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionAverages))), 		&disp[15] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._previousSolutionCompressed))), 		&disp[16] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._update))), 		&disp[17] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateAverages))), 		&disp[18] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._updateCompressed))), 		&disp[19] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictor))), 		&disp[20] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorAverages))), 		&disp[21] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[22] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuation))), 		&disp[23] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationAverages))), 		&disp[24] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._fluctuationCompressed))), 		&disp[25] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMin))), 		&disp[26] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._solutionMax))), 		&disp[27] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._limiterStatus))), 		&disp[28] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords0))), 		&disp[30] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked._persistentRecords._packedRecords1))), 		&disp[31] );
-            for (int i=1; i<Attributes; i++) {
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStamp))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousCorrectorTimeStepSize))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionAverages))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionCompressed))), 		&disp[13] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[14] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionAverages))), 		&disp[15] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._previousSolutionCompressed))), 		&disp[16] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._update))), 		&disp[17] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateAverages))), 		&disp[18] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._updateCompressed))), 		&disp[19] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictor))), 		&disp[20] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorAverages))), 		&disp[21] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._extrapolatedPredictorCompressed))), 		&disp[22] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuation))), 		&disp[23] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationAverages))), 		&disp[24] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fluctuationCompressed))), 		&disp[25] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMin))), 		&disp[26] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solutionMax))), 		&disp[27] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._limiterStatus))), 		&disp[28] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._mergedLimiterStatus[0]))), 		&disp[29] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords0))), 		&disp[30] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1))), 		&disp[31] );
+            disp[Attributes-1] = sizeof(dummyADERDGCellDescriptionPacked[0]._persistentRecords._packedRecords1);
+            for (int i=1; i<Attributes-1; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
-            for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            for (int i=0; i<Attributes-1; i++) {
+               disp[i] -= base;
             }
-            MPI_Datatype tmpType; 
-            MPI_Aint lowerBound, typeExtent; 
-            MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
-            MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
-            MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &ADERDGCellDescriptionPacked::FullDatatype );
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &ADERDGCellDescriptionPacked::FullDatatype );
             MPI_Type_commit( &ADERDGCellDescriptionPacked::FullDatatype );
             
          }
