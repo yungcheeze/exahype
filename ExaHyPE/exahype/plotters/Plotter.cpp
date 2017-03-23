@@ -422,8 +422,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlotting
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
 
-  // TODO(Dominic): Remove
-  logInfo(
+  logDebug(
     "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
     "plotter="<< _identifier <<
     ", active=" << ( isActive() ? "yes" : "no" ) <<
