@@ -40,74 +40,13 @@ tarch::logging::Log _log("");
 void version(const std::string& programname); // version dumping, see below
 void help(const std::string& programname);  // A help message
 
-int main(int argc, char** argv) {
-  peano::fillLookupTables();
-
-  //
-  //   Setup environment
-  // =====================
-  //
-  int parallelSetup = peano::initParallelEnvironment(&argc, &argv);
-  if (parallelSetup != 0) {
-#ifdef Parallel
-    // Please do not use the logging if MPI doesn't work properly.
-    std::cerr << "mpi initialisation wasn't successful. Application shut down"
-              << std::endl;
-#else
-    _log.error("main()",
-               "mpi initialisation wasn't successful. Application shut down");
-#endif
-    return parallelSetup;
-  }
-
-  int sharedMemorySetup = peano::initSharedMemoryEnvironment();
-  if (sharedMemorySetup != 0) {
-    logError("main()",
-             "shared memory initialisation wasn't successful. Application shut "
-             "down");
-    return sharedMemorySetup;
-  }
-
-  //
-  //   Parse config file
-  // =====================
-  //
-
-  std::string progname = argv[0];
-
-  if (argc < 2) {
-    logError("main()", "Usage: " << progname << " config-file [additional args passed to Solver...]");
-    return -1;
-  }
-
-  // cmdlineargs contains all argv expect the progname.
-  std::vector<std::string> cmdlineargs(argv + 1, argv + argc);
-  std::string firstarg = cmdlineargs[0];
-
-  bool showHelp    = firstarg == "-h" || firstarg == "--help";
-  bool showVersion = firstarg == "-v" || firstarg == "--version";
-
-  if(showHelp) {
-    help(progname);
-    return EXIT_SUCCESS;
-  }
-
-  if(showVersion) {
-    version(progname);
-    return EXIT_SUCCESS;
-  }
-
-  exahype::Parser parser;
-  parser.readFile(firstarg);
-
-  if (!parser.isValid()) {
-    logError("main()", "invalid config file. Quit");
-    return -2;
-  }
 
 
-
-
+/**
+ * The ping pong test has to be triggered by main very very early. There should
+ * be no other message in the MPI subsystem.
+ */
+void pingPoingTest() {
   #if defined(Asserts) && defined(Parallel)
   logInfo( "run()", "start ping-pong test" );
   exahype::Vertex::initDatatype();
@@ -137,7 +76,9 @@ int main(int argc, char** argv) {
       logInfo( "run()", "vertices left system" );
 
       exahype::Vertex* heapVertices = new exahype::Vertex[5];
+      logInfo( "run()", "wait for three vertices to arrive" );
       MPI_Recv( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+      logInfo( "run()", "vertices have arrived" );
 
       assertion3( heapVertices[0].getLevel()==4,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       assertion3( heapVertices[0].getX()(0)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
@@ -161,6 +102,7 @@ int main(int argc, char** argv) {
       #endif
 
       delete[] heapVertices;
+      logInfo( "run()", "ping-poing test ok" );
     }
     else {
       logInfo( "run()", "start to receive vertex " );
@@ -202,14 +144,81 @@ int main(int argc, char** argv) {
       heapVertices[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
       heapVertices[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
       heapVertices[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
-      MPI_Send( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      MPI_Send( heapVertices, 0, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator() );
       delete[] heapVertices;
       logInfo( "run()", "ping-poing test ok" );
     }
   }
+  MPI_Barrier( tarch::parallel::Node::getInstance().getCommunicator() );
   #endif
+}
 
-  
+
+int main(int argc, char** argv) {
+  peano::fillLookupTables();
+
+  //
+  //   Setup environment
+  // =====================
+  //
+  int parallelSetup = peano::initParallelEnvironment(&argc, &argv);
+  if (parallelSetup != 0) {
+#ifdef Parallel
+    // Please do not use the logging if MPI doesn't work properly.
+    std::cerr << "mpi initialisation wasn't successful. Application shut down"
+              << std::endl;
+#else
+    _log.error("main()",
+               "mpi initialisation wasn't successful. Application shut down");
+#endif
+    return parallelSetup;
+  }
+
+  int sharedMemorySetup = peano::initSharedMemoryEnvironment();
+  if (sharedMemorySetup != 0) {
+    logError("main()",
+             "shared memory initialisation wasn't successful. Application shut "
+             "down");
+    return sharedMemorySetup;
+  }
+
+  pingPoingTest();
+
+  //
+  //   Parse config file
+  // =====================
+  //
+  std::string progname = argv[0];
+
+  if (argc < 2) {
+    logError("main()", "Usage: " << progname << " config-file [additional args passed to Solver...]");
+    return -1;
+  }
+
+  // cmdlineargs contains all argv expect the progname.
+  std::vector<std::string> cmdlineargs(argv + 1, argv + argc);
+  std::string firstarg = cmdlineargs[0];
+
+  bool showHelp    = firstarg == "-h" || firstarg == "--help";
+  bool showVersion = firstarg == "-v" || firstarg == "--version";
+
+  if(showHelp) {
+    help(progname);
+    return EXIT_SUCCESS;
+  }
+
+  if(showVersion) {
+    version(progname);
+    return EXIT_SUCCESS;
+  }
+
+  exahype::Parser parser;
+  parser.readFile(firstarg);
+
+  if (!parser.isValid()) {
+    logError("main()", "invalid config file. Quit");
+    return -2;
+  }
 
   //
   //   Init solver registries
