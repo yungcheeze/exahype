@@ -202,9 +202,10 @@
 #endif
             };
             
-            MPI_Aint     disp[Attributes];
+            MPI_Aint  disp[Attributes];
+            MPI_Aint  base;
             
-            MPI_Aint base;
+            #ifdef MPI2
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[0] );
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[1] );
@@ -216,10 +217,20 @@
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[7] );
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[9] );
-
-#ifndef MPI2
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))),     &disp[10] );
-#endif
+            #else
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))),    &disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))),    &disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._insideOutsideDomain))),    &disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._x[0]))),     &disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._level))),    &disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentRanks[0]))),     &disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))),    &disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))),     &disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))),    &disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))),    &disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))),     &disp[10] );
+            #endif
 
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -228,14 +239,14 @@
                disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
             }
 
-#ifdef MPI2
+            #ifdef MPI2
             MPI_Datatype tmpType; 
             MPI_Aint lowerBound, typeExtent; 
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Vertex::Datatype );
             MPI_Type_commit( &Vertex::Datatype );
-#else
+            #else
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
             MPI_Type_commit( &Vertex::Datatype );
             #endif
