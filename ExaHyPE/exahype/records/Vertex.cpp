@@ -1,5 +1,9 @@
 #include "exahype/records/Vertex.h"
 
+#define Parallel
+#define PersistentRegularSubtrees
+#define Asserts
+
 #if defined(Parallel) && defined(PersistentRegularSubtrees) && defined(Asserts)
    exahype::records::Vertex::PersistentRecords::PersistentRecords() {
       
@@ -157,9 +161,13 @@
       
       void exahype::records::Vertex::initDatatype() {
          {
-            Vertex dummyVertex;
-            
+            Vertex dummyVertex[2];
+//#define MPI2
+            #ifdef MPI2
             const int Attributes = 10;
+            #else
+            const int Attributes = 11;
+            #endif
             MPI_Datatype subtypes[Attributes] = {
                  MPI_CHAR		 //isHangingNode
                , MPI_INT		 //refinementControl
@@ -171,6 +179,9 @@
                , MPI_CHAR		 //parentRegularPersistentSubgrid
                , MPI_CHAR		 //parentRegularPersistentSubgridInPreviousIteration
                , MPI_INT		 //numberOfAdjacentRefinedCells
+#ifndef MPI2
+               , MPI_UB
+#endif
                
             };
             
@@ -186,35 +197,48 @@
                , 1		 //parentRegularPersistentSubgridInPreviousIteration
                , 1		 //numberOfAdjacentRefinedCells
                
+#ifndef MPI2
+               ,1
+#endif
             };
             
             MPI_Aint     disp[Attributes];
             
             MPI_Aint base;
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex))), &base);
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._isHangingNode))), 		&disp[0] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._refinementControl))), 		&disp[1] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._insideOutsideDomain))), 		&disp[2] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._x[0]))), 		&disp[3] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._level))), 		&disp[4] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._adjacentRanks[0]))), 		&disp[5] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[6] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[7] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex._numberOfAdjacentRefinedCells))), 		&disp[9] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[0] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[1] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._insideOutsideDomain))), 		&disp[2] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._x[0]))), 		&disp[3] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._level))), 		&disp[4] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentRanks[0]))), 		&disp[5] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[6] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgrid))), 		&disp[7] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._parentRegularPersistentSubgridInPreviousIteration))), 		&disp[8] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[9] );
+
+#ifndef MPI2
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[1]._persistentRecords._isHangingNode))),     &disp[10] );
+#endif
+
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
             }
             for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+               disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
             }
+
+#ifdef MPI2
             MPI_Datatype tmpType; 
             MPI_Aint lowerBound, typeExtent; 
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &Vertex::Datatype );
             MPI_Type_commit( &Vertex::Datatype );
-            
+#else
+            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &Vertex::Datatype );
+            MPI_Type_commit( &Vertex::Datatype );
+            #endif
          }
          {
             Vertex dummyVertex;
@@ -275,7 +299,7 @@
                assertion1( disp[i] > disp[i-1], i );
             }
             for (int i=0; i<Attributes; i++) {
-               disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+               disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
             }
             MPI_Datatype tmpType; 
             MPI_Aint lowerBound, typeExtent; 
@@ -742,7 +766,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
             assertion1( disp[i] > disp[i-1], i );
          }
          for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
          }
          MPI_Datatype tmpType; 
          MPI_Aint lowerBound, typeExtent; 
@@ -802,7 +826,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
             assertion1( disp[i] > disp[i-1], i );
          }
          for (int i=0; i<Attributes; i++) {
-            disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+            disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
          }
          MPI_Datatype tmpType; 
          MPI_Aint lowerBound, typeExtent; 
@@ -1237,7 +1261,7 @@ void exahype::records::Vertex::initDatatype() {
          assertion1( disp[i] > disp[i-1], i );
       }
       for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
       }
       MPI_Datatype tmpType; 
       MPI_Aint lowerBound, typeExtent; 
@@ -1300,7 +1324,7 @@ void exahype::records::Vertex::initDatatype() {
          assertion1( disp[i] > disp[i-1], i );
       }
       for (int i=0; i<Attributes; i++) {
-         disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+         disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
       }
       MPI_Datatype tmpType; 
       MPI_Aint lowerBound, typeExtent; 
@@ -1752,7 +1776,7 @@ void exahype::records::VertexPacked::initDatatype() {
       assertion1( disp[i] > disp[i-1], i );
    }
    for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
    }
    MPI_Datatype tmpType; 
    MPI_Aint lowerBound, typeExtent; 
@@ -1809,7 +1833,7 @@ void exahype::records::VertexPacked::initDatatype() {
       assertion1( disp[i] > disp[i-1], i );
    }
    for (int i=0; i<Attributes; i++) {
-      disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+      disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
    }
    MPI_Datatype tmpType; 
    MPI_Aint lowerBound, typeExtent; 
@@ -2251,7 +2275,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2314,7 +2338,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2767,7 +2791,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -2821,7 +2845,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3256,7 +3280,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3319,7 +3343,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3768,7 +3792,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -3822,7 +3846,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4237,7 +4261,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4294,7 +4318,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4728,7 +4752,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -4779,7 +4803,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5200,7 +5224,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5257,7 +5281,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5692,7 +5716,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -5740,7 +5764,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6162,7 +6186,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6219,7 +6243,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6657,7 +6681,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -6708,7 +6732,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7109,7 +7133,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7160,7 +7184,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7580,7 +7604,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 
@@ -7625,7 +7649,7 @@ for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
 }
 for (int i=0; i<Attributes; i++) {
-disp[i] -= base; // disp[i] -= base; // disp[i] -= base; // disp[i] = MPI_Aint_diff(disp[i], base);
+disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
 }
 MPI_Datatype tmpType; 
 MPI_Aint lowerBound, typeExtent; 

@@ -116,12 +116,22 @@ int main(int argc, char** argv) {
   if (tarch::parallel::Node::getInstance().getNumberOfNodes()==2) {
     if (tarch::parallel::Node::getInstance().getRank()==0) {
       sendVertex[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
-      sendVertex[0].send(1,100,false,-1);
+      sendVertex[0].setAdjacentRank( 0, 10 );
+      sendVertex[0].setAdjacentRank( 1, 11 );
+      sendVertex[0].setAdjacentRank( 2, 12 );
+      sendVertex[0].setAdjacentRank( 3, 13 );
       sendVertex[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
-      sendVertex[1].send(1,100,false,-1);
+      sendVertex[1].setAdjacentRank( 0, 20 );
+      sendVertex[1].setAdjacentRank( 1, 21 );
+      sendVertex[1].setAdjacentRank( 2, 22 );
+      sendVertex[1].setAdjacentRank( 3, 23 );
       sendVertex[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
+      sendVertex[2].setAdjacentRank( 0, 30 );
+      sendVertex[2].setAdjacentRank( 1, 31 );
+      sendVertex[2].setAdjacentRank( 2, 32 );
+      sendVertex[2].setAdjacentRank( 3, 33 );
 
-      sendVertex[2].send(1,100,false,-1);
+      sendVertex[0].send(1,100,false,-1);
       logInfo( "run()", "vertex left system" );
       MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
       logInfo( "run()", "vertices left system" );
