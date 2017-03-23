@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_DropIncomingMPIMetadataMessages_H_
-#define EXAHYPE_MAPPINGS_DropIncomingMPIMetadataMessages_H_
+#ifndef EXAHYPE_MAPPINGS_FinaliseMeshRefinement_H_
+#define EXAHYPE_MAPPINGS_FinaliseMeshRefinement_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -29,42 +29,30 @@
 
 namespace exahype {
   namespace mappings {
-    class DropIncomingMPIMetadataMessages;
+    class FinaliseMeshRefinement;
   }
 }
 
 /**
- * This mapping is does only plug into the boundary receive operations. In the
- * serial mode, i.e. if you compile without MPI, it reduces to nop. The incoming
- * messages are taken from the heap but we do nothing with this information.
+ * This mapping is used to finalise grid refinement operations.
  *
- * The mapping is used by the global time stepping whenever the optimistic step
- * size choice fails. If this happens, the code reruns the predictor again and
- * this predictor automatically sends out face data for the subsequent Riemann
- * solve. In return, the old face data becomes invalid. As we cannot recall it
- * (it already left the node through MPI), we receive it throughout the resend
- * in this mapping and just drop it.
+ * If you compile with MPI, it will further drop grid metadata messages
+ * that have been sent during the grid update iterations.
  *
- * @author Tobias Weinzierl
+ * @author Dominic Charrier
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::DropIncomingMPIMetadataMessages {
+class exahype::mappings::FinaliseMeshRefinement {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
  public:
-  /**
-   * These flags are used to inform Peano about your operation. It tells the
-   * framework whether the operation is empty, whether it works only on the
-   * spacetree leaves, whether the operation can restart if the thread
-   * crashes (resiliency), and so forth. This information allows Peano to
-   * optimise the code.
-   *
-   * @see peano::MappingSpecification for information on thread safety.
-   */
+  /* Nop */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
+
+
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
   static peano::MappingSpecification enterCellSpecification();
   static peano::MappingSpecification leaveCellSpecification();
@@ -74,27 +62,47 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
+   * Finalise the synchronous sending operations started in the
+   * previous iteration.
+   *
+   * I further need to start sending synchronous data since I will send time step data
+   * size in the Sending mapping in the same adapter.
+   */
+  void beginIteration(exahype::State& solverState);
+
+  /**
    * Nop
    */
-  DropIncomingMPIMetadataMessages();
+  void enterCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * Nop
+   */
+  FinaliseMeshRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop
    */
-  DropIncomingMPIMetadataMessages(const DropIncomingMPIMetadataMessages& masterThread);
+  FinaliseMeshRefinement(const FinaliseMeshRefinement& masterThread);
 #endif
 
   /**
    * Nop
    */
-  virtual ~DropIncomingMPIMetadataMessages();
+  virtual ~FinaliseMeshRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop
    */
-  void mergeWithWorkerThread(const DropIncomingMPIMetadataMessages& workerThread);
+  void mergeWithWorkerThread(const FinaliseMeshRefinement& workerThread);
 #endif
 
   /**
@@ -331,17 +339,6 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
   /**
    * Nop
    */
-  void enterCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
   void leaveCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -349,15 +346,6 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Finalise the synchronous sending operations started in the
-   * previous iteration.
-   *
-   * I further need to start sending synchronous data since I will send time step data
-   * size in the Sending mapping in the same adapter.
-   */
-  void beginIteration(exahype::State& solverState);
 
   /**
    * Nop

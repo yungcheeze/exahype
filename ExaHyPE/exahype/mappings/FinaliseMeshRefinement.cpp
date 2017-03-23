@@ -11,14 +11,18 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
+#include "exahype/mappings/FinaliseMeshRefinement.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "tarch/multicore/Loop.h"
+
+#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "exahype/solvers/Solver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::communicationSpecification() {
+exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           MaskOutMasterWorkerDataAndStateExchange,
@@ -28,13 +32,13 @@ exahype::mappings::DropIncomingMPIMetadataMessages::communicationSpecification()
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexLastTimeSpecification() {
+exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
-peano::MappingSpecification exahype::mappings::DropIncomingMPIMetadataMessages::
+peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
     touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
@@ -42,50 +46,50 @@ peano::MappingSpecification exahype::mappings::DropIncomingMPIMetadataMessages::
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::enterCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::leaveCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::ascendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMetadataMessages::descendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
-tarch::logging::Log exahype::mappings::DropIncomingMPIMetadataMessages::_log(
-    "exahype::mappings::DropIncomingMPIMetadataMessages");
+tarch::logging::Log exahype::mappings::FinaliseMeshRefinement::_log(
+    "exahype::mappings::FinaliseMeshRefinement");
 
-exahype::mappings::DropIncomingMPIMetadataMessages::DropIncomingMPIMetadataMessages() {}
+exahype::mappings::FinaliseMeshRefinement::FinaliseMeshRefinement() {}
 
-exahype::mappings::DropIncomingMPIMetadataMessages::~DropIncomingMPIMetadataMessages() {}
+exahype::mappings::FinaliseMeshRefinement::~FinaliseMeshRefinement() {}
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::DropIncomingMPIMetadataMessages::DropIncomingMPIMetadataMessages(
-    const DropIncomingMPIMetadataMessages& masterThread) {}
+exahype::mappings::FinaliseMeshRefinement::FinaliseMeshRefinement(
+    const FinaliseMeshRefinement& masterThread) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithWorkerThread(
-    const DropIncomingMPIMetadataMessages& workerThread) {}
+void exahype::mappings::FinaliseMeshRefinement::mergeWithWorkerThread(
+    const FinaliseMeshRefinement& workerThread) {}
 #endif
 
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(exahype::State& solverState) {
+void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   #ifdef Parallel
@@ -103,12 +107,40 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(exahype:
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
+void exahype::mappings::FinaliseMeshRefinement::enterCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  if (fineGridCell.isInitialised()) {
+    const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[solverNumber];
+      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::endIteration(
-    exahype::State& solverState) {}
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->finaliseStateUpdates(
+            fineGridCell,
+            fineGridVertices,
+            fineGridVerticesEnumerator,
+            coarseGridVertices,
+            coarseGridVerticesEnumerator,
+            coarseGridCell,
+            fineGridPositionOfCell,
+            solverNumber);
+      }
+    endpfor
+    grainSize.parallelSectionHasTerminated();
+  }
+}
 
 #ifdef Parallel
-void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
+void exahype::mappings::FinaliseMeshRefinement::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
@@ -142,35 +174,35 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
 
 
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToNeighbour(
+void exahype::mappings::FinaliseMeshRefinement::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::prepareCopyToRemoteNode(
+void exahype::mappings::FinaliseMeshRefinement::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::prepareCopyToRemoteNode(
+void exahype::mappings::FinaliseMeshRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::
+void exahype::mappings::FinaliseMeshRefinement::
     mergeWithRemoteDataDueToForkOrJoin(
         exahype::Vertex& localVertex,
         const exahype::Vertex& masterOrWorkerVertex, int fromRank,
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::
+void exahype::mappings::FinaliseMeshRefinement::
     mergeWithRemoteDataDueToForkOrJoin(
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
 
-bool exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToWorker(
+bool exahype::mappings::FinaliseMeshRefinement::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -181,7 +213,7 @@ bool exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToWorker(
   return false;
 }
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToMaster(
+void exahype::mappings::FinaliseMeshRefinement::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -189,7 +221,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToMaster(
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithMaster(
+void exahype::mappings::FinaliseMeshRefinement::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -202,7 +234,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithMaster(
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::receiveDataFromMaster(
+void exahype::mappings::FinaliseMeshRefinement::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -213,18 +245,24 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithWorker(
+void exahype::mappings::FinaliseMeshRefinement::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithWorker(
+void exahype::mappings::FinaliseMeshRefinement::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
 #endif
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::createHangingVertex(
+/**
+ * Nop
+ */
+void exahype::mappings::FinaliseMeshRefinement::endIteration(
+    exahype::State& solverState) {}
+
+void exahype::mappings::FinaliseMeshRefinement::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -233,7 +271,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::createHangingVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::destroyHangingVertex(
+void exahype::mappings::FinaliseMeshRefinement::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -242,7 +280,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::destroyHangingVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::createInnerVertex(
+void exahype::mappings::FinaliseMeshRefinement::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -251,7 +289,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::createInnerVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::createBoundaryVertex(
+void exahype::mappings::FinaliseMeshRefinement::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -260,7 +298,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::createBoundaryVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::destroyVertex(
+void exahype::mappings::FinaliseMeshRefinement::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -269,7 +307,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::destroyVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::createCell(
+void exahype::mappings::FinaliseMeshRefinement::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -277,7 +315,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::createCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::destroyCell(
+void exahype::mappings::FinaliseMeshRefinement::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -285,7 +323,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::destroyCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexFirstTime(
+void exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -294,7 +332,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexFirstTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexLastTime(
+void exahype::mappings::FinaliseMeshRefinement::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -303,7 +341,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::enterCell(
+void exahype::mappings::FinaliseMeshRefinement::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -311,22 +349,14 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::leaveCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
-
-void exahype::mappings::DropIncomingMPIMetadataMessages::descend(
+void exahype::mappings::FinaliseMeshRefinement::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {}
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::ascend(
+void exahype::mappings::FinaliseMeshRefinement::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

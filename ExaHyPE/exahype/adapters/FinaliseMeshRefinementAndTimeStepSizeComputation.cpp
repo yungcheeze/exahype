@@ -1,9 +1,9 @@
-#include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h"
+#include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::communicationSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::communicationSpecification()
    & exahype::mappings::PreProcessing::communicationSpecification()
    & exahype::mappings::TimeStepSizeComputation::communicationSpecification()
    & exahype::mappings::Sending::communicationSpecification()
@@ -13,9 +13,9 @@ peano::CommunicationSpecification   exahype::adapters::DropMPIMetadataMessagesAn
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexLastTimeSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification()
    & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
    & exahype::mappings::TimeStepSizeComputation::touchVertexLastTimeSpecification()
    & exahype::mappings::Sending::touchVertexLastTimeSpecification()
@@ -25,9 +25,9 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::touchVertexFirstTimeSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTimeSpecification()
    & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
    & exahype::mappings::TimeStepSizeComputation::touchVertexFirstTimeSpecification()
    & exahype::mappings::Sending::touchVertexFirstTimeSpecification()
@@ -37,9 +37,9 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::enterCellSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::enterCellSpecification()
    & exahype::mappings::PreProcessing::enterCellSpecification()
    & exahype::mappings::TimeStepSizeComputation::enterCellSpecification()
    & exahype::mappings::Sending::enterCellSpecification()
@@ -49,9 +49,9 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::leaveCellSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification()
    & exahype::mappings::PreProcessing::leaveCellSpecification()
    & exahype::mappings::TimeStepSizeComputation::leaveCellSpecification()
    & exahype::mappings::Sending::leaveCellSpecification()
@@ -61,9 +61,9 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::ascendSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::ascendSpecification()
    & exahype::mappings::PreProcessing::ascendSpecification()
    & exahype::mappings::TimeStepSizeComputation::ascendSpecification()
    & exahype::mappings::Sending::ascendSpecification()
@@ -73,9 +73,9 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMetadataMessages::descendSpecification()
+   & exahype::mappings::FinaliseMeshRefinement::descendSpecification()
    & exahype::mappings::PreProcessing::descendSpecification()
    & exahype::mappings::TimeStepSizeComputation::descendSpecification()
    & exahype::mappings::Sending::descendSpecification()
@@ -85,17 +85,17 @@ peano::MappingSpecification   exahype::adapters::DropMPIMetadataMessagesAndTimeS
 }
 
 
-exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::DropMPIMetadataMessagesAndTimeStepSizeComputation() {
+exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::FinaliseMeshRefinementAndTimeStepSizeComputation() {
 }
 
 
-exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::~DropMPIMetadataMessagesAndTimeStepSizeComputation() {
+exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::~FinaliseMeshRefinementAndTimeStepSizeComputation() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::DropMPIMetadataMessagesAndTimeStepSizeComputation(const DropMPIMetadataMessagesAndTimeStepSizeComputation&  masterThread):
-  _map2DropIncomingMPIMetadataMessages(masterThread._map2DropIncomingMPIMetadataMessages) , 
+exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::FinaliseMeshRefinementAndTimeStepSizeComputation(const FinaliseMeshRefinementAndTimeStepSizeComputation&  masterThread):
+  _map2FinaliseMeshRefinement(masterThread._map2FinaliseMeshRefinement) , 
   _map2PreProcessing(masterThread._map2PreProcessing) , 
   _map2TimeStepSizeComputation(masterThread._map2TimeStepSizeComputation) , 
   _map2Sending(masterThread._map2Sending) , 
@@ -105,8 +105,8 @@ exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::DropMPIMet
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithWorkerThread(const DropMPIMetadataMessagesAndTimeStepSizeComputation& workerThread) {
-  _map2DropIncomingMPIMetadataMessages.mergeWithWorkerThread(workerThread._map2DropIncomingMPIMetadataMessages);
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithWorkerThread(const FinaliseMeshRefinementAndTimeStepSizeComputation& workerThread) {
+  _map2FinaliseMeshRefinement.mergeWithWorkerThread(workerThread._map2FinaliseMeshRefinement);
   _map2PreProcessing.mergeWithWorkerThread(workerThread._map2PreProcessing);
   _map2TimeStepSizeComputation.mergeWithWorkerThread(workerThread._map2TimeStepSizeComputation);
   _map2Sending.mergeWithWorkerThread(workerThread._map2Sending);
@@ -116,7 +116,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 #endif
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::createHangingVertex(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -125,7 +125,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -135,7 +135,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destroyHangingVertex(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -144,7 +144,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -153,7 +153,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::createInnerVertex(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -162,7 +162,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -171,7 +171,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::createBoundaryVertex(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -180,7 +180,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -189,7 +189,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destroyVertex(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -198,7 +198,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -207,7 +207,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::createCell(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -216,7 +216,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FinaliseMeshRefinement.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2PreProcessing.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2TimeStepSizeComputation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -225,7 +225,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::creat
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destroyCell(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -234,7 +234,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FinaliseMeshRefinement.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2PreProcessing.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2TimeStepSizeComputation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -244,7 +244,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::destr
 
 
 #ifdef Parallel
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithNeighbour(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -252,7 +252,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2FinaliseMeshRefinement.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2PreProcessing.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2TimeStepSizeComputation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Sending.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
@@ -261,14 +261,14 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepareSendToNeighbour(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::prepareSendToNeighbour(
   exahype::Vertex&  vertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMetadataMessages.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2FinaliseMeshRefinement.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2PreProcessing.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2TimeStepSizeComputation.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Sending.prepareSendToNeighbour( vertex, toRank, x, h, level );
@@ -277,14 +277,14 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepareCopyToRemoteNode(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::prepareCopyToRemoteNode(
   exahype::Vertex&  localVertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMetadataMessages.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2FinaliseMeshRefinement.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2PreProcessing.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2TimeStepSizeComputation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Sending.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
@@ -293,14 +293,14 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepareCopyToRemoteNode(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::prepareCopyToRemoteNode(
   exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-   _map2DropIncomingMPIMetadataMessages.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2FinaliseMeshRefinement.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2PreProcessing.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2TimeStepSizeComputation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Sending.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
@@ -309,7 +309,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -317,7 +317,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2FinaliseMeshRefinement.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2PreProcessing.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2TimeStepSizeComputation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Sending.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
@@ -326,7 +326,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -334,7 +334,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2FinaliseMeshRefinement.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2PreProcessing.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2TimeStepSizeComputation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Sending.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
@@ -343,7 +343,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 }
 
 
-bool exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepareSendToWorker(
+bool exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -354,7 +354,7 @@ bool exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
   int                                                                  worker
 ) {
   bool result = false;
-   result |= _map2DropIncomingMPIMetadataMessages.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2FinaliseMeshRefinement.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2PreProcessing.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2TimeStepSizeComputation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Sending.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
@@ -364,7 +364,7 @@ bool exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepareSendToMaster(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::prepareSendToMaster(
   exahype::Cell&                       localCell,
   exahype::Vertex *                    vertices,
   const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -373,7 +373,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-   _map2DropIncomingMPIMetadataMessages.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2FinaliseMeshRefinement.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2PreProcessing.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2TimeStepSizeComputation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Sending.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -382,7 +382,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::prepa
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithMaster(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -397,7 +397,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
     const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2FinaliseMeshRefinement.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2PreProcessing.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2TimeStepSizeComputation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Sending.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
@@ -406,7 +406,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::receiveDataFromMaster(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -418,7 +418,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::recei
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-   _map2DropIncomingMPIMetadataMessages.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2FinaliseMeshRefinement.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2PreProcessing.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2TimeStepSizeComputation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Sending.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
@@ -427,14 +427,14 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::recei
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithWorker(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithWorker(
   exahype::Cell&           localCell, 
   const exahype::Cell&     receivedMasterCell,
   const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2FinaliseMeshRefinement.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2PreProcessing.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2TimeStepSizeComputation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Sending.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
@@ -443,14 +443,14 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::mergeWithWorker(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::mergeWithWorker(
   exahype::Vertex&        localVertex,
   const exahype::Vertex&  receivedMasterVertex,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMetadataMessages.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2FinaliseMeshRefinement.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2PreProcessing.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2TimeStepSizeComputation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Sending.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
@@ -460,7 +460,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::merge
 #endif
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touchVertexFirstTime(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -469,7 +469,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touch
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -478,7 +478,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touch
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touchVertexLastTime(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -487,7 +487,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touch
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMetadataMessages.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FinaliseMeshRefinement.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2PreProcessing.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2TimeStepSizeComputation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Sending.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
@@ -496,7 +496,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::touch
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::enterCell(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -505,7 +505,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::enter
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FinaliseMeshRefinement.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2PreProcessing.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2TimeStepSizeComputation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -514,7 +514,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::enter
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::leaveCell(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -523,7 +523,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::leave
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FinaliseMeshRefinement.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2PreProcessing.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2TimeStepSizeComputation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Sending.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
@@ -532,10 +532,10 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::leave
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::beginIteration(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::beginIteration(
   exahype::State&  solverState
 ) {
-  _map2DropIncomingMPIMetadataMessages.beginIteration( solverState );
+  _map2FinaliseMeshRefinement.beginIteration( solverState );
   _map2PreProcessing.beginIteration( solverState );
   _map2TimeStepSizeComputation.beginIteration( solverState );
   _map2Sending.beginIteration( solverState );
@@ -544,10 +544,10 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::begin
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::endIteration(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::endIteration(
   exahype::State&  solverState
 ) {
-  _map2DropIncomingMPIMetadataMessages.endIteration( solverState );
+  _map2FinaliseMeshRefinement.endIteration( solverState );
   _map2PreProcessing.endIteration( solverState );
   _map2TimeStepSizeComputation.endIteration( solverState );
   _map2Sending.endIteration( solverState );
@@ -558,7 +558,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::endIt
 
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::descend(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -566,7 +566,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::desce
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2FinaliseMeshRefinement.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2PreProcessing.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2TimeStepSizeComputation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Sending.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
@@ -575,7 +575,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::desce
 }
 
 
-void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::ascend(
+void exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -583,7 +583,7 @@ void exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation::ascen
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
-  _map2DropIncomingMPIMetadataMessages.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2FinaliseMeshRefinement.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2PreProcessing.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2TimeStepSizeComputation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Sending.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );

@@ -101,8 +101,6 @@ void exahype::mappings::MeshRefinement::beginIteration(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     solver->zeroTimeStepSizes();
-//    logInfo("beginIteration(...)","solver->getMinTimeStamp()="<<solver->getMinTimeStamp()); // TODO(Dominic): remove
-
     assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
   } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
 
@@ -260,7 +258,6 @@ void exahype::mappings::MeshRefinement::enterCell(
             fineGridPositionOfCell,
             solverNumber);
 
-    solver->updateNextGridUpdateRequested(refinementRequested);
     refineFineGridCell |= refinementRequested;
 
     const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -298,7 +295,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    bool erasingRequested =
+    eraseFineGridCell &=
         solver->updateStateInLeaveCell(
             fineGridCell,
             fineGridVertices,
@@ -308,8 +305,16 @@ void exahype::mappings::MeshRefinement::leaveCell(
             coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
-    solver->updateNextGridUpdateRequested(erasingRequested);
-    eraseFineGridCell &= erasingRequested;
+
+    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      bool isStable = solver->attainedStableState(
+          fineGridCell,
+          fineGridVertices,
+          fineGridVerticesEnumerator,
+          solverNumber);
+      solver->updateNextGridUpdateRequested(!isStable);
+    }
   }
 
   // We assume that the solvers have all removed
@@ -317,11 +322,13 @@ void exahype::mappings::MeshRefinement::leaveCell(
   // cell.
   if (eraseFineGridCell) {
     fineGridCell.shutdownMetaData();
+
     dfor2(v)
-      if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-          exahype::Vertex::Records::RefinementControl::Refined) {
-        fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
-      }
+    if (coarseGridVertices[ coarseGridVerticesEnumerator(v) ].getRefinementControl()==
+        exahype::Vertex::Records::RefinementControl::Refined
+    ) {
+      coarseGridVertices[ coarseGridVerticesEnumerator(v) ].erase();
+    }
     enddforx
   }
 
