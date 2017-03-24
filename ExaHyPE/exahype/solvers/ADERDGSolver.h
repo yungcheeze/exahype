@@ -60,8 +60,8 @@ public:
    * Rank-local heap that stores ADERDGCellDescription instances.
    *
    * \note This heap might be shared by multiple ADERDGSolver instances
-     that differ in their solver number and other attributes.
-     @see solvers::Solver::RegisteredSolvers.
+   * that differ in their solver number and other attributes.
+   * @see solvers::Solver::RegisteredSolvers.
    */
   typedef exahype::records::ADERDGCellDescription CellDescription;
   typedef peano::heap::PlainHeap<CellDescription> Heap;
@@ -273,7 +273,7 @@ private:
    * the next finer level have all been initialised with
    * type Descendant.
    *
-   * If a ...
+   * TODO(Dominic): More docu.
    *
    * \return true if a fine grid cell can be erased.
    */
@@ -285,6 +285,11 @@ private:
    * or erase them from the grid, we first restrict
    * volume data up to the parent and further
    * copy the corrector and predictor time stamps.
+   *
+   * \return true if we erase descendants from
+   * the grid. In this case, to call an erase
+   * on the grid/Peano cell if no other cell descriptions are
+   * registered. Returns false otherwise.
    *
    * TODO(Dominic): More docu.
    */
