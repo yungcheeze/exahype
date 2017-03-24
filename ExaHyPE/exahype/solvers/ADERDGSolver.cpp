@@ -711,16 +711,6 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
               neighbourCellDescriptionIndices,
               fineGridCell.isAssignedToRemoteRank());
     }
-
-    if (fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::ErasingChildren
-        || fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::DeaugmentingChildren
-        || fineGridCellDescription.getRefinementEvent()==CellDescription::RefinementEvent::ErasingChildrenRequested) {
-      logInfo("updateStateInEnterCell(...)",
-              CellDescription::toString(fineGridCellDescription.getRefinementEvent()) <<
-              ": fineGridCell.getCellDescriptionsIndex()=" <<
-              fineGridCell.getCellDescriptionsIndex()
-      );
-    }
   }
 
   // Coarse grid cell based adaptive mesh refinement operations.
@@ -1911,7 +1901,7 @@ void exahype::solvers::ADERDGSolver::prolongateDataAndPrepareDataRestriction(
       isValidCellDescriptionIndex(cellDescription.getParentIndex())) {
     exahype::solvers::Solver::SubcellPosition
     subcellPosition =
-        exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap>(
+        exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap,false>(
             cellDescription);
 
     prolongateFaceDataToDescendant(cellDescription,subcellPosition);
@@ -3183,7 +3173,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
 
   if (cellDescription.getType()==CellDescription::Descendant) {
     exahype::solvers::Solver::SubcellPosition subcellPosition =
-        exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap>(cellDescription);
+        exahype::amr::computeSubcellPositionOfDescendant<CellDescription,Heap,false>(cellDescription);
     prolongateFaceDataToDescendant(cellDescription,subcellPosition);
 
     double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
