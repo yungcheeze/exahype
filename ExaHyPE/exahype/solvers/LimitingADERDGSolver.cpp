@@ -9,6 +9,10 @@
 
 #include "kernels/limiter/generic/Limiter.h"
 
+#include "exahype/VertexOperations.h"
+
+#include "exahype/amr/AdaptiveMeshRefinement.h"
+
 namespace exahype {
 namespace solvers {
 
@@ -163,6 +167,87 @@ double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
+bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStatus(
+    SolverPatch& solverPatch,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
+  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+  indicesAdjacentToFineGridVertices =
+      VertexOperations::readCellDescriptionsIndex(
+          fineGridVerticesEnumerator,fineGridVertices);
+
+  if (
+      (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled
+      || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
+      && multiscalelinkedcell::adjacencyInformationIsConsistent(indicesAdjacentToFineGridVertices)) {
+    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionIndices =
+        multiscalelinkedcell::getIndicesAroundCell(
+            indicesAdjacentToFineGridVertices);
+
+    const exahype::solvers::Solver::AugmentationControl augmentationControl =
+          exahype::amr::augmentationCriterion<SolverPatch,SolverHeap>(
+              solverPatch.getSolverNumber(),solverPatch.getType(),
+              solverPatch.getLevel(),
+              neighbourCellDescriptionIndices);
+
+    switch (solverPatch.getType()) {
+      case SolverPatch::Type::Cell:
+        switch (augmentationControl) {
+          case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
+            switch (solverPatch.getRefinementEvent()) {
+              case SolverPatch::RefinementEvent::None:
+              case SolverPatch::RefinementEvent::AugmentingRequested:
+                solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+                return true;
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+            break;
+        }
+        break;
+      case SolverPatch::Type::Descendant:
+        switch (augmentationControl) {
+          case exahype::solvers::Solver::AugmentationControl::NextToCell: {
+            exahype::solvers::Solver::SubcellPosition subcellPosition =
+                exahype::amr::computeSubcellPositionOfDescendant<SolverPatch,SolverHeap,true>(solverPatch);
+            assertion(SolverHeap::getInstance().isValidIndex(subcellPosition.parentCellDescriptionsIndex));
+
+            SolverPatch& parentSolverPatch = _solver->getCellDescription(
+                subcellPosition.parentCellDescriptionsIndex,
+                subcellPosition.parentElement);
+
+            // TODO(Dominic): We currently assume that the parent solver patch
+            // is of type Cell.
+            // If the parent is a descendant, we have to find the top most by
+            // recursion
+            assertion2(parentSolverPatch.getType()==SolverPatch::Cell,parentSolverPatch.toString(),
+                      solverPatch.toString());
+
+            switch (solverPatch.getRefinementEvent()) {
+              case SolverPatch::RefinementEvent::None:
+              case SolverPatch::RefinementEvent::AugmentingRequested:
+                parentSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+                break;
+              default:
+                break;
+            }
+          } break;
+          default:
+            break;
+        }
+        break;
+      default:
+        break;
+    }
+
+  }
+
+  return false;
+}
+
 bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -172,10 +257,24 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->updateStateInEnterCell(
+  bool refineFineGridCell = _solver->updateStateInEnterCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
       fineGridPositionOfCell,solverNumber);
+
+  const int element =
+      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+  if (element!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& solverPatch =
+        _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
+
+    refineFineGridCell |=
+        markForRefinementBasedOnLimiterStatus(
+            solverPatch,fineGridVertices,fineGridVerticesEnumerator);
+  }
+
+  return refineFineGridCell;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
