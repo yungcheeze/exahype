@@ -182,17 +182,12 @@
          {
             FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
             
-<<<<<<< HEAD
             #ifdef MPI2
             const int Attributes = 16;
             #else
             const int Attributes = 17;
             #endif
-=======
-            const int Attributes = 17;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
                  MPI_INT		 //solverNumber
                , MPI_DOUBLE		 //timeStepSize
                , MPI_DOUBLE		 //timeStamp
@@ -213,29 +208,9 @@
                , MPI_UB
                #endif
                
-=======
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
             int blocklen[Attributes] = {
-<<<<<<< HEAD
                  1		 //solverNumber
                , 1		 //timeStepSize
                , 1		 //timeStamp
@@ -256,28 +231,8 @@
                , 1
                #endif
                
-=======
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
-<<<<<<< HEAD
             MPI_Aint  disp[Attributes];
             MPI_Aint  base;
             #ifdef MPI2
@@ -370,33 +325,8 @@
             #else
             for (int i=1; i<Attributes-1; i++) {
             #endif
-=======
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
                assertion1( disp[i] > disp[i-1], i );
             }
-<<<<<<< HEAD
             #ifdef MPI2
             for (int i=0; i<Attributes; i++) {
             #else
@@ -404,12 +334,7 @@
             #endif
                disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
                assertion4(disp[i]<static_cast<int>(sizeof(FiniteVolumesCellDescription)), i, disp[i], Attributes, sizeof(FiniteVolumesCellDescription));
-=======
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             }
-<<<<<<< HEAD
             #ifndef MPI2
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]))), 		&disp[16] );
             disp[16] -= base;
@@ -421,9 +346,6 @@
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &FiniteVolumesCellDescription::Datatype );
-=======
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Type_commit( &FiniteVolumesCellDescription::Datatype );
             #else
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype);
@@ -434,17 +356,12 @@
          {
             FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
             
-<<<<<<< HEAD
             #ifdef MPI2
             const int Attributes = 16;
             #else
             const int Attributes = 17;
             #endif
-=======
-            const int Attributes = 17;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
                  MPI_INT		 //solverNumber
                , MPI_DOUBLE		 //timeStepSize
                , MPI_DOUBLE		 //timeStamp
@@ -465,29 +382,9 @@
                , MPI_UB
                #endif
                
-=======
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
             int blocklen[Attributes] = {
-<<<<<<< HEAD
                  1		 //solverNumber
                , 1		 //timeStepSize
                , 1		 //timeStamp
@@ -508,28 +405,8 @@
                , 1
                #endif
                
-=======
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
-<<<<<<< HEAD
             MPI_Aint  disp[Attributes];
             MPI_Aint  base;
             #ifdef MPI2
@@ -622,33 +499,8 @@
             #else
             for (int i=1; i<Attributes-1; i++) {
             #endif
-=======
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[14] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
                assertion1( disp[i] > disp[i-1], i );
             }
-<<<<<<< HEAD
             #ifdef MPI2
             for (int i=0; i<Attributes; i++) {
             #else
@@ -656,12 +508,7 @@
             #endif
                disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
                assertion4(disp[i]<static_cast<int>(sizeof(FiniteVolumesCellDescription)), i, disp[i], Attributes, sizeof(FiniteVolumesCellDescription));
-=======
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             }
-<<<<<<< HEAD
             #ifndef MPI2
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]))), 		&disp[16] );
             disp[16] -= base;
@@ -673,9 +520,6 @@
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &FiniteVolumesCellDescription::FullDatatype );
-=======
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Type_commit( &FiniteVolumesCellDescription::FullDatatype );
             #else
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype);
@@ -1074,17 +918,12 @@
          {
             FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
             
-<<<<<<< HEAD
             #ifdef MPI2
             const int Attributes = 16;
             #else
             const int Attributes = 17;
             #endif
-=======
-            const int Attributes = 17;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
                  MPI_INT		 //solverNumber
                , MPI_DOUBLE		 //timeStepSize
                , MPI_DOUBLE		 //timeStamp
@@ -1105,29 +944,9 @@
                , MPI_UB
                #endif
                
-=======
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
             int blocklen[Attributes] = {
-<<<<<<< HEAD
                  1		 //solverNumber
                , 1		 //timeStepSize
                , 1		 //timeStamp
@@ -1148,28 +967,8 @@
                , 1
                #endif
                
-=======
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
-<<<<<<< HEAD
             MPI_Aint  disp[Attributes];
             MPI_Aint  base;
             #ifdef MPI2
@@ -1262,33 +1061,8 @@
             #else
             for (int i=1; i<Attributes-1; i++) {
             #endif
-=======
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
                assertion1( disp[i] > disp[i-1], i );
             }
-<<<<<<< HEAD
             #ifdef MPI2
             for (int i=0; i<Attributes; i++) {
             #else
@@ -1296,12 +1070,7 @@
             #endif
                disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
                assertion4(disp[i]<static_cast<int>(sizeof(FiniteVolumesCellDescriptionPacked)), i, disp[i], Attributes, sizeof(FiniteVolumesCellDescriptionPacked));
-=======
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             }
-<<<<<<< HEAD
             #ifndef MPI2
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]))), 		&disp[16] );
             disp[16] -= base;
@@ -1313,9 +1082,6 @@
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &FiniteVolumesCellDescriptionPacked::Datatype );
-=======
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Type_commit( &FiniteVolumesCellDescriptionPacked::Datatype );
             #else
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype);
@@ -1326,17 +1092,12 @@
          {
             FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
             
-<<<<<<< HEAD
             #ifdef MPI2
             const int Attributes = 16;
             #else
             const int Attributes = 17;
             #endif
-=======
-            const int Attributes = 17;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
                  MPI_INT		 //solverNumber
                , MPI_DOUBLE		 //timeStepSize
                , MPI_DOUBLE		 //timeStamp
@@ -1357,29 +1118,9 @@
                , MPI_UB
                #endif
                
-=======
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               MPI_INT,		 //faceDataExchangeCounter
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
             int blocklen[Attributes] = {
-<<<<<<< HEAD
                  1		 //solverNumber
                , 1		 //timeStepSize
                , 1		 //timeStamp
@@ -1400,28 +1141,8 @@
                , 1
                #endif
                
-=======
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
-               DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             };
             
-<<<<<<< HEAD
             MPI_Aint  disp[Attributes];
             MPI_Aint  base;
             #ifdef MPI2
@@ -1514,33 +1235,8 @@
             #else
             for (int i=1; i<Attributes-1; i++) {
             #endif
-=======
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[13] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[14] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[15] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
                assertion1( disp[i] > disp[i-1], i );
             }
-<<<<<<< HEAD
             #ifdef MPI2
             for (int i=0; i<Attributes; i++) {
             #else
@@ -1548,12 +1244,7 @@
             #endif
                disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
                assertion4(disp[i]<static_cast<int>(sizeof(FiniteVolumesCellDescriptionPacked)), i, disp[i], Attributes, sizeof(FiniteVolumesCellDescriptionPacked));
-=======
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             }
-<<<<<<< HEAD
             #ifndef MPI2
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]))), 		&disp[16] );
             disp[16] -= base;
@@ -1565,9 +1256,6 @@
             MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
             MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
             MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &FiniteVolumesCellDescriptionPacked::FullDatatype );
-=======
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             MPI_Type_commit( &FiniteVolumesCellDescriptionPacked::FullDatatype );
             #else
             MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype);
@@ -1931,7 +1619,6 @@
       out << getIsInside(i) << ",";
    }
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
-<<<<<<< HEAD
          out << ",";
          out << "type:" << toString(getType());
          out << ",";
@@ -1939,188 +1626,6 @@
          out << ",";
          out << "refinementEvent:" << toString(getRefinementEvent());
          out <<  ")";
-=======
-      out << ",";
-      out << "type:" << toString(getType());
-      out << ",";
-      out << "parentIndex:" << getParentIndex();
-      out << ",";
-      out << "refinementEvent:" << toString(getRefinementEvent());
-      out <<  ")";
-   }
-   
-   
-   exahype::records::FiniteVolumesCellDescription::PersistentRecords exahype::records::FiniteVolumesCellDescription::getPersistentRecords() const {
-      return _persistentRecords;
-   }
-   
-   exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVolumesCellDescription::convert() const{
-      return FiniteVolumesCellDescriptionPacked(
-         getSolverNumber(),
-         getTimeStepSize(),
-         getTimeStamp(),
-         getPreviousTimeStepSize(),
-         getSolution(),
-         getPreviousSolution(),
-         getLevel(),
-         getOffset(),
-         getSize(),
-         getRiemannSolvePerformed(),
-         getIsInside(),
-         getType(),
-         getParentIndex(),
-         getRefinementEvent()
-      );
-   }
-   
-   #ifdef Parallel
-      tarch::logging::Log exahype::records::FiniteVolumesCellDescription::_log( "exahype::records::FiniteVolumesCellDescription" );
-      
-      MPI_Datatype exahype::records::FiniteVolumesCellDescription::Datatype = 0;
-      MPI_Datatype exahype::records::FiniteVolumesCellDescription::FullDatatype = 0;
-      
-      
-      void exahype::records::FiniteVolumesCellDescription::initDatatype() {
-         {
-            FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
-            
-            const int Attributes = 15;
-            MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
-            };
-            
-            int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
-            };
-            
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
-               assertion1( disp[i] > disp[i-1], i );
-            }
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
-            }
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::Datatype );
-            MPI_Type_commit( &FiniteVolumesCellDescription::Datatype );
-            
-         }
-         {
-            FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
-            
-            const int Attributes = 15;
-            MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
-            };
-            
-            int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
-            };
-            
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._parentIndex))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescription[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
-               assertion1( disp[i] > disp[i-1], i );
-            }
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
-            }
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescription::FullDatatype );
-            MPI_Type_commit( &FiniteVolumesCellDescription::FullDatatype );
-            
-         }
-         
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
       }
       
       
@@ -2810,7 +2315,6 @@
       out << getIsInside(i) << ",";
    }
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
-<<<<<<< HEAD
          out << ",";
          out << "type:" << toString(getType());
          out << ",";
@@ -2818,188 +2322,6 @@
          out << ",";
          out << "refinementEvent:" << toString(getRefinementEvent());
          out <<  ")";
-=======
-      out << ",";
-      out << "type:" << toString(getType());
-      out << ",";
-      out << "parentIndex:" << getParentIndex();
-      out << ",";
-      out << "refinementEvent:" << toString(getRefinementEvent());
-      out <<  ")";
-   }
-   
-   
-   exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords exahype::records::FiniteVolumesCellDescriptionPacked::getPersistentRecords() const {
-      return _persistentRecords;
-   }
-   
-   exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCellDescriptionPacked::convert() const{
-      return FiniteVolumesCellDescription(
-         getSolverNumber(),
-         getTimeStepSize(),
-         getTimeStamp(),
-         getPreviousTimeStepSize(),
-         getSolution(),
-         getPreviousSolution(),
-         getLevel(),
-         getOffset(),
-         getSize(),
-         getRiemannSolvePerformed(),
-         getIsInside(),
-         getType(),
-         getParentIndex(),
-         getRefinementEvent()
-      );
-   }
-   
-   #ifdef Parallel
-      tarch::logging::Log exahype::records::FiniteVolumesCellDescriptionPacked::_log( "exahype::records::FiniteVolumesCellDescriptionPacked" );
-      
-      MPI_Datatype exahype::records::FiniteVolumesCellDescriptionPacked::Datatype = 0;
-      MPI_Datatype exahype::records::FiniteVolumesCellDescriptionPacked::FullDatatype = 0;
-      
-      
-      void exahype::records::FiniteVolumesCellDescriptionPacked::initDatatype() {
-         {
-            FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
-            
-            const int Attributes = 15;
-            MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
-            };
-            
-            int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
-            };
-            
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
-               assertion1( disp[i] > disp[i-1], i );
-            }
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
-            }
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::Datatype );
-            MPI_Type_commit( &FiniteVolumesCellDescriptionPacked::Datatype );
-            
-         }
-         {
-            FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
-            
-            const int Attributes = 15;
-            MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //solverNumber
-               MPI_DOUBLE,		 //timeStepSize
-               MPI_DOUBLE,		 //timeStamp
-               MPI_DOUBLE,		 //previousTimeStepSize
-               MPI_INT,		 //solution
-               MPI_INT,		 //previousSolution
-               MPI_INT,		 //level
-               MPI_DOUBLE,		 //offset
-               MPI_DOUBLE,		 //size
-               MPI_INT,		 //riemannSolvePerformed
-               MPI_INT,		 //isInside
-               MPI_INT,		 //type
-               MPI_INT,		 //parentIndex
-               MPI_INT,		 //refinementEvent
-               MPI_UB		 // end/displacement flag
-            };
-            
-            int blocklen[Attributes] = {
-               1,		 //solverNumber
-               1,		 //timeStepSize
-               1,		 //timeStamp
-               1,		 //previousTimeStepSize
-               1,		 //solution
-               1,		 //previousSolution
-               1,		 //level
-               DIMENSIONS,		 //offset
-               DIMENSIONS,		 //size
-               DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-               DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //type
-               1,		 //parentIndex
-               1,		 //refinementEvent
-               1		 // end/displacement flag
-            };
-            
-            MPI_Aint     disp[Attributes];
-            
-            MPI_Aint base;
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousTimeStepSize))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._previousSolution))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[12] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[13] );
-            disp[Attributes-1] = sizeof(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._refinementEvent);
-            for (int i=1; i<Attributes-1; i++) {
-               assertion1( disp[i] > disp[i-1], i );
-            }
-            for (int i=0; i<Attributes-1; i++) {
-               disp[i] -= base;
-            }
-            MPI_Type_struct( Attributes, blocklen, disp, subtypes, &FiniteVolumesCellDescriptionPacked::FullDatatype );
-            MPI_Type_commit( &FiniteVolumesCellDescriptionPacked::FullDatatype );
-            
-         }
-         
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
       }
       
       

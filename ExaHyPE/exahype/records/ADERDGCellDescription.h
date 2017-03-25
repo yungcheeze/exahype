@@ -33,11 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-<<<<<<< HEAD
-    * @date   25/03/2017 19:59
-=======
-    * @date   21/03/2017 18:01
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+    * @date   25/03/2017 20:37
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -1271,1405 +1267,8 @@ namespace exahype {
             
             
          };
-<<<<<<< HEAD
          private: 
             PersistentRecords _persistentRecords;
-=======
-         
-      private: 
-         PersistentRecords _persistentRecords;
-         
-      public:
-         /**
-          * Generated
-          */
-         ADERDGCellDescription();
-         
-         /**
-          * Generated
-          */
-         ADERDGCellDescription(const PersistentRecords& persistentRecords);
-         
-         /**
-          * Generated
-          */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-         
-         /**
-          * Generated
-          */
-         ~ADERDGCellDescription();
-         
-         
-         inline int getSolverNumber() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solverNumber;
-         }
-         
-         
-         
-         inline void setSolverNumber(const int& solverNumber) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solverNumber = solverNumber;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._riemannSolvePerformed;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
-         }
-         
-         
-         
-         inline bool getRiemannSolvePerformed(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._riemannSolvePerformed[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-            
-         }
-         
-         
-         
-         inline void flipRiemannSolvePerformed(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._riemannSolvePerformed.flip(elementIndex);
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._isInside;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._isInside = (isInside);
-         }
-         
-         
-         
-         inline bool getIsInside(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._isInside[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setIsInside(int elementIndex, const bool& isInside) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._isInside[elementIndex]= isInside;
-            
-         }
-         
-         
-         
-         inline void flipIsInside(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._isInside.flip(elementIndex);
-         }
-         
-         
-         
-         inline bool getAdjacentToRemoteRank() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._adjacentToRemoteRank;
-         }
-         
-         
-         
-         inline void setAdjacentToRemoteRank(const bool& adjacentToRemoteRank) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._adjacentToRemoteRank = adjacentToRemoteRank;
-         }
-         
-         
-         
-         inline bool getHasToHoldDataForNeighbourCommunication() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasToHoldDataForNeighbourCommunication;
-         }
-         
-         
-         
-         inline void setHasToHoldDataForNeighbourCommunication(const bool& hasToHoldDataForNeighbourCommunication) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasToHoldDataForNeighbourCommunication = hasToHoldDataForNeighbourCommunication;
-         }
-         
-         
-         
-         inline bool getHasToHoldDataForMasterWorkerCommunication() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasToHoldDataForMasterWorkerCommunication;
-         }
-         
-         
-         
-         inline void setHasToHoldDataForMasterWorkerCommunication(const bool& hasToHoldDataForMasterWorkerCommunication) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasToHoldDataForMasterWorkerCommunication = hasToHoldDataForMasterWorkerCommunication;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFaceDataExchangeCounter() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._faceDataExchangeCounter;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setFaceDataExchangeCounter(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._faceDataExchangeCounter = (faceDataExchangeCounter);
-         }
-         
-         
-         
-         inline int getFaceDataExchangeCounter(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._faceDataExchangeCounter[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setFaceDataExchangeCounter(int elementIndex, const int& faceDataExchangeCounter) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._faceDataExchangeCounter[elementIndex]= faceDataExchangeCounter;
-            
-         }
-         
-         
-         
-         inline int getParentIndex() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._parentIndex;
-         }
-         
-         
-         
-         inline void setParentIndex(const int& parentIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._parentIndex = parentIndex;
-         }
-         
-         
-         
-         inline bool getNewlyCreated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._newlyCreated;
-         }
-         
-         
-         
-         inline void setNewlyCreated(const bool& newlyCreated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._newlyCreated = newlyCreated;
-         }
-         
-         
-         
-         inline Type getType() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._type;
-         }
-         
-         
-         
-         inline void setType(const Type& type) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._type = type;
-         }
-         
-         
-         
-         inline RefinementEvent getRefinementEvent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._refinementEvent;
-         }
-         
-         
-         
-         inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._refinementEvent = refinementEvent;
-         }
-         
-         
-         
-         inline int getLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._level;
-         }
-         
-         
-         
-         inline void setLevel(const int& level) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._level = level;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS,double> getOffset() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._offset;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setOffset(const tarch::la::Vector<DIMENSIONS,double>& offset) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._offset = (offset);
-         }
-         
-         
-         
-         inline double getOffset(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS);
-            return _persistentRecords._offset[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setOffset(int elementIndex, const double& offset) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS);
-            _persistentRecords._offset[elementIndex]= offset;
-            
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS,double> getSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._size;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setSize(const tarch::la::Vector<DIMENSIONS,double>& size) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._size = (size);
-         }
-         
-         
-         
-         inline double getSize(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS);
-            return _persistentRecords._size[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setSize(int elementIndex, const double& size) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS);
-            _persistentRecords._size[elementIndex]= size;
-            
-         }
-         
-         
-         
-         inline double getPreviousCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousCorrectorTimeStamp;
-         }
-         
-         
-         
-         inline void setPreviousCorrectorTimeStamp(const double& previousCorrectorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousCorrectorTimeStamp = previousCorrectorTimeStamp;
-         }
-         
-         
-         
-         inline double getPreviousCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousCorrectorTimeStepSize;
-         }
-         
-         
-         
-         inline void setPreviousCorrectorTimeStepSize(const double& previousCorrectorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousCorrectorTimeStepSize = previousCorrectorTimeStepSize;
-         }
-         
-         
-         
-         inline double getCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._correctorTimeStepSize;
-         }
-         
-         
-         
-         inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._correctorTimeStepSize = correctorTimeStepSize;
-         }
-         
-         
-         
-         inline double getCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._correctorTimeStamp;
-         }
-         
-         
-         
-         inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._correctorTimeStamp = correctorTimeStamp;
-         }
-         
-         
-         
-         inline double getPredictorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._predictorTimeStepSize;
-         }
-         
-         
-         
-         inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._predictorTimeStepSize = predictorTimeStepSize;
-         }
-         
-         
-         
-         inline double getPredictorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._predictorTimeStamp;
-         }
-         
-         
-         
-         inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._predictorTimeStamp = predictorTimeStamp;
-         }
-         
-         
-         
-         inline int getSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solution;
-         }
-         
-         
-         
-         inline void setSolution(const int& solution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solution = solution;
-         }
-         
-         
-         
-         inline int getSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solutionAverages;
-         }
-         
-         
-         
-         inline void setSolutionAverages(const int& solutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solutionAverages = solutionAverages;
-         }
-         
-         
-         
-         inline int getSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solutionCompressed;
-         }
-         
-         
-         
-         inline void setSolutionCompressed(const int& solutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solutionCompressed = solutionCompressed;
-         }
-         
-         
-         
-         inline int getPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousSolution;
-         }
-         
-         
-         
-         inline void setPreviousSolution(const int& previousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousSolution = previousSolution;
-         }
-         
-         
-         
-         inline int getPreviousSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousSolutionAverages;
-         }
-         
-         
-         
-         inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousSolutionAverages = previousSolutionAverages;
-         }
-         
-         
-         
-         inline int getPreviousSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousSolutionCompressed;
-         }
-         
-         
-         
-         inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
-         }
-         
-         
-         
-         inline int getUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._update;
-         }
-         
-         
-         
-         inline void setUpdate(const int& update) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._update = update;
-         }
-         
-         
-         
-         inline int getUpdateAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._updateAverages;
-         }
-         
-         
-         
-         inline void setUpdateAverages(const int& updateAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._updateAverages = updateAverages;
-         }
-         
-         
-         
-         inline int getUpdateCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._updateCompressed;
-         }
-         
-         
-         
-         inline void setUpdateCompressed(const int& updateCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._updateCompressed = updateCompressed;
-         }
-         
-         
-         
-         inline int getExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._extrapolatedPredictor;
-         }
-         
-         
-         
-         inline void setExtrapolatedPredictor(const int& extrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._extrapolatedPredictor = extrapolatedPredictor;
-         }
-         
-         
-         
-         inline int getExtrapolatedPredictorAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._extrapolatedPredictorAverages;
-         }
-         
-         
-         
-         inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
-         }
-         
-         
-         
-         inline int getExtrapolatedPredictorCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._extrapolatedPredictorCompressed;
-         }
-         
-         
-         
-         inline void setExtrapolatedPredictorCompressed(const int& extrapolatedPredictorCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._extrapolatedPredictorCompressed = extrapolatedPredictorCompressed;
-         }
-         
-         
-         
-         inline int getFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._fluctuation;
-         }
-         
-         
-         
-         inline void setFluctuation(const int& fluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._fluctuation = fluctuation;
-         }
-         
-         
-         
-         inline int getFluctuationAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._fluctuationAverages;
-         }
-         
-         
-         
-         inline void setFluctuationAverages(const int& fluctuationAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._fluctuationAverages = fluctuationAverages;
-         }
-         
-         
-         
-         inline int getFluctuationCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._fluctuationCompressed;
-         }
-         
-         
-         
-         inline void setFluctuationCompressed(const int& fluctuationCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._fluctuationCompressed = fluctuationCompressed;
-         }
-         
-         
-         
-         inline int getSolutionMin() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solutionMin;
-         }
-         
-         
-         
-         inline void setSolutionMin(const int& solutionMin) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solutionMin = solutionMin;
-         }
-         
-         
-         
-         inline int getSolutionMax() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._solutionMax;
-         }
-         
-         
-         
-         inline void setSolutionMax(const int& solutionMax) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._solutionMax = solutionMax;
-         }
-         
-         
-         
-         inline LimiterStatus getLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._limiterStatus;
-         }
-         
-         
-         
-         inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._limiterStatus = limiterStatus;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._mergedLimiterStatus;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
-         }
-         
-         
-         
-         inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._mergedLimiterStatus[elementIndex];
-            
-         }
-         
-         
-         
-         inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
-            
-         }
-         
-         
-         
-         inline CompressionState getCompressionState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._compressionState;
-         }
-         
-         
-         
-         inline void setCompressionState(const CompressionState& compressionState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._compressionState = compressionState;
-         }
-         
-         
-         
-         inline int getBytesPerDoFInPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._bytesPerDoFInPreviousSolution;
-         }
-         
-         
-         
-         inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
-         }
-         
-         
-         
-         inline int getBytesPerDoFInSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._bytesPerDoFInSolution;
-         }
-         
-         
-         
-         inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
-         }
-         
-         
-         
-         inline int getBytesPerDoFInUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._bytesPerDoFInUpdate;
-         }
-         
-         
-         
-         inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._bytesPerDoFInUpdate = bytesPerDoFInUpdate;
-         }
-         
-         
-         
-         inline int getBytesPerDoFInExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._bytesPerDoFInExtrapolatedPredictor;
-         }
-         
-         
-         
-         inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
-         }
-         
-         
-         
-         inline int getBytesPerDoFInFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._bytesPerDoFInFluctuation;
-         }
-         
-         
-         
-         inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
-         }
-         
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const CompressionState& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getCompressionStateMapping();
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const LimiterStatus& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getLimiterStatusMapping();
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const RefinementEvent& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getRefinementEventMapping();
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const Type& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getTypeMapping();
-         
-         /**
-          * Generated
-          */
-         std::string toString() const;
-         
-         /**
-          * Generated
-          */
-         void toString(std::ostream& out) const;
-         
-         
-         PersistentRecords getPersistentRecords() const;
-         /**
-          * Generated
-          */
-         ADERDGCellDescriptionPacked convert() const;
-         
-         
-      #ifdef Parallel
-         protected:
-            static tarch::logging::Log _log;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             
          public:
             /**
@@ -2685,7 +1284,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -2810,7 +1409,6 @@ namespace exahype {
             
             
             /**
-<<<<<<< HEAD
              * Generated and optimized
              * 
              * If you realise a for loop using exclusively arrays (vectors) and compile 
@@ -2828,16 +1426,6 @@ namespace exahype {
              * into the unpacked version first. 
              * 
              * @see convert()
-=======
-             * @author This class is generated by DaStGen
-             * 		   DataStructureGenerator (DaStGen)
-             * 		   2007-2009 Wolfgang Eckhardt
-             * 		   2012      Tobias Weinzierl
-             *
-             * 		   build date: 09-02-2014 14:40
-             *
-             * @date   21/03/2017 18:01
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
              */
             inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
  #ifdef UseManualInlining
@@ -2887,94 +1475,11 @@ namespace exahype {
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                return _persistentRecords._isInside[elementIndex];
                
-<<<<<<< HEAD
             }
             
             
             
             inline void setIsInside(int elementIndex, const bool& isInside) 
-=======
-               public:
-                  
-                  typedef exahype::records::ADERDGCellDescription::Type Type;
-                  
-                  typedef exahype::records::ADERDGCellDescription::RefinementEvent RefinementEvent;
-                  
-                  typedef exahype::records::ADERDGCellDescription::LimiterStatus LimiterStatus;
-                  
-                  typedef exahype::records::ADERDGCellDescription::CompressionState CompressionState;
-                  
-                  struct PersistentRecords {
-                     int _solverNumber;
-                     bool _hasToHoldDataForMasterWorkerCommunication;
-                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
-                     int _parentIndex;
-                     int _level;
-                     tarch::la::Vector<DIMENSIONS,double> _offset;
-                     tarch::la::Vector<DIMENSIONS,double> _size;
-                     double _previousCorrectorTimeStamp;
-                     double _previousCorrectorTimeStepSize;
-                     double _correctorTimeStepSize;
-                     double _correctorTimeStamp;
-                     double _predictorTimeStepSize;
-                     double _predictorTimeStamp;
-                     int _solution;
-                     int _solutionAverages;
-                     int _solutionCompressed;
-                     int _previousSolution;
-                     int _previousSolutionAverages;
-                     int _previousSolutionCompressed;
-                     int _update;
-                     int _updateAverages;
-                     int _updateCompressed;
-                     int _extrapolatedPredictor;
-                     int _extrapolatedPredictorAverages;
-                     int _extrapolatedPredictorCompressed;
-                     int _fluctuation;
-                     int _fluctuationAverages;
-                     int _fluctuationCompressed;
-                     int _solutionMin;
-                     int _solutionMax;
-                     LimiterStatus _limiterStatus;
-                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
-                     
-                     /** mapping of records:
-                     || Member 	|| startbit 	|| length
-                      |  riemannSolvePerformed	| startbit 0	| #bits DIMENSIONS_TIMES_TWO
-                      |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
-                      |  adjacentToRemoteRank	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
-                      |  hasToHoldDataForNeighbourCommunication	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 1
-                      |  newlyCreated	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2	| #bits 1
-                      |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3	| #bits 3
-                      |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6	| #bits 4
-                      |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10	| #bits 2
-                      |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12	| #bits 3
-                      |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15	| #bits 3
-                      */
-                     int _packedRecords0;
-                     
-                     
-                     /** mapping of records:
-                     || Member 	|| startbit 	|| length
-                      |  bytesPerDoFInUpdate	| startbit 0	| #bits 3
-                      |  bytesPerDoFInExtrapolatedPredictor	| startbit 3	| #bits 3
-                      |  bytesPerDoFInFluctuation	| startbit 6	| #bits 3
-                      */
-                     int _packedRecords1;
-                     
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords();
-                     
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                     
-                     
-                     inline int getSolverNumber() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3159,6 +1664,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._parentIndex = parentIndex;
+            }
+            
+            
+            
+            inline bool getNewlyCreated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._newlyCreated;
+            }
+            
+            
+            
+            inline void setNewlyCreated(const bool& newlyCreated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._newlyCreated = newlyCreated;
             }
             
             
@@ -4187,7 +2712,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   25/03/2017 19:59
+    * @date   25/03/2017 20:37
     */
    class exahype::records::ADERDGCellDescriptionPacked { 
       
@@ -4241,20 +2766,21 @@ namespace exahype {
              |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
              |  adjacentToRemoteRank	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
              |  hasToHoldDataForNeighbourCommunication	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 1
-             |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2	| #bits 3
-             |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 5	| #bits 4
-             |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9	| #bits 2
-             |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11	| #bits 3
-             |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14	| #bits 3
-             |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17	| #bits 3
+             |  newlyCreated	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2	| #bits 1
+             |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3	| #bits 3
+             |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6	| #bits 4
+             |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10	| #bits 2
+             |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12	| #bits 3
+             |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15	| #bits 3
              */
             int _packedRecords0;
             
             
             /** mapping of records:
             || Member 	|| startbit 	|| length
-             |  bytesPerDoFInExtrapolatedPredictor	| startbit 0	| #bits 3
-             |  bytesPerDoFInFluctuation	| startbit 3	| #bits 3
+             |  bytesPerDoFInUpdate	| startbit 0	| #bits 3
+             |  bytesPerDoFInExtrapolatedPredictor	| startbit 3	| #bits 3
+             |  bytesPerDoFInFluctuation	| startbit 6	| #bits 3
              */
             int _packedRecords1;
             
@@ -4266,7 +2792,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -4560,55 +3086,41 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                _parentIndex = parentIndex;
             }
             
             
             
-            inline Type getType() const 
-=======
-                        _parentIndex = parentIndex;
-                     }
-                     
-                     
-                     
-                     inline bool getNewlyCreated() const 
+            inline bool getNewlyCreated() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
+               int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
    int tmp = static_cast<int>(_packedRecords0 & mask);
    return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setNewlyCreated(const bool& newlyCreated) 
+            }
+            
+            
+            
+            inline void setNewlyCreated(const bool& newlyCreated) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
+               int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
    _packedRecords0 = static_cast<int>( newlyCreated ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline Type getType() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+            }
+            
+            
+            
+            inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2));
-=======
-                        int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
    assertion(( tmp >= 0 &&  tmp <= 5));
@@ -4626,32 +3138,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
             }
             
             
             
             inline RefinementEvent getRefinementEvent() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
-                     }
-                     
-                     
-                     
-                     inline RefinementEvent getRefinementEvent() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (4)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 5));
-=======
-                        int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
    assertion(( tmp >= 0 &&  tmp <= 11));
@@ -4669,21 +3167,12 @@ namespace exahype {
    int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 5));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
             }
             
             
             
             inline int getLevel() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
-                     }
-                     
-                     
-                     
-                     inline int getLevel() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5362,13 +3851,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (2)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
-=======
-                        int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    assertion(( tmp >= 0 &&  tmp <= 2));
@@ -5386,32 +3870,18 @@ namespace exahype {
    int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
             }
             
             
             
             inline int getBytesPerDoFInPreviousSolution() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
-                     }
-                     
-                     
-                     
-                     inline int getBytesPerDoFInPreviousSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
-=======
-                        int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
    tmp = tmp + 1;
@@ -5430,32 +3900,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
             }
             
             
             
             inline int getBytesPerDoFInSolution() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
-                     }
-                     
-                     
-                     
-                     inline int getBytesPerDoFInSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
-=======
-                        int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
    tmp = tmp + 1;
@@ -5474,8 +3930,7 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
             }
             
             
@@ -5486,9 +3941,9 @@ namespace exahype {
  #endif 
  {
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -5503,73 +3958,14 @@ namespace exahype {
  {
                assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
-   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   mask = static_cast<int>(mask << (0));
+   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (0));
             }
             
             
             
             inline int getBytesPerDoFInExtrapolatedPredictor() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
-                     }
-                     
-                     
-                     
-                     inline int getBytesPerDoFInUpdate() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (0));
-   int tmp = static_cast<int>(_packedRecords1 & mask);
-   tmp = static_cast<int>(tmp >> (0));
-   tmp = tmp + 1;
-   assertion(( tmp >= 1 &&  tmp <= 7));
-   return (int) tmp;
-<<<<<<< HEAD
-            }
-            
-            
-            
-            inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
-=======
-                     }
-                     
-                     
-                     
-                     inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-<<<<<<< HEAD
-               assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
-=======
-                        assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
-   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (0));
-   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
-<<<<<<< HEAD
-   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
-            }
-            
-            
-            
-            inline int getBytesPerDoFInFluctuation() const 
-=======
-   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (0));
-                     }
-                     
-                     
-                     
-                     inline int getBytesPerDoFInExtrapolatedPredictor() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5581,49 +3977,41 @@ namespace exahype {
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
-<<<<<<< HEAD
             }
             
             
             
-            inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
-=======
-                     }
-                     
-                     
-                     
-                     inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+            inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+               assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (3));
    _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
    _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (3));
-                     }
-                     
-                     
-                     
-                     inline int getBytesPerDoFInFluctuation() const 
+            }
+            
+            
+            
+            inline int getBytesPerDoFInFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        int mask =  (1 << (3)) - 1;
+               int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (6));
    int tmp = static_cast<int>(_packedRecords1 & mask);
    tmp = static_cast<int>(tmp >> (6));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
-                     }
-                     
-                     
-                     
-                     inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+            }
+            
+            
+            
+            inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5632,8 +4020,7 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (6));
    _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
-<<<<<<< HEAD
-   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (6));
             }
             
             
@@ -5656,7 +4043,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -5665,41 +4052,6 @@ namespace exahype {
             
             
             inline int getSolverNumber() const 
-=======
-   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (6));
-                     }
-                     
-                     
-                     
-                  };
-                  
-               private: 
-                  PersistentRecords _persistentRecords;
-                  
-               public:
-                  /**
-                   * Generated
-                   */
-                  ADERDGCellDescriptionPacked();
-                  
-                  /**
-                   * Generated
-                   */
-                  ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords);
-                  
-                  /**
-                   * Generated
-                   */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                  
-                  /**
-                   * Generated
-                   */
-                  ~ADERDGCellDescriptionPacked();
-                  
-                  
-                  inline int getSolverNumber() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6106,55 +4458,41 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                _persistentRecords._parentIndex = parentIndex;
             }
             
             
             
-            inline Type getType() const 
-=======
-                     _persistentRecords._parentIndex = parentIndex;
-                  }
-                  
-                  
-                  
-                  inline bool getNewlyCreated() const 
+            inline bool getNewlyCreated() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
+               int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setNewlyCreated(const bool& newlyCreated) 
+            }
+            
+            
+            
+            inline void setNewlyCreated(const bool& newlyCreated) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
+               int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2);
    _persistentRecords._packedRecords0 = static_cast<int>( newlyCreated ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline Type getType() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+            }
+            
+            
+            
+            inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2));
-=======
-                     int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
    assertion(( tmp >= 0 &&  tmp <= 5));
@@ -6172,32 +4510,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 2));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
             }
             
             
             
             inline RefinementEvent getRefinementEvent() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
-                  }
-                  
-                  
-                  
-                  inline RefinementEvent getRefinementEvent() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (4)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 5));
-=======
-                     int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
    assertion(( tmp >= 0 &&  tmp <= 11));
@@ -6215,21 +4539,12 @@ namespace exahype {
    int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 5));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
             }
             
             
             
             inline int getLevel() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 6));
-                  }
-                  
-                  
-                  
-                  inline int getLevel() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6986,13 +5301,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (2)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
-=======
-                     int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    assertion(( tmp >= 0 &&  tmp <= 2));
@@ -7010,32 +5320,18 @@ namespace exahype {
    int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
             }
             
             
             
             inline int getBytesPerDoFInPreviousSolution() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
-                  }
-                  
-                  
-                  
-                  inline int getBytesPerDoFInPreviousSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
-=======
-                     int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
    tmp = tmp + 1;
@@ -7054,32 +5350,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
             }
             
             
             
             inline int getBytesPerDoFInSolution() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
-                  }
-                  
-                  
-                  
-                  inline int getBytesPerDoFInSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
-=======
-                     int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
    tmp = tmp + 1;
@@ -7098,8 +5380,7 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
             }
             
             
@@ -7110,9 +5391,9 @@ namespace exahype {
  #endif 
  {
                int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -7127,73 +5408,14 @@ namespace exahype {
  {
                assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17));
+   mask = static_cast<int>(mask << (0));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (0));
             }
             
             
             
             inline int getBytesPerDoFInExtrapolatedPredictor() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
-                  }
-                  
-                  
-                  
-                  inline int getBytesPerDoFInUpdate() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (0));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
-   tmp = static_cast<int>(tmp >> (0));
-   tmp = tmp + 1;
-   assertion(( tmp >= 1 &&  tmp <= 7));
-   return (int) tmp;
-<<<<<<< HEAD
-            }
-            
-            
-            
-            inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
-=======
-                  }
-                  
-                  
-                  
-                  inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-<<<<<<< HEAD
-               assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
-=======
-                     assertion((bytesPerDoFInUpdate >= 1 && bytesPerDoFInUpdate <= 7));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
-   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (0));
-   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
-            }
-            
-            
-            
-            inline int getBytesPerDoFInFluctuation() const 
-=======
-   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (0));
-                  }
-                  
-                  
-                  
-                  inline int getBytesPerDoFInExtrapolatedPredictor() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7205,49 +5427,41 @@ namespace exahype {
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
-<<<<<<< HEAD
             }
             
             
             
-            inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
-=======
-                  }
-                  
-                  
-                  
-                  inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
+            inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
+               assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (3));
    _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
    _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (3));
-                  }
-                  
-                  
-                  
-                  inline int getBytesPerDoFInFluctuation() const 
+            }
+            
+            
+            
+            inline int getBytesPerDoFInFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     int mask =  (1 << (3)) - 1;
+               int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (6));
    int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
    tmp = static_cast<int>(tmp >> (6));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
-                  }
-                  
-                  
-                  
-                  inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+            }
+            
+            
+            
+            inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7256,8 +5470,7 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (6));
    _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (6));
             }
             
             
@@ -7370,7 +5583,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   25/03/2017 19:59
+       * @date   25/03/2017 20:37
        */
       class exahype::records::ADERDGCellDescription { 
          
@@ -7407,6 +5620,7 @@ namespace exahype {
                std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                #endif
                int _parentIndex;
+               bool _newlyCreated;
                Type _type;
                RefinementEvent _refinementEvent;
                int _level;
@@ -7463,7 +5677,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
@@ -7618,6 +5832,26 @@ namespace exahype {
  #endif 
  {
                   _parentIndex = parentIndex;
+               }
+               
+               
+               
+               inline bool getNewlyCreated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _newlyCreated;
+               }
+               
+               
+               
+               inline void setNewlyCreated(const bool& newlyCreated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _newlyCreated = newlyCreated;
                }
                
                
@@ -8474,7 +6708,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -8568,10 +6802,6 @@ namespace exahype {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._riemannSolvePerformed[elementIndex];
-=======
-   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (6));
-                  }
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
                   
                }
                
@@ -8714,6 +6944,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._parentIndex = parentIndex;
+               }
+               
+               
+               
+               inline bool getNewlyCreated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._newlyCreated;
+               }
+               
+               
+               
+               inline void setNewlyCreated(const bool& newlyCreated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._newlyCreated = newlyCreated;
                }
                
                
@@ -9720,7 +7970,6 @@ namespace exahype {
                   
                   static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
                   
-<<<<<<< HEAD
                   #endif
          
       };
@@ -9743,7 +7992,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   25/03/2017 19:59
+       * @date   25/03/2017 20:37
        */
       class exahype::records::ADERDGCellDescriptionPacked { 
          
@@ -9793,12 +8042,13 @@ namespace exahype {
                || Member 	|| startbit 	|| length
                 |  riemannSolvePerformed	| startbit 0	| #bits DIMENSIONS_TIMES_TWO
                 |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
-                |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 3
-                |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3	| #bits 4
-                |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7	| #bits 2
-                |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9	| #bits 3
-                |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12	| #bits 3
-                |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15	| #bits 3
+                |  newlyCreated	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
+                |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 3
+                |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4	| #bits 4
+                |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 2
+                |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10	| #bits 3
+                |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13	| #bits 3
+                |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16	| #bits 3
                 */
                int _packedRecords0;
                
@@ -9818,195 +8068,10 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
-=======
-                  /**
-                   * Generated
-                   */
-                  static std::string getLimiterStatusMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string toString(const CompressionState& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getCompressionStateMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  std::string toString() const;
-                  
-                  /**
-                   * Generated
-                   */
-                  void toString(std::ostream& out) const;
-                  
-                  
-                  PersistentRecords getPersistentRecords() const;
-                  /**
-                   * Generated
-                   */
-                  ADERDGCellDescription convert() const;
-                  
-                  
-               #ifdef Parallel
-                  protected:
-                     static tarch::logging::Log _log;
-                     
-                  public:
-                     
-                     /**
-                      * Global that represents the mpi datatype.
-                      * There are two variants: Datatype identifies only those attributes marked with
-                      * parallelise. FullDatatype instead identifies the whole record with all fields.
-                      */
-                     static MPI_Datatype Datatype;
-                     static MPI_Datatype FullDatatype;
-                     
-                     /**
-                      * Initializes the data type for the mpi operations. Has to be called
-                      * before the very first send or receive operation is called.
-                      */
-                     static void initDatatype();
-                     
-                     static void shutdownDatatype();
-                     
-                     /**
-                      * @param communicateSleep -1 Data exchange through blocking mpi
-                      * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                      * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                      */
-                     void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                     
-                     #endif
-                        
-                     };
-                     
-                     #ifdef PackedRecords
-                     #pragma pack (pop)
-                     #endif
-                     
-                     
-                     
-                  #elif !defined(Parallel)
-                     /**
-                      * @author This class is generated by DaStGen
-                      * 		   DataStructureGenerator (DaStGen)
-                      * 		   2007-2009 Wolfgang Eckhardt
-                      * 		   2012      Tobias Weinzierl
-                      *
-                      * 		   build date: 09-02-2014 14:40
-                      *
-                      * @date   21/03/2017 18:01
-                      */
-                     class exahype::records::ADERDGCellDescription { 
-                        
-                        public:
-                           
-                           typedef exahype::records::ADERDGCellDescriptionPacked Packed;
-                           
-                           enum CompressionState {
-                              Uncompressed = 0, CurrentlyProcessed = 1, Compressed = 2
-                           };
-                           
-                           enum LimiterStatus {
-                              Ok = 0, NeighbourIsNeighbourOfTroubledCell = 1, NeighbourIsTroubledCell = 2, Troubled = 3
-                           };
-                           
-                           enum RefinementEvent {
-                              None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequestedTriggered = 7, DeaugmentingChildrenRequested = 8, DeaugmentingChildren = 9, AugmentingRequested = 10, Augmenting = 11
-                           };
-                           
-                           enum Type {
-                              Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
-                           };
-                           
-                           struct PersistentRecords {
-                              int _solverNumber;
-                              #ifdef UseManualAlignment
-                              std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-                              #endif
-                              #ifdef UseManualAlignment
-                              std::bitset<DIMENSIONS_TIMES_TWO> _isInside __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
-                              #endif
-                              int _parentIndex;
-                              bool _newlyCreated;
-                              Type _type;
-                              RefinementEvent _refinementEvent;
-                              int _level;
-                              #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              tarch::la::Vector<DIMENSIONS,double> _offset;
-                              #endif
-                              #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS,double> _size __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              tarch::la::Vector<DIMENSIONS,double> _size;
-                              #endif
-                              double _previousCorrectorTimeStamp;
-                              double _previousCorrectorTimeStepSize;
-                              double _correctorTimeStepSize;
-                              double _correctorTimeStamp;
-                              double _predictorTimeStepSize;
-                              double _predictorTimeStamp;
-                              int _solution;
-                              int _solutionAverages;
-                              int _solutionCompressed;
-                              int _previousSolution;
-                              int _previousSolutionAverages;
-                              int _previousSolutionCompressed;
-                              int _update;
-                              int _updateAverages;
-                              int _updateCompressed;
-                              int _extrapolatedPredictor;
-                              int _extrapolatedPredictorAverages;
-                              int _extrapolatedPredictorCompressed;
-                              int _fluctuation;
-                              int _fluctuationAverages;
-                              int _fluctuationCompressed;
-                              int _solutionMin;
-                              int _solutionMax;
-                              LimiterStatus _limiterStatus;
-                              #ifdef UseManualAlignment
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus __attribute__((aligned(VectorisationAlignment)));
-                              #else
-                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
-                              #endif
-                              CompressionState _compressionState;
-                              int _bytesPerDoFInPreviousSolution;
-                              int _bytesPerDoFInSolution;
-                              int _bytesPerDoFInUpdate;
-                              int _bytesPerDoFInExtrapolatedPredictor;
-                              int _bytesPerDoFInFluctuation;
-                              /**
-                               * Generated
-                               */
-                              PersistentRecords();
-                              
-                              /**
-                               * Generated
-                               */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                              
-                              
-                              inline int getSolverNumber() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10173,2463 +8238,41 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   _parentIndex = parentIndex;
                }
                
                
                
-               inline Type getType() const 
-=======
-                                 _parentIndex = parentIndex;
-                              }
-                              
-                              
-                              
-                              inline bool getNewlyCreated() const 
+               inline bool getNewlyCreated() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _newlyCreated;
-                              }
-                              
-                              
-                              
-                              inline void setNewlyCreated(const bool& newlyCreated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _newlyCreated = newlyCreated;
-                              }
-                              
-                              
-                              
-                              inline Type getType() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-<<<<<<< HEAD
-                  int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
-=======
-                                 return _type;
-                              }
-                              
-                              
-                              
-                              inline void setType(const Type& type) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _type = type;
-                              }
-                              
-                              
-                              
-                              inline RefinementEvent getRefinementEvent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _refinementEvent;
-                              }
-                              
-                              
-                              
-                              inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _refinementEvent = refinementEvent;
-                              }
-                              
-                              
-                              
-                              inline int getLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _level;
-                              }
-                              
-                              
-                              
-                              inline void setLevel(const int& level) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _level = level;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS,double> getOffset() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _offset;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline void setOffset(const tarch::la::Vector<DIMENSIONS,double>& offset) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _offset = (offset);
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS,double> getSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _size;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline void setSize(const tarch::la::Vector<DIMENSIONS,double>& size) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _size = (size);
-                              }
-                              
-                              
-                              
-                              inline double getPreviousCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _previousCorrectorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline void setPreviousCorrectorTimeStamp(const double& previousCorrectorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _previousCorrectorTimeStamp = previousCorrectorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline double getPreviousCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _previousCorrectorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline void setPreviousCorrectorTimeStepSize(const double& previousCorrectorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _previousCorrectorTimeStepSize = previousCorrectorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline double getCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _correctorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _correctorTimeStepSize = correctorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline double getCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _correctorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _correctorTimeStamp = correctorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline double getPredictorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _predictorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _predictorTimeStepSize = predictorTimeStepSize;
-                              }
-                              
-                              
-                              
-                              inline double getPredictorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _predictorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _predictorTimeStamp = predictorTimeStamp;
-                              }
-                              
-                              
-                              
-                              inline int getSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _solution;
-                              }
-                              
-                              
-                              
-                              inline void setSolution(const int& solution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _solution = solution;
-                              }
-                              
-                              
-                              
-                              inline int getSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _solutionAverages;
-                              }
-                              
-                              
-                              
-                              inline void setSolutionAverages(const int& solutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _solutionAverages = solutionAverages;
-                              }
-                              
-                              
-                              
-                              inline int getSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _solutionCompressed;
-                              }
-                              
-                              
-                              
-                              inline void setSolutionCompressed(const int& solutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _solutionCompressed = solutionCompressed;
-                              }
-                              
-                              
-                              
-                              inline int getPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _previousSolution;
-                              }
-                              
-                              
-                              
-                              inline void setPreviousSolution(const int& previousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _previousSolution = previousSolution;
-                              }
-                              
-                              
-                              
-                              inline int getPreviousSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _previousSolutionAverages;
-                              }
-                              
-                              
-                              
-                              inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _previousSolutionAverages = previousSolutionAverages;
-                              }
-                              
-                              
-                              
-                              inline int getPreviousSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _previousSolutionCompressed;
-                              }
-                              
-                              
-                              
-                              inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _previousSolutionCompressed = previousSolutionCompressed;
-                              }
-                              
-                              
-                              
-                              inline int getUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _update;
-                              }
-                              
-                              
-                              
-                              inline void setUpdate(const int& update) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _update = update;
-                              }
-                              
-                              
-                              
-                              inline int getUpdateAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _updateAverages;
-                              }
-                              
-                              
-                              
-                              inline void setUpdateAverages(const int& updateAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _updateAverages = updateAverages;
-                              }
-                              
-                              
-                              
-                              inline int getUpdateCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _updateCompressed;
-                              }
-                              
-                              
-                              
-                              inline void setUpdateCompressed(const int& updateCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _updateCompressed = updateCompressed;
-                              }
-                              
-                              
-                              
-                              inline int getExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _extrapolatedPredictor;
-                              }
-                              
-                              
-                              
-                              inline void setExtrapolatedPredictor(const int& extrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _extrapolatedPredictor = extrapolatedPredictor;
-                              }
-                              
-                              
-                              
-                              inline int getExtrapolatedPredictorAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _extrapolatedPredictorAverages;
-                              }
-                              
-                              
-                              
-                              inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _extrapolatedPredictorAverages = extrapolatedPredictorAverages;
-                              }
-                              
-                              
-                              
-                              inline int getExtrapolatedPredictorCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _extrapolatedPredictorCompressed;
-                              }
-                              
-                              
-                              
-                              inline void setExtrapolatedPredictorCompressed(const int& extrapolatedPredictorCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _extrapolatedPredictorCompressed = extrapolatedPredictorCompressed;
-                              }
-                              
-                              
-                              
-                              inline int getFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _fluctuation;
-                              }
-                              
-                              
-                              
-                              inline void setFluctuation(const int& fluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _fluctuation = fluctuation;
-                              }
-                              
-                              
-                              
-                              inline int getFluctuationAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _fluctuationAverages;
-                              }
-                              
-                              
-                              
-                              inline void setFluctuationAverages(const int& fluctuationAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _fluctuationAverages = fluctuationAverages;
-                              }
-                              
-                              
-                              
-                              inline int getFluctuationCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _fluctuationCompressed;
-                              }
-                              
-                              
-                              
-                              inline void setFluctuationCompressed(const int& fluctuationCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _fluctuationCompressed = fluctuationCompressed;
-                              }
-                              
-                              
-                              
-                              inline int getSolutionMin() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _solutionMin;
-                              }
-                              
-                              
-                              
-                              inline void setSolutionMin(const int& solutionMin) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _solutionMin = solutionMin;
-                              }
-                              
-                              
-                              
-                              inline int getSolutionMax() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _solutionMax;
-                              }
-                              
-                              
-                              
-                              inline void setSolutionMax(const int& solutionMax) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _solutionMax = solutionMax;
-                              }
-                              
-                              
-                              
-                              inline LimiterStatus getLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _limiterStatus;
-                              }
-                              
-                              
-                              
-                              inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _limiterStatus = limiterStatus;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _mergedLimiterStatus;
-                              }
-                              
-                              
-                              
-                              /**
-                               * Generated and optimized
-                               * 
-                               * If you realise a for loop using exclusively arrays (vectors) and compile 
-                               * with -DUseManualAlignment you may add 
-                               * \code
-                               #pragma vector aligned
-                               #pragma simd
-                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                               * 
-                               * The alignment is tied to the unpacked records, i.e. for packed class
-                               * variants the machine's natural alignment is switched off to recude the  
-                               * memory footprint. Do not use any SSE/AVX operations or 
-                               * vectorisation on the result for the packed variants, as the data is misaligned. 
-                               * If you rely on vectorisation, convert the underlying record 
-                               * into the unpacked version first. 
-                               * 
-                               * @see convert()
-                               */
-                              inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _mergedLimiterStatus = (mergedLimiterStatus);
-                              }
-                              
-                              
-                              
-                              inline CompressionState getCompressionState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _compressionState;
-                              }
-                              
-                              
-                              
-                              inline void setCompressionState(const CompressionState& compressionState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _compressionState = compressionState;
-                              }
-                              
-                              
-                              
-                              inline int getBytesPerDoFInPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _bytesPerDoFInPreviousSolution;
-                              }
-                              
-                              
-                              
-                              inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
-                              }
-                              
-                              
-                              
-                              inline int getBytesPerDoFInSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _bytesPerDoFInSolution;
-                              }
-                              
-                              
-                              
-                              inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _bytesPerDoFInSolution = bytesPerDoFInSolution;
-                              }
-                              
-                              
-                              
-                              inline int getBytesPerDoFInUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _bytesPerDoFInUpdate;
-                              }
-                              
-                              
-                              
-                              inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _bytesPerDoFInUpdate = bytesPerDoFInUpdate;
-                              }
-                              
-                              
-                              
-                              inline int getBytesPerDoFInExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _bytesPerDoFInExtrapolatedPredictor;
-                              }
-                              
-                              
-                              
-                              inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
-                              }
-                              
-                              
-                              
-                              inline int getBytesPerDoFInFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _bytesPerDoFInFluctuation;
-                              }
-                              
-                              
-                              
-                              inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
-                              }
-                              
-                              
-                              
-                           };
-                           
-                        private: 
-                           PersistentRecords _persistentRecords;
-                           
-                        public:
-                           /**
-                            * Generated
-                            */
-                           ADERDGCellDescription();
-                           
-                           /**
-                            * Generated
-                            */
-                           ADERDGCellDescription(const PersistentRecords& persistentRecords);
-                           
-                           /**
-                            * Generated
-                            */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                           
-                           /**
-                            * Generated
-                            */
-                           ~ADERDGCellDescription();
-                           
-                           
-                           inline int getSolverNumber() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solverNumber;
-                           }
-                           
-                           
-                           
-                           inline void setSolverNumber(const int& solverNumber) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solverNumber = solverNumber;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._riemannSolvePerformed;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
-                           }
-                           
-                           
-                           
-                           inline bool getRiemannSolvePerformed(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._riemannSolvePerformed[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-                              
-                           }
-                           
-                           
-                           
-                           inline void flipRiemannSolvePerformed(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._riemannSolvePerformed.flip(elementIndex);
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._isInside;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._isInside = (isInside);
-                           }
-                           
-                           
-                           
-                           inline bool getIsInside(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._isInside[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setIsInside(int elementIndex, const bool& isInside) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._isInside[elementIndex]= isInside;
-                              
-                           }
-                           
-                           
-                           
-                           inline void flipIsInside(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._isInside.flip(elementIndex);
-                           }
-                           
-                           
-                           
-                           inline int getParentIndex() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._parentIndex;
-                           }
-                           
-                           
-                           
-                           inline void setParentIndex(const int& parentIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._parentIndex = parentIndex;
-                           }
-                           
-                           
-                           
-                           inline bool getNewlyCreated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._newlyCreated;
-                           }
-                           
-                           
-                           
-                           inline void setNewlyCreated(const bool& newlyCreated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._newlyCreated = newlyCreated;
-                           }
-                           
-                           
-                           
-                           inline Type getType() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._type;
-                           }
-                           
-                           
-                           
-                           inline void setType(const Type& type) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._type = type;
-                           }
-                           
-                           
-                           
-                           inline RefinementEvent getRefinementEvent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._refinementEvent;
-                           }
-                           
-                           
-                           
-                           inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._refinementEvent = refinementEvent;
-                           }
-                           
-                           
-                           
-                           inline int getLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._level;
-                           }
-                           
-                           
-                           
-                           inline void setLevel(const int& level) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._level = level;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS,double> getOffset() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._offset;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setOffset(const tarch::la::Vector<DIMENSIONS,double>& offset) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._offset = (offset);
-                           }
-                           
-                           
-                           
-                           inline double getOffset(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS);
-                              return _persistentRecords._offset[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setOffset(int elementIndex, const double& offset) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS);
-                              _persistentRecords._offset[elementIndex]= offset;
-                              
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS,double> getSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._size;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setSize(const tarch::la::Vector<DIMENSIONS,double>& size) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._size = (size);
-                           }
-                           
-                           
-                           
-                           inline double getSize(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS);
-                              return _persistentRecords._size[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setSize(int elementIndex, const double& size) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS);
-                              _persistentRecords._size[elementIndex]= size;
-                              
-                           }
-                           
-                           
-                           
-                           inline double getPreviousCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._previousCorrectorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousCorrectorTimeStamp(const double& previousCorrectorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._previousCorrectorTimeStamp = previousCorrectorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline double getPreviousCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._previousCorrectorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousCorrectorTimeStepSize(const double& previousCorrectorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._previousCorrectorTimeStepSize = previousCorrectorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getCorrectorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._correctorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._correctorTimeStepSize = correctorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getCorrectorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._correctorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._correctorTimeStamp = correctorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline double getPredictorTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._predictorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._predictorTimeStepSize = predictorTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getPredictorTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._predictorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._predictorTimeStamp = predictorTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline int getSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solution;
-                           }
-                           
-                           
-                           
-                           inline void setSolution(const int& solution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solution = solution;
-                           }
-                           
-                           
-                           
-                           inline int getSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solutionAverages;
-                           }
-                           
-                           
-                           
-                           inline void setSolutionAverages(const int& solutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solutionAverages = solutionAverages;
-                           }
-                           
-                           
-                           
-                           inline int getSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solutionCompressed;
-                           }
-                           
-                           
-                           
-                           inline void setSolutionCompressed(const int& solutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solutionCompressed = solutionCompressed;
-                           }
-                           
-                           
-                           
-                           inline int getPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._previousSolution;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousSolution(const int& previousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._previousSolution = previousSolution;
-                           }
-                           
-                           
-                           
-                           inline int getPreviousSolutionAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._previousSolutionAverages;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousSolutionAverages(const int& previousSolutionAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._previousSolutionAverages = previousSolutionAverages;
-                           }
-                           
-                           
-                           
-                           inline int getPreviousSolutionCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._previousSolutionCompressed;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousSolutionCompressed(const int& previousSolutionCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._previousSolutionCompressed = previousSolutionCompressed;
-                           }
-                           
-                           
-                           
-                           inline int getUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._update;
-                           }
-                           
-                           
-                           
-                           inline void setUpdate(const int& update) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._update = update;
-                           }
-                           
-                           
-                           
-                           inline int getUpdateAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._updateAverages;
-                           }
-                           
-                           
-                           
-                           inline void setUpdateAverages(const int& updateAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._updateAverages = updateAverages;
-                           }
-                           
-                           
-                           
-                           inline int getUpdateCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._updateCompressed;
-                           }
-                           
-                           
-                           
-                           inline void setUpdateCompressed(const int& updateCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._updateCompressed = updateCompressed;
-                           }
-                           
-                           
-                           
-                           inline int getExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._extrapolatedPredictor;
-                           }
-                           
-                           
-                           
-                           inline void setExtrapolatedPredictor(const int& extrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._extrapolatedPredictor = extrapolatedPredictor;
-                           }
-                           
-                           
-                           
-                           inline int getExtrapolatedPredictorAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._extrapolatedPredictorAverages;
-                           }
-                           
-                           
-                           
-                           inline void setExtrapolatedPredictorAverages(const int& extrapolatedPredictorAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._extrapolatedPredictorAverages = extrapolatedPredictorAverages;
-                           }
-                           
-                           
-                           
-                           inline int getExtrapolatedPredictorCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._extrapolatedPredictorCompressed;
-                           }
-                           
-                           
-                           
-                           inline void setExtrapolatedPredictorCompressed(const int& extrapolatedPredictorCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._extrapolatedPredictorCompressed = extrapolatedPredictorCompressed;
-                           }
-                           
-                           
-                           
-                           inline int getFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._fluctuation;
-                           }
-                           
-                           
-                           
-                           inline void setFluctuation(const int& fluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._fluctuation = fluctuation;
-                           }
-                           
-                           
-                           
-                           inline int getFluctuationAverages() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._fluctuationAverages;
-                           }
-                           
-                           
-                           
-                           inline void setFluctuationAverages(const int& fluctuationAverages) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._fluctuationAverages = fluctuationAverages;
-                           }
-                           
-                           
-                           
-                           inline int getFluctuationCompressed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._fluctuationCompressed;
-                           }
-                           
-                           
-                           
-                           inline void setFluctuationCompressed(const int& fluctuationCompressed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._fluctuationCompressed = fluctuationCompressed;
-                           }
-                           
-                           
-                           
-                           inline int getSolutionMin() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solutionMin;
-                           }
-                           
-                           
-                           
-                           inline void setSolutionMin(const int& solutionMin) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solutionMin = solutionMin;
-                           }
-                           
-                           
-                           
-                           inline int getSolutionMax() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._solutionMax;
-                           }
-                           
-                           
-                           
-                           inline void setSolutionMax(const int& solutionMax) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._solutionMax = solutionMax;
-                           }
-                           
-                           
-                           
-                           inline LimiterStatus getLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._limiterStatus;
-                           }
-                           
-                           
-                           
-                           inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._limiterStatus = limiterStatus;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getMergedLimiterStatus() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._mergedLimiterStatus;
-                           }
-                           
-                           
-                           
-                           /**
-                            * Generated and optimized
-                            * 
-                            * If you realise a for loop using exclusively arrays (vectors) and compile 
-                            * with -DUseManualAlignment you may add 
-                            * \code
-                            #pragma vector aligned
-                            #pragma simd
-                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                            * 
-                            * The alignment is tied to the unpacked records, i.e. for packed class
-                            * variants the machine's natural alignment is switched off to recude the  
-                            * memory footprint. Do not use any SSE/AVX operations or 
-                            * vectorisation on the result for the packed variants, as the data is misaligned. 
-                            * If you rely on vectorisation, convert the underlying record 
-                            * into the unpacked version first. 
-                            * 
-                            * @see convert()
-                            */
-                           inline void setMergedLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._mergedLimiterStatus = (mergedLimiterStatus);
-                           }
-                           
-                           
-                           
-                           inline exahype::records::ADERDGCellDescription::LimiterStatus getMergedLimiterStatus(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              return _persistentRecords._mergedLimiterStatus[elementIndex];
-                              
-                           }
-                           
-                           
-                           
-                           inline void setMergedLimiterStatus(int elementIndex, const LimiterStatus& mergedLimiterStatus) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              assertion(elementIndex>=0);
-                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                              _persistentRecords._mergedLimiterStatus[elementIndex]= mergedLimiterStatus;
-                              
-                           }
-                           
-                           
-                           
-                           inline CompressionState getCompressionState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._compressionState;
-                           }
-                           
-                           
-                           
-                           inline void setCompressionState(const CompressionState& compressionState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._compressionState = compressionState;
-                           }
-                           
-                           
-                           
-                           inline int getBytesPerDoFInPreviousSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._bytesPerDoFInPreviousSolution;
-                           }
-                           
-                           
-                           
-                           inline void setBytesPerDoFInPreviousSolution(const int& bytesPerDoFInPreviousSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._bytesPerDoFInPreviousSolution = bytesPerDoFInPreviousSolution;
-                           }
-                           
-                           
-                           
-                           inline int getBytesPerDoFInSolution() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._bytesPerDoFInSolution;
-                           }
-                           
-                           
-                           
-                           inline void setBytesPerDoFInSolution(const int& bytesPerDoFInSolution) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._bytesPerDoFInSolution = bytesPerDoFInSolution;
-                           }
-                           
-                           
-                           
-                           inline int getBytesPerDoFInUpdate() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._bytesPerDoFInUpdate;
-                           }
-                           
-                           
-                           
-                           inline void setBytesPerDoFInUpdate(const int& bytesPerDoFInUpdate) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._bytesPerDoFInUpdate = bytesPerDoFInUpdate;
-                           }
-                           
-                           
-                           
-                           inline int getBytesPerDoFInExtrapolatedPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._bytesPerDoFInExtrapolatedPredictor;
-                           }
-                           
-                           
-                           
-                           inline void setBytesPerDoFInExtrapolatedPredictor(const int& bytesPerDoFInExtrapolatedPredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._bytesPerDoFInExtrapolatedPredictor = bytesPerDoFInExtrapolatedPredictor;
-                           }
-                           
-                           
-                           
-                           inline int getBytesPerDoFInFluctuation() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._bytesPerDoFInFluctuation;
-                           }
-                           
-                           
-                           
-                           inline void setBytesPerDoFInFluctuation(const int& bytesPerDoFInFluctuation) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._bytesPerDoFInFluctuation = bytesPerDoFInFluctuation;
-                           }
-                           
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string toString(const CompressionState& param);
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string getCompressionStateMapping();
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string toString(const LimiterStatus& param);
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string getLimiterStatusMapping();
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string toString(const RefinementEvent& param);
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string getRefinementEventMapping();
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string toString(const Type& param);
-                           
-                           /**
-                            * Generated
-                            */
-                           static std::string getTypeMapping();
-                           
-                           /**
-                            * Generated
-                            */
-                           std::string toString() const;
-                           
-                           /**
-                            * Generated
-                            */
-                           void toString(std::ostream& out) const;
-                           
-                           
-                           PersistentRecords getPersistentRecords() const;
-                           /**
-                            * Generated
-                            */
-                           ADERDGCellDescriptionPacked convert() const;
-                           
-                           
-                        #ifdef Parallel
-                           protected:
-                              static tarch::logging::Log _log;
-                              
-                           public:
-                              
-                              /**
-                               * Global that represents the mpi datatype.
-                               * There are two variants: Datatype identifies only those attributes marked with
-                               * parallelise. FullDatatype instead identifies the whole record with all fields.
-                               */
-                              static MPI_Datatype Datatype;
-                              static MPI_Datatype FullDatatype;
-                              
-                              /**
-                               * Initializes the data type for the mpi operations. Has to be called
-                               * before the very first send or receive operation is called.
-                               */
-                              static void initDatatype();
-                              
-                              static void shutdownDatatype();
-                              
-                              /**
-                               * @param communicateSleep -1 Data exchange through blocking mpi
-                               * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                               * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                               */
-                              void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                              
-                              void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                              
-                              static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                              
-                              #endif
-                                 
-                              };
-                              
-                              #ifndef DaStGenPackedPadding
-                                #define DaStGenPackedPadding 1      // 32 bit version
-                                // #define DaStGenPackedPadding 2   // 64 bit version
-                              #endif
-                              
-                              
-                              #ifdef PackedRecords
-                                 #pragma pack (push, DaStGenPackedPadding)
-                              #endif
-                              
-                              /**
-                               * @author This class is generated by DaStGen
-                               * 		   DataStructureGenerator (DaStGen)
-                               * 		   2007-2009 Wolfgang Eckhardt
-                               * 		   2012      Tobias Weinzierl
-                               *
-                               * 		   build date: 09-02-2014 14:40
-                               *
-                               * @date   21/03/2017 18:01
-                               */
-                              class exahype::records::ADERDGCellDescriptionPacked { 
-                                 
-                                 public:
-                                    
-                                    typedef exahype::records::ADERDGCellDescription::Type Type;
-                                    
-                                    typedef exahype::records::ADERDGCellDescription::RefinementEvent RefinementEvent;
-                                    
-                                    typedef exahype::records::ADERDGCellDescription::LimiterStatus LimiterStatus;
-                                    
-                                    typedef exahype::records::ADERDGCellDescription::CompressionState CompressionState;
-                                    
-                                    struct PersistentRecords {
-                                       int _solverNumber;
-                                       int _parentIndex;
-                                       int _level;
-                                       tarch::la::Vector<DIMENSIONS,double> _offset;
-                                       tarch::la::Vector<DIMENSIONS,double> _size;
-                                       double _previousCorrectorTimeStamp;
-                                       double _previousCorrectorTimeStepSize;
-                                       double _correctorTimeStepSize;
-                                       double _correctorTimeStamp;
-                                       double _predictorTimeStepSize;
-                                       double _predictorTimeStamp;
-                                       int _solution;
-                                       int _solutionAverages;
-                                       int _solutionCompressed;
-                                       int _previousSolution;
-                                       int _previousSolutionAverages;
-                                       int _previousSolutionCompressed;
-                                       int _update;
-                                       int _updateAverages;
-                                       int _updateCompressed;
-                                       int _extrapolatedPredictor;
-                                       int _extrapolatedPredictorAverages;
-                                       int _extrapolatedPredictorCompressed;
-                                       int _fluctuation;
-                                       int _fluctuationAverages;
-                                       int _fluctuationCompressed;
-                                       int _solutionMin;
-                                       int _solutionMax;
-                                       LimiterStatus _limiterStatus;
-                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _mergedLimiterStatus;
-                                       
-                                       /** mapping of records:
-                                       || Member 	|| startbit 	|| length
-                                        |  riemannSolvePerformed	| startbit 0	| #bits DIMENSIONS_TIMES_TWO
-                                        |  isInside	| startbit DIMENSIONS_TIMES_TWO + 0	| #bits DIMENSIONS_TIMES_TWO
-                                        |  newlyCreated	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0	| #bits 1
-                                        |  type	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1	| #bits 3
-                                        |  refinementEvent	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4	| #bits 4
-                                        |  compressionState	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8	| #bits 2
-                                        |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10	| #bits 3
-                                        |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13	| #bits 3
-                                        |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16	| #bits 3
-                                        */
-                                       int _packedRecords0;
-                                       
-                                       
-                                       /** mapping of records:
-                                       || Member 	|| startbit 	|| length
-                                        |  bytesPerDoFInExtrapolatedPredictor	| startbit 0	| #bits 3
-                                        |  bytesPerDoFInFluctuation	| startbit 3	| #bits 3
-                                        */
-                                       int _packedRecords1;
-                                       
-                                       /**
-                                        * Generated
-                                        */
-                                       PersistentRecords();
-                                       
-                                       /**
-                                        * Generated
-                                        */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                                       
-                                       
-                                       inline int getSolverNumber() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _solverNumber;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setSolverNumber(const int& solverNumber) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _solverNumber = solverNumber;
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
-                                          mask = static_cast<int>(mask << (0));
-                                          int tmp = static_cast<int>(_packedRecords0 & mask);
-                                          tmp = static_cast<int>(tmp >> (0));
-                                          std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
-                                          return result;
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
-                                          mask = static_cast<int>(mask << (0));
-                                          _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-                                          _packedRecords0 = static_cast<int>(_packedRecords0 | riemannSolvePerformed.to_ulong() << (0));
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
-                                          mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
-                                          int tmp = static_cast<int>(_packedRecords0 & mask);
-                                          tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO));
-                                          std::bitset<DIMENSIONS_TIMES_TWO> result = tmp;
-                                          return result;
-                                       }
-                                       
-                                       
-                                       
-                                       /**
-                                        * Generated and optimized
-                                        * 
-                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
-                                        * with -DUseManualAlignment you may add 
-                                        * \code
-                                        #pragma vector aligned
-                                        #pragma simd
-                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                                        * 
-                                        * The alignment is tied to the unpacked records, i.e. for packed class
-                                        * variants the machine's natural alignment is switched off to recude the  
-                                        * memory footprint. Do not use any SSE/AVX operations or 
-                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
-                                        * If you rely on vectorisation, convert the underlying record 
-                                        * into the unpacked version first. 
-                                        * 
-                                        * @see convert()
-                                        */
-                                       inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          int mask = (int) (1 << (DIMENSIONS_TIMES_TWO)) - 1 ;
-                                          mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO));
-                                          _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-                                          _packedRecords0 = static_cast<int>(_packedRecords0 | isInside.to_ulong() << (DIMENSIONS_TIMES_TWO));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getParentIndex() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _parentIndex;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setParentIndex(const int& parentIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _parentIndex = parentIndex;
-                                       }
-                                       
-                                       
-                                       
-                                       inline bool getNewlyCreated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+                  int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
    int tmp = static_cast<int>(_packedRecords0 & mask);
    return (tmp != 0);
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setNewlyCreated(const bool& newlyCreated) 
+               }
+               
+               
+               
+               inline void setNewlyCreated(const bool& newlyCreated) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+                  int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
    _packedRecords0 = static_cast<int>( newlyCreated ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                                       }
-                                       
-                                       
-                                       
-                                       inline Type getType() const 
+               }
+               
+               
+               
+               inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          int mask =  (1 << (3)) - 1;
+                  int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
    assertion(( tmp >= 0 &&  tmp <= 5));
@@ -12647,32 +8290,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
                }
                
                
                
                inline RefinementEvent getRefinementEvent() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
-                                       }
-                                       
-                                       
-                                       
-                                       inline RefinementEvent getRefinementEvent() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (4)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
-=======
-                                          int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
    assertion(( tmp >= 0 &&  tmp <= 11));
@@ -12690,21 +8319,12 @@ namespace exahype {
    int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
                }
                
                
                
                inline int getLevel() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getLevel() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -13383,13 +9003,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (2)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
-=======
-                                          int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    assertion(( tmp >= 0 &&  tmp <= 2));
@@ -13407,32 +9022,18 @@ namespace exahype {
    int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
                }
                
                
                
                inline int getBytesPerDoFInPreviousSolution() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getBytesPerDoFInPreviousSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
-=======
-                                          int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    tmp = tmp + 1;
@@ -13451,32 +9052,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
                }
                
                
                
                inline int getBytesPerDoFInSolution() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getBytesPerDoFInSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
-=======
-                                          int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
    tmp = tmp + 1;
@@ -13495,32 +9082,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
                }
                
                
                
                inline int getBytesPerDoFInUpdate() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getBytesPerDoFInUpdate() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
-=======
-                                          int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
    tmp = tmp + 1;
@@ -13539,21 +9112,12 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
                }
                
                
                
                inline int getBytesPerDoFInExtrapolatedPredictor() const 
-=======
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getBytesPerDoFInExtrapolatedPredictor() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -13609,7 +9173,6 @@ namespace exahype {
    mask = static_cast<int>(mask << (3));
    _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
    _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
-<<<<<<< HEAD
                }
                
                
@@ -13632,7 +9195,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -13641,40 +9204,6 @@ namespace exahype {
                
                
                inline int getSolverNumber() const 
-=======
-                                       }
-                                       
-                                       
-                                       
-                                    };
-                                    
-                                 private: 
-                                    PersistentRecords _persistentRecords;
-                                    
-                                 public:
-                                    /**
-                                     * Generated
-                                     */
-                                    ADERDGCellDescriptionPacked();
-                                    
-                                    /**
-                                     * Generated
-                                     */
-                                    ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords);
-                                    
-                                    /**
-                                     * Generated
-                                     */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& limiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& mergedLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
-                                    
-                                    /**
-                                     * Generated
-                                     */
-                                    ~ADERDGCellDescriptionPacked();
-                                    
-                                    
-                                    inline int getSolverNumber() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -13931,55 +9460,41 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   _persistentRecords._parentIndex = parentIndex;
                }
                
                
                
-               inline Type getType() const 
-=======
-                                       _persistentRecords._parentIndex = parentIndex;
-                                    }
-                                    
-                                    
-                                    
-                                    inline bool getNewlyCreated() const 
+               inline bool getNewlyCreated() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+                  int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    return (tmp != 0);
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setNewlyCreated(const bool& newlyCreated) 
+               }
+               
+               
+               
+               inline void setNewlyCreated(const bool& newlyCreated) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
+                  int mask = 1 << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0);
    _persistentRecords._packedRecords0 = static_cast<int>( newlyCreated ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                                    }
-                                    
-                                    
-                                    
-                                    inline Type getType() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
+               }
+               
+               
+               
+               inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
-=======
-                                       int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
    assertion(( tmp >= 0 &&  tmp <= 5));
@@ -13997,32 +9512,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 0));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
                }
                
                
                
                inline RefinementEvent getRefinementEvent() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(type) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 1));
-                                    }
-                                    
-                                    
-                                    
-                                    inline RefinementEvent getRefinementEvent() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (4)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
-=======
-                                       int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
    assertion(( tmp >= 0 &&  tmp <= 11));
@@ -14040,21 +9541,12 @@ namespace exahype {
    int mask =  (1 << (4)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 3));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
                }
                
                
                
                inline int getLevel() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(refinementEvent) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 4));
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getLevel() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -14811,13 +10303,8 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (2)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
-=======
-                                       int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    assertion(( tmp >= 0 &&  tmp <= 2));
@@ -14835,32 +10322,18 @@ namespace exahype {
    int mask =  (1 << (2)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 7));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
                }
                
                
                
                inline int getBytesPerDoFInPreviousSolution() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(compressionState) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 8));
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getBytesPerDoFInPreviousSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
-=======
-                                       int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    tmp = tmp + 1;
@@ -14879,32 +10352,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
                }
                
                
                
                inline int getBytesPerDoFInSolution() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInPreviousSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 10));
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getBytesPerDoFInSolution() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
-=======
-                                       int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
    tmp = tmp + 1;
@@ -14923,32 +10382,18 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
                }
                
                
                
                inline int getBytesPerDoFInUpdate() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInSolution) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 13));
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getBytesPerDoFInUpdate() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-<<<<<<< HEAD
                   int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
-=======
-                                       int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
    tmp = tmp + 1;
@@ -14967,21 +10412,12 @@ namespace exahype {
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-<<<<<<< HEAD
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15));
+   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
                }
                
                
                
                inline int getBytesPerDoFInExtrapolatedPredictor() const 
-=======
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInUpdate) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 16));
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getBytesPerDoFInExtrapolatedPredictor() const 
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 

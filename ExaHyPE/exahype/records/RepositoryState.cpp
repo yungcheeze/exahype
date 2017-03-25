@@ -112,17 +112,12 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
       {
          RepositoryState dummyRepositoryState[2];
          
-<<<<<<< HEAD
          #ifdef MPI2
          const int Attributes = 3;
          #else
          const int Attributes = 4;
          #endif
-=======
-         const int Attributes = 4;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
               MPI_INT		 //action
             , MPI_INT		 //numberOfIterations
             , MPI_CXX_BOOL		 //exchangeBoundaryVertices
@@ -130,16 +125,9 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
             , MPI_UB
             #endif
             
-=======
-            MPI_INT,		 //action
-            MPI_INT,		 //numberOfIterations
-            MPI_CHAR,		 //exchangeBoundaryVertices
-            MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          };
          
          int blocklen[Attributes] = {
-<<<<<<< HEAD
               1		 //action
             , 1		 //numberOfIterations
             , 1		 //exchangeBoundaryVertices
@@ -147,15 +135,8 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
             , 1
             #endif
             
-=======
-            1,		 //action
-            1,		 //numberOfIterations
-            1,		 //exchangeBoundaryVertices
-            1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          };
          
-<<<<<<< HEAD
          MPI_Aint  disp[Attributes];
          MPI_Aint  base;
          #ifdef MPI2
@@ -183,20 +164,8 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          #else
          for (int i=1; i<Attributes-1; i++) {
          #endif
-=======
-         MPI_Aint     disp[Attributes];
-         
-         MPI_Aint base;
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._action))), 		&disp[0] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-         disp[Attributes-1] = sizeof(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices);
-         for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             assertion1( disp[i] > disp[i-1], i );
          }
-<<<<<<< HEAD
          #ifdef MPI2
          for (int i=0; i<Attributes; i++) {
          #else
@@ -204,12 +173,7 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          #endif
             disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
             assertion4(disp[i]<static_cast<int>(sizeof(RepositoryState)), i, disp[i], Attributes, sizeof(RepositoryState));
-=======
-         for (int i=0; i<Attributes-1; i++) {
-            disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          }
-<<<<<<< HEAD
          #ifndef MPI2
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[1]))), 		&disp[3] );
          disp[3] -= base;
@@ -221,9 +185,6 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
          MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
          MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &RepositoryState::Datatype );
-=======
-         MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::Datatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          MPI_Type_commit( &RepositoryState::Datatype );
          #else
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::Datatype);
@@ -234,17 +195,12 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
       {
          RepositoryState dummyRepositoryState[2];
          
-<<<<<<< HEAD
          #ifdef MPI2
          const int Attributes = 3;
          #else
          const int Attributes = 4;
          #endif
-=======
-         const int Attributes = 4;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          MPI_Datatype subtypes[Attributes] = {
-<<<<<<< HEAD
               MPI_INT		 //action
             , MPI_INT		 //numberOfIterations
             , MPI_CXX_BOOL		 //exchangeBoundaryVertices
@@ -252,16 +208,9 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
             , MPI_UB
             #endif
             
-=======
-            MPI_INT,		 //action
-            MPI_INT,		 //numberOfIterations
-            MPI_CHAR,		 //exchangeBoundaryVertices
-            MPI_UB		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          };
          
          int blocklen[Attributes] = {
-<<<<<<< HEAD
               1		 //action
             , 1		 //numberOfIterations
             , 1		 //exchangeBoundaryVertices
@@ -269,15 +218,8 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
             , 1
             #endif
             
-=======
-            1,		 //action
-            1,		 //numberOfIterations
-            1,		 //exchangeBoundaryVertices
-            1		 // end/displacement flag
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          };
          
-<<<<<<< HEAD
          MPI_Aint  disp[Attributes];
          MPI_Aint  base;
          #ifdef MPI2
@@ -305,20 +247,8 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          #else
          for (int i=1; i<Attributes-1; i++) {
          #endif
-=======
-         MPI_Aint     disp[Attributes];
-         
-         MPI_Aint base;
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._action))), 		&disp[0] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-         disp[Attributes-1] = sizeof(dummyRepositoryState[0]._persistentRecords._exchangeBoundaryVertices);
-         for (int i=1; i<Attributes-1; i++) {
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
             assertion1( disp[i] > disp[i-1], i );
          }
-<<<<<<< HEAD
          #ifdef MPI2
          for (int i=0; i<Attributes; i++) {
          #else
@@ -326,12 +256,7 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          #endif
             disp[i] = disp[i] - base; // should be MPI_Aint_diff(disp[i], base); but this is not supported by most MPI-2 implementations
             assertion4(disp[i]<static_cast<int>(sizeof(RepositoryState)), i, disp[i], Attributes, sizeof(RepositoryState));
-=======
-         for (int i=0; i<Attributes-1; i++) {
-            disp[i] -= base;
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          }
-<<<<<<< HEAD
          #ifndef MPI2
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryState[1]))), 		&disp[3] );
          disp[3] -= base;
@@ -343,9 +268,6 @@ exahype::records::RepositoryStatePacked exahype::records::RepositoryState::conve
          MPI_Type_create_struct( Attributes, blocklen, disp, subtypes, &tmpType );
          MPI_Type_get_extent( tmpType, &lowerBound, &typeExtent );
          MPI_Type_create_resized( tmpType, lowerBound, typeExtent, &RepositoryState::FullDatatype );
-=======
-         MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::FullDatatype );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
          MPI_Type_commit( &RepositoryState::FullDatatype );
          #else
          MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryState::FullDatatype);
@@ -662,7 +584,6 @@ exahype::records::RepositoryState exahype::records::RepositoryStatePacked::conve
 }
 
 #ifdef Parallel
-<<<<<<< HEAD
    tarch::logging::Log exahype::records::RepositoryStatePacked::_log( "exahype::records::RepositoryStatePacked" );
    
    MPI_Datatype exahype::records::RepositoryStatePacked::Datatype = 0;
@@ -752,81 +673,7 @@ exahype::records::RepositoryState exahype::records::RepositoryStatePacked::conve
          MPI_Type_commit( &RepositoryStatePacked::Datatype );
          #endif
          
-=======
-tarch::logging::Log exahype::records::RepositoryStatePacked::_log( "exahype::records::RepositoryStatePacked" );
-
-MPI_Datatype exahype::records::RepositoryStatePacked::Datatype = 0;
-MPI_Datatype exahype::records::RepositoryStatePacked::FullDatatype = 0;
-
-
-void exahype::records::RepositoryStatePacked::initDatatype() {
-   {
-      RepositoryStatePacked dummyRepositoryStatePacked[2];
-      
-      const int Attributes = 4;
-      MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //action
-         MPI_INT,		 //numberOfIterations
-         MPI_CHAR,		 //exchangeBoundaryVertices
-         MPI_UB		 // end/displacement flag
-      };
-      
-      int blocklen[Attributes] = {
-         1,		 //action
-         1,		 //numberOfIterations
-         1,		 //exchangeBoundaryVertices
-         1		 // end/displacement flag
-      };
-      
-      MPI_Aint     disp[Attributes];
-      
-      MPI_Aint base;
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._action))), 		&disp[0] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-      disp[Attributes-1] = sizeof(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices);
-      for (int i=1; i<Attributes-1; i++) {
-         assertion1( disp[i] > disp[i-1], i );
       }
-      for (int i=0; i<Attributes-1; i++) {
-         disp[i] -= base;
-      }
-      MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryStatePacked::Datatype );
-      MPI_Type_commit( &RepositoryStatePacked::Datatype );
-      
-   }
-   {
-      RepositoryStatePacked dummyRepositoryStatePacked[2];
-      
-      const int Attributes = 4;
-      MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //action
-         MPI_INT,		 //numberOfIterations
-         MPI_CHAR,		 //exchangeBoundaryVertices
-         MPI_UB		 // end/displacement flag
-      };
-      
-      int blocklen[Attributes] = {
-         1,		 //action
-         1,		 //numberOfIterations
-         1,		 //exchangeBoundaryVertices
-         1		 // end/displacement flag
-      };
-      
-      MPI_Aint     disp[Attributes];
-      
-      MPI_Aint base;
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._action))), 		&disp[0] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._numberOfIterations))), 		&disp[1] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices))), 		&disp[2] );
-      disp[Attributes-1] = sizeof(dummyRepositoryStatePacked[0]._persistentRecords._exchangeBoundaryVertices);
-      for (int i=1; i<Attributes-1; i++) {
-         assertion1( disp[i] > disp[i-1], i );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
-      }
-<<<<<<< HEAD
       {
          RepositoryStatePacked dummyRepositoryStatePacked[2];
          
@@ -909,38 +756,6 @@ void exahype::records::RepositoryStatePacked::initDatatype() {
          MPI_Type_commit( &RepositoryStatePacked::FullDatatype );
          #endif
          
-=======
-      for (int i=0; i<Attributes-1; i++) {
-         disp[i] -= base;
-      }
-      MPI_Type_struct( Attributes, blocklen, disp, subtypes, &RepositoryStatePacked::FullDatatype );
-      MPI_Type_commit( &RepositoryStatePacked::FullDatatype );
-      
-   }
-   
-}
-
-
-void exahype::records::RepositoryStatePacked::shutdownDatatype() {
-   MPI_Type_free( &RepositoryStatePacked::Datatype );
-   MPI_Type_free( &RepositoryStatePacked::FullDatatype );
-   
-}
-
-void exahype::records::RepositoryStatePacked::send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep) {
-   _senderDestinationRank = destination;
-   
-   if (communicateSleep<0) {
-   
-      const int result = MPI_Send(this, 1, exchangeOnlyAttributesMarkedWithParallelise ? Datatype : FullDatatype, destination, tag, tarch::parallel::Node::getInstance().getCommunicator());
-      if  (result!=MPI_SUCCESS) {
-         std::ostringstream msg;
-         msg << "was not able to send message exahype::records::RepositoryStatePacked "
-         << toString()
-         << " to node " << destination
-         << ": " << tarch::parallel::MPIReturnValueToString(result);
-         _log.error( "send(int)",msg.str() );
->>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
       }
       
    }
