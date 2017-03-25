@@ -13,12 +13,11 @@
  
 #include "exahype/mappings/Prediction.h"
 
+#include "peano/utils/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
-
-#include "peano/utils/Loop.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -113,7 +112,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
 
-    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[pre]");
 
     solver->performPredictionAndVolumeIntegral(
         cellDescription,
@@ -124,7 +123,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
         _temporaryVariables._tempStateSizedVectors    [cellDescription.getSolverNumber()],
         _temporaryVariables._tempPointForceSources    [cellDescription.getSolverNumber()]);
 
-    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[post]");
   }
 }
 

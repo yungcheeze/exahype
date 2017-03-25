@@ -1,5 +1,12 @@
 #include "exahype/records/Vertex.h"
 
+<<<<<<< HEAD
+=======
+//#define Parallel
+//#define PersistentRegularSubtrees
+//#define Asserts
+
+>>>>>>> branch 'master' of https://gitlab.lrz.de/exahype/ExaHyPE-Engine.git
 #if defined(Parallel) && defined(PersistentRegularSubtrees) && defined(Asserts)
    exahype::records::Vertex::PersistentRecords::PersistentRecords() {
       

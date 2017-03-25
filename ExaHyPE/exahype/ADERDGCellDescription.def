@@ -129,6 +129,13 @@ class exahype::records::ADERDGCellDescription {
     Descendant,
     EmptyDescendant
   };
+  
+  /**
+   * Can be used to flag a cell description as newly created.
+   * 
+   * Is currently only used for ancestors.
+   */
+  persistent packed bool newlyCreated;
 
   /**
    * @defgroup AMRInfo AMR information

@@ -402,9 +402,12 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  while ( repository.getState().continueToConstructGrid() ) {
+  while ( repository.getState().continueToConstructGrid()
+          || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+  ) {
     repository.iterate();
     gridSetupIterations++;
+
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
@@ -433,6 +436,13 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     );
     #endif
 
+    #ifdef Asserts
+    logInfo("createGrid()",
+             "grid setup iteration #" << gridSetupIterations <<
+             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+     );
+    #endif
+
     #if !defined(Parallel)
     logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
     #endif
@@ -446,6 +456,9 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -483,9 +496,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-    //    repository.switchToPlotAugmentedAMRGrid();
-    //    repository.iterate(); For debugging purposes
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
@@ -904,7 +914,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
 
     gridUpdate = true;
@@ -983,7 +993,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
   }
 

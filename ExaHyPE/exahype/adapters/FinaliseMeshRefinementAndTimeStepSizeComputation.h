@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_DropMPIMetadataMessagesAndTimeStepSizeComputation_H_
-#define EXAHYPE_ADAPTERS_DropMPIMetadataMessagesAndTimeStepSizeComputation_H_
+#ifndef EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
+ #include "exahype/mappings/FinaliseMeshRefinement.h"
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/Sending.h"
@@ -28,7 +28,7 @@
 
 namespace exahype {
       namespace adapters {
-        class DropMPIMetadataMessagesAndTimeStepSizeComputation;
+        class FinaliseMeshRefinementAndTimeStepSizeComputation;
       } 
 }
 
@@ -40,15 +40,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation {
+class exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation {
   private:
-    typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
+    typedef mappings::FinaliseMeshRefinement Mapping0;
     typedef mappings::PreProcessing Mapping1;
     typedef mappings::TimeStepSizeComputation Mapping2;
     typedef mappings::Sending Mapping3;
     typedef mappings::PostProcessing Mapping4;
 
-     Mapping0  _map2DropIncomingMPIMetadataMessages;
+     Mapping0  _map2FinaliseMeshRefinement;
      Mapping1  _map2PreProcessing;
      Mapping2  _map2TimeStepSizeComputation;
      Mapping3  _map2Sending;
@@ -64,16 +64,16 @@ class exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    DropMPIMetadataMessagesAndTimeStepSizeComputation();
+    FinaliseMeshRefinementAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    DropMPIMetadataMessagesAndTimeStepSizeComputation(const DropMPIMetadataMessagesAndTimeStepSizeComputation& masterThread);
+    FinaliseMeshRefinementAndTimeStepSizeComputation(const FinaliseMeshRefinementAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~DropMPIMetadataMessagesAndTimeStepSizeComputation();
+    virtual ~FinaliseMeshRefinementAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const DropMPIMetadataMessagesAndTimeStepSizeComputation& workerThread);
+    void mergeWithWorkerThread(const FinaliseMeshRefinementAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

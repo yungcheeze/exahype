@@ -379,6 +379,21 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 //  }
 }
 
+bool exahype::solvers::FiniteVolumesSolver::attainedStableState(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const int solverNumber) const {
+  const int element = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (element!=exahype::solvers::Solver::NotFound) {
+    CellDescription& cellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
+
+    return (cellDescription.getRefinementEvent()==CellDescription::RefinementEvent::None);
+  }
+
+  return true;
+}
+
 bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -397,6 +412,18 @@ bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
   }
 
   return false;
+}
+
+void exahype::solvers::FiniteVolumesSolver::finaliseStateUpdates(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) {
+  // do nothing
 }
 
 ///////////////////////////////////

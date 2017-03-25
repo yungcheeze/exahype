@@ -218,6 +218,29 @@ private:
   void determineLimiterMinAndMax(SolverPatch& solverPatch,LimiterPatch& limiterPatch);
 
   /**
+   * Based on the limiter status of a solver patch
+   * and the solver patch's type, we perform the
+   * following actions:
+   *
+   * | New Status | Type                        | Action                                                                                           |
+   * ----------------------------------------------------------------------------------------------------------------------------------------------|
+   * | O/NNT      | Any                         | Do nothing.                                                                                      |
+   * | T/NT       | Cell                        | Set RefinementRequested event on parent cell if its current event is None or AugmentingRequested |
+   * | T/NT       | Descendant                  | Set RefinementRequested event if current event is None or AugmentingRequested                    |
+   * | T/NT       | Else                        | Do nothing                                                                                       |
+   *
+   * \note Currently we assume that the problem and load-balancing is so well-behaved that
+   * we always find a Cell as parent of a Descendant. We further do not
+   * consider Master-Worker boundaries in the lookup of the parent.
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   */
+  bool markForRefinementBasedOnLimiterStatus(
+      SolverPatch& solverPatch,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
+
+  /**
    * Updates the merged limiter status based on the cell-local ADER-DG solution
    * values,
    */
@@ -287,6 +310,7 @@ private:
       SolverPatch&  cellDescription,
       const int     faceIndex,
       const double* const min, const double* const  max) const;
+
 
 //  /**
 //   * Send the limiter status
@@ -472,6 +496,22 @@ public:
       const int solverNumber) override;
 
   bool updateStateInLeaveCell(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) override;
+
+  bool attainedStableState(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int solverNumber) const override;
+
+  void finaliseStateUpdates(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
