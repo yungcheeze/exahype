@@ -139,11 +139,11 @@ void pingPoingTest() {
       assertion3( heapVertices[1].getX()(2)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       #endif
 
-      assertion3( heapVertices[1].getLevel()==6,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
-      assertion3( heapVertices[1].getX()(0)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
-      assertion3( heapVertices[1].getX()(1)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getLevel()==6,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getX()(0)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getX()(1)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       #ifdef Dim3
-      assertion3( heapVertices[1].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       #endif
 
       //delete[] heapVertices;
@@ -155,7 +155,7 @@ void pingPoingTest() {
       heapVertices[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
       heapVertices[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
       logInfo( "run()", "send out three vertices from heap" );
-      MPI_Send( heapVertices, 0, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      MPI_Send( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator() );
       delete[] heapVertices;
       logInfo( "run()", "vertices have left the system" );
     }
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
     return sharedMemorySetup;
   }
 
-//  pingPoingTest();
+  pingPoingTest();
 
   //
   //   Parse config file
