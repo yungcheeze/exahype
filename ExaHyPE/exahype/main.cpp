@@ -146,7 +146,7 @@ void pingPoingTest() {
       assertion3( heapVertices[2].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
       #endif
 
-      //delete[] heapVertices;
+      delete[] heapVertices;
       logInfo( "run()", "second part of ping-poing test ok" );
     }
     if (tarch::parallel::Node::getInstance().getRank()==1) {
