@@ -58,6 +58,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1, numberOfVariables);
 
   // 1. Trivial initial guess
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int i = 0; i < basisSize; i++) { // i == z
     for (int j = 0; j < basisSize; j++) { // j == y
       for (int k = 0; k < basisSize; k++) { // k == x
@@ -73,6 +76,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   // 2. Compute the contribution of the initial condition uh to the time update
   // ASSUMABLY: idx_rhs(t,z,y,x,nVar)
   idx5 idx_rhs(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {

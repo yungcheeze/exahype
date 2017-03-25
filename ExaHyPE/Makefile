@@ -111,7 +111,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	FCOMPILER_CFLAGS  += -r8 -fast -cpp
 	LINK_FORTRAN      += -lifcore
 
-	COMPILER_CFLAGS   +=  -restrict
+	COMPILER_CFLAGS   +=  -restrict 
 	COMPILER_LFLAGS   +=
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
@@ -131,7 +131,9 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	LINK_FORTRAN      += -lgfortran
 
 	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
-	COMPILER_CFLAGS   += -pedantic -Drestrict=__restrict__ -Wall
+	#COMPILER_CFLAGS   += -pedantic -Drestrict=__restrict__ -Wall
+	COMPILER_CFLAGS   += -pedantic -Wall 
+	# Ich glaub -DnoPackedRecords geht nimmer
 	COMPILER_LFLAGS   +=
 
 else
@@ -170,7 +172,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the GNU compiler
 	  # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-	  COMPILER_CFLAGS += -O3
+	  COMPILER_CFLAGS += -O0
 	  COMPILER_LFLAGS +=
 	endif
 endif
@@ -186,8 +188,10 @@ ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
     COMPILER_CFLAGS += -xHost
     COMPILER_LFLAGS += -xHost
   else
-    COMPILER_CFLAGS += -march=native
-    COMPILER_LFLAGS += -march=native
+    #COMPILER_CFLAGS += -march=native
+    #COMPILER_LFLAGS += -march=native
+    COMPILER_CFLAGS += 
+    COMPILER_LFLAGS += 
   endif
 
 else ifeq ($(call tolower,$(ARCHITECTURE)),phi)

@@ -58,6 +58,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,numberOfVariables); // idx_lFi(t, y, x, nDim + 1 for Source, nVar)
 
   // 1. Trivial initial guess
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int j = 0; j < basisSize; j++) { // j == y
     for (int k = 0; k < basisSize; k++) { // k == x
       for (int l = 0; l < basisSize; l++) { // l == t
@@ -72,6 +75,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   // 2. Compute the contribution of the initial condition uh to the time update
   idx4 idx_rhs(basisSize, basisSize, basisSize, numberOfVariables); // idx_rhs(t,y,x,nVar)
   
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int j = 0; j < basisSize; j++) { // j == y
     for (int k = 0; k < basisSize; k++) { // k == x
       const double weight = 
@@ -97,6 +103,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
     std::memcpy(lQi_old, lQi, basisSize3 * (numberOfVariables+numberOfParameters) * sizeof(double));
 
     for (int i = 0; i < basisSize; i++) {  // time DOF, i=t
+      #ifdef SharedMemoryParallelisation
+      #pragma omp parallel for
+      #endif
       for (int k = 0; k < basisSize; k++) { // presumably k=y
         for (int l = 0; l < basisSize; l++) { // presumably l=x
           // Call PDE fluxes
@@ -118,6 +127,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
       }
 
       // Copy rhs0 -> rhs
+      #ifdef SharedMemoryParallelisation
+      #pragma omp parallel for
+      #endif
       for (int k = 0; k < basisSize; k++) { // y
         for (int l = 0; l < basisSize; l++) { // x
           for (int m = 0; m < numberOfVariables; m++) {
@@ -130,8 +142,12 @@ void aderPicardLoopNonlinear(SolverType& solver,
       if(useNCP) {
         std::memset(gradQ, 0, basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
       }
+
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // x direction (independent from the y derivatives)
+      #ifdef SharedMemoryParallelisation
+      #pragma omp parallel for
+      #endif
       for (int k = 0; k < basisSize; k++) { // k == y
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][k];
@@ -154,6 +170,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
       }
 
       // y direction (independent from the x derivatives)
+      #ifdef SharedMemoryParallelisation
+      #pragma omp parallel for
+      #endif
       for (int k = 0; k < basisSize; k++) { // k == x
         const double weight = kernels::gaussLegendreWeights[order][i] *
             kernels::gaussLegendreWeights[order][k];
@@ -175,6 +194,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
 
+      #ifdef SharedMemoryParallelisation
+      #pragma omp parallel for
+      #endif
       if(useSource || useNCP) {
         // source
         for (int k = 0; k < basisSize; k++) { // k == y
@@ -220,6 +242,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
     
+    #ifdef SharedMemoryParallelisation
+    #pragma omp parallel for
+    #endif
     for (int j = 0; j < basisSize; j++) { // j == y
       for (int k = 0; k < basisSize; k++) { // k == x
         const double weight = kernels::gaussLegendreWeights[order][j] *

@@ -378,7 +378,7 @@ void exahype::mappings::Sending::mergeWithMaster(
         int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
           solver->mergeWithWorkerData(
               worker,
               receivedMetadata[solverNumber].getU(),

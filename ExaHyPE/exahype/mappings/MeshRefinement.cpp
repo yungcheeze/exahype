@@ -386,7 +386,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-          if (neighbourCellTypes[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+          if (neighbourCellTypes[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
             int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
             if (element!=exahype::solvers::Solver::NotFound) {
@@ -426,7 +426,7 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
   if (vertex.isBoundary()) return;
   #endif
 
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+  tarch::la::Vector<TWO_POWER_D, int> adjacentADERDGCellDescriptionsIndices =
       vertex.getCellDescriptionsIndex();
 
   dfor2(dest)

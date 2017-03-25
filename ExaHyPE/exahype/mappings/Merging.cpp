@@ -320,7 +320,7 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+    if (receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       assertion1(element>=0,element);
 
@@ -493,7 +493,7 @@ void exahype::mappings::Merging::receiveDataFromMaster(
         int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
           solver->mergeWithMasterData(
                     tarch::parallel::NodePool::getInstance().getMasterRank(),
                     receivedMetadata[solverNumber].getU(),

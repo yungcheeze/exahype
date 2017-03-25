@@ -65,26 +65,46 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
       if(aderdgSolver->alignTempArray()) {
         temporaryVariables._tempSpaceTimeUnknowns[solverNumber] = new double*[4];
         for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
+          #ifdef ALIGNMENT
           temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] =
               (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
+          #else
+          temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
+          #endif
           std::memset(temporaryVariables._tempSpaceTimeUnknowns[solverNumber][i], 0, sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize());
         }
         //
         temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
         for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
+          #ifdef ALIGNMENT
           temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i] =
               (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeFluxUnknownsSize(), ALIGNMENT);
+          #else
+          temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i] = new double[aderdgSolver->getTempSpaceTimeFluxUnknownsSize()];
+          #endif
           std::memset(temporaryVariables._tempSpaceTimeFluxUnknowns[solverNumber][i], 0, sizeof(double)*aderdgSolver->getTempSpaceTimeFluxUnknownsSize());
         }
         //
+        #ifdef ALIGNMENT
         temporaryVariables._tempUnknowns    [solverNumber]      = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempUnknownsSize(), ALIGNMENT);
         //
         temporaryVariables._tempFluxUnknowns[solverNumber]      = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempFluxUnknownsSize(), ALIGNMENT);
          //
         temporaryVariables._tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempStateSizedVectorsSize(), ALIGNMENT);
+        #else
+        temporaryVariables._tempUnknowns    [solverNumber]      = new double[aderdgSolver->getTempUnknownsSize()];
+        //
+        temporaryVariables._tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getTempFluxUnknownsSize()];
+         //
+        temporaryVariables._tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getTempStateSizedVectorsSize()];
+        #endif
 
         if(aderdgSolver->usePointSource()) { //TODO KD
+          #ifdef ALIGNMENT
           temporaryVariables._tempPointForceSources    [solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
+          #else
+          temporaryVariables._tempPointForceSources    [solverNumber] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
+          #endif
         } else {
           temporaryVariables._tempPointForceSources    [solverNumber] = nullptr;
         }
