@@ -131,9 +131,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	LINK_FORTRAN      += -lgfortran
 
 	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
-	#COMPILER_CFLAGS   += -pedantic -Drestrict=__restrict__ -Wall
-	COMPILER_CFLAGS   += -pedantic -Wall 
-	# Ich glaub -DnoPackedRecords geht nimmer
+	COMPILER_CFLAGS   += -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned
 	COMPILER_LFLAGS   +=
 
 else
