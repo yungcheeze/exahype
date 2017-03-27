@@ -393,6 +393,11 @@ int exahype::runners::Runner::run() {
   shutdownSharedMemoryConfiguration();
   shutdownDistributedMemoryConfiguration();
 
+  #ifdef Parallel
+  repository->shutdownAllParallelDatatypes();
+  #endif
+
+
   delete repository;
 
   return result;
