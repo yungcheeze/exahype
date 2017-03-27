@@ -467,6 +467,7 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
 #endif
 
 
+#ifdef Parallel
 exahype::MetadataHeap::HeapEntries exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries() {
     exahype::MetadataHeap::HeapEntries encodedMetaData(
         exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver,
@@ -485,3 +486,5 @@ bool exahype::Vertex::isEncodedMetadataSequenceWithInvalidEntries(exahype::Metad
 
    return true;
 }
+#endif
+
