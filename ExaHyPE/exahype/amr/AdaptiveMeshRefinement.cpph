@@ -146,6 +146,7 @@ exahype::amr::computeSubcellPositionOfCellOrAncestor(
 
   return subcellPosition;
 }
+/*
 
 template <class CellDescription,class CellDescriptionHeap>
 exahype::solvers::Solver::SubcellPosition
@@ -204,6 +205,10 @@ exahype::amr::computeSubcellPositionOfDescendant(
 
   return subcellPosition;
 }
+
+*/
+
+
 
 template <class CellDescription,class CellDescriptionHeap,bool topMost>
 exahype::solvers::Solver::SubcellPosition
