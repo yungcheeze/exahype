@@ -116,7 +116,7 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined19);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[solverNumber];
