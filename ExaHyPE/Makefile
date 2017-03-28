@@ -170,7 +170,7 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the GNU compiler
 	  # --------------------------------------------
 	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-	  COMPILER_CFLAGS += -O0
+	  COMPILER_CFLAGS += -O3
 	  COMPILER_LFLAGS +=
 	endif
 endif
