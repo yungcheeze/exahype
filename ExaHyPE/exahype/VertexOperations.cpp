@@ -79,7 +79,6 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
-
  tarch::la::Vector<TWO_POWER_D,int>  exahype::VertexOperations::readCellDescriptionsIndex(const Vertex& vertex)  { return vertex._vertexData.getCellDescriptionsIndex(); }
 
 
@@ -87,7 +86,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
-
+ int  exahype::VertexOperations::readCellDescriptionsIndex(const Vertex& vertex, const int elementIndex)  { return vertex._vertexData.getCellDescriptionsIndex(elementIndex); }
 
 
 
@@ -108,6 +107,18 @@ exahype::VertexOperations::VertexOperations() {
 
 
  void exahype::VertexOperations::writeCellDescriptionsIndex(Vertex& vertex, const tarch::la::Vector<TWO_POWER_D,int>& values) { vertex._vertexData.setCellDescriptionsIndex(values ); }
+
+
+
+
+
+
+
+
+
+
+
+ void exahype::VertexOperations::writeCellDescriptionsIndex(Vertex& vertex, const int elementIndex, const int& value) { vertex._vertexData.setCellDescriptionsIndex(elementIndex, value); }
 
 
 

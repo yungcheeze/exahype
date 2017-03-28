@@ -110,7 +110,8 @@ class exahype::VertexOperations {
 
 
 
-
+    static int  readCellDescriptionsIndex(const Vertex& vertex, const int elementIndex);
+    static void writeCellDescriptionsIndex(Vertex& vertex, const int elementIndex, const int& value);
 
 
 
