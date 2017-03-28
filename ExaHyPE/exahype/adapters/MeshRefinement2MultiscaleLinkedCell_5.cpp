@@ -73,22 +73,12 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createHangingVert
   const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   const int level = coarseGridVerticesEnumerator.getLevel()+1;
-
-// TODO Replace
-//  fineGridVertex.getCellDescriptionsIndex() =
-//      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
-//        fineGridX,level,
-//        fineGridPositionOfVertex,
-//        VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices)
-//      );
-
-  // Replacement:
-  VertexOperations::writeCellDescriptionsIndex(
-    fineGridVertex,
+  
+  fineGridVertex.getCellDescriptionsIndex() = 
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
       fineGridX,level,
       fineGridPositionOfVertex,
-      VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
+      VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices)
     );
 }
 
@@ -115,14 +105,7 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createInnerVertex
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  // TODO Replace:
-  //  fineGridVertex.getCellDescriptionsIndex() =
-  //        multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
-
-  // Replacement
-  VertexOperations::writeCellDescriptionsIndex(
-      fineGridVertex,
-      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex());
+  fineGridVertex.getCellDescriptionsIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
 }
 
 
@@ -135,14 +118,7 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createBoundaryVer
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  // Replace:
-  //  fineGridVertex.getCellDescriptionsIndex() =
-  //      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex();
-
-  // Replacement
-  VertexOperations::writeCellDescriptionsIndex(
-      fineGridVertex,
-      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex());
+  fineGridVertex.getCellDescriptionsIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex();
 }
 
 
@@ -391,12 +367,7 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCell(
       )(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
     }
     else {
-      // TODO Replace
-      // fineGridVertices[fineGridVerticesEnumerator(k)].getCellDescriptionsIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
-
-      // Replacement:
-      VertexOperations::writeCellDescriptionsIndex(
-          fineGridVertices[fineGridVerticesEnumerator(k)], TWO_POWER_D-kScalar-1, fineGridCell.getCellDescriptionsIndex());
+      fineGridVertices[fineGridVerticesEnumerator(k)].getCellDescriptionsIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
     }
   enddforx
 }
