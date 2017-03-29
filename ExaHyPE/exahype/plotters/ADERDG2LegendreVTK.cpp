@@ -351,8 +351,20 @@ void exahype::plotters::ADERDG2LegendreVTK::plotVertexData(
   double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
+  // TODO: value has to be a double[nVar*(order+1)*(order+1)] array to store
+  //       the *whole* mapped guy
+  _postProcessing->mapQuantitiesPatchwise(
+    offsetOfPatch,
+    sizeOfPatch,
+    u,
+    value,
+    timeStamp
+  );
+
   dfor(i,_order+1) {
     // This is inefficient but works. We could look it up directly from the arrays
+    // => i.e. intepoland = u[idx_Q(i, 0)] ? Or just omitting interpoland?
+    // => tbd.
     tarch::la::Vector<DIMENSIONS, double> p;
     for (int d=0; d<DIMENSIONS; d++) {
       p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
@@ -403,6 +415,15 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
 
   double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+  // c.f. code duplicacy, above at plotVertexData.
+  _postProcessing->mapQuantitiesPatchwise(
+    offsetOfPatch,
+    sizeOfPatch,
+    u,
+    value,
+    timeStamp
+  );
 
   dfor(i,_order) {
     // This is inefficient but works. We could look it up directly from the arrays

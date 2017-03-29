@@ -139,6 +139,29 @@ class exahype::plotters::Plotter {
         double* Q,
         double* outputQuantities,
         double timeStamp) = 0;
+
+     /**
+       * PATCHWISE Mapping of simulation quantities onto output quantities
+       *
+       * This routine is the patchwise alternative to the pointwise mapQuantities
+       * method. It's a virtual function so you're free to overload it in order
+       * to use it in your class.
+       * 
+       * You can actually use the pointwise and patchwise mapping methods at
+       * the same time.
+       * 
+       * Parameters are similar to mapQuantities()
+       *
+       * In order not to break API compatibility this is not a pure method but
+       * by default does nothing.
+       * 
+       */
+      virtual void mapQuantitiesPatchwise(
+        const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+        double* Q,
+        double* outputQuantities,
+        double timeStamp) {}
   };
 
   /**
