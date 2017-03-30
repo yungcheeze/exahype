@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include "exahype/Parser.h"
 #include "peano/utils/Globals.h"
@@ -61,12 +62,6 @@ class exahype::plotters::Plotter {
   class UserOnTheFlyPostProcessing {
     public:
       virtual ~UserOnTheFlyPostProcessing() {}
-
-      /**
-       * The user's decision whether to map pointwise, patchwise or not at all.
-       * The "NoMapping" should be standard but actually isn't.
-       **/
-      enum class MapMethod { NoMapping = 0, Pointwise = 1, Patchwise = 2 };
 
       /**
        * Start plotting
@@ -141,49 +136,34 @@ class exahype::plotters::Plotter {
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& x,
-	const tarch::la::Vector<DIMENSIONS, int>&    pos,
+        const tarch::la::Vector<DIMENSIONS, int>&    pos,
         double* Q,
         double* outputQuantities,
-        double timeStamp) {}
+        double timeStamp) { abort(); /* catch missing API implementations */ }
 
-     /**
-      * The user might choose how to map.
-      * 
-      * This method might get some more arguments like the offsetOfPatch or
-      * sizeOfPatch.
-      **/
-     virtual MapMethod useMapping() {
-         // to keep compatibility, by default this returns:
-         return MapMethod::Pointwise;
-     }
-
-     /**
-       * PATCHWISE Mapping of simulation quantities onto output quantities
+      /**
+       * This is an alternative version which offers you the gradients of Q.
+       * 
+       * The Ordering of gradQ is (nDim, nVars). It's the derivative locally
+       * at point x, computed by your friendly plotter on the whole ADERDG patch.
        *
-       * This routine is the patchwise alternative to the pointwise mapQuantities
-       * method. It's a virtual function so you're free to overload it in order
-       * to use it in your class.
-       * 
-       * You can actually use the pointwise and patchwise mapping methods at
-       * the same time.
-       * 
-       * Parameters are similar to mapQuantities().
-       *
-       * In order to avoid needless copying of data like crazy, I introduce here
-       * a return value which indicates whether data have been changed (ie. some
-       * mapping took place) or the nothing changed and the mapping is just the
-       * identify function.
-       * 
-       * In order not to break API compatibility this is not a pure method but
-       * by default does nothing.
-       * 
-       */
-      virtual void mapQuantitiesPatchwise(
+       * By changing the value of the class property `mapWithDerivatives` to true
+       * this method is used, not the other one.
+       **/
+      virtual void mapQuantities(
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+	const tarch::la::Vector<DIMENSIONS, int>&    pos,
         double* Q,
+	double* gradQ,
         double* outputQuantities,
-        double timeStamp) {}
+        double timeStamp) { abort(); /* catch missing API implementations */ }
+
+      /**
+       * Here you can specify if you want to map using gradients or not.
+       **/
+      virtual bool mapWithDerivatives() { return false; }
   };
 
   /**
