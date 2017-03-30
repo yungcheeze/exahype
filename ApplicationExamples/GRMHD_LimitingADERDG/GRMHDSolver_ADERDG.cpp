@@ -9,20 +9,21 @@
 #include "kernels/GaussLegendreQuadrature.h"
 
 const double excision_radius = 1.0;
-  const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
+const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
 
 
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 }
 
-bool GRMHD::GRMHDSolver_ADERDG::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
    bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
   insideExcisionBall = false;
-  return tarch::la::equals(t,0.0) || insideExcisionBall;
+  bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
+  return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void GRMHD::GRMHDSolver_ADERDG::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Fortran
   initialdata_(x, &t, Q);
 }
@@ -35,7 +36,7 @@ void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,do
 
 
 void GRMHD::GRMHDSolver_ADERDG::flux(const double* const Q,double** F) {
-  pdeflux_(F[0], Q);
+  pdeflux_(F[0], F[1], (DIMENSIONS==3)?F[2]:nullptr, Q);
 }
 
 
@@ -53,25 +54,21 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
   const int basisSize = order + 1;
   const int nDim = DIMENSIONS;
 
-  double Qgp[nVar];
+  double Qgp[nVar], F[nDim][nVar];
+
   std::memset(stateOut, 0, nVar * sizeof(double));
   std::memset(fluxOut, 0, nVar * sizeof(double));
-
-  double F[3 * nVar]; // Fortran needs continous storage!
-                      // Use always 3 dimensions here since the kernels works with those internally; see nDim in PDE.f90;
-
-  kernels::idx2 F_idx(nDim, nVar);
-
+  
   for(int i=0; i < basisSize; i++)  { // i == time
      const double weight = kernels::gaussLegendreWeights[order][i];
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
      initialdata_(x, &ti, Qgp);
-     pdeflux_(F, Qgp);
+     pdeflux_(F[0], F[1], (nDim==3)?F[2]:nullptr, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];
-        fluxOut[m] += weight * F[F_idx(d, m)];
+        fluxOut[m] += weight * F[d][m];
      }
   }
 }
@@ -82,8 +79,7 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-
-bool GRMHD::GRMHDSolver_ADERDG::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
+bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
 
@@ -105,19 +101,4 @@ void GRMHD::GRMHDSolver_ADERDG::coefficientMatrix(const double* const Q,const in
   double nv[3] = {0.};
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);
-}
-
-bool GRMHD::GRMHDSolver_ADERDG::useAlgebraicSource() const {return true;}
-
-bool GRMHD::GRMHDSolver_ADERDG::useNonConservativeProduct() const {return true;}
-
-bool GRMHD::GRMHDSolver_ADERDG::useCoefficientMatrix() const {return true;}
-
-bool GRMHD::GRMHDSolver_ADERDG::usePointSource() const { 
-  return false;
-}
-
-
-void GRMHD::GRMHDSolver_ADERDG::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  // ...
 }
