@@ -18,7 +18,7 @@ from plotting import scalingplot as sp
 :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
 '''
 
-def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False,_fontsize=10):
+def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_plot=False,_fontsize=10):
     '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
@@ -137,13 +137,16 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     fig.set_size_inches( (DefaultSize[0]/10, DefaultSize[1]/10) )
     fig.set_size_inches(7.25,7.25)
     
-    if create_pdf:
+    if create_plot:
         plot_info = [''] * n_root_dir
         for i in range(0,n_root_dir):
             plot_info[i] = '+'.join(adapters[i])
             plot_info[i] = prefix[i] + '-' + plot_info[i]
+            # make sure string is not too loong
+            plot_info[i] = plot_info[i][:int(float(200)/float(n_root_dir))]
         plt.savefig('%s/%s.pdf' % ('.','_'.join(plot_info)), bbox_inches='tight')
-        print("PDF output written.")
+        plt.savefig('%s/%s.png' % ('.','_'.join(plot_info)), bbox_inches='tight')
+        print("PDF and PNG output written.")
     else:
         plt.show()
     return
@@ -176,7 +179,7 @@ parser.add_argument('-ylim',required=True,help="Upper limit for the y-axis.")
 parser.add_argument('-hyperthreading', action='store_true', default=False,help="The last thread count corresponds to a hyperthreading run.")
 parser.add_argument('-annotate', action='store_true', default=False,help="Annotate the plots with the speedup values.")
 parser.add_argument('-per_iteration', action='store_true', default=False,help="Use the adapter times per iteration instead of the total times.")
-parser.add_argument('-create_pdf', action='store_true', default=False,help="Creates a PDF plot in the working directory.")
+parser.add_argument('-create_plot', action='store_true', default=False,help="Creates a plot (PDF and PNG) in the working directory.")
 parser.add_argument('-fontsize',default=10,required=False,help="Font size of the legend and tick labels. Axis labels are computed by ceiling the font size times a factor 1.2.")
 
 args           = parser.parse_args();
@@ -200,7 +203,7 @@ fontsize       = args.fontsize
 hyperthreading = args.hyperthreading
 annotate       = args.annotate
 per_iteration  = args.per_iteration
-create_pdf     = args.create_pdf
+create_plot     = args.create_plot
 
 xticks         = args.xticks
 if args.xticks is None:
@@ -209,4 +212,4 @@ yticks         = args.yticks
 if args.yticks is None:
     yticks     =xticks
 
-plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration,hyperthreading,annotate,create_pdf,fontsize)
+plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration,hyperthreading,annotate,create_plot,fontsize)

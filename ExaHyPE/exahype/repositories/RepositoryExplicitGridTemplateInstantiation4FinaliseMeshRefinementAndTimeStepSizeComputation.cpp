@@ -35,15 +35,15 @@
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
- #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepDataMerging.h" 
  #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h" 
 
 
 namespace peano {
   namespace grid {
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation>;
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::DropMPIMetadataMessagesAndTimeStepSizeComputation>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation>;
   }
 }
 

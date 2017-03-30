@@ -101,8 +101,6 @@ void exahype::mappings::MeshRefinement::beginIteration(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     solver->zeroTimeStepSizes();
-//    logInfo("beginIteration(...)","solver->getMinTimeStamp()="<<solver->getMinTimeStamp()); // TODO(Dominic): remove
-
     assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
   } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
 
@@ -111,6 +109,10 @@ void exahype::mappings::MeshRefinement::beginIteration(
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
   DataHeap::getInstance().finishedToSendSynchronousData();
   MetadataHeap::getInstance().finishedToSendSynchronousData();
+
+  if (! MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty() ) {
+      exit(-1);
+  }
 
   exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
@@ -256,7 +258,6 @@ void exahype::mappings::MeshRefinement::enterCell(
             fineGridPositionOfCell,
             solverNumber);
 
-    solver->updateNextGridUpdateRequested(refinementRequested);
     refineFineGridCell |= refinementRequested;
 
     const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -294,7 +295,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    bool erasingRequested =
+    eraseFineGridCell &=
         solver->updateStateInLeaveCell(
             fineGridCell,
             fineGridVertices,
@@ -304,8 +305,16 @@ void exahype::mappings::MeshRefinement::leaveCell(
             coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
-    solver->updateNextGridUpdateRequested(erasingRequested);
-    eraseFineGridCell &= erasingRequested;
+
+    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      bool isStable = solver->attainedStableState(
+          fineGridCell,
+          fineGridVertices,
+          fineGridVerticesEnumerator,
+          solverNumber);
+      solver->updateNextGridUpdateRequested(!isStable);
+    }
   }
 
   // We assume that the solvers have all removed
@@ -313,11 +322,13 @@ void exahype::mappings::MeshRefinement::leaveCell(
   // cell.
   if (eraseFineGridCell) {
     fineGridCell.shutdownMetaData();
+
     dfor2(v)
-      if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-          exahype::Vertex::Records::RefinementControl::Refined) {
-        fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
-      }
+    if (coarseGridVertices[ coarseGridVerticesEnumerator(v) ].getRefinementControl()==
+        exahype::Vertex::Records::RefinementControl::Refined
+    ) {
+      coarseGridVertices[ coarseGridVerticesEnumerator(v) ].erase();
+    }
     enddforx
   }
 
@@ -342,14 +353,21 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
-// Keep this for the grid setup
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
+
+  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
+  // Keep this for the grid setup
+  #if !defined(PeriodicBC)
+    if (vertex.isBoundary()) return;
+  #endif
 
   // @todo If this assertion holds, then we should remove firstGridSetupIteration from the state.
+  // Yes, we could initialise it with true, set it to false in endIteration
+  // and reset it in DropIncomingMPIMetadataMessages::beginIteration()
   assertion( !_localState.firstGridSetupIteration() );
-  if (_localState.firstGridSetupIteration()) return; // TODO is reset in end iteration.
+  if (_localState.firstGridSetupIteration()) return; // TODO is set in end iteration.
 
   dfor2(myDest)
     dfor2(mySrc)
@@ -375,7 +393,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-          if (neighbourCellTypes[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+          if (neighbourCellTypes[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
             int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
             if (element!=exahype::solvers::Solver::NotFound) {
@@ -406,12 +424,16 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
 
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
   // Keep this for the grid setup
   #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
   #endif
 
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+  tarch::la::Vector<TWO_POWER_D, int> adjacentADERDGCellDescriptionsIndices =
       vertex.getCellDescriptionsIndex();
 
   dfor2(dest)

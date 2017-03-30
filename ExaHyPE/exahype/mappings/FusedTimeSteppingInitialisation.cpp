@@ -320,6 +320,8 @@ void exahype::mappings::FusedTimeSteppingInitialisation::endIteration(
       }
     }
   }
+
+  peano::performanceanalysis::Analysis::getInstance().enable(true);
 }
 
 #if defined(SharedMemoryParallelisation)

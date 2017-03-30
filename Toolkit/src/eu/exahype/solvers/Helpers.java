@@ -173,13 +173,13 @@ public class Helpers {
       throw new IOException();
     }
     
-    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
+/*    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
         new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
     if (!pathToLibxsmmMakefile.exists()) {
       System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
       throw new IOException();
     }
-
+*/
     String numericsParameter = isLinear ? "linear" : "nonlinear";
 
     // set up the command to execute the code generator

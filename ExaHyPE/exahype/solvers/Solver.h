@@ -476,7 +476,7 @@ class exahype::solvers::Solver {
   /**
    * The maximum extent in each coordinate direction at least one cell in the grid has.
    *
-   * * This value needs to be updated every time the grid has been changed.
+   * This value needs to be updated every time the grid has been changed.
    */
   double _maxCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
   double _nextMaxCellSize; // TODO(Dominic): Remove these cell size variables and put them into the solver subclasses.
@@ -774,6 +774,42 @@ class exahype::solvers::Solver {
    * this hook.
    */
   virtual bool updateStateInLeaveCell(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) = 0;
+
+  /**
+   * Returns true if the solver has attained
+   * a stable state on the cell description
+   *
+   * \param fineGridCell a fine grid cell
+   * \param fineGridVertices vertices surrounding the fine grid cell
+   * \param fineGridVerticesEnumerator a enumerator for the fine grid vertices
+   * \param solverNumber a solver number
+   */
+  virtual bool attainedStableState(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int solverNumber) const = 0;
+
+  /**
+   * This method is called after the
+   * mesh refinement iterations where this
+   * solver performs states updates in
+   * the enterCell() and leaveCell().
+   *
+   * This method is used to finalise some state
+   * updates.
+   *
+   * TODO(Dominic): Docu
+   */
+  virtual void finaliseStateUpdates(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,

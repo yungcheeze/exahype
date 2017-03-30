@@ -330,27 +330,35 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       " of width/size " << _parser.getDomainSize() <<
       ". bounding box has size " << _parser.getBoundingBoxSize() <<
       ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
-#ifdef Parallel
-  const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
-  assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
-  const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-  assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
 
-  logInfo(
-      "createRepository(...)",
-      "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxSize   = _parser.getBoundingBoxSize();
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxOffset = _parser.getOffset();
+  #ifdef Parallel
+  if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
+    const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
+    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
+    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+
+    logInfo(
+        "createRepository(...)",
+        "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+    boundingBoxSize   *= boundingBoxScaling;
+    boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
+  }
+  #endif
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      _parser.getBoundingBoxSize()*boundingBoxScaling,
-      _parser.getOffset()+boundingBoxShift*_parser.getBoundingBoxSize()
+      boundingBoxSize,
+      boundingBoxOffset
   );
-#else
-  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      _parser.getBoundingBoxSize(),
-      _parser.getOffset()
-  );
-#endif
+}
+
+
+void exahype::runners::Runner::initHPCEnvironment() {
+  peano::performanceanalysis::Analysis::getInstance().enable(false);
 }
 
 
@@ -360,6 +368,8 @@ int exahype::runners::Runner::run() {
   initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
   initDataCompression();
+  initHPCEnvironment();
+
 
   int result = 0;
   if ( _parser.isValid() ) {
@@ -392,9 +402,12 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  while ( repository.getState().continueToConstructGrid() ) {
+  while ( repository.getState().continueToConstructGrid()
+          || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+  ) {
     repository.iterate();
     gridSetupIterations++;
+
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
@@ -423,6 +436,13 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     );
     #endif
 
+    #ifdef Asserts
+    logInfo("createGrid()",
+             "grid setup iteration #" << gridSetupIterations <<
+             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+     );
+    #endif
+
     #if !defined(Parallel)
     logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
     #endif
@@ -436,6 +456,9 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -474,9 +497,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
-    //    repository.switchToPlotAugmentedAMRGrid();
-    //    repository.iterate(); For debugging purposes
-
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
     repository.iterate();
@@ -487,7 +507,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       updateLimiterDomain(repository);
     }
 
-    bool plot = exahype::plotters::isAPlotterActive(
+    bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (exahype::State::fuseADERDGPhases()) {
@@ -538,8 +558,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
       // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
       // see issue #103
-      bool plot = exahype::plotters::isAPlotterActive(
-          solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
+      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
+          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
       if (_parser.getFuseAlgorithmicSteps()) {
         repository.getState().setTimeStepSizeWeightForPredictionRerun(
@@ -894,7 +914,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
 
     gridUpdate = true;
@@ -973,7 +993,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
   }
 
