@@ -123,7 +123,7 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createBoundaryVer
 ) {
   VertexOperations::writeCellDescriptionsIndex(
       fineGridVertex,
-      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex());
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex());
 }
 
 
