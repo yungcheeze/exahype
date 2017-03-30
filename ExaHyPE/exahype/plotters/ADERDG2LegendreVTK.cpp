@@ -17,6 +17,7 @@
 #include "kernels/DGMatrices.h"
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGBasisFunctions.h"
+#include "kernels/KernelUtils.h" // helpers and so
 
 #include "peano/utils/Loop.h"
 
@@ -344,27 +345,19 @@ void exahype::plotters::ADERDG2LegendreVTK::plotVertexData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
   double* u,
-  double timeStamp
+  double timeStamp,
+  bool patchwiseMappingHasBeenDone
 ) {
   assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
 
+  
   double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
-  // TODO: value has to be a double[nVar*(order+1)*(order+1)] array to store
-  //       the *whole* mapped guy
-  _postProcessing->mapQuantitiesPatchwise(
-    offsetOfPatch,
-    sizeOfPatch,
-    u,
-    value,
-    timeStamp
-  );
-
   dfor(i,_order+1) {
     // This is inefficient but works. We could look it up directly from the arrays
-    // => i.e. intepoland = u[idx_Q(i, 0)] ? Or just omitting interpoland?
-    // => tbd.
+    // SVEN: I think for Legendre at vertex positions, no interpolation is neccessary.
+    // => i.e. intepoland = u[idx_Q(i, 0)] just omitting the interpoland @TODO.
     tarch::la::Vector<DIMENSIONS, double> p;
     for (int d=0; d<DIMENSIONS; d++) {
       p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
@@ -409,24 +402,17 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
   double* u,
-  double timeStamp
+  double timeStamp,
+  bool patchwiseMappingHasBeenDone
 ) {
   assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
 
   double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
-  // c.f. code duplicacy, above at plotVertexData.
-  _postProcessing->mapQuantitiesPatchwise(
-    offsetOfPatch,
-    sizeOfPatch,
-    u,
-    value,
-    timeStamp
-  );
-
   dfor(i,_order) {
     // This is inefficient but works. We could look it up directly from the arrays
+    // SVEN: I think in this case (cell data), interpolation is actually neccessary.
     tarch::la::Vector<DIMENSIONS, double> p;
     for (int d=0; d<DIMENSIONS; d++) {
       p(d) = offsetOfPatch(d) + (kernels::gaussLegendreNodes[_order][i(d)]+kernels::gaussLegendreNodes[_order][i(d)+1]) * sizeOfPatch(d)/2.0;
@@ -491,17 +477,83 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     assertion( _writtenUnknowns==0 || _vertexWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _cellWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
+    assertion( _writtenpatchwiseMappingHasBeenDoneUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
 
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first, vertexAndCellIndex.second );
 
+    // Learn how the user wants to map
+    UserOnTheFlyPostProcessing::Mapping mapMethod = _postProcessing->mapMethod();
+
+    // this should go to the header or similar
+    const int basisX = _order + 1;
+    const int basisY = _order + 1;
+    const int basisZ = (DIMENSIONS == 3 ? _order  : 0 ) + 1;
+
+    // allow patchwise mapping
+    double* patchwiseMappedValue  = nullptr;
+    if(mapMethod == UserOnTheFlyPostProcessing::Patchwise) {
+      patchwiseMappedValue = _writtenUnknowns==0 ? nullptr : new double[basisZ*basisY*basisX*_writtenUnknowns];
+      _postProcessing->mapQuantitiesPatchwise(
+        offsetOfPatch, sizeOfPatch,
+        u, patchwiseMappedValue,
+        timeStamp
+      );
+    }
+
+    // Setup patch/mapped patch data to be plotted
+    double *patchValue = (mapMethod == UserOnTheFlyPostProcessing::Patchwise) ? patchwiseMappedValue : u;
+    int patchValueLen = (mapMethod == UserOnTheFlyPostProcessing::Patchwise) ? _writtenUnknowns : _solverUnknowns;
+    kernels::index idx_patchValue(basisZ, basisY, basisX, patchValueLen);
+
+    // for cell centered data, interpolate the current patch values on the cell centers.
+    double* interpolated = nullptr;
     if (_plotCells) {
-      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      interpolated  = new double[basisZ*basisY*basisX*patchValueLen];
+      tarch::la::Vector<DIMENSIONS, double> p;
+      for (int d=0; d<DIMENSIONS; d++) {
+        p(d) = offsetOfPatch(d) + (kernels::gaussLegendreNodes[_order][i(d)]+kernels::gaussLegendreNodes[_order][i(d)+1]) * sizeOfPatch(d)/2.0;
+      }
+      for (int known=0; known < patchValueLen; known++) {
+        interpolated[known] = kernels::interpolate(
+          offsetOfPatch.data(),
+          sizeOfPatch.data(),
+          p.data(), // das ist die Position
+          patchValueLen,
+          known,
+          _order,
+          patchValue
+        );
+      }
+    }
+
+    // Allow pointwise mapping
+    double *pointValue = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+    dfor(i,_order) {
+        tarch::la::Vector<DIMENSIONS, double> pos;
+        for (int d=0; d<DIMENSIONS; d++) {
+          pos(d) = offsetOfPatch(d) + (kernels::gaussLegendreNodes[_order][i(d)]+kernels::gaussLegendreNodes[_order][i(d)+1]) * sizeOfPatch(d)/2.0;
+        }
+        _postProcessing->mapQuantities(
+          offsetOfPatch, sizeOfPatch,
+          p, i,
+          patchValue[idx_patchValue(DIMENSIONS == 3 ? i(2) : 0, i(1), i(0), 0)],
+          value,
+          timeStamp
+	);
+      }
+      
+      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, patchValue, timeStamp, patchwiseMappingHasBeenDone );
+    }
+    if (_plotCells) {
+          assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
     }
     else {
-      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
+      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, patchValue, timeStamp, patchwiseMappingHasBeenDone );
     }
+
+    if(patchwiseMappedValue!=nullptr) delete[] patchwiseMappedValue;
   }
 }

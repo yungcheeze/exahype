@@ -63,6 +63,12 @@ class exahype::plotters::Plotter {
       virtual ~UserOnTheFlyPostProcessing() {}
 
       /**
+       * The user's decision whether to map pointwise, patchwise or not at all.
+       * The "NoMapping" should be standard but actually isn't.
+       **/
+      enum class MapMethod { NoMapping = 0, Pointwise = 1, Patchwise = 2 };
+
+      /**
        * Start plotting
        *
        * Is called per plot. The code instantiates each postprocessing filter
@@ -138,7 +144,18 @@ class exahype::plotters::Plotter {
 	const tarch::la::Vector<DIMENSIONS, int>&    pos,
         double* Q,
         double* outputQuantities,
-        double timeStamp) = 0;
+        double timeStamp) {}
+
+     /**
+      * The user might choose how to map.
+      * 
+      * This method might get some more arguments like the offsetOfPatch or
+      * sizeOfPatch.
+      **/
+     virtual MapMethod useMapping() {
+         // to keep compatibility, by default this returns:
+         return MapMethod::Pointwise;
+     }
 
      /**
        * PATCHWISE Mapping of simulation quantities onto output quantities
@@ -150,8 +167,13 @@ class exahype::plotters::Plotter {
        * You can actually use the pointwise and patchwise mapping methods at
        * the same time.
        * 
-       * Parameters are similar to mapQuantities()
+       * Parameters are similar to mapQuantities().
        *
+       * In order to avoid needless copying of data like crazy, I introduce here
+       * a return value which indicates whether data have been changed (ie. some
+       * mapping took place) or the nothing changed and the mapping is just the
+       * identify function.
+       * 
        * In order not to break API compatibility this is not a pure method but
        * by default does nothing.
        * 

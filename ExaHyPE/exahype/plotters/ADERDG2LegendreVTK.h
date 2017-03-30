@@ -85,18 +85,12 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
 
   void plotVertexData(
     int firstVertexIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
-    double timeStamp
+    double* value,
   );
 
   void plotCellData(
     int firstCellIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
-    double timeStamp
+    double* value,
   );
 
   std::pair<int,int> plotLegendrePatch(
