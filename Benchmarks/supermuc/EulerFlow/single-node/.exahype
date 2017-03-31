@@ -30,18 +30,18 @@ exahype-project  Euler
     dimension const          = 3
     width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = '0.01'
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 7
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
 
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:1}
+    configure                = {hotspot,fair,ranks_per_node:28}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -61,7 +61,7 @@ exahype-project  Euler
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = '0.05'
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
