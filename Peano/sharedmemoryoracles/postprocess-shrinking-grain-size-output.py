@@ -16,7 +16,7 @@ Colour = [
 
 class Analysis(Enum):
   Nop                = 0,
-  SeemsNotToScale    = 2,
+  CurrentGrainSizeSeemsNotToScale    = 2,
   MightScale         = 3,
   DoesNotScale       = 4,
   Scales             = 5
@@ -99,7 +99,7 @@ def processMeasurement(adapter):
     
     analysis = Analysis.Nop
     if int(searchDelta)>0  and speedup<1.0 and speedup>0.0:
-      analysis = Analysis.SeemsNotToScale
+      analysis = Analysis.CurrentGrainSizeSeemsNotToScale
     elif int(searchDelta)>0  and speedup>1.0:
       analysis = Analysis.MightScale
     elif int(searchDelta)==0 and float(currentGrainSize)==float(biggestProblemSize):
@@ -109,7 +109,7 @@ def processMeasurement(adapter):
 
 
     colour = "Grey"
-    if analysis==Analysis.SeemsNotToScale:
+    if analysis==Analysis.CurrentGrainSizeSeemsNotToScale:
       colour = "Fuchsia"
     elif analysis==Analysis.MightScale:
       colour = "LightGreen"
