@@ -252,9 +252,9 @@ void exahype::runners::Runner::initDataCompression() {
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
-  case Parser::MulticoreOracleType::Dummy:
   case Parser::MulticoreOracleType::AutotuningWithoutLearning:
     break;
+  case Parser::MulticoreOracleType::Dummy:
   case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
   case Parser::MulticoreOracleType::GrainSizeSampling:
