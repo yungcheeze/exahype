@@ -518,10 +518,8 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
-    assertion( _writtenUnknowns==0 || _vertexWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _cellWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || ( _vertexWriter && _cellWriter && _gridWriter ));
+    assertion( _writtenUnknowns==0 || (_plotCells && _cellTimeStampDataWriter!=nullptr) || (!_plotCells && _vertexTimeStampDataWriter!=nullptr ));
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
 
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
