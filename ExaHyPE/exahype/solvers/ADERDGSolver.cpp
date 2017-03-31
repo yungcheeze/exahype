@@ -3084,14 +3084,14 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToWorker(...)","Broadcasting time step data: " <<
+    logDebug("sendDataToWorker(...)","Broadcasting time step data: " <<
             " data[0]=" << timeStepDataToSend[0] <<
             ",data[1]=" << timeStepDataToSend[1] <<
             ",data[2]=" << timeStepDataToSend[2] <<
             ",data[3]=" << timeStepDataToSend[3] <<
             ",data[4]=" << timeStepDataToSend[4] <<
             ",data[5]=" << timeStepDataToSend[5]);
-    logInfo("sendDataWorker(...)","_minNextPredictorTimeStepSize="<<_minNextPredictorTimeStepSize);
+    logDebug("sendDataWorker(...)","_minNextPredictorTimeStepSize="<<_minNextPredictorTimeStepSize);
   }
 
   DataHeap::getInstance().sendData(
@@ -3117,7 +3117,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithMasterData(...)","Received time step data: " <<
+    logDebug("mergeWithMasterData(...)","Received time step data: " <<
             "data[0]="  << receivedTimeStepData[0] <<
             ",data[1]=" << receivedTimeStepData[1] <<
             ",data[2]=" << receivedTimeStepData[2] <<
