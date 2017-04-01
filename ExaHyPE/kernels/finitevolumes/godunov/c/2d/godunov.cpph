@@ -68,7 +68,7 @@ double solutionUpdate(
       const double *qL = luh + idx(j, k, 0);
       const double *qR = luh + idx(j, k+1, 0);
       double s_max_x = 
-          riemannsolvers::c::riemannSolver<SolverType>(
+          riemannsolvers::c::rusanov<SolverType>(
               solver,
               fL, fR,
               qL, qR, 
@@ -93,7 +93,7 @@ double solutionUpdate(
       const double *qL = luh + idx(j, k, 0);
       const double *qR = luh + idx(j+1, k, 0);
       double s_max_y =
-          riemannsolvers::c::riemannSolver<SolverType>(
+          riemannsolvers::c::rusanov<SolverType>(
           solver,
           fL, fR,
           qL, qR, 
