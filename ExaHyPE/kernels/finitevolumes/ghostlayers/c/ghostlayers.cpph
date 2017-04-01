@@ -12,10 +12,6 @@
  *
  * @authors: Dominic E. Charrier
  **/
-namespace kernels {
-namespace finitevolumes {
-namespace ghostlayers {
-namespace c {
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +21,7 @@ namespace c {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 template <typename SolverType>
-void boundaryLayerExtraction(
+void kernels::finitevolumes::ghostlayers::c::boundaryLayerExtraction(
     SolverType& solver,
     double* luhbnd,const double* luh,
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
@@ -101,7 +97,7 @@ void boundaryLayerExtraction(
 }
 
 template <typename SolverType>
-void ghostLayerFillingAtBoundary(
+void kernels::finitevolumes::ghostlayers::c::ghostLayerFillingAtBoundary(
     SolverType& solver,
     double* luh,const double* luhbnd,
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
@@ -128,10 +124,11 @@ void ghostLayerFillingAtBoundary(
     // assertion: boundaryPosition[1] == 0;
     for (int i=patchBegin; i<patchEnd; ++i) {
       for (int k=0; k<ghostLayerWidth; ++k) {
-      std::copy_n(
-          luhbnd+idx_bnd_x(i-patchBegin,k,0), // (iy,ix,ivar)
-          numberOfData,
-          luh+idx(i,k,0));
+        std::copy_n(
+            luhbnd+idx_bnd_x(i-patchBegin,k,0), // (iy,ix,ivar)
+            numberOfData,
+            luh+idx(i,k,0));
+      }
     }
   }
   if (boundaryPosition[0] == +1) {
@@ -171,7 +168,7 @@ void ghostLayerFillingAtBoundary(
 }
 
 template <typename SolverType>
-void ghostLayerFilling(
+void kernels::finitevolumes::ghostlayers::c::ghostLayerFilling(
       SolverType& solver,
       double* luh,const double* luhNeighbour,
       const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
@@ -245,7 +242,7 @@ void ghostLayerFilling(
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 template <typename SolverType>
-void boundaryLayerExtraction(
+void kernels::finitevolumes::ghostlayers::c::boundaryLayerExtraction(
     SolverType& solver,
     double* luhbnd,const double* luh,
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
@@ -257,7 +254,7 @@ void boundaryLayerExtraction(
 
   constexpr int ghostLayerWidth=2;
   constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd=pathcBegin+patchSize;
+  constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -358,7 +355,7 @@ void boundaryLayerExtraction(
 }
 
 template <typename SolverType>
-void ghostLayerFillingAtBoundary(
+void kernels::finitevolumes::ghostlayers::c::ghostLayerFillingAtBoundary(
     SolverType& solver,
     double* luh,const double* luhbnd,
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
@@ -370,7 +367,7 @@ void ghostLayerFillingAtBoundary(
 
   constexpr int ghostLayerWidth=2; // TODO
   constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd=pathcBegin+patchSize;
+  constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -472,7 +469,7 @@ void ghostLayerFillingAtBoundary(
 
 
 template <typename SolverType>
-void ghostLayerFilling(
+void kernels::finitevolumes::ghostlayers::c::ghostLayerFilling(
       SolverType& solver,
       double* luh,const double* luhNeighbour,
       const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
@@ -484,7 +481,7 @@ void ghostLayerFilling(
 
   constexpr int ghostLayerWidth=2; // TODO
   constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd=pathcBegin+patchSize;
+  constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loop,
@@ -580,10 +577,4 @@ void ghostLayerFilling(
     }
   }
 }
-#endif
-
-} // c
-} // ghostlayers
-} // finitevolumes
-} // kernels
-
+#endif // DIMENSIONS
