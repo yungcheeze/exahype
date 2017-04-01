@@ -193,12 +193,16 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
           true
         ));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::AutotuningWithoutLearning:
     logInfo("initSharedMemoryConfiguration()",
         "use autotuning shared memory oracle configuration but disable machine learning algorithm");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(false,false));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
     logInfo("initSharedMemoryConfiguration()",
@@ -208,6 +212,8 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
           false
         ));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
     logInfo("initSharedMemoryConfiguration()",
@@ -217,15 +223,10 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
             64,
             true    // logarithmicDistribution
         ));
-    break;
-  }
-
-  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
-  if (f.good()) {
     peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
         _parser.getMulticorePropertiesFile());
+    break;
   }
-  f.close();
   #endif
 }
 
