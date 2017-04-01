@@ -47,7 +47,7 @@ class ChronoElapsedTimeProfiler : public Profiler {
                      std::chrono::time_point<clockType>>
       time_points_;
   std::unordered_map<std::string,
-                     std::pair<int, clockType::duration>>
+                     std::pair<long long, clockType::duration>>
       counts_and_durations_;
 };
 
