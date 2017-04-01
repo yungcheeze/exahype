@@ -345,16 +345,5 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     if (sq_res < tol * tol) {
       break;
     }
-
-    if(false) { //no debug by default
-      if (iter == MaxIterations) {  // No convergence after last iteration
-        static tarch::logging::Log _log("kernels::aderdg::optimised");
-        logWarning("picardLoop(...)",
-                   "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "
-                              << iter << " iterations. Solver seems not to "
-                                         "have converged properly within "
-                                         "maximum number of iteration steps");
-      }
-    }
   }  // end iter
 }
