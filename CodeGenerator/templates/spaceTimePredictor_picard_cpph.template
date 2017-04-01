@@ -26,6 +26,9 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
+{% if useDeepProfiler %}
+        , exahype::profilers::Profiler* profiler
+{% endif %}
 ) {
 
 
@@ -36,7 +39,6 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(rhs_0, ALIGNMENT);
   __assume_aligned(lFi, ALIGNMENT);
   __assume_aligned(F0, ALIGNMENT);
-  __assume_aligned(s_m, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
   if(useSource || useNCP) {
     __assume_aligned(lSi, ALIGNMENT);
@@ -44,10 +46,11 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   if(useNCP) {
     __assume_aligned(gradQ, ALIGNMENT);
     __assume_aligned(BGradQ, ALIGNMENT);
-    __assume_aligned(tmp_nDof_nDofPad, ALIGNMENT);
   }
   
 #endif
+  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
+  double dudxT_by_dx[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
 
   if(useNCP) {
   // 0. Ensure padded BGradQ has a zero padding
@@ -58,7 +61,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     const double invDx = 1.0 / dx[0];
     #pragma simd
     for(int it=0;it<{{nDof*nDofPad}};it++) {
-      tmp_nDof_nDofPad[it] = invDx * dudx_T[it];
+      dudxT_by_dx[it] = invDx * dudx_T[it];
     }
     
   }
@@ -108,10 +111,28 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim == 3 %}
         F[2] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{2*(nDof**nDim)*nDof*nVarPad}}];
 {% endif %}
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor");
+        profiler->start("spaceTimePredictor_PDEflux");
+{% endif %}
         PDEflux(Q, F);
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor_PDEflux");
+{% endif %}
         if(useSource) { //optimised away at compile time
+{% if useDeepProfiler %}
+          profiler->start("spaceTimePredictor_PDEsource");
+{% endif %}
           PDEsource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
+{% if useDeepProfiler %}
+          profiler->stop("spaceTimePredictor_PDEsource");
+{% endif %}
         }
+{% if useDeepProfiler %}
+        profiler->start("spaceTimePredictor_overhead");
+        profiler->stop("spaceTimePredictor_overhead"); 
+        profiler->start("spaceTimePredictor");
+{% endif %}
       }
 
       // Copy rhs0 -> rhs for slice at i
@@ -159,7 +180,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             } 
             */
-            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
+            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
           }          
         }
       }
@@ -200,7 +221,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
             */
-            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
+            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
           }
         }
       }
@@ -242,7 +263,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               }
             }
             */
-            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
+            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
           }
         }
       }
@@ -260,7 +281,15 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim==3 %}
             std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad}}],&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
 {% endif %}
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor");
+            profiler->start("spaceTimePredictor_PDEncp");
+{% endif %}
             PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor_PDEncp");
+            profiler->start("spaceTimePredictor");
+{% endif %}
           }
           
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
