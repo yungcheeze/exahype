@@ -123,18 +123,11 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
       askingMethod, this
     );
   }
-  else if ( _activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling ) {
-    return peano::datatraversal::autotuning::GrainSize(
-      0,
-      false,
-      problemSize,
-      askingMethod, this
-    );
-  }
   else {
     const int chosenParallelGrainSize = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
+
     return peano::datatraversal::autotuning::GrainSize(
-      chosenParallelGrainSize,\
+      chosenParallelGrainSize,
       trackTime,
       problemSize,
       askingMethod, this
