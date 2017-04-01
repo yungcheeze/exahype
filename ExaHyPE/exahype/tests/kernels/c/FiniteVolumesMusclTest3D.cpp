@@ -19,7 +19,7 @@
 
 #if DIMENSIONS == 3
 
-#include "kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph"
+#include "kernels/finitevolumes/musclhancock/c/3d/solutionUpdate.cpph"
 
 namespace exahype {
 namespace tests {
