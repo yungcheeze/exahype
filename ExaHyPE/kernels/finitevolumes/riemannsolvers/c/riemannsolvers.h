@@ -1,12 +1,19 @@
-/*
- * rusanov.h
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
  *
- *  Created on: Apr 1, 2017
- *      Author: dominic
- */
-
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
 #ifndef KERNELS_FINITEVOLUMES_RIEMANNSOLVERS_C_RIEMANNSOLVERS_H_
 #define KERNELS_FINITEVOLUMES_RIEMANNSOLVERS_C_RIEMANNSOLVERS_H_
+
+#include "kernels/KernelUtils.h"
 
 namespace kernels {
 namespace finitevolumes {
