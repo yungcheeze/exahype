@@ -61,7 +61,7 @@ exahype-project MHD
     time-stepping            = global
     kernel                   = generic::fluxes::nonlinear
     language                 = C
-    limiter-kernel           = generic::Godunov 
+    limiter-kernel           = generic::godunov 
     limiter-language         = C
     dmp-relaxation-parameter = 0.0001
     dmp-difference-scaling   = 0.001

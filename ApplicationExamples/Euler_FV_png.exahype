@@ -42,7 +42,7 @@ exahype-project Euler
     patch-size const  = 10
     maximum-mesh-size = 5e-3
     time-stepping     = global
-    kernel const      = generic::Godunov
+    kernel const      = generic::godunov
     language const    = C
     plot vtk::Cartesian::cells::ascii EulerWriter
       variables const = 5

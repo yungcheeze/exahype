@@ -6,7 +6,7 @@ import java.util.Set;
  * @author Dominic E. Charrier
  */
 public class GenericFiniteVolumesGodunovInC extends GenericFiniteVolumesInC {
-    public static final String Identifier = "generic::finitevolumes::godunov";
+    public static final String Identifier = "generic::godunov";
     
     public GenericFiniteVolumesGodunovInC(
             int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames, int patchSize, boolean enableProfiler, boolean hasConstants) {

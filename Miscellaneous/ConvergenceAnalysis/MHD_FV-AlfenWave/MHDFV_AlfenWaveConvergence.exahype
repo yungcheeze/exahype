@@ -58,7 +58,7 @@ exahype-project  MHDSolver
     patch-size         = @PATCH_SIZE@
     maximum-mesh-size  = @MESHSIZE@
     time-stepping      = global
-    kernel             = generic::Godunov
+    kernel             = generic::godunov
     language           = C
     constants          = {initialdata:thisneverworks}
 

@@ -63,7 +63,7 @@ exahype-project GRMHD
     patch-size const               = 4
     maximum-mesh-size              = 0.5
     time-stepping                  = global
-    kernel const                   = generic::Godunov
+    kernel const                   = generic::godunov
     language const                 = C
 
     plot vtk::Cartesian::cells::ascii ConservedWriter
