@@ -77,6 +77,9 @@ l_parser.add_argument('architecture',
 l_parser.add_argument('pathToLibxsmm',
                       type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
                       help='where to find your local copy of code generator back end "https://github.com/hfp/libxsmm"')
+l_parser.add_argument('--deepProfiling',
+                      action='store_true',
+                      help='where to find your local copy of code generator back end "https://github.com/hfp/libxsmm"')
 # l_parser.add_argument('--precision',
                       # type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
                       # default='DP',
@@ -93,12 +96,14 @@ numerics               = l_commandLineArguments.numerics
 architecture           = l_commandLineArguments.architecture
 pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
 precision              = 'DP' #l_commandLineArguments.precision
+useDeepProfiler        = l_commandLineArguments.deepProfiling
 
 config = { 
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
            "nDim"              : dimensions,
-           "nPar"              : 0 #TODO JMG add paramters ?
+           "nPar"              : 0, #TODO JMG add paramters ?
+           "useDeepProfiler"   : useDeepProfiler
           }
 
 # configure global setup of the code generator

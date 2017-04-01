@@ -43,7 +43,16 @@ namespace {
                              "volumeUnknownsProlongation",
                              "volumeUnknownsRestriction",
                              "boundaryConditions",
-                             "pointSource"}; //TODO KD
+                             "pointSource"
+                             };
+  constexpr const char* deepProfilingTags[]{
+                             /*"spaceTimePredictor_PDEflux",
+                             "spaceTimePredictor_PDEsource",
+                             "spaceTimePredictor_overhead",
+                             "spaceTimePredictor_PDEncp",
+                             "riemannSolver_PDEmatrixb",
+                             "riemannSolver_overhead"*/
+  };
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
 
@@ -339,6 +348,10 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
+  }
+  
+  for (const char* tag : deepProfilingTags) {
+    _profiler->registerTag(tag); //TODO JMG only if using deepProfiling
   }
 
   CompressedDataHeap::getInstance().setName("compressed-data");

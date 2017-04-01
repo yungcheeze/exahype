@@ -158,7 +158,7 @@ public class Helpers {
   }
 
   static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm)
+      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
@@ -181,11 +181,12 @@ public class Helpers {
     }
 */
     String numericsParameter = isLinear ? "linear" : "nonlinear";
+    String deepProfiler = enableDeepProfiler ? "--deepProfiling " : "";
 
     // set up the command to execute the code generator
     String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " "; 
+        + currentDirectory + "/"  + pathToLibxsmm + " " + deepProfiler; 
 
     String bashCommand = "env python3 " + pathToCodeGenerator + args;
 

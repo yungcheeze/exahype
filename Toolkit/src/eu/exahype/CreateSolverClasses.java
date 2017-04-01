@@ -32,12 +32,14 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   private int _dimensions;
 
   private boolean _enableProfiler;
+  private boolean _enableDeepProfiler;
 
   public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
     _supportedMicroarchitectures =
         java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
     _enableProfiler = false;
+    _enableDeepProfiler = false;
   }
 
   @Override
@@ -103,6 +105,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   @Override
   public void inAProfiling(AProfiling node) {
     _enableProfiler = !node.getProfiler().getText().equals("NoOpProfiler");
+    _enableDeepProfiler = (node.getDeepProfiling() != null) && node.getDeepProfiling().getText().equals("on");
   };
 
   private boolean validate(
@@ -147,7 +150,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
-    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
+    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler,  _enableDeepProfiler, _microarchitecture, _pathToLibxsmm);
     eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
         kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), order, hasConstants);
 

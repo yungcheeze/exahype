@@ -36,6 +36,8 @@ void kernels::aderdg::optimised::volumeIntegral(
     __assume_aligned(lShi, ALIGNMENT);
   }
 #endif
+
+  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
   
   // Assume equispaced mesh, dx[0] == dx[1] == dx[2]
 {% for j in j_seq%} {# if nDim == 2 then j_seq == [0] #}
