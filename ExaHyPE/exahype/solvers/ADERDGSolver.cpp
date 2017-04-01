@@ -46,12 +46,12 @@ namespace {
                              "pointSource"
                              };
   constexpr const char* deepProfilingTags[]{
-                             /*"spaceTimePredictor_PDEflux",
+                             "spaceTimePredictor_PDEflux",
                              "spaceTimePredictor_PDEsource",
                              "spaceTimePredictor_overhead",
                              "spaceTimePredictor_PDEncp",
                              "riemannSolver_PDEmatrixb",
-                             "riemannSolver_overhead"*/
+                             "riemannSolver_overhead"
   };
   typedef peano::heap::PlainCharHeap CompressedDataHeap;
 }
