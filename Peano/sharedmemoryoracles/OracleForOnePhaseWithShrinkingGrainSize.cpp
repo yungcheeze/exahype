@@ -2,6 +2,7 @@
 #include "peano/utils/Globals.h"
 #include "tarch/Assertions.h"
 #include "tarch/multicore/Core.h"
+#include "tarch/multicore/Lock.h"
 
 
 #include <cstdlib>
@@ -17,7 +18,8 @@ const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_Ma
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 0.9 );
 
 
-bool  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_hasLearnedSinceLastQuery( false );
+bool                                 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_hasLearnedSinceLastQuery( false );
+tarch::multicore::BooleanSemaphore   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_semaphore;
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
@@ -42,6 +44,8 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
   int problemSize,
   peano::datatraversal::autotuning::MethodTrace askingMethod
 ) {
+  tarch::multicore::Lock lock(_semaphore);
+
   if ( _measurements.count(askingMethod)==0 ) {
     _measurements.insert( std::pair<peano::datatraversal::autotuning::MethodTrace,MethodTraceData >(askingMethod,MethodTraceData()) );
     _measurements[askingMethod].push_back( DatabaseEntry(2) );
@@ -53,6 +57,8 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
       << ": " << _measurements[askingMethod].rbegin()->toString()
     );
   }
+
+  assertion(_measurements[askingMethod].rbegin()->getBiggestProblemSize()>0);
 
   while (_measurements[askingMethod].rbegin()->getBiggestProblemSize()<problemSize*2) {
     _measurements[askingMethod].push_back( DatabaseEntry(
@@ -66,6 +72,8 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
       << ": " << _measurements[askingMethod].rbegin()->toString()
     );
   }
+
+  lock.free();
 
   MethodTraceData::iterator entry = _measurements[askingMethod].begin();
   while (entry->getBiggestProblemSize()<problemSize) {
@@ -123,8 +131,27 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
       askingMethod, this
     );
   }
+/*
+  else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
+    return peano::datatraversal::autotuning::GrainSize(
+      0,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+  }
+*/
   else {
     const int chosenParallelGrainSize = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
+
+/*
+    return peano::datatraversal::autotuning::GrainSize(
+      0,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+*/
 
     return peano::datatraversal::autotuning::GrainSize(
       chosenParallelGrainSize,
@@ -462,7 +489,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
   _numberOfParallelMeasurements   = 0.0;
   _previousSpeedup                = 1.0;
 
-  assertion1( _currentGrainSize>0, toString() );
+  assertion1( _currentGrainSize>0 || problemSize==1, toString() );
 }
 
 

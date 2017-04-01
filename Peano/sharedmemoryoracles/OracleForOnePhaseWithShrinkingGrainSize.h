@@ -5,6 +5,7 @@
 
 
 #include "tarch/logging/Log.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
 #include "peano/datatraversal/autotuning/MethodTrace.h"
 
@@ -149,6 +150,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     static const double                                  _InitialRelativeAccuracy;
 
     static bool                                          _hasLearnedSinceLastQuery;
+
+    static tarch::multicore::BooleanSemaphore            _semaphore;
 
     /**
      * We never do optimise all traces. We only do it with one trace at a time.
