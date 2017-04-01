@@ -642,10 +642,16 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistics(const std::string& filename, int oracleNumber) {
   std::ifstream file(filename);
 
-  if (!file.is_open()) {
+  if (!file.is_open() and _learn) {
+    logInfo(
+      "loadStatistics(...)",
+      "was not able to load input file " << filename << ". Oracle will start to learn from scratch"
+    );
+  }
+  else if (!file.is_open()) {
     logError(
       "loadStatistics(...)",
-      "was not able to load input file " << filename << ". Code might fall back to serial version"
+      "was not able to load input file " << filename << ". Code might fall back to single-core version"
     );
   }
 
