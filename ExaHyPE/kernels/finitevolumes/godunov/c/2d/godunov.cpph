@@ -29,6 +29,7 @@ namespace finitevolumes {
 namespace godunov {
 namespace c {
 
+
 /**
  * Solves all the Riemann problems that do only require
  * internal data and add the result directly onto the
@@ -46,7 +47,7 @@ double solutionUpdate(
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
-  constxper int numberOfData = numberOfVariables+numberOfParameters;
+  constexpr int numberOfData = numberOfVariables+numberOfParameters;
 
   constexpr double cflFactor = 0.9; // TODO(Dominic): Move this out.
 
@@ -64,9 +65,6 @@ double solutionUpdate(
   double  fR[numberOfVariables];
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
-      const double *qL =
-      const double *qR =
-
       double s_max_x = 
           riemannsolvers::c::rusanov<SolverType>(
               solver,
@@ -95,7 +93,7 @@ double solutionUpdate(
           solver,
           fL, fR,
           luh + idx(j, k, 0),
-          luh + idx(j+1, k, 0)
+          luh + idx(j+1, k, 0),
           1);
       //tempStateSizedVectors + 1);
       dt_max_allowed = std::min(
