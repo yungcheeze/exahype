@@ -218,17 +218,12 @@ void aderPicardLoopNonlinear(SolverType& solver,
             const double updateSize = weight * dt;
             double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
 
-            if(useNCP) {
-              // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-              solver.nonConservativeProduct(&lQi[idx_lQi(k, l, i, 0)], &gradQ[idx_gradQ(k, l, i, 0, 0)], BGradQ);
-            }
-            
+            // by intention, gradQ is undefined if useNCP is wrong. This is because
+	    // algebraicSource is only a function of Q and S.
+            solver.fusedSource(&lQi[idx_lQi(j, k, l, i, 0)], &gradQ[idx_gradQ(j, k, l, i, 0, 0)], S);
 
             // TODO: numberOfVariables - numberOfParameters would do
             for (int m = 0; m < numberOfVariables; m++) {
-              if(useNCP) {
-                S[m] -= BGradQ[m]; // <-- adding the BGradQ to the Source was missing!
-              }
               rhs[idx_rhs(i, k, l, m)] += updateSize * S[m];
             }
           }
@@ -648,7 +643,7 @@ void spaceTimePredictorNonlinear(
 
   double* lFhi    = tempFluxUnknowns;
   
-  double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
+  double *BGradQ  = tempStateSizedVector; // size: numberOfVariables // TODO: Remove, no more used.
 
   if(useSource) {
     if(useNCP) {

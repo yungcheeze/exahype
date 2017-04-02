@@ -97,7 +97,7 @@ void riemannSolverNonlinear(SolverType& solver,
   //double* ncp = tempStateSizedVectors[4];
   //idx2 idx_Bn(numberOfVariables, numberOfVariables);
   /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-  double gradQ[idx_gradQ.size], ncp[numberOfVariables];
+  double gradQ[DIMENSIONS*numberOfVariables], ncp[numberOfVariables];
   std::fill_n(gradQ, idx_gradQ.size, 0.0);
   std::fill_n(ncp, numberOfVariables, 0.0);
   /*
