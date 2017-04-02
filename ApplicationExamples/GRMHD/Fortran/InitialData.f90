@@ -414,6 +414,8 @@ SUBROUTINE InitialAccretionDisc3D(x,t,Q)
        
        BV = MATMUL(g_cov,BV_contr)
        
+       BV = 0
+       
 
        V(1:9) = (/ rho, VV_cov(1:3), p, BV(1:3), 0. /)
        V(10:19) = (/ lapse, shift(1:3), gammaij(1:6) /)

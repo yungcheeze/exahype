@@ -63,7 +63,7 @@ exahype-project GRMHD
     patch-size const               = 4
     maximum-mesh-size              = 0.5
     time-stepping                  = global
-    kernel const                   = generic::godunov
+    kernel const                   = generic::musclhancock
     language const                 = C
 
     plot vtk::Cartesian::cells::ascii ConservedWriter
@@ -74,13 +74,6 @@ exahype-project GRMHD
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Cartesian::cells::ascii IntegralsWriter
-      variables const = 0
-      time = 0.0
-      repeat = 0.00590278
-      output = ./global-integrals
-      select    = x:0.0,y:0.0
-    end plot
   end solver
 
 

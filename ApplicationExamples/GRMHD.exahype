@@ -27,8 +27,8 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 3.0, 3.0, 3.0
-    offset                         = -3.0, -3.0, -3.0
+    width                          = 2.0, 2.0, 2.0
+    offset                         = 1.0, 1.0, 1.0
     end-time                       = 10.1
   end computational-domain
   
