@@ -33,19 +33,27 @@ exahype-project Euler
     offset                   = 0.0, 0.0
     end-time                 = 1.0
   end computational-domain
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+  end shared-memory
  
   solver Finite-Volumes MyEulerSolver
     variables const   = rho:1,j:3,E:1
     patch-size const  = 10
-    maximum-mesh-size = 0.15
+    maximum-mesh-size = 0.444
     time-stepping     = global
     kernel const      = generic::godunov
     language const    = C
+    /* musclhancock */
+    
     plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 5
       time      = 0.0
-      repeat    = 0.5E-1
-      output    = ./conserved
+      repeat    = 0.5E-8
+      output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
   end solver
