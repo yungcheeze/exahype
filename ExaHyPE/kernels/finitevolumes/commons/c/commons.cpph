@@ -476,7 +476,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
-  constexpr int ghostLayerWidth    = solverType::GhostLayerWidth;
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   double x[DIMENSIONS];
 
@@ -748,7 +748,6 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
   constexpr int patchBegin = ghostLayerWidth;
-  constexpr int patchEnd   = patchBegin+patchSize;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;
@@ -850,7 +849,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_y(k,j,i,0),stateOut + idx_bnd_y(k,j,i,0));
+                                stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }
@@ -870,7 +869,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_y(k,j,i,0));
+                                stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }
