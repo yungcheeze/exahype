@@ -108,7 +108,7 @@ double solutionUpdate(
     for (int k = patchBegin; k < patchEnd; k++) {
       for (int l = 0; l < numberOfVariables; l++) {
         wLy[idx_slope(j, k, l)] = luh[idx(j, k, l)] - 0.5 * slopey[idx_slope(j, k, l)];
-        wRy[idx_slope(j, k, l)] = luh[idx(j, K, l)] + 0.5 * slopey[idx_slope(j, k, l)];
+        wRy[idx_slope(j, k, l)] = luh[idx(j, k, l)] + 0.5 * slopey[idx_slope(j, k, l)];
       }
     }
   }
@@ -156,10 +156,11 @@ double solutionUpdate(
   }
 
   // 4. Solve Riemann problems
-  double FLx[numberOfVariables*patchSize*(patchSize + 1)] = {0.0};
-  double FRy[numberOfVariables*patchSize*(patchSize + 1)] = {0.0};
-  double FLx[numberOfVariables*patchSize*(patchSize + 1)] = {0.0};
-  double FRy[numberOfVariables*patchSize*(patchSize + 1)] = {0.0};
+  idx3 idx_Fx(patchSize,patchSize+1,numberOfData);
+  idx3 idx_Fy(patchSize+1,patchSize,numberOfData);
+
+  double Fx[variablesPerPatch] = {0.0};
+  double Fy[variablesPerPatch] = {0.0};
 
   double dt_max_allowed = std::numeric_limits<double>::max();
 
