@@ -36,7 +36,7 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
   double dt_max_stable = std::numeric_limits<double>::max();
   constexpr double cflFactor = 0.9; // TODO externalize
 
-  constexpr int patchBegin=ghostLayerWidth;
+	constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
   idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
 
@@ -189,9 +189,6 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
-  constexpr int patchBegin = ghostLayerWidth;
-  //constexpr int patchEnd   = patchBegin+patchSize;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;

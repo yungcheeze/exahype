@@ -29,7 +29,7 @@ namespace c {
  */
 template <typename SolverType>
 double rusanov(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
-               int normalNonZero,double** tempStateSizedVectors);
+               int normalNonZero);
 } // namespace c
 } // namespace riemansolvers
 } // namespace finitevolumes

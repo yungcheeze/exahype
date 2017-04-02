@@ -102,3 +102,21 @@ void Euler::MyEulerSolver::boundaryValues(
   stateOut[4] = stateIn[4];
 }
 
+void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
+  for(int l=0; l<NumberOfVariables; l++) {
+    S[l] = 0.0;
+  }
+}
+
+void Euler::MyEulerSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+  for(int l=0; l<NumberOfVariables; l++) {
+    BgradQ[l] = 0.0;
+  }
+}
+
+void Euler::MyEulerSolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  for(int l=0; l<NumberOfVariables*NumberOfVariables; l++) {
+    Bn[l] = 0.0;
+  }
+}
+
