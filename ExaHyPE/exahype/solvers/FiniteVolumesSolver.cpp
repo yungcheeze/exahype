@@ -528,6 +528,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
+  std::cout << "[pre] solution:" << std::endl;
+  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+
   double admissibleTimeStepSize=0;
   solutionUpdate(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
@@ -555,6 +558,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize());
   }
+
+  std::cout << "[post] solution:" << std::endl;
+  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
