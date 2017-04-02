@@ -24,13 +24,10 @@
 template <typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(
     SolverType& solver,
-    double* fL, double *fR, const double* qL, const double* qR, int normalNonZero,
-    double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
+    double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
 
-  //double* sL = tempStateSizedVectors[0];
-  //double* sR = tempStateSizedVectors[1];
   double sL[numberOfVariables + numberOfParameters];
   double sR[numberOfVariables + numberOfParameters];
 
@@ -52,8 +49,6 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
   double FR2a[numberOfVariables + numberOfParameters];
   double FR2b[numberOfVariables + numberOfParameters];
 
-  //double* FL2[2] = {tempStateSizedVectors[0],tempStateSizedVectors[1]}; // dim a numberOfVariables
-  //double* FR2[2] = {tempStateSizedVectors[2],tempStateSizedVectors[3]}; // dim a numberOfVariables
   double* FL2[2] = {FL2a,FL2b}; // dim a numberOfVariables
   double* FR2[2] = {FR2a,FR2b}; // dim a numberOfVariables
 
@@ -109,12 +104,10 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
 //          void PDEFlux(const double* const Q, double** F)>
 template <typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
-                     int normalNonZero,double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
+                     int normalNonZero) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
 
-  //double* sL = tempStateSizedVectors[0];
-  //double* sR = tempStateSizedVectors[1];
   double sL[numberOfVariables + numberOfParameters];
   double sR[numberOfVariables + numberOfParameters];
 
@@ -139,8 +132,6 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
   double FR3b[numberOfVariables + numberOfParameters];
   double FR3c[numberOfVariables + numberOfParameters];
 
-  //double* FL3[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
-  //double* FR3[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
   double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
   double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
 

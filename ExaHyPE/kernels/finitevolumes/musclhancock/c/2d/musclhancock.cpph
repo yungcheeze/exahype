@@ -72,11 +72,12 @@ double solutionUpdate(
 
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
+  return 0.1;//DEBUG
   // 1. Gather data from neighbouring cells; already done.
 
   // 2. Compute slopes TODO(Dominic): Make sure to only consider parameters in luh
   idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
-  constexpr int dataPerPatch = (patchSize+2*ghostLayerWidth)*(patchSize+2*ghostLayerWidth)*numberOfData;
+
 
   idx4 idx_slope(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,DIMENSIONS,numberOfVariables);
   constexpr int variablesPerPatch = (patchSize+2*ghostLayerWidth)*(patchSize+2*ghostLayerWidth)*numberOfVariables;
@@ -137,7 +138,6 @@ double solutionUpdate(
   double* F[2] = {flx, flx + numberOfVariables};
 
   double slopet[variablesPerPatch] = {0.0};
-  double Qt[numberOfVariables];
   double ncp[numberOfVariables];
 
   // wx
@@ -191,11 +191,11 @@ double solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {
       double s_max_x =
-          riemannsolvers::c::rusanov<SolverType>(
+          riemannsolvers::c::rusanov<SolverType>(solver,
             fL, fR,
             wRx + idx_w(j, k, 0),
             wLx + idx_w(j, k+1, 0),
-            numberOfVariables, 0
+            0
           );
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x);
@@ -210,11 +210,11 @@ double solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
-      double s_max_y = riemannsolvers::c::rusanov<SolverType>(
+      double s_max_y = riemannsolvers::c::rusanov<SolverType>(solver,
           fL, fR,
           wRy + idx_w(j, k, 0),
           wLy + idx_w(j+1, k, 0),
-          numberOfVariables, 1
+          1
       );
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
