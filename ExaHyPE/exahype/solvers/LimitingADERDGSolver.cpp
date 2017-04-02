@@ -853,6 +853,7 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
         fineGridCell.addNewCellDescription(
             solverPatch.getSolverNumber(),
             LimiterPatch::Type::Cell,
+            LimiterPatch::RefinementEvent::None,
             solverPatch.getLevel(),
             solverPatch.getParentIndex(),
             solverPatch.getSize(),

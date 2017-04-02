@@ -257,13 +257,14 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
   fineGridCell.addNewCellDescription(
               solverNumber,
               CellDescription::Cell,
-//              CellDescription::None,
+              CellDescription::None,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCellDescriptionsIndex,
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getVertexPosition());
   int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
   CellDescription& fineGridCellDescription =
       getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
@@ -403,13 +404,7 @@ bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
-//  assertionMsg(false,"Not implemented."); // TODO(Dominic): Implement.
-  int fineGridCellElement = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-  if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
-    CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
-  }
+  // do nothing
 
   return false;
 }
@@ -528,8 +523,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
-  std::cout << "[pre] solution:" << std::endl;
-  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+//  std::cout << "[pre] solution:" << std::endl;
+//  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
 
   double admissibleTimeStepSize=0;
   solutionUpdate(
@@ -559,8 +554,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStepSize());
   }
 
-  std::cout << "[post] solution:" << std::endl;
-  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+//  std::cout << "[post] solution:" << std::endl;
+//  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }
