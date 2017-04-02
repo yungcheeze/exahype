@@ -46,6 +46,7 @@ void {{Project}}::{{Solver}}::flux(const double* const Q, double** F) {
 }
 
 
+
 void {{Project}}::{{Solver}}::boundaryValues(
     const double* const x,
     const double t,const double dt,

@@ -13,6 +13,10 @@
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
+
+#include <cstdlib> // abort()
+#include "kernels/KernelUtils.h" // idx
+
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
   init(cmdlineargs);
@@ -28,7 +32,8 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	os << "{{Project}}::Abstract{{Solver}}("
 	   << "nVar=" << NumberOfVariables << ", "
 	   << "nParam=" << NumberOfParameters << ", "
-	   << "PatchSize=" << PatchSize
+	   << "PatchSize=" << PatchSize << ", "
+	   << "GhostLayerWidth=" << GhostLayerWidth
 	   << ")";
 }
 
@@ -61,4 +66,40 @@ void {{Project}}::Abstract{{Solver}}::ghostLayerFillingAtBoundary(double* luh,co
 
 void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   kernels::finitevolumes::commons::c::boundaryLayerExtraction<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbnd,luh,boundaryPosition);
+}
+
+
+void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abort();
+}
+
+void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+	// By default, if not given, fallback to nonConservativeProduct
+	kernels::idx2 idx_gradQ(DIMENSIONS, NumberOfVariables+NumberOfParameters);
+	kernels::idx2 idx_Bn(NumberOfVariables, NumberOfVariables);
+	
+	// build gradQ from normal vector and fill up Bn.
+	double gradQ[DIMENSIONS * (NumberOfVariables + NumberOfParameters)] = {0.};
+	for(int i=0; i<NumberOfVariables; i++) {
+		std::fill_n(gradQ, idx_gradQ.size, 0.0);
+		gradQ[idx_gradQ(d, i)] = 1.0;
+		nonConservativeProduct(Q, gradQ, Bn + idx_Bn(i,0));
+	}
+}
+
+void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abort();
+}
+
+void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+      algebraicSource(Q, S);
+      if(useNonConservativeProduct()) {
+        double ncp[NumberOfVariables];
+        nonConservativeProduct(Q, gradQ, ncp);
+        for(int l=0; l<NumberOfVariables; l++) {
+          S[l] -= ncp[l];
+        }
+      }
 }

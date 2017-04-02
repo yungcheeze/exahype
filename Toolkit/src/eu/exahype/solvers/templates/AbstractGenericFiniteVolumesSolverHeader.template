@@ -18,8 +18,6 @@
  */
 #include "tarch/Assertions.h"
 
-
-
 {{ProfilerInclude}}
 
 namespace {{Project}}{
@@ -68,16 +66,13 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    };
 
-    /**
-     * Please overwrite in user's solver. See superclass for documentation.
-     */
-    virtual void algebraicSource(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    };    
+    /* New April 2017 API changes */
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
+    virtual void algebraicSource(const double* const Q,double* S);
+    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
+
 };
 
 
