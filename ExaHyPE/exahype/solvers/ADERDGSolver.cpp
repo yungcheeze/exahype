@@ -1523,7 +1523,41 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       pointSource(cellDescription.getCorrectorTimeStamp() , cellDescription.getCorrectorTimeStepSize(), cellDescription.getOffset()+0.5*cellDescription.getSize(), cellDescription.getSize(), tempPointForceSources); //TODO KD
       // luh, t, dt, cell cell center, cell size, data allocation for forceVect
     }
-  
+//TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
+#ifdef OPT_KERNELS
+  double* dx = &cellDescription.getSize()[0];
+#if DIMENSIONS==2
+  double inverseDx[2];
+#else
+  double inverseDx[3];
+  inverseDx[2] = 1.0/dx[2];
+#endif
+  inverseDx[0] = 1.0/dx[0];
+  inverseDx[1] = 1.0/dx[1];
+  spaceTimePredictor(
+      lQhbnd,
+      lFhbnd,
+      tempSpaceTimeUnknowns,
+      tempSpaceTimeFluxUnknowns,
+      tempUnknowns,
+      tempFluxUnknowns,
+      tempStateSizedVector,
+      luh,
+      &inverseDx[0], //TODO JMG use cellDescription.getInverseSize() when implemented
+      cellDescription.getPredictorTimeStepSize(),
+      tempPointForceSources);
+      
+  // TODO(Future Opt.)
+  // Volume integral should be performed using the space time
+  // flux unknowns. Something equivalent can also be done for
+  // the extrpolated fluxes. Here, we can also perform the
+  // time averaging on the fly.
+  // Remove the tempFluxUnkowns and tempUnknowns.
+  volumeIntegral(
+      lduh,
+      tempFluxUnknowns,
+      &inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+#else 
   spaceTimePredictor(
       lQhbnd,
       lFhbnd,
@@ -1547,6 +1581,7 @@ void exahype::solvers::ADERDGSolver::performPredictionAndVolumeIntegral(
       lduh,
       tempFluxUnknowns,
       cellDescription.getSize());
+#endif
 
   for (int i=0; i<getTempSpaceTimeUnknownsSize(); i++) { // cellDescription.getCorrectorTimeStepSize==0.0 is an initial condition
     assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(tempSpaceTimeUnknowns[0][i]),cellDescription.toString(),"performPredictionAndVolumeIntegral(...)",i);
@@ -1581,9 +1616,23 @@ double exahype::solvers::ADERDGSolver::startNewTimeStep(
     const double* luh = exahype::DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
     validateNoNansInADERDGSolver(cellDescription,"startNewTimeStep(...)");
-
+//TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
+#ifdef OPT_KERNELS
+    double* dx = &cellDescription.getSize()[0];
+#if DIMENSIONS==2
+    double inverseDx[2];
+#else
+    double inverseDx[3];
+    inverseDx[2] = 1.0/dx[2];
+#endif
+    inverseDx[0] = 1.0/dx[0];
+    inverseDx[1] = 1.0/dx[1];
+    double admissibleTimeStepSize =
+        stableTimeStepSize(luh,tempEigenvalues,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+#else
     double admissibleTimeStepSize =
         stableTimeStepSize(luh,tempEigenvalues,cellDescription.getSize());
+#endif
     assertion2(admissibleTimeStepSize>0,admissibleTimeStepSize,cellDescription.toString());
     assertion3(admissibleTimeStepSize<std::numeric_limits<double>::max(),std::numeric_limits<double>::max(),admissibleTimeStepSize,cellDescription.toString());
     assertion2(std::isfinite(admissibleTimeStepSize),admissibleTimeStepSize,cellDescription.toString());
@@ -1739,8 +1788,21 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     for (int i=0; i<getBndFluxTotalSize(); i++) {
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0) || std::isfinite(lFhbnd[i]),cellDescription.toString(),"updateSolution",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
+//TODO JMG move everything to inverseDx and use Peano to get it when Dominic implemente it
+#ifdef OPT_KERNELS
+    double* dx = &cellDescription.getSize()[0];
+#if DIMENSIONS==2
+    double inverseDx[2];
+#else
+    double inverseDx[3];
+    inverseDx[2] = 1.0/dx[2];
+#endif
+    inverseDx[0] = 1.0/dx[0];
+    inverseDx[1] = 1.0/dx[1];
+    surfaceIntegral(lduh,lFhbnd,&inverseDx[0]); //TODO JMG use cellDescription.getInverseSize() when implemented
+#else 
     surfaceIntegral(lduh,lFhbnd,cellDescription.getSize());
+#endif
 
     for (int i=0; i<getUnknownsPerCell(); i++) {
       assertion3(tarch::la::equals(cellDescription.getCorrectorTimeStepSize(),0.0)  || std::isfinite(lduh[i]),cellDescription.toString(),"updateSolution(...)",i);

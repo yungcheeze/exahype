@@ -22,7 +22,7 @@ template <bool useSource, bool useNCP, void PDEflux(const double* const Q, doubl
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
-        const tarch::la::Vector<DIMENSIONS, double>& dx,
+        const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
@@ -57,11 +57,10 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     std::memset(BGradQ, 0, {{nVarPad}} * sizeof(double));
 
   
-  // 0. precompute 1/dx * dudx_T
-    const double invDx = 1.0 / dx[0];
+  // 0. precompute 1/dx * dudx_T. Assume dx[0] == dx[1] == dx[2]
     #pragma simd
     for(int it=0;it<{{nDof*nDofPad}};it++) {
-      dudxT_by_dx[it] = invDx * dudx_T[it];
+      dudxT_by_dx[it] = inverseDx[0] * dudx_T[it];
     }
     
   }
@@ -148,7 +147,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt / dx[0];
+          const double updateSize = weight * dt * inverseDx[0];
 
           // Matrix operation
           /*
@@ -174,7 +173,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += inverseDx[0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
@@ -189,7 +188,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt / dx[1];
+          const double updateSize = weight * dt * inverseDx[1];
 
           // Matrix operation
           /*
@@ -215,7 +214,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += inverseDx[0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
@@ -231,7 +230,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] *  weights1[j] * weights1[k];
-          const double updateSize = weight * dt / dx[2];
+          const double updateSize = weight * dt * inverseDx[2];
 
           // Matrix operation
           /*
@@ -257,7 +256,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += inverseDx [0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * dudx[l+{{nDofPad}}*m];
                 }
               }

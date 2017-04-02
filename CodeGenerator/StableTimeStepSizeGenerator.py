@@ -125,7 +125,7 @@ class StableTimeStepSizeGenerator:
                                '        for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n'\
                                '          maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n'\
                                '        }\n'\
-                               '        denominator += maxEigenvalue / dx[d];\n'\
+                               '        denominator += maxEigenvalue * inverseDx[d];\n'\
                                '      }\n\n'\
                                '      dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n'\
                                '    }\n'\
@@ -143,7 +143,7 @@ class StableTimeStepSizeGenerator:
                                '          for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n'\
                                '            maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n'\
                                '          }\n'\
-                               '          denominator += maxEigenvalue / dx[d];\n'\
+                               '          denominator += maxEigenvalue * inverseDx[d];\n'\
                                '        }\n\n'\
                                '        dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n'\
                                '      }\n'\
