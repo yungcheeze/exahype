@@ -159,7 +159,7 @@ def generateComputeKernels():
     solutionUpdateGenerator.generateCode()
     solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(generateContext(m_config))
     solutionAdjustmentGenerator.generateCode()
-    stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(m_config)
+    stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(generateContext(m_config))
     stableTimeStepSizeGenerator.generateCode()
     weightsGenerator = WeightsGenerator.WeightsGenerator(m_config)
     weightsGenerator.generateCode()
