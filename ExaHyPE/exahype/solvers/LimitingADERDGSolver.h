@@ -25,6 +25,8 @@
 
 #include "exahype/profilers/simple/NoOpProfiler.h"
 
+#include "exahype/solvers/TemporaryVariables.h"
+
 namespace exahype {
 namespace solvers {
 
