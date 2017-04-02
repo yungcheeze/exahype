@@ -42,15 +42,11 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     : Solver(identifier, exahype::solvers::Solver::Type::FiniteVolumes,
              numberOfVariables, numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, timeStepping, std::move(profiler)),
-      _dataPerPatch((numberOfVariables + numberOfParameters) *
-                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _dataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _ghostLayerWidth(ghostLayerWidth),
-      _ghostDataPerPatch((numberOfVariables + numberOfParameters) *
-                       power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
-      _dataPerPatchFace(
-          (numberOfVariables + numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _dataPerPatchBoundary(
-          DIMENSIONS_TIMES_TWO *_dataPerPatchFace),
+      _ghostDataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
+      _dataPerPatchFace(_ghostLayerWidth*(numberOfVariables+numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _dataPerPatchBoundary(DIMENSIONS_TIMES_TWO *_dataPerPatchFace),
       _previousMinTimeStepSize(std::numeric_limits<double>::max()),
       _minTimeStamp(std::numeric_limits<double>::max()),
       _minTimeStepSize(std::numeric_limits<double>::max()),
