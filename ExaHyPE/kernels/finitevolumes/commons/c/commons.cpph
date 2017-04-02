@@ -43,7 +43,7 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
   double* lambda = tempEigenvalues;
 
   for (int j = patchBegin; j < patchEnd; j++) {
-  for (int k = patchBegin; k < patchEndd; k++) {
+  for (int k = patchBegin; k < patchEnd; k++) {
     // x
     solver.eigenvalues(luh + idx(j, k, 0), 0, lambda);
     std::transform(lambda, lambda + numberOfVariables, lambda,
@@ -191,7 +191,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
   constexpr int patchBegin = ghostLayerWidth;
-  constexpr int patchEnd   = patchBegin+patchSize;
+  //constexpr int patchEnd   = patchBegin+patchSize;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;
@@ -209,7 +209,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                               stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
@@ -225,7 +225,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                               stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
@@ -241,7 +241,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                               stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
@@ -257,7 +257,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                               stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
@@ -769,7 +769,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
         xOutside[1] = cellCentre[1] + cellSize[1] * (qi - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0)); // TODO: suboptimal memory layout
       }
       }
@@ -789,7 +789,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
         xOutside[1] = cellCentre[1] + cellSize[2] * (qi - 0.5);
 
-        solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0));
       }
       }
@@ -809,7 +809,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
-          solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
@@ -829,7 +829,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
-          solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
@@ -849,7 +849,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[1] = cellCentre[1] + cellSize[1] * (qj - 0.5);
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
-          solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_y(k,j,i,0),stateOut + idx_bnd_y(k,j,i,0));
         }
       }
@@ -869,7 +869,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[1] = cellCentre[1] + cellSize[1] * (qj - 0.5);
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
-          solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
                                 stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_y(k,j,i,0));
         }
       }
