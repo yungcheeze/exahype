@@ -9,7 +9,7 @@
 
 #include "kernels/finitevolumes/{{FiniteVolumesType}}/c/2d/{{FiniteVolumesType}}.cpph"
 #include "kernels/finitevolumes/{{FiniteVolumesType}}/c/3d/{{FiniteVolumesType}}.cpph"
-#include "kernels/finitevolumes/ghostlayers/c/ghostlayers.h"
+#include "kernels/finitevolumes/commons/c/commons.h"
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
@@ -32,34 +32,33 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
-double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx);
-  return maxAdmissibleDt;
-}
-
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
   maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
 }
 
+
+double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
+  double maxAdmissibleDt = kernels::finitevolumes::commons::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx);
+  return maxAdmissibleDt;
+}
+
 void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
+  kernels::finitevolumes::commons::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
 }
 
 void {{Project}}::Abstract{{Solver}}::boundaryConditions(double* luhbndOutside,const double* const luhbndInside,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {
-  kernels::finitevolumes::{{FiniteVolumesType}}::c::boundaryConditions<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbndOutside,luhbndInside,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
+  kernels::finitevolumes::commons::c::boundaryConditions<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbndOutside,luhbndInside,cellCentre,cellSize,t,dt,faceIndex,normalNonZero);
 }
 
 
-
-// ghost layer handling
 void {{Project}}::Abstract{{Solver}}::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
-  kernels::finitevolumes::ghostlayers::c::ghostLayerFilling<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhNeighbour,neighbourPosition);
+  kernels::finitevolumes::commons::c::ghostLayerFilling<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhNeighbour,neighbourPosition);
 }
 
 void {{Project}}::Abstract{{Solver}}::ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::ghostlayers::c::ghostLayerFillingAtBoundary<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhbnd,boundaryPosition);
+  kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhbnd,boundaryPosition);
 }
 
 void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::ghostlayers::c::boundaryLayerExtraction<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbnd,luh,boundaryPosition);
+  kernels::finitevolumes::commons::c::boundaryLayerExtraction<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbnd,luh,boundaryPosition);
 }
