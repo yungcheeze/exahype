@@ -933,7 +933,7 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd; ++i) {
       for (int k=0; k<ghostLayerWidth; ++k) {
         std::copy_n(
-            luhNeighbour+idx(j,patchEnd+k,i,0),
+            luhNeighbour+idx(j,patchEnd-ghostLayerWidth+k,i,0),
             numberOfData,
             luh+idx(j,k,i,0));
       }
@@ -963,7 +963,7 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     for (int i=patchBegin; i<patchEnd; ++i) {
       for (int k=0; k<ghostLayerWidth; ++k) {
         std::copy_n(
-            luhNeighbour+idx(patchEnd+k,j,i,0),
+            luhNeighbour+idx(patchEnd-ghostLayerWidth+k,j,i,0),
             numberOfData,
             luh+idx(k,j,i,0));
       }
