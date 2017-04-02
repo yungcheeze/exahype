@@ -155,7 +155,7 @@ def generateComputeKernels():
     surfaceIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(generateContext(m_config))
     riemannGenerator.generateCode()
-    solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
+    solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(generateContext(m_config))
     solutionUpdateGenerator.generateCode()
     solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(generateContext(m_config))
     solutionAdjustmentGenerator.generateCode()
