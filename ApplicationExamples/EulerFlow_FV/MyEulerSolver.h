@@ -15,6 +15,7 @@
 
 #include "AbstractMyEulerSolver.h"
 
+<<<<<<< HEAD
 
 /**
  * We use Peano's logging
@@ -22,16 +23,21 @@
 #include "tarch/logging/Log.h"
 
 
+=======
+>>>>>>> ncp2
 namespace Euler{
   class MyEulerSolver;
 }
 
 class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
+<<<<<<< HEAD
   private:
     /**
      * Log device
      */
     static tarch::logging::Log _log;
+=======
+>>>>>>> ncp2
   public:
     MyEulerSolver(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
     
@@ -41,6 +47,7 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
      * \param[in] cmdlineargs the command line arguments.
      */
     void init(std::vector<std::string>& cmdlineargs);
+<<<<<<< HEAD
 
     /**
      * @see FiniteVolumesSolver
@@ -53,6 +60,43 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
      * @see FiniteVolumesSolver
      */    
     void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override; 
+=======
+    
+    /**
+     * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
+     * during the interval [t,t+dt].
+     *
+     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     *
+     * \param[in]    center    The center of the cell.
+     * \param[in]    dx        The extent of the cell.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \return true if the solution has to be adjusted.
+     */
+    virtual bool useAdjustSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) const;
+      
+    /**
+     * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+     *
+     * \note Use this function and ::hasToAdjustSolution to set initial conditions.
+     *
+     * \param[in]    x         the physical coordinate on the face.
+     * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+     *                         as C array (already allocated).
+     */
+    void adjustSolution(const double* const x,
+                                               const double w,
+                                               const double t,
+                                               const double dt, double* Q);
+>>>>>>> ncp2
     
     /**
      * Compute the flux tensor.
@@ -72,10 +116,26 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
      * \param[inout] lambda the eigenvalues as C array (already allocated).
      */
     void eigenvalues(const double* const Q,const int d,double* lambda);
+<<<<<<< HEAD
         
     /**
      * Impose boundary conditions at a point on a boundary face
      * within the time interval [t,t+dt].
+=======
+    
+    /**
+     * Compute the source.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] S the source point as C array (already allocated).
+     */
+    void source(const double* const Q,double* S);                                                               
+    
+    /**
+     * Impose boundary conditions at a point on a face
+     * during the time interval [t,t+dt].
+>>>>>>> ncp2
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    t         the start of the time interval.
@@ -92,11 +152,17 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+<<<<<<< HEAD
 
     void algebraicSource(const double* const Q, double* S) override;
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
 
+=======
+    
+    // for debugging / the new interface
+    void nonConservativeProduct(const double *const Q, const double *const gradQ, double *BgradQ);
+>>>>>>> ncp2
 };
 
 

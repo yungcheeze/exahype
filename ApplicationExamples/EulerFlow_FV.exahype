@@ -49,12 +49,21 @@ exahype-project Euler
     language const    = C
     /* musclhancock */
     
+
     plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 5
       time      = 0.0
-      repeat    = 0.5E-8
+      repeat    = 0.5E-10
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::cells::ascii ComputeGlobalIntegrals
+      variables const = 0
+      time            = 0.0
+      repeat          = 0.000001
+      output          = ./output/these-files-should-not-be-there
+      select          = x:0.0,y:0.0
     end plot
   end solver
 end exahype-project

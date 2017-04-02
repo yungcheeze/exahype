@@ -2,16 +2,20 @@
 
 // @todo Has to be included by generator
 #include "MyEulerSolver_Variables.h"
-
+#include "kernels/KernelUtils.h"
 
 #include "InitialData.h"
+#include "tarch/la/Vector.h"
 
 void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
-  // do nothing
+   idfunc = MovingGauss;
 }
 
-bool Euler::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
-  // @todo Please implement
+bool Euler::MyEulerSolver::useAdjustSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) const  {
   return tarch::la::equals(t,0.0); // ? exahype::solvers::Solver::AdjustSolutionValue::Pointwisely : exahype::solvers::Solver::AdjustSolutionValue::No;
 }
 
@@ -20,7 +24,7 @@ void Euler::MyEulerSolver::adjustSolution(const double* const x,
                                                const double t,
                                                const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
-    initialData(x,Q);
+    idfunc(x,Q,t);
   } 
 }
 
@@ -59,7 +63,8 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  f.rho ( vars.j()                                 );
+  //f.rho ( vars.j()                                 );
+  f.rho( tarch::la::Vector<DIMENSIONS,double>(0.0) ); // handle rho with NCP
   f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }
@@ -72,35 +77,26 @@ void Euler::MyEulerSolver::boundaryValues(
     const int normalNonZero,
     const double* const stateIn,
     double* stateOut) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
 
     // Compute boundary state.
-//    InitialData(x, stateOut, t);
-
-    // This copy is not neccessary as we do have one component of
-    // F already pointing to fluxOut.
-    /*
-    for (int i=0; i<5; i++) {
-      fluxOut[i] = F[normalNonZero][i];
-    }
-    */
-
-  // The problem with these definitions is that in a simulation
-  // with a global nonzero velocity (as in MovingGauss2D), errnous
-  // values move into the simulation domain very quickly. So these
-  // boundary conditions are not good at all. Instead, we should
-  // have per default "vacuum" boundary conditions, so that vacuum
-  // values enter the grid as soon as matter moves away.
-
-  //  // stateOut
-  //  // @todo Please implement
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
-  stateOut[4] = stateIn[4];
+    idfunc(x, stateOut, t);
 }
+
+void Euler::MyEulerSolver::nonConservativeProduct(const double *const Q, const double *const gradQ, double *ncp) {
+  constexpr kernels::idx2 idx_gradQ(DIMENSIONS, NumberOfVariables);
+  for(int i=0; i<NumberOfVariables*DIMENSIONS; i++) {
+      ncp[i] = 0.0;
+  }
+  
+  const int rho = 0; // position of rho in Q
+  const int j = 1; // position where j vector starts in Q
+  const int x=0, y=1, z=2; // directions/entries
+  // compute ncp[rho] = Nabla*j
+  ncp[rho] =   gradQ[idx_gradQ(x,j+x)]
+             + gradQ[idx_gradQ(y,j+y)]
+             + gradQ[idx_gradQ(z,j+z)];
+}
+
 
 void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   for(int l=0; l<NumberOfVariables; l++) {

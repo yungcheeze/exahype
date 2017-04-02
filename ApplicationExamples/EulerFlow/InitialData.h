@@ -11,9 +11,11 @@ extern InitialDataHandler idfunc;
 
 void InitialData(const double* const x, double* Q, double t);
 
+void Polynomial(const double* const x, double* Q, double t);
+
 void ShuVortex2D(const double* const x, double* Q, double t);
 
-void MovingGauss2D(const double* const x, double* V, double t);
+void MovingGauss(const double* const x, double* V, double t);
 
 void DiffusingGauss(const double* const x, double* Q, double /*t*/);
 

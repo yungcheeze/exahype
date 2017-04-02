@@ -51,7 +51,7 @@ void GRMHD::GRMHDSolver::flux(const double* const Q, double** F) {
 }
 
 
-void GRMHD::GRMHDSolver::algebraicSource(const double* const Q, double* S) {
+void GRMHD::GRMHDSolver::source(const double* const Q, double* S) {
   pdesource_(S, Q);
   
   for(int l=0; l<NumberOfVariables; l++) {
@@ -79,7 +79,12 @@ void GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const doub
   }
 }
 
+// new FV scheme has no coefficient matrix
 void GRMHD::GRMHDSolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  static tarch::logging::Log _log("GRMHDSolver");
+  logError("coefficientMatrix()", "Coefficient Matrix invoked");
+  exit(-2);
+  /*
   double nv[3] = {0.};
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);
@@ -87,4 +92,10 @@ void GRMHD::GRMHDSolver::coefficientMatrix(const double* const Q,const int d,dou
   for(int l=0; l<NumberOfVariables*NumberOfVariables; l++) {
     Bn[l] = 0.0;
   }
+  */
 }
+
+
+
+
+
