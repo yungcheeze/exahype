@@ -45,6 +45,7 @@ double minmod(double a, double b) {
  }
 }
 
+
 // TODO(Dominic): Work in progress
 /**
  * Solves all the Riemann problems that do only require
@@ -61,10 +62,10 @@ double solutionUpdate(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
-
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
+  
   constexpr int numberOfData = numberOfVariables+numberOfParameters;
 
-  constexpr int ghostLayerWidth=2;
   constexpr int patchBegin=ghostLayerWidth; // patchBegin cell is inside domain
   constexpr int patchEnd=patchBegin+patchSize; // patchEnd cell is outside domain
 
@@ -72,24 +73,23 @@ double solutionUpdate(
 
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
-  return 0.1;//DEBUG
   // 1. Gather data from neighbouring cells; already done.
 
   // 2. Compute slopes TODO(Dominic): Make sure to only consider parameters in luh
   idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
-
-
   idx4 idx_slope(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,DIMENSIONS,numberOfVariables);
   constexpr int variablesPerPatch = (patchSize+2*ghostLayerWidth)*(patchSize+2*ghostLayerWidth)*numberOfVariables;
   //double slopex[variablesPerPatch] = {0.0};
   //double slopey[variablesPerPatch] = {0.0};
   double slope[variablesPerPatch*DIMENSIONS] = {0.0};
+  
+  // This musclhancock does not yet use 2. ghostlayer.
 
   // slopex
   for (int j = patchBegin; j < patchEnd; j++) { // y
     for (int k = patchBegin-1; k < patchEnd+1; k++) { // x
       for (int l = 0; l < numberOfVariables; l++) {
-        slope[idx_slope(j, k, 0/*x*/, l)] =
+        slope[idx_slope(j, k, 0, l)] = 
             minmod(luh[idx(j, k + 1, l)] - luh[idx(j, k, l)],
                    luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) / cellSize[0];
       }
@@ -99,13 +99,12 @@ double solutionUpdate(
   for (int j = patchBegin-1; j < patchEnd+1; j++) { // y
     for (int k = patchBegin; k < patchEnd; k++) { // x
       for (int l = 0; l < numberOfVariables; l++) {
-        slope[idx_slope(j, k, 1/*y*/, l)] =
+        slope[idx_slope(j, k, 1, l)] = 
             minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],
                    luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) / cellSize[1];
       }
     }
   }
-
 
   // 3.Boundary extrapolation (left and right value per face)
   idx3 idx_w(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfVariables);
@@ -138,19 +137,14 @@ double solutionUpdate(
   double* F[2] = {flx, flx + numberOfVariables};
 
   double slopet[variablesPerPatch] = {0.0};
-  double ncp[numberOfVariables];
 
   // wx
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
       double* Qt = slopet + idx(j, k, 0);
       double* gradQ = slope + idx_slope(j, k, 0, 0);
-      // algebraic Source
-      solver.algebraicSource(luh + idx(j, k, 0), Qt);
-      // NCP
-      solver.nonConservativeProduct(luh + idx(j,k,0), gradQ, ncp);
-      for(int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= ncp[l];
+      if(solver.useSource()) {
+         solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
       }
 
       // x fluxes
@@ -182,9 +176,9 @@ double solutionUpdate(
     }
   }
 
+  
   // 4. Solve Riemann problems
   double fL[numberOfVariables], fR[numberOfVariables];
-
   double dt_max_allowed = std::numeric_limits<double>::max();
 
   // x edges
@@ -229,26 +223,24 @@ double solutionUpdate(
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Evolve, evaluate source, update cells
-  double ws[numberOfVariables]  = {0.0};
-  double src[numberOfVariables] = {0.0};
+  if(solver.useSource()) {
+	double ws[numberOfVariables]  = {0.0};
+	double src[numberOfVariables] = {0.0};
 
-  for (int j = patchBegin; j < patchEnd; j++) {
-    for (int k = patchBegin; k < patchEnd; k++) {
-      for (int l = 0; l < numberOfVariables; l++) {
-        ws[l] = luh[idx(j,k,l)] + 0.5 * dt * slopet[idx_w(j,k,l)]; /* idx_w ~ idx_slopet */
-      }
+	for (int j = patchBegin; j < patchEnd; j++) {
+	  for (int k = patchBegin; k < patchEnd; k++) {
+	    for (int l = 0; l < numberOfVariables; l++) {
+		ws[l] = luh[idx(j,k,l)] + 0.5 * dt * slopet[idx_w(j,k,l)]; // idx_w ~ idx_slopet
+	    }
 
-      // algebraic Source
-      solver.algebraicSource(ws, src);
-      // NCP
-      double* gradQ = slope + idx_slope(j, k, 0, 0); // const in time
-      solver.nonConservativeProduct(ws, gradQ, ncp);
+	    double* gradQ = slope + idx_slope(j, k, 0, 0); // const in time
+	    solver.fusedSource(ws, gradQ, src);
 
-      for(int l = 0; l < numberOfVariables; l++) {
-        src[l] -= ncp[l];
-        luh_new[idx(j, k, l)] += dt * src[l];
-      }
-    }
+	    for(int l = 0; l < numberOfVariables; l++) {
+		luh_new[idx(j, k, l)] += dt * src[l];
+	    }
+	  }
+	}
   }
 
   return dt_max_allowed;

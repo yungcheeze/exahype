@@ -24,12 +24,13 @@
 template <typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(
     SolverType& solver,
-    double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) { // TODO(Dominic): I need four of those
+    double* fnL, double *fnR, const double* qL, const double* qR, int normalNonZero) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData = numberOfVariables + numberOfParameters;
 
-  double sL[numberOfVariables + numberOfParameters];
-  double sR[numberOfVariables + numberOfParameters];
+  double sL[numberOfVariables ];
+  double sR[numberOfVariables ];
 
   solver.eigenvalues(qL, normalNonZero, sL);
   solver.eigenvalues(qR, normalNonZero, sR);
@@ -44,10 +45,10 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double FL2a[numberOfVariables + numberOfParameters];
-  double FL2b[numberOfVariables + numberOfParameters];
-  double FR2a[numberOfVariables + numberOfParameters];
-  double FR2b[numberOfVariables + numberOfParameters];
+  double FL2a[numberOfVariables ];
+  double FL2b[numberOfVariables ];
+  double FR2a[numberOfVariables ];
+  double FR2b[numberOfVariables ];
 
   double* FL2[2] = {FL2a,FL2b}; // dim a numberOfVariables
   double* FR2[2] = {FR2a,FR2b}; // dim a numberOfVariables
@@ -55,34 +56,29 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
   solver.flux(qL, FL2);
   solver.flux(qR, FR2);
 
-  double Qavg[numberOfVariables+numberOfParameters];
-  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
-     Qavg[k] = (qL[k] + qR[k]) / 2;
-  }
+  double ncp[numberOfVariables+numberOfParameters];
 
-  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-    fL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-    fR[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-  }
-
+  // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
-    double Bn[ (numberOfVariables + numberOfParameters) * (numberOfVariables + numberOfParameters)];
-    double ncp[numberOfVariables + numberOfParameters];
-    idx2 idx_Bn(numberOfVariables + numberOfParameters, numberOfVariables + numberOfParameters);
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
-
-    for(int l=0; l < numberOfVariables + numberOfParameters; l++) {
-      ncp[l] = 0;
-      for(int m=0; m < numberOfVariables+ numberOfParameters; m++) {
-        ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
-      }
+    double Qavg[numberOfVariables+numberOfParameters];
+    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+    for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+       Qavg[k] = (qR[k] + qL[k]) / 2;
+       gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
     }
+    solver.nonConservativeProduct(Qavg, gradQ, ncp);
+  }
+  
+  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
+    fnL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
+             0.5 * s_max * (qL[i] - qR[i]);
 
-    for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-      fR[i] = fR[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
+    if(solver.useNonConservativeProduct()) {
+      fnR[i] = fnL[i] - 0.5 * ncp[i];
+      fnL[i] = fnL[i] + 0.5 * ncp[i];
+    } else {
+      fnR[i] = fnL[i];
     }
   }
 
@@ -103,13 +99,13 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
 //                              double* lambda),
 //          void PDEFlux(const double* const Q, double** F)>
 template <typename SolverType>
-double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
+double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fnL, double *fnR, const double* qL, const double* qR,
                      int normalNonZero) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
 
-  double sL[numberOfVariables + numberOfParameters];
-  double sR[numberOfVariables + numberOfParameters];
+  double sL[numberOfVariables ];
+  double sR[numberOfVariables ];
 
 
   solver.eigenvalues(qL, normalNonZero, sL);
@@ -125,12 +121,12 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double FL3a[numberOfVariables + numberOfParameters];
-  double FL3b[numberOfVariables + numberOfParameters];
-  double FL3c[numberOfVariables + numberOfParameters];
-  double FR3a[numberOfVariables + numberOfParameters];
-  double FR3b[numberOfVariables + numberOfParameters];
-  double FR3c[numberOfVariables + numberOfParameters];
+  double FL3a[numberOfVariables ];
+  double FL3b[numberOfVariables ];
+  double FL3c[numberOfVariables ];
+  double FR3a[numberOfVariables ];
+  double FR3b[numberOfVariables ];
+  double FR3c[numberOfVariables ];
 
   double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
   double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
@@ -138,34 +134,30 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
   solver.flux(qL, FL3);
   solver.flux(qR, FR3);
 
-  double Qavg[numberOfVariables+numberOfParameters];
-  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
-     Qavg[k] = (qL[k] + qR[k]) / 2;
-  }
 
-  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-    fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-    fR[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-  }
+  double ncp[numberOfVariables+numberOfParameters];
 
+  // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
-    double Bn[ (numberOfVariables + numberOfParameters) * (numberOfVariables + numberOfParameters)];
-    double ncp[numberOfVariables + numberOfParameters];
-    idx2 idx_Bn(numberOfVariables + numberOfParameters, numberOfVariables + numberOfParameters);
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
-
-    for(int l=0; l < numberOfVariables + numberOfParameters; l++) {
-      ncp[l] = 0;
-      for(int m=0; m < numberOfVariables+ numberOfParameters; m++) {
-        ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
-      }
+    double Qavg[numberOfVariables+numberOfParameters];
+    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+    for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+       Qavg[k] = (qR[k] + qL[k]) / 2;
+       gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
     }
+    solver.nonConservativeProduct(Qavg, gradQ, ncp);
+  }
+  
+  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
+    fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
+             0.5 * s_max * (qL[i] - qR[i]);
 
-    for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-      fR[i] = fR[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
+    if(solver.useNonConservativeProduct()) {
+      fnR[i] = fnL[i] - 0.5 * ncp[i];
+      fnL[i] = fnL[i] + 0.5 * ncp[i];
+    } else {
+      fnR[i] = fnL[i];
     }
   }
 
