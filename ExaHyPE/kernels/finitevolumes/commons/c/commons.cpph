@@ -82,7 +82,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
 
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
+  idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   for (int j = patchBegin; j < patchEnd; j++) {  // loop over dof
     const double qs = (2.0*(j-patchBegin)+1.0)/(2.0*patchSize); //linspace;
@@ -488,11 +488,11 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
     const double qk = (2.0*(k-patchBegin)+1.0)/(2.0*patchSize); //linspace;
     x[2] = center[2] + dx[2] * (qk - 0.5);
 
-    for (int j = patchBegin; j < patchEnd+1; j++) {
+    for (int j = patchBegin; j < patchEnd; j++) {
       const double qj = (2.0*(j-patchBegin)+1.0)/(2.0*patchSize); //linspace;
       x[1] = center[1] + dx[1] * (qj - 0.5);
 
-      for (int i = patchBegin; i < patchEnd+1; i++) {
+      for (int i = patchBegin; i < patchEnd; i++) {
         const double qi = (2.0*(i-patchBegin)+1.0)/(2.0*patchSize); //linspace;
         x[0] = center[0] + dx[0] * (qi - 0.5);
         // read initial condition
