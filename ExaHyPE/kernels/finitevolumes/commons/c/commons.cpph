@@ -513,10 +513,10 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
-  constexpr int ghostLayerWidth=2;
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
@@ -626,10 +626,10 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
-  constexpr int ghostLayerWidth=2; // TODO
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
@@ -746,8 +746,6 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
-  constexpr int patchBegin = ghostLayerWidth;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;
@@ -886,10 +884,10 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
 
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
-  constexpr int ghostLayerWidth=2; // TODO
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
   idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
