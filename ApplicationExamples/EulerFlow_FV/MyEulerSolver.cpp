@@ -8,7 +8,6 @@
 #include "tarch/la/Vector.h"
 
 void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
-   idfunc = MovingGauss;
 }
 
 bool Euler::MyEulerSolver::useAdjustSolution(
@@ -24,7 +23,7 @@ void Euler::MyEulerSolver::adjustSolution(const double* const x,
                                                const double t,
                                                const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
-    idfunc(x,Q,t);
+    explosionProblem(x,Q);
   } 
 }
 
@@ -79,24 +78,8 @@ void Euler::MyEulerSolver::boundaryValues(
     double* stateOut) {
 
     // Compute boundary state.
-    idfunc(x, stateOut, t);
+    explosionProblem(x, stateOut);
 }
-
-void Euler::MyEulerSolver::nonConservativeProduct(const double *const Q, const double *const gradQ, double *ncp) {
-  constexpr kernels::idx2 idx_gradQ(DIMENSIONS, NumberOfVariables);
-  for(int i=0; i<NumberOfVariables*DIMENSIONS; i++) {
-      ncp[i] = 0.0;
-  }
-  
-  const int rho = 0; // position of rho in Q
-  const int j = 1; // position where j vector starts in Q
-  const int x=0, y=1, z=2; // directions/entries
-  // compute ncp[rho] = Nabla*j
-  ncp[rho] =   gradQ[idx_gradQ(x,j+x)]
-             + gradQ[idx_gradQ(y,j+y)]
-             + gradQ[idx_gradQ(z,j+z)];
-}
-
 
 void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
   for(int l=0; l<NumberOfVariables; l++) {
