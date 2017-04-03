@@ -10,7 +10,6 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
-
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -25,12 +24,7 @@
 
 #if DIMENSIONS == 3
 
-namespace kernels {
-namespace finitevolumes {
-namespace musclhancock {
-namespace c {
-
-double minmod(double a, double b) {
+double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
  assert(std::isfinite(a));
  assert(std::isfinite(b));
 
@@ -53,7 +47,7 @@ double minmod(double a, double b) {
  * Finally add the source terms.
  */
 template <typename SolverType>
-double solutionUpdate(
+double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
@@ -320,10 +314,5 @@ double solutionUpdate(
 
   return dt_max_allowed;
 }
-
-}  // namespace c
-}  // namespace godunov
-}  // namespace finitevolumes
-}  // namespace kernels
 
 #endif  // DIMENSIONS == 3
