@@ -20,14 +20,6 @@
 
 namespace kernels {
 
-// asserts as compound expressions break the constexpr'ness of
-// some functions.
-#ifndef Asserts
-#define C11CONSTEXPR constexpr
-#else
-#define C11CONSTEXPR
-#endif
-
 /**
  * This is a single successor class for the idx2, idx3, idx4, idx5, idx6 classes.
  * It works basically like idx6. If you work with less than 6 dimensions, nothing
@@ -42,7 +34,7 @@ struct index {
 	const int b0, b1, b2, b3, b4, b5; // Basis
 	const int size;
 	
-	C11CONSTEXPR index(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) :
+	index(int j0=1, int j1=1, int j2=1, int j3=1, int j4=1, int j5=1) :
 		i0(j0), i1(j1), i2(j2), i3(j3), i4(j4), i5(j5),
 		b0(i1 * i2 * i3 * i4 * i5),
 		b1(i2 * i3 * i4 * i5),
@@ -55,7 +47,7 @@ struct index {
 	/**
 	 * Compute a single index ("superindex", global index, ...) from the tuples.
 	 **/
-	C11CONSTEXPR int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		assertion2(j0 < i0, j1, i1);
 		assertion2(j1 < i1, j2, i2);
 		assertion2(j2 < i2, j3, i3);
@@ -98,7 +90,7 @@ struct index {
 	}
 	
 	// syntactic sugar:
-	C11CONSTEXPR int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		return get(j0, j1, j2, j3, j4, j5);
 	}
 	
@@ -106,7 +98,7 @@ struct index {
 	 * Checks if the given indices are in the valid range. Works also if assertions are
 	 * not enabled. Can be handy to check access to variables.
 	 **/
-	C11CONSTEXPR bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		// assertion way
 		assertion2(j0 < i0, j1, i1);
 		assertion2(j1 < i1, j2, i2);
@@ -207,9 +199,9 @@ typedef shadow<double> dshadow;
 
 
 struct idx2 {
-  C11CONSTEXPR idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
+  idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
 
-  C11CONSTEXPR int operator()(int i, int j) const {
+  int operator()(int i, int j) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     return i * J_ + j;

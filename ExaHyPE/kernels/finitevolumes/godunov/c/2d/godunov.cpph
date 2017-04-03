@@ -24,12 +24,6 @@
 
 #if DIMENSIONS == 2
 
-namespace kernels {
-namespace finitevolumes {
-namespace godunov {
-namespace c {
-
-
 /**
  * Solves all the Riemann problems that do only require
  * internal data and add the result directly onto the
@@ -37,7 +31,7 @@ namespace c {
  * Finally add the source terms.
  */
 template <typename SolverType>
-double solutionUpdate(
+double kernels::finitevolumes::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
@@ -128,10 +122,5 @@ double solutionUpdate(
   
   return dt_max_allowed;
 }
-
-}  // namespace c
-}  // namespace godunov
-}  // namespace finitevolumes
-}  // namespace kernels
 
 #endif  // DIMENSIONS == 2

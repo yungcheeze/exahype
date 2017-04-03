@@ -7,9 +7,8 @@
 // ========================
 #include "Abstract{{Solver}}.h"
 
-#include "kernels/finitevolumes/{{FiniteVolumesType}}/c/2d/{{FiniteVolumesType}}.cpph"
-#include "kernels/finitevolumes/{{FiniteVolumesType}}/c/3d/{{FiniteVolumesType}}.cpph"
 #include "kernels/finitevolumes/commons/c/commons.h"
+#include "kernels/finitevolumes/{{FiniteVolumesType}}/c/{{FiniteVolumesType}}.h"
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
