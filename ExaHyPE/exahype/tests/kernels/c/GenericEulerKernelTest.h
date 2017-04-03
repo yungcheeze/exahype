@@ -57,7 +57,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
  public:
   static void flux(const double* const Q, double** F);
 
-  static void algebraicSource(const double* Q, const double* const gradQ, double* S);
+  static void fusedSource(const double* Q, const double* const gradQ, double* S);
 
   static void eigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);
