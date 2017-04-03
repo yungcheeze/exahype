@@ -45,13 +45,6 @@ class GRMHD::GRMHDSolver : public GRMHD::AbstractGRMHDSolver {
     /**
      * @see FiniteVolumesSolver
      */    
-    bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-    virtual bool useNonConservativeProduct() const {return true;}
-    virtual bool useSource()                 const {return true;}
-    
-    /**
-     * @see FiniteVolumesSolver
-     */    
     void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) override; 
     
     /**
@@ -92,12 +85,19 @@ class GRMHD::GRMHDSolver : public GRMHD::AbstractGRMHDSolver {
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-    
+
+
+    /**
+     * @see FiniteVolumesSolver
+     */    
+    bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
+    bool useNonConservativeProduct() const override {return true;}
+    bool useSource()                 const override {return true;}
+        
     
     void algebraicSource(const double* const Q, double* S);
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
     void coefficientMatrix(const double* const Q,const int d,double* Bn);
-
 };
 
 #endif // __GRMHDSolver_CLASS_HEADER__

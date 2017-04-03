@@ -51,7 +51,7 @@ void GRMHD::GRMHDSolver::flux(const double* const Q, double** F) {
 }
 
 
-void GRMHD::GRMHDSolver::source(const double* const Q, double* S) {
+void GRMHD::GRMHDSolver::algebraicSource(const double* const Q, double* S) {
   pdesource_(S, Q);
   
   for(int l=0; l<NumberOfVariables; l++) {
