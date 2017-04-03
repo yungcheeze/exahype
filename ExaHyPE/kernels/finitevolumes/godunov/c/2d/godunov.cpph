@@ -112,7 +112,8 @@ double solutionUpdate(
   
     for (int j = patchBegin; j < patchEnd; j++) {
       for (int k = patchBegin; k < patchEnd; k++) {
-        solver.source(luh + idx(j, k, 0), source);
+	// TODO: Probably call fusedSource here instead with gradQ=0.
+        solver.algebraicSource(luh + idx(j, k, 0), source);
       
         for (int l = 0; l < numberOfVariables; l++) {
           // in Godunov 1st order, we have piecewise constant data and thus

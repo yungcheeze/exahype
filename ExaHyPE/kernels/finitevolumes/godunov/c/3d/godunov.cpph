@@ -60,8 +60,8 @@ double solutionUpdate(
   double dt_max_allowed = std::numeric_limits<double>::max();
   
   // x edges 
-  double *fL = tempStateSizedVectors[0];
-  double  fR[numberOfVariables];
+  double fL[numberOfVariables];
+  double fR[numberOfVariables];
   for (int i = patchBegin; i < patchEnd; i++) {
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
@@ -135,7 +135,7 @@ double solutionUpdate(
     for (int i = patchBegin; i < patchEnd; i++) {
     for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
-      solver.source(&luh[idx(i,j,k,0)], source);
+      solver.algebraicSource(&luh[idx(i,j,k,0)], source);
       for (int l = 0; l < numberOfVariables; l++) {
         // No BgradQ contribution as this is first order, cf. 2D godunov.
         luh_new[idx(i,j,k,l)] += dt * source[l];
