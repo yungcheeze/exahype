@@ -40,10 +40,12 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::getDatabaseEntry(
-  int problemSize,
-  peano::datatraversal::autotuning::MethodTrace askingMethod
-) {
+bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) const {
+  return _measurements.count(askingMethod)>0 && _measurements.at(askingMethod).rbegin()->getBiggestProblemSize()>=problemSize;
+}
+
+
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createDatabaseEntries(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
   tarch::multicore::Lock lock(_semaphore);
 
   if ( _measurements.count(askingMethod)==0 ) {
@@ -73,18 +75,48 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
     );
   }
 
-  lock.free();
+  assertion4( hasDatabaseEntry(problemSize, askingMethod), problemSize, toString(askingMethod), _measurements.at(askingMethod).rbegin()->toString(), _measurements.at(askingMethod).rbegin()->getBiggestProblemSize() );
+}
 
-  MethodTraceData::iterator entry = _measurements[askingMethod].begin();
+
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::getDatabaseEntry(
+  int problemSize,
+  peano::datatraversal::autotuning::MethodTrace askingMethod
+) {
+  MethodTraceData::iterator entry = _measurements.at(askingMethod).begin();
   while (entry->getBiggestProblemSize()<problemSize) {
     entry++;
     assertion(entry!=_measurements[askingMethod].end());
+    assertion(entry!=_measurements.at(askingMethod).end());
   }
 
   DatabaseEntry& result = *entry;
   assertion5(
     result.getCurrentGrainSize()>0,
     result.toString(), _measurements[askingMethod].back().toString(), toString(_activeMethodTrace), _measurements[askingMethod].size(),
+    problemSize);
+  return result;
+}
+
+
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::getDatabaseEntry(
+  int problemSize,
+  peano::datatraversal::autotuning::MethodTrace askingMethod
+) const {
+  MethodTraceData::const_iterator entry = _measurements.at(askingMethod).begin();
+  while (
+    entry->getBiggestProblemSize()<problemSize
+    and
+    (entry+1)!=_measurements.at(askingMethod).end()
+  ) {
+    entry++;
+    assertion(entry!=_measurements.at(askingMethod).end());
+  }
+
+  DatabaseEntry result = *entry;
+  assertion5(
+    result.getCurrentGrainSize()>0,
+    result.toString(), _measurements.at(askingMethod).back().toString(), toString(_activeMethodTrace), _measurements.at(askingMethod).size(),
     problemSize);
   return result;
 }
@@ -99,63 +131,78 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
       askingMethod, this
     );
   }
+  else if (
+    _activeMethodTrace==askingMethod
+    or
+    _measurements.empty()
+    or
+    _measurements.count(askingMethod)==0
+  ) {
+    // @todo Das eigentliche Oracle
+    assertion( askingMethod != peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
+    assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
+    assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
 
-  assertion( askingMethod != peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
+    createDatabaseEntries(problemSize, askingMethod);
 
-  assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
-  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
+    auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
 
-  auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
+    assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
+    assertion( _measurements.count(askingMethod)>0 );
 
-  assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
-  assertion( _measurements.count(askingMethod)>0 );
+    const bool trackTime = databaseEntry.isSearching();
 
-  const bool trackTime         = (_activeMethodTrace==askingMethod) &&  (databaseEntry.isSearching());
+    logDebug(
+      "parallelise()",
+      "will track time for " << toString(askingMethod) << "=" << trackTime <<
+      " with active trace " << toString(_activeMethodTrace) <<
+      " for maximum problem size " << problemSize
+    );
 
-  logDebug(
-    "parallelise()",
-    "will track time for " << toString(askingMethod) << "=" << trackTime <<
-    " with active trace " << toString(_activeMethodTrace) <<
-    " for maximum problem size " << problemSize
-  );
-
-  if (trackTime) {
     assertion2( databaseEntry.getCurrentGrainSize()>0, databaseEntry.toString(), toString(_activeMethodTrace) );
     const int chosenParallelGrainSize     = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
-    const int EveryXthIsSerialMeasurement = databaseEntry.getBiggestProblemSize() / databaseEntry.getCurrentGrainSize();
-    const bool passedGrainSize            = rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize;
-    return peano::datatraversal::autotuning::GrainSize(
-      passedGrainSize,
-      trackTime,
-      problemSize,
-      askingMethod, this
-    );
-  }
-/*
-  else if (_activeMethodTrace==peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) {
-    return peano::datatraversal::autotuning::GrainSize(
-      0,
-      false,
-      problemSize,
-      askingMethod, this
-    );
-  }
-*/
-  else {
-    const int chosenParallelGrainSize = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
 
-/*
-    return peano::datatraversal::autotuning::GrainSize(
-      0,
-      false,
-      problemSize,
-      askingMethod, this
-    );
-*/
+    if (trackTime) {
+      assertion( hasDatabaseEntry(problemSize, askingMethod) );
+
+      const int EveryXthIsSerialMeasurement = databaseEntry.getBiggestProblemSize() / databaseEntry.getCurrentGrainSize();
+      const bool passedGrainSize            = rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize;
+      return peano::datatraversal::autotuning::GrainSize(
+        passedGrainSize,
+        trackTime,
+        problemSize,
+        askingMethod, this
+      );
+    }
+    else {
+      return peano::datatraversal::autotuning::GrainSize(
+        chosenParallelGrainSize,
+        trackTime,
+        problemSize,
+        askingMethod, this
+      );
+    }
+  }
+  else if ( _measurements.count(askingMethod)>0 ) {
+//    else if (hasDatabaseEntry(problemSize, askingMethod)) {
+    auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
+
+    assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
+    assertion( _measurements.count(askingMethod)>0 );
+
+    const int chosenParallelGrainSize     = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
 
     return peano::datatraversal::autotuning::GrainSize(
       chosenParallelGrainSize,
-      trackTime,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+  }
+  else {
+    return peano::datatraversal::autotuning::GrainSize(
+      0,
+      false,
       problemSize,
       askingMethod, this
     );
@@ -207,6 +254,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
       _activeMethodTrace             = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
 
       while ( _measurements.count(_activeMethodTrace)==0 ) {
+//        xxx Kann das ne Endlosschleife geben?
         _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
         if (
           remainingTriesToFindSearchingTrace>0
@@ -374,6 +422,8 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSectionHasTerminated(int problemSize, int grainSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) {
   assertion( askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
+
+  assertion( hasDatabaseEntry(problemSize, askingMethod) );
 
   auto& databaseEntry = getDatabaseEntry(problemSize,askingMethod);
   if (!databaseEntry.isAccuracyInitialised() ) {
