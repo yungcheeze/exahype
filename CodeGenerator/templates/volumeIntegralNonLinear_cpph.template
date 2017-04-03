@@ -25,7 +25,7 @@ void kernels::aderdg::optimised::volumeIntegral(
   double* restrict lduh, 
   const double* restrict const lFhi,
   const double* restrict const lShi, //nullptr if not used
-  const tarch::la::Vector<DIMENSIONS,double> &dx
+  const tarch::la::Vector<DIMENSIONS,double> &inverseDx
 ) {
   memset(lduh, 0, sizeof(lduh)*{{nVar*(nDof**nDim)}});
 
@@ -44,7 +44,7 @@ void kernels::aderdg::optimised::volumeIntegral(
 {% for i in i_seq%}
   #pragma simd
   for(int it=0;it<{{nDof*nDofPad}};it++) 
-    s_m[it] = weights2[{{i+j*nDof}}]/dx[0] * Kxi_T[it];
+    s_m[it] = weights2[{{i+j*nDof}}] * inverseDx[0] * Kxi_T[it];
 
   {{gemm_x}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof}}],&s_m[0],&lduh[{{(j*nDof+i) * nVar * nDof}}]);
   {{gemm_y}}(&lFhi[{{(j*nDof+i) * nVarPad * nDof + lFhi_padY}}],&s_m[0],&lduh[{{(j*nDof*nDof+i) * nVar}}]);
@@ -64,6 +64,5 @@ void kernels::aderdg::optimised::volumeIntegral(
       }
     }
   }
-  //TODO JMG source
 }
 
