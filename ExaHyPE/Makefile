@@ -108,7 +108,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -r8 -fast -cpp -recursive 
+	FCOMPILER_CFLAGS  += -r8 -fast -cpp -auto 
 	LINK_FORTRAN      += -lifcore
 
 	COMPILER_CFLAGS   +=  -restrict 
