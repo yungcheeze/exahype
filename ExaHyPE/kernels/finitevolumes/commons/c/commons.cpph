@@ -13,6 +13,9 @@
  * @authors: Dominic E. Charrier
  **/
 
+#include "kernels/KernelUtils.h" // idx classes
+#include <algorithm> // transform, fill_n
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +41,7 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
 
 	constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
+  kernels:.idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
 
   double* lambda = tempEigenvalues;
 
@@ -82,7 +85,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
 
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
+  kernels::idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   for (int j = patchBegin; j < patchEnd; j++) {  // loop over dof
     const double qs = (2.0*(j-patchBegin)+1.0)/(2.0*patchSize); //linspace;
@@ -115,12 +118,12 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
   // G: ghost value, Ui: local solution value
   constexpr int patchBegin      = ghostLayerWidth;
   constexpr int patchEnd        = patchBegin+patchSize;
-  idx3 idx(patchSize+2*ghostLayerWidth, // y
+  kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
            patchSize+2*ghostLayerWidth, // x
            numberOfData);
 
-  idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData); // x,x; x,x; x,x; ... x,x;
-  idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData); // x,x,x,x,x,...,x; x,x,x,x,x,...,x;
+  kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData); // x,x; x,x; x,x; ... x,x;
+  kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData); // x,x,x,x,x,...,x; x,x,x,x,x,...,x;
 
   // TODO: Depending on the memory layout, we can remove the loops
   // and use larger strides for one of the coordinate directions.
@@ -197,7 +200,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
 
   // x-left
   if (direction==0 && orientation==0) {
-    idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
+    kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -213,7 +216,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // x-right
   else if (direction==0 && orientation==1) {
-    idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
+    kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -229,7 +232,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // y-left
   else if (direction==1 && orientation==0) {
-    idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
+    kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -245,7 +248,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // y-right
   else if (direction==1 && orientation==1) {
-    idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
+    kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -277,12 +280,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
 
   constexpr int patchBegin      = ghostLayerWidth;
   constexpr int patchEnd        = patchBegin+patchSize;
-  idx3 idx(patchSize+2*ghostLayerWidth, // y
+  kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
       patchSize+2*ghostLayerWidth, // x
       numberOfData);
 
-  idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData); // x,x; x,x; x,x; ... x,x;
-  idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData); // x,x,x,x,x,...,x; x,x,x,x,x,...,x;
+  kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData); // x,x; x,x; x,x; ... x,x;
+  kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData); // x,x,x,x,x,...,x; x,x,x,x,x,...,x;
 
   // TODO: Depending on the memory layout, we can remove the loop,
   // and use larger strides for one of the coordinate directions.
@@ -348,7 +351,7 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
 
   constexpr int patchBegin      = ghostLayerWidth;
   constexpr int patchEnd        = patchBegin+patchSize; // exclusive
-  idx3 idx(patchSize+2*ghostLayerWidth, // y
+  kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
       patchSize+2*ghostLayerWidth, // x
       numberOfData);
 
@@ -425,7 +428,7 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
 
   constexpr int patchBegin = ghostLayerWidth;
   constexpr int patchEnd   = patchBegin+patchSize;
-  idx4 idx(patchSize+2*ghostLayerWidth,
+  kernels::idx4 idx(patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,numberOfData);
 
@@ -479,7 +482,7 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
 
   constexpr int patchBegin = ghostLayerWidth;
   constexpr int patchEnd   = patchBegin+patchSize;
-  idx4 idx(patchSize+2*ghostLayerWidth,
+  kernels::idx4 idx(patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,
                numberOfVariables+numberOfParameters);
@@ -516,10 +519,10 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
 
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
-  idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
-  idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
-  idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
+  kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
+  kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
+  kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
+  kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loops
   // and use larger strides for one of the coordinate directions.
@@ -629,10 +632,10 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
 
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
-  idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
-  idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
-  idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
+  kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
+  kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
+  kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
+  kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loop,
   // and use larger strides for one of the coordinate directions.
@@ -751,7 +754,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
 
   // x-left (
   if (direction==0 && orientation==0) {
-    idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
+    kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -771,7 +774,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // x-right
   else if (direction==0 && orientation==1) {
-    idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
+    kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -791,7 +794,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // y-front
   else if (direction==1 && orientation==0) {
-    idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
+    kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -811,7 +814,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // y-back
   else if (direction==1 && orientation==1) {
-    idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
+    kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -831,7 +834,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // z-bottom
   else if (direction==2 && orientation==0) {
-    idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
+    kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[2] = cellCentre[2] - 0.5 * cellSize[2] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -851,7 +854,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
   }
   // z-top
   else if (direction==2 && orientation==1) {
-    idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
+    kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
       xOutside[2] = cellCentre[2] + 0.5 * cellSize[2] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
@@ -887,7 +890,7 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
 
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
+  kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loop,
   // and use larger strides for one of the coordinate directions.
