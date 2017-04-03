@@ -24,7 +24,7 @@
 
 #if DIMENSIONS == 3
 
-double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
+inline double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
  assert(std::isfinite(a));
  assert(std::isfinite(b));
 
