@@ -107,28 +107,28 @@ void GenericEulerKernelTest::nonConservativeProduct(const double *const Q,
 
 void GenericEulerKernelTest::coefficientMatrix(const double *const Q,
     const int normalNonZero, double *Bn) {
-  std::memset(Bn, 0, 5 * 5 * sizeof(double));
+  std::fill_n(Bn, 5 * 5, 0);
 
-  if (!_setNcpAndMatrixBToZero) {
-    // 3D compressible Euler equations
-    double *B1 = new double[5 * 5];
-    double *B2 = new double[5 * 5];
-    double *B3 = new double[5 * 5];
-
-    std::memset(B1, 0, 5 * 5 * sizeof(double));
-    std::memset(B2, 0, 5 * 5 * sizeof(double));
-    std::memset(B3, 0, 5 * 5 * sizeof(double));
-
-    // Bn = B1 if normalNonZero == 0
-    //      B2 if normalNonZero == 1
-    //      B3 if normalNonZero == 2
-    std::memcpy(Bn, (normalNonZero == 0) ? B1 : (normalNonZero == 1) ? B2 : B3,
-        5 * 5 * sizeof(double));
-
-    delete[] B1;
-    delete[] B2;
-    delete[] B3;
-  }
+//  if (!_setNcpAndMatrixBToZero) {
+//    // 3D compressible Euler equations
+//    double *B1 = new double[5 * 5];
+//    double *B2 = new double[5 * 5];
+//    double *B3 = new double[5 * 5];
+//
+//    std::memset(B1, 0, 5 * 5 * sizeof(double));
+//    std::memset(B2, 0, 5 * 5 * sizeof(double));
+//    std::memset(B3, 0, 5 * 5 * sizeof(double));
+//
+//    // Bn = B1 if normalNonZero == 0
+//    //      B2 if normalNonZero == 1
+//    //      B3 if normalNonZero == 2
+//    std::memcpy(Bn, (normalNonZero == 0) ? B1 : (normalNonZero == 1) ? B2 : B3,
+//        5 * 5 * sizeof(double));
+//
+//    delete[] B1;
+//    delete[] B2;
+//    delete[] B3;
+//  }
 }  // matrixb
 
 void GenericEulerKernelTest::testPDEFluxes() {
@@ -492,6 +492,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     }
   }
 
+  _setNcpAndMatrixBToZero=true;
   kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
@@ -499,6 +500,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
       dt,
       1  // normalNonZero
   );
+  _setNcpAndMatrixBToZero=false;
 
   for (int i = 0; i < nVar*basisSize2; i++) {
     validateNumericalEqualsWithEpsWithParams1(
