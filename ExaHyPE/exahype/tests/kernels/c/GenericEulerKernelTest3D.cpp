@@ -853,21 +853,22 @@ void GenericEulerKernelTest::testVolumeUnknownsProjection() {
   logInfo("testVolumeUnknownsProjection()",
       "Test volume unknowns projection operators, ORDER=3, DIM=3");
 
-  constexpr int nData = NumberOfVariables+NumberOfParameters;
-  constexpr int basisSize = 4;
+  constexpr int nVar       = 1;
+  constexpr int nPar       = 1;
+  constexpr int nData      = nVar+nPar;
+  constexpr int basisSize  = 4;
   constexpr int basisSize3 = basisSize*basisSize*basisSize;
 
   // in/out
-  double luhCoarseOut[basisSize3 * nData] = {0.0};
-  double luhFineOut  [basisSize3 * nData] = {0.0};
+  double luhCoarseOut[basisSize3 * nData];
+  double luhFineOut  [basisSize3 * nData];
 
   // in:
-  double luhCoarseIn[basisSize3 * nData] = {0.0};
-  double luhFineIn  [basisSize3 * nData] = {0.0};
+  double luhCoarseIn[basisSize3 * nData];
+  double luhFineIn  [basisSize3 * nData];
 
   // Initialise to constant value.
-  for (int i = 0; i < basisSize3 * nData;
-      ++i) {
+  for (int i = 0; i < basisSize3 * nData; ++i) {
     luhCoarseIn[i] = 1.0;
     luhFineIn[i] = 1.0;
   }
@@ -881,6 +882,7 @@ void GenericEulerKernelTest::testVolumeUnknownsProjection() {
 
       // Test the restriction operator.
       tarch::la::Vector<DIMENSIONS, int> subcellIndex(0);
+      std::fill_n(luhCoarseOut, basisSize3 * nData, 0.0);
 
       for (int i3 = 0; i3 < numberOfSubIntervals; ++i3) {
         for (int i2 = 0; i2 < numberOfSubIntervals; ++i2) {
@@ -890,20 +892,19 @@ void GenericEulerKernelTest::testVolumeUnknownsProjection() {
             subcellIndex[2] = i3;
 
             // Prolongate.
-            kernels::aderdg::generic::c::volumeUnknownsProlongation<NumberOfVariables,NumberOfParameters,Order+1>(
+            kernels::aderdg::generic::c::volumeUnknownsProlongation<nVar,nPar,basisSize>(
                 luhFineOut, luhCoarseIn, levelCoarse, levelCoarse + levelDelta,
                 subcellIndex);
 
             // Test prolongated values.
             for (int m = 0; m < basisSize3 * nData; ++m) {
-              /*
-              assertionNumericalEquals5(luhFineOut[m], luhFineIn[m], m,
+              assertion7(tarch::la::equals(luhFineOut[m], luhFineIn[m], 1e-9), luhFineOut[m], luhFineIn[m], m,
                                         levelCoarse, levelDelta, i1, i2);
-               */
             }
 
+
             // Restrict.
-            kernels::aderdg::generic::c::volumeUnknownsRestriction<NumberOfVariables,NumberOfParameters,Order+1>(
+            kernels::aderdg::generic::c::volumeUnknownsRestriction<nVar,nPar,basisSize>(
                 luhCoarseOut, luhFineIn, levelCoarse, levelCoarse + levelDelta,
                 subcellIndex);
           }

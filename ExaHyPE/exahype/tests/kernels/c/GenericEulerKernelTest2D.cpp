@@ -1146,7 +1146,7 @@ void GenericEulerKernelTest::testVolumeUnknownsProjection() {
 
       // Test the restriction operator.
       tarch::la::Vector<DIMENSIONS, int> subcellIndex(0);
-      memset(luhCoarseOut, 0, basisSize2 * nData * sizeof(double));
+      std::fill_n(luhCoarseOut, basisSize2 * nData, 0.0);
 
       for (int i2 = 0; i2 < numberOfSubIntervals; ++i2) {
         for (int i1 = 0; i1 < numberOfSubIntervals; ++i1) {
