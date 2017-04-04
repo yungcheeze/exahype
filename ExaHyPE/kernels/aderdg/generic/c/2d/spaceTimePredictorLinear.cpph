@@ -55,14 +55,14 @@ void spaceTimePredictorLinear(SolverType& solver,
   double* lQi = tempSpaceTimeUnknowns[0]; // size: basisSize2 * (basisSize + 1) * numberOfData;
   std::fill_n(lQi, basisSize2 * (basisSize + 1) * numberOfData, 0.0);
 
-  idx4 idx_PSi(basisSize + 1, basisSize, basisSize,numberOfVariables);
+  idx4 idx_PSi(basisSize + 1, basisSize, basisSize, numberOfVariables);
 
-  idx4 idx_lQi(basisSize + 1, basisSize, basisSize,numberOfData;
+  idx4 idx_lQi(basisSize + 1, basisSize, basisSize, numberOfData);
   
   // The zeroth time derivative (time dof number 1) is the initial condition
   // lqh(l,k,j,1) += luh(l,k,j)
   {
-    idx3 idx_luh(basisSize, basisSize,numberOfData;
+    idx3 idx_luh(basisSize, basisSize, numberOfData);
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
         std::copy_n (luh + idx_luh(j, k, 0),numberOfData,
@@ -170,7 +170,7 @@ void spaceTimePredictorLinear(SolverType& solver,
   }
 
   double* lQh = tempUnknowns;
-  idx3 idx_lQh(basisSize, basisSize,numberOfData;
+  idx3 idx_lQh(basisSize, basisSize, numberOfData);
 
   // Immediately compute the time-averaged space-time polynomials
   // Fortran: lQh(:,:,:,:) = lQi(:,:,:,:,1)
@@ -248,7 +248,7 @@ void spaceTimePredictorLinear(SolverType& solver,
   // Compute the boundary-extrapolated values for Q and F*n
   std::fill_n(lQbnd, 2 * DIMENSIONS * basisSize * numberOfData, 0.0); // ~(numberOfVariables+numberOfParamters)
   std::fill_n(lFbnd, 2 * DIMENSIONS * basisSize *  numberOfVariables, 0.0); // ~numberOfVariables
-  idx3 idx_lQbnd(2 * DIMENSIONS, basisSize,numberOfData;
+  idx3 idx_lQbnd(2 * DIMENSIONS, basisSize, numberOfData);
   idx3 idx_lFbnd(2 * DIMENSIONS, basisSize, numberOfVariables);
 
   // x-direction: face 1 (left) and face 2 (right)

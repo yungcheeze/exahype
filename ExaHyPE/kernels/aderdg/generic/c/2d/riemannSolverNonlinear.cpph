@@ -50,11 +50,11 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   double QavL[numberOfData] = {0.0}; // ~(numberOfVariables+numberOfParameters)
   double QavR[numberOfData] = {0.0}; // ~(numberOfVariables+numberOfParameters)
   {
-    idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
+    idx2 idx_QLR(basisSize, numberOfData);
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
 
-      for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
+      for (int k = 0; k < numberOfData; k++) {
         QavL[k] += weight * QL[idx_QLR(j, k)];
         QavR[k] += weight * QR[idx_QLR(j, k)];
       }
@@ -66,8 +66,8 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
   
-  double Qavg[numberOfData] = {0.0}; // ~(numberOfVariables+numberOfParameters)
-  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+  double Qavg[numberOfData] = {0.0}; // ~(numberOfData)
+  for(int k=0; k < numberOfData; k++) {
      Qavg[k] = (QavL[k] + QavR[k]) / 2;
   }
 
@@ -92,7 +92,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   double ncp[numberOfVariables] = {0.0};
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
   if(useCoefficientMatrix) {
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn); // Bn is nVar x nVar matrix
+    solver.coefficientMatrix(Qavg, normalNonZero, Bn[0]); // Bn is nVar x nVar matrix
   }
 
   // We now compute the numerical flux. Note that the scheme is at the moment
@@ -103,7 +103,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
 
   {
     idx2 idx_FLR(basisSize, numberOfVariables);
-    idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
+    idx2 idx_QLR(basisSize, numberOfData);
     for (int j = 0; j < basisSize; j++) {
       
       if(useCoefficientMatrix) {
@@ -112,7 +112,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
           ncp[l] = 0;
           for(int m=0; m < numberOfVariables; m++) {
            // BUG resolved: Fortran <-> C matrix access
-           ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_QLR(j, m)] - QL[idx_QLR(j, m)]);
+           ncp[l] += Bn[m][l] * (QR[idx_QLR(j, m)] - QL[idx_QLR(j, m)]);
           }
           // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_QLR(j, l)]);
           // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_QLR(j, l)]);

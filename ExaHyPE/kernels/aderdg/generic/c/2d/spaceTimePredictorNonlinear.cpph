@@ -118,9 +118,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
       pfor(k,0,basisSize,grainSizeFluxSourceNCPLoop.getGrainSize())
         for (int l = 0; l < basisSize; l++) { // presumably l=x
           // Call PDE fluxes
-          const double* Q = lQi + idx_lQi(k, l, i, 0);
+          const double* Q = lQi + idx_lQi(k, l, i, 0); // TODO(Sven): unused
 
-          double* F[2];
+          double* F[2]; // TODO(Sven): set but not used
           F[0]      = lFi + idx_lFi(i, k, l, 0, 0);
           F[1]      = lFi + idx_lFi(i, k, l, 1, 0);
 
