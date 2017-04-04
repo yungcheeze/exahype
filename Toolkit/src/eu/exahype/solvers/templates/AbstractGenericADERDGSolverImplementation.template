@@ -61,7 +61,7 @@ void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* 
 
 void {{Project}}::Abstract{{Solver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeSurfaceIntegral}}
-  kernels::aderdg::generic::{{Language}}::surfaceIntegral{{NonlinearOrLinear}}(lduh,lFhbnd,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::{{Language}}::surfaceIntegral{{NonlinearOrLinear}}<NumberOfVariables,Order+1>(lduh,lFhbnd,dx);
 {{AfterSurfaceIntegral}}
 }
 
@@ -115,7 +115,7 @@ void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la
 
 void {{Project}}::Abstract{{Solver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsProlongation}}
-  kernels::aderdg::generic::c::faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsProlongation<NumberOfVariables,NumberOfParameters,Order+1>(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex);
 {{AfterFaceUnknownsProlongation}}
 }
 
@@ -123,7 +123,7 @@ void {{Project}}::Abstract{{Solver}}::faceUnknownsProlongation(double* lQhbndFin
 
 void {{Project}}::Abstract{{Solver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsRestriction}}
-  kernels::aderdg::generic::c::faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsRestriction<NumberOfVariables,NumberOfParameters,Order+1>(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex);
 {{AfterFaceUnknownsRestriction}}
 }
 
@@ -131,7 +131,7 @@ void {{Project}}::Abstract{{Solver}}::faceUnknownsRestriction(double* lQhbndCoar
 
 void {{Project}}::Abstract{{Solver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsProlongation}}
-  kernels::aderdg::generic::c::volumeUnknownsProlongation(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsProlongation<NumberOfVariables,NumberOfParameters,Order+1>(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex);
 {{AfterVolumeUnknownsProlongation}}
 }
 
@@ -139,7 +139,7 @@ void {{Project}}::Abstract{{Solver}}::volumeUnknownsProlongation(double* luhFine
 
 void {{Project}}::Abstract{{Solver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsRestriction}}
-  kernels::aderdg::generic::c::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsRestriction<NumberOfVariables,NumberOfParameters,Order+1>(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex);
 {{AfterVolumeUnknownsRestriction}}
 }
 
@@ -179,7 +179,7 @@ void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,co
 	kernels::idx2 idx_Bn(NumberOfVariables, NumberOfVariables);
 	
 	// build gradQ from normal vector and fill up Bn.
-	double gradQ[DIMENSIONS * (NumberOfVariables + NumberOfParameters)] = {0.};
+	double gradQ[DIMENSIONS * (NumberOfVariables + NumberOfParameters)] = {0.0};
 	for(int i=0; i<NumberOfVariables; i++) {
 		std::fill_n(gradQ, idx_gradQ.size, 0.0);
 		gradQ[idx_gradQ(d, i)] = 1.0;

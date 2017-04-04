@@ -310,15 +310,15 @@ public class GenericADERDG implements Solver {
       content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}","kernels::aderdg::generic::fortran::spaceTimePredictor"+linearStr+"<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
     } else {
       if(_isLinear) {
-        content = content.replaceAll("\\{\\{volumeIntegral\\}\\}","kernels::aderdg::generic::c::volumeIntegralLinear(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());");
+        content = content.replaceAll("\\{\\{volumeIntegral\\}\\}","kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(lduh,lFhi,dx);");
         content = content.replaceAll("\\{\\{riemannSolver\\}\\}","kernels::aderdg::generic::c::riemannSolverLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);");
         content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}","kernels::aderdg::generic::c::spaceTimePredictorLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
       } else {
         content = content.replaceAll("\\{\\{volumeIntegral\\}\\}",
             "if(useAlgebraicSource() || useNonConservativeProduct()) {\n"
-        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n"
+        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<true,NumberOfVariables,Order+1>(lduh,lFhi,dx);\n"
         + "  } else {\n"
-        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n" 
+        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false,NumberOfVariables,Order+1>(lduh,lFhi,dx);\n" 
         + "  }");
         content = content.replaceAll("\\{\\{riemannSolver\\}\\}",
             "if(useNonConservativeProduct()) {\n"

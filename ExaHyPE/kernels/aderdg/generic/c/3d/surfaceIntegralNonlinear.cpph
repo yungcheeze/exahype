@@ -18,16 +18,10 @@
 
 #if DIMENSIONS == 3
 
-namespace kernels {
-namespace aderdg {
-namespace generic {
-namespace c {
-
-void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
-                              const tarch::la::Vector<DIMENSIONS, double> &dx,
-                              const int numberOfVariables,
-                              const int basisSize) {
-  const int order = basisSize - 1;
+template <int numberOfVariables, int basisSize>
+void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
+                              const tarch::la::Vector<DIMENSIONS, double> &dx) {
+  constexpr int order = basisSize - 1;
 
   idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
   idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
@@ -89,10 +83,5 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
     }
   }
 }
-
-}  // namespace c
-}  // namespace generic
-}  // namespace aderdg
-}  // namespace kernels
 
 #endif  // DIMENSIONS == 3
