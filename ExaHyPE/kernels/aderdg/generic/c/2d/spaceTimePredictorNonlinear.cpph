@@ -50,15 +50,14 @@ void aderPicardLoopNonlinear(SolverType& solver,
                              double* lFi, double* gradQ, double* BGradQ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize3         = basisSize2 * basisSize;
-  constexpr int order              = basisSize - 1;
   
   assertion(numberOfVariables>=0);
   assertion(numberOfParameters>=0);
-  
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
 
   idx3 idx_luh(basisSize, basisSize, numberOfData); // idx_luh(y,x,nVar)
   
@@ -655,13 +654,13 @@ void spaceTimePredictorNonlinear(
   }
   
   if(useSource || useNCP) {
-    aderPredictorNonlinear<numberOfVariables, numberOfParameters, basisSize, true>(lQi, lFi, lQhi,
+    aderPredictorNonlinear<true, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
         &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
     );
   } else {
-    aderPredictorNonlinear<numberOfVariables, numberOfParameters, basisSize, false>(lQi, lFi, lQhi,
+    aderPredictorNonlinear<false, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
         &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
