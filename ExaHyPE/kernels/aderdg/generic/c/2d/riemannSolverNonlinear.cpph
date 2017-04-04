@@ -86,6 +86,8 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   const double* smax_R =
       std::max_element(LR, LR + numberOfVariables);
   const double smax = std::max(*smax_L, *smax_R);
+  
+  // NCP: Still has to be moved to the new NCP2 interface
 
   double* Bn  = tempStateSizedSquareMatrices[0];
   double* ncp = tempStateSizedVectors[4];

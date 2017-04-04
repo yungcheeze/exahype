@@ -63,7 +63,7 @@ exahype-project  CA
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 14.0
     time-stepping     = global
-    kernel const      = generic::Godunov
+    kernel const      = generic::godunov
     language const    = C
 
     plot vtu::Cartesian::cells::ascii VariableWriter

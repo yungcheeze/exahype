@@ -76,6 +76,9 @@ public class SolverFactory {
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
       return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
     }
+    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC.Identifier )) {
+        return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
+    }
 
     return null;
   }

@@ -50,7 +50,7 @@ void GenericEulerKernelTest::flux(const double *Q, double **F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::algebraicSource(const double *Q, double *S) {
+void GenericEulerKernelTest::fusedSource(const double* const Q, const double* const gradQ, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;

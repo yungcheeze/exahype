@@ -9,10 +9,12 @@ buildinfo.h
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
 
-# Eclipse projects
+# IDE project files: Eclipse, Kdevelop
 .cproject
 .project
 .settings
+.kdev4
+*.kdev4
 
 # Python compiled files
 *.pyc

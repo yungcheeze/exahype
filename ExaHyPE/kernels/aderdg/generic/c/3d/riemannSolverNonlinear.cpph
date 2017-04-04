@@ -71,9 +71,12 @@ void riemannSolverNonlinear(SolverType& solver,
   solver.eigenvalues(QavR, normalNonZero, LR);
 
   double Qavg[numberOfVariables+numberOfParameters]; // ~(numberOfVariables+numberOfParameters)
+  /*
+  // Wurde nur bei matrixB verwendet, gemittelt ueber die gesamte Flaeche/Kante
   for(int k=0; k < numberOfVariables; k++) {
     Qavg[k] = (QavL[k] + QavR[k]) / 2;
   }
+  */
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
@@ -90,14 +93,20 @@ void riemannSolverNonlinear(SolverType& solver,
       std::max_element(LR, LR + numberOfVariables);
   const double smax = std::max(*smax_L, *smax_R);
 
-  double* Bn  = tempStateSizedSquareMatrices[0];
-  double* ncp = tempStateSizedVectors[4];
-  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  //double* Bn  = tempStateSizedSquareMatrices[0];
+  //double* ncp = tempStateSizedVectors[4];
+  //idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[DIMENSIONS*numberOfVariables], ncp[numberOfVariables];
+  std::fill_n(gradQ, idx_gradQ.size, 0.0);
+  std::fill_n(ncp, numberOfVariables, 0.0);
+  /*
   if(useCoefficientMatrix) {
     solver.coefficientMatrix(Qavg, normalNonZero, Bn);
   }
-  
+  */
 
+  // This comment is not true:
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
@@ -108,20 +117,14 @@ void riemannSolverNonlinear(SolverType& solver,
 
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
-        
-        if(useCoefficientMatrix) {
-          // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
+
+        if(useCoefficientMatrix) { // we don't use matrixB but the NCP call here.
           for(int l=0; l < numberOfVariables; l++) {
-            ncp[l] = 0;
-            for(int m=0; m < numberOfVariables; m++) {
-              ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_QLR(i, j, m)] - QL[idx_QLR(i, j, m)]);
-            }
-            // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_QLR(j, l)]);
-            // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_QLR(j, l)]);
-            // printf("ncp[%d]=%.20e\n", l, ncp[l]);
-          }
-        }
-        
+            gradQ[idx_gradQ(normalNonZero, l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
+	    Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
+	  }
+	  solver.nonConservativeProduct(Qavg, gradQ, ncp);
+	}
 
         // skip parameters
         for (int k = 0; k < numberOfVariables; k++) {
