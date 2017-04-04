@@ -94,14 +94,13 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
 
   double BnMinusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
   double BnPlusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
-  std::copy_n (Bn, numberOfVariables2, BnMinusIdSmax);
-  std::copy_n (Bn, numberOfVariables2, BnPlusIdSmax);
   {
-    idx2 idx_BnPM(numberOfVariables, numberOfVariables);
     // skip parameters
+    std::copy_n (Bn, numberOfVariables2, BnMinusIdSmax);
+    std::copy_n (Bn, numberOfVariables2, BnPlusIdSmax);
     for (int i = 0; i < numberOfVariables; i++) {
-      BnMinusIdSmax[idx_BnPM(i, i)] -= smax;
-      BnPlusIdSmax[idx_BnPM(i, i)]  += smax;
+      BnMinusIdSmax[i][i] -= smax;
+      BnPlusIdSmax [i][i] += smax;
     }
   }
 
