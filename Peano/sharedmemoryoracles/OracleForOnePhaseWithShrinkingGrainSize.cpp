@@ -46,7 +46,7 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasDatabaseEn
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createDatabaseEntries(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
-  tarch::multicore::Lock lock(_semaphore);
+  //tarch::multicore::Lock lock(_semaphore);
 
   if ( _measurements.count(askingMethod)==0 ) {
     _measurements.insert( std::pair<peano::datatraversal::autotuning::MethodTrace,MethodTraceData >(askingMethod,MethodTraceData()) );
@@ -84,7 +84,11 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
   peano::datatraversal::autotuning::MethodTrace askingMethod
 ) {
   MethodTraceData::iterator entry = _measurements.at(askingMethod).begin();
-  while (entry->getBiggestProblemSize()<problemSize) {
+  while (
+    entry->getBiggestProblemSize()<problemSize
+    and
+    (entry+1)!=_measurements.at(askingMethod).end()
+  ) {
     entry++;
     assertion(entry!=_measurements[askingMethod].end());
     assertion(entry!=_measurements.at(askingMethod).end());
@@ -123,6 +127,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry  sha
 
 
 peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
+  // tarch::multicore::Lock lock(_semaphore);
   if ( problemSize==1 ) {
     return peano::datatraversal::autotuning::GrainSize(
       0,
@@ -143,9 +148,10 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
     assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
 
+    tarch::multicore::Lock lock(_semaphore);
     createDatabaseEntries(problemSize, askingMethod);
-
     auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
+    lock.free();
 
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
     assertion( _measurements.count(askingMethod)>0 );
@@ -161,6 +167,7 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
 
     assertion2( databaseEntry.getCurrentGrainSize()>0, databaseEntry.toString(), toString(_activeMethodTrace) );
     const int chosenParallelGrainSize     = databaseEntry.isStudyingScalingSetup() ? databaseEntry.getCurrentGrainSize() : 0;
+
 
     if (trackTime) {
       assertion( hasDatabaseEntry(problemSize, askingMethod) );
@@ -184,7 +191,10 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
     }
   }
   else if ( _measurements.count(askingMethod)>0 ) {
-    auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
+    // ohne den hammer an Segfault
+     tarch::multicore::Lock lock(_semaphore);   
+    const auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
+    lock.free();
 
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
     assertion( _measurements.count(askingMethod)>0 );
