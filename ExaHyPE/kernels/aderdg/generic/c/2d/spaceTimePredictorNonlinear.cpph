@@ -602,7 +602,8 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <bool useSource, bool useNCP, typename SolverType>
+
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -613,13 +614,15 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, 
-    double dt,
-    double* tempPointForceSources //not used, should be nullptr
+    double dt
     ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
   constexpr int basisSize2         = basisSize * basisSize;
+  
+  const bool useSource = solver.useAlgebraicSource();
+  const bool useNCP    = solver.useNonConservativeProduct();
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];

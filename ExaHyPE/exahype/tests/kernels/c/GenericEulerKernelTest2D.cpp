@@ -951,14 +951,14 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double lFhbnd[4 * nData*basisSize];  // nData * nDOFy * 4
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
       tempStateSizedVector,
       luh,
-      dx, dt, nullptr);
+      dx, dt);
   _setNcpAndMatrixBToZero = false;
 
   for (int i = 0; i < basisSize3; i++) {
