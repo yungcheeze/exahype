@@ -56,14 +56,14 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
   solver.flux(qL, FL2);
   solver.flux(qR, FR2);
 
-  double ncp[numberOfVariables+numberOfParameters];
+  double ncp[numberOfData];
 
   // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
-    double Qavg[numberOfVariables+numberOfParameters];
+    double Qavg[numberOfData];
     idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
     double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
-    for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+    for(int k=0; k < numberOfData; k++) {
        Qavg[k] = (qR[k] + qL[k]) / 2;
        gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
     }
@@ -104,8 +104,8 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
   constexpr int numberOfVariables = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
 
-  double sL[numberOfVariables ];
-  double sR[numberOfVariables ];
+  double sL[numberOfVariables];
+  double sR[numberOfVariables];
 
 
   solver.eigenvalues(qL, normalNonZero, sL);
@@ -121,12 +121,12 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double FL3a[numberOfVariables ];
-  double FL3b[numberOfVariables ];
-  double FL3c[numberOfVariables ];
-  double FR3a[numberOfVariables ];
-  double FR3b[numberOfVariables ];
-  double FR3c[numberOfVariables ];
+  double FL3a[numberOfVariables];
+  double FL3b[numberOfVariables];
+  double FL3c[numberOfVariables];
+  double FR3a[numberOfVariables];
+  double FR3b[numberOfVariables];
+  double FR3c[numberOfVariables];
 
   double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
   double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
@@ -135,21 +135,21 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
   solver.flux(qR, FR3);
 
 
-  double ncp[numberOfVariables+numberOfParameters];
+  double ncp[numberOfData];
 
   // determine BgradQ from ncp
   if (solver.useNonConservativeProduct()) {
-    double Qavg[numberOfVariables+numberOfParameters];
+    double Qavg[numberOfData];
     idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
     double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
-    for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
+    for(int k=0; k < numberOfData; k++) {
        Qavg[k] = (qR[k] + qL[k]) / 2;
        gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
     }
     solver.nonConservativeProduct(Qavg, gradQ, ncp);
   }
   
-  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
+  for (int i = 0; i < numberOfData; i++) {
     fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
              0.5 * s_max * (qL[i] - qR[i]);
 

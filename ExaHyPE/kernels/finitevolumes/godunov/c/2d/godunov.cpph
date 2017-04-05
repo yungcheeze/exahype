@@ -31,7 +31,7 @@
  * Finally add the source terms.
  */
 template <typename SolverType>
-double kernels::finitevolumes::c::solutionUpdate(
+double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
