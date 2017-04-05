@@ -25,7 +25,7 @@ do
  
   sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
   sed -i 's,EulerFlow_LimitingADERDG-no-output,EulerFlow_LimitingADERDG-'$io',g' $newScript
-  sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',g' $newScript
+  sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',g' $newScript 
 
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript

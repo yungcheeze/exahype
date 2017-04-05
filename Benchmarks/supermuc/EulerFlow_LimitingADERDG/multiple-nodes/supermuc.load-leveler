@@ -20,12 +20,13 @@ module load gcc/4.9
 module load tbb
 
 # Important for multithreaded MPI
-export MP_SINGLE_THREAD=no
 
 nodes=1
 tasks=1
 let tasksPerNode=tasks/nodes
 let coresPerTask=28/tasksPerNode # rounds down
+export OMP_SINGLE_THREAD=no
+export OMP_NUM_THREADS=$coresPerTask
 
 compiler=Intel
 sharedMem=None
