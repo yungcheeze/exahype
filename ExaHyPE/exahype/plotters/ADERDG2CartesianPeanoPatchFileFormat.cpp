@@ -106,7 +106,7 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::init(
 void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double time ) {
   _fileCounter++;
 
-  assertion( _patchWriter==nullptr );
+  assertion( _writer==nullptr );
 
   if (_writtenUnknowns>0) {
     _writer = new tarch::plotter::griddata::blockstructured::PeanoPatchFileWriter(DIMENSIONS,_order+1);
@@ -146,8 +146,7 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
       _vertexTimeStampDataWriter = _writer->createVertexDataWriter("time", 1);
     }
 
-    assertion( _patchWriter!=nullptr );
-    assertion( _gridWriter!=nullptr );
+    assertion( _writer!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
