@@ -327,19 +327,8 @@ public class GenericADERDG implements Solver {
         + "    kernels::aderdg::generic::c::riemannSolverNonlinear<false,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n" 
         + "  }");
         content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}",
-            "if(useAlgebraicSource()) {\n"
-        + "    if(useNonConservativeProduct()) {\n"
-        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
-        + "    } else {\n"
-        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
-        + "    }\n"
-        + "  } else {\n"
-        + "    if(useNonConservativeProduct()) {\n"
-        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
-        + "    } else {\n"
-        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
-        + "    }\n"
-        + "  }");
+          "  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);\n"
+        );
       }
     }
     
