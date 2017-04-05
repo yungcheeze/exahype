@@ -37,29 +37,29 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
   constexpr int patchBegin         = ghostLayerWidth;
   constexpr int patchEnd           = patchBegin+patchSize;
   constexpr double cflFactor       = SolverType::CFL;
-  
+
   kernels::idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
-  
+
   double lambda[numberOfVariables] = {0.0};
   double dt_max_stable = std::numeric_limits<double>::max();
   for (int j = patchBegin; j < patchEnd; j++) {
-  for (int k = patchBegin; k < patchEnd; k++) {
-    // x
-    solver.eigenvalues(luh + idx(j, k, 0), 0, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/patchSize) / s_max_x);
+    for (int k = patchBegin; k < patchEnd; k++) {
+      // x
+      solver.eigenvalues(luh + idx(j, k, 0), 0, lambda);
+      std::transform(lambda, lambda + numberOfVariables, lambda,
+          std::abs<double>);
+      double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
+      dt_max_stable = std::min(
+          dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/patchSize) / s_max_x);
 
-    // y
-    solver.eigenvalues(luh + idx(j, k, 0), 1, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/patchSize) / s_max_y);
-  }
+      // y
+      solver.eigenvalues(luh + idx(j, k, 0), 1, lambda);
+      std::transform(lambda, lambda + numberOfVariables, lambda,
+          std::abs<double>);
+      double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
+      dt_max_stable = std::min(
+          dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/patchSize) / s_max_y);
+    }
   }
 
   assertion( tarch::la::greater(dt_max_stable,0.0) );
@@ -116,8 +116,8 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
   constexpr int patchBegin      = ghostLayerWidth;
   constexpr int patchEnd        = patchBegin+patchSize;
   kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
-           patchSize+2*ghostLayerWidth, // x
-           numberOfData);
+      patchSize+2*ghostLayerWidth, // x
+      numberOfData);
 
   kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData); // x,x; x,x; x,x; ... x,x;
   kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData); // x,x,x,x,x,...,x; x,x,x,x,x,...,x;
@@ -129,11 +129,11 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     // assertion: boundaryPosition[1] == 0;
     for (int i=patchBegin; i<patchEnd; ++i) {
       for (int k=0; k<ghostLayerWidth; ++k) {
-      // first layer
-      std::copy_n(
-          luh+idx(i,patchBegin+k,0),
-          numberOfData,
-          luhbnd+idx_bnd_x(i-patchBegin,k,0));
+        // first layer
+        std::copy_n(
+            luh+idx(i,patchBegin+k,0),
+            numberOfData,
+            luhbnd+idx_bnd_x(i-patchBegin,k,0));
       }
     }
   }
@@ -176,13 +176,13 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
 
 template <typename SolverType>
 void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
-                        double* stateOut,
-                        const double* const stateIn,
-                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-                        const double t,const double dt,
-                        const int faceIndex,
-                        const int normalNonZero) {
+    double* stateOut,
+    const double* const stateIn,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+    const double t,const double dt,
+    const int faceIndex,
+    const int normalNonZero) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
@@ -207,7 +207,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                              stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
+            stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
   }
@@ -223,7 +223,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                              stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
+            stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
   }
@@ -239,7 +239,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                              stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
+            stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
   }
@@ -255,7 +255,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                              stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
+            stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
   } else {
@@ -303,9 +303,9 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     for (int i=patchBegin; i<patchEnd; ++i) {
       for (int k=0; k<ghostLayerWidth; ++k) {
         std::copy_n(
-          luhbnd+idx_bnd_x(i-patchBegin,k,0),
-          numberOfData,
-          luh+idx(i,patchEnd+k,0));
+            luhbnd+idx_bnd_x(i-patchBegin,k,0),
+            numberOfData,
+            luh+idx(i,patchEnd+k,0));
       }
     }
   }
@@ -336,9 +336,9 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
 
 template <typename SolverType>
 void kernels::finitevolumes::commons::c::ghostLayerFilling(
-      SolverType& solver,
-      double* luh,const double* luhNeighbour,
-      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
+    SolverType& solver,
+    double* luh,const double* luhNeighbour,
+    const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
@@ -424,40 +424,40 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
   constexpr double cflFactor       = SolverType::CFL;
 
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,
-               patchSize+2*ghostLayerWidth,
-               patchSize+2*ghostLayerWidth,numberOfData);
+      patchSize+2*ghostLayerWidth,
+      patchSize+2*ghostLayerWidth,numberOfData);
 
   double lambda[numberOfVariables] = {0.0};
   double dt_max_stable = std::numeric_limits<double>::max();
 
   for (int i = patchBegin; i < patchEnd; i++) {
-  for (int j = patchBegin; j < patchEnd; j++) {
-  for (int k = patchBegin; k < patchEnd; k++) {
-    // x
-    solver.eigenvalues(luh + idx(i,j,k,0), 0/*x-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/patchSize) / s_max_x);
+    for (int j = patchBegin; j < patchEnd; j++) {
+      for (int k = patchBegin; k < patchEnd; k++) {
+        // x
+        solver.eigenvalues(luh + idx(i,j,k,0), 0/*x-axis*/, lambda);
+        std::transform(lambda, lambda + numberOfVariables, lambda,
+            std::abs<double>);
+        double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
+        dt_max_stable = std::min(
+            dt_max_stable, cflFactor / DIMENSIONS * (dx[0]/patchSize) / s_max_x);
 
-    // y
-    solver.eigenvalues(luh + idx(i,j,k,0), 1/*y-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/patchSize) / s_max_y);
+        // y
+        solver.eigenvalues(luh + idx(i,j,k,0), 1/*y-axis*/, lambda);
+        std::transform(lambda, lambda + numberOfVariables, lambda,
+            std::abs<double>);
+        double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
+        dt_max_stable = std::min(
+            dt_max_stable, cflFactor / DIMENSIONS * (dx[1]/patchSize) / s_max_y);
 
-    // z
-    solver.eigenvalues(luh + idx(i,j,k,0), 2/*z-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-        std::abs<double>);
-    double s_max_z = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, cflFactor / DIMENSIONS * (dx[2]/patchSize) / s_max_z);
-  }
-  }
+        // z
+        solver.eigenvalues(luh + idx(i,j,k,0), 2/*z-axis*/, lambda);
+        std::transform(lambda, lambda + numberOfVariables, lambda,
+            std::abs<double>);
+        double s_max_z = *std::max_element(lambda, lambda + numberOfVariables);
+        dt_max_stable = std::min(
+            dt_max_stable, cflFactor / DIMENSIONS * (dx[2]/patchSize) / s_max_z);
+      }
+    }
   }
 
   return dt_max_stable;
@@ -478,9 +478,9 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
   constexpr int patchBegin = ghostLayerWidth;
   constexpr int patchEnd   = patchBegin+patchSize;
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,
-               patchSize+2*ghostLayerWidth,
-               patchSize+2*ghostLayerWidth,
-               numberOfVariables+numberOfParameters);
+      patchSize+2*ghostLayerWidth,
+      patchSize+2*ghostLayerWidth,
+      numberOfVariables+numberOfParameters);
 
   for (int k = patchBegin; k < patchEnd; k++) {
     const double qk = (2.0*(k-patchBegin)+1.0)/(2.0*patchSize); //linspace;
@@ -527,28 +527,28 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     // assertion: boundaryPosition[1] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(j,i,patchBegin+k,0),
-            numberOfData,
-            luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(j,i,patchBegin+k,0),
+              numberOfData,
+              luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[0] == +1) { // UN-1|UN||G0|G1|
     // assertion: boundaryPosition[1] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(j,i,patchEnd-ghostLayerWidth+k,0),
-            numberOfData,
-            luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(j,i,patchEnd-ghostLayerWidth+k,0),
+              numberOfData,
+              luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0));
+        }
       }
-    }
     }
   }
 
@@ -557,28 +557,28 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(j,patchBegin,i,0),
-            numberOfData,
-            luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(j,patchBegin,i,0),
+              numberOfData,
+              luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[1] == +1) {
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(j,patchEnd-ghostLayerWidth+k,i,0),
-            numberOfData,
-            luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(j,patchEnd-ghostLayerWidth+k,i,0),
+              numberOfData,
+              luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0));
+        }
       }
-    }
     }
   }
 
@@ -587,28 +587,28 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(patchBegin,j,i,0),
-            numberOfData,
-            luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(patchBegin,j,i,0),
+              numberOfData,
+              luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[2] == +1) {
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; k++) {
-        std::copy_n(
-            luh+idx(patchEnd-ghostLayerWidth+k,j,i,0),
-            numberOfData,
-            luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; k++) {
+          std::copy_n(
+              luh+idx(patchEnd-ghostLayerWidth+k,j,i,0),
+              numberOfData,
+              luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0));
+        }
       }
-    }
     }
   }
 }
@@ -640,28 +640,28 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     // assertion: boundaryPosition[1] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0),
-            numberOfData,
-            luh+idx(j,i,k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0),
+              numberOfData,
+              luh+idx(j,i,k,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[0] == +1) {
     // assertion: boundaryPosition[1] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0),
-            numberOfData,
-            luh+idx(j,i,patchEnd+k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_x(j-patchBegin,i-patchBegin,k,0),
+              numberOfData,
+              luh+idx(j,i,patchEnd+k,0));
+        }
       }
-    }
     }
   }
 
@@ -670,28 +670,28 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0),
-            numberOfData,
-            luh+idx(j,k,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0),
+              numberOfData,
+              luh+idx(j,k,i,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[1] == +1) {
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0),
-            numberOfData,
-            luh+idx(j,patchEnd+k,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_y(j-patchBegin,k,i-patchBegin,0),
+              numberOfData,
+              luh+idx(j,patchEnd+k,i,0));
+        }
       }
-    }
     }
   }
 
@@ -700,41 +700,41 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0),
-            numberOfData,
-            luh+idx(k,j,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0),
+              numberOfData,
+              luh+idx(k,j,i,0));
+        }
       }
-    }
     }
   }
   if (boundaryPosition[2] == +1) {
     // assertion: boundaryPosition[0] == 0;
     // assertion: boundaryPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0),
-            numberOfData,
-            luh+idx(patchEnd+k,j,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhbnd+idx_bnd_z(k,j-patchBegin,i-patchBegin,0),
+              numberOfData,
+              luh+idx(patchEnd+k,j,i,0));
+        }
       }
-    }
     }
   }
 }
 
 template <typename SolverType>
 void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
-                        double* stateOut,
-                        const double* const stateIn,
-                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-                        const double t,const double dt,
-                        const int faceIndex,
-                        const int normalNonZero) {
+    double* stateOut,
+    const double* const stateIn,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+    const double t,const double dt,
+    const int faceIndex,
+    const int normalNonZero) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
@@ -755,15 +755,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
       xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
 
       for (int j = 0; j < patchSize; ++j) {
-      for (int i = 0; i < patchSize; ++i) {
-        const double qj = (2.0*j+1.0)/(2.0*patchSize);
-        const double qi = (2.0*i+1.0)/(2.0*patchSize);
-        xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
-        xOutside[1] = cellCentre[1] + cellSize[1] * (qi - 0.5);
+        for (int i = 0; i < patchSize; ++i) {
+          const double qj = (2.0*j+1.0)/(2.0*patchSize);
+          const double qi = (2.0*i+1.0)/(2.0*patchSize);
+          xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
+          xOutside[1] = cellCentre[1] + cellSize[1] * (qi - 0.5);
 
-        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0)); // TODO: suboptimal memory layout
-      }
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
+              stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0)); // TODO: suboptimal memory layout
+        }
       }
     }
   }
@@ -775,15 +775,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
       xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
 
       for (int j = 0; j < patchSize; ++j) {
-      for (int i = 0; i < patchSize; ++i) {
-        const double qj = (2.0*j+1.0)/(2.0*patchSize);
-        const double qi = (2.0*i+1.0)/(2.0*patchSize);
-        xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
-        xOutside[1] = cellCentre[1] + cellSize[2] * (qi - 0.5);
+        for (int i = 0; i < patchSize; ++i) {
+          const double qj = (2.0*j+1.0)/(2.0*patchSize);
+          const double qi = (2.0*i+1.0)/(2.0*patchSize);
+          xOutside[2] = cellCentre[2] + cellSize[2] * (qj - 0.5);
+          xOutside[1] = cellCentre[1] + cellSize[2] * (qi - 0.5);
 
-        solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0));
-      }
+          solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
+              stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0));
+        }
       }
     }
   }
@@ -802,7 +802,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
+              stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
     }
@@ -822,7 +822,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
+              stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
     }
@@ -842,7 +842,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
+              stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }
@@ -862,7 +862,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-                                stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
+              stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }
@@ -873,9 +873,9 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
 
 template <typename SolverType>
 void kernels::finitevolumes::commons::c::ghostLayerFilling(
-      SolverType& solver,
-      double* luh,const double* luhNeighbour,
-      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
+    SolverType& solver,
+    double* luh,const double* luhNeighbour,
+    const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
@@ -895,28 +895,28 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     // assertion: neighbourPosition[1] == 0;
     // assertion: neighbourPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(j,i,patchEnd-ghostLayerWidth+k,0),
-            numberOfData,
-            luh+idx(j,i,k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(j,i,patchEnd-ghostLayerWidth+k,0),
+              numberOfData,
+              luh+idx(j,i,k,0));
+        }
       }
-    }
     }
   }
   if (neighbourPosition[0] == +1) {
     // assertion: neighbourPosition[1] == 0;
     // assertion: neighbourPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(j,i,patchBegin+k,0),
-            numberOfData,
-            luh+idx(j,i,patchEnd+k,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(j,i,patchBegin+k,0),
+              numberOfData,
+              luh+idx(j,i,patchEnd+k,0));
+        }
       }
-    }
     }
   }
 
@@ -925,28 +925,28 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     // assertion: neighbourPosition[0] == 0;
     // assertion: neighbourPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(j,patchEnd-ghostLayerWidth+k,i,0),
-            numberOfData,
-            luh+idx(j,k,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(j,patchEnd-ghostLayerWidth+k,i,0),
+              numberOfData,
+              luh+idx(j,k,i,0));
+        }
       }
-    }
     }
   }
   if (neighbourPosition[1] == +1) {
     // assertion: neighbourPosition[0] == 0;
     // assertion: neighbourPosition[2] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(j,patchBegin+k,i,0),
-            numberOfData,
-            luh+idx(j,patchEnd+k,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(j,patchBegin+k,i,0),
+              numberOfData,
+              luh+idx(j,patchEnd+k,i,0));
+        }
       }
-    }
     }
   }
 
@@ -955,28 +955,28 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     // assertion: neighbourPosition[0] == 0;
     // assertion: neighbourPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(patchEnd-ghostLayerWidth+k,j,i,0),
-            numberOfData,
-            luh+idx(k,j,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(patchEnd-ghostLayerWidth+k,j,i,0),
+              numberOfData,
+              luh+idx(k,j,i,0));
+        }
       }
-    }
     }
   }
   if (neighbourPosition[2] == +1) {
     // assertion: neighbourPosition[0] == 0;
     // assertion: neighbourPosition[1] == 0;
     for (int j=patchBegin; j<patchEnd; ++j) {
-    for (int i=patchBegin; i<patchEnd; ++i) {
-      for (int k=0; k<ghostLayerWidth; ++k) {
-        std::copy_n(
-            luhNeighbour+idx(patchBegin+k,j,i,0),
-            numberOfData,
-            luh+idx(patchEnd+k,j,i,0));
+      for (int i=patchBegin; i<patchEnd; ++i) {
+        for (int k=0; k<ghostLayerWidth; ++k) {
+          std::copy_n(
+              luhNeighbour+idx(patchBegin+k,j,i,0),
+              numberOfData,
+              luh+idx(patchEnd+k,j,i,0));
+        }
       }
-    }
     }
   }
 }
