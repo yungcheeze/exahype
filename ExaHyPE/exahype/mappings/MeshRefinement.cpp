@@ -24,6 +24,12 @@
 
 #include "exahype/VertexOperations.h"
 
+#ifdef Parallel
+exahype::mappings::MeshRefinement::FirstIteration = true;
+#endif
+
+tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::MeshRefinement");
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -80,9 +86,6 @@ exahype::mappings::MeshRefinement::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
-
-tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::MeshRefinement");
-
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::MeshRefinement::MeshRefinement(const MeshRefinement& masterThread):
   _localState(masterThread._localState) {
@@ -132,8 +135,7 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
   }
 
   #ifdef Parallel
-  // @todo raus
-  solverState.setFirstGridSetupIteration(false);
+  exahype::mappings::MeshRefinement::FirstIteration = false;
   #endif
 }
 
@@ -354,6 +356,8 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
+  if (exahype::mappings::MeshRefinement::FirstIteration) return;
+
   if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
     return;
   }
@@ -362,12 +366,6 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   #if !defined(PeriodicBC)
     if (vertex.isBoundary()) return;
   #endif
-
-  // @todo If this assertion holds, then we should remove firstGridSetupIteration from the state.
-  // Yes, we could initialise it with true, set it to false in endIteration
-  // and reset it in DropIncomingMPIMetadataMessages::beginIteration()
-  assertion( !_localState.firstGridSetupIteration() );
-  if (_localState.firstGridSetupIteration()) return; // TODO is set in end iteration.
 
   dfor2(myDest)
     dfor2(mySrc)
