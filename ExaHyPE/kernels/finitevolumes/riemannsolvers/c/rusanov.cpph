@@ -101,9 +101,10 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
 template <typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fnL, double *fnR, const double* qL, const double* qR,
                      int normalNonZero) { // TODO(Dominic): I need four of those
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  
   double sL[numberOfVariables];
   double sR[numberOfVariables];
 
@@ -133,7 +134,6 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
 
   solver.flux(qL, FL3);
   solver.flux(qR, FR3);
-
 
   double ncp[numberOfData];
 
