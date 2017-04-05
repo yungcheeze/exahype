@@ -31,20 +31,17 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  double dt_max_stable = std::numeric_limits<double>::max();
-  constexpr double cflFactor = 0.9; // TODO externalize
-
-	constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd=patchBegin+patchSize;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
+  constexpr double cflFactor       = SolverType::CFL;
+  
   kernels::idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
-
-  double* lambda = tempEigenvalues;
-
+  
+  double lambda[numberOfVariables] = {0.0};
+  double dt_max_stable = std::numeric_limits<double>::max();
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     // x
@@ -419,20 +416,18 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
+  constexpr double cflFactor       = SolverType::CFL;
 
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  constexpr double cflFactor = 0.9; // TODO externalize
-
-  constexpr int patchBegin = ghostLayerWidth;
-  constexpr int patchEnd   = patchBegin+patchSize;
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,
                patchSize+2*ghostLayerWidth,numberOfData);
 
-  double lambda[numberOfVariables];
+  double lambda[numberOfVariables] = {0.0};
   double dt_max_stable = std::numeric_limits<double>::max();
 
   for (int i = patchBegin; i < patchEnd; i++) {

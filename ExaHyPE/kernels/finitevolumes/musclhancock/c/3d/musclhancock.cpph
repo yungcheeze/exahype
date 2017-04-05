@@ -54,22 +54,19 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-  
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  constexpr int patchBegin=ghostLayerWidth; // patchBegin cell is inside domain
-  constexpr int patchEnd=patchBegin+patchSize; // patchEnd cell is outside domain
-
-  constexpr double cflFactor = 0.9;
+  constexpr int patchBegin         = ghostLayerWidth; // patchBegin cell is inside domain
+  constexpr int patchEnd           = patchBegin+patchSize; // patchEnd cell is outside domain
+  constexpr double cflFactor       = SolverType::CFL;
 
   const double cellSize[3] = {dx[0]/patchSize, dx[1]/patchSize, dx[2]/patchSize};
 
   // 1. Gather data from neighbouring cells; already done.
 
   // 2. Compute slopes TODO(Dominic): Make sure to only consider parameters in luh
-  const int stride = patchSize+2*ghostLayerWidth;
+  constexpr int stride = patchSize+2*ghostLayerWidth;
   idx4 idx(stride, stride, stride, numberOfData);
   idx5 idx_slope(stride,stride,stride,DIMENSIONS,numberOfVariables);
   constexpr int variablesPerPatch = stride*stride*stride*numberOfVariables;

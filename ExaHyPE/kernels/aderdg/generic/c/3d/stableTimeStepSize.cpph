@@ -28,11 +28,12 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int order              = SolverType::Order;
-  constexpr int basisSize          = SolverType::Order+1;
-  constexpr double cflFactor       = 0.9;
-  constexpr double PNPM[10]        = {1.0,   0.33,  0.17, 0.1,  0.069,
-                                      0.045, 0.038, 0.03, 0.02, 0.015};
-
+  constexpr int basisSize          = order+1;
+  constexpr double cflFactor       = SolverType::CFL;
+  
+  constexpr double PNPM[10]  = {1.0,   0.33,  0.17, 0.1,  0.069,
+                                0.045, 0.038, 0.03, 0.02, 0.015};
+  
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfData);
   
   double dt = std::numeric_limits<double>::max();
