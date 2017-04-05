@@ -45,7 +45,7 @@ exahype-project Euler
     patch-size const  = 7
     maximum-mesh-size = 0.05
     time-stepping     = global
-    kernel const      = generic::muscl
+    kernel const      = generic::musclhancock
     language const    = C
     /* musclhancock */
     
