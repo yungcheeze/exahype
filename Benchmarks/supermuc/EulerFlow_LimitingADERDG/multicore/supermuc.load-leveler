@@ -2,7 +2,7 @@
 #@ job_type = parallel
 #@ class = micro
 #@ node = 1
-#@ tasks_per_node = 28
+#@ tasks_per_node = 1
 #@ island_count = 1
 #@ network.MPI = sn_all,not_shared,us 
 #@ energy_policy_tag = EulerFlow_LimitingADERDG_energy_tag
@@ -19,12 +19,11 @@
 module load gcc/4.9
 module load tbb
 
-# Important for multithreaded MPI
-
+# Important for multithreaded MPPI
 nodes=1
 tasks=1
-let tasksPerNode=tasks/nodes
-let coresPerTask=28/tasksPerNode # rounds down
+tasksPerNode=1
+coresPerTask=1
 export OMP_SINGLE_THREAD=no
 export OMP_NUM_THREADS=$coresPerTask
 

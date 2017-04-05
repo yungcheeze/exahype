@@ -19,21 +19,23 @@
 module load gcc/4.9
 module load tbb
 
-# Important for multithreaded MPI
-export MP_SINGLE_THREAD=no
 
 nodes=1
 tasks=1
 let tasksPerNode=tasks/nodes
 let coresPerTask=28/tasksPerNode # rounds down
+# Important for multithreaded MPI
+export OMP_SINGLE_THREAD=no
+export OMP_NUM_THREADS=$coresPerTask
 
 compiler=Intel
 sharedMem=None
 prefix=EulerFlow-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
-
-# pipe some environment and build information into output file
+spec=benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+# pipe some information into output file
 module list 2>$out
-ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
+cat $spec >> $out
+#ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
 # execute the job
-mpiexec -n $tasks ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype  >> $out
+mpiexec -n $tasks ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec  >> $out

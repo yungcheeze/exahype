@@ -16,7 +16,7 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
-  for p in 3 9
+  for p in 3 5 9
   do
     rm *.o
     sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $header

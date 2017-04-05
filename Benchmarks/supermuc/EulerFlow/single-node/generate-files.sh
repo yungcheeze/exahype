@@ -2,14 +2,14 @@
 hMax=(0.05 0.01 0.005 0.001)
 times=(0.01 0.002 0.0005 0.0001)
 
-i=1
+i=0
 mesh=regular-$i
 h=${hMax[i]}
 t=${times[i]}
 
 order=3
 
-sharedMem=None
+sharedMem=TBB
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
@@ -18,7 +18,7 @@ for io in 'output' 'no-output'
 do
 for nodes in 1
 do
-for tasksPerNode in 1 2 10 14 28
+for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 56
 do 
   let tasks=$nodes*$tasksPerNode
   let coresPerTask=28/$tasksPerNode  
@@ -35,6 +35,7 @@ do
 
   sed -i 's,nodes=1,nodes='$nodes',g' $newScript
   sed -i 's,tasks=1,tasks='$tasks',g' $newScript
+
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
 

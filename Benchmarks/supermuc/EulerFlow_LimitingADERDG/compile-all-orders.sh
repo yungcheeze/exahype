@@ -1,7 +1,7 @@
 exe1=ExaHyPE-Euler
 exe2=ExaHyPE-EulerFlow_LimitingADERDG
-header=AbstractMyEulerSolver.h
-
+headerADERDG=AbstractLimitingADERDG_ADERDG.h
+headerFV=AbstractLimitingADERDG_FV.h
 
 for m in 1 2
 do
@@ -19,7 +19,10 @@ do
   for p in 3 5 9
   do
     rm *.o
-    sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $header
+    sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $headerADERDG 
+    let patchSize=2*$p+1
+    sed -i -r 's,PatchSize(\s+)= ([0-9]),PatchSize\1= '$patchSize',' $headerFV
+
     make -j28 && \
     mv $exe1 $exe2-p$p-$SHAREDMEM-$COMPILER
 #    sleep 2m
