@@ -23,7 +23,7 @@ void Euler::MyEulerSolver::adjustSolution(const double* const x,
                                                const double t,
                                                const double dt, double* Q) {
   if (tarch::la::equals(t, 0.0)) {
-    explosionProblem(x,Q);
+    initialData(x,Q);
   } 
 }
 
@@ -77,8 +77,10 @@ void Euler::MyEulerSolver::boundaryValues(
     const double* const stateIn,
     double* stateOut) {
 
-    // Compute boundary state.
-    explosionProblem(x, stateOut);
+  // Compute boundary state.
+  for (int i=0; i<NumberOfVariables+NumberOfParameters; i++) {
+    stateOut[i] = stateIn[i];
+  }
 }
 
 void Euler::MyEulerSolver::algebraicSource(const double* const Q, double* S) {
