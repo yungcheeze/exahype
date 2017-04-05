@@ -41,7 +41,7 @@ double kernels::finitevolumes::commons::c::stableTimeStepSize(
 
 	constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
-  kernels:.idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
+  kernels::idx3 idx(patchSize+2*ghostLayerWidth, patchSize+2*ghostLayerWidth, numberOfData);
 
   double* lambda = tempEigenvalues;
 
