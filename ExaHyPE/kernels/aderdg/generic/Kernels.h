@@ -79,7 +79,10 @@ namespace generic {
 namespace c {
 
 
-template <bool useSource, bool useNCP, typename SolverType>
+/**
+ * @param SolverType Has to be of type ADERDG Solver.
+ */
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -90,8 +93,7 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt,
-    double* tempPointForceSources);
+    const double dt);
 
 template <typename SolverType>
 void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);

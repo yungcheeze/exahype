@@ -70,6 +70,9 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 
   const double eps = 1.0e-10;  // for quick adaption of the test cases (say,
                                // switch to single precision)
+
+  bool useAlgebraicSource() {return false;}
+  bool useNonConservativeProduct() {return false;}
 };
 
 

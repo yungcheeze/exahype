@@ -184,7 +184,6 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
     }
   }
   else if ( _measurements.count(askingMethod)>0 ) {
-//    else if (hasDatabaseEntry(problemSize, askingMethod)) {
     auto databaseEntry = getDatabaseEntry(problemSize,askingMethod);
 
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
@@ -425,6 +424,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSecti
 
   assertion( hasDatabaseEntry(problemSize, askingMethod) );
 
+  tarch::multicore::Lock lock(_semaphore);
   auto& databaseEntry = getDatabaseEntry(problemSize,askingMethod);
   if (!databaseEntry.isAccuracyInitialised() ) {
     const double computeTime   = costPerProblemElement * static_cast<double>(problemSize);
