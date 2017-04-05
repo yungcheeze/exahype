@@ -14,6 +14,7 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/plotters/ADERDG2CartesianVTK.h"
+#include "exahype/plotters/ADERDG2CartesianPeanoPatchFileFormat.h"
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
@@ -132,6 +133,13 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
+      if (_identifier.compare( ADERDG2CartesianCellsPeanoFileFormatAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsPeanoFileFormatAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesPeanoFileFormatAscii(postProcessing);
+      }
+
       if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
