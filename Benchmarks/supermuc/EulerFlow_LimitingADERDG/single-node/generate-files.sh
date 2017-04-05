@@ -18,7 +18,7 @@ for io in 'output' 'no-output'
 do
 for nodes in 1
 do
-for tasksPerNode in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 56
+for tasksPerNode in 1 2 4 7 14 28
 do 
   let tasks=$nodes*$tasksPerNode
   let coresPerTask=28/$tasksPerNode  
