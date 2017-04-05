@@ -30,7 +30,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int NumberOfVariables  = {{NumberOfVariables}};
     static constexpr int NumberOfParameters = {{NumberOfParameters}};
     static constexpr int Order              = {{Order}};
-    static constexpr int CFL                = 0.9;
+    static constexpr double CFL             = 0.9;
   
     class Variables;
     class ReadOnlyVariables;
