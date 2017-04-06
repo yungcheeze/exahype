@@ -47,6 +47,13 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     /**
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
      */
+    virtual bool useConservativeFlux()       const {return true;}
+
+    virtual void flux(const double* const Q,double** F);
+
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
     virtual bool useAlgebraicSource()        const {return false;}
 
     /**
