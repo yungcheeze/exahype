@@ -44,6 +44,8 @@ void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
 // HDF5 stuff
 #include "H5Cpp.h"
 
+typedef tarch::la::Vector<DIMENSIONS, double> dvec;
+
 class exahype::plotters::ADERDG2CarpetHDF5Writer {
 public:
   // The ADERDG2CarpetHDF5 instance
@@ -91,8 +93,8 @@ public:
    * This is simple.
    **/
   void plotPatch(
-      const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-      const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+      const dvec& offsetOfPatch,
+      const dvec& sizeOfPatch,
       double* mappedCell,
       double timeStamp, int iteration, int component) {
         using namespace H5;
@@ -103,25 +105,61 @@ public:
 	DataSpace patch_dataspace(rank, dims);
 	kernels::idx2 mappedIdx(order+1, order+1);
 	
-	char component_name[100];
-	sprintf(component_name, "EXA::rho it=%d tl=0 m=0 rl=0 c=%d", iteration, component);
+	// the name must contain a "::"
+	std::string name("EXA::rho");
 	
-	DataSet table = hf->createDataSet(component_name, PredType::NATIVE_DOUBLE, patch_dataspace);
-	table.write(mappedCell, PredType::NATIVE_DOUBLE);
+	char component_name[100];
+	sprintf(component_name, "%s it=%d tl=0 m=0 rl=0 c=%d", name.c_str(), iteration, component);
+	
+	// Transpose the 2D data.
+	// This has to be done in a more intelligent way
+	double *transposedCell = new double[mappedIdx.size];
+	dfor(i,order+1) {
+		transposedCell[mappedIdx(i(1),i(0))] = mappedCell[mappedIdx(i(0),i(1))];
+	}
+	
+	DataSet table = hf->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_dataspace);
+	table.write(transposedCell, PredType::NATIVE_DOUBLE);
+	
+	delete[] transposedCell;
 	
 	// write the meat information about the new table
 	
-	hsize_t dtuple_len[rank] = {1,1};
-	DataSpace dtuple(rank, dtuple_len);
+	//hsize_t dtuple_len[rank] = {1,1};
+	//DataSpace dtuple(rank, dtuple_len);
 	
-	Attribute origin = table.createAttribute("origin", PredType::NATIVE_DOUBLE, dtuple);
+	// tuple/vector with DIMENSIONS elements
+	assert(DIMENSIONS == 2);
+	hsize_t tupleDim_len[1] = {DIMENSIONS};
+	DataSpace tupleDim(sizeof(tupleDim_len)/sizeof(hsize_t), tupleDim_len);
+	
+	Attribute origin = table.createAttribute("origin", PredType::NATIVE_DOUBLE, tupleDim);
 	origin.write(PredType::NATIVE_DOUBLE, offsetOfPatch.data());
 	
 	double iorigin_data[rank] = {0.,0.};
-	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_DOUBLE, dtuple);
-	iorigin.write(PredType::NATIVE_DOUBLE, &iorigin_data);
+	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_INT, tupleDim);
+	iorigin.write(PredType::NATIVE_INT, &iorigin_data);
 	
+	int level_data = 0;
+	Attribute level = table.createAttribute("level", PredType::NATIVE_INT, H5S_SCALAR);
+	level.write(PredType::NATIVE_INT, &level_data);
 	
+	Attribute timestep = table.createAttribute("timestep", PredType::NATIVE_INT, H5S_SCALAR);
+	timestep.write(PredType::NATIVE_INT, &iteration);
+
+	Attribute time = table.createAttribute("time", PredType::NATIVE_DOUBLE, H5S_SCALAR);
+	time.write(PredType::NATIVE_DOUBLE, &timeStamp);
+
+	// dx in terms of Cactus: Real seperation from each value
+	dvec dx = 1./(order ) * sizeOfPatch;
+	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, tupleDim);
+	delta.write(PredType::NATIVE_DOUBLE, dx.data()); // issue: conversion from double to float
+	
+	const int max_string_length = 60;
+	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length);
+	Attribute aname = table.createAttribute("name", t_str, H5S_SCALAR);
+	aname.write(t_str, name.c_str());
+
 	// alternatively, also write to text file for comparison
 	dfor(i,order+1) {
 		fprintf(fh, "%d %d %f\n", i(0), i(1), mappedCell[mappedIdx(i(0),i(1))]);
@@ -183,14 +221,14 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
 
     interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
 
-    component++;
     writer->plotPatch(offsetOfPatch, sizeOfPatch, mappedCell, timeStamp, iteration, component);
+    component++;
 }
 
 
 void exahype::plotters::ADERDG2CarpetHDF5::startPlotting( double _time ) {
 	time = _time;
-	component = 0;
+	component = 0; // CarpetHDF5 wants the components start with 0.
 	_postProcessing->startPlotting(time);
 	//writer->startPlotting(time);
 }

@@ -15,7 +15,6 @@
 
 #include "tarch/la/Vector.h"
 #include "tarch/multicore/Loop.h"
-
 #include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "../../../../DGMatrices.h"
@@ -23,7 +22,6 @@
 #include "../../../../KernelUtils.h"
 
 #include "SharedMemoryLabels.h"
-
 
 #if DIMENSIONS == 2
 
@@ -74,7 +72,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
         // Fortran: lQi(m,:,k,j) = luh(m,k,j)
         std::copy_n (luh + idx_luh(j, k, 0), numberOfData,
                      lQi + idx_lQi(j, k, l, 0));
-        // if(l==0) printf("luh[%d,%d,t=0,%d] = %.20e\n", j, k, 0, luh[idx_luh(j, k, 0)]);
       }
     }
   endpfor
@@ -110,9 +107,10 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, basisSize3 * (numberOfData) * sizeof(double));
+    std::memcpy(lQi_old, lQi, basisSize3 * numberOfData * sizeof(double));
 
-    for (int i = 0; i < basisSize; i++) {  // time DOF, i=t
+    for (int i = 0; i < basisSize; i++) {  // time DOF
+      // Compute the fluxes
       auto grainSizeFluxSourceNCPLoop = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsFluxSourceNCPLoop);
       //for (int k = 0; k < basisSize; k++) { // presumably k=y
       pfor(k,0,basisSize,grainSizeFluxSourceNCPLoop.getGrainSize())
@@ -143,7 +141,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
       grainSizeCopyRhs.parallelSectionHasTerminated();
 
       // Compute gradients only if nonconservative contributions have to be
-      // computed. Otherwise, it shall be a nullptr/undefined.
+      // computed. 
       if(useNCP) {
         std::memset(gradQ, 0, basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
       }
@@ -197,8 +195,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       endpfor
       grainSizeComputeDerivatives.parallelSectionHasTerminated();
-
-      
       
       if(useSource || useNCP) {
         // source
@@ -299,7 +295,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
       iter = MaxIterations + 1; // break
     }
 
-    if (iter == (MaxIterations - 1)) {  // No convergence after last iteration
+    if (iter == MaxIterations) {  // No convergence after last iteration
       static tarch::logging::Log _log("kernels::aderdg::generic::c");
       logWarning("aderPicardLoopNonlinear(...)",
           "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "

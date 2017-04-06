@@ -19,6 +19,8 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "exahype/mappings/MeshRefinement.h"
+
 #include "exahype/solvers/Solver.h"
 
 peano::CommunicationSpecification
@@ -91,6 +93,10 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithWorkerThread(
 
 void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  #ifdef Parallel
+  exahype::mappings::MeshRefinement::FirstIteration = true;
+  #endif
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();

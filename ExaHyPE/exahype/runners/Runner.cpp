@@ -53,6 +53,8 @@
 #endif
 #include "exahype/plotters/Plotter.h"
 
+#include "exahype/mappings/MeshRefinement.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
@@ -375,7 +377,11 @@ int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
     // We have to do this for any rank.
-    exahype::State::FuseADERDGPhases = _parser.getFuseAlgorithmicSteps();
+    exahype::State::FuseADERDGPhases  = _parser.getFuseAlgorithmicSteps();
+
+    #ifdef Parallel
+    exahype::mappings::MeshRefinement::FirstIteration = false;
+    #endif
 
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
       result = runAsMaster(*repository);
