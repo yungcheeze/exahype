@@ -31,6 +31,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     static constexpr int NumberOfParameters = {{NumberOfParameters}};
     static constexpr int PatchSize          = {{PatchSize}};
     static constexpr int GhostLayerWidth    = {{GhostLayerWidth}};
+    static constexpr double CFL             = 0.9;
   
     class Variables;
     class ReadOnlyVariables;

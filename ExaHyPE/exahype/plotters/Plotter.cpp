@@ -19,6 +19,7 @@
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
+#include "exahype/plotters/ADERDG2CarpetHDF5.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
@@ -209,6 +210,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCSV(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new ADERDG2CarpetHDF5(postProcessing);
       }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:

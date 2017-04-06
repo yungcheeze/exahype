@@ -148,7 +148,7 @@ private:
    * | ~          | NT                 | NNT
    * | NNT        | T                  | NT
    */
-  void mergeWithNeighbourLimiterStatus(
+  void mergeWithLimiterStatus(
       SolverPatch& solverPatch,
       const int faceIndex,
       const SolverPatch::LimiterStatus& neighbourLimiterStatus) const;
@@ -236,6 +236,15 @@ private:
    * consider Master-Worker boundaries in the lookup of the parent.
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   */
+  bool markForRefinementBasedOnMergedLimiterStatus(
+      SolverPatch& solverPatch,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
+
+  /**
+   * Same as ::markForRefinementBasedOnMergedLimiterStatus
+   * but takes the reduced limiter status into account.
    */
   bool markForRefinementBasedOnLimiterStatus(
       SolverPatch& solverPatch,
@@ -785,6 +794,18 @@ public:
       const int parentCellDescriptionsIndex,
       const int parentElement,
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
+
+  /**
+   * Restrict and merge the merged limiter status of a solver patch of
+   * type Cell or Ancestor with the next Ancestor and
+   * all the intermediate EmptyAncestors.
+   * Perform the merge only if the cell associated with the solver patch is
+   * adjacent to the boundary of the cell associated with the intermediate
+   * EmptyAncestors or next Ancestor.
+   */
+  void mergeLimiterStatusWithAncestors(
+      const int cellDescriptionsIndex,
+      const int element);
 
   ///////////////////////////////////
   // NEIGHBOUR

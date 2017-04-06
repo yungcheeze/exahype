@@ -25,18 +25,18 @@
 #if DIMENSIONS == 2
 
 double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
- assert(std::isfinite(a));
- assert(std::isfinite(b));
+  assert(std::isfinite(a));
+  assert(std::isfinite(b));
 
- if (a * b < 0.0) {  // sign is different (alternative: std::signbit and xor)
-   return 0.0;
- } else {
-   if (std::abs(a) < std::abs(b)) {
-     return a;
-   } else {
-     return b;
-   }
- }
+  if (a * b < 0.0) {  // sign is different (alternative: std::signbit and xor)
+    return 0.0;
+  } else {
+    if (std::abs(a) < std::abs(b)) {
+      return a;
+    } else {
+      return b;
+    }
+  }
 }
 
 
@@ -55,15 +55,12 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-  
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  constexpr int patchBegin=ghostLayerWidth; // patchBegin cell is inside domain
-  constexpr int patchEnd=patchBegin+patchSize; // patchEnd cell is outside domain
-
-  constexpr double cflFactor = 0.9;
+  constexpr int patchBegin         = ghostLayerWidth; // patchBegin cell is inside domain
+  constexpr int patchEnd           = patchBegin+patchSize; // patchEnd cell is outside domain
+  constexpr double cflFactor       = SolverType::CFL;
 
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
@@ -76,7 +73,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   //double slopex[variablesPerPatch] = {0.0};
   //double slopey[variablesPerPatch] = {0.0};
   double slope[variablesPerPatch*DIMENSIONS] = {0.0};
-  
+
   // This musclhancock does not yet use 2. ghostlayer.
 
   // slopex
@@ -85,7 +82,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 0, l)] = 
             minmod(luh[idx(j, k + 1, l)] - luh[idx(j, k, l)],
-                   luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) / cellSize[0];
+                luh[idx(j, k, l)] - luh[idx(j, k - 1, l)]) / cellSize[0];
       }
     }
   }
@@ -95,7 +92,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
       for (int l = 0; l < numberOfVariables; l++) {
         slope[idx_slope(j, k, 1, l)] = 
             minmod(luh[idx(j + 1, k, l)] - luh[idx(j, k, l)],
-                   luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) / cellSize[1];
+                luh[idx(j, k, l)] - luh[idx(j - 1, k, l)]) / cellSize[1];
       }
     }
   }
@@ -138,7 +135,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
       double* Qt = slopet + idx(j, k, 0);
       double* gradQ = slope + idx_slope(j, k, 0, 0);
       if(solver.useSource()) {
-         solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
+        solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
       }
 
       // x fluxes
@@ -170,7 +167,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     }
   }
 
-  
+
   // 4. Solve Riemann problems
   double fL[numberOfVariables], fR[numberOfVariables];
   double dt_max_allowed = std::numeric_limits<double>::max();
@@ -180,10 +177,10 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     for (int k = patchBegin-1; k < patchEnd; k++) {
       double s_max_x =
           riemannsolvers::c::rusanov<SolverType>(solver,
-            fL, fR,
-            wRx + idx_w(j, k, 0),
-            wLx + idx_w(j, k+1, 0),
-            0
+              fL, fR,
+              wRx + idx_w(j, k, 0),
+              wLx + idx_w(j, k+1, 0),
+              0
           );
       dt_max_allowed = std::min(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[0] / s_max_x);
@@ -218,23 +215,23 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
 
   // 5. Evolve, evaluate source, update cells
   if(solver.useSource()) {
-	double ws[numberOfVariables]  = {0.0};
-	double src[numberOfVariables] = {0.0};
+    double ws[numberOfVariables]  = {0.0};
+    double src[numberOfVariables] = {0.0};
 
-	for (int j = patchBegin; j < patchEnd; j++) {
-	  for (int k = patchBegin; k < patchEnd; k++) {
-	    for (int l = 0; l < numberOfVariables; l++) {
-		ws[l] = luh[idx(j,k,l)] + 0.5 * dt * slopet[idx_w(j,k,l)]; // idx_w ~ idx_slopet
-	    }
+    for (int j = patchBegin; j < patchEnd; j++) {
+      for (int k = patchBegin; k < patchEnd; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          ws[l] = luh[idx(j,k,l)] + 0.5 * dt * slopet[idx_w(j,k,l)]; // idx_w ~ idx_slopet
+        }
 
-	    double* gradQ = slope + idx_slope(j, k, 0, 0); // const in time
-	    solver.fusedSource(ws, gradQ, src);
+        double* gradQ = slope + idx_slope(j, k, 0, 0); // const in time
+        solver.fusedSource(ws, gradQ, src);
 
-	    for(int l = 0; l < numberOfVariables; l++) {
-		luh_new[idx(j, k, l)] += dt * src[l];
-	    }
-	  }
-	}
+        for(int l = 0; l < numberOfVariables; l++) {
+          luh_new[idx(j, k, l)] += dt * src[l];
+        }
+      }
+    }
   }
 
   return dt_max_allowed;
