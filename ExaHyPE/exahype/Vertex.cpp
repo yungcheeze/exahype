@@ -280,7 +280,7 @@ bool exahype::Vertex::hasToSendMetadataIgnoreForksJoins(
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
-  return tarch::la::countEqualEntries(dest, src)  == 1 &&
+  return tarch::la::countEqualEntries(dest, src)  == (DIMENSIONS-1) &&
          adjacentRanks(destScalar) == toRank &&
          adjacentRanks(srcScalar)  == tarch::parallel::Node::getInstance().getRank();
 }

@@ -25,6 +25,7 @@ exahype::plotters::ADERDG2CarpetHDF5::ADERDG2CarpetHDF5(exahype::plotters::Plott
 exahype::plotters::ADERDG2CarpetHDF5::~ADERDG2CarpetHDF5() {}
 void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select) {}
 void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const int cellDescriptionsIndex, const int element) {}
+void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,double timeStamp) {}
 void exahype::plotters::ADERDG2CarpetHDF5::startPlotting(double time) {}
 void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
 

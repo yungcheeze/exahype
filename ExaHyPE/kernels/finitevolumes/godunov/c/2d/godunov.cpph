@@ -31,22 +31,19 @@
  * Finally add the source terms.
  */
 template <typename SolverType>
-double kernels::finitevolumes::c::solutionUpdate(
+double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {  
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  constexpr double cflFactor = 0.9; // TODO(Dominic): Move this out.
-
-  constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd  =patchBegin+patchSize;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
+  constexpr double cflFactor       = SolverType::CFL;
   
   idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   

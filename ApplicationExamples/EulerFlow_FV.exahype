@@ -28,9 +28,9 @@ exahype-project Euler
   log-file  = we-dont-care.log
 
   computational-domain
-    dimension const          = 3
-    width                    = 1.0, 1.0, 1.0
-    offset                   = 0.0, 0.0, 0.0
+    dimension const          = 2
+    width                    = 1.0, 1.0
+    offset                   = 0.0, 0.0
     end-time                 = 1.0
   end computational-domain
 
@@ -42,8 +42,8 @@ exahype-project Euler
  
   solver Finite-Volumes MyEulerSolver
     variables const   = rho:1,j:3,E:1
-    patch-size const  = 4
-    maximum-mesh-size = 0.444
+    patch-size const  = 7
+    maximum-mesh-size = 0.05
     time-stepping     = global
     kernel const      = generic::musclhancock
     language const    = C
@@ -52,10 +52,10 @@ exahype-project Euler
 
     plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 5
-      time      = 0.0
-      repeat    = 0.5E-10
-      output    = ./vtk-output/conserved
-      select    = x:0.0,y:0.0
+      time            = 0.0
+      repeat          = 0.5E-1
+      output          = ./vtk-output/conserved
+      select          = x:0.0,y:0.0
     end plot
 
   end solver

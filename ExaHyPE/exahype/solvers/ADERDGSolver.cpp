@@ -2008,7 +2008,7 @@ void exahype::solvers::ADERDGSolver::restrictData(
   const int levelDelta  = levelFine - levelCoarse;
 
   for (int d = 0; d < DIMENSIONS; d++) {
-    if (subcellIndex[d]==0 || // TODO(Dominic): Check this beforehand to minimize locking
+    if (subcellIndex[d]==0 ||
         subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
       const int faceIndex = 2*d + ((subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
 
