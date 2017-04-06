@@ -30,7 +30,7 @@ exahype-project  Euler
     dimension const          = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.2
+    end-time                 = 0.1
   end computational-domain
 
   shared-memory
@@ -73,5 +73,21 @@ exahype-project  Euler
       select          = x:0.0,y:0.0
     end plot
 
+    plot vtk::Cartesian::vertices::ascii ComparisonVTKWriter
+      variables const = 1
+      time            = 0.0
+      repeat          = 0.00000001
+      output          = ./output/comparison
+      select          = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii OrdinaryWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.00000001
+      output          = ./output/allfields
+      select          = x:0.0,y:0.0
+    end plot
+    
   end solver
 end exahype-project

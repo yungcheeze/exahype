@@ -1,27 +1,27 @@
-#include "h5writer.h"
+#include "ComparisonVTKWriter.h"
 
 
-Euler::h5writer::h5writer(MyEulerSolver&  solver) {
+Euler::ComparisonVTKWriter::ComparisonVTKWriter(MyEulerSolver&  solver) {
   // @todo Please insert your code here
 }
 
 
-Euler::h5writer::~h5writer() {
+Euler::ComparisonVTKWriter::~ComparisonVTKWriter() {
   // @todo Please insert your code here
 }
 
 
-void Euler::h5writer::startPlotting(double time) {
+void Euler::ComparisonVTKWriter::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void Euler::h5writer::finishPlotting() {
+void Euler::ComparisonVTKWriter::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void Euler::h5writer::mapQuantities(
+void Euler::ComparisonVTKWriter::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -30,8 +30,8 @@ void Euler::h5writer::mapQuantities(
     double* outputQuantities,
     double timeStamp
 ) {
-  // ONLY ONE OUTPUT QUANTITY
-  outputQuantities[0] = Q[4]; // energy
+  // just for comparing...
+  outputQuantities[0] = Q[4]; //energy
 }
 
 
