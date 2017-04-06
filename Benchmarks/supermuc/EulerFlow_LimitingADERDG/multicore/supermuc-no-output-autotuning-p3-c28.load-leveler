@@ -29,14 +29,14 @@ rm sharedmemory*.autotuning.properties
 mv sharedmemory.0.005.fused.autotuning.properties    sharedmemory-with-finest-grid.0.005.fused.autotuning.properties
 mv sharedmemory.0.005.nonfused.autotuning.properties sharedmemory-with-finest-grid.0.005.nonfused.autotuning.properties
 
-./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-autotuning-p3-0.5-t1-c28.exahype    > EulerFlow_LimitingADERDG-no-output-fused-autotuning-from-coarse-grid-p3.0.5.result
-./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-p3-0.5-t1-c28.exahype > EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-from-coarse-grid-p3.0.5.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-autotuning-p3-0.5-t1-c28.exahype    > EulerFlow_LimitingADERDG-no-output-fused-autotuning-from-coarse-grid-p3.0.5.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-p3-0.5-t1-c28.exahype > EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-from-coarse-grid-p3.0.5.result
 
 cp sharedmemory.0.005.fused.autotuning.properties    sharedmemory-from-coarse-grid.0.5.fused.autotuning.properties
 cp sharedmemory.0.005.nonfused.autotuning.properties sharedmemory-from-coarse-grid.0.5.nonfused.autotuning.properties
 
-./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-autotuning-p3-0.1-t1-c28.exahype    > EulerFlow_LimitingADERDG-no-output-fused-autotuning-from-coarse-grid-p3.0.1.result
-./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-p3-0.1-t1-c28.exahype > EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-from-coarse-grid-p3.0.1.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-autotuning-p3-0.1-t1-c28.exahype    > EulerFlow_LimitingADERDG-no-output-fused-autotuning-from-coarse-grid-p3.0.1.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-p3-0.1-t1-c28.exahype > EulerFlow_LimitingADERDG-no-output-nonfused-autotuning-from-coarse-grid-p3.0.1.result
 
 cp sharedmemory.0.005.fused.autotuning.properties    sharedmemory-from-coarse-grid.0.1.fused.autotuning.properties
 cp sharedmemory.0.005.nonfused.autotuning.properties sharedmemory-from-coarse-grid.0.1.nonfused.autotuning.properties
