@@ -9,7 +9,7 @@ t=${times[i]}
 
 order=5
 
-sharedMem=None
+sharedMem=TBB
 
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
@@ -29,6 +29,8 @@ do
 
   sed -i 's,p3,p'$order',g' $newScript
   sed -i 's,regular-0,'$mesh',g' $newScript
+
+  sed -i 's,script=supermuc.load-leveler,script='$newScript',g' $newScript
 
   # Create spec file
   spec=EulerFlow-$io.exahype
