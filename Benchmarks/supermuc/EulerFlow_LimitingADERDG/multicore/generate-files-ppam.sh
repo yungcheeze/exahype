@@ -1,7 +1,7 @@
 #!/bin/bash
 hMax=(0.5 0.1 0.05 0.01 0.005)
 
-for order in 3 # 9
+for order in 3 9
 do
 
 times=(0.1 0.05 0.01 0.005 0.001)
@@ -18,11 +18,11 @@ t=${times[i]}
 
 for fused in 'fused' 'nonfused'
 do
+for io in 'no-output' # output
+do
 for sharedMem in 'None' 'TBB'
 do
 for sharedMemIdentifier in 'dummy' 'autotuning' 'autotuning-without-learning'
-do
-for io in 'no-output' # output
 do
 #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 56
 for coresPerTask in 1 2 4 7 14 28 56
@@ -47,10 +47,10 @@ do
   
   sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec 
  
-  fuseSteps=off
-  if [ '$fused'=='fused' ]; 
+  fuseSteps='off'
+  if [ "$fused" == "fused" ]; 
   then 
-    fuseSteps=on   
+    fuseSteps='on'  
   fi
   sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(\w+),fuse-algorithmic-steps\1=\2'$fuseSteps',g' $newSpec
 
@@ -62,6 +62,11 @@ do
   sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
 
   echo 'created files '$newScript', '$newSpec
+
+  if [ "$sharedMem" = "None" ];
+  then
+    break
+  fi
 
 done
 done
