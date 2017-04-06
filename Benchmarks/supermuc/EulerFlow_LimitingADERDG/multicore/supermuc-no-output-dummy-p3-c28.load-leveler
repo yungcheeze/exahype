@@ -2,14 +2,16 @@
 #@ job_type = parallel
 ##@ job_type = MPICH
 #@ class = micro
+#@ energy_policy_tag = EulerFlow-p3
+#@ minimize_time_to_solution = yes
 #@ node = 1
 #@ tasks_per_node = 1
 #@ island_count = 1
 #@ wall_clock_limit = 04:00:00
-#@ job_name = benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3
+#@ job_name = EulerFlow_LimitingADERDG-no-output-dummy-p3
 #@ network.MPI = sn_all,not_shared,us
-#@ output = Euler-dummy.out
-#@ error =  Euler-dummy.err
+#@ output = Euler-dummy-p3.out
+#@ error =  Euler-dummy-p3.err
 #@ notification=complete
 #@ notify_user=dominic.e.charrier@durham.ac.uk
 #@ queue
@@ -21,43 +23,43 @@ module load tbb
 
 rm sharedmemory*.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-with-finest-grid-p3.0.005.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-with-finest-grid-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-with-finest-grid-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-with-finest-grid-p3.0.005.result
 
 mv sharedmemory.0.005.fused.dummy.properties    sharedmemory-with-finest-grid.0.005.fused.dummy.properties
 mv sharedmemory.0.005.nonfused.dummy.properties sharedmemory-with-finest-grid.0.005.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.5-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.5.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.5-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.5.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.5-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.5.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.5-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.5.result
 
 cp sharedmemory.0.005.fused.dummy.properties    sharedmemory-from-coarse-grid.0.5.fused.dummy.properties
 cp sharedmemory.0.005.nonfused.dummy.properties sharedmemory-from-coarse-grid.0.5.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.1-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.1.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.1-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.1.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.1-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.1.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.1-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.1.result
 
 cp sharedmemory.0.005.fused.dummy.properties    sharedmemory-from-coarse-grid.0.1.fused.dummy.properties
 cp sharedmemory.0.005.nonfused.dummy.properties sharedmemory-from-coarse-grid.0.1.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.05-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.05.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.05-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.05.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.05-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.05.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.05-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.05.result
 
 cp sharedmemory.0.005.fused.dummy.properties    sharedmemory-from-coarse-grid.0.05.fused.dummy.properties
 cp sharedmemory.0.005.nonfused.dummy.properties sharedmemory-from-coarse-grid.0.05.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.01-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.01.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.01-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.01.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.01-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.01.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.01-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.01.result
 
 cp sharedmemory.0.005.fused.dummy.properties    sharedmemory-from-coarse-grid.0.01.fused.dummy.properties
 cp sharedmemory.0.005.nonfused.dummy.properties sharedmemory-from-coarse-grid.0.01.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.005.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-p3.0.005.result
 
 cp sharedmemory.0.005.fused.dummy.properties    sharedmemory-from-coarse-grid.0.005.fused.dummy.properties
 cp sharedmemory.0.005.nonfused.dummy.properties sharedmemory-from-coarse-grid.0.005.nonfused.dummy.properties
 
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-without-learning-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-without-learning-p3.0.005.result
-./ExaHyPE-Euler-p3 benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-without-learning-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-without-learning-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-without-learning-p3-0.005-t1-c28.exahype    > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-fused-dummy-from-coarse-grid-without-learning-p3.0.005.result
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-TBB-Intel benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-without-learning-p3-0.005-t1-c28.exahype > benchmarks/multicore/EulerFlow_LimitingADERDG-no-output-nonfused-dummy-from-coarse-grid-without-learning-p3.0.005.result
 
 rm sharedmemory.0.005.*.dummy.properties 
