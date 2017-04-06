@@ -37,11 +37,11 @@ do
   sed -i 's,coresPerTask=1,coresPerTask='$coresPerTask',g' $newScript 
 
   sed -i 's,p3,p'$order',g' $newScript
-  sed -i 's,regular-0,'$mesh',g' $newScript
+  sed -i 's,regular-0,'$h',g' $newScript
   
   # Create spec file
   spec=EulerFlow_LimitingADERDG-$io.exahype
-  prefix=EulerFlow_LimitingADERDG-$io-$fused-$sharedMemIdentifier-p$order-$mesh-t1-c$coresPerTask
+  prefix=EulerFlow_LimitingADERDG-$io-$fused-$sharedMemIdentifier-p$order-$h-t1-c$coresPerTask
   newSpec=$prefix'.exahype'
   cp $spec $newSpec
   
@@ -54,11 +54,11 @@ do
   fi
   sed -i -r 's,fuse-algorithmic-steps(\s*)=(\s*)(\w+),fuse-algorithmic-steps\1=\2'$fuseSteps',g' $newSpec
 
-  sed -i -r 's,identifier(\s+)=(\s+)(\w+),identifier\1=\2'$sharedMemIdentifier',g' $newSpec
-  sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
-  sed -i -r 's,properties-file(\s*)=(\s*)sharedmemory.'$h'.'$fused'.'$sharedMemIdentifier'.properties,g,' $newSpec
+  sed -i -r 's,identifier(\s*)=(\s*)(\w+),identifier\1=\2'$sharedMemIdentifier',g' $newSpec
+  sed -i -r 's,cores(\s*)=(\s*)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
+  sed -i -r 's,properties-file(\s*)=(\s*)((\w|\.)+),properties-file\1=\2sharedmemory-'$h'-'$fused'-'$sharedMemIdentifier'.properties,g' $newSpec
  
-  sed -i -r 's,order(\s+)const(\s+)=(\s+)([0-9]+),order\1const\2=\3'$order',g' $newSpec
+  sed -i -r 's,order(\s+)const(\s*)=(\s*)([0-9]+),order\1const\2=\3'$order',g' $newSpec
   sed -i -r 's,maximum-mesh-size(\s*)=(\s*)(([0-9]|\.)*),maximum-mesh-size\1=\2'$h',g' $newSpec
 
   echo 'created files '$newScript', '$newSpec
