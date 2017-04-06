@@ -208,7 +208,7 @@ bool exahype::State::continueToConstructGrid() const {
 
  void exahype::State::switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
    _stateData.setReinitTimeStepData(false);
-   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 

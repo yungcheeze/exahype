@@ -24,6 +24,14 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+#include "exahype/mappings/LimiterStatusSpreading.h"
+
+#include "exahype/mappings/LimiterStatusMergingMPI.h"
+
+#ifdef Parallel
+exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
+#endif
+
 peano::CommunicationSpecification
 exahype::mappings::LimiterStatusSpreading::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -93,7 +101,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined5);
+    auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined2);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
       auto solver = exahype::solvers::RegisteredSolvers[i];
 
@@ -126,14 +134,14 @@ void exahype::mappings::LimiterStatusSpreading::touchVertexFirstTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
-                             fineGridX, fineGridH,
-                             coarseGridVerticesEnumerator.toString(),
-                             coarseGridCell, fineGridPositionOfVertex);
+                               fineGridX, fineGridH,
+                               coarseGridVerticesEnumerator.toString(),
+                               coarseGridCell, fineGridPositionOfVertex);
   dfor2(pos1)
     dfor2(pos2)
       if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices // TODO(Dominic): Probably have to consider Voronoi neighbours later on when we use high order schemes
         auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined6);
+            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined3);
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
           auto solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
@@ -179,7 +187,7 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
 void exahype::mappings::LimiterStatusSpreading::endIteration(
     exahype::State& solverState) {
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
-  logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
+  logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges); /// @deprecated fields
   logInfo("endIteration(...)","boundary face merges: " << _boundaryFaceMerges);
   #endif
 }
@@ -189,13 +197,135 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  // do nothing
+  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
+  if (exahype::mappings::LimiterStatusSpreading::FirstIteration) {
+    if (exahype::State::fuseADERDGPhases()) { // drop metadata and face data
+      dfor2(myDest)
+        dfor2(mySrc)
+          tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+          tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+          if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+            MetadataHeap::getInstance().receiveData(
+                fromRank, fineGridX, level,
+                peano::heap::MessageType::NeighbourCommunication);
+
+            ...
+          }
+        enddforx
+      enddforx
+    }
+
+
+  }
+
+  dfor2(myDest)
+    dfor2(mySrc)
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+      int destScalar = TWO_POWER_D - myDestScalar - 1;
+      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
+
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+        int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::solvers::RegisteredSolvers.size());
+        MetadataHeap::getInstance().receiveData(
+            receivedMetadataIndex,
+            fromRank, fineGridX, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+        if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
+          mergeNeighourMergedLimiterStatus(
+              fromRank,
+              src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              fineGridX,level,
+              receivedMetadata);
+
+          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
+          vertex.setMergePerformed(src,dest,true);
+        } else {
+          dropNeighbourMergedLimiterStatus(
+              fromRank,
+              src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              fineGridX,level,
+              receivedMetadata);
+        }
+        // Clean up
+        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+      }
+    enddforx
+  enddforx
+}
+
+void exahype::mappings::LimiterStatusSpreading::dropNeighbourMergedLimiterStatus(
+    const int                                    fromRank,
+    const tarch::la::Vector<DIMENSIONS, int>&    src,
+    const tarch::la::Vector<DIMENSIONS, int>&    dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level,
+    const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDGSolver->dropNeighbourMergedLimiterStatus(
+          fromRank,src,dest,x,level);
+    }
+  }
+}
+
+void exahype::mappings::LimiterStatusSpreading::mergeNeighourMergedLimiterStatus(
+    const int                                    fromRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level,
+    const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
+
+  for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
+    auto* solver = solvers::RegisteredSolvers[solverNumber];
+
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+      int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound
+          && receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
+        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        limitingADERDGSolver->mergeWithNeighbourMergedLimiterStatus(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
+      } else {
+        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        limitingADERDGSolver->dropNeighbourMergedLimiterStatus(fromRank,src,dest,x,level);
+      }
+    }
+  }
 }
 
 void exahype::mappings::LimiterStatusSpreading::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
   dfor2(dest)
     dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {
@@ -217,6 +347,7 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToNeighbour(
     enddforx
   enddforx
 }
+
 
 /*
  * We only activate send empty data for LimitingADERDGSolvers
@@ -288,7 +419,6 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
       encodedMetadata, toRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
 }
-
 
 //
 // Below all methods are nop.

@@ -696,46 +696,41 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
 }
 
 void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Repository& repository) {
-  logInfo("updateLimiterDomain(...)","start to update limiter domain");
-  repository.getState().switchToLimiterStatusSpreadingContext();
-  repository.switchToLimiterStatusSpreading();
-  repository.iterate();
-
-  /**
-   * We need to gather information from all neighbours
-   * of a cell before we can determine the unified
-   * limiter status value of the cell.
-   *
-   * We thus need two extra iterations to send and receive
-   * the limiter status of remote neighbours.
-   */
-  #ifdef Parallel
-  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
-  repository.switchToLimiterStatusMergingAndSpreadingMPI();
-  repository.iterate();
-  repository.switchToLimiterStatusMergingMPI();
-  repository.iterate();
-  #endif
-
-  repository.getState().switchToReinitialisationContext();
-  logInfo("updateLimiterDomain(...)","reinitialise cells");
-  repository.switchToReinitialisation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
-  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
-  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomain(...)","updated limiter domain");
+//  logInfo("updateLimiterDomain(...)","start to update limiter domain");
+//  repository.getState().switchToLimiterStatusSpreadingContext();
+//  repository.switchToLimiterStatusSpreading();
+//  repository.iterate();
+//
+//  /**
+//   * We need to gather information from all neighbours
+//   * of a cell before we can determine the unified
+//   * limiter status value of the cell.
+//   *
+//   * We thus need two extra iterations to send and receive
+//   * the limiter status of remote neighbours.
+//   */
+//  #ifdef Parallel
+//  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
+//  repository.switchToLimiterStatusMergingAndSpreadingMPI();
+//  repository.iterate();
+//  repository.switchToLimiterStatusMergingMPI();
+//  repository.iterate();
+//  #endif
+//
+//  repository.getState().switchToReinitialisationContext();
+//  logInfo("updateLimiterDomain(...)","reinitialise cells");
+//  repository.switchToReinitialisation();
+//  repository.iterate();
+//
+//  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
+//  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+//  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+//  repository.iterate();
+//
+//  logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
 void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","start to update limiter domain");
-  repository.getState().switchToLimiterStatusSpreadingContext();
-  repository.switchToLimiterStatusSpreadingFusedTimeStepping();
-  repository.iterate();
-
   /**
    * We need to gather information from all neighbours
    * of a cell before we can determine the unified
@@ -744,25 +739,30 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
    * We thus need two extra iterations to send and receive
    * the limiter status of remote neighbours.
    */
-  #ifdef Parallel
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","merge limiter status of remote neighbours");
-  repository.switchToLimiterStatusMergingAndSpreadingMPI();
-  repository.iterate();
-  repository.switchToLimiterStatusMergingMPI();
-  repository.iterate();
-  #endif
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
+  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
+  repository.switchToLimiterStatusSpreading();
+  repository.iterate(2);
 
   repository.getState().switchToReinitialisationContext();
   logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
   repository.switchToReinitialisation();
   repository.iterate();
 
+  // We refine here using the previous solution (which is valid)
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
+  //
+  // TODO(Dominic): A-posteriori refinement based on limiter status
+
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
+  repository.switchToFinaliseMeshRefinementAndSubcellSending(); // finalise mesh refinment and send the data
+  repository.iterate();
+
+
   logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
   repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
   repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
   repository.iterate();
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
 }
 
 void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {

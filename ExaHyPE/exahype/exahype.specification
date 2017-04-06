@@ -55,19 +55,13 @@ event-mapping:
   name: LimiterStatusSpreading
 
 event-mapping:
-  name: LimiterStatusMergingAndSpreadingMPI
-
-event-mapping:
-  name: LimiterStatusMergingMPI
-
-event-mapping:
   name: Reinitialisation
   
 event-mapping:
-  name: SolutionRecomputation
-
+  name: SubcellSending
+  
 event-mapping:
-  name: DropIncomingMPIMessages
+  name: SolutionRecomputation
 
 // GridUpdate   
 event-mapping:
@@ -87,7 +81,7 @@ adapter:
   name: MeshRefinement
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  // Initial Condition comes after MeshRefinement since we refine here in a fast manner down to the 
+  // Initial Condition comes after "MeshRefinement" since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
   merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
@@ -191,20 +185,6 @@ adapter:
   merge-with-user-defined-mapping: Merging // merge time step data and limiter domain has changed attribute of solvers
   merge-with-user-defined-mapping: LimiterStatusSpreading
 
-adapter: 
-  name: LimiterStatusSpreadingFusedTimeStepping
-  merge-with-user-defined-mapping: DropIncomingMPIMessages
-  merge-with-user-defined-mapping: Merging // merge time step data and limiter domain has changed attribute of solvers
-  merge-with-user-defined-mapping: LimiterStatusSpreading
-
-adapter: 
-  name: LimiterStatusMergingAndSpreadingMPI
-  merge-with-user-defined-mapping: LimiterStatusMergingAndSpreadingMPI
-
-adapter: 
-  name: LimiterStatusMergingMPI
-  merge-with-user-defined-mapping: LimiterStatusMergingMPI
-
 adapter:  
   name: Reinitialisation
   merge-with-user-defined-mapping: PreProcessing
@@ -276,15 +256,14 @@ adapter:
   
 // Additional adapters for AMR in 4 phase time stepping
 adapter:
-  name: TimeStepDataMerging
+  name: MergeTimeStepData
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Merging 
   merge-with-user-defined-mapping: PostProcessing
   
 // Additional adapters for AMR in fused time stepping
 adapter:
-  name: TimeStepDataMergingAndDropIncomingMPIMessages
+  name: MergeTimeStepDataDropFaceData
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: Merging 
   merge-with-user-defined-mapping: PostProcessing

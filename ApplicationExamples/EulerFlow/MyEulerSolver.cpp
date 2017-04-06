@@ -114,7 +114,7 @@ void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     // pass the time for exact initial data as t is not exactly 0.
-    idfunc(x, Q, t);
+    DiffusingGauss(x, Q, 0.0);
   }
 }
 
@@ -157,12 +157,12 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x, const double t,
   // Number of variables    = 5 (#unknowns + #parameters)
 
     // Compute boundary state.
-    idfunc(x, stateOut, t);
-  //stateOut[0] = stateIn[0];
-  //stateOut[1] = stateIn[1];
-  //stateOut[2] = stateIn[2];
-  //stateOut[3] = stateIn[3];
-  //stateOut[4] = stateIn[4];
+//  DiffusingGauss(x, stateOut, t);
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
 
     // Compute flux and
     // extract normal flux in a lazy fashion.

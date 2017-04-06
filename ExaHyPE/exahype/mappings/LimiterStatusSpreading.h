@@ -55,6 +55,8 @@ class exahype::mappings::LimiterStatusSpreading {
 
  public:
 #ifdef Parallel
+  static bool FirstIteration;
+
   /**
    * Loop over all the solvers and check
    * if a cell description (ADERDGCellDescription,
@@ -79,7 +81,7 @@ class exahype::mappings::LimiterStatusSpreading {
       const int                                    level);
 
   /**
-   * Loop over all the solvers and check
+   * Loop over all the solvers and
    * send out empty messages for the particular
    * solver.
    *
@@ -93,6 +95,42 @@ class exahype::mappings::LimiterStatusSpreading {
       const int                                    destCellDescriptionIndex,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
+
+  /**
+   * We only drop the received limiter status for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void dropNeighbourMergedLimiterStatus(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level,
+      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+
+  /**
+   * We only merge the face-wise limiter status for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void mergeNeighourMergedLimiterStatus(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level,
+      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
   #endif
 
   /**

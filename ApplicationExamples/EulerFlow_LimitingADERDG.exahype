@@ -27,7 +27,7 @@ exahype-project  Euler
   log-file  = bla.log
 
   computational-domain
-    dimension const                = 2
+    dimension const          = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
@@ -58,21 +58,21 @@ exahype-project  Euler
   end optimisation
 
   solver Limiting-ADER-DG LimitingADERDG
-    variables const         = rho:1,j:3,E:1
-    order const             = 3
-    maximum-mesh-size = 0.04
-    time-stepping     = global
-    kernel const            = generic::fluxes::nonlinear
-    language const          = C
-    limiter-kernel const    = generic::godunov 
-    limiter-language const  = C
+    variables const          = rho:1,j:3,E:1
+    order const              = 3
+    maximum-mesh-size        = 0.04
+    time-stepping            = global
+    kernel const             = generic::fluxes::nonlinear
+    language const           = C
+    limiter-kernel const     = generic::musclhancock
+    limiter-language const   = C
     dmp-relaxation-parameter = 1e-2
-    dmp-difference-scaling = 1e-3
+    dmp-difference-scaling   = 1e-3
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
       time      = 0.0
-      repeat    = 0.000001
+      repeat    = 0.01
       output    = ./limitingaderg-dg
       select    = x:0.0,y:0.0
     end plot

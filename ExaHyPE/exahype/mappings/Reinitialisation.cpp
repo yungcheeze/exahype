@@ -210,6 +210,8 @@ void exahype::mappings::Reinitialisation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // TODO(Dominic): Do not send data
+
   dfor2(dest)
     dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {

@@ -253,8 +253,12 @@ void exahype::mappings::Merging::mergeWithNeighbour(
     return;
   }
   
-  if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+  if (
+      _localState.getMergeMode()==exahype::records::State::MergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::DropFaceData ||
+      _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndDropFaceData
+  ) {
     // logInfo("mergeWithNeighbour(...)","hasToMerge");
 
     dfor2(myDest)
@@ -280,13 +284,25 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
             // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
 
-            mergeWithNeighbourData(
-                fromRank,
-                vertex.getCellDescriptionsIndex()[srcScalar],
-                vertex.getCellDescriptionsIndex()[destScalar],
-                src,dest,
-                fineGridX,level,
-                receivedMetadata);
+            if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
+                _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+              mergeWithNeighbourData(
+                  fromRank,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  src,dest,
+                  fineGridX,level,
+                  receivedMetadata);
+            } else { // _localState.getMergeMode()==exahype::records::State::DropFaceData ||
+                     // _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndDropFaceData
+              dropNeighbourData(
+                  fromRank,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  src,dest,
+                  fineGridX,level,
+                  receivedMetadata);
+            }
 
             vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
             vertex.setMergePerformed(src,dest,true);

@@ -41,6 +41,7 @@ class exahype::dastgen::State {
      * a reduction-broadcast operation.
      */
     BroadcastAndMergeTimeStepData,
+    
     /**
      * This is one of the modes
      * for the standard time stepping
@@ -53,10 +54,16 @@ class exahype::dastgen::State {
      * direct neighbour communication.
      * However if we consider adaptive meshes,
      * face data exchange also includes
-     * as master-worker and worker-master
+     * master-worker and worker-master
      * communication.
      */
     MergeFaceData,
+    
+    /**
+     * Drop face data.
+     */
+    DropFaceData,
+    
     /**
      * This is the default mode if you use
      * fused time stepping.
@@ -65,7 +72,14 @@ class exahype::dastgen::State {
      * time step as well as
      * face data.
      */
-    BroadcastAndMergeTimeStepDataAndMergeFaceData
+    BroadcastAndMergeTimeStepDataAndMergeFaceData,
+    
+    /**
+     * Broadcast time step data from the 
+     * master to the workers 
+     * and drop face data.
+     */
+    BroadcastAndMergeTimeStepDataAndDropFaceData
   };
 
   parallelise persistent MergeMode mergeMode;

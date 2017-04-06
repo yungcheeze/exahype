@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   06/04/2017 12:03
     */
    class exahype::records::State { 
       
@@ -42,7 +42,7 @@ namespace exahype {
          typedef exahype::records::StatePacked Packed;
          
          enum MergeMode {
-            MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+            MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
          };
          
          enum SendMode {
@@ -715,7 +715,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   06/04/2017 12:03
     */
    class exahype::records::StatePacked { 
       
@@ -1429,7 +1429,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::State { 
          
@@ -1438,7 +1438,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -2979,7 +2979,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::StatePacked { 
          
@@ -4572,7 +4572,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::State { 
          
@@ -4581,7 +4581,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -5999,7 +5999,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::StatePacked { 
          
@@ -7451,7 +7451,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::State { 
          
@@ -7460,7 +7460,7 @@ namespace exahype {
             typedef exahype::records::StatePacked Packed;
             
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -8256,7 +8256,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   06/04/2017 12:03
        */
       class exahype::records::StatePacked { 
          

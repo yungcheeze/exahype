@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#ifndef EXAHYPE_MAPPINGS_LimiterStatusMergingMPI_H_
-#define EXAHYPE_MAPPINGS_LimiterStatusMergingMPI_H_
+#ifndef EXAHYPE_MAPPINGS_SubcellSending_H_
+#define EXAHYPE_MAPPINGS_SubcellSending_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -29,7 +29,7 @@
 
 namespace exahype {
 namespace mappings {
-class LimiterStatusMergingMPI;
+class SubcellSending;
 }
 }
 
@@ -41,7 +41,7 @@ class LimiterStatusMergingMPI;
  *
  * @author Dominic Charrier
  */
-class exahype::mappings::LimiterStatusMergingMPI {
+class exahype::mappings::SubcellSending {
  private:
   /**
    * Logging device for the trace macros.
@@ -53,20 +53,63 @@ class exahype::mappings::LimiterStatusMergingMPI {
   int _boundaryFaceMerges;
   #endif
 
+#ifdef Parallel
+  /**
+   * We only send empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendEmptyDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /*
+   * We only send solver and empty data for LimitingADERDGSolvers
+   * where we have detected a change of the limiter domain.
+   * This information should be available on all ranks.
+   * We ignore other solver types.
+   *
+   * TODO(Dominic): Add more docu.
+   */
+  static void sendDataToNeighbour(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+#endif
+
  public:
+  /**
+   * Mask out data exchange between master and worker.
+   * Further let Peano handle heap data exchange internally.
+   */
+  static peano::CommunicationSpecification communicationSpecification();
+
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */
   static peano::MappingSpecification enterCellSpecification();
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+
 
   /**
    * Nop.
    */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
   /**
    * Nop.
    */
@@ -79,12 +122,6 @@ class exahype::mappings::LimiterStatusMergingMPI {
    * Nop.
    */
   static peano::MappingSpecification descendSpecification();
-
-  /**
-   * Mask out data exchange between master and worker.
-   * Further let Peano handle heap data exchange internally.
-   */
-  static peano::CommunicationSpecification communicationSpecification();
 
   /**
      * Initialise debug counters.
@@ -125,51 +162,6 @@ class exahype::mappings::LimiterStatusMergingMPI {
     /**
      * TODO(Dominic): Add docu.
      */
-    void mergeWithNeighbour(exahype::Vertex& vertex,
-                            const exahype::Vertex& neighbour, int fromRank,
-                            const tarch::la::Vector<DIMENSIONS, double>& x,
-                            const tarch::la::Vector<DIMENSIONS, double>& h,
-                            int level);
-
-    /**
-     * We only drop the received limiter status for LimitingADERDGSolvers
-     * where we have detected a change of the limiter domain.
-     * This information should be available on all ranks.
-     * We ignore other solver types.
-     *
-     * TODO(Dominic): Add more docu.
-     */
-    static void dropNeighbourMergedLimiterStatus(
-        const int                                    fromRank,
-        const tarch::la::Vector<DIMENSIONS, int>&    src,
-        const tarch::la::Vector<DIMENSIONS, int>&    dest,
-        const int                                    srcCellDescriptionIndex,
-        const int                                    destCellDescriptionIndex,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const int                                    level,
-        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
-
-    /**
-     * We only merge the face-wise limiter status for LimitingADERDGSolvers
-     * where we have detected a change of the limiter domain.
-     * This information should be available on all ranks.
-     * We ignore other solver types.
-     *
-     * TODO(Dominic): Add more docu.
-     */
-    static void mergeNeighourMergedLimiterStatus(
-        const int                                    fromRank,
-        const tarch::la::Vector<DIMENSIONS,int>&     src,
-        const tarch::la::Vector<DIMENSIONS,int>&     dest,
-        const int                                    srcCellDescriptionIndex,
-        const int                                    destCellDescriptionIndex,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const int                                    level,
-        const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
-
-    /**
-     * TODO(Dominic): Add docu.
-     */
     void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                                 const tarch::la::Vector<DIMENSIONS, double>& x,
                                 const tarch::la::Vector<DIMENSIONS, double>& h,
@@ -181,6 +173,16 @@ class exahype::mappings::LimiterStatusMergingMPI {
     // Below all methods are nop.
     //
     //===================================
+
+    /**
+     * Nop.
+     */
+    void mergeWithNeighbour(exahype::Vertex& vertex,
+                            const exahype::Vertex& neighbour, int fromRank,
+                            const tarch::la::Vector<DIMENSIONS, double>& x,
+                            const tarch::la::Vector<DIMENSIONS, double>& h,
+                            int level);
+
 
     /**
      * Nop.
@@ -289,25 +291,25 @@ class exahype::mappings::LimiterStatusMergingMPI {
     /**
      * Nop
      */
-    LimiterStatusMergingMPI();
+    SubcellSending();
 
   #if defined(SharedMemoryParallelisation)
     /**
      * Nop.
      */
-    LimiterStatusMergingMPI(const LimiterStatusMergingMPI& masterThread);
+    SubcellSending(const SubcellSending& masterThread);
   #endif
 
     /**
      * Nop.
      */
-    virtual ~LimiterStatusMergingMPI();
+    virtual ~SubcellSending();
 
   #if defined(SharedMemoryParallelisation)
     /**
      * Nop.
      */
-    void mergeWithWorkerThread(const LimiterStatusMergingMPI& workerThread);
+    void mergeWithWorkerThread(const SubcellSending& workerThread);
   #endif
 
     /**

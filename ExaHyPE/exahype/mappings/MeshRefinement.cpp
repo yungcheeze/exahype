@@ -28,6 +28,9 @@
 exahype::mappings::MeshRefinement::FirstIteration = true;
 #endif
 
+exahype::mappings::MeshRefinement::RefinementMode
+exahype::mappings::MeshRefinement::Mode = exahype::mappings::MeshRefinement::RefinementMode::APriori;
+
 tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::MeshRefinement");
 
 /**
@@ -249,22 +252,26 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    bool refinementRequested =
-        solver->updateStateInEnterCell(
-            fineGridCell,
-            fineGridVertices,
-            fineGridVerticesEnumerator,
-            coarseGridVertices,
-            coarseGridVerticesEnumerator,
-            coarseGridCell,
-            fineGridPositionOfCell,
-            solverNumber);
+    if (Mode==RefinementMode::APriori) {
+      bool refinementRequested =
+          solver->updateStateInEnterCell(
+              fineGridCell,
+              fineGridVertices,
+              fineGridVerticesEnumerator,
+              coarseGridVertices,
+              coarseGridVerticesEnumerator,
+              coarseGridCell,
+              fineGridPositionOfCell,
+              solverNumber);
 
-    refineFineGridCell |= refinementRequested;
+      refineFineGridCell |= refinementRequested;
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+      }
+    } else { ..
+
     }
   }
 

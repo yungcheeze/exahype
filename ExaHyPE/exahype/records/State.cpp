@@ -47,13 +47,15 @@
          case MergeNothing: return "MergeNothing";
          case BroadcastAndMergeTimeStepData: return "BroadcastAndMergeTimeStepData";
          case MergeFaceData: return "MergeFaceData";
+         case DropFaceData: return "DropFaceData";
          case BroadcastAndMergeTimeStepDataAndMergeFaceData: return "BroadcastAndMergeTimeStepDataAndMergeFaceData";
+         case BroadcastAndMergeTimeStepDataAndDropFaceData: return "BroadcastAndMergeTimeStepDataAndDropFaceData";
       }
       return "undefined";
    }
    
    std::string exahype::records::State::getMergeModeMapping() {
-      return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,BroadcastAndMergeTimeStepDataAndMergeFaceData=3)";
+      return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,DropFaceData=3,BroadcastAndMergeTimeStepDataAndMergeFaceData=4,BroadcastAndMergeTimeStepDataAndDropFaceData=5)";
    }
    std::string exahype::records::State::toString(const SendMode& param) {
       switch (param) {
@@ -1332,13 +1334,15 @@
             case MergeNothing: return "MergeNothing";
             case BroadcastAndMergeTimeStepData: return "BroadcastAndMergeTimeStepData";
             case MergeFaceData: return "MergeFaceData";
+            case DropFaceData: return "DropFaceData";
             case BroadcastAndMergeTimeStepDataAndMergeFaceData: return "BroadcastAndMergeTimeStepDataAndMergeFaceData";
+            case BroadcastAndMergeTimeStepDataAndDropFaceData: return "BroadcastAndMergeTimeStepDataAndDropFaceData";
          }
          return "undefined";
       }
       
       std::string exahype::records::State::getMergeModeMapping() {
-         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,BroadcastAndMergeTimeStepDataAndMergeFaceData=3)";
+         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,DropFaceData=3,BroadcastAndMergeTimeStepDataAndMergeFaceData=4,BroadcastAndMergeTimeStepDataAndDropFaceData=5)";
       }
       std::string exahype::records::State::toString(const SendMode& param) {
          switch (param) {
@@ -3149,13 +3153,15 @@
             case MergeNothing: return "MergeNothing";
             case BroadcastAndMergeTimeStepData: return "BroadcastAndMergeTimeStepData";
             case MergeFaceData: return "MergeFaceData";
+            case DropFaceData: return "DropFaceData";
             case BroadcastAndMergeTimeStepDataAndMergeFaceData: return "BroadcastAndMergeTimeStepDataAndMergeFaceData";
+            case BroadcastAndMergeTimeStepDataAndDropFaceData: return "BroadcastAndMergeTimeStepDataAndDropFaceData";
          }
          return "undefined";
       }
       
       std::string exahype::records::State::getMergeModeMapping() {
-         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,BroadcastAndMergeTimeStepDataAndMergeFaceData=3)";
+         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,DropFaceData=3,BroadcastAndMergeTimeStepDataAndMergeFaceData=4,BroadcastAndMergeTimeStepDataAndDropFaceData=5)";
       }
       std::string exahype::records::State::toString(const SendMode& param) {
          switch (param) {
@@ -4893,13 +4899,15 @@
             case MergeNothing: return "MergeNothing";
             case BroadcastAndMergeTimeStepData: return "BroadcastAndMergeTimeStepData";
             case MergeFaceData: return "MergeFaceData";
+            case DropFaceData: return "DropFaceData";
             case BroadcastAndMergeTimeStepDataAndMergeFaceData: return "BroadcastAndMergeTimeStepDataAndMergeFaceData";
+            case BroadcastAndMergeTimeStepDataAndDropFaceData: return "BroadcastAndMergeTimeStepDataAndDropFaceData";
          }
          return "undefined";
       }
       
       std::string exahype::records::State::getMergeModeMapping() {
-         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,BroadcastAndMergeTimeStepDataAndMergeFaceData=3)";
+         return "MergeMode(MergeNothing=0,BroadcastAndMergeTimeStepData=1,MergeFaceData=2,DropFaceData=3,BroadcastAndMergeTimeStepDataAndMergeFaceData=4,BroadcastAndMergeTimeStepDataAndDropFaceData=5)";
       }
       std::string exahype::records::State::toString(const SendMode& param) {
          switch (param) {
