@@ -14,6 +14,13 @@
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
+// failure verbosely even without assertions turned on.
+#include <stdio.h>
+void abortForWrongAPI(const char* const msg) {
+	puts(msg);
+	abort();
+}
+
 // We define the constructor of the actual solver here in order to regenerate it easily.
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
@@ -98,7 +105,7 @@ void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la
 {{BeforeSolutionAdjustment}}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
-      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      abortForWrongAPI(Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
       kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
@@ -163,14 +170,16 @@ void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const d
       }
 }
 
+void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+}
+
 void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
 void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
@@ -188,14 +197,11 @@ void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,co
 }
 
 void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
-}
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
 void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -203,6 +209,6 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const double t,
       const double dt,
       double* luh) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
+
