@@ -16,12 +16,12 @@ do
   echo "SHAREDMEM=$SHAREDMEM"
   #read -p "press any key..."
 
-  for p in 3 5 9
+  for p in 3 9
   do
     rm *.o
-    sed -i -r "s,Order(\s+)= ([0-9]),Order\1= ${p}," $headerADERDG 
+    sed -i -r "s,Order(\s+)= ([0-9]+),Order\1= ${p}," $headerADERDG 
     let patchSize=2*$p+1
-    sed -i -r 's,PatchSize(\s+)= ([0-9]),PatchSize\1= '$patchSize',' $headerFV
+    sed -i -r 's,PatchSize(\s+)= ([0-9]+),PatchSize\1= '$patchSize',' $headerFV
 
     make -j28 && \
     mv $exe1 $exe2-p$p-$SHAREDMEM-$COMPILER
