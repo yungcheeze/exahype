@@ -12,11 +12,16 @@
  **/
 
 #include <cstring>
-#include <tarch/la/Vector.h>
+
+#include "tarch/la/Vector.h"
+#include "tarch/multicore/Loop.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "../../../../DGMatrices.h"
 #include "../../../../GaussLegendreQuadrature.h"
 #include "../../../../KernelUtils.h"
+
+#include "SharedMemoryLabels.h"
 
 #if DIMENSIONS == 3
 
@@ -59,10 +64,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1, numberOfVariables);
 
   // 1. Trivial initial guess
-  #ifdef SharedMemoryParallelisation
-  #pragma omp parallel for
-  #endif
-  for (int i = 0; i < basisSize; i++) { // i == z
+  auto grainSizeTrivialGuess = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsTrivialGuessLoop);
+  //for (int i = 0; i < basisSize; i++) { // i == z
+  pfor(i,0,basisSize,grainSizeTrivialGuess.getGrainSize())
     for (int j = 0; j < basisSize; j++) { // j == y
       for (int k = 0; k < basisSize; k++) { // k == x
         for (int l = 0; l < basisSize; l++) { // l==t
@@ -72,15 +76,16 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
     }
-  }
+  endpfor
+  grainSizeTrivialGuess.parallelSectionHasTerminated();
 
   // 2. Compute the contribution of the initial condition uh to the time update
   // ASSUMABLY: idx_rhs(t,z,y,x,nVar)
   idx5 idx_rhs(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
-  #ifdef SharedMemoryParallelisation
-  #pragma omp parallel for
-  #endif
-  for (int i = 0; i < basisSize; i++) {
+
+  auto grainSizeComputeOldSolutionsImpactOnRhs = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsComputeOldSolutionsImpactOnRhs);
+  //for (int i = 0; i < basisSize; i++) {
+  pfor(i,0,basisSize,grainSizeComputeOldSolutionsImpactOnRhs.getGrainSize())
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
@@ -94,7 +99,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
         }
       }
     }
-  }
+  endpfor
+  grainSizeComputeOldSolutionsImpactOnRhs.parallelSectionHasTerminated();
 
   // 3. Discrete Picard iterations
   constexpr int MaxIterations = 2 * (order + 1);
@@ -109,7 +115,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
     for (int i = 0; i < basisSize; i++) {  // time DOF
       // Compute the fluxes
-      for (int j = 0; j < basisSize; j++) { // z
+      auto grainSizeFluxSourceNCPLoop = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsFluxSourceNCPLoop);
+      //for (int j = 0; j < basisSize; j++) { // z
+      pfor(j,0,basisSize,grainSizeFluxSourceNCPLoop.getGrainSize())
         for (int k = 0; k < basisSize; k++) { // y
           for (int l = 0; l < basisSize; l++) { // x
             // Call PDE fluxes
@@ -124,10 +132,13 @@ void aderPicardLoopNonlinear(SolverType& solver,
             // to the end.
           }
         }
-      }
+      endpfor
+      grainSizeFluxSourceNCPLoop.parallelSectionHasTerminated();
 
       // Copy rhs0 -> rhs
-      for (int j = 0; j < basisSize; j++) {
+      auto grainSizeCopyRhs = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsCopyRhs);
+      //for (int j = 0; j < basisSize; j++) {
+      pfor(j,0,basisSize,grainSizeCopyRhs.getGrainSize())
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
@@ -135,16 +146,20 @@ void aderPicardLoopNonlinear(SolverType& solver,
             }
           }
         }
-      }
+      endpfor
+      grainSizeCopyRhs.parallelSectionHasTerminated();
 
+      // Compute gradients only if nonconservative contributions have to be
+      // computed. 
       if(useNCP) {
-        // Compute gradients: zero
         std::memset(gradQ, 0, basisSize4 * DIMENSIONS * numberOfVariables * sizeof(double));
       }
       
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // x direction (independent from the y and z derivatives)
-      for (int j = 0; j < basisSize; j++) { // z
+      auto grainSizeComputeDerivatives = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsComputeDerivatives);
+      //for (int j = 0; j < basisSize; j++) { // z
+      pfor(j,0,basisSize,grainSizeComputeDerivatives.getGrainSize())
         for (int k = 0; k < basisSize; k++) { // y
           const double weight = kernels::gaussLegendreWeights[order][i] *
               kernels::gaussLegendreWeights[order][j] *
@@ -166,10 +181,11 @@ void aderPicardLoopNonlinear(SolverType& solver,
             }
           }
         }
-      } 
+      endpfor
       
       // y direction (independent from the x and z derivatives)
-      for (int j = 0; j < basisSize; j++) { // z
+      //for (int j = 0; j < basisSize; j++) { // z
+      pfor(j,0,basisSize,grainSizeComputeDerivatives.getGrainSize())
         for (int k = 0; k < basisSize; k++) { // x
           const double weight = kernels::gaussLegendreWeights[order][i] *
               kernels::gaussLegendreWeights[order][j] *
@@ -191,10 +207,11 @@ void aderPicardLoopNonlinear(SolverType& solver,
             }
           }
         }
-      } 
+      endpfor
       
       // z direction (independent from the x and y derivatives)
-      for (int j = 0; j < basisSize; j++) { // y
+      //for (int j = 0; j < basisSize; j++) { // y
+      pfor(j,0,basisSize,grainSizeComputeDerivatives.getGrainSize())
         for (int k = 0; k < basisSize; k++) { // x 
           const double weight = kernels::gaussLegendreWeights[order][i] *
               kernels::gaussLegendreWeights[order][j] *
@@ -216,11 +233,13 @@ void aderPicardLoopNonlinear(SolverType& solver,
             }
           }
         }
-      } 
+      endpfor
       
       if(useSource || useNCP) {
         // source
-        for (int j = 0; j < basisSize; j++) { // z
+        auto grainSizeSourceNCP = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsSourceNCP);
+        //for (int j = 0; j < basisSize; j++) { // z
+        pfor(j,0,basisSize,grainSizeSourceNCP.getGrainSize())
           for (int k = 0; k < basisSize; k++) { // y
             for (int l = 0; l < basisSize; l++) { // x
               const double weight = kernels::gaussLegendreWeights[order][i] *
@@ -239,7 +258,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
               }
             }
           }
-        }
+        endpfor
+        grainSizeSourceNCP.parallelSectionHasTerminated();
       }
     }  // end time dof
 
@@ -260,7 +280,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
     
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    for (int i = 0; i < basisSize; i++) {
+    auto grainSizeDiscreteTimeIntegral = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsDiscreteTimeIntegral);
+    //for (int i = 0; i < basisSize; i++) {
+    pfor(i,0,basisSize,grainSizeDiscreteTimeIntegral.getGrainSize())
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           const double weight = kernels::gaussLegendreWeights[order][i] *
@@ -281,7 +303,8 @@ void aderPicardLoopNonlinear(SolverType& solver,
           }
         }
       }
-    }
+    endpfor
+    grainSizeDiscreteTimeIntegral.parallelSectionHasTerminated();
 
     // 5. Exit condition
     constexpr double tol = 1e-7;
