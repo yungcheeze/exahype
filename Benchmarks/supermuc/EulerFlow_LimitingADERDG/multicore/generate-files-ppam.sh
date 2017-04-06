@@ -25,11 +25,12 @@ do
 for sharedMemIdentifier in 'dummy' 'autotuning' 'autotuning-without-learning'
 do
 #for coresPerTask in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 56
-for coresPerTask in 1 2 4 7 14 28 56
+#for coresPerTask in 1 2 4 7 14 28 56
+for coresPerTask in 28
 do 
   # Create script
   script=supermuc.load-leveler
-  newScript=supermuc-$io-$fused-$sharedMemIdentifier-p$order-n1-t1-c$coresPerTask-$sharedMem.load-leveler
+  newScript=supermuc-$io-$fused-$sharedMemIdentifier-p$order-$h-n1-t1-c$coresPerTask-$sharedMem.load-leveler
   cp $script $newScript
  
   sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
