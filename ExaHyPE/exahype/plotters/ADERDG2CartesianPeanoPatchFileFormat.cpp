@@ -14,10 +14,6 @@
 #include "ADERDG2CartesianPeanoPatchFileFormat.h"
 #include "tarch/parallel/Node.h"
 
-// @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
-// Should thus be placed in kernel module or the solver
-// should provide a function that computes solution values
-// at equidistant grid points
 #include "kernels/DGMatrices.h"
 #include "peano/utils/Loop.h"
 
@@ -109,31 +105,7 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
   assertion( _writer==nullptr );
 
   if (_writtenUnknowns>0) {
-    _writer = new tarch::plotter::griddata::blockstructured::PeanoPatchFileWriter(DIMENSIONS,_order+1);
-/*
-    switch (_plotterType) {
-      case PlotterType::BinaryVTK:
-        _patchWriter =
-          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
-        break;
-      case PlotterType::ASCIIVTK:
-        _patchWriter =
-          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
-        break;
-      case PlotterType::BinaryVTU:
-        _patchWriter =
-          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTUBinaryFileWriter());
-        break;
-      case PlotterType::ASCIIVTU:
-        _patchWriter =
-          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTUTextFileWriter());
-        break;
-    }
-*/
+    _writer = new tarch::plotter::griddata::blockstructured::PeanoPatchFileWriter(DIMENSIONS,_order);
 
     if (_plotCells) {
       _cellDataWriter          = _writer->createCellDataWriter("Q", _writtenUnknowns);
