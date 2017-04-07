@@ -39,8 +39,9 @@ namespace {
  * Currently we simply copy them over from the solution array.
  * 
  * !!! WARNING: ncp argument BGradQ is a dim x nVar tensor for the linear scheme 
+ * No more warning: BgradQ is no more used, isn't it?
  */
-template <bool useSource, bool useNCP, typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void aderPicardLoopNonlinear(SolverType& solver,
     const double* luh, const double dt,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -333,7 +334,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
  *  We have to consider that we store parameters in lQi
  *  and lQhi, and have to adjust the index accordingly.
  */
-template <bool useSourceOrNCP, int numberOfVariables, int numberOfParameters, int basisSize>
+template <bool useSource, bool useFlux, bool useNCP, int numberOfVariables, int numberOfParameters, int basisSize>
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
     double* lQhi,double* lFhi_x, double* lFhi_y, double* lFhi_z,
     double* lShi) {
@@ -382,7 +383,7 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
                 lFi[idx_lFi(m, i, j, k, 2, l)] *
                 kernels::gaussLegendreWeights[order][m];
 
-            if(useSourceOrNCP) {
+            if(useSource || useNCP) {
               // Fortran: lShi(:,k,j,i) = lSh(:,k,j,i,:) * wGPN(:)
               lShi[idx_lShi(i, j, k, l)] +=
                   lFi[idx_lFi(m, i, j, k, 3, l)] *
@@ -405,7 +406,7 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
   }
 }
 
-template <int numberOfVariables, int numberOfParameters, int basisSize>
+template <bool useFlux, int numberOfVariables, int numberOfParameters, int basisSize>
 void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
     const double* lFhi_y, const double* lFhi_z, double* lQhbnd, double* lFhbnd) {
   // Compute the boundary-extrapolated values for Q and F*n
@@ -518,7 +519,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -537,9 +538,6 @@ void spaceTimePredictorNonlinear(
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize3         = basisSize2 * basisSize;
 
-  const bool useSource = solver.useAlgebraicSource();
-  const bool useNCP    = solver.useNonConservativeProduct();
-
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];
   double* rhs     = tempSpaceTimeUnknowns[2];
@@ -554,41 +552,16 @@ void spaceTimePredictorNonlinear(
 
   double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
 
-  if(useSource) {
-    if(useNCP) {
-      aderPicardLoopNonlinear<true, true, SolverType>(solver, luh, dt, dx,
-        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
-    } else {
-      aderPicardLoopNonlinear<true, false, SolverType>(solver, luh, dt, dx,
-        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
-    }
-  } else {
-    if(useNCP) {
-      aderPicardLoopNonlinear<false, true, SolverType>(solver, luh, dt, dx,
-        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
-    } else {
-      aderPicardLoopNonlinear<false, false, SolverType>(solver, luh, dt, dx,
-        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
-    }
-  }
+  aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(solver, luh, dt, dx, lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
 
-  if(useSource || useNCP) {
-    aderPredictorNonlinear<true, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
+  aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
         &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
         &lFhi[3 * basisSize3 * numberOfVariables]   // lShi
     );
-  } else {
-    aderPredictorNonlinear<false, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
-        &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
-        &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
-        &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
-        &lFhi[3 * basisSize3 * numberOfVariables]   // lShi
-    );
-  }
 
-  aderExtrapolatorNonlinear<numberOfVariables, numberOfParameters, basisSize>(
+  aderExtrapolatorNonlinear<useFlux, numberOfVariables, numberOfParameters, basisSize>(
       lQhi,
       &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
       &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y

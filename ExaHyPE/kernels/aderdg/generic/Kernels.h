@@ -82,7 +82,7 @@ namespace c {
 /**
  * @param SolverType Has to be of type ADERDG Solver.
  */
-template <typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -134,7 +134,7 @@ void solutionAdjustment(SolverType& solver, double* luh,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <bool useCoefficientMatrix, typename SolverType>
+template <bool useNCP, typename SolverType>
 void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,

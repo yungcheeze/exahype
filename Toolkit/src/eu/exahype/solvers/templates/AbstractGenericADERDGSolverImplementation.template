@@ -54,7 +54,47 @@ void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* 
 #ifdef isLinear
   kernels::aderdg::generic::c::spaceTimePredictorLinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
 #else
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
+
+  // For some reason, we compile here the SpaceTimepRedictorNonLinear (STPNL) for all possible
+  // combinations, even if the guards have no other possibility than staying constant for the whole
+  // run (which means they could be constexpr). I have no clue why we need this overhead here. In
+  // my eyes it's waste of time. Maybe somebody can explain it to me.  -- Sven, 2017-04-07.
+
+#define STPNL(useSource, useFlux, useNCP) \
+    kernels::aderdg::generic::c::spaceTimePredictorNonlinear<useSource, useFlux, useNCP, {{Solver}}>(\
+        *static_cast<{{Solver}}*>(this), lQhbnd, lFhbnd,\
+        tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,\
+        luh,dx,dt);
+  
+  if(useAlgebraicSource()) {
+    if(useConservativeFlux()) {
+      if(useNonConservativeProduct()) {
+        STPNL(true,true,true);
+      } else {
+        STPNL(true,true,false);
+      }
+    } else {
+      if(useNonConservativeProduct()) {
+        STPNL(true,false,true);
+      } else {
+        STPNL(true,false,false);
+      }
+    }
+  } else {
+    if(useConservativeFlux()) {
+      if(useNonConservativeProduct()) {
+        STPNL(false,true,true);
+      } else {
+        STPNL(false,true,false);
+      }
+    } else {
+      if(useNonConservativeProduct()) {
+        STPNL(false,false,true);
+      } else {
+        STPNL(false,false,false);
+      }
+    }
+  } 
 #endif // isLinear
 #endif // isFortran
 {{AfterSpaceTimePredictor}}
