@@ -625,7 +625,9 @@ void spaceTimePredictorNonlinear(
   double* rhs     = tempSpaceTimeUnknowns[2];
   double* rhs_0   = tempSpaceTimeUnknowns[3];
 
-  double* lFi     = tempSpaceTimeFluxUnknowns[0];
+  // if fluxes are not computed, make sure wrong access patterns result in a crash, thus
+  // the nullptr:
+  double* lFi     = useFlux ? tempSpaceTimeFluxUnknowns[0] : nullptr;
   double* gradQ   = tempSpaceTimeFluxUnknowns[1]; // size: basisSize3 * DIMENSIONS * numberOfVariables
 
   double* lQhi    = tempUnknowns;
@@ -634,10 +636,12 @@ void spaceTimePredictorNonlinear(
   
   double *BGradQ  = tempStateSizedVector; // size: numberOfVariables // TODO: Remove, no more used.
 
-  aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(solver, luh, dt, dx,
+  aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
+        solver, luh, dt, dx,
         lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
   
-  aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
+  aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(
+        lQi, lFi, lQhi,
         &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize2 * numberOfVariables]   // lShi

@@ -102,13 +102,13 @@ template <int numberOfVariables, int basisSize>
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
-template <bool useSourceOrNCP, int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
-template <int numberOfVariables, int basisSize>
+template <bool useFlux, int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double>& dx);
 
