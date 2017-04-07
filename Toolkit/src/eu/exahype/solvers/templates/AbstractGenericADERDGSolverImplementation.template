@@ -21,6 +21,10 @@ void abortForWrongAPI(const char* const msg) {
 	abort();
 }
 
+// Code generation information.
+{{defineLinear}}
+{{defineFortran}}
+
 // We define the constructor of the actual solver here in order to regenerate it easily.
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
@@ -44,7 +48,15 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  {{spaceTimePredictor}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+#else
+#ifdef isLinear
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+#else
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);
+#endif // isLinear
+#endif // isFortran
 {{AfterSpaceTimePredictor}}
 }
 
@@ -60,7 +72,20 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  {{volumeIntegral}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::volumeIntegral{{NonlinearOrLinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+#endif
+#ifndef isFortran
+#ifdef isLinear
+  kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(lduh,lFhi,dx);
+#else
+  if(useAlgebraicSource() || useNonConservativeProduct()) {
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<true,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+  } else {
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<false,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+  }
+#endif // isLinear
+#endif // !isFortran
 {{AfterVolumeIntegral}}
 }
 
@@ -78,7 +103,20 @@ void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  {{riemannSolver}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::riemannSolver{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+#endif
+#ifndef isFortran
+#ifdef isLinear
+   kernels::aderdg::generic::c::riemannSolverLinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+#else
+  if(useNonConservativeProduct()) {
+    kernels::aderdg::generic::c::riemannSolverNonlinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  } else {
+    kernels::aderdg::generic::c::riemannSolverNonlinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  }
+#endif // isLinear
+#endif // !isFortran
 {{AfterRiemannSolver}}
 }
 

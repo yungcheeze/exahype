@@ -28,7 +28,7 @@ clean:
 
 #	delete unpacked dependencies.
 	rm -rf org/jtwig
-	rm -rf com/github/mustachejava
+	rm -rf com/github/
 
 
 createParser:
@@ -42,9 +42,10 @@ unpack_deps:
 #	Ugly trick to get the depencies in the same directory.
 #	They only contain .class files, so nothing to compile, needs only
 # 	to be present during compiling eu/exahype/.
-
+#
 #	jar xf ../lib/jtwig-core.jar org/jtwig
-	jar xf ../lib/mustache.jar   com/github/mustachejava
+#	jar xf ../lib/mustache.jar   com/github/mustachejava
+#	jar xf ../lib/handlebars.jar com/github/jknack
 
 jar:
 	jar cmf ./Manifest.txt ExaHyPE.jar .
@@ -55,7 +56,13 @@ dist:
 	tar -czf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class Manifest.txt Makefile eu 
 
 
-all: clean createParser unpack_deps compile dist
+all:
+#	try serial making by invoking individual make instead of dependency list:
+	make clean
+	make createParser
+	make unpack_deps
+	make compile
+	make dist
 
 
 files.mk:	

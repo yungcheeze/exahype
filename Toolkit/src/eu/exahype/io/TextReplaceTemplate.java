@@ -22,8 +22,8 @@ public class TextReplaceTemplate extends SourceTemplate  {
     this.tpl = template;
   }
 
-  public void put(String key, String value) {
-    this.tpl = this.tpl.replaceAll("\\{\\{"+key+"\\}\\}", value);
+  public void put(String key, Object value) {
+    this.tpl = this.tpl.replaceAll("\\{\\{"+key+"\\}\\}", (String)value);
   }
 
   public String toString() {

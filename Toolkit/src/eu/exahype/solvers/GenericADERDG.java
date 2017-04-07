@@ -304,46 +304,13 @@ public class GenericADERDG implements Solver {
     content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
     
     //TODO JMG move this to template when using template engine
+    //     SK: I just moved the logic to C++ level. There is no reason this could not stay there.
+    //     If we have a decent template engine, you can move it from C++ to template level, thought.
     String linearStr = _isLinear ? "Linear" : "Nonlinear";
-    if(_isFortran) {
-      content.put("volumeIntegral","kernels::aderdg::generic::fortran::volumeIntegral"+linearStr+"(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());");
-      content.put("riemannSolver","kernels::aderdg::generic::fortran::riemannSolver"+linearStr+"<"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);");
-      content.put("spaceTimePredictor","kernels::aderdg::generic::fortran::spaceTimePredictor"+linearStr+"<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
-    } else {
-      if(_isLinear) {
-        content.put("volumeIntegral","kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(lduh,lFhi,dx);");
-        content.put("riemannSolver","kernels::aderdg::generic::c::riemannSolverLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);");
-        content.put("spaceTimePredictor","kernels::aderdg::generic::c::spaceTimePredictorLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
-      } else {
-        content.put("volumeIntegral",
-            "if(useAlgebraicSource() || useNonConservativeProduct()) {\n"
-        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<true,NumberOfVariables,Order+1>(lduh,lFhi,dx);\n"
-        + "  } else {\n"
-        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false,NumberOfVariables,Order+1>(lduh,lFhi,dx);\n" 
-        + "  }");
-        content.put("riemannSolver",
-            "if(useNonConservativeProduct()) {\n"
-        + "    kernels::aderdg::generic::c::riemannSolverNonlinear<true,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n"
-        + "  } else {\n"
-        + "    kernels::aderdg::generic::c::riemannSolverNonlinear<false,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n" 
-        + "  }");
-        content.put("spaceTimePredictor",
-          "  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt);\n"
-        );
-      }
-    }
-    
-    if (_isLinear) {
-      content.put("NonlinearOrLinear","Linear");
-    } else {
-      content.put("NonlinearOrLinear","Nonlinear");
-    }
-    
-    if (_isFortran) {
-      content.put("Language","fortran");
-    } else {
-      content.put("Language","c");
-    }
+    content.put("NonlinearOrLinear", linearStr);
+    content.put("defineLinear", _isLinear ? "#define isLinear" : "/* #define isLinear */");
+    content.put("defineFortran", _isFortran ? "#define isFortran" : "/* #define isFortran */");
+    content.put("Language", _isFortran ? "fortran" : "c");
     
     writer.write(content.toString());
   }
