@@ -18,16 +18,24 @@
 
 #include "kernels/finitevolumes/riemannsolvers/c/riemannsolvers.h"
 
-registerTest(exahype::tests::c::RusanovTest)
+#include <algorithm>
+
+#include "tarch/la/ScalarOperations.h"
+
+registerTest(exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest)
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", off)
 #endif
 
-tarch::logging::Log exahype::tests::c::RusanovTest::_log( "exahype::tests::c::RusanovTest" );
+tarch::logging::Log exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::_log( "exahype::tests::c::RusanovTest" );
 
 // ZeroFluxZeroNCP
 exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP::ZeroFluxZeroNCP() {
+  // do nothing
+}
+
+exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP::~ZeroFluxZeroNCP() {
   // do nothing
 }
 
@@ -45,7 +53,7 @@ exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP::eige
 
 bool
 exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP::useNonConservativeProduct() {
-  return false;
+  return true;
 }
 
 void exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP::nonConservativeProduct(
@@ -58,12 +66,31 @@ void exahype::tests::kernels::finitevolumes::riemannsolvers::c::ZeroFluxZeroNCP:
 exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::RusanovTest()
     : tarch::tests::TestCase("exahype::tests::c::RusanovTest") {}
 
-RusanovTest::~RusanovTest() {}
+exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::~RusanovTest() {}
 
-void RusanovTest::run() {
+void exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::run() {
   _log.info("RusanovTest::run()", "RusanovTest is active");
 
+  // ZeroFluxZeroNCP
+  ZeroFluxZeroNCP mockupSolver;
+  double qL[ZeroFluxZeroNCP::NumberOfVariables+ZeroFluxZeroNCP::NumberOfParameters] = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8};
+  double qR[ZeroFluxZeroNCP::NumberOfVariables+ZeroFluxZeroNCP::NumberOfParameters] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
+  const double output_fL[ZeroFluxZeroNCP::NumberOfVariables] = {0.3, 0.3, 0.3, 0.3};
+  const double output_fR[ZeroFluxZeroNCP::NumberOfVariables] = {0.3, 0.3, 0.3, 0.3};
 
+  double fL[ZeroFluxZeroNCP::NumberOfVariables];
+  double fR[ZeroFluxZeroNCP::NumberOfVariables];
+  ::kernels::finitevolumes::riemannsolvers::c::rusanov<ZeroFluxZeroNCP>(
+      mockupSolver,
+      fL,fR,
+      qL,
+      qR,
+      0 // this test is independent of the dimension since non-conservative product and flux are zero
+  );
+  for (int i=0; i<ZeroFluxZeroNCP::NumberOfVariables; i++) {
+    assertionNumericalEquals2(fL[i],output_fL[i],fL[i],output_fL[i]);
+    assertionNumericalEquals2(fR[i],output_fR[i],fR[i],output_fR[i]);
+  }
 }
 
 #ifdef UseTestSpecificCompilerSettings

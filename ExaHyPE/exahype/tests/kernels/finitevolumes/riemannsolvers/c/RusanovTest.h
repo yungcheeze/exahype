@@ -33,16 +33,19 @@ namespace c {
  * fR[i] = fL[i];
  */
 class ZeroFluxZeroNCP {
-  static constexpr int NumberOfVariables  = 12;
-  static constexpr int NumberOfParameters = 12;
-  static constexpr int PatchSize          = 7;
+public:
+  static constexpr int NumberOfVariables  = 4;
+  static constexpr int NumberOfParameters = 3;
+
+  ZeroFluxZeroNCP();
+  virtual ~ZeroFluxZeroNCP();
 
   void flux           (const double* const Q, double** F);
   void eigenvalues    (const double* const Q,const int normalNonZeroIndex, double* lambda);
 
-  bool useNonConservativeProduct() = 0;
+  bool useNonConservativeProduct();
   void nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ);
-}
+};
 
 class RusanovTest : public tarch::tests::TestCase {
  public:
