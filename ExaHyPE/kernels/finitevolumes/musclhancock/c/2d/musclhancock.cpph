@@ -47,7 +47,7 @@ double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
  * new solution.
  * Finally add the source terms.
  */
-template <typename SolverType>
+template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,

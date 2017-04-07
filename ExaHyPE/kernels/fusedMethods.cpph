@@ -8,9 +8,6 @@
 #include "kernels/KernelUtils.h"
 
 namespace kernels {
-namespace aderdg {
-namespace generic {
-namespace c {
 
 /**
  * The fusedSource is since April the successor of S = algebraicSource - NCP.
@@ -50,7 +47,4 @@ void coefficientMatrix(SolverType& solver, const double* const Q,const int d,dou
 	}
 }
 
-} // ns c
-} // ns generic
-} // ns aderdg
 } // ns kernels

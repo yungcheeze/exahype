@@ -51,6 +51,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 
     static void constantsToString(std::ostream& os);
+    static void abortWithMsg(const char* const msg);
     
     /**
      * Please overwrite in user's solver. See superclass for documentation.
@@ -63,6 +64,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
 
     virtual bool useSource()                 const { return false; }
     virtual bool useNonConservativeProduct() const { return false; }
+    virtual bool useConservativeFlux()       const { return true; }
 
     /**
      * Please overwrite in user's solver. See superclass for documentation.
@@ -73,7 +75,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
     virtual void algebraicSource(const double* const Q,double* S);
     virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
-
+    virtual void flux(const double* const Q,double** F);
 };
 
 

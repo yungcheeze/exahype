@@ -26,7 +26,7 @@ namespace c {
    */
   double minmod(double a, double b);
 
-  template <class SolverType>
+  template <bool useSource, bool useNCP, bool useFlux, class SolverType>
   double solutionUpdate(
       SolverType& solver,double* luh_new, const double* luh,
       double** tempStateSizedVectors,double** tempUnknowns,

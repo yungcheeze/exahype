@@ -433,6 +433,9 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
   idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
   std::fill_n(lQhbnd, 2 * DIMENSIONS * basisSize2 *  numberOfData, 0.0);
+  // in princple, we should ignore the lFhbnd but we can also zero them out.
+  // zeroing them keeps CCZ4 GaugeWave stable for more time steps but not
+  // for long time.
   if(useFlux) {
     std::fill_n(lFhbnd, 2 * DIMENSIONS * basisSize2 * numberOfVariables, 0.0);
   }

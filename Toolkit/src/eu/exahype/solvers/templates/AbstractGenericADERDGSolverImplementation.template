@@ -14,12 +14,7 @@
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
-// failure verbosely even without assertions turned on.
 #include <stdio.h>
-void abortForWrongAPI(const char* const msg) {
-	puts(msg);
-	abort();
-}
 
 // Code generation information.
 {{defineLinear}}
@@ -44,6 +39,12 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	   << "nParam=" << NumberOfParameters << ", "
 	   << "Order=" << Order
 	   << ")";
+}
+
+void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
+	// verbosily fail even without assertions turned on
+	puts(msg);
+	abort();
 }
 
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
@@ -203,7 +204,7 @@ void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la
 {{BeforeSolutionAdjustment}}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
-      abortForWrongAPI("Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      abortWithMsg("Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
       kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
@@ -258,23 +259,23 @@ void {{Project}}::Abstract{{Solver}}::pointSource(const double t,const double dt
 }
 
 void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
 void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
 void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -282,25 +283,25 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const double t,
       const double dt,
       double* luh) {
-      abortForWrongAPI("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 /**
  * Fallback implementations of joined functions. Users can either safely ignore this
  * or overwrite with their own implementations.
  **/
-#include "kernels/aderdg/generic/c/fusedMethods.cpph"
+#include "kernels/fusedMethods.cpph"
 
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
   if(useNonConservativeProduct()) {
-    kernels::aderdg::generic::c::fusedSource<true, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+    kernels::fusedSource<true, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
   } else {
-    kernels::aderdg::generic::c::fusedSource<false, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+    kernels::fusedSource<false, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
   }
 }
 
 void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-  kernels::aderdg::generic::c::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
+  kernels::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
 }
 
 
