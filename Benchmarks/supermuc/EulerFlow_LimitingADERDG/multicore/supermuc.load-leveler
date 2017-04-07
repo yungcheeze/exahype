@@ -31,10 +31,10 @@ compiler=Intel
 sharedMem=None
 prefix=EulerFlow_LimitingADERDG-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
-spec=benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 # pipe some information into output file
 module list 2>$out
 cat $spec >> $out
-#ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler --version >> $out
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler --version >> $out
 # execute the job
-mpiexec -n $tasks ./ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler $spec  >> $out
+./ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler $spec  >> $out

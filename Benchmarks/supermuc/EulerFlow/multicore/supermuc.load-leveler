@@ -14,6 +14,7 @@
 #@ notify_user=dominic.e.charrier@durham.ac.uk
 #@ error =  $(job_name).$(jobid).err
 #@ queue
+
 . /etc/profile
 . /etc/profile.d/modules.sh
 module load gcc/4.9
@@ -24,17 +25,23 @@ nodes=1
 tasks=1
 tasksPerNode=1
 coresPerTask=1
+let procsPerNode=tasksPerNode*coresPerTask
+
 export OMP_SINGLE_THREAD=no
-export OMP_NUM_THREADS=$coresPerTask
+export OMP_NUM_THREADS=$procsPerNode
 
 compiler=Intel
 sharedMem=None
 prefix=EulerFlow-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+script=supermuc.load-leveler
 spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 # pipe some information into output file
 module list 2>$out
+echo "" >> $out
+cat $script >>$out
+echo "" >> $out
 cat $spec >> $out
 #ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
 # execute the job
-mpiexec -n $tasks ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec  >> $out
+poe ./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out --procs $procsPerNode --nodes $nodes

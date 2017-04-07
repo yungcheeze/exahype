@@ -39,13 +39,6 @@ exahype-project  Euler
     properties-file          = sharedmemory.properties
   end shared-memory
 
-  distributed-memory
-    identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:1}
-    buffer-size              = 64
-    timeout                  = 60
-  end distributed-memory
-
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
