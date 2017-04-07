@@ -58,7 +58,7 @@ exahype-project  Euler
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-    limiter-kernel const    = generic::Godunov
+    limiter-kernel const    = generic::godunov
     limiter-language const  = C
     dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling = 1e-3
