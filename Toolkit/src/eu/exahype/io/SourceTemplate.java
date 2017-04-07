@@ -13,7 +13,8 @@ abstract public class SourceTemplate {
   
   public static SourceTemplate getDefaultImplementation(String inline_template) {
     // here we choose about the default implementation
-    return new TextReplaceTemplate(inline_template);
+    //return new TextReplaceTemplate(inline_template);
+    return new MoustacheTemplate(inline_template);
   }
 
   public static SourceTemplate fromRessourceContent(String relativePath) {
