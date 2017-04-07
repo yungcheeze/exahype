@@ -4,8 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
 
-import eu.exahype.IOUtils;
-import eu.exahype.SourceTemplate;
+import eu.exahype.io.IOUtils;
+import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
   public static final String Identifier = "optimised::fluxes::nonlinear";

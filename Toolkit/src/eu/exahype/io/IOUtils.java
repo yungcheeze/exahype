@@ -1,4 +1,4 @@
-package eu.exahype;
+package eu.exahype.io;
 
 import java.io.InputStream;
 import java.util.Scanner;

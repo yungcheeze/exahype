@@ -1,6 +1,7 @@
-package eu.exahype;
+package eu.exahype.io;
 
-import eu.exahype.IOUtils;
+import eu.exahype.io.IOUtils;
+import eu.exahype.io.SourceTemplate;
 
 /**
  * The SourceTemplate class supersedes IOUtils and hides a template engine.
@@ -8,12 +9,15 @@ import eu.exahype.IOUtils;
  * This class is introduced for the migration to a fully featured templating engine.
  * At first, it will just supersede what IOUtils did before.
  *
+ * Todo: Rename this class to something like TextTemplate and then make an
+ *   abstract interface.
+ *
  *
  **/
-public class SourceTemplate {
+public class TextReplaceTemplate extends SourceTemplate  {
   String tpl;
 
-  public SourceTemplate(String template) {
+  public TextReplaceTemplate(String template) {
     // for the beginning, just masquerade what a String would do
     this.tpl = template;
   }
@@ -24,10 +28,5 @@ public class SourceTemplate {
 
   public String toString() {
     return tpl;
-  }
-
-  public static SourceTemplate fromRessourceContent(String relativePath) {
-    String template = IOUtils.convertRessourceContentToString(relativePath);
-    return new SourceTemplate(template);
   }
 }
