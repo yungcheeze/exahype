@@ -112,6 +112,9 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+
+          // uses lock inside
+          limitingADERDGSolver->mergeLimiterStatusWithAncestors(fineGridCell.getCellDescriptionsIndex(),element);
         }
 
         solver->prepareNextNeighbourMerging(

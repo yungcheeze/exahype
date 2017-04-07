@@ -378,7 +378,8 @@ int exahype::runners::Runner::run() {
   if ( _parser.isValid() ) {
     // We have to do this for any rank.
     exahype::State::FuseADERDGPhases  = _parser.getFuseAlgorithmicSteps();
-
+    exahype::mappings::MeshRefinement::Mode=
+         exahype::mappings::MeshRefinement::RefinementMode::APriori;
     #ifdef Parallel
     exahype::mappings::MeshRefinement::FirstIteration = false;
     #endif

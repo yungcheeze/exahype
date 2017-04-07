@@ -171,104 +171,115 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
     SolverPatch& solverPatch,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-  indicesAdjacentToFineGridVertices =
-      VertexOperations::readCellDescriptionsIndex(
-          fineGridVerticesEnumerator,fineGridVertices);
+// TODO(Dominic): Remove
 
-  if (multiscalelinkedcell::adjacencyInformationIsConsistent(
-          indicesAdjacentToFineGridVertices)) {
-    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
-        multiscalelinkedcell::getIndicesAroundCell(
-            indicesAdjacentToFineGridVertices);
-    // left,right,front,back,(bottom,top)
-    #if DIMENSIONS == 2
-    constexpr int neighbourPositions[4] = {3, 5, 1, 7};
-    #else
-    constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
-    #endif
-
-    for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
-      const int neighbourElement =
-          neighbourCellDescriptionsIndices[neighbourPositions[i]];
-      if (SolverHeap::getInstance().isValidIndex(neighbourElement)) {
-        for (SolverPatch& neighbourSolverPatch :
-            SolverHeap::getInstance().getData(neighbourElement)) {
-          if (neighbourSolverPatch.getSolverNumber() == solverPatch.getSolverNumber()) {
-            SolverPatch::LimiterStatus limiterStatus          = solverPatch.getLimiterStatus();
-            SolverPatch::LimiterStatus neighbourLimiterStatus = neighbourSolverPatch.getLimiterStatus();
-            switch (neighbourSolverPatch.getType()) {
-            case SolverPatch::Ancestor:
-            case SolverPatch::EmptyAncestor:
-              if (
-                  (limiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                      limiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-                      ||
-                      (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                          neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-              ) {
-                solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
-                return true;
-              }
-              break;
-            default:
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  return false;
+  //  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+//  indicesAdjacentToFineGridVertices =
+//      VertexOperations::readCellDescriptionsIndex(
+//          fineGridVerticesEnumerator,fineGridVertices);
+//
+//  if (multiscalelinkedcell::adjacencyInformationIsConsistent(
+//          indicesAdjacentToFineGridVertices)) {
+//    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
+//        multiscalelinkedcell::getIndicesAroundCell(
+//            indicesAdjacentToFineGridVertices);
+//    // left,right,front,back,(bottom,top)
+//    #if DIMENSIONS == 2
+//    constexpr int neighbourPositions[4] = {3, 5, 1, 7};
+//    #else
+//    constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
+//    #endif
+//
+//    for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
+//      const int neighbourElement =
+//          neighbourCellDescriptionsIndices[neighbourPositions[i]];
+//      if (SolverHeap::getInstance().isValidIndex(neighbourElement)) {
+//        for (SolverPatch& neighbourSolverPatch :
+//            SolverHeap::getInstance().getData(neighbourElement)) {
+//          if (neighbourSolverPatch.getSolverNumber() == solverPatch.getSolverNumber()) {
+//            SolverPatch::LimiterStatus limiterStatus          = solverPatch.getLimiterStatus();
+//            SolverPatch::LimiterStatus neighbourLimiterStatus = neighbourSolverPatch.getLimiterStatus();
+//            switch (neighbourSolverPatch.getType()) {
+//            case SolverPatch::Ancestor:
+//            case SolverPatch::EmptyAncestor:
+//              if (
+//                  (limiterStatus==SolverPatch::LimiterStatus::Troubled ||
+//                      limiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
+//                      ||
+//                      (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled ||
+//                          neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
+//              ) {
+//                solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+//                return true;
+//              }
+//              break;
+//            default:
+//              break;
+//            }
+//          }
+//        }
+//      }
+//    }
+//  }
+//  return false;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimiterStatus(
-    SolverPatch& solverPatch,
+    exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-  indicesAdjacentToFineGridVertices =
-      VertexOperations::readCellDescriptionsIndex(
-          fineGridVerticesEnumerator,fineGridVertices);
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const int solverNumber) const {
+  const int element =
+      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-  if (multiscalelinkedcell::adjacencyInformationIsConsistent(
-          indicesAdjacentToFineGridVertices)) {
-    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
-        multiscalelinkedcell::getIndicesAroundCell(
-            indicesAdjacentToFineGridVertices);
-    // left,right,front,back,(bottom,top)
-    #if DIMENSIONS == 2
-    constexpr int neighbourPositions[4] = {3, 5, 1, 7};
-    #else
-    constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
-    #endif
+  if (element!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& solverPatch =
+        _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
 
-    for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
-      const int neighbourElement =
-          neighbourCellDescriptionsIndices[neighbourPositions[i]];
-      if (SolverHeap::getInstance().isValidIndex(neighbourElement)) {
-        for (SolverPatch& neighbourSolverPatch :
-            SolverHeap::getInstance().getData(neighbourElement)) {
-          if (neighbourSolverPatch.getSolverNumber() == solverPatch.getSolverNumber()) {
-            SolverPatch::LimiterStatus limiterStatus = determineLimiterStatus(solverPatch);
-            SolverPatch::LimiterStatus neighbourLimiterStatus = determineLimiterStatus(neighbourSolverPatch);
+    const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+    indicesAdjacentToFineGridVertices =
+        VertexOperations::readCellDescriptionsIndex(
+            fineGridVerticesEnumerator,fineGridVertices);
 
-            switch (neighbourSolverPatch.getType()) {
-            case SolverPatch::Ancestor:
-            case SolverPatch::EmptyAncestor:
-              if (
-                  (limiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                      limiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-                      ||
-                      (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                          neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-              ) {
-                solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
-                return true;
+    if (multiscalelinkedcell::adjacencyInformationIsConsistent(
+        indicesAdjacentToFineGridVertices)) {
+      const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices =
+          multiscalelinkedcell::getIndicesAroundCell(
+              indicesAdjacentToFineGridVertices);
+      // left,right,front,back,(bottom,top)
+      #if DIMENSIONS == 2
+      constexpr int neighbourPositions[4] = {3, 5, 1, 7};
+      #else
+      constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
+      #endif
+
+      for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
+        const int neighbourElement =
+            neighbourCellDescriptionsIndices[neighbourPositions[i]];
+        if (SolverHeap::getInstance().isValidIndex(neighbourElement)) {
+          for (SolverPatch& neighbourSolverPatch :
+              SolverHeap::getInstance().getData(neighbourElement)) {
+            if (neighbourSolverPatch.getSolverNumber() == solverPatch.getSolverNumber()) {
+              SolverPatch::LimiterStatus limiterStatus = determineLimiterStatus(solverPatch);
+              SolverPatch::LimiterStatus neighbourLimiterStatus = determineLimiterStatus(neighbourSolverPatch);
+
+              switch (neighbourSolverPatch.getType()) {
+                case SolverPatch::Ancestor:
+                case SolverPatch::EmptyAncestor:
+                  if (
+                      (limiterStatus==SolverPatch::LimiterStatus::Troubled ||
+                          limiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
+                          ||
+                          (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled ||
+                              neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
+                  ) {
+                    solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+                    return true;
+                  }
+                  break;
+                default:
+                  break;
               }
-              break;
-            default:
-              break;
             }
           }
         }
@@ -287,24 +298,10 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  bool refineFineGridCell = _solver->updateStateInEnterCell(
+  return _solver->updateStateInEnterCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
       fineGridPositionOfCell,solverNumber);
-
-  const int element =
-      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-  if (element!=exahype::solvers::Solver::NotFound) {
-    SolverPatch& solverPatch =
-        _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
-
-    refineFineGridCell |=
-        markForRefinementBasedOnMergedLimiterStatus(
-            solverPatch,fineGridVertices,fineGridVerticesEnumerator);
-  }
-
-  return refineFineGridCell;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(

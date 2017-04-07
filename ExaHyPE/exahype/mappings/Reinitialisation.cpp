@@ -26,6 +26,8 @@
 
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
+#include "exahype/mappings/MeshRefinement.h"
+
 peano::CommunicationSpecification
 exahype::mappings::Reinitialisation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -84,6 +86,7 @@ tarch::logging::Log exahype::mappings::Reinitialisation::_log(
 
 void exahype::mappings::Reinitialisation::beginIteration(
     exahype::State& solverState) {
+  exahype::mappings::MeshRefinement::Mode=exahype::mappings::MeshRefinement::RefinementMode::APosteriori;
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;

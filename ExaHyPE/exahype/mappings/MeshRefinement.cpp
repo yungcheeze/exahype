@@ -270,8 +270,20 @@ void exahype::mappings::MeshRefinement::enterCell(
       if (element!=exahype::solvers::Solver::NotFound) {
         solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
       }
-    } else { ..
+    } else if (Mode==RefinementMode::APosteriori &&
+               solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
+      bool refinementRequested =
+          limitingADERDGSolver->markForRefinementBasedOnMergedLimiterStatus(
+              fineGridCell,
+              fineGridVertices,
+              fineGridVerticesEnumerator,
+              solverNumber);
+
+      // todo refinement stuff!
+
+      refineFineGridCell |= refinementRequested;
     }
   }
 

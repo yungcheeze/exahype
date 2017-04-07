@@ -238,9 +238,10 @@ private:
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
   bool markForRefinementBasedOnMergedLimiterStatus(
-      SolverPatch& solverPatch,
+      exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int solverNumber) const;
 
   /**
    * Same as ::markForRefinementBasedOnMergedLimiterStatus
