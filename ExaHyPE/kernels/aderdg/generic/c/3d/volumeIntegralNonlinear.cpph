@@ -33,8 +33,9 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
   // Initialize the update DOF
   std::fill_n(lduh, basisSize3 * numberOfVariables, 0.0);
 
-  // x-direction
+
   if(useFlux) {
+    // x-direction
     idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
     const int x_offset = 0 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
@@ -56,10 +57,9 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
         }
       }
     }
-  }
 
-  // y-direction
-  if(useFlux) {
+
+    // y-direction
     idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
     const int y_offset = 1 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
@@ -81,10 +81,8 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const do
         }
       }
     }
-  }
 
-  // z-direction
-  if(useFlux) {
+    // z-direction
     idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
     const int z_offset = 2 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
