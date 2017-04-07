@@ -616,9 +616,6 @@ void spaceTimePredictorNonlinear(
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
   constexpr int basisSize2         = basisSize * basisSize;
-  
-  const bool useSource = solver.useAlgebraicSource();
-  const bool useNCP    = solver.useNonConservativeProduct();
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];
