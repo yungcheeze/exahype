@@ -217,6 +217,18 @@ exahype::solvers::Solver::SubcellPosition exahype::solvers::FiniteVolumesSolver:
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
+bool exahype::solvers::FiniteVolumesSolver::markForRefinement(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const int solverNumber) {
+  // do nothing
+}
+
 bool exahype::solvers::FiniteVolumesSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,

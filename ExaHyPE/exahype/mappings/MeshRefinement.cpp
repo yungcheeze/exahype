@@ -254,6 +254,17 @@ void exahype::mappings::MeshRefinement::enterCell(
 
     if (Mode==RefinementMode::APriori) {
       bool refinementRequested =
+          solver->markForRefinement(
+              fineGridCell,
+              fineGridVertices,
+              fineGridVerticesEnumerator,
+              coarseGridVertices,
+              coarseGridVerticesEnumerator,
+              coarseGridCell,
+              fineGridPositionOfCell,
+              solverNumber);
+
+      refinementRequested |=
           solver->updateStateInEnterCell(
               fineGridCell,
               fineGridVertices,
@@ -279,9 +290,22 @@ void exahype::mappings::MeshRefinement::enterCell(
               fineGridCell,
               fineGridVertices,
               fineGridVerticesEnumerator,
+              coarseGridVertices,
+              coarseGridVerticesEnumerator,
+              coarseGridCell,
+              fineGridPositionOfCell,
               solverNumber);
 
-      // todo refinement stuff!
+      refinementRequested |=
+          limitingADERDGSolver->updateStateInEnterCell(
+              fineGridCell,
+              fineGridVertices,
+              fineGridVerticesEnumerator,
+              coarseGridVertices,
+              coarseGridVerticesEnumerator,
+              coarseGridCell,
+              fineGridPositionOfCell,
+              solverNumber);
 
       refineFineGridCell |= refinementRequested;
     }

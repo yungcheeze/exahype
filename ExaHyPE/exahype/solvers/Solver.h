@@ -67,6 +67,13 @@ namespace exahype {
      */
     extern std::vector<Solver*> RegisteredSolvers;
 
+    /**
+     * Temporary variables that
+     * hold information if the grid has been updated
+     * or if the limiter domain has changed.
+     *
+     * Used if we employ multiple threads.
+     */
     class SolverFlags;
 
     /**
@@ -116,7 +123,7 @@ class exahype::solvers::Solver {
   /**
    * The type of a solver.
    */
-  enum class Type { ADERDG, FiniteVolumes, LimitingADERDG }; // TODO(Dominic): Get rid of the underscore
+  enum class Type { ADERDG, FiniteVolumes, LimitingADERDG };
 
   /**
    * The time stepping mode.
@@ -135,7 +142,8 @@ class exahype::solvers::Solver {
   };
 
   /**
-   * The refinement control.
+   * The refinement control states
+   * returned by the user functions.
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
@@ -569,6 +577,31 @@ class exahype::solvers::Solver {
   virtual SubcellPosition computeSubcellPositionOfCellOrAncestor(
       const int cellDescriptionsIndex,
       const int element) = 0;
+
+  /**
+   * Evaluates the user refinement criterion and sets
+   * the RefinementEvent of a cell description to RefinementRequested
+   * if the users criterion has been accepted,
+   * or vetoes the ErasingChildrenRequested RefinementEvent
+   * set on an Ancestor if
+   * the users criterion returns a keep.
+   *
+   * \note We moved this routine out of the updateStateInEnterCell
+   * since it does a-priori refinement, and we want to
+   * reuse the updateStateInEnterCell and updateStateInLeaveCell methods
+   * for a-posteriori refinement performed by the LimitingADERDGSolver
+   * in scenarios where the mesh is refined based on a criterion
+   * that takes the limiter status into account.
+   */
+  virtual bool markForRefinement(
+        exahype::Cell& fineGridCell,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+        const int solverNumber) = 0;
 
   /**
    * Modify a cell description in enter cell event.

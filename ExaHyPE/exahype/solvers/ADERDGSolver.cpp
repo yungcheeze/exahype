@@ -660,6 +660,59 @@ exahype::solvers::ADERDGSolver::computeSubcellPositionOfCellOrAncestor(
 ///////////////////////////////////
 // CELL-LOCAL MESH REFINEMENT
 ///////////////////////////////////
+void exahype::solvers::ADERDGSolver::ensureConsistencyOfParentIndex(
+    CellDescription& fineGridCellDescription,
+    const int coarseGridCellDescriptionsIndex,
+    const int solverNumber) {
+  fineGridCellDescription.setParentIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+  int coarseGridElement = tryGetElement(coarseGridCellDescriptionsIndex,solverNumber);
+  if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
+    fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
+    // In this case, we are not at a master worker boundary only our parent is.
+    fineGridCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
+  }
+}
+
+bool exahype::solvers::ADERDGSolver::markForRefinement(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const int solverNumber) {
+  // Fine grid cell based uniform mesh refinement.
+  int fineGridCellElement =
+      tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+  // Fine grid cell based adaptive mesh refinement operations.
+  if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
+    CellDescription& fineGridCellDescription = Heap::getInstance().getData(
+        fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
+
+    #ifdef Parallel
+    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
+    #if defined(Asserts) || defined(Debug)
+    int coarseGridCellElement =
+        tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
+    assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
+        fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+        fineGridCellDescription.toString(),fineGridCell.toString(),
+        coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+
+    // marking for refinement
+    return markForRefinement(fineGridCellDescription);
+  }
+
+  return false;
+}
+
+///////////////////////////////////
+// CELL-LOCAL MESH REFINEMENT
+///////////////////////////////////
 bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -679,7 +732,7 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
       tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),getMaximumMeshSize())) {
     addNewCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
                multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
-               solverNumber);
+               solverNumber); // TODO(Dominic): Can directly refine if we directly evaluate initial conditions here.
   // Fine grid cell based adaptive mesh refinement operations.
   } else if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
@@ -696,9 +749,6 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
         fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
         fineGridCellDescription.toString(),fineGridCell.toString(),
         coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
-
-    // marking for refinement
-    refineFineGridCell |= markForRefinement(fineGridCellDescription);
 
     // actions requiring adjacency info
     const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
@@ -2462,19 +2512,6 @@ void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
     // Limiter meta data (oscillations identificator)
     p.setSolutionMin(-1);
     p.setSolutionMax(-1);
-  }
-}
-
-void exahype::solvers::ADERDGSolver::ensureConsistencyOfParentIndex(
-    CellDescription& fineGridCellDescription,
-    const int coarseGridCellDescriptionsIndex,
-    const int solverNumber) {
-  fineGridCellDescription.setParentIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
-  int coarseGridElement = tryGetElement(coarseGridCellDescriptionsIndex,solverNumber);
-  if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
-    fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
-    // In this case, we are not at a master worker boundary only our parent is.
-    fineGridCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
   }
 }
 
