@@ -51,7 +51,7 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
-void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, const int ghostLayerWidht,double* const localMinPerVariables, double* const localMaxPerVariables);
 
 /**
  * Find the minimum and maximum per variable in the limiter solution.
@@ -155,6 +155,17 @@ inline int getBasisSizeLim(const int basisSize) {
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); 
 
 void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+
+/**
+ * Compare the min and max values with the interpolated values
+ * at the FV subcell centers.
+ *
+ * \note It is very important to make this check. Otherwise
+ * wrong values at the FV subcell centers get not noticed and
+ * this becomes a problem if we project the DG solution onto the FV
+ * subcell.
+ */
+void compareWithADERDGSolutionAtFVSubcellCenters(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
 
 } // namespace c
 } // namespace generic
