@@ -151,6 +151,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
     static void constantsToString(std::ostream& os);
+    static void abortWithMsg(const char* const msg);
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

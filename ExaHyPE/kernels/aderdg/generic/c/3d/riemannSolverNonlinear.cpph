@@ -31,7 +31,7 @@ namespace kernels {
          * We don't need to consider material parameters
          * in FL,FR,tempStateSizedSquareMatrices,
          */
-        template <bool useCoefficientMatrix, typename SolverType>
+        template <bool useNCP, typename SolverType>
         void riemannSolverNonlinear(SolverType& solver,
                                     double* FL, double* FR, const double* const QL,
                                     const double* const QR,
@@ -116,7 +116,7 @@ namespace kernels {
             for (int i = 0; i < basisSize; i++) {
               for (int j = 0; j < basisSize; j++) {
 
-                if(useCoefficientMatrix) { // we don't use matrixB but the NCP call here.
+                if(useNCP) { // we don't use matrixB but the NCP call here.
                   for(int l=0; l < numberOfVariables; l++) {
                     gradQ[idx_gradQ(normalNonZero, l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
                     Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
@@ -130,7 +130,7 @@ namespace kernels {
                       0.5 * (FR[idx_FLR(i, j, k)] + FL[idx_FLR(i, j, k)]) -
                       0.5 * smax * (QR[idx_QLR(i, j, k)] - QL[idx_QLR(i, j, k)]);
 
-                  if(useCoefficientMatrix) {
+                  if(useNCP) {
                     FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] - 0.5 * ncp[k];
                     FL[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] + 0.5 * ncp[k];
                   } else {

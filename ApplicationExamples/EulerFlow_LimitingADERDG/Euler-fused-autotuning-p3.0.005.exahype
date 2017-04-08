@@ -27,16 +27,16 @@ exahype-project  Euler
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 3
-    width                    = 1.0, 1.0, 1.0
-    offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.4
+    dimension const          = 2
+    width                    = 1.0, 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.01
   end computational-domain
 
   shared-memory
-    identifier               = dummy
-    cores                    = 7
-    properties-file          = sharedmemory.properties
+    identifier               = autotuning
+    cores                    = 28
+    properties-file          = sharedmemory-p3-fused.autotuning.properties
   end shared-memory
 
   optimisation
@@ -44,17 +44,18 @@ exahype-project  Euler
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
-    skip-reduction-in-batched-time-steps = off
+    skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
   end optimisation
 
+
   solver Limiting-ADER-DG LimitingADERDG
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
+    maximum-mesh-size = 0.005
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C

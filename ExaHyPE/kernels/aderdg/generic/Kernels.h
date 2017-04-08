@@ -82,7 +82,7 @@ namespace c {
 /**
  * @param SolverType Has to be of type ADERDG Solver.
  */
-template <typename SolverType>
+template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -102,13 +102,13 @@ template <int numberOfVariables, int basisSize>
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
-template <bool useSourceOrNCP, int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
-template <int numberOfVariables, int basisSize>
+template <bool useFlux, int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double>& dx);
 
@@ -134,7 +134,7 @@ void solutionAdjustment(SolverType& solver, double* luh,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <bool useCoefficientMatrix, typename SolverType>
+template <bool useNCP, typename SolverType>
 void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,

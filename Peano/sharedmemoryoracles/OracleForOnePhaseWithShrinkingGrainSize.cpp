@@ -380,7 +380,12 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     logInfo( "learn()", "found better scaling parameter choice/serial runtime for " << toString() );
 
     while ( _currentGrainSize - _searchDelta <= 0 && _searchDelta>0 ) {
-      _searchDelta /= 2;
+      if (_currentGrainSize>tarch::multicore::Core::getInstance().getNumberOfThreads()*2) {
+        _searchDelta--;
+      }
+      else {
+        _searchDelta /= 2;
+      }
     }
 
     if (_searchDelta>0) {

@@ -25,7 +25,7 @@
 #include "exahype/VertexOperations.h"
 
 #ifdef Parallel
-exahype::mappings::MeshRefinement::FirstIteration = true;
+bool exahype::mappings::MeshRefinement::FirstIteration = true;
 #endif
 
 exahype::mappings::MeshRefinement::RefinementMode

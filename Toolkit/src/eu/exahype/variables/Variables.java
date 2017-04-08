@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import eu.exahype.IOUtils;
+import eu.exahype.io.IOUtils;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
