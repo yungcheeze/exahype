@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_LimiterStatusMergingAndSpreadingMPI_H_
-#define EXAHYPE_ADAPTERS_LimiterStatusMergingAndSpreadingMPI_H_
+#ifndef EXAHYPE_ADAPTERS_MergeTimeStepData_H_
+#define EXAHYPE_ADAPTERS_MergeTimeStepData_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,13 +18,15 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/LimiterStatusMergingAndSpreadingMPI.h"
+ #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/Merging.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class LimiterStatusMergingAndSpreadingMPI;
+        class MergeTimeStepData;
       } 
 }
 
@@ -36,11 +38,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::LimiterStatusMergingAndSpreadingMPI {
+class exahype::adapters::MergeTimeStepData {
   private:
-    typedef mappings::LimiterStatusMergingAndSpreadingMPI Mapping0;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2LimiterStatusMergingAndSpreadingMPI;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2Merging;
+     Mapping2  _map2PostProcessing;
 
 
   public:
@@ -52,16 +58,16 @@ class exahype::adapters::LimiterStatusMergingAndSpreadingMPI {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    LimiterStatusMergingAndSpreadingMPI();
+    MergeTimeStepData();
 
     #if defined(SharedMemoryParallelisation)
-    LimiterStatusMergingAndSpreadingMPI(const LimiterStatusMergingAndSpreadingMPI& masterThread);
+    MergeTimeStepData(const MergeTimeStepData& masterThread);
     #endif
 
-    virtual ~LimiterStatusMergingAndSpreadingMPI();
+    virtual ~MergeTimeStepData();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const LimiterStatusMergingAndSpreadingMPI& workerThread);
+    void mergeWithWorkerThread(const MergeTimeStepData& workerThread);
     #endif
 
     void createInnerVertex(

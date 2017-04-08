@@ -33,8 +33,8 @@
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
- #include "exahype/adapters/TimeStepDataMerging.h" 
- #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h" 
+ #include "exahype/adapters/MergeTimeStepData.h" 
+ #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
 
 
 namespace peano {

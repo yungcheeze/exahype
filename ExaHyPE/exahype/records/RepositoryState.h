@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   06/04/2017 12:03
+ * @date   08/04/2017 20:37
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndFusedTimeSteppingInitialisation = 7, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot = 8, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterPlotAndADERDGTimeStep = 12, UseAdapterPredictionRerun = 13, UseAdapterLimiterStatusSpreading = 14, UseAdapterReinitialisation = 15, UseAdapterSolutionRecomputationAndTimeStepSizeComputation = 16, UseAdapterNeighbourDataMerging = 17, UseAdapterSolutionUpdate = 18, UseAdapterTimeStepSizeComputation = 19, UseAdapterPrediction = 20, UseAdapterPredictionAndPlot = 21, UseAdapterPredictionAndPlot2d = 22, UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation = 23, UseAdapterTimeStepDataMerging = 24, UseAdapterTimeStepDataMergingAndDropIncomingMPIMessages = 25, NumberOfAdapters = 26
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndFusedTimeSteppingInitialisation = 7, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot = 8, UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterPlotAndADERDGTimeStep = 12, UseAdapterPredictionRerun = 13, UseAdapterLimiterStatusSpreading = 14, UseAdapterReinitialisation = 15, UseAdapterSolutionRecomputationAndTimeStepSizeComputation = 16, UseAdapterNeighbourDataMerging = 17, UseAdapterSolutionUpdate = 18, UseAdapterTimeStepSizeComputation = 19, UseAdapterPrediction = 20, UseAdapterPredictionAndPlot = 21, UseAdapterPredictionAndPlot2d = 22, UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation = 23, UseAdapterMergeTimeStepData = 24, UseAdapterMergeTimeStepDataDropFaceData = 25, NumberOfAdapters = 26
       };
       
       struct PersistentRecords {
@@ -289,7 +289,7 @@ class exahype::records::RepositoryState {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   06/04/2017 12:03
+ * @date   08/04/2017 20:37
  */
 class exahype::records::RepositoryStatePacked { 
    

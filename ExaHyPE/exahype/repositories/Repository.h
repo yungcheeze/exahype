@@ -89,8 +89,8 @@ class exahype::repositories::Repository {
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToPredictionAndPlot2d() = 0;    
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
-    virtual void switchToTimeStepDataMerging() = 0;    
-    virtual void switchToTimeStepDataMergingAndDropIncomingMPIMessages() = 0;    
+    virtual void switchToMergeTimeStepData() = 0;    
+    virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
@@ -112,8 +112,8 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
-    virtual bool isActiveAdapterTimeStepDataMerging() const = 0;
-    virtual bool isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const = 0;
+    virtual bool isActiveAdapterMergeTimeStepData() const = 0;
+    virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;
 
 
     /**

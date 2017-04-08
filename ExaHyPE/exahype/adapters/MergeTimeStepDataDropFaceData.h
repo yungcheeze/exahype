@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_TimeStepDataMerging_H_
-#define EXAHYPE_ADAPTERS_TimeStepDataMerging_H_
+#ifndef EXAHYPE_ADAPTERS_MergeTimeStepDataDropFaceData_H_
+#define EXAHYPE_ADAPTERS_MergeTimeStepDataDropFaceData_H_
 
 
 #include "tarch/logging/Log.h"
@@ -26,7 +26,7 @@
 
 namespace exahype {
       namespace adapters {
-        class TimeStepDataMerging;
+        class MergeTimeStepDataDropFaceData;
       } 
 }
 
@@ -38,7 +38,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::TimeStepDataMerging {
+class exahype::adapters::MergeTimeStepDataDropFaceData {
   private:
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
@@ -58,16 +58,16 @@ class exahype::adapters::TimeStepDataMerging {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    TimeStepDataMerging();
+    MergeTimeStepDataDropFaceData();
 
     #if defined(SharedMemoryParallelisation)
-    TimeStepDataMerging(const TimeStepDataMerging& masterThread);
+    MergeTimeStepDataDropFaceData(const MergeTimeStepDataDropFaceData& masterThread);
     #endif
 
-    virtual ~TimeStepDataMerging();
+    virtual ~MergeTimeStepDataDropFaceData();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const TimeStepDataMerging& workerThread);
+    void mergeWithWorkerThread(const MergeTimeStepDataDropFaceData& workerThread);
     #endif
 
     void createInnerVertex(

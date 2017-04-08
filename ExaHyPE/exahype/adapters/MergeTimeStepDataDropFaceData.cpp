@@ -1,7 +1,7 @@
-#include "exahype/adapters/TimeStepDataMerging.h"
+#include "exahype/adapters/MergeTimeStepDataDropFaceData.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::TimeStepDataMerging::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::communicationSpecification()
    & exahype::mappings::Merging::communicationSpecification()
@@ -11,7 +11,7 @@ peano::CommunicationSpecification   exahype::adapters::TimeStepDataMerging::comm
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
    & exahype::mappings::Merging::touchVertexLastTimeSpecification()
@@ -21,7 +21,7 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::touchVerte
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
    & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
@@ -31,7 +31,7 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::touchVerte
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::enterCellSpecification()
    & exahype::mappings::Merging::enterCellSpecification()
@@ -41,7 +41,7 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::enterCellS
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::leaveCellSpecification()
    & exahype::mappings::Merging::leaveCellSpecification()
@@ -51,7 +51,7 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::leaveCellS
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::ascendSpecification()
    & exahype::mappings::Merging::ascendSpecification()
@@ -61,7 +61,7 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::ascendSpec
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::MergeTimeStepDataDropFaceData::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::PreProcessing::descendSpecification()
    & exahype::mappings::Merging::descendSpecification()
@@ -71,16 +71,16 @@ peano::MappingSpecification   exahype::adapters::TimeStepDataMerging::descendSpe
 }
 
 
-exahype::adapters::TimeStepDataMerging::TimeStepDataMerging() {
+exahype::adapters::MergeTimeStepDataDropFaceData::MergeTimeStepDataDropFaceData() {
 }
 
 
-exahype::adapters::TimeStepDataMerging::~TimeStepDataMerging() {
+exahype::adapters::MergeTimeStepDataDropFaceData::~MergeTimeStepDataDropFaceData() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::TimeStepDataMerging::TimeStepDataMerging(const TimeStepDataMerging&  masterThread):
+exahype::adapters::MergeTimeStepDataDropFaceData::MergeTimeStepDataDropFaceData(const MergeTimeStepDataDropFaceData&  masterThread):
   _map2PreProcessing(masterThread._map2PreProcessing) , 
   _map2Merging(masterThread._map2Merging) , 
   _map2PostProcessing(masterThread._map2PostProcessing) 
@@ -89,7 +89,7 @@ exahype::adapters::TimeStepDataMerging::TimeStepDataMerging(const TimeStepDataMe
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithWorkerThread(const TimeStepDataMerging& workerThread) {
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithWorkerThread(const MergeTimeStepDataDropFaceData& workerThread) {
   _map2PreProcessing.mergeWithWorkerThread(workerThread._map2PreProcessing);
   _map2Merging.mergeWithWorkerThread(workerThread._map2Merging);
   _map2PostProcessing.mergeWithWorkerThread(workerThread._map2PostProcessing);
@@ -98,7 +98,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithWorkerThread(const TimeSte
 #endif
 
 
-void exahype::adapters::TimeStepDataMerging::createHangingVertex(
+void exahype::adapters::MergeTimeStepDataDropFaceData::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -115,7 +115,7 @@ void exahype::adapters::TimeStepDataMerging::createHangingVertex(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::destroyHangingVertex(
+void exahype::adapters::MergeTimeStepDataDropFaceData::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -131,7 +131,7 @@ void exahype::adapters::TimeStepDataMerging::destroyHangingVertex(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::createInnerVertex(
+void exahype::adapters::MergeTimeStepDataDropFaceData::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -147,7 +147,7 @@ void exahype::adapters::TimeStepDataMerging::createInnerVertex(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::createBoundaryVertex(
+void exahype::adapters::MergeTimeStepDataDropFaceData::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -163,7 +163,7 @@ void exahype::adapters::TimeStepDataMerging::createBoundaryVertex(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::destroyVertex(
+void exahype::adapters::MergeTimeStepDataDropFaceData::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -179,7 +179,7 @@ void exahype::adapters::TimeStepDataMerging::destroyVertex(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::createCell(
+void exahype::adapters::MergeTimeStepDataDropFaceData::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -195,7 +195,7 @@ void exahype::adapters::TimeStepDataMerging::createCell(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::destroyCell(
+void exahype::adapters::MergeTimeStepDataDropFaceData::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -212,7 +212,7 @@ void exahype::adapters::TimeStepDataMerging::destroyCell(
 
 
 #ifdef Parallel
-void exahype::adapters::TimeStepDataMerging::mergeWithNeighbour(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -227,7 +227,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithNeighbour(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::prepareSendToNeighbour(
+void exahype::adapters::MergeTimeStepDataDropFaceData::prepareSendToNeighbour(
   exahype::Vertex&  vertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -241,7 +241,7 @@ void exahype::adapters::TimeStepDataMerging::prepareSendToNeighbour(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::prepareCopyToRemoteNode(
+void exahype::adapters::MergeTimeStepDataDropFaceData::prepareCopyToRemoteNode(
   exahype::Vertex&  localVertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -255,7 +255,7 @@ void exahype::adapters::TimeStepDataMerging::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::prepareCopyToRemoteNode(
+void exahype::adapters::MergeTimeStepDataDropFaceData::prepareCopyToRemoteNode(
   exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -269,7 +269,7 @@ void exahype::adapters::TimeStepDataMerging::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -284,7 +284,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -299,7 +299,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 
-bool exahype::adapters::TimeStepDataMerging::prepareSendToWorker(
+bool exahype::adapters::MergeTimeStepDataDropFaceData::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -318,7 +318,7 @@ bool exahype::adapters::TimeStepDataMerging::prepareSendToWorker(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::prepareSendToMaster(
+void exahype::adapters::MergeTimeStepDataDropFaceData::prepareSendToMaster(
   exahype::Cell&                       localCell,
   exahype::Vertex *                    vertices,
   const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -334,7 +334,7 @@ void exahype::adapters::TimeStepDataMerging::prepareSendToMaster(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithMaster(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -356,7 +356,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithMaster(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::receiveDataFromMaster(
+void exahype::adapters::MergeTimeStepDataDropFaceData::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -375,7 +375,7 @@ void exahype::adapters::TimeStepDataMerging::receiveDataFromMaster(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithWorker(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithWorker(
   exahype::Cell&           localCell, 
   const exahype::Cell&     receivedMasterCell,
   const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -389,7 +389,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithWorker(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::mergeWithWorker(
+void exahype::adapters::MergeTimeStepDataDropFaceData::mergeWithWorker(
   exahype::Vertex&        localVertex,
   const exahype::Vertex&  receivedMasterVertex,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -404,7 +404,7 @@ void exahype::adapters::TimeStepDataMerging::mergeWithWorker(
 #endif
 
 
-void exahype::adapters::TimeStepDataMerging::touchVertexFirstTime(
+void exahype::adapters::MergeTimeStepDataDropFaceData::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -420,7 +420,7 @@ void exahype::adapters::TimeStepDataMerging::touchVertexFirstTime(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::touchVertexLastTime(
+void exahype::adapters::MergeTimeStepDataDropFaceData::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -436,7 +436,7 @@ void exahype::adapters::TimeStepDataMerging::touchVertexLastTime(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::enterCell(
+void exahype::adapters::MergeTimeStepDataDropFaceData::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -452,7 +452,7 @@ void exahype::adapters::TimeStepDataMerging::enterCell(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::leaveCell(
+void exahype::adapters::MergeTimeStepDataDropFaceData::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -468,7 +468,7 @@ void exahype::adapters::TimeStepDataMerging::leaveCell(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::beginIteration(
+void exahype::adapters::MergeTimeStepDataDropFaceData::beginIteration(
   exahype::State&  solverState
 ) {
   _map2PreProcessing.beginIteration( solverState );
@@ -478,7 +478,7 @@ void exahype::adapters::TimeStepDataMerging::beginIteration(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::endIteration(
+void exahype::adapters::MergeTimeStepDataDropFaceData::endIteration(
   exahype::State&  solverState
 ) {
   _map2PreProcessing.endIteration( solverState );
@@ -490,7 +490,7 @@ void exahype::adapters::TimeStepDataMerging::endIteration(
 
 
 
-void exahype::adapters::TimeStepDataMerging::descend(
+void exahype::adapters::MergeTimeStepDataDropFaceData::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -505,7 +505,7 @@ void exahype::adapters::TimeStepDataMerging::descend(
 }
 
 
-void exahype::adapters::TimeStepDataMerging::ascend(
+void exahype::adapters::MergeTimeStepDataDropFaceData::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
