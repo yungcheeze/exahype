@@ -51,7 +51,7 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
 void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const luh);
 
 // Get the local min/max from the DG and Gauss Lobatto nodes
-void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, const int ghostLayerWidht,double* const localMinPerVariables, double* const localMaxPerVariables);
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
 
 /**
  * Find the minimum and maximum per variable in the limiter solution.
