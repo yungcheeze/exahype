@@ -363,11 +363,11 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
 
   std::fill_n(lQhi, basisSize3 * numberOfData, 0.0);
   
-  if(useFlux) {
+  //if(useFlux) {
     std::fill_n(lFhi_x, basisSize3 * numberOfVariables, 0.0);
     std::fill_n(lFhi_y, basisSize3 * numberOfVariables, 0.0);
     std::fill_n(lFhi_z, basisSize3 * numberOfVariables, 0.0);
-  }
+  //}
   std::fill_n(lShi,   basisSize3 * numberOfVariables, 0.0);
 
   for (int i = 0; i < basisSize; i++) {
@@ -436,9 +436,9 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
   // in princple, we should ignore the lFhbnd but we can also zero them out.
   // zeroing them keeps CCZ4 GaugeWave stable for more time steps but not
   // for long time.
-  if(useFlux) {
+  //if(useFlux) {
     std::fill_n(lFhbnd, 2 * DIMENSIONS * basisSize2 * numberOfVariables, 0.0);
-  }
+  //}
 
   // x-direction: face 1 (left) and face 2 (right)
   for (int i = 0; i < basisSize; i++) {
