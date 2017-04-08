@@ -18,16 +18,10 @@
 
 #if DIMENSIONS == 3
 
-template <bool useFlux, int numberOfVariables, int basisSize>
+template <bool useFlux/*unused*/, int numberOfVariables, int basisSize>
 void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double> &dx) {
   constexpr int order = basisSize - 1;
-  
-  if(!useFlux) {
-    // we just provide the same signature with useFlux for consistency. Actually, there is no surface
-    // integral if there are no fluxes.
-    return;
-  }
 
   idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
   idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);

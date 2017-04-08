@@ -295,7 +295,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
         80 * sizeof(double));
 
     // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<nVar, basisSize>(
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear<true, nVar, basisSize>(
         lduh, lFhbnd, dx[0]
         );
 
@@ -320,7 +320,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
         ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
         80 * sizeof(double));
 
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<nVar, basisSize>(
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear<true, nVar, basisSize>(
         lduh, ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::
                   lFhbnd_in,
         dx[0]
@@ -771,7 +771,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
                     3.70370370370370349811e-02};  // mesh spacing
     // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
-    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, nVar, basisSize>(
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, true, nVar, basisSize>(
         lduh,
         ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0]
@@ -807,7 +807,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // output:
     double lduh[80];  // intentionally left uninitialised
 
-    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, nVar, basisSize>(lduh, lFhi, dx[0]);
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<true, true, nVar, basisSize>(lduh, lFhi, dx[0]);
 
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -951,7 +951,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double lFhbnd[4 * nData*basisSize];  // nData * nDOFy * 4
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,true,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
