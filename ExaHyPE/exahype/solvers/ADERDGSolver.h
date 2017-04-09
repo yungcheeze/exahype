@@ -353,8 +353,11 @@ private:
    * Further copy the corrector and predictor time stamp and
    * time step sizes.
    *
-   * \note This method makes only sense for virtual shells
-   * in the current AMR concept.
+   * Furthermore, set the limiterStatus to the value of the
+   * coarse grid cell description.
+   * Set the value of the mergedLimiterStatus elements to Troubled
+   * in case the coarse grid cell descriptions' values are Troubled.
+   * Otherwise, set it to Ok.
    */
   void prolongateVolumeData(
       CellDescription&       fineGridCellDescription,
@@ -1315,7 +1318,7 @@ public:
    * If so, update the parent index of the fine grid cell description
    * with the coarse grid cell descriptions index.
    */
-  static void ensureConsistencyOfParentIndex(
+  void ensureConsistencyOfParentIndex(
       CellDescription& cellDescription,
       const int coarseGridCellDescriptionsIndex,
       const int solverNumber);
