@@ -233,6 +233,12 @@ bool exahype::State::continueToConstructGrid() const {
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
  }
 
+ void exahype::State::switchToGridErasingContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::DropFaceData);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
  //
  void exahype::State::setStabilityConditionOfOneSolverWasViolated(bool state) {
    _stateData.setStabilityConditionOfOneSolverWasViolated(state);
