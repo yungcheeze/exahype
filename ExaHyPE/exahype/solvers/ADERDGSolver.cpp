@@ -669,7 +669,9 @@ void exahype::solvers::ADERDGSolver::ensureConsistencyOfParentIndex(
   if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
     fineGridCellDescription.setParentIndex(coarseGridCellDescriptionsIndex);
     // In this case, we are not at a master worker boundary only our parent is.
+    #ifdef Parallel
     fineGridCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
+    #endif
   }
 }
 
@@ -1221,6 +1223,24 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   fineGridCellDescription.setPredictorTimeStamp(coarseGridCellDescription.getPredictorTimeStamp());
   fineGridCellDescription.setCorrectorTimeStepSize(coarseGridCellDescription.getCorrectorTimeStepSize());
   fineGridCellDescription.setPredictorTimeStepSize(coarseGridCellDescription.getPredictorTimeStepSize());
+
+  // Dominic: This is a little inconsistent since I orignally tried to hide
+  // the limiting from the pure ADER-DG scheme
+  fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
+  fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
+
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Ok);
+  }
+  if (coarseGridCellDescription.getMergedLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+      fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Troubled);
+    }
+
+    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+      assertion(coarseGridCellDescription.getMergedLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
+    } // Dead code elimination will get rid of this line
+  }
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(
