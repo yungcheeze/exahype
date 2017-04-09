@@ -752,8 +752,7 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
 
   // We refine here using the previous solution (which is valid)
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
-  //
-  // TODO(Dominic): A-posteriori refinement based on limiter status
+  createGrid(repository);
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
   repository.switchToFinaliseMeshRefinementAndSubcellSending(); // finalise mesh refinment and send the data
@@ -916,7 +915,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     logInfo("runOneTimeStampWithFusedAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
-    repository.switchToTimeStepDataMergingAndDropIncomingMPIMessages(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
+    repository.switchToMergeTimeStepDataDropFaceData(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
     repository.iterate();
 
     createGrid(repository);
@@ -950,7 +949,7 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
         "\t\t Space-time predictor must be recomputed.");
 
     repository.getState().switchToPredictionRerunContext();
-    repository.switchToPredictionRerun();
+    repository.switchToPrediction();
     repository.iterate();
   }
 }
@@ -995,7 +994,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
-    repository.switchToTimeStepDataMerging();
+    repository.switchToMergeTimeStepData();
     repository.iterate();
 
     createGrid(repository);
