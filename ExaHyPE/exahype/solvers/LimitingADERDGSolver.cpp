@@ -1,5 +1,4 @@
 /*
- * LimitingADERDGSolver.cpp
  *
  *  Created on: 26 Oct 2016
  *      Author: dominic
@@ -229,7 +228,7 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimit
         _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
 
     #ifdef Parallel
-    exahype::solvers::ADERDGSolver::ensureConsistencyOfParentIndex(
+    _solver->ensureConsistencyOfParentIndex(
         solverPatch,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
     #endif
     #if defined(Asserts) || defined(Debug)
@@ -238,8 +237,8 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimit
     #endif
 
     assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
-    fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
-    fineGridCellDescription.toString(),fineGridCell.toString(),
+    solverPatch.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+    solverPatch.toString(),fineGridCell.toString(),
     coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
     const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
