@@ -16,7 +16,7 @@
 #include "peano/utils/Globals.h"
 #include "peano/utils/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "tarch/la/VectorScalarOperations.h"
 
