@@ -161,7 +161,9 @@ bool exahype::State::continueToConstructGrid() const {
  }
 
  void exahype::State::switchToPredictionRerunContext() {
-   switchToPredictionContext();
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData);
+   _stateData.setSendMode (records::State::SendMode::SendFaceData);
  }
 
  void exahype::State::switchToNeighbourDataMergingContext() {

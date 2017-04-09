@@ -118,6 +118,12 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToADERDGTimeStepContext();
 
+  /**
+   * In a serial version, running the predictor is the same for optimistic time
+   * stepping and the non-fused algorithm. In the MPI case however a rerun in
+   * optimistic time stepping has to remove all old MPI messages from the queues
+   * and re-send the updated boundary values, so it is slightly different
+   */
   void switchToPredictionRerunContext();
 
   void switchToNeighbourDataMergingContext();
