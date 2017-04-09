@@ -139,7 +139,7 @@ adapter:
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
-  merge-with-user-defined-mapping: DropIncomingMPIMessages
+  merge-with-user-defined-mapping: Merging  // DropFaceData
   merge-with-user-defined-mapping: GridErasing
 
 // Adapter for 1 phase time stepping
