@@ -227,6 +227,7 @@ bool exahype::solvers::FiniteVolumesSolver::markForRefinement(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
   // do nothing
+  return false;
 }
 
 bool exahype::solvers::FiniteVolumesSolver::updateStateInEnterCell(
