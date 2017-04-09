@@ -26,8 +26,6 @@
 
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
-#include "exahype/mappings/LimiterStatusMergingMPI.h"
-
 #ifdef Parallel
 exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
 #endif
