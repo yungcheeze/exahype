@@ -78,7 +78,6 @@ class exahype::repositories::Repository {
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToPlotAndADERDGTimeStep() = 0;    
-    virtual void switchToPredictionRerun() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
     virtual void switchToReinitialisation() = 0;    
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation() = 0;    
@@ -91,6 +90,7 @@ class exahype::repositories::Repository {
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
     virtual void switchToMergeTimeStepData() = 0;    
     virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
+    virtual void switchToFinaliseMeshRefinementAndSubcellSending() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
@@ -101,7 +101,6 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
-    virtual bool isActiveAdapterPredictionRerun() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const = 0;
@@ -114,6 +113,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterMergeTimeStepData() const = 0;
     virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;
+    virtual bool isActiveAdapterFinaliseMeshRefinementAndSubcellSending() const = 0;
 
 
     /**

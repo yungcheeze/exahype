@@ -46,7 +46,6 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithGridErasing(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlotAndADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
-  _gridWithPredictionRerun(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusSpreading(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithReinitialisation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithSolutionRecomputationAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -59,6 +58,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithMergeTimeStepData(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithMergeTimeStepDataDropFaceData(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithFinaliseMeshRefinementAndSubcellSending(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositoryArrayStack(...)" );
@@ -94,7 +94,6 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithGridErasing(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlotAndADERDGTimeStep(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
-  _gridWithPredictionRerun(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithLimiterStatusSpreading(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithReinitialisation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithSolutionRecomputationAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -107,6 +106,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithMergeTimeStepData(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithMergeTimeStepDataDropFaceData(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithFinaliseMeshRefinementAndSubcellSending(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositoryArrayStack(Geometry&)" );
@@ -154,7 +154,6 @@ void exahype::repositories::RepositoryArrayStack::restart(
   _gridWithGridErasing.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithADERDGTimeStep.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPlotAndADERDGTimeStep.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
-  _gridWithPredictionRerun.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithLimiterStatusSpreading.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithReinitialisation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithSolutionRecomputationAndTimeStepSizeComputation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
@@ -167,6 +166,7 @@ void exahype::repositories::RepositoryArrayStack::restart(
   _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithMergeTimeStepData.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithMergeTimeStepDataDropFaceData.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithFinaliseMeshRefinementAndSubcellSending.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
 
  
    _solverState.restart();
@@ -199,7 +199,6 @@ void exahype::repositories::RepositoryArrayStack::terminate() {
   _gridWithGridErasing.terminate();
   _gridWithADERDGTimeStep.terminate();
   _gridWithPlotAndADERDGTimeStep.terminate();
-  _gridWithPredictionRerun.terminate();
   _gridWithLimiterStatusSpreading.terminate();
   _gridWithReinitialisation.terminate();
   _gridWithSolutionRecomputationAndTimeStepSizeComputation.terminate();
@@ -212,6 +211,7 @@ void exahype::repositories::RepositoryArrayStack::terminate() {
   _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation.terminate();
   _gridWithMergeTimeStepData.terminate();
   _gridWithMergeTimeStepDataDropFaceData.terminate();
+  _gridWithFinaliseMeshRefinementAndSubcellSending.terminate();
 
  
   logTraceOut( "terminate()" );
@@ -276,7 +276,6 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
       case exahype::records::RepositoryState::UseAdapterGridErasing: watch.startTimer(); _gridWithGridErasing.iterate(); watch.stopTimer(); _measureGridErasingCPUTime.setValue( watch.getCPUTime() ); _measureGridErasingCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterADERDGTimeStep: watch.startTimer(); _gridWithADERDGTimeStep.iterate(); watch.stopTimer(); _measureADERDGTimeStepCPUTime.setValue( watch.getCPUTime() ); _measureADERDGTimeStepCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep: watch.startTimer(); _gridWithPlotAndADERDGTimeStep.iterate(); watch.stopTimer(); _measurePlotAndADERDGTimeStepCPUTime.setValue( watch.getCPUTime() ); _measurePlotAndADERDGTimeStepCalendarTime.setValue( watch.getCalendarTime() ); break;
-      case exahype::records::RepositoryState::UseAdapterPredictionRerun: watch.startTimer(); _gridWithPredictionRerun.iterate(); watch.stopTimer(); _measurePredictionRerunCPUTime.setValue( watch.getCPUTime() ); _measurePredictionRerunCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading: watch.startTimer(); _gridWithLimiterStatusSpreading.iterate(); watch.stopTimer(); _measureLimiterStatusSpreadingCPUTime.setValue( watch.getCPUTime() ); _measureLimiterStatusSpreadingCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterReinitialisation: watch.startTimer(); _gridWithReinitialisation.iterate(); watch.stopTimer(); _measureReinitialisationCPUTime.setValue( watch.getCPUTime() ); _measureReinitialisationCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterSolutionRecomputationAndTimeStepSizeComputation: watch.startTimer(); _gridWithSolutionRecomputationAndTimeStepSizeComputation.iterate(); watch.stopTimer(); _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.setValue( watch.getCPUTime() ); _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
@@ -289,6 +288,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
       case exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation: watch.startTimer(); _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation.iterate(); watch.stopTimer(); _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.setValue( watch.getCPUTime() ); _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterMergeTimeStepData: watch.startTimer(); _gridWithMergeTimeStepData.iterate(); watch.stopTimer(); _measureMergeTimeStepDataCPUTime.setValue( watch.getCPUTime() ); _measureMergeTimeStepDataCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterMergeTimeStepDataDropFaceData: watch.startTimer(); _gridWithMergeTimeStepDataDropFaceData.iterate(); watch.stopTimer(); _measureMergeTimeStepDataDropFaceDataCPUTime.setValue( watch.getCPUTime() ); _measureMergeTimeStepDataDropFaceDataCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndSubcellSending: watch.startTimer(); _gridWithFinaliseMeshRefinementAndSubcellSending.iterate(); watch.stopTimer(); _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.setValue( watch.getCPUTime() ); _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime.setValue( watch.getCalendarTime() ); break;
 
       case exahype::records::RepositoryState::Terminate:
         assertionMsg( false, "this branch/state should never be reached" ); 
@@ -329,7 +329,6 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  void exahype::repositories::RepositoryArrayStack::switchToGridErasing() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterGridErasing); }
  void exahype::repositories::RepositoryArrayStack::switchToADERDGTimeStep() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterADERDGTimeStep); }
  void exahype::repositories::RepositoryArrayStack::switchToPlotAndADERDGTimeStep() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep); }
- void exahype::repositories::RepositoryArrayStack::switchToPredictionRerun() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictionRerun); }
  void exahype::repositories::RepositoryArrayStack::switchToLimiterStatusSpreading() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading); }
  void exahype::repositories::RepositoryArrayStack::switchToReinitialisation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterReinitialisation); }
  void exahype::repositories::RepositoryArrayStack::switchToSolutionRecomputationAndTimeStepSizeComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterSolutionRecomputationAndTimeStepSizeComputation); }
@@ -342,6 +341,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  void exahype::repositories::RepositoryArrayStack::switchToFinaliseMeshRefinementAndTimeStepSizeComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation); }
  void exahype::repositories::RepositoryArrayStack::switchToMergeTimeStepData() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterMergeTimeStepData); }
  void exahype::repositories::RepositoryArrayStack::switchToMergeTimeStepDataDropFaceData() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterMergeTimeStepDataDropFaceData); }
+ void exahype::repositories::RepositoryArrayStack::switchToFinaliseMeshRefinementAndSubcellSending() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndSubcellSending); }
 
 
 
@@ -354,7 +354,6 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterGridErasing() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterGridErasing; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterADERDGTimeStep() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterADERDGTimeStep; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPlotAndADERDGTimeStep() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPlotAndADERDGTimeStep; }
- bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPredictionRerun() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictionRerun; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterLimiterStatusSpreading() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterLimiterStatusSpreading; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterReinitialisation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterReinitialisation; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterSolutionRecomputationAndTimeStepSizeComputation; }
@@ -367,6 +366,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterMergeTimeStepData() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterMergeTimeStepData; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterMergeTimeStepDataDropFaceData() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterMergeTimeStepDataDropFaceData; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterFinaliseMeshRefinementAndSubcellSending() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterFinaliseMeshRefinementAndSubcellSending; }
 
 
 
@@ -452,7 +452,6 @@ void exahype::repositories::RepositoryArrayStack::logIterationStatistics(bool lo
    if (logAllAdapters || _measureGridErasingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| GridErasing \t |  " << _measureGridErasingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureGridErasingCPUTime.getAccumulatedValue() << " \t |  " << _measureGridErasingCPUTime.getValue()  << " \t |  " << _measureGridErasingCalendarTime.getAccumulatedValue() << " \t |  " << _measureGridErasingCalendarTime.getValue() << " \t |  " << _measureGridErasingCPUTime.toString() << " \t |  " << _measureGridErasingCalendarTime.toString() );
    if (logAllAdapters || _measureADERDGTimeStepCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| ADERDGTimeStep \t |  " << _measureADERDGTimeStepCPUTime.getNumberOfMeasurements() << " \t |  " << _measureADERDGTimeStepCPUTime.getAccumulatedValue() << " \t |  " << _measureADERDGTimeStepCPUTime.getValue()  << " \t |  " << _measureADERDGTimeStepCalendarTime.getAccumulatedValue() << " \t |  " << _measureADERDGTimeStepCalendarTime.getValue() << " \t |  " << _measureADERDGTimeStepCPUTime.toString() << " \t |  " << _measureADERDGTimeStepCalendarTime.toString() );
    if (logAllAdapters || _measurePlotAndADERDGTimeStepCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PlotAndADERDGTimeStep \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getAccumulatedValue() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.getValue()  << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.getAccumulatedValue() << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.getValue() << " \t |  " << _measurePlotAndADERDGTimeStepCPUTime.toString() << " \t |  " << _measurePlotAndADERDGTimeStepCalendarTime.toString() );
-   if (logAllAdapters || _measurePredictionRerunCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PredictionRerun \t |  " << _measurePredictionRerunCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionRerunCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionRerunCPUTime.getValue()  << " \t |  " << _measurePredictionRerunCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionRerunCalendarTime.getValue() << " \t |  " << _measurePredictionRerunCPUTime.toString() << " \t |  " << _measurePredictionRerunCalendarTime.toString() );
    if (logAllAdapters || _measureLimiterStatusSpreadingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| LimiterStatusSpreading \t |  " << _measureLimiterStatusSpreadingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.getValue()  << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.getAccumulatedValue() << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.getValue() << " \t |  " << _measureLimiterStatusSpreadingCPUTime.toString() << " \t |  " << _measureLimiterStatusSpreadingCalendarTime.toString() );
    if (logAllAdapters || _measureReinitialisationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| Reinitialisation \t |  " << _measureReinitialisationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureReinitialisationCPUTime.getAccumulatedValue() << " \t |  " << _measureReinitialisationCPUTime.getValue()  << " \t |  " << _measureReinitialisationCalendarTime.getAccumulatedValue() << " \t |  " << _measureReinitialisationCalendarTime.getValue() << " \t |  " << _measureReinitialisationCPUTime.toString() << " \t |  " << _measureReinitialisationCalendarTime.toString() );
    if (logAllAdapters || _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| SolutionRecomputationAndTimeStepSizeComputation \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.getValue()  << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime.getValue() << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.toString() << " \t |  " << _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime.toString() );
@@ -465,6 +464,7 @@ void exahype::repositories::RepositoryArrayStack::logIterationStatistics(bool lo
    if (logAllAdapters || _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| FinaliseMeshRefinementAndTimeStepSizeComputation \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.getValue()  << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime.getValue() << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.toString() << " \t |  " << _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime.toString() );
    if (logAllAdapters || _measureMergeTimeStepDataCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| MergeTimeStepData \t |  " << _measureMergeTimeStepDataCPUTime.getNumberOfMeasurements() << " \t |  " << _measureMergeTimeStepDataCPUTime.getAccumulatedValue() << " \t |  " << _measureMergeTimeStepDataCPUTime.getValue()  << " \t |  " << _measureMergeTimeStepDataCalendarTime.getAccumulatedValue() << " \t |  " << _measureMergeTimeStepDataCalendarTime.getValue() << " \t |  " << _measureMergeTimeStepDataCPUTime.toString() << " \t |  " << _measureMergeTimeStepDataCalendarTime.toString() );
    if (logAllAdapters || _measureMergeTimeStepDataDropFaceDataCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| MergeTimeStepDataDropFaceData \t |  " << _measureMergeTimeStepDataDropFaceDataCPUTime.getNumberOfMeasurements() << " \t |  " << _measureMergeTimeStepDataDropFaceDataCPUTime.getAccumulatedValue() << " \t |  " << _measureMergeTimeStepDataDropFaceDataCPUTime.getValue()  << " \t |  " << _measureMergeTimeStepDataDropFaceDataCalendarTime.getAccumulatedValue() << " \t |  " << _measureMergeTimeStepDataDropFaceDataCalendarTime.getValue() << " \t |  " << _measureMergeTimeStepDataDropFaceDataCPUTime.toString() << " \t |  " << _measureMergeTimeStepDataDropFaceDataCalendarTime.toString() );
+   if (logAllAdapters || _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| FinaliseMeshRefinementAndSubcellSending \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.getNumberOfMeasurements() << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.getAccumulatedValue() << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.getValue()  << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime.getAccumulatedValue() << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime.getValue() << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.toString() << " \t |  " << _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime.toString() );
 
 }
 
@@ -479,7 +479,6 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureGridErasingCPUTime.erase();
    _measureADERDGTimeStepCPUTime.erase();
    _measurePlotAndADERDGTimeStepCPUTime.erase();
-   _measurePredictionRerunCPUTime.erase();
    _measureLimiterStatusSpreadingCPUTime.erase();
    _measureReinitialisationCPUTime.erase();
    _measureSolutionRecomputationAndTimeStepSizeComputationCPUTime.erase();
@@ -492,6 +491,7 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime.erase();
    _measureMergeTimeStepDataCPUTime.erase();
    _measureMergeTimeStepDataDropFaceDataCPUTime.erase();
+   _measureFinaliseMeshRefinementAndSubcellSendingCPUTime.erase();
 
    _measureMeshRefinementCalendarTime.erase();
    _measurePlotAugmentedAMRGridCalendarTime.erase();
@@ -502,7 +502,6 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureGridErasingCalendarTime.erase();
    _measureADERDGTimeStepCalendarTime.erase();
    _measurePlotAndADERDGTimeStepCalendarTime.erase();
-   _measurePredictionRerunCalendarTime.erase();
    _measureLimiterStatusSpreadingCalendarTime.erase();
    _measureReinitialisationCalendarTime.erase();
    _measureSolutionRecomputationAndTimeStepSizeComputationCalendarTime.erase();
@@ -515,5 +514,6 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime.erase();
    _measureMergeTimeStepDataCalendarTime.erase();
    _measureMergeTimeStepDataDropFaceDataCalendarTime.erase();
+   _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime.erase();
 
 }

@@ -164,20 +164,6 @@ adapter:
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
- 
-/**
- * In a serial version, running the predictor is the same for optimistic time 
- * stepping and the non-fused algorithm. In the MPI case however a rerun in 
- * optimistic time stepping has to remove all old MPI messages from the queues
- * and re-send the updated boundary values, so it is slightly different
- */
-adapter:
-  name: PredictionRerun
-  merge-with-user-defined-mapping: DropIncomingMPIMessages // drop face data
-  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data
-  merge-with-user-defined-mapping: Merging
-  merge-with-user-defined-mapping: Prediction 
-  merge-with-user-defined-mapping: Sending
 
 // Additional adapters for limiter status spreading and recomputation
 adapter: 
@@ -266,4 +252,11 @@ adapter:
   name: MergeTimeStepDataDropFaceData
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Merging 
+  merge-with-user-defined-mapping: PostProcessing
+  
+adapter:
+  name: FinaliseMeshRefinementAndSubcellSending
+  merge-with-user-defined-mapping: FinaliseMeshRefinement
+  merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: SubcellSending
   merge-with-user-defined-mapping: PostProcessing
