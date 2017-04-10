@@ -26,9 +26,9 @@ exahype-project GRMHD
   log-file                         = whatever.log
 
   computational-domain
-    dimension const                = 2
-    width                          = 1.0, 1.0
-    offset                         = 0.0, 0.0
+    dimension const                = 3
+    width                          = 1.0, 1.0, 1.0
+    offset                         = 0.0, 0.0, 0.0
     end-time                       = 2.1
   end computational-domain
   
@@ -59,7 +59,7 @@ exahype-project GRMHD
     /* gamma is actually parts of a matrix... */
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
     order const                    = 3
-    maximum-mesh-size              = 0.04
+    maximum-mesh-size              = 0.9
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C

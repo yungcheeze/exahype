@@ -94,6 +94,13 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,
 
 void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
+  
+  // why the hell do we need this here so it does not crash?
+  for(int i=0; i<NumberOfVariables; ++i) {
+    if(!std::isfinite(BgradQ[i])) {
+       printf("Nonfinite BgradQ[%d] = %f\n", i, BgradQ[i]);
+    }
+  }
 }
 
 

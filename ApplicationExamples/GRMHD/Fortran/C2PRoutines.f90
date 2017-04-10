@@ -1,6 +1,6 @@
 ! Con2Prim helper routines, a file by Olindo Zanotti.
 
-FUNCTION RTSAFE_C2P_RMHD1(X1,X2,XACC,gam,d,e,s2,b2,sb2,w,FAILED)
+RECURSIVE FUNCTION RTSAFE_C2P_RMHD1(X1,X2,XACC,gam,d,e,s2,b2,sb2,w,FAILED)
   IMPLICIT NONE
   INTEGER, PARAMETER    :: MAXIT=200
   INTEGER               :: J
@@ -115,7 +115,7 @@ PURE SUBROUTINE FUNC_C2P_RMHD1(x,f,df,gam,d,e,s2,b2,sb2,w)
 END SUBROUTINE FUNC_C2P_RMHD1
 
 
- SUBROUTINE MatrixInverse3x3(M,iM,det) 
+RECURSIVE SUBROUTINE MatrixInverse3x3(M,iM,det) 
     !---------------
     ! compute the determinant det of the NxN-matrix M
     !---------------
