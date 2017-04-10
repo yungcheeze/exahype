@@ -91,8 +91,9 @@ Qavg[k] = (QavL[k] + QavR[k]) / 2;
     //double* Bn  = tempStateSizedSquareMatrices[0];
     //double* ncp = tempStateSizedVectors[4];
     //idx2 idx_Bn(numberOfVariables, numberOfVariables);
-//    /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-    double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
+    /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+//    double* gradQ = new double[DIMENSIONS*numberOfVariables];    
     double ncp[numberOfVariables]               = {0.0};
     /*
 if(useCoefficientMatrix) {
@@ -114,10 +115,11 @@ solver.coefficientMatrix(Qavg, normalNonZero, Bn);
 
           if(useNCP) { // we don't use matrixB but the NCP call here.
             for(int l=0; l < numberOfVariables; l++) {
-              gradQ[normalNonZero][l] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
+              gradQ[idx_gradQ(normalNonZero,l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
               Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
             }
-            solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
+            
+            solver.nonConservativeProduct(Qavg, gradQ, ncp);
           }
 
           // skip parameters
