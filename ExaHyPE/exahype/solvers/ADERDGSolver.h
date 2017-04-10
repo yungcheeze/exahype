@@ -10,7 +10,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  *
- * \author Dominic E. Charrier, Tobias Weinzierl, Fabian Güra
+ * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra
  **/
 
 #ifndef _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
@@ -74,6 +74,49 @@ private:
   static tarch::logging::Log _log;
 
   /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _previousMinCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of all
+   * cell descriptions in the previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the minCorrectorTimeStepSize during a rollback.
+   */
+  double _previousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _minCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of
+   * all cell descriptions.
+   */
+  double _minCorrectorTimeStepSize;
+
+  /**
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
+
+  /**
+   * Minimum predictor time step size of
+   * all cell descriptions.
+   */
+  double _minPredictorTimeStepSize;
+
+  /**
+   * Minimum next predictor time step size of
+   * all cell descriptions.
+   */
+  double _minNextPredictorTimeStepSize;
+
+  /**
    * The number of unknowns/basis functions associated with each face of an
    * element.
    * This number includes the unknowns of all state variables.
@@ -125,48 +168,6 @@ private:
    */
   const int _dataPointsPerCell;
 
-  /**
-   * Minimum corrector time stamp of all cell descriptions.
-   */
-  double _previousMinCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of all
-   * cell descriptions in the previous iteration.
-   *
-   * This time step size is necessary for the fused time stepping + limiting
-   * to reconstruct the minCorrectorTimeStepSize during a rollback.
-   */
-  double _previousMinCorrectorTimeStepSize;
-
-  /**
-   * Minimum corrector time stamp of all cell descriptions.
-   */
-  double _minCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of
-   * all cell descriptions.
-   */
-  double _minCorrectorTimeStepSize;
-
-  /**
-   * Minimum predictor time stamp of all cell descriptions.
-   * Always equal or larger than the minimum corrector time stamp.
-   */
-  double _minPredictorTimeStamp;
-
-  /**
-   * Minimum predictor time step size of
-   * all cell descriptions.
-   */
-  double _minPredictorTimeStepSize;
-
-  /**
-   * Minimum next predictor time step size of
-   * all cell descriptions.
-   */
-  double _minNextPredictorTimeStepSize;
 
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
@@ -665,7 +666,7 @@ public:
   ADERDGSolver(
       const std::string& identifier,
       int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-      double maximumMeshSize,
+      double maximumMeshSize, int maximumAdaptiveMeshDepth,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -1261,42 +1262,19 @@ public:
   void setPreviousMinCorrectorTimeStepSize(double value);
   double getPreviousMinCorrectorTimeStepSize() const;
 
-  double getMinTimeStamp() const override {
-    return getMinCorrectorTimeStamp();
-  }
+  double getMinTimeStamp() const override;
 
-  double getMinTimeStepSize() const override {
-    return getMinCorrectorTimeStepSize();
-  }
+  double getMinTimeStepSize() const override;
 
-  double getMinNextTimeStepSize() const override {
-    return getMinNextPredictorTimeStepSize();
-  }
+  double getMinNextTimeStepSize() const override;
 
-  void updateMinNextTimeStepSize( double value ) override {
-    updateMinNextPredictorTimeStepSize(value);
-  }
+  void updateMinNextTimeStepSize( double value ) override;
 
-  void initSolverTimeStepData(double value) override {
-    setPreviousMinCorrectorTimeStepSize(0.0);
-    setMinCorrectorTimeStepSize(0.0);
-    setMinPredictorTimeStepSize(0.0);
+  void initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) override;
 
-    setPreviousMinCorrectorTimeStamp(value);
-    setMinCorrectorTimeStamp(value);
-    setMinPredictorTimeStamp(value);
-  }
+  void initFusedSolverTimeStepSizes();
 
-  void initFusedSolverTimeStepSizes() {
-    setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
-    setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
-    setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
-  }
-
-  bool isValidCellDescriptionIndex(
-      const int cellDescriptionsIndex) const override {
-    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
-  }
+  bool isValidCellDescriptionIndex(const int cellDescriptionsIndex) const override;
 
   int tryGetElement(
       const int cellDescriptionsIndex,

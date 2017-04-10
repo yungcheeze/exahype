@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * @author Dominic E. Charrier, Tobias Weinzierl
  **/
 
 #ifndef _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
@@ -57,35 +59,6 @@ private:
   static tarch::logging::Log _log;
 
   /**
-   * Total number of volume averages and ghost values in a patch.
-   * This number does include ghost values.
-   */
-  int _dataPerPatch;
-
-  /**
-   * Width of the ghost layer used for
-   * reconstruction and Riemann solves.
-   */
-  int _ghostLayerWidth;
-
-  /**
-   * Total number of ghost values surrounding a patch.
-   */
-  int _ghostDataPerPatch;
-
-  /**
-   * Total number of volume averages per face of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchFace;
-
-  /**
-   * Total number of volume averages per boundary of the patch.
-   * This number does not include ghost values.
-   */
-  int _dataPerPatchBoundary;
-
-  /**
    * Minimum time step size of all patches
    * in the previous iteration.
    */
@@ -106,6 +79,35 @@ private:
    * the next iteration.
    */
   double _minNextTimeStepSize;
+
+  /**
+   * Width of the ghost layer used for
+   * reconstruction and Riemann solves.
+   */
+  int _ghostLayerWidth;
+
+  /**
+   * Total number of volume averages and ghost values in a patch.
+   * This number does include ghost values.
+   */
+  int _dataPerPatch;
+
+  /**
+   * Total number of ghost values surrounding a patch.
+   */
+  int _ghostDataPerPatch;
+
+  /**
+   * Total number of volume averages per face of the patch.
+   * This number does not include ghost values.
+   */
+  int _dataPerPatchFace;
+
+  /**
+   * Total number of volume averages per boundary of the patch.
+   * This number does not include ghost values.
+   */
+  int _dataPerPatchBoundary;
 
   /**
    * Synchonises the cell description time stamps
@@ -220,7 +222,7 @@ public:
 
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
       int numberOfParameters, int nodesPerCoordinateAxis, int ghostLayerWidth,
-      double maximumMeshSize,
+      double maximumMeshSize, int maximumAdaptiveMeshDepth,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -460,7 +462,7 @@ public:
     _previousMinTimeStepSize = value;
   }
 
-  void initSolverTimeStepData(double value) override;
+  void initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,

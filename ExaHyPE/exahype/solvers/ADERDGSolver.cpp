@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * \author Dominic E. Charrier, Tobias Weinzierl, Jean-Matthieu Gallard, Fabian Güra
  **/
 #include "exahype/solvers/ADERDGSolver.h"
 
@@ -320,31 +322,35 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
-    int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize,
+    int numberOfParameters, int nodesPerCoordinateAxis,
+    double maximumMeshSize, int maximumAdaptiveMeshDepth,
     exahype::solvers::Solver::TimeStepping timeStepping,
     std::unique_ptr<profilers::Profiler> profiler)
     : Solver(identifier, Solver::Type::ADERDG, numberOfVariables,
-             numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize,
+             numberOfParameters, nodesPerCoordinateAxis,
+             maximumMeshSize, maximumAdaptiveMeshDepth,
              timeStepping, std::move(profiler)),
-      _dofPerFace(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _dofPerCellBoundary(DIMENSIONS_TIMES_TWO * _dofPerFace),
-      _dofPerCell(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxDofPerCell(_dofPerCell *
-                           (DIMENSIONS + 1)),  // +1 for sources
-      _spaceTimeDofPerCell(numberOfVariables *
-                                power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxDofPerCell(_spaceTimeDofPerCell *
-                                    (DIMENSIONS + 1)),  // +1 for sources
-      _dataPointsPerCell((numberOfVariables+numberOfParameters) *
-                   power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _previousMinCorrectorTimeStepSize(std::numeric_limits<double>::max()),
-      _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
-      _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
-      _minPredictorTimeStamp(std::numeric_limits<double>::max()),
-      _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
-      _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
+     _coarsestGridLevel(3),
+     _maximumGridDepth(maximumGridDepth),
+     _previousMinCorrectorTimeStepSize(std::numeric_limits<double>::max(),
+     _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
+     _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
+     _minPredictorTimeStamp(std::numeric_limits<double>::max()),
+     _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
+     _minNextPredictorTimeStepSize(std::numeric_limits<double>::max(),
+     _dofPerFace(numberOfVariables *
+          power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+     _dofPerCellBoundary(DIMENSIONS_TIMES_TWO * _dofPerFace),
+     _dofPerCell(numberOfVariables *
+          power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+     _fluxDofPerCell(_dofPerCell *
+              (DIMENSIONS + 1)),  // +1 for sources
+     _spaceTimeDofPerCell(numberOfVariables *
+                   power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+     _spaceTimeFluxDofPerCell(_spaceTimeDofPerCell *
+                       (DIMENSIONS + 1)),  // +1 for sources
+     _dataPointsPerCell((numberOfVariables+numberOfParameters) *
+     power(nodesPerCoordinateAxis, DIMENSIONS + 0))) {
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
@@ -629,6 +635,45 @@ double exahype::solvers::ADERDGSolver::getPreviousMinCorrectorTimeStamp() const 
 void exahype::solvers::ADERDGSolver::setPreviousMinCorrectorTimeStepSize(double value) {
   _previousMinCorrectorTimeStepSize = value;
 }
+
+double exahype::solvers::ADERDGSolver::getMinTimeStamp() const {
+  return getMinCorrectorTimeStamp();
+}
+
+double exahype::solvers::ADERDGSolver::getMinTimeStepSize() const {
+  return getMinCorrectorTimeStepSize();
+}
+
+double exahype::solvers::ADERDGSolver::getMinNextTimeStepSize() const {
+  return getMinNextPredictorTimeStepSize();
+}
+
+void exahype::solvers::ADERDGSolver::updateMinNextTimeStepSize( double value ) {
+  updateMinNextPredictorTimeStepSize(value);
+}
+
+void exahype::solvers::ADERDGSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+  _coarsestMeshLevel = exahype::solvers::Solver::computMeshLevel(_maximumMeshSize,boundingBox[0]);
+
+  setPreviousMinCorrectorTimeStepSize(0.0);
+  setMinCorrectorTimeStepSize(0.0);
+  setMinPredictorTimeStepSize(0.0);
+
+  setPreviousMinCorrectorTimeStamp(value);
+  setMinCorrectorTimeStamp(value);
+  setMinPredictorTimeStamp(value);
+}
+
+void exahype::solvers::ADERDGSolver::initFusedSolverTimeStepSizes() {
+  setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+  setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+  setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
+}
+
+bool exahype::solvers::ADERDGSolver::isValidCellDescriptionIndex(
+      const int cellDescriptionsIndex) const {
+    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
+  }
 
 int exahype::solvers::ADERDGSolver::tryGetElement(
     const int cellDescriptionsIndex,

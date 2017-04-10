@@ -3,12 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * \author Dominic E. Charrier, Tobias Weinzierl
  **/
  
 #ifndef _EXAHYPE_SOLVERS_SOLVER_H_
@@ -312,6 +314,21 @@ class exahype::solvers::Solver {
   const double _maximumMeshSize;
 
   /**
+   * The coarsest level of the adaptive mesh that is
+   * occupied by this solver.
+   */
+  int _coarsestMeshLevel;
+
+  /**
+   * The maximum depth the adaptive mesh is allowed
+   * occupy (set by the user).
+   * Summing this value with _coarsestMeshdLevel results in
+   * the finest mesh level the solver might occupy during the
+   * simulation.
+   */
+  int _maximumAdaptiveMeshDepth;
+
+  /**
    * The minimum extent in each coordinate direction at least one cell in the grid has.
    *
    * This value needs to be updated every time the grid has been changed.
@@ -367,7 +384,9 @@ class exahype::solvers::Solver {
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type,
          int numberOfVariables, int numberOfParameters,
-         int nodesPerCoordinateAxis, double maximumMeshSize,
+         int nodesPerCoordinateAxis,
+         double maximumMeshSize,
+         int maximumAdaptiveMeshDepth,
          exahype::solvers::Solver::TimeStepping timeStepping,
          std::unique_ptr<profilers::Profiler> profiler =
              std::unique_ptr<profilers::Profiler>(
@@ -388,6 +407,12 @@ class exahype::solvers::Solver {
    * Return a string representation for the time stepping mode \p param.
    */
   static std::string toString(const exahype::solvers::Solver::TimeStepping& param);
+
+  /**
+   * Return the grid level corresponding to the given mesh size with
+   * respect to the given bounding box.
+   */
+  static int computMeshLevel(double meshSize, double boundingBoxSize);
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
@@ -506,7 +531,16 @@ class exahype::solvers::Solver {
 
   virtual void updateMinNextTimeStepSize(double value) = 0;
 
-  virtual void initSolverTimeStepData(double value) = 0;
+  /**
+   * Initialise the solver's time stamps and time step sizes.
+   * Further use the bounding box and the already known
+   * maximum mesh size to compute the coarsest grid level
+   * this solver is placed on.
+   *
+   * The maximum adaptive refinement level is defined
+   * with respect to this level.
+   */
+  virtual void initSolver(double timeStamp, tarch::la::Vector<DIMENSIONS,double>& boundingBox) = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

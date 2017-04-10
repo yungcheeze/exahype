@@ -385,7 +385,7 @@ public:
 
   void updateMinNextTimeStepSize(double value) override;
 
-  void initSolverTimeStepData(double value) override;
+  void initSolver(double value) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,

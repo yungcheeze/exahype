@@ -3,12 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * \author Dominic E. Charrier, Tobias Weinzierl
  **/
  
 #include "exahype/solvers/Solver.h"
@@ -89,6 +91,7 @@ exahype::solvers::Solver::Solver(
   int                                    numberOfParameters,
   int                                    nodesPerCoordinateAxis,
   double                                 maximumMeshSize,
+  int                                    maximumAdaptiveMeshDepth,
   exahype::solvers::Solver::TimeStepping timeStepping,
   std::unique_ptr<profilers::Profiler>   profiler
   ):  _identifier(identifier),
@@ -97,6 +100,7 @@ exahype::solvers::Solver::Solver(
       _numberOfParameters(numberOfParameters),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
       _maximumMeshSize(maximumMeshSize),
+      _maximumAdaptiveMeshDepth(maximumAdaptiveMeshDepth),
       _minCellSize(std::numeric_limits<double>::max()),
       _nextMinCellSize(std::numeric_limits<double>::max()),
       _maxCellSize(-std::numeric_limits<double>::max()), // "-", min
@@ -126,6 +130,17 @@ std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::T
     case TimeStepping::GlobalFixed: return "globalfixed";
   }
   return "undefined";
+}
+
+int exahype::solvers::Solver::computMeshLevel(double meshSize, double boundingBoxSize) {
+  int    result      = 1;
+  double currenthMax = std::numeric_limits<double>::max();
+  while (currenthMax>meshSize) {
+    currenthMax = boundingBoxSize / threePowI(result);
+    result++;
+  }
+
+  return std::max(3,result);
 }
 
 exahype::solvers::Solver::Type exahype::solvers::Solver::getType() const {

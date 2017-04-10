@@ -624,7 +624,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
 void exahype::runners::Runner::initSolverTimeStepData() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initSolverTimeStepData(0.0);
+    p->initSolver(0.0);
   }
 }
 

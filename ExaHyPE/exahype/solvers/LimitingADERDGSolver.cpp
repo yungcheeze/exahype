@@ -79,8 +79,8 @@ void exahype::solvers::LimitingADERDGSolver::updateMinNextTimeStepSize(double va
   _solver->updateMinNextTimeStepSize(value);
 }
 
-void exahype::solvers::LimitingADERDGSolver::initSolverTimeStepData(double value) {
-  _solver->initSolverTimeStepData(value);
+void exahype::solvers::LimitingADERDGSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+  _solver->initSolver(value);
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
