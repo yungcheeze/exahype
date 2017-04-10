@@ -108,7 +108,8 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -r8 -fast -cpp -auto 
+	FCOMPILER_CFLAGS  += -r8 -cpp -auto 
+	# REMOVING "-fast" as it induces compiler bugs!
 	LINK_FORTRAN      += -lifcore
 
 	COMPILER_CFLAGS   +=  -restrict 
@@ -127,7 +128,8 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -O3 -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	# REMOVING "-O3"  as it creates compiler bugs!
 	LINK_FORTRAN      += -lgfortran
 
 	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
