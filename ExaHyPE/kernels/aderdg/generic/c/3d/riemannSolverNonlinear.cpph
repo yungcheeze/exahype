@@ -39,7 +39,7 @@ namespace c {
                               double** tempStateSizedVectors,
                               double** tempStateSizedSquareMatrices,
                               const double dt,
-                              const int normalNonZero) {
+                              const int direction) {
     constexpr int numberOfVariables  = SolverType::NumberOfVariables;
     constexpr int numberOfParameters = SolverType::NumberOfParameters;
     constexpr int numberOfData       = numberOfVariables+numberOfParameters;
@@ -66,8 +66,8 @@ namespace c {
 
     double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
     double LR[numberOfVariables] = {0.0};
-    solver.eigenvalues(QavL, normalNonZero, LL);
-    solver.eigenvalues(QavR, normalNonZero, LR);
+    solver.eigenvalues(QavL, direction, LL);
+    solver.eigenvalues(QavR, direction, LR);
 
     double Qavg[numberOfData];
     /*
@@ -92,12 +92,12 @@ Qavg[k] = (QavL[k] + QavR[k]) / 2;
     //double* ncp = tempStateSizedVectors[4];
     //idx2 idx_Bn(numberOfVariables, numberOfVariables);
     /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+    double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
 //    double* gradQ = new double[DIMENSIONS*numberOfVariables];    
     double ncp[numberOfVariables]               = {0.0};
     /*
 if(useCoefficientMatrix) {
-solver.coefficientMatrix(Qavg, normalNonZero, Bn);
+solver.coefficientMatrix(Qavg, direction, Bn);
 }
      */
 
@@ -115,11 +115,11 @@ solver.coefficientMatrix(Qavg, normalNonZero, Bn);
 
           if(useNCP) { // we don't use matrixB but the NCP call here.
             for(int l=0; l < numberOfVariables; l++) {
-              gradQ[idx_gradQ(normalNonZero,l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
+              gradQ[direction][l] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
               Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
             }
             
-            solver.nonConservativeProduct(Qavg, gradQ, ncp);
+            solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
           }
 
           // skip parameters
