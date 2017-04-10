@@ -11,13 +11,13 @@ SUBROUTINE InitialData(x, t, Q)
 
 	! Call here one of
 	! CALL InitialBlast(x, 0.0,  Q)
-	! Call AlfenWave(x, t, Q)
+	Call AlfenWave(x, t, Q)
 	! Call InitialRotor(x, 0.0, Q)
 	! Call InitialBlast(x, 0.0, Q)
 	! Call InitialOrsagTang(x, 0.0 , Q)
 	
 	! CALL InitialAccretionDisc(x, 0.0,  Q)
-	CALL InitialAccretionDisc3D(x, 0.0, Q)
+!	CALL InitialAccretionDisc3D(x, 0.0, Q)
 END SUBROUTINE InitialData
 
 
