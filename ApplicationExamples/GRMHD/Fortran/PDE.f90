@@ -1,7 +1,7 @@
 ! GRMHD PDE.f90
 ! Trento (EQNTYPE4)
 
-SUBROUTINE PDEFlux(f,g,hz,Q)
+RECURSIVE SUBROUTINE PDEFlux(f,g,hz,Q)
   USE Parameters, ONLY : nVar, nDim, gamma, DivCleaning_a
   USE iso_c_binding
   IMPLICIT NONE
@@ -156,7 +156,7 @@ SUBROUTINE PDEFlux(f,g,hz,Q)
 END SUBROUTINE PDEFlux
 
 
-SUBROUTINE PDENCP(BgradQ,Q,gradQ) 
+RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ) 
    USE Parameters, ONLY :  nVar, nDim, gamma
    IMPLICIT NONE
    REAL :: AQx(nVar), BQy(nVar), CQz(nVar), Qx(nVar), Qy(nVar), Qz(nVar) 
@@ -329,7 +329,7 @@ SUBROUTINE PDENCP(BgradQ,Q,gradQ)
 END SUBROUTINE PDENCP
 
 
-SUBROUTINE PDEEigenvalues(L,Q,n)
+RECURSIVE SUBROUTINE PDEEigenvalues(L,Q,n)
   USE Parameters, ONLY :  nVar, nDim
   USE iso_c_binding
   IMPLICIT NONE
@@ -344,7 +344,7 @@ SUBROUTINE PDEEigenvalues(L,Q,n)
 
 END SUBROUTINE PDEEigenvalues
 
-SUBROUTINE PDESource(S,Q) 
+RECURSIVE SUBROUTINE PDESource(S,Q) 
   USE Parameters, ONLY:  nVar, nDim
   USE iso_c_binding
   IMPLICIT NONE
@@ -361,7 +361,7 @@ SUBROUTINE PDESource(S,Q)
       
 END SUBROUTINE PDESource
 
-SUBROUTINE PDEVarName(Name) 
+RECURSIVE SUBROUTINE PDEVarName(Name) 
   USE Parameters, ONLY: nVar  
   IMPLICIT NONE     
   CHARACTER(LEN=10):: Name(nVar)
@@ -389,7 +389,7 @@ SUBROUTINE PDEVarName(Name)
 
 END SUBROUTINE PDEVarName
 
-SUBROUTINE Kreuzprodukt(res,vec_1,vec_2)
+RECURSIVE SUBROUTINE Kreuzprodukt(res,vec_1,vec_2)
   !--------------------------------------------------------------------------
   IMPLICIT NONE                                            
   !--------------------------------------------------------------------------
@@ -405,7 +405,7 @@ SUBROUTINE Kreuzprodukt(res,vec_1,vec_2)
 END SUBROUTINE Kreuzprodukt
 
 
-SUBROUTINE PDEMatrixB(An,Q,nv) 
+RECURSIVE SUBROUTINE PDEMatrixB(An,Q,nv) 
   USE Parameters, ONLY : nVar, nDim, gamma
   USE iso_c_binding
   IMPLICIT NONE
