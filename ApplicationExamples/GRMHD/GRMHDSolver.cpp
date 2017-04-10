@@ -80,7 +80,7 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver::refinementCriter
 }
 
 
-void GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+void  __attribute__((optimize("O0"))) GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
   /*
   for(int i=0; i<NumberOfVariables; ++i) {
