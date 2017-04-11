@@ -6,7 +6,8 @@ set -e
 cd "$(dirname "$0")"
 source "oot.env"
 
-rsync="rsync -r --relative --delete --exclude=.git/ --exclude=.svn/"
+# -L: Copy symlinks as real files
+rsync="rsync -r -L --relative --delete --exclude=.git/ --exclude=.svn/"
 
 # assume that $oot_appdir can be quite populated with a mess
 # caveats, if the variables are empty, there is --exclude=*

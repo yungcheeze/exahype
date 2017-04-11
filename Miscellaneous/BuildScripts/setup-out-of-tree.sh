@@ -66,7 +66,7 @@ export oot_abs_exahype="$(readlink -f .)"
 
 # other directories (or only subdirectories) we need to copy
 export oot_dependencies="CodeGenerator Peano ExaHyPE"
-optional_dependencies="Libxsmm/lib"
+optional_dependencies="Libxsmm/lib ExternalLibraries"
 
 # an assumption: This is called from the base codedir of ExaHyPE,
 # ie. the root directory where there are all the dependencies.
@@ -117,7 +117,7 @@ log "Setting up build $oot_buildname at $oot_outdir"
 
 export oot_codedir="oot-code" # the subdirectory in $oot_outdir where the files are doubled to
 insthash=$(echo $buildscripts | md5sum | fold -w10 | head -n1) # a deterministic hash for this ExaHyPE installation
-export qualifiedbuildname="exabuild-${insthash}-$oot_projectname-$oot_buildname"
+export qualifiedbuildname="exabuild-$(hostname)-${insthash}-$oot_projectname-$oot_buildname"
 
 if [[ ${oot_oot} == "Yes" ]]; then
 	# this is really out of tree
