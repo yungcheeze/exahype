@@ -653,7 +653,7 @@ void exahype::solvers::ADERDGSolver::updateMinNextTimeStepSize( double value ) {
 }
 
 void exahype::solvers::ADERDGSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _coarsestMeshLevel = exahype::solvers::Solver::computMeshLevel(_maximumMeshSize,boundingBox[0]);
+  _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
 
   setPreviousMinCorrectorTimeStepSize(0.0);
   setMinCorrectorTimeStepSize(0.0);
@@ -1254,13 +1254,24 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   const int levelCoarse = coarseGridCellDescription.getLevel();
   assertion(levelCoarse < levelFine);
 
-  double* luhFine   = DataHeap::getInstance().getData(
+  // current solution
+  double* solutionFine   = DataHeap::getInstance().getData(
       fineGridCellDescription.getSolution()).data();
-  double* luhCoarse = DataHeap::getInstance().getData(
+  double* solutionCoarse = DataHeap::getInstance().getData(
       coarseGridCellDescription.getSolution()).data();
-
   volumeUnknownsProlongation(
-      luhFine,luhCoarse,
+      solutionFine,solutionCoarse,
+      levelCoarse,levelFine,
+      subcellIndex);
+
+  // previous solution
+  assertion(DataHeap::getInstance().isValidIndex(fineGridCellDescription.getPreviousSolution());
+  double* previousSolutionFine   = DataHeap::getInstance().getData(
+      fineGridCellDescription.getPreviousSolution()).data();
+  double* previousSolutionCoarse = DataHeap::getInstance().getData(
+      coarseGridCellDescription.getPreviousSolution()).data();
+  volumeUnknownsProlongation(
+      previousSolutionFine,previousSolutionCoarse,
       levelCoarse,levelFine,
       subcellIndex);
 

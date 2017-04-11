@@ -354,6 +354,13 @@ private:
    * Further copy the corrector and predictor time stamp and
    * time step sizes.
    *
+   * We prolongate both, the current and the previous
+   * solution to the newly created fine grid cell description.
+   * This especially important for the LimitingADERDGSolver.
+   * Here, the cell descriptions of with LimiterStatus
+   * NeighbourOfNeighbourOfTroubledCell need to communicate layers of
+   * the previous solution to the neighbour.
+   *
    * Furthermore, set the limiterStatus to the value of the
    * coarse grid cell description.
    * Set the value of the mergedLimiterStatus elements to Troubled
