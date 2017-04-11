@@ -252,62 +252,76 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    if (Mode==RefinementMode::APriori) {
-      bool refinementRequested =
-          solver->markForRefinement(
-              fineGridCell,
-              fineGridVertices,
-              fineGridVerticesEnumerator,
-              coarseGridVertices,
-              coarseGridVerticesEnumerator,
-              coarseGridCell,
-              fineGridPositionOfCell,
-              solverNumber);
+    bool refinementRequested = false;
 
-      refinementRequested |=
-          solver->updateStateInEnterCell(
-              fineGridCell,
-              fineGridVertices,
-              fineGridVerticesEnumerator,
-              coarseGridVertices,
-              coarseGridVerticesEnumerator,
-              coarseGridCell,
-              fineGridPositionOfCell,
-              solverNumber);
+    switch (MeshRefinement::Mode) {
+      case MeshRefinement::RefinementMode::Initial:
+        refineFineGridCell |=
+                  solver->markForRefinement( // TODO(Dominic): Consider the maximum refinement depth here
+                      fineGridCell,
+                      fineGridVertices,
+                      fineGridVerticesEnumerator,
+                      coarseGridVertices,
+                      coarseGridVerticesEnumerator,
+                      coarseGridCell,
+                      fineGridPositionOfCell,
+                      solverNumber);
 
-      refineFineGridCell |= refinementRequested;
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          refineFineGridCell |=
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->markForRefinementBasedOnMergedLimiterStatus(
+                        fineGridCell, // TODO(Dominic): Consider the maximum refinement depth here
+                        fineGridVertices,
+                        fineGridVerticesEnumerator,
+                        coarseGridVertices,
+                        coarseGridVerticesEnumerator,
+                        coarseGridCell,
+                        fineGridPositionOfCell,
+                        solverNumber);
+        }
+        break;
+      case MeshRefinement::RefinementMode::APriori:
+        refineFineGridCell |=
+                  solver->markForRefinement(
+                      fineGridCell,
+                      fineGridVertices,
+                      fineGridVerticesEnumerator,
+                      coarseGridVertices,
+                      coarseGridVerticesEnumerator,
+                      coarseGridCell,
+                      fineGridPositionOfCell,
+                      solverNumber);
+        break;
+      case MeshRefinement::RefinementMode::APosteriori:
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          refineFineGridCell |=
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->markForRefinementBasedOnMergedLimiterStatus(
+                  fineGridCell,
+                  fineGridVertices,
+                  fineGridVerticesEnumerator,
+                  coarseGridVertices,
+                  coarseGridVerticesEnumerator,
+                  coarseGridCell,
+                  fineGridPositionOfCell,
+                  solverNumber);
+        }
+        break;
+    }
 
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
-      }
-    } else if (Mode==RefinementMode::APosteriori &&
-               solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+    refineFineGridCell |=
+        solver->updateStateInEnterCell(
+            fineGridCell,
+            fineGridVertices,
+            fineGridVerticesEnumerator,
+            coarseGridVertices,
+            coarseGridVerticesEnumerator,
+            coarseGridCell,
+            fineGridPositionOfCell,
+            solverNumber);
 
-      bool refinementRequested =
-          limitingADERDGSolver->markForRefinementBasedOnMergedLimiterStatus(
-              fineGridCell,
-              fineGridVertices,
-              fineGridVerticesEnumerator,
-              coarseGridVertices,
-              coarseGridVerticesEnumerator,
-              coarseGridCell,
-              fineGridPositionOfCell,
-              solverNumber);
-
-      refinementRequested |=
-          limitingADERDGSolver->updateStateInEnterCell(
-              fineGridCell,
-              fineGridVertices,
-              fineGridVerticesEnumerator,
-              coarseGridVertices,
-              coarseGridVerticesEnumerator,
-              coarseGridCell,
-              fineGridPositionOfCell,
-              solverNumber);
-
-      refineFineGridCell |= refinementRequested;
+    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
     }
   }
 
