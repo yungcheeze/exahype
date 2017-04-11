@@ -63,4 +63,4 @@ class GRMHD::SphereIntegrals : public exahype::plotters::ADERDG2UserDefined {
   void finishPlotting() override;
 };
 
-#endif /* SphereIntegrals_CLASS_HEADER_ */
+#endif

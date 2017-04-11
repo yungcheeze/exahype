@@ -22,7 +22,7 @@
 void kernels::aderdg::optimised::surfaceIntegral( 
   double* restrict lduh, 
   const double* restrict const lFbnd, 
-  const tarch::la::Vector<DIMENSIONS,double> &dx
+  const tarch::la::Vector<DIMENSIONS,double> &inverseDx
 ) {
   //TODO JMG uncomment when using vectorization
 // #ifdef __INTEL_COMPILER
@@ -34,7 +34,7 @@ void kernels::aderdg::optimised::surfaceIntegral(
   // x faces
   for (int l = 0; l < {{nVar}}; l++) {
     for (int ij = 0; ij < {{nDofPowDimMinOne}}; ij++) {
-      const double weight = weights2[ij] / dx[0];
+      const double weight = weights2[ij] * inverseDx[0];
 
       for (int k = 0; k < {{nDof}}; k++) {
         // left flux minus right flux
@@ -49,7 +49,7 @@ void kernels::aderdg::optimised::surfaceIntegral(
   // y faces
   for (int l = 0; l < {{nVar}}; l++) {
     for (int ik = 0; ik < {{nDofPowDimMinOne}}; ik++) {
-      const double weight = weights2[ik] / dx[1];
+      const double weight = weights2[ik] * inverseDx[1];
 {% if nDim == 3 %} {# // ik in [0..nDof*nDof-1], need to extract i and k to compute the correct shift for luh #}
       const int ikLuhIndex = ((ik/{{nDof}})*{{nDof*nDof}} + ik % {{nDof}})*{{nVar}};
 {% else %}
@@ -68,7 +68,7 @@ void kernels::aderdg::optimised::surfaceIntegral(
   // z faces
   for (int l = 0; l < {{nVar}}; l++) {
     for (int jk = 0; jk < {{nDofPowDimMinOne}}; jk++) {
-      const double weight = weights2[jk] / dx[2];
+      const double weight = weights2[jk] * inverseDx[2];
       for (int i = 0; i < {{nDof}}; i++) {
         // bottom flux minus top flux
         lduh[i*{{nDof*nDof*nVar}}+ jk*{{nVar}}+l] -=

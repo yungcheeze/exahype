@@ -1,7 +1,7 @@
 ! GRMHD Initial Data
 
 
-SUBROUTINE InitialData(x, t, Q)
+RECURSIVE SUBROUTINE InitialData(x, t, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
 	USE Parameters, ONLY : nVar, nDim
 	IMPLICIT NONE 
@@ -11,17 +11,17 @@ SUBROUTINE InitialData(x, t, Q)
 
 	! Call here one of
 	! CALL InitialBlast(x, 0.0,  Q)
-	! Call AlfenWave(x, t, Q)
+	Call AlfenWave(x, t, Q)
 	! Call InitialRotor(x, 0.0, Q)
 	! Call InitialBlast(x, 0.0, Q)
 	! Call InitialOrsagTang(x, 0.0 , Q)
 	
 	! CALL InitialAccretionDisc(x, 0.0,  Q)
-	CALL InitialAccretionDisc3D(x, 0.0, Q)
+!	CALL InitialAccretionDisc3D(x, 0.0, Q)
 END SUBROUTINE InitialData
 
 
-SUBROUTINE AlfenWave(x, t, Q)
+RECURSIVE SUBROUTINE AlfenWave(x, t, Q)
     ! Computes the AlfenWave conserved variables (Q) at a given time t.
     ! Use it ie. with t=0 for initial data
     ! Use it for any other time ie. for comparison
@@ -72,7 +72,7 @@ SUBROUTINE AlfenWave(x, t, Q)
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE AlfenWave
 
-SUBROUTINE InitialBlast(x, t, Q)
+RECURSIVE SUBROUTINE InitialBlast(x, t, Q)
     ! Blast wave initial data in conserved variables (Q):
     ! Simulation domain:  -6 .. +6
 
@@ -123,7 +123,7 @@ SUBROUTINE InitialBlast(x, t, Q)
     CALL PDEPrim2Cons(Q,V)
 END SUBROUTINE
 
-SUBROUTINE InitialOrsagTang(x, t, Q)
+RECURSIVE SUBROUTINE InitialOrsagTang(x, t, Q)
     ! Orsang-Tang initial data in conserved variables (Q)
     ! Simulation Domain: 0 .. 2*pi = 6.283185307179586
 
@@ -158,7 +158,7 @@ SUBROUTINE InitialOrsagTang(x, t, Q)
     Call PDEPrim2Cons(Q,V)
 END SUBROUTINE InitialOrsagTang
 
-SUBROUTINE InitialRotor(x,t,Q)
+RECURSIVE SUBROUTINE InitialRotor(x,t,Q)
     ! GRMHD Rotor initial data in conserved variables (Q)
     ! Needs Limiting, otherwise crash.
     ! Domain: 0.0 .. 1.0 square
@@ -211,7 +211,7 @@ END SUBROUTINE InitialRotor
 
 
 
-SUBROUTINE InitialAccretionDisc(x,t,Q)
+RECURSIVE SUBROUTINE InitialAccretionDisc(x,t,Q)
     ! 2D Accretion disk, with simulation domain:
     !    dimension const                = 2
     !    width                          = 8.5, 2.0
@@ -285,7 +285,7 @@ SUBROUTINE InitialAccretionDisc(x,t,Q)
 END SUBROUTINE InitialAccretionDisc
 
 
-SUBROUTINE InitialAccretionDisc3D(x,t,Q)
+RECURSIVE SUBROUTINE InitialAccretionDisc3D(x,t,Q)
     ! 3D Accretion disk, with simulation domain
     !     width                          = 2.0, 2.0, 2.0
     !     offset                         = 0.0, 0.0, 0.0

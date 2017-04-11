@@ -1,6 +1,7 @@
 import sys
 import re
 import os
+import traceback
 from enum import Enum
 
 
@@ -16,10 +17,11 @@ Colour = [
 
 class Analysis(Enum):
   Nop                = 0,
-  SeemsNotToScale    = 2,
+  CurrentGrainSizeSeemsNotToScale    = 2,
   MightScale         = 3,
   DoesNotScale       = 4,
-  Scales             = 5
+  Scales             = 5,
+  GrainSizePredictedManually = 6
 
 
 AdapterNames = []
@@ -46,15 +48,13 @@ def readAdapterNumbers( filename ):
   
 
 def processMeasurement(adapter):
-  searchPattern = "adapter=" + str(adapter) + ","
-
   searchPattern = "adapter-number=" + str(adapter) 
   line          = inputFile.readline()
-  runtime       = 0
   while not line=="" and not re.search( searchPattern, line ):
-    if re.search( "total-runtime=", line ):
-      runtime = line.split("=")[1]
     line = inputFile.readline()
+    
+  if line=="":
+    return
   
   htmlOverview.write( "<table border=\"1\">" );
   htmlOverview.write( 
@@ -77,75 +77,90 @@ def processMeasurement(adapter):
 
   line = inputFile.readline()
   while not re.search( "end OracleForOnePhaseWithShrinkingGrainSize", line):
-    methodTrace                      = line.split( "=" )[0]
-    biggestProblemSize               = line.split( "=" )[1].split( "," )[0]
-    currentGrainSize                 = line.split( "=" )[1].split( "," )[1]
-    searchDelta                      = line.split( "=" )[1].split( "," )[2]
-    measurementsAreAccurate          = line.split( "=" )[1].split( "," )[3]
-    accuracy                         = line.split( "=" )[1].split( "," )[4]
-    accumulatedSerialMeasurement     = line.split( "=" )[1].split( "," )[5]
-    accumulatedParallelMeasurement   = line.split( "=" )[1].split( "," )[6]
-    numberOfSerialMeasurements       = line.split( "=" )[1].split( "," )[7]
-    numberOfParallelMeasurements     = line.split( "=" )[1].split( "," )[8]
-    previousSpeedup                  = line.split( "=" )[1].split( "," )[9]
+    try:
+      methodTrace                      = line.split( "=" )[0]
+      biggestProblemSize               = line.split( "=" )[1].split( "," )[0]
+      currentGrainSize                 = line.split( "=" )[1].split( "," )[1]
+      searchDelta                      = line.split( "=" )[1].split( "," )[2]
+      measurementsAreAccurate          = line.split( "=" )[1].split( "," )[3]
+      accuracy                         = line.split( "=" )[1].split( "," )[4]
+      accumulatedSerialMeasurement     = line.split( "=" )[1].split( "," )[5]
+      accumulatedParallelMeasurement   = line.split( "=" )[1].split( "," )[6]
+      numberOfSerialMeasurements       = line.split( "=" )[1].split( "," )[7]
+      numberOfParallelMeasurements     = line.split( "=" )[1].split( "," )[8]
+      previousSpeedup                  = line.split( "=" )[1].split( "," )[9]
 
+      speedup = 0.0
+      if float(numberOfSerialMeasurements)>0 and float(numberOfParallelMeasurements)>0:
+        speedup = float(accumulatedSerialMeasurement) / float(numberOfSerialMeasurements) / float(accumulatedParallelMeasurement) * float(numberOfParallelMeasurements)
     
-    speedup = 0.0
-    if float(numberOfSerialMeasurements)>0 and float(numberOfParallelMeasurements)>0:
-      speedup = float(accumulatedSerialMeasurement) / float(numberOfSerialMeasurements) / float(accumulatedParallelMeasurement) * float(numberOfParallelMeasurements)
-    
-    maxConcurrencyLevel = float(biggestProblemSize) / float(currentGrainSize)
+      maxConcurrencyLevel = -1
+      if float(currentGrainSize)>0:
+        maxConcurrencyLevel = float(biggestProblemSize) / float(currentGrainSize)
     
     
-    analysis = Analysis.Nop
-    if int(searchDelta)>0  and speedup<1.0 and speedup>0.0:
-      analysis = Analysis.SeemsNotToScale
-    elif int(searchDelta)>0  and speedup>1.0:
-      analysis = Analysis.MightScale
-    elif int(searchDelta)==0 and float(currentGrainSize)==float(biggestProblemSize):
-      analysis = Analysis.DoesNotScale
-    elif int(searchDelta)==0 and speedup>1.0:
-      analysis = Analysis.Scales
+      analysis = Analysis.Nop
+      if int(searchDelta)>0  and speedup<1.0 and speedup>0.0:
+        analysis = Analysis.CurrentGrainSizeSeemsNotToScale
+      elif int(searchDelta)>0  and speedup>1.0:
+        analysis = Analysis.MightScale
+      elif int(searchDelta)==0 and float(currentGrainSize)==float(biggestProblemSize):
+        analysis = Analysis.DoesNotScale
+      elif int(searchDelta)==0 and speedup>1.0:
+        analysis = Analysis.Scales
+      elif int(searchDelta)==0 and speedup==0.0 and float(currentGrainSize)>0:
+        analysis = Analysis.GrainSizePredictedManually
+      #elif maxConcurrencyLevel<0 and float(currentGrainSize)<float(biggestProblemSize):
+      #  analysis = Analysis.Scales
+      #elif maxConcurrencyLevel>0 and :
+      #  analysis = Analysis.GrainSizePredictedManually
+  
 
+      colour = "Grey"
+      if analysis==Analysis.CurrentGrainSizeSeemsNotToScale:
+        colour = "Fuchsia"
+      elif analysis==Analysis.MightScale:
+        colour = "LightGreen"
+      elif analysis==Analysis.DoesNotScale:
+        colour = "Red"
+      elif analysis==Analysis.Scales:
+        colour = "Green"
+      elif analysis==Analysis.GrainSizePredictedManually:
+        colour = "Lime"
+      else:
+        colour = "White"
 
-    colour = "Grey"
-    if analysis==Analysis.SeemsNotToScale:
-      colour = "Fuchsia"
-    elif analysis==Analysis.MightScale:
-      colour = "LightGreen"
-    elif analysis==Analysis.DoesNotScale:
-      colour = "Red"
-    elif analysis==Analysis.Scales:
-      colour = "Green"
-    else:
-      colour = "White"
-
-    htmlOverview.write( "<tr>" );
-    htmlOverview.write( "<td>" + methodTrace + "</td>" );
-    htmlOverview.write( "<td>" + biggestProblemSize + "</td>" );
-    htmlOverview.write( "<td>" + currentGrainSize + "</td>" );
-    htmlOverview.write( "<td>" + searchDelta + "</td>" );
-    if re.search( "is-accurate", measurementsAreAccurate):
-      htmlOverview.write( "<td bgcolor=\"Aqua\">" + measurementsAreAccurate + "</td>" );
-      htmlOverview.write( "<td bgcolor=\"Aqua\">" + accuracy + "</td>" );
-    else:
-      htmlOverview.write( "<td>" + measurementsAreAccurate + "</td>" );
-      htmlOverview.write( "<td>" + accuracy + "</td>" );
-    htmlOverview.write( "<td>" + accumulatedSerialMeasurement + "</td>" );
-    htmlOverview.write( "<td>" + accumulatedParallelMeasurement + "</td>" );
-    htmlOverview.write( "<td>" + numberOfSerialMeasurements + "</td>" );
-    htmlOverview.write( "<td>" + numberOfParallelMeasurements + "</td>" );
-    htmlOverview.write( "<td>" + previousSpeedup + "</td>" );
-    htmlOverview.write( "<td>" + str(maxConcurrencyLevel) + "</td>" );
-    htmlOverview.write( "<td bgcolor=\"" + colour + "\">" + str(speedup) + "</td>" );
-
-    htmlOverview.write( "<td>");
-    if int(searchDelta)!=0:
-      htmlOverview.write( "Still searching. " );
-    htmlOverview.write( str(analysis) );
-    htmlOverview.write( "</td>" );    
-    htmlOverview.write( "</tr>" );
-
+      htmlOverview.write( "<tr>" );
+      htmlOverview.write( "<td>" + methodTrace + "</td>" );
+      htmlOverview.write( "<td>" + biggestProblemSize + "</td>" );
+      htmlOverview.write( "<td>" + currentGrainSize + "</td>" );
+      htmlOverview.write( "<td>" + searchDelta + "</td>" );
+      if re.search( "is-accurate", measurementsAreAccurate):
+        htmlOverview.write( "<td bgcolor=\"Aqua\">" + measurementsAreAccurate + "</td>" );
+        htmlOverview.write( "<td bgcolor=\"Aqua\">" + accuracy + "</td>" );
+      else:
+        htmlOverview.write( "<td>" + measurementsAreAccurate + "</td>" );
+        htmlOverview.write( "<td>" + accuracy + "</td>" );
+      htmlOverview.write( "<td>" + accumulatedSerialMeasurement + "</td>" );
+      htmlOverview.write( "<td>" + accumulatedParallelMeasurement + "</td>" );
+      htmlOverview.write( "<td>" + numberOfSerialMeasurements + "</td>" );
+      htmlOverview.write( "<td>" + numberOfParallelMeasurements + "</td>" );
+      htmlOverview.write( "<td>" + previousSpeedup + "</td>" );
+      htmlOverview.write( "<td>" + str(maxConcurrencyLevel) + "</td>" );
+      htmlOverview.write( "<td bgcolor=\"" + colour + "\">" + str(speedup) + "</td>" );
+  
+      htmlOverview.write( "<td>");
+      if int(searchDelta)!=0:
+        htmlOverview.write( "Still searching. " );
+      htmlOverview.write( str(analysis) );
+      htmlOverview.write( "</td>" );    
+      htmlOverview.write( "</tr>" );
+      
+    except Exception as exc:
+      print "ERROR: failed to parse input file for adapter " + str(adapter) + " in line: " + line
+      print("       details:", sys.exc_info()[0])
+      traceback.print_exc()
+    
     line = inputFile.readline()  
 
   htmlOverview.write( "</table>" );
@@ -185,7 +200,7 @@ for i in range(2,len(sys.argv)):
   htmlOverview.write( "<h3>Table of content:</h3>" );
   htmlOverview.write( "<ul>" );
   for adapter in range(oraclesForSteering,totalNumberOfOracles):
-    htmlOverview.write( "<li><a href=\"#adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</a></li>" );
+    htmlOverview.write( "<li><a href=\"#adapter-" + str(adapter) + "\">Adapter " + str(adapter)  + ": " + AdapterNames[adapter-oraclesForSteering] + "</a></li>" );
   htmlOverview.write( "</ul>" );
 
   htmlOverview.write( "<p>Empty adapter sections imply that this adapter is not used by the code. The adapter order requals the adapter order in the specification file. Only those program phases that are actually used are also displayed.</p>" );

@@ -1,0 +1,41 @@
+#!/bin/bash
+#@ job_type = parallel
+#@ class = micro
+#@ node = 1
+#@ tasks_per_node = 28
+#@ island_count = 1
+#@ network.MPI = sn_all,not_shared,us 
+#@ energy_policy_tag = EulerFlow_LimitingADERDG_energy_tag
+#@ minimize_time_to_solution = yes
+#@ wall_clock_limit = 04:00:00
+#@ job_name = EulerFlow_LimitingADERDG
+#@ network.MPI = sn_all,not_shared,us
+#@ notification=complete
+#@ notify_user=dominic.e.charrier@durham.ac.uk
+#@ error =  $(job_name).$(jobid).err
+#@ queue
+. /etc/profile
+. /etc/profile.d/modules.sh
+module load gcc/4.9
+module load tbb
+
+# Important for multithreaded MPI
+
+nodes=1
+tasks=1
+let tasksPerNode=tasks/nodes
+let coresPerTask=28/tasksPerNode # rounds down
+export OMP_SINGLE_THREAD=no
+export OMP_NUM_THREADS=$coresPerTask
+
+compiler=Intel
+sharedMem=None
+prefix=EulerFlow_LimitingADERDG-no-output-p3-regular-0
+out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+spec=benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+# pipe some information into output file
+module list 2>$out
+cat $spec >> $out
+#ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler --version >> $out
+# execute the job
+mpiexec -n $tasks ./ExaHyPE-EulerFlow_LimitingADERDG-p3-$sharedMem-$compiler $spec  >> $out

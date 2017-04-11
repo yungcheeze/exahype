@@ -1,6 +1,6 @@
 ! Static background metrics for GRMHD
 
-SUBROUTINE METRIC ( xc, lapse, gp, gm, shift, g_cov, g_contr)
+RECURSIVE SUBROUTINE METRIC ( xc, lapse, gp, gm, shift, g_cov, g_contr)
   USE Parameters, ONLY : nVar, nDim
   IMPLICIT NONE
   !

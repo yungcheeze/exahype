@@ -119,7 +119,7 @@ int mpibalancing::FairNodePoolStrategy::getWorkersOfNode( int rank ) const {
 
 void mpibalancing::FairNodePoolStrategy::addNode(const tarch::parallel::messages::RegisterAtNodePoolMessage& node) {
   #ifdef Parallel
-  assertion( !isRegisteredNode(node.getSenderRank()) );
+  //assertion( !isRegisteredNode(node.getSenderRank()) );
 
   logTraceInWith1Argument( "addNode(...)", node.getSenderRank() );
   NodePoolListEntry newEntry(

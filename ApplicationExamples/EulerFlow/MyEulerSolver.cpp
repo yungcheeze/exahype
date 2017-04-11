@@ -50,7 +50,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 
   logInfo("ID", std::string("Loading Initial data: '")+id+std::string("'"));
   if(id == "ShuVortex") idfunc = ShuVortex2D;
-  if(id == "MovingGauss2D") idfunc = MovingGauss2D;
+  if(id == "MovingGauss2D") idfunc = MovingGauss;
   if(id == "DiffusingGauss") idfunc = DiffusingGauss;
   if(!idfunc) {
       logError("ID", "Cannot understand requested ID.");

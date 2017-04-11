@@ -119,7 +119,6 @@ void exahype::mappings::LoadBalancing::mergeWithWorker(
 void exahype::mappings::LoadBalancing::endIteration(
   exahype::State&  solverState
 ) {
-  logInfo("endIteration(State)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
 }
 
 

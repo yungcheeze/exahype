@@ -21,7 +21,7 @@ void GRMHD::GRMHDSolver::init(std::vector<std::string>& cmdlineargs) {
   logInfo("init()", "FV Godunov + GRMHD starting.");
 }
 
-bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool GRMHD::GRMHDSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   using namespace tarch::la;
   // Do excision only in 3D.
   bool insideExcisionBall = norm2(center) < excision_radius;
@@ -30,7 +30,7 @@ bool GRMHD::GRMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,
 
 }
 
-void GRMHD::GRMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt, double* Q) {
+void GRMHD::GRMHDSolver::adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) {
   initialdata_(x, &t, Q);
 }
 
@@ -53,6 +53,10 @@ void GRMHD::GRMHDSolver::flux(const double* const Q, double** F) {
 
 void GRMHD::GRMHDSolver::algebraicSource(const double* const Q, double* S) {
   pdesource_(S, Q);
+  
+  for(int l=0; l<NumberOfVariables; l++) {
+    S[l] = 0.0;
+  }
 }
 
 void GRMHD::GRMHDSolver::boundaryValues(
@@ -69,10 +73,29 @@ void GRMHD::GRMHDSolver::boundaryValues(
 
 void GRMHD::GRMHDSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
+  
+  for(int l=0; l<NumberOfVariables; l++) {
+    BgradQ[l] = 0.0;
+  }
 }
 
+// new FV scheme has no coefficient matrix
 void GRMHD::GRMHDSolver::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  static tarch::logging::Log _log("GRMHDSolver");
+  logError("coefficientMatrix()", "Coefficient Matrix invoked");
+  exit(-2);
+  /*
   double nv[3] = {0.};
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);
+  
+  for(int l=0; l<NumberOfVariables*NumberOfVariables; l++) {
+    Bn[l] = 0.0;
+  }
+  */
 }
+
+
+
+
+

@@ -1,0 +1,49 @@
+{# /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/ #}
+
+#include "kernels/aderdg/optimised/Kernels.h"
+#include <limits>
+
+#include "tarch/la/Vector.h" 
+
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>
+double kernels::aderdg::optimised::stableTimeStepSize(
+    const double* restrict const luh,
+    const tarch::la::Vector<DIMENSIONS,double>& inverseDx
+) {
+  constexpr double cflFactor       = 0.9;
+  constexpr double PNPM[10]        = {1.0,   0.33,  0.17, 0.1,  0.069,
+                                      0.045, 0.038, 0.03, 0.02, 0.015};
+  
+  double lambda[{{nVarPad}}] __attribute__((aligned(ALIGNMENT)));
+  double dt = std::numeric_limits<double>::max();
+  
+  for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) { //xyz
+    double denominator = 0.0;
+    for (int d = 0; d < {{nDim}}; d++) {
+      PDEEigenvalues(&luh[{{nVar}}*ijk], d, lambda);
+      
+      double maxEigenvalue = 0.0;
+      for (int ivar = 0; ivar < {{nVar}}; ivar++) {
+        maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);
+      }
+      denominator += maxEigenvalue * inverseDx[d];
+    }
+
+    dt = std::min(dt, cflFactor * PNPM[{{nDof-1}}] / denominator);  // order = nDof-1
+
+  }
+
+  return dt;
+}
+

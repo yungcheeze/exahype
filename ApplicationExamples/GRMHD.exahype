@@ -27,20 +27,20 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 3.0, 3.0, 3.0
-    offset                         = 0.0, 0.0, 0.0
+    width                          = 1.0, 1.0, 1.0
+    offset                         = 1.0, 1.0, 1.0
     end-time                       = 10.1
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 9
+    cores                    = 10
     properties-file          = sharedmemory.properties
   end shared-memory  
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:1}
+    configure                = {hotspot,fair,ranks_per_node:10}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -50,7 +50,7 @@ exahype-project GRMHD
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
-    disable-amr-if-grid-has-been-stationary-in-previous-iteration = of
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = on
   end optimisation
@@ -59,7 +59,7 @@ exahype-project GRMHD
     /* gamma is actually parts of a matrix... */
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
     order const                    = 3
-    maximum-mesh-size              = 0.5
+    maximum-mesh-size              = 0.9
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
@@ -75,19 +75,17 @@ exahype-project GRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.0066667
+      repeat = 0.66667
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
-
     plot user::defined SphereIntegrals
       variables const = 0
       time = 0.0
-      repeat = 0.00129329
+      repeat = 0.666667  /*0.129329*/
       output = ./global-sphere-integrals
       select    = x:0.0,y:0.0
     end plot
-
   end solver
 
 

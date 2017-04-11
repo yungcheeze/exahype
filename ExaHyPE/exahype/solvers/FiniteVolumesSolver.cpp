@@ -42,15 +42,11 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     : Solver(identifier, exahype::solvers::Solver::Type::FiniteVolumes,
              numberOfVariables, numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, timeStepping, std::move(profiler)),
-      _dataPerPatch((numberOfVariables + numberOfParameters) *
-                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _dataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _ghostLayerWidth(ghostLayerWidth),
-      _ghostDataPerPatch((numberOfVariables + numberOfParameters) *
-                       power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
-      _dataPerPatchFace(
-          (numberOfVariables + numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _dataPerPatchBoundary(
-          DIMENSIONS_TIMES_TWO *_dataPerPatchFace),
+      _ghostDataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
+      _dataPerPatchFace(_ghostLayerWidth*(numberOfVariables+numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _dataPerPatchBoundary(DIMENSIONS_TIMES_TWO *_dataPerPatchFace),
       _previousMinTimeStepSize(std::numeric_limits<double>::max()),
       _minTimeStamp(std::numeric_limits<double>::max()),
       _minTimeStepSize(std::numeric_limits<double>::max()),
@@ -257,13 +253,14 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
   fineGridCell.addNewCellDescription(
               solverNumber,
               CellDescription::Cell,
-//              CellDescription::None,
+              CellDescription::None,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCellDescriptionsIndex,
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getVertexPosition());
   int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
   CellDescription& fineGridCellDescription =
       getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
@@ -379,6 +376,21 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 //  }
 }
 
+bool exahype::solvers::FiniteVolumesSolver::attainedStableState(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const int solverNumber) const {
+  const int element = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (element!=exahype::solvers::Solver::NotFound) {
+    CellDescription& cellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
+
+    return (cellDescription.getRefinementEvent()==CellDescription::RefinementEvent::None);
+  }
+
+  return true;
+}
+
 bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -388,15 +400,21 @@ bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
-//  assertionMsg(false,"Not implemented."); // TODO(Dominic): Implement.
-  int fineGridCellElement = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
-  if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
-    CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
-  }
+  // do nothing
 
   return false;
+}
+
+void exahype::solvers::FiniteVolumesSolver::finaliseStateUpdates(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) {
+  // do nothing
 }
 
 ///////////////////////////////////
@@ -501,6 +519,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
+//  std::cout << "[pre] solution:" << std::endl;
+//  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+
   double admissibleTimeStepSize=0;
   solutionUpdate(
       newSolution,solution,tempStateSizedVectors,tempUnknowns,
@@ -528,6 +549,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
         cellDescription.getTimeStamp()+cellDescription.getTimeStepSize(),
         cellDescription.getTimeStepSize());
   }
+
+//  std::cout << "[post] solution:" << std::endl;
+//  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 }

@@ -115,25 +115,25 @@ class DGMatrixGenerator:
         
         # tmp memory for 1/dx*dudx_T
         # nDof * nDofPad
-        l_nEntries  = Backend.getSizeWithPadding(self.m_config['nDof']) * self.m_config['nDof']
-        tmp_nDof_nDofPad = np.zeros((1,l_nEntries))
-        l_matrices['tmp_nDof_nDofPad'] = tmp_nDof_nDofPad.flatten('F')
+        # l_nEntries  = Backend.getSizeWithPadding(self.m_config['nDof']) * self.m_config['nDof']
+        # tmp_nDof_nDofPad = np.zeros((1,l_nEntries))
+        # l_matrices['tmp_nDof_nDofPad'] = tmp_nDof_nDofPad.flatten('F')
 
         # tmp memory for *s*caled *m*atrices
-        s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)
-        l_matrices['s_m'] = s_m.flatten('F')
+        # s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)
+        # l_matrices['s_m'] = s_m.flatten('F')
 
         # tmp memory for *s*caled *v*ector
-        s_v = np.zeros((1,Backend.getSizeWithPadding(self.m_config['nVar'])))
-        l_matrices['s_v'] = s_v.flatten('F')
+        # s_v = np.zeros((1,Backend.getSizeWithPadding(self.m_config['nVar'])))
+        # l_matrices['s_v'] = s_v.flatten('F')
 
         # tmp memory for simd vectorisation on boundaries, sized as e.g. lQbndL
         # 2D: nVar * getSizeWithPadding(nDOF)
         # 3D: nVar * getSizeWithPadding(nDOF*nDOF)
-        l_nTotalDof = self.m_config['nDof']**(self.m_nDim-1)
-        l_nEntries  = Backend.getSizeWithPadding(self.m_config['nVar']) * Backend.getSizeWithPadding(l_nTotalDof)
-        tmp_bnd = np.zeros((1,l_nEntries))
-        l_matrices['tmp_bnd'] = tmp_bnd.flatten('F')
+        # l_nTotalDof = self.m_config['nDof']**(self.m_nDim-1)
+        # l_nEntries  = Backend.getSizeWithPadding(self.m_config['nVar']) * Backend.getSizeWithPadding(l_nTotalDof)
+        # tmp_bnd = np.zeros((1,l_nEntries))
+        # l_matrices['tmp_bnd'] = tmp_bnd.flatten('F')
 
 
         # [FLCoeff 0...0]; [FRCoeff 0...0];
@@ -173,10 +173,10 @@ class DGMatrixGenerator:
                            'extern double *iK1;\n'      \
                            'extern double *dudx;\n'     \
                            'extern double *dudx_T;\n'   \
-                           'extern double *tmp_nDof_nDofPad;\n'  \
-                           'extern double *s_m;\n'      \
-                           'extern double *s_v;\n'      \
-                           'extern double *tmp_bnd;\n'  \
+                           #'extern double *tmp_nDof_nDofPad;\n'  \
+                           #'extern double *s_m;\n'      \
+                           #'extern double *s_v;\n'      \
+                           #'extern double *tmp_bnd;\n'  \
                            'extern double *F0; \n'      \
                            'extern double *FLCoeff;\n'  \
                            'extern double *FRCoeff;\n'  \
@@ -196,10 +196,10 @@ class DGMatrixGenerator:
                            'double* kernels::aderdg::optimised::iK1;\n'     \
                            'double* kernels::aderdg::optimised::dudx;\n'    \
                            'double* kernels::aderdg::optimised::dudx_T;\n'  \
-                           'double* kernels::aderdg::optimised::tmp_nDof_nDofPad;\n'  \
-                           'double* kernels::aderdg::optimised::s_m;\n'     \
-                           'double* kernels::aderdg::optimised::s_v;\n'     \
-                           'double* kernels::aderdg::optimised::tmp_bnd;\n' \
+                           #'double* kernels::aderdg::optimised::tmp_nDof_nDofPad;\n'  \
+                           #'double* kernels::aderdg::optimised::s_m;\n'     \
+                           #'double* kernels::aderdg::optimised::s_v;\n'     \
+                           #'double* kernels::aderdg::optimised::tmp_bnd;\n' \
                            'double* kernels::aderdg::optimised::F0;\n'      \
                            'double* kernels::aderdg::optimised::FLCoeff;\n' \
                            'double* kernels::aderdg::optimised::FRCoeff;\n' \

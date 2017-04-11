@@ -120,6 +120,11 @@ void exahype::mappings::Merging::beginIteration(
     exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
     DataHeap::getInstance().finishedToSendSynchronousData();
     MetadataHeap::getInstance().finishedToSendSynchronousData();
+    MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty();
+
+    if (! MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty() ) {
+        exit(-1);
+    }
   }
   #endif
 
@@ -244,7 +249,10 @@ void exahype::mappings::Merging::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-
+  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+  
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     // logInfo("mergeWithNeighbour(...)","hasToMerge");
@@ -311,7 +319,7 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+    if (receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       assertion1(element>=0,element);
 
@@ -484,7 +492,7 @@ void exahype::mappings::Merging::receiveDataFromMaster(
         int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
           solver->mergeWithMasterData(
                     tarch::parallel::NodePool::getInstance().getMasterRank(),
                     receivedMetadata[solverNumber].getU(),

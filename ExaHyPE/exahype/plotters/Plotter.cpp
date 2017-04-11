@@ -14,10 +14,12 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/plotters/ADERDG2CartesianVTK.h"
+#include "exahype/plotters/ADERDG2CartesianPeanoPatchFileFormat.h"
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
+#include "exahype/plotters/ADERDG2CarpetHDF5.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
@@ -132,6 +134,13 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
+      if (_identifier.compare( ADERDG2CartesianCellsPeanoFileFormatAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsPeanoFileFormatAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesPeanoFileFormatAscii(postProcessing);
+      }
+
       if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
@@ -201,6 +210,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCSV(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new ADERDG2CarpetHDF5(postProcessing);
       }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
@@ -422,8 +434,7 @@ bool exahype::plotters::Plotter::checkWetherPlotterBecomesActiveAndStartPlotting
     _solverTimeStamp = -std::numeric_limits<double>::max();
   }
 
-  // TODO(Dominic): Remove
-  logInfo(
+  logDebug(
     "checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double)",
     "plotter="<< _identifier <<
     ", active=" << ( isActive() ? "yes" : "no" ) <<

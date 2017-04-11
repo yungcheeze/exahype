@@ -53,6 +53,8 @@
 #endif
 #include "exahype/plotters/Plotter.h"
 
+#include "exahype/mappings/MeshRefinement.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
@@ -193,12 +195,16 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
           true
         ));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::AutotuningWithoutLearning:
     logInfo("initSharedMemoryConfiguration()",
         "use autotuning shared memory oracle configuration but disable machine learning algorithm");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(false,false));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
     logInfo("initSharedMemoryConfiguration()",
@@ -208,6 +214,8 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
           false
         ));
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
     logInfo("initSharedMemoryConfiguration()",
@@ -217,15 +225,10 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
             64,
             true    // logarithmicDistribution
         ));
-    break;
-  }
-
-  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
-  if (f.good()) {
     peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
         _parser.getMulticorePropertiesFile());
+    break;
   }
-  f.close();
   #endif
 }
 
@@ -252,9 +255,9 @@ void exahype::runners::Runner::initDataCompression() {
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
-  case Parser::MulticoreOracleType::Dummy:
   case Parser::MulticoreOracleType::AutotuningWithoutLearning:
     break;
+  case Parser::MulticoreOracleType::Dummy:
   case Parser::MulticoreOracleType::AutotuningWithRestartAndLearning:
   case Parser::MulticoreOracleType::AutotuningWithLearningButWithoutRestart:
   case Parser::MulticoreOracleType::GrainSizeSampling:
@@ -330,27 +333,30 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       " of width/size " << _parser.getDomainSize() <<
       ". bounding box has size " << _parser.getBoundingBoxSize() <<
       ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
-#ifdef Parallel
-  const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
-  assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
-  const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-  assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
 
-  logInfo(
-      "createRepository(...)",
-      "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxSize   = _parser.getBoundingBoxSize();
+  tarch::la::Vector<DIMENSIONS, double> boundingBoxOffset = _parser.getOffset();
+  #ifdef Parallel
+  if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
+    const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
+    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
+    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+
+    logInfo(
+        "createRepository(...)",
+        "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+
+    boundingBoxSize   *= boundingBoxScaling;
+    boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
+  }
+  #endif
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      _parser.getBoundingBoxSize()*boundingBoxScaling,
-      _parser.getOffset()+boundingBoxShift*_parser.getBoundingBoxSize()
+      boundingBoxSize,
+      boundingBoxOffset
   );
-#else
-  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      _parser.getBoundingBoxSize(),
-      _parser.getOffset()
-  );
-#endif
 }
 
 
@@ -371,7 +377,11 @@ int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
     // We have to do this for any rank.
-    exahype::State::FuseADERDGPhases = _parser.getFuseAlgorithmicSteps();
+    exahype::State::FuseADERDGPhases  = _parser.getFuseAlgorithmicSteps();
+
+    #ifdef Parallel
+    exahype::mappings::MeshRefinement::FirstIteration = false;
+    #endif
 
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
       result = runAsMaster(*repository);
@@ -399,9 +409,12 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
-  while ( repository.getState().continueToConstructGrid() ) {
+  while ( repository.getState().continueToConstructGrid()
+          || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+  ) {
     repository.iterate();
     gridSetupIterations++;
+
     repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
@@ -430,6 +443,13 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     );
     #endif
 
+    #ifdef Asserts
+    logInfo("createGrid()",
+             "grid setup iteration #" << gridSetupIterations <<
+             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+     );
+    #endif
+
     #if !defined(Parallel)
     logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
     #endif
@@ -443,6 +463,9 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -480,9 +503,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     initSolverTimeStepData();
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-    //    repository.switchToPlotAugmentedAMRGrid();
-    //    repository.iterate(); For debugging purposes
 
     repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
     repository.switchToInitialConditionAndTimeStepSizeComputation();
@@ -901,7 +921,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
 
     gridUpdate = true;
@@ -980,7 +1000,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     createGrid(repository);
 
     repository.getState().switchToPostAMRContext();
-    repository.switchToDropMPIMetadataMessagesAndTimeStepSizeComputation();
+    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
     repository.iterate();
   }
 

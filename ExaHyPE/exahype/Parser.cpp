@@ -272,12 +272,31 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   assertion(isValid());
   std::string token;
   tarch::la::Vector<DIMENSIONS, double> result;
+
+  token = getTokenAfter("computational-domain", "dimension", 0);	
+  int dim = std::atoi(token.c_str());
+  if (dim < DIMENSIONS) {
+    logError("getDomainSize()",
+             "dimension: value "<< token << " in specification file" <<
+             " does not match -DDim"<<DIMENSIONS<<" switch in Makefile");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+
   token = getTokenAfter("computational-domain", "width", 0);
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "width", 1);
   result(1) = atof(token.c_str());
 #if DIMENSIONS == 3
-  token = getTokenAfter("computational-domain", "width", 2);
+  token = getTokenAfter("computational-domain", "width", 2);	
+  if (token.compare("offset")==0) {
+    logError("getDomainSize()",
+             "width: not enough values specified for " <<
+             DIMENSIONS<< " dimensions");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+  
   result(2) = atof(token.c_str());
 #endif
   return result;
@@ -298,7 +317,16 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "offset", 1);
   result(1) = atof(token.c_str());
-#if DIMENSIONS == 3
+#if DIMENSIONS == 3 
+  token = getTokenAfter("computational-domain", "offset", 2);	
+  if (token.compare("end-time")==0) {
+    logError("getOffset()",
+             "offset: not enough values specified for " <<
+             DIMENSIONS<< " dimensions");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+
   token = getTokenAfter("computational-domain", "offset", 2);
   result(2) = atof(token.c_str());
 #endif
@@ -360,9 +388,9 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
     result = MulticoreOracleType::Dummy;
   } else if (token.compare("autotuning") == 0) {
     result = MulticoreOracleType::AutotuningWithRestartAndLearning;
-  } else if (token.compare("autotuning-without-learning") == 0) {
+  } else if (token.compare("autotuning_without_learning") == 0) {
     result = MulticoreOracleType::AutotuningWithoutLearning;
-  } else if (token.compare("autotuning-without-restart") == 0) {
+  } else if (token.compare("autotuning_without_restart") == 0) {
     result = MulticoreOracleType::AutotuningWithLearningButWithoutRestart;
   } else if (token.compare("sampling") == 0) {
     result = MulticoreOracleType::GrainSizeSampling;

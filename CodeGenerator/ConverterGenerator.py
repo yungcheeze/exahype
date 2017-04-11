@@ -28,8 +28,8 @@ class ConverterGenerator:
     m_filenameRoot = "converter"
 
 
-    def __init__(self, i_config):
-        self.m_context = i_config
+    def __init__(self, i_context):
+        self.m_context = i_context
         
 
     def generateCode(self):

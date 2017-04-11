@@ -22,10 +22,13 @@ template <bool useSource, bool useNCP, void PDEflux(const double* const Q, doubl
 void kernels::aderdg::optimised::picardLoopNonlinear(
         const double* restrict const luh, 
         const double dt,
-        const tarch::la::Vector<DIMENSIONS, double>& dx,
+        const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
         double* restrict lQi, double* restrict lQi_old, double* restrict rhs, double* restrict rhs_0,
         double* restrict lFi,
         double* restrict lSi, double* restrict gradQ, double* restrict BGradQ //source and ncp related term, nullptr if not used
+{% if useDeepProfiler %}
+        , exahype::profilers::Profiler* profiler
+{% endif %}
 ) {
 
 
@@ -36,7 +39,6 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   __assume_aligned(rhs_0, ALIGNMENT);
   __assume_aligned(lFi, ALIGNMENT);
   __assume_aligned(F0, ALIGNMENT);
-  __assume_aligned(s_m, ALIGNMENT);
   __assume_aligned(Kxi, ALIGNMENT);
   if(useSource || useNCP) {
     __assume_aligned(lSi, ALIGNMENT);
@@ -44,21 +46,21 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
   if(useNCP) {
     __assume_aligned(gradQ, ALIGNMENT);
     __assume_aligned(BGradQ, ALIGNMENT);
-    __assume_aligned(tmp_nDof_nDofPad, ALIGNMENT);
   }
   
 #endif
+  double s_m[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
+  double dudxT_by_dx[{{nDof*nDofPad}}] __attribute__((aligned(ALIGNMENT)));
 
   if(useNCP) {
   // 0. Ensure padded BGradQ has a zero padding
     std::memset(BGradQ, 0, {{nVarPad}} * sizeof(double));
 
   
-  // 0. precompute 1/dx * dudx_T
-    const double invDx = 1.0 / dx[0];
+  // 0. precompute 1/dx * dudx_T. Assume dx[0] == dx[1] == dx[2]
     #pragma simd
     for(int it=0;it<{{nDof*nDofPad}};it++) {
-      tmp_nDof_nDofPad[it] = invDx * dudx_T[it];
+      dudxT_by_dx[it] = inverseDx[0] * dudx_T[it];
     }
     
   }
@@ -108,10 +110,28 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim == 3 %}
         F[2] = &lFi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)+{{2*(nDof**nDim)*nDof*nVarPad}}];
 {% endif %}
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor");
+        profiler->start("spaceTimePredictor_PDEflux");
+{% endif %}
         PDEflux(Q, F);
+{% if useDeepProfiler %}
+        profiler->stop("spaceTimePredictor_PDEflux");
+{% endif %}
         if(useSource) { //optimised away at compile time
+{% if useDeepProfiler %}
+          profiler->start("spaceTimePredictor_PDEsource");
+{% endif %}
           PDEsource(Q,&lSi[{{nVarPad}}*(jkl+{{nDof**nDim}}*i)]);
+{% if useDeepProfiler %}
+          profiler->stop("spaceTimePredictor_PDEsource");
+{% endif %}
         }
+{% if useDeepProfiler %}
+        profiler->start("spaceTimePredictor_overhead");
+        profiler->stop("spaceTimePredictor_overhead"); 
+        profiler->start("spaceTimePredictor");
+{% endif %}
       }
 
       // Copy rhs0 -> rhs for slice at i
@@ -127,7 +147,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt / dx[0];
+          const double updateSize = weight * dt * inverseDx[0];
 
           // Matrix operation
           /*
@@ -153,13 +173,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(0+{{nDim}}*(i+{{nDof}}*(l+{{nDof}}*(k+{{nDof}}*j))))] += inverseDx[0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(m+{{nDof}}*(k+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             } 
             */
-            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
+            {{gemm_gradQ_x}}(&lQi[{{nVarPad}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof*nDof}}*(k+{{nDof}}*j))]);
           }          
         }
       }
@@ -168,7 +188,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof3D}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] * {{'weights1[j] * ' if nDim == 3 else ''}} weights1[k];
-          const double updateSize = weight * dt / dx[1];
+          const double updateSize = weight * dt * inverseDx[1];
 
           // Matrix operation
           /*
@@ -194,13 +214,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(1+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(l+{{nDof}}*j))))] += inverseDx[0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(m+{{nDof}}*j)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
             */
-            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
+            {{gemm_gradQ_y}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof*nDof}}*j))+{{nVarPad}}]);
           }
         }
       }
@@ -210,7 +230,7 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
       for (int j = 0; j < {{nDof}}; j++) {
         for (int k = 0; k < {{nDof}}; k++) {
           const double weight = weights1[i] *  weights1[j] * weights1[k];
-          const double updateSize = weight * dt / dx[2];
+          const double updateSize = weight * dt * inverseDx[2];
 
           // Matrix operation
           /*
@@ -236,13 +256,13 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
               for (int m = 0; m < {{nDof}}; m++) {
                 #pragma simd
                 for (int n = 0; n < {{nVar}}; n++) {
-                  gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += 1.0 / dx[0] *
+                  gradQ[n+{{nVar}}*(2+{{nDim}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*l))))] += inverseDx [0] *
                       lQi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*(j+{{nDof}}*m)))] * dudx[l+{{nDofPad}}*m];
                 }
               }
             }
             */
-            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &tmp_nDof_nDofPad[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
+            {{gemm_gradQ_z}}(&lQi[{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))], &dudxT_by_dx[0], &gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad}}]);
           }
         }
       }
@@ -260,7 +280,15 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
 {% if nDim==3 %}
             std::copy(&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad}}],&gradQ[{{nVarPad*nDim}}*(i+{{nDof}}*jkl)+{{2*nVarPad+nVar}}], &gradQNoPad[{{2*nVar}}]); //z
 {% endif %}
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor");
+            profiler->start("spaceTimePredictor_PDEncp");
+{% endif %}
             PDEncp(&lQi[{{nVarPad}}*(i+{{nDof}}*jkl)], &gradQNoPad[0], BGradQ);
+{% if useDeepProfiler %}
+            profiler->stop("spaceTimePredictor_PDEncp");
+            profiler->start("spaceTimePredictor");
+{% endif %}
           }
           
           const int shift = {{nVarPad}}*(jkl+{{nDof**nDim}}*i);
@@ -315,17 +343,6 @@ void kernels::aderdg::optimised::picardLoopNonlinear(
     }
     if (sq_res < tol * tol) {
       break;
-    }
-
-    if(false) { //no debug by default
-      if (iter == MaxIterations) {  // No convergence after last iteration
-        static tarch::logging::Log _log("kernels::aderdg::optimised");
-        logWarning("picardLoop(...)",
-                   "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "
-                              << iter << " iterations. Solver seems not to "
-                                         "have converged properly within "
-                                         "maximum number of iteration steps");
-      }
     }
   }  // end iter
 }

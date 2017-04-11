@@ -5,6 +5,7 @@
 
 
 #include "tarch/logging/Log.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
 #include "peano/datatraversal/autotuning/MethodTrace.h"
 
@@ -149,6 +150,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     static const double                                  _InitialRelativeAccuracy;
 
     static bool                                          _hasLearnedSinceLastQuery;
+
+    static tarch::multicore::BooleanSemaphore            _semaphore;
 
     /**
      * We never do optimise all traces. We only do it with one trace at a time.
@@ -431,8 +434,17 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * look at the last measurement, and create a new one with twice the
      * problem size. To create a new entry, we do use the copy constructor that
      * extrapolates reasonable grain sizes automatically.
+     *
+     * @todo
      */
     DatabaseEntry& getDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod);
+
+    /**
+     * If not availble, return biggest one.
+     */
+    DatabaseEntry  getDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) const;
+    bool hasDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) const;
+    void createDatabaseEntries(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod);
 
     /**
      * This operation analyses whether a set of entries for a given method

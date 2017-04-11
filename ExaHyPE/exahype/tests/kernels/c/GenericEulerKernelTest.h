@@ -29,6 +29,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   static constexpr int NumberOfVariables  = 5;
   static constexpr int NumberOfParameters = 1;
   static constexpr int Order              = 3;
+  static constexpr double CFL             = 0.9;
 
   GenericEulerKernelTest();
   virtual ~GenericEulerKernelTest();
@@ -57,7 +58,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
  public:
   static void flux(const double* const Q, double** F);
 
-  static void algebraicSource(const double* Q, double* S);
+  static void fusedSource(const double* Q, const double* const gradQ, double* S);
 
   static void eigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);
@@ -70,6 +71,9 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 
   const double eps = 1.0e-10;  // for quick adaption of the test cases (say,
                                // switch to single precision)
+
+  bool useAlgebraicSource() {return false;}
+  bool useNonConservativeProduct() {return false;}
 };
 
 

@@ -28,7 +28,7 @@ exahype-project  Euler
 
   computational-domain
     dimension const                = 2
-    width                    = 1.0, 0.3
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -47,7 +47,7 @@ exahype-project  Euler
   end distributed-memory
   
   optimisation
-    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /*0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
@@ -64,7 +64,7 @@ exahype-project  Euler
     time-stepping     = global
     kernel const            = generic::fluxes::nonlinear
     language const          = C
-    limiter-kernel const    = generic::Godunov 
+    limiter-kernel const    = generic::godunov 
     limiter-language const  = C
     dmp-relaxation-parameter = 1e-2
     dmp-difference-scaling = 1e-3
@@ -72,7 +72,7 @@ exahype-project  Euler
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
       time      = 0.0
-      repeat    = 0.05
+      repeat    = 0.000001
       output    = ./limitingaderg-dg
       select    = x:0.0,y:0.0
     end plot

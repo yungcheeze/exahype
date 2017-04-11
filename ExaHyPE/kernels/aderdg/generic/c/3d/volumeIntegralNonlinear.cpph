@@ -21,29 +21,22 @@
 #include "../../../../GaussLegendreQuadrature.h"
 #include "../../../../KernelUtils.h"
 
-namespace kernels {
-namespace aderdg {
-namespace generic {
-namespace c {
-
 #if DIMENSIONS == 3
 
-template <bool useSourceOrNCP>
-void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
-                             const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             const int numberOfVariables,
-                             const int numberOfParameters, /*not used*/ // TODO(Dominic): Remove from arg list.
-                             const int basisSize) {
-  const int order = basisSize - 1;
-  const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
+void kernels::aderdg::generic::c::volumeIntegralNonlinear(double* lduh, const double* const lFhi,
+                             const tarch::la::Vector<DIMENSIONS, double>& dx) {
+  constexpr int order      = basisSize - 1;
+  constexpr int basisSize2 = basisSize * basisSize;
+  constexpr int basisSize3 = basisSize2 * basisSize;
 
   // Initialize the update DOF
-  std::memset(lduh, 0, basisSize3 * numberOfVariables * sizeof(double));
+  std::fill_n(lduh, basisSize3 * numberOfVariables, 0.0);
+  idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
 
-  // x-direction
-  {
-    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
+
+  if(useFlux) {
+    // x-direction
     const int x_offset = 0 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
@@ -64,11 +57,8 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         }
       }
     }
-  }
 
-  // y-direction
-  {
-    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
+    // y-direction
     const int y_offset = 1 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
@@ -89,11 +79,8 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         }
       }
     }
-  }
 
-  // z-direction
-  {
-    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
+    // z-direction
     const int z_offset = 2 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
@@ -114,11 +101,9 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         }
       }
     }
-  }
+  } // useFlux
 
-  // source
   if(useSourceOrNCP) {
-    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
     const int s_offset = 3 * basisSize3 * numberOfVariables;
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
@@ -136,12 +121,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         }
       }
     }
-  }
+  } // useSourceOrNCP
 }
 
 #endif  // DIMENSIONS == 3
-
-}  // namespace c
-}  // namespace generic
-}  // namespace aderdg
-}  // namespace kernels
