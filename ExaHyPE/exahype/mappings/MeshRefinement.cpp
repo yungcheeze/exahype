@@ -429,6 +429,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
       tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
       int destScalar = TWO_POWER_D - myDestScalar - 1;
+      int srcScalar = TWO_POWER_D - mySrcScalar - 1;
 
       if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
         logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
@@ -445,6 +446,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
         MetadataHeap::HeapEntries& neighbourCellTypes = MetadataHeap::getInstance().
             getData(receivedMetadataIndex);
 
+        // Work with the neighbour cell type
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
@@ -455,6 +457,35 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
               solver->mergeWithNeighbourMetadata(
                   neighbourCellTypes[solverNumber].getU(),
                   vertex.getCellDescriptionsIndex()[destScalar],element);
+            }
+          }
+
+          // LimiterStatusSpreading
+          if (
+              !LimiterStatusSpreading::FirstIteration
+              &&
+              (MeshRefinement::Mode==MeshRefinement::RefinementMode::Initial ||
+               MeshRefinement::Mode==MeshRefinement::RefinementMode::APosteriori)
+          ) {
+            if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
+              exahype::mappings::LimiterStatusSpreading::mergeNeighourMergedLimiterStatus(
+                  fromRank,
+                  src,dest,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  fineGridX,level,
+                  neighbourCellTypes);
+
+              vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
+              vertex.setMergePerformed(src,dest,true);
+            } else {
+              exahype::mappings::LimiterStatusSpreading::dropNeighbourMergedLimiterStatus(
+                  fromRank,
+                  src,dest,
+                  vertex.getCellDescriptionsIndex()[srcScalar],
+                  vertex.getCellDescriptionsIndex()[destScalar],
+                  fineGridX,level,
+                  neighbourCellTypes);
             }
           }
 
@@ -509,6 +540,33 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
 
           exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
               toRank,peano::heap::MessageType::NeighbourCommunication,x,level);
+        }
+
+        // LimiterStatusSpreading
+        if (
+            MeshRefinement::Mode==MeshRefinement::RefinementMode::Initial ||
+            MeshRefinement::Mode==MeshRefinement::RefinementMode::APosteriori
+        ) {
+          dfor2(dest)
+            dfor2(src)
+              if (vertex.hasToSendMetadata(src,dest,toRank)) {
+                vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+                if (vertex.hasToSendDataToNeighbour(src,dest)) {
+                  exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbour(
+                      toRank,src,dest,
+                      vertex.getCellDescriptionsIndex()[srcScalar],
+                      vertex.getCellDescriptionsIndex()[destScalar],
+                      x,level);
+                } else {
+                  exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+                      toRank,src,dest,
+                      vertex.getCellDescriptionsIndex()[srcScalar],
+                      vertex.getCellDescriptionsIndex()[destScalar],
+                      x,level);
+                }
+              }
+            enddforx
+          enddforx
         }
       }
     enddforx

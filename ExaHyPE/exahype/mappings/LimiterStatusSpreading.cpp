@@ -202,70 +202,51 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
     return;
   }
 
-  if (exahype::mappings::LimiterStatusSpreading::FirstIteration) {
-    if (exahype::State::fuseADERDGPhases()) { // drop metadata and face data
-      dfor2(myDest)
-        dfor2(mySrc)
-          tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-          tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+  if (!exahype::mappings::LimiterStatusSpreading::FirstIteration) {
+    dfor2(myDest)
+      dfor2(mySrc)
+        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+        tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
 
-          if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-            MetadataHeap::getInstance().receiveData(
-                fromRank, fineGridX, level,
-                peano::heap::MessageType::NeighbourCommunication);
+        int destScalar = TWO_POWER_D - myDestScalar - 1;
+        int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-            ...
+        if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+          int receivedMetadataIndex = MetadataHeap::getInstance().
+              createData(0,exahype::solvers::RegisteredSolvers.size());
+          MetadataHeap::getInstance().receiveData(
+              receivedMetadataIndex,
+              fromRank, fineGridX, level,
+              peano::heap::MessageType::NeighbourCommunication);
+          exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+          assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+          if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
+            mergeNeighourMergedLimiterStatus(
+                fromRank,
+                src,dest,
+                vertex.getCellDescriptionsIndex()[srcScalar],
+                vertex.getCellDescriptionsIndex()[destScalar],
+                fineGridX,level,
+                receivedMetadata);
+
+            vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
+            vertex.setMergePerformed(src,dest,true);
+          } else {
+            dropNeighbourMergedLimiterStatus(
+                fromRank,
+                src,dest,
+                vertex.getCellDescriptionsIndex()[srcScalar],
+                vertex.getCellDescriptionsIndex()[destScalar],
+                fineGridX,level,
+                receivedMetadata);
           }
-        enddforx
-      enddforx
-    }
-
-
-  }
-
-  dfor2(myDest)
-    dfor2(mySrc)
-      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
-
-      int destScalar = TWO_POWER_D - myDestScalar - 1;
-      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
-
-      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-        int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::solvers::RegisteredSolvers.size());
-        MetadataHeap::getInstance().receiveData(
-            receivedMetadataIndex,
-            fromRank, fineGridX, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
-
-        if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
-          mergeNeighourMergedLimiterStatus(
-              fromRank,
-              src,dest,
-              vertex.getCellDescriptionsIndex()[srcScalar],
-              vertex.getCellDescriptionsIndex()[destScalar],
-              fineGridX,level,
-              receivedMetadata);
-
-          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
-          vertex.setMergePerformed(src,dest,true);
-        } else {
-          dropNeighbourMergedLimiterStatus(
-              fromRank,
-              src,dest,
-              vertex.getCellDescriptionsIndex()[srcScalar],
-              vertex.getCellDescriptionsIndex()[destScalar],
-              fineGridX,level,
-              receivedMetadata);
+          // Clean up
+          MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
         }
-        // Clean up
-        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
-      }
+      enddforx
     enddforx
-  enddforx
+  }
 }
 
 void exahype::mappings::LimiterStatusSpreading::dropNeighbourMergedLimiterStatus(

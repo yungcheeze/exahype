@@ -385,7 +385,7 @@ public:
 
   void updateMinNextTimeStepSize(double value) override;
 
-  void initSolver(double value) override;
+  void initSolver(double timeStamp, tarch::la::Vector<DIMENSIONS,double>& boundingBox) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,

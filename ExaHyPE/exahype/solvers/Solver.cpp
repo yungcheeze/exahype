@@ -132,7 +132,7 @@ std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::T
   return "undefined";
 }
 
-int exahype::solvers::Solver::computMeshLevel(double meshSize, double boundingBoxSize) {
+int exahype::solvers::Solver::computeMeshLevel(double meshSize, double boundingBoxSize) {
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>meshSize) {
@@ -165,6 +165,18 @@ int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
 
 double exahype::solvers::Solver::getMaximumMeshSize() const {
   return _maximumMeshSize;
+}
+
+double exahype::solvers::Solver::getCoarsestMeshLevel() const {
+  return _coarsestMeshLevel;
+}
+
+double exahype::solvers::Solver::getMaximumAdaptiveMeshDepth() const {
+  return _maximumAdaptiveMeshDepth;
+}
+
+double exahype::solvers::Solver::getMaximumAdaptiveMeshLevel() const {
+  return _coarsestMeshLevel+_maximumAdaptiveMeshDepth;
 }
 
 void exahype::solvers::Solver::resetGridUpdateRequestedFlags() {

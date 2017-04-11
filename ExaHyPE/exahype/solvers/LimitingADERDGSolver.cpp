@@ -50,6 +50,7 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
     :
     exahype::solvers::Solver(identifier, Solver::Type::LimitingADERDG, solver->getNumberOfVariables(),
         solver->getNumberOfParameters(), solver->getNodesPerCoordinateAxis(), solver->getMaximumMeshSize(),
+          solver->getMaximumAdaptiveMeshDepth(),
           solver->getTimeStepping()),
           _solver(std::move(solver)),
           _limiter(std::move(limiter)),
@@ -79,8 +80,8 @@ void exahype::solvers::LimitingADERDGSolver::updateMinNextTimeStepSize(double va
   _solver->updateMinNextTimeStepSize(value);
 }
 
-void exahype::solvers::LimitingADERDGSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _solver->initSolver(value);
+void exahype::solvers::LimitingADERDGSolver::initSolver(double timeStamp, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+  _solver->initSolver(timeStamp, boundingBox);
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(

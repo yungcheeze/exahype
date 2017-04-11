@@ -379,7 +379,7 @@ int exahype::runners::Runner::run() {
     // We have to do this for any rank.
     exahype::State::FuseADERDGPhases  = _parser.getFuseAlgorithmicSteps();
     exahype::mappings::MeshRefinement::Mode=
-         exahype::mappings::MeshRefinement::RefinementMode::APriori;
+         exahype::mappings::MeshRefinement::RefinementMode::Initial;
     #ifdef Parallel
     exahype::mappings::MeshRefinement::FirstIteration = false;
     #endif
@@ -740,11 +740,14 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
    * We thus need two extra iterations to send and receive
    * the limiter status of remote neighbours.
    */
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
   repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
+  repository.switchToMergeTimeStepDataDropFaceData();
+  repository.iterate();
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
   repository.switchToLimiterStatusSpreading();
   repository.iterate(2);
 
+  // TODO(Dominic): Be careful that the rollback does not
   repository.getState().switchToReinitialisationContext();
   logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
   repository.switchToReinitialisation();

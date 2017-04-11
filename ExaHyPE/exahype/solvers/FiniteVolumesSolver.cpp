@@ -94,7 +94,7 @@ void exahype::solvers::FiniteVolumesSolver::updateMinNextTimeStepSize(
 }
 
 void exahype::solvers::FiniteVolumesSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _coarsestMeshLevel = exahype::solvers::Solver::computMeshLevel(_maximumMeshSize,boundingBox[0]);
+  _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
 
   _previousMinTimeStepSize = 0.0;
   _minTimeStepSize = 0.0;

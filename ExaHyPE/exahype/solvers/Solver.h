@@ -321,7 +321,7 @@ class exahype::solvers::Solver {
 
   /**
    * The maximum depth the adaptive mesh is allowed
-   * occupy (set by the user).
+   * to occupy (set by the user).
    * Summing this value with _coarsestMeshdLevel results in
    * the finest mesh level the solver might occupy during the
    * simulation.
@@ -412,7 +412,7 @@ class exahype::solvers::Solver {
    * Return the grid level corresponding to the given mesh size with
    * respect to the given bounding box.
    */
-  static int computMeshLevel(double meshSize, double boundingBoxSize);
+  static int computeMeshLevel(double meshSize, double boundingBoxSize);
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
@@ -424,6 +424,27 @@ class exahype::solvers::Solver {
    * you indicate that this solver is not active in the domain.
    */
   double getMaximumMeshSize() const;
+
+  /**
+   * The coarsest level of the adaptive mesh that is
+   * occupied by this solver.
+   */
+  double getCoarsestMeshLevel() const;
+
+  /**
+   * The maximum depth the adaptive mesh is allowed to
+   * occupy (set by the user).
+   * Summing this value with _coarsestMeshdLevel results in
+   * the finest mesh level the solver might occupy during the
+   * simulation.
+   */
+  double getMaximumAdaptiveMeshDepth() const;
+
+  /**
+   * The finest level of the adaptive mesh that might be
+   * occupied by this solver.
+   */
+  double getMaximumAdaptiveMeshLevel() const;
 
   virtual void updateNextMinCellSize(double minCellSize) {
     _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
