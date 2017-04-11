@@ -121,8 +121,19 @@ case $CMD in
 		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
 		exec $buildloc/sync.sh
 		;;
+	"build-exec") # Execute a build executable. Parameters: <BuildName>
+		# Can execute from anywhere. You might want to use as
+		#   exa build-exec name-of-run path/to/some/specfile.exahype
+		# to run in the PWD.
+		buildName=$1
+		buildloc=$(subreq root)/$(subreq build-find $buildName) || abort "Could determine build location"
+		[[ -e $buildloc/oot.env ]] || abort "Cannot find build instance '$buildName'. Maybe execute 'exa build-compile $buildName' before?"
+		source $buildloc/oot.env
+		[[ -e $buildloc/$oot_binary ]] || abort "Cannot find build binary. Is the build finished?"
+		exec $buildloc/$oot_binary ${@:2}
+		;;
 	"build-compile") # Setup and compile an out of tree build. Parameters: [AppName] <BuildName>
-		cdroot; getappname; buildName=$2
+		cdroot; getappname; buildName=$2;
 		set -e;
 		subreq build-setup $APPNAME $buildName || abort "Could not setup build."
 		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
