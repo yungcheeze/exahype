@@ -230,7 +230,7 @@ case $CMD in
 		$reducedbuf $ROOT/$BINARY $ROOT/$SPECFILE 2>&1 | $reducedbuf tee -a run.log
 		;;
 	"sim") # lightweight simulation managament
-		exec $BuildScripts/sim.sh $@
+		exec $BuildScripts/../RunScripts/sim.sh $@
 		;;
 	""|"help") # prints out help about the exa toolkit
 		me=$(basename "$0")

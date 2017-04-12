@@ -12,7 +12,10 @@ export CLEAN="${CLEAN:=Clean}"
 ( cd $oot_codedir/$oot_appdir && time $oot_compile; )
 
 # collect compilation result
-cp $oot_binarypath .
+cp $oot_binarypath $oot_binary
+
+# also collect specfile
+cp $oot_codedir/$oot_specfile $oot_base_specfile
 
 # also collect a build log, if present
 for log in "$oot_codedir/$oot_appdir/*.log"; do

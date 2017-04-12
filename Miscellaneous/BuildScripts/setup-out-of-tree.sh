@@ -57,6 +57,7 @@ verbose() { warn "$@"; >&2 $@; }
 [ "$#" -ne 2 ] && die "Usage: $0 <PathToSpecfile.exahype> <BuildName>"
 export oot_specfile="$1"
 [[ -e "$oot_specfile" ]] || die "Specfile '$oot_specfile' does not exist." 
+export oot_base_specfile="$(basename $oot_specfile)" # as a service
 
 # our assumption about the toolkit location
 export oot_toolkit="${oot_toolkit=./Toolkit/dist/ExaHyPE.jar}"
