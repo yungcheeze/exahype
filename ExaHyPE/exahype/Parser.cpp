@@ -73,8 +73,6 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
-  Abfrage stimmt net. Wir wollen ab 4.9 alles zulassen:
-
    try {
     const int MAX_CHARS_PER_LINE = 65536;
 
