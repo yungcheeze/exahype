@@ -166,7 +166,7 @@ void exahype::Parser::readFile(const std::string& filename) {
     }
   }
   catch (const std::regex_error& e) {
-    logError("readFile(String)", "catched exception " e.what() );
+    logError("readFile(String)", "catched exception " << e.what() );
     _interpretationErrorOccured = true;
   }
 
