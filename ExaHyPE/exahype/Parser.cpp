@@ -73,9 +73,9 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
-  #if __GNUC__ > 4 || __GNUC_MINOR__ > 9
+  Abfrage stimmt net. Wir wollen ab 4.9 alles zulassen:
+
    try {
-  #endif
     const int MAX_CHARS_PER_LINE = 65536;
 
     std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
@@ -166,13 +166,11 @@ void exahype::Parser::readFile(const std::string& filename) {
                "A multi-line comment was not closed after line " << lineNumber);
       _interpretationErrorOccured = true;
     }
-  #if __GNUC__ > 4 || __GNUC_MINOR__ > 9
    }
   catch (const std::regex_error& e) {
     logError("readFile(String)", "catched exception " << e.what() );
     _interpretationErrorOccured = true;
   }
-  #endif
 
   //  For debugging purposes
   //  std::cout << "_tokenStream=" << std::endl;
