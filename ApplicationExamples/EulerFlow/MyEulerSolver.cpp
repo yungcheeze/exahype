@@ -30,6 +30,10 @@
 
 
 void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+  // This guy usually should go into the header but it does not make sense to
+  // commit a whole header only because of one file.
+  static tarch::logging::Log _log("MyEulerSolver::init");
+
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 
@@ -39,7 +43,6 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
     logInfo("init(...)", "- " << cmdlineargs[i].c_str() );
   }
 
-  static tarch::logging::Log _log("MyEulerSolver::init");
   // Until Parameter access works, we use ENVIRONMENT variables
   const char* _id = std::getenv("EXAHYPE_INITIALDATA");
   const char* _bc = std::getenv("EXAHYPE_BOUNDC");
