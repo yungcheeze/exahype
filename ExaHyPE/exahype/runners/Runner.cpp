@@ -452,6 +452,10 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 
     #if !defined(Parallel)
     logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+    #else
+    if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
+      logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+    }
     #endif
 
     #ifdef Asserts
