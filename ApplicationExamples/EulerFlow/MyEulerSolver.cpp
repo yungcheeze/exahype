@@ -34,9 +34,10 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   // @todo Please implement/augment if required
 
   // Demonstration how to access parameters:
-  printf("EulerFlow was called with these parameters:\n");
-  for(size_t i=0; i<cmdlineargs.size(); i++)
-    printf("%i. %s\n", (int)i, cmdlineargs[i].c_str());
+  logInfo("init(...)", "EulerFlow was called with the following parameters:");
+  for(size_t i=0; i<cmdlineargs.size(); i++) {
+    logInfo("init(...)", "- " << cmdlineargs[i].c_str() );
+  }
 
   static tarch::logging::Log _log("MyEulerSolver::init");
   // Until Parameter access works, we use ENVIRONMENT variables
