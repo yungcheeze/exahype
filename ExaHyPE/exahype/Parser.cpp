@@ -73,7 +73,9 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
+  #ifdef __EXCEPTIONS
   try {
+  #endif
     const int MAX_CHARS_PER_LINE = 65536;
 
     std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
@@ -164,11 +166,13 @@ void exahype::Parser::readFile(const std::string& filename) {
                "A multi-line comment was not closed after line " << lineNumber);
       _interpretationErrorOccured = true;
     }
+  #ifdef __EXCEPTIONS
   }
   catch (const std::regex_error& e) {
     logError("readFile(String)", "catched exception " << e.what() );
     _interpretationErrorOccured = true;
   }
+  #endif
 
   //  For debugging purposes
   //  std::cout << "_tokenStream=" << std::endl;
