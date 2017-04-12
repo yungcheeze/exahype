@@ -73,8 +73,8 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
-  #ifdef __EXCEPTIONS
-  try {
+  #if __GNUC__ > 4 || __GNUC_MINOR__ > 9
+   try {
   #endif
     const int MAX_CHARS_PER_LINE = 65536;
 
@@ -166,8 +166,8 @@ void exahype::Parser::readFile(const std::string& filename) {
                "A multi-line comment was not closed after line " << lineNumber);
       _interpretationErrorOccured = true;
     }
-  #ifdef __EXCEPTIONS
-  }
+  #if __GNUC__ > 4 || __GNUC_MINOR__ > 9
+   }
   catch (const std::regex_error& e) {
     logError("readFile(String)", "catched exception " << e.what() );
     _interpretationErrorOccured = true;
