@@ -1,4 +1,4 @@
-SUBROUTINE MassAccretionRate(Q,masschange,vx,vy,vz)
+RECURSIVE SUBROUTINE MassAccretionRate(Q,masschange,vx,vy,vz)
   USE Parameters, ONLY: nVar, nDim
   IMPLICIT NONE
   ! Argument list declaration

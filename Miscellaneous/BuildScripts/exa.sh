@@ -121,8 +121,19 @@ case $CMD in
 		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
 		exec $buildloc/sync.sh
 		;;
+	"build-exec") # Execute a build executable. Parameters: <BuildName>
+		# Can execute from anywhere. You might want to use as
+		#   exa build-exec name-of-run path/to/some/specfile.exahype
+		# to run in the PWD.
+		buildName=$1
+		buildloc=$(subreq root)/$(subreq build-find $buildName) || abort "Could determine build location"
+		[[ -e $buildloc/oot.env ]] || abort "Cannot find build instance '$buildName'. Maybe execute 'exa build-compile $buildName' before?"
+		source $buildloc/oot.env
+		[[ -e $buildloc/$oot_binary ]] || abort "Cannot find build binary. Is the build finished?"
+		exec $buildloc/$oot_binary ${@:2}
+		;;
 	"build-compile") # Setup and compile an out of tree build. Parameters: [AppName] <BuildName>
-		cdroot; getappname; buildName=$2
+		cdroot; getappname; buildName=$2;
 		set -e;
 		subreq build-setup $APPNAME $buildName || abort "Could not setup build."
 		buildloc=$(subreq build-find $buildName) || abort "Could determine build location"
@@ -188,7 +199,22 @@ case $CMD in
 		exec $Postprocessing/exaslicer.py $@
 		;;
 	"peano-analysis") # Quickly start Peanos Domaincomposition analysis script.
+		set -e
 		exec python $GITROOT/Peano/peano/performanceanalysis/domaindecompositionanalysis.py $@
+		# copy stuff to the stage
+		stageroot="$HOME/public_html/exahype/domaindecompositionanalysis/"
+		stagesub="$(date +%Y-%m-%dT%H-%M-%S)"
+		if [[ -e "$stageroot" ]]; then
+			stagedir="$stageroot/$stagesub"
+			echo "Copying output to $stagedir"
+			mkdir $stagedir
+			cp *pdf *png *html *log ExaHyPE-* $stagedir/
+			./ExaHyPE-* --version > $stagedir/ExaHyPE-VERSION.txt
+			# try to obtain the parameter file
+			cp ../$(basename $(pwd)).exahype $stagedir/
+		else
+			echo "Stageroot $stageroot not available"
+		fi
 		;;
 	"run") # quickly start an application inside it's directory. Cleans VTK files before.
 		cdapp

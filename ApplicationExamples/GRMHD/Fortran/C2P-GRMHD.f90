@@ -1,6 +1,6 @@
 ! C2P for GRMHD
 
-SUBROUTINE PDEPrim2Cons(Q,V)
+RECURSIVE SUBROUTINE PDEPrim2Cons(Q,V)
   USE Parameters, ONLY: gamma, nVar, nDim 
   IMPLICIT NONE
   ! Argument list declaration
@@ -88,7 +88,7 @@ SUBROUTINE PDEPrim2Cons(Q,V)
 END SUBROUTINE PDEPrim2Cons
 
 
-SUBROUTINE PDECons2Prim(V,Q,iErr)
+RECURSIVE SUBROUTINE PDECons2Prim(V,Q,iErr)
   USE Parameters, ONLY: gamma, nVar, nDim
   IMPLICIT NONE
   !--------------------------------------------!
