@@ -742,24 +742,27 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
    */
   repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
   repository.switchToMergeTimeStepDataDropFaceData();
-  repository.iterate();
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
-  repository.switchToLimiterStatusSpreading();
-  repository.iterate(2);
+  repository.iterate(); // spread limiter status once TODO(Dominic):
 
-  // TODO(Dominic): Be careful that the rollback does not
-  repository.getState().switchToReinitialisationContext();
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
-  repository.switchToReinitialisation();
-  repository.iterate();
 
   // We refine here using the previous solution (which is valid)
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
   createGrid(repository);
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
-  repository.switchToFinaliseMeshRefinementAndSubcellSending(); // finalise mesh refinment and send the data
+  repository.switchToFinaliseMeshRefinementAndSubcellSending();
+  // finalise mesh refinment and send the data; replace with reinitialisation again
   repository.iterate();
+
+//  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
+//    repository.switchToLimiterStatusSpreading();
+//    repository.iterate(2);
+//
+//    // TODO(Dominic): Be careful that the rollback does not
+//    repository.getState().switchToReinitialisationContext();
+//    logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
+//    repository.switchToReinitialisation();
+//    repository.iterate();
 
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
