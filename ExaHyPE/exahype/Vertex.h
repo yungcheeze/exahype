@@ -28,7 +28,7 @@ namespace exahype {
    * We never actually store data on this heap.
    * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
    */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Migrate to Vertex.
+  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Use RLE heap.
 
   class Vertex;
 
@@ -45,8 +45,11 @@ namespace exahype {
   /**
    * Defines the length of the metadata
    * we send out per sovler.
+   *
+   * First entry cell type
+   * Second entry limiter status.
    */
-  const int MetadataPerSolver = 1;
+  const int MetadataPerSolver = 2;
 }
 
 /**
@@ -195,12 +198,16 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   /**
    * Creates a sequence of \p InvalidMetadataEntry with length
    * exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver.
+   *
+   * TODO(Dominic): Reduce length to 1.
    */
   static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceWithInvalidEntries();
 
   /**
    * Checks if all the entries of \p sequence are set to
    * \p InvalidMetadataEntry.
+   *
+   * TODO(Dominic): Reduce length to 1.
    */
   static bool isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
 
@@ -212,12 +219,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int                                   cellDescriptionsIndex,
       const peano::heap::MessageType&             messageType,
       const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::HeapEntries encodedMetadata =
-        encodeMetadata(cellDescriptionsIndex);
-    MetadataHeap::getInstance().sendData(
-        encodedMetadata,toRank,x,level,messageType);
-  }
+      const int                                   level);
 
   /**
    * Send a metadata sequence filled with InvalidMetadataEntry
@@ -227,12 +229,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int                                   toRank,
       const peano::heap::MessageType&             messageType,
       const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::HeapEntries encodedMetadata =
-        createEncodedMetadataSequenceWithInvalidEntries();
-    MetadataHeap::getInstance().sendData(
-        encodedMetadata,toRank,x,level,messageType);
-  }
+      const int                                   level);
 
   /**
    * Drop metadata sent by rank \p fromRank.
@@ -241,10 +238,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int                                   fromRank,
       const peano::heap::MessageType&             messageType,
       const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::getInstance().receiveData(
-        fromRank,x,level,messageType);
-  }
+      const int                                   level);
 
   /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.

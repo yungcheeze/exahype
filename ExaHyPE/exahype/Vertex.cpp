@@ -246,11 +246,16 @@ exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescr
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[p.getSolverNumber()] = static_cast<int>(p.getType()); // Implicit conversion.
+    encodedMetaData[MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
+    encodedMetaData[MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getMergedLimiterStatus(0));
   }
   // FV
+  const unsigned int numberOfADERDGPatches =
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).size();
+
   for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[p.getSolverNumber()] = static_cast<int>(p.getType()); // Implicit conversion.
+    encodedMetaData[numberOfADERDGPatches + MetadataPerSolver*p.getSolverNumber() + 0]
+                    = static_cast<int>(p.getType()); // Implicit conversion.
   }
   return encodedMetaData;
 }
@@ -485,6 +490,48 @@ bool exahype::Vertex::isEncodedMetadataSequenceWithInvalidEntries(exahype::Metad
        return false;
 
    return true;
+}
+
+/**
+ * Send metadata to rank \p toRank.
+ */
+void exahype::Vertex::sendEncodedMetadata(
+    const int                                   toRank,
+    const int                                   cellDescriptionsIndex,
+    const peano::heap::MessageType&             messageType,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  MetadataHeap::HeapEntries encodedMetadata =
+      encodeMetadata(cellDescriptionsIndex);
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata,toRank,x,level,messageType);
+}
+
+/**
+ * Send a metadata sequence filled with InvalidMetadataEntry
+ * to rank \p toRank.
+ */
+void exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
+    const int                                   toRank,
+    const peano::heap::MessageType&             messageType,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  MetadataHeap::HeapEntries encodedMetadata =
+      createEncodedMetadataSequenceWithInvalidEntries();
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata,toRank,x,level,messageType);
+}
+
+/**
+ * Drop metadata sent by rank \p fromRank.
+ */
+void exahype::Vertex::dropMetadata(
+    const int                                   fromRank,
+    const peano::heap::MessageType&             messageType,
+    const tarch::la::Vector<DIMENSIONS,double>& x,
+    const int                                   level) {
+  MetadataHeap::getInstance().receiveData(
+      fromRank,x,level,messageType);
 }
 #endif
 
