@@ -108,7 +108,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	endif
 	ifndef $(EXAHYPE_FC)
       ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpifort
+	    CC=mpiifort
 	  else
 	    FC=ifort
 	  endif
@@ -130,7 +130,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
       COMPILER_CFLAGS += -g3
       COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3
+      COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
       COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -fast -no-ipo -ip
@@ -175,7 +175,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
       COMPILER_CFLAGS += -g3
       COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3
+      COMPILER_CFLAGS += -p -pg -g3 -O3
       COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -O3
