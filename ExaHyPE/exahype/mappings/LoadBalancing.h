@@ -53,6 +53,7 @@ class exahype::mappings::LoadBalancing {
 
   public:
     static void setLoadBalancingAnalysis(LoadBalancingAnalysis loadBalancingAnalysis);
+    static LoadBalancingAnalysis getLoadBalancingAnalysis();
 
     /**
      * Nothing to be done

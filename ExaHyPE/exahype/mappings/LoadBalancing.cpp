@@ -11,6 +11,11 @@ void exahype::mappings::LoadBalancing::setLoadBalancingAnalysis(LoadBalancingAna
 }
 
 
+exahype::mappings::LoadBalancing::LoadBalancingAnalysis exahype::mappings::LoadBalancing::getLoadBalancingAnalysis() {
+  return _loadBalancingAnalysis;
+}
+
+
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
