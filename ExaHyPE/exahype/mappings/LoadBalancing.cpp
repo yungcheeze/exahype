@@ -3,6 +3,14 @@
 #include "peano/utils/UserInterface.h"
 
 
+exahype::mappings::LoadBalancing::LoadBalancingAnalysis  exahype::mappings::LoadBalancing::_loadBalancingAnalysis;
+
+
+void exahype::mappings::LoadBalancing::setLoadBalancingAnalysis(LoadBalancingAnalysis loadBalancingAnalysis) {
+  _loadBalancingAnalysis = loadBalancingAnalysis;
+}
+
+
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
