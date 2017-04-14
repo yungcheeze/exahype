@@ -184,6 +184,12 @@ bool exahype::Parser::isValid() const {
   return !_tokenStream.empty() && !_interpretationErrorOccured;
 }
 
+
+void exahype::Parser::invalidate() {
+  _interpretationErrorOccured = true;
+}
+
+
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
   assertion(isValid());
