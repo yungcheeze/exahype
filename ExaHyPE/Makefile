@@ -11,7 +11,7 @@
 # export variable  |  default-value  |  further values         |  description
 #--------------------------------------------------------------------------------------------------
 # ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-plattfrom
-# COMPILER            Intel             GNU                       Used compiler (and linker)
+# COMPILER            Intel             GNU, Manual               Used compiler (and linker)
 # MODE                Release           Debug, PeanoProfile       Verbosity and Debug level
 #                                       Profile, Asserts          
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
@@ -45,15 +45,14 @@ ifeq ($(BOUNDARYCONDITIONS),)
 	BOUNDARYCONDITIONS=None
 endif
 
-# ************************************************
-#
-#Set compiler and linker flags which hold for all combinations
-COMPILER_CFLAGS=-fstrict-aliasing -std=c++0x
-COMPILER_LFLAGS=
 
 # ************************************************
 #
 #Set compiler and linker flags for the different Debug/Release modes
+#These are only Peano/ExaHyPE flags. Nothing that has to do with the
+#compiler. 
+#
+#
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
@@ -75,14 +74,14 @@ else ifeq ($(call tolower,$(MODE)),debug)
 else ifeq ($(call tolower,$(MODE)),profile)
 	# Settings for the Profile mode
 	# --------------------------------------------
-	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics -p -pg -g3
-	COMPILER_LFLAGS += -p -pg
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
+	COMPILER_LFLAGS += 
 
 else ifeq ($(call tolower,$(MODE)),asserts)
-	# Settings for the Adderst mode
+	# Settings for the Asserts mode
 	# --------------------------------------------
-	COMPILER_CFLAGS += -DAsserts -g3 -DTrackGridStatistics
-	COMPILER_LFLAGS += -g3
+	COMPILER_CFLAGS += -DAsserts -DTrackGridStatistics
+	COMPILER_LFLAGS += 
 
 else
 	# Option not recognized
@@ -91,19 +90,28 @@ else
 endif
 
 
+
 # ************************************************
 #
 #Set compiler and linker flags for the different conmpilers
 ifeq ($(call tolower,$(COMPILER)),intel)
 	# Settings for the Intel Compiler
 	# ----------------------------------------------
-	ifndef EXAHYPE_CC
-	  CC=icpc
+	ifndef EXAHYPE_CC 
+      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    CC=mpiicpc
+	  else
+	    CC=icpc
+	  endif
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef EXAHYPE_FC
-	  FC=ifort
+	ifndef $(EXAHYPE_FC)
+      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    CC=mpifort
+	  else
+	    FC=ifort
+	  endif
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
@@ -112,30 +120,74 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	# REMOVING "-fast" as it induces compiler bugs!
 	LINK_FORTRAN      += -lifcore
 
-	COMPILER_CFLAGS   +=  -restrict 
+	COMPILER_CFLAGS   +=  -restrict -std=c++11 -pedantic -Wall  
 	COMPILER_LFLAGS   +=
+	
+	
+	ifeq ($(call tolower,$(MODE)),debug)
+	  COMPILER_CFLAGS   += -O0 -ggdb
+	else ifeq ($(call tolower,$(MODE)),asserts)
+      COMPILER_CFLAGS += -g3
+      COMPILER_LFLAGS += -g3
+	else ifeq ($(call tolower,$(MODE)),profile)
+      COMPILER_CFLAGS += -p -pg -g3
+      COMPILER_LFLAGS += -p -pg
+	else
+	  COMPILER_CFLAGS   += -fast -no-ipo -ip
+	endif
+
+	ifeq ($(call tolower,$(SHAREDMEM)),)
+	  COMPILER_CFLAGS   += -fno-rtti
+	endif
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
 	# --------------------------------------------
-	ifndef EXAHYPE_CC
-	  CC=g++
+	ifndef EXAHYPE_CC 
+      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    CC=mpicc
+	  else
+	    CC=g++
+	  endif
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
 	ifndef $(EXAHYPE_FC)
-	  FC=gfortran
+      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    CC=mpifort
+	  else
+	    FC=gfortran
+	  endif
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
+	
 	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
 	# REMOVING "-O3"  as it creates compiler bugs!
 	LINK_FORTRAN      += -lgfortran
 
-	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
-	COMPILER_CFLAGS   += -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned
-	COMPILER_LFLAGS   +=
+	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
+	COMPILER_LFLAGS   += -lrt
+	
+	ifeq ($(call tolower,$(MODE)),debug)
+	  COMPILER_CFLAGS   += -O0 -ggdb
+	else ifeq ($(call tolower,$(MODE)),asserts)
+      COMPILER_CFLAGS += -g3
+      COMPILER_LFLAGS += -g3
+	else ifeq ($(call tolower,$(MODE)),profile)
+      COMPILER_CFLAGS += -p -pg -g3
+      COMPILER_LFLAGS += -p -pg
+	else
+	  COMPILER_CFLAGS   += -O3
+	endif
 
+	ifeq ($(call tolower,$(SHAREDMEM)),)
+	  COMPILER_CFLAGS   += -fno-rtti
+	endif
+else ifeq ($(call tolower,$(COMPILER)),manual)
+	ifndef EXAHYPE_CC
+	  $(error COMPILER=manual at least requries user to set EXAHYPE_CC)
+	endif
 else
 	# Option not recognized
 	# ----------------------------------------------
@@ -143,39 +195,13 @@ else
 endif
 
 
-# ************************************************
-#
-# Special options for all "non-Debug" builds
-ifneq ($(call tolower,$(MODE)),debug)
-	ifeq ($(call tolower,$(COMPILER)),intel)
-	  # Settings for the Intel compiler
-	  # ----------------------------------------------
-	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-        ifeq ($(call tolower,$(MODE)),asserts)
-	    COMPILER_CFLAGS += -O0 -no-ipo -ip
-	    else
-	    COMPILER_CFLAGS += -O3 -no-ipo -ip
-	    endif
-	  COMPILER_LFLAGS +=
-	  else
-	  COMPILER_CFLAGS += -fast -no-ipo -ip
-	  COMPILER_LFLAGS +=
-	  endif
 
-	  #Special options
-	  ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	    COMPILER_CFLAGS +=
-	    COMPILER_LFLAGS +=
-	  endif
 
-	else ifeq ($(call tolower,$(COMPILER)),gnu)
-	  # Settings for the GNU compiler
-	  # --------------------------------------------
-	#TODO JMG here is the -fno-rtti flag that cause issue with gcc+tbb, comment if needed. Remove this when bug fixed by Tobias
-	  COMPILER_CFLAGS += -O3
-	  COMPILER_LFLAGS +=
-	endif
-endif
+# Assemble compiler flags for ditributed-memory parallelization
+# -----------------------
+#	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
+
+
 
 
 # ************************************************
@@ -232,20 +258,6 @@ endif
 
 
 
-# ************************************************
-#
-#Very special options
-# -----------------------
-ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	ifeq ($(call tolower,$(COMPILER)),gnu)
-		ifeq ($(call tolower,$(MODE)),debug)
-			COMPILER_CFLAGS += -Wstrict-aliasing -ggdb
-		endif
-	endif
-endif
-
-
-
 
 # Include files defining $CSOURCES, $FSOURCES, $FMODULESOURCES.
 # They are generated by the make target "cfiles.mk" and "ffiles.mk" and contain the
@@ -283,29 +295,11 @@ else ifeq ($(call tolower,$(SHAREDMEM)),tbb)
 	SYSTEM_CFLAGS   += $(INCLUDE_TBB)
 	SYSTEM_LFLAGS   += $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
-else
-	SYSTEM_LFLAGS   += -lrt
-	SYSTEM_CFLAGS   += -fno-rtti 
-	# disabled the -lrt for plain serial compilations. No system
-	# I tested needed it.
-
-	#SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
-	#SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 endif
 
 
-
-# Assemble compiler flags for ditributed-memory parallelization
-# -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-	ifndef EXAHYPE_CC
-		ifeq ($(call tolower,$(COMPILER)),gnu)
-			CC = mpiCC
-		else
-			CC = mpiicpc
-		endif
-	endif
+	COMPILER_CFLAGS += -DParallel
 endif
 
 
@@ -436,6 +430,11 @@ header:
 	@echo so forth depending on the value of COMPILER. If you specify your own 
 	@echo compilers via EXAHYPE_CC and EXAHYPE_FC, please specify a valid COMPILER 
 	@echo mode nevertheless.
+	@echo
+	@echo The different modes do set initialise various compiler flags that can be 
+	@echo augmented by setting PROJECT_FLAGS before you invoke make. If you select
+	@echo the mode manual, ExaHyPE does not set any PROJECT_CFLAGS, i.e. it is up 
+	@echo to you to initialise all compiler settings.
 
 
 build:  $(FOBJECTS) $(COBJECTS)
