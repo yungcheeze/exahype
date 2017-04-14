@@ -130,15 +130,38 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  COMPILER_CFLAGS += -g3
 	  COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-	  COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
+	  #COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
+	  COMPILER_CFLAGS += -p -pg -g3 -O3 -no-ipo -ip
 	  COMPILER_LFLAGS += -p -pg
 	else
-	  COMPILER_CFLAGS   += -fast -no-ipo -ip
+	  #COMPILER_CFLAGS   += -fast -no-ipo -ip
+	  COMPILER_CFLAGS   += -O3 -no-ipo -ip
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),)
 	  COMPILER_CFLAGS   += -fno-rtti
 	endif
+	
+    ifeq ($(call tolower,$(ARCHITECTURE)),)
+	  COMPILER_CFLAGS += 
+      COMPILER_LFLAGS += 
+    else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+ 	  COMPILER_CFLAGS += -xHost
+      COMPILER_LFLAGS += -xHost
+	else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
+	  COMPILER_CFLAGS += -mmic
+	  COMPILER_LFLAGS += -mmic -lrt
+	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
+	  COMPILER_CFLAGS += -xMIC-AVX512 -fma
+      FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+      COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+    else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+	  COMPILER_CFLAGS += -xCORE-AVX2 -fma
+	  FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+      COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+    else
+      $(error Unknown option for variable [ARCHITECTURE])
+    endif
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
@@ -184,6 +207,23 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	ifeq ($(call tolower,$(SHAREDMEM)),)
 	  COMPILER_CFLAGS   += -fno-rtti
 	endif
+
+	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+	  COMPILER_CFLAGS += 
+	  COMPILER_LFLAGS += 
+	else ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+	  COMPILER_CFLAGS += -march=native
+	  COMPILER_LFLAGS += -march=native
+	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
+	  COMPILER_CFLAGS += -march=knl
+	  COMPILER_LFLAGS += -march=knl -lrt
+	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+	  COMPILER_CFLAGS += -march=haswell
+      COMPILER_LFLAGS += -march=haswell -lrt
+    else
+	  $(error Unknown option for variable [ARCHITECTURE])
+	endif
+
 else ifeq ($(call tolower,$(COMPILER)),manual)
 	ifndef EXAHYPE_CC
 	  $(error COMPILER=manual at least requries user to set EXAHYPE_CC)
@@ -194,66 +234,6 @@ else
 	$(error Unknown option for variable [COMPILER])
 endif
 
-
-
-
-# Assemble compiler flags for ditributed-memory parallelization
-# -----------------------
-#	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-
-
-
-
-# ************************************************
-#
-#Set compiler and linker flags for the different architectures
-ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-  # Settings for CPU architectures
-  # ----------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xHost
-    COMPILER_LFLAGS += -xHost
-  else
-    #COMPILER_CFLAGS += -march=native
-    #COMPILER_LFLAGS += -march=native
-    COMPILER_CFLAGS += 
-    COMPILER_LFLAGS += 
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -mmic
-	COMPILER_LFLAGS += -mmic -lrt
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xMIC-AVX512 -fma
-    FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
-    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=knl
-    COMPILER_LFLAGS += -march=knl -lrt
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xCORE-AVX2 -fma
-	FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
-    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=haswell
-    COMPILER_LFLAGS += -march=haswell -lrt
-  endif
-else
-	# Option not recognized
-	# ----------------------------------------------
-	$(error Unknown option for variable [ARCHITECTURE])
-endif
 
 
 
@@ -422,6 +402,7 @@ header:
 	@echo "MODE           | $(MODE)"
 	@echo "SHAREDMEM      | $(SHAREDMEM)"
 	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
+	@echo "ARCHITECTURE   | $(ARCHITECTURE)"
 	@echo ================================
 	@echo
 	@echo ExaHyPE uses environment variables EXAHYPE_CC and EXAHYPE_FC for the 
