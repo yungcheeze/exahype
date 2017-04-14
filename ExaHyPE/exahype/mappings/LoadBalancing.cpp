@@ -107,10 +107,12 @@ void exahype::mappings::LoadBalancing::mergeWithMaster(
 ) {
   logTraceIn( "mergeWithMaster(...)" );
 
-  mpibalancing::HotspotBalancing::mergeWithMaster(
-    worker,
-    workerState.getCouldNotEraseDueToDecompositionFlag()
-  );
+  if (_loadBalancingAnalysis==LoadBalancingAnalysis::Hotspot) {
+    mpibalancing::HotspotBalancing::mergeWithMaster(
+      worker,
+      workerState.getCouldNotEraseDueToDecompositionFlag()
+    );
+  }
 
   logTraceOut( "mergeWithMaster(...)" );
 }
@@ -337,7 +339,9 @@ void exahype::mappings::LoadBalancing::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(_numberOfLocalCells);
+  if (_loadBalancingAnalysis==LoadBalancingAnalysis::Hotspot) {
+    mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(_numberOfLocalCells);
+  }
 }
 
 
