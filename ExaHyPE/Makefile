@@ -227,7 +227,10 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 else ifeq ($(call tolower,$(COMPILER)),manual)
 	ifndef EXAHYPE_CC
 	  $(error COMPILER=manual at least requries user to set EXAHYPE_CC)
+	else
+	  CC=$(EXAHYPE_CC)
 	endif
+	FC=$(EXAHYPE_FC)
 else
 	# Option not recognized
 	# ----------------------------------------------
