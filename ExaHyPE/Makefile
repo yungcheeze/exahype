@@ -98,7 +98,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	# Settings for the Intel Compiler
 	# ----------------------------------------------
 	ifndef EXAHYPE_CC 
-      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    CC=mpiicpc
 	  else
 	    CC=icpc
@@ -107,8 +107,8 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  CC=$(EXAHYPE_CC)
 	endif
 	ifndef $(EXAHYPE_FC)
-      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpiifort
+	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    FC=mpiifort
 	  else
 	    FC=ifort
 	  endif
@@ -120,18 +120,18 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	# REMOVING "-fast" as it induces compiler bugs!
 	LINK_FORTRAN      += -lifcore
 
-	COMPILER_CFLAGS   +=  -restrict -std=c++11 -pedantic -Wall  
+	COMPILER_CFLAGS   += -restrict -std=c++11 -pedantic -Wall  
 	COMPILER_LFLAGS   +=
 	
 	
 	ifeq ($(call tolower,$(MODE)),debug)
 	  COMPILER_CFLAGS   += -O0 -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-      COMPILER_CFLAGS += -g3
-      COMPILER_LFLAGS += -g3
+	  COMPILER_CFLAGS += -g3
+	  COMPILER_LFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
-      COMPILER_LFLAGS += -p -pg
+	  COMPILER_CFLAGS += -p -pg -g3 -fast -no-ipo -ip
+	  COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -fast -no-ipo -ip
 	endif
@@ -144,7 +144,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	# Settings for the GNU Compiler
 	# --------------------------------------------
 	ifndef EXAHYPE_CC 
-      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    CC=mpicc
 	  else
 	    CC=g++
@@ -153,8 +153,8 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  CC=$(EXAHYPE_CC)
 	endif
 	ifndef $(EXAHYPE_FC)
-      ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	    CC=mpifort
+	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+	    FC=mpifort
 	  else
 	    FC=gfortran
 	  endif
