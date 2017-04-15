@@ -391,13 +391,12 @@ void exahype::runners::Runner::initHPCEnvironment() {
 
 
 int exahype::runners::Runner::run() {
-  initDistributedMemoryConfiguration();
   exahype::repositories::Repository* repository = createRepository();
 
+  initDistributedMemoryConfiguration();
   initSharedMemoryConfiguration();
   initDataCompression();
   initHPCEnvironment();
-
 
   int result = 0;
   if ( _parser.isValid() ) {
