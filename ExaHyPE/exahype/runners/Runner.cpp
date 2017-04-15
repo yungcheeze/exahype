@@ -104,7 +104,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     }
   }
 
-  if ( configuration.find( "greedy" )!=std::string::npos ) {
+  if ( configuration.find( "greedy-naive" )!=std::string::npos ) {
     exahype::mappings::LoadBalancing::setLoadBalancingAnalysis( exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Greedy );
   }
   else if ( configuration.find( "greedy-regular" )!=std::string::npos ) {
