@@ -155,7 +155,6 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   }
 
   tarch::parallel::NodePool::getInstance().restart();
-  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(_parser.getMPITimeOut());
   tarch::parallel::Node::getInstance().setTimeOutWarning(_parser.getMPITimeOut()/2);
@@ -174,6 +173,8 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
     exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
   }
+
+  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
   #endif
 }
 
