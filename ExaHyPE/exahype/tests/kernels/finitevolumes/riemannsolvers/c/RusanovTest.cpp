@@ -80,7 +80,7 @@ void exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::run
 
   double fL[ZeroFluxZeroNCP::NumberOfVariables];
   double fR[ZeroFluxZeroNCP::NumberOfVariables];
-  ::kernels::finitevolumes::riemannsolvers::c::rusanov<ZeroFluxZeroNCP>(
+  ::kernels::finitevolumes::riemannsolvers::c::rusanov<false,true,ZeroFluxZeroNCP>(
       mockupSolver,
       fL,fR,
       qL,
