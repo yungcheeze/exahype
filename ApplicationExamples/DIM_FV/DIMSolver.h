@@ -86,22 +86,20 @@ class DIM::DIMSolver : public DIM::AbstractDIMSolver {
      * \param[inout] QOut      the conserved variables at point x from outside of the domain
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
+        
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
-    
-    /** Has currently no effect for the Finite Volumes Solver. */
-    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
-    virtual bool useSource()                 const { return false; }
+
+    virtual bool useSource()                 const { return true; }
     virtual bool useNonConservativeProduct() const { return true; }
     virtual bool useConservativeFlux()       const { return false; }
+    
+    /** Has currently no effect for the Finite Volumes Solver. */
+    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override; 
 
-    /**
-     * Please overwrite in user's solver. See superclass for documentation.
-     */
-
-    /* New April 2017 API changes */
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
+    void algebraicSource(const double* const Q,double* S) override; 
 
 
 };
