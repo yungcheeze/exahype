@@ -134,27 +134,29 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     for (int k = patchBegin; k < patchEnd; k++) {
       double* Qt = slopet + idx(j, k, 0);
       double* gradQ = slope + idx_slope(j, k, 0, 0);
-      if(solver.useSource()) {
+      if(useSource || useNCP) {
         solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
       }
 
-      // x fluxes
-      solver.flux(wLx + idx_w(j, k, 0), F); // FLx
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[0][l] / cellSize[0];
-      }
-      solver.flux(wRx + idx_w(j, k, 0), F); // FRx
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[0][l] / cellSize[0];
-      }
-      // y fluxes
-      solver.flux(wLy + idx_w(j, k, 0), F); // FLy
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[1][l] / cellSize[1];
-      }
-      solver.flux(wRy + idx_w(j, k, 0), F); // FRy
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[1][l] / cellSize[1];
+      if(useFlux) {
+        // x fluxes
+        solver.flux(wLx + idx_w(j, k, 0), F); // FLx
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] += F[0][l] / cellSize[0];
+        }
+        solver.flux(wRx + idx_w(j, k, 0), F); // FRx
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] -= F[0][l] / cellSize[0];
+        }
+        // y fluxes
+        solver.flux(wLy + idx_w(j, k, 0), F); // FLy
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] += F[1][l] / cellSize[1];
+        }
+        solver.flux(wRy + idx_w(j, k, 0), F); // FRy
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] -= F[1][l] / cellSize[1];
+        }
       }
 
       // evolve boundary states
@@ -176,7 +178,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {
       double s_max_x =
-          riemannsolvers::c::rusanov<SolverType>(solver,
+          riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
               fL, fR,
               wRx + idx_w(j, k, 0),
               wLx + idx_w(j, k+1, 0),
@@ -195,7 +197,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
-      double s_max_y = riemannsolvers::c::rusanov<SolverType>(solver,
+      double s_max_y = riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
           fL, fR,
           wRy + idx_w(j, k, 0),
           wLy + idx_w(j+1, k, 0),
@@ -214,7 +216,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Evolve, evaluate source, update cells
-  if(solver.useSource()) {
+  if(useNCP || useSource) {
     double ws[numberOfVariables]  = {0.0};
     double src[numberOfVariables] = {0.0};
 

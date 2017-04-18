@@ -61,7 +61,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
     const double s_max_x = 
-        riemannsolvers::c::rusanov<SolverType>(
+        riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
             solver,
             fL, fR,
             luh + idx(i,j, k, 0),
@@ -85,7 +85,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin-1; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_y =
-      riemannsolvers::c::rusanov<SolverType>(
+      riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
         solver,
         fL, fR,
         luh + idx(i, j, k,0),
@@ -107,7 +107,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_z =
-      riemannsolvers::c::rusanov<SolverType>(
+      riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
         solver,
         fL, fR,
         luh + idx(i, j,k,0),
@@ -130,7 +130,9 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
     for (int i = patchBegin; i < patchEnd; i++) {
     for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
+      // TODO: Probably call fusedSource here instead with gradQ=0.
       solver.algebraicSource(&luh[idx(i,j,k,0)], source);
+
       for (int l = 0; l < numberOfVariables; l++) {
         // No BgradQ contribution as this is first order, cf. 2D godunov.
         luh_new[idx(i,j,k,l)] += dt * source[l];

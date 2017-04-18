@@ -21,7 +21,7 @@
  * A simple Rusanov flux considering pointwise
  * left and right values.
  */
-template <typename SolverType>
+template <bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(
     SolverType& solver,
     double* fnL, double *fnR, const double* qL, const double* qR, int normalNonZero) { // TODO(Dominic): I need four of those
@@ -44,16 +44,18 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
     s_max = std::max( abs_sR_i, s_max );
   }
 
-  double FL2[DIMENSIONS][numberOfVariables] = {0.0};
+  double FL2[DIMENSIONS][numberOfVariables] = {0.0}; // Q: Can we skip this memset?
   double FR2[DIMENSIONS][numberOfVariables] = {0.0};
   double* FL[DIMENSIONS]={FL2[0], FL2[1]};
   double* FR[DIMENSIONS]={FR2[0], FR2[1]};
-  solver.flux(qL, FL);
-  solver.flux(qR, FR);
+  if (useFlux) {
+    solver.flux(qL, FL);
+    solver.flux(qR, FR);
+  }
 
   // determine BgradQ from ncp
   double ncp[numberOfData] = {0.0};
-  if (solver.useNonConservativeProduct()) {
+  if (useNCP) {
     double Qavg[numberOfData];
     double gradQ[DIMENSIONS][numberOfData] = {0.0};
     for(int k=0; k < numberOfData; k++) {
@@ -64,10 +66,12 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
   }
   
   for (int i = 0; i < numberOfVariables; i++) {
-    fnL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
-             0.5 * s_max * (qL[i] - qR[i]);
+    fnL[i] = 0.5 * s_max * (qL[i] - qR[i]);
+    if (useFlux) {
+      fnL[i] += 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]);
+    }
 
-    if(solver.useNonConservativeProduct()) {
+    if(useNCP) {
       fnR[i] = fnL[i] - 0.5 * ncp[i];
       fnL[i] = fnL[i] + 0.5 * ncp[i];
     } else {
@@ -91,7 +95,7 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(
 //template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 //                              double* lambda),
 //          void PDEFlux(const double* const Q, double** F)>
-template <typename SolverType>
+template <bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fnL, double *fnR, const double* qL, const double* qR,
                      int normalNonZero) { // TODO(Dominic): I need four of those
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
@@ -117,12 +121,14 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
   double FR3[DIMENSIONS][numberOfVariables] = {0.0};
   double* FL[DIMENSIONS]={FL3[0], FL3[1], FL3[2]};
   double* FR[DIMENSIONS]={FR3[0], FR3[1], FR3[2]};
-  solver.flux(qL, FL);
-  solver.flux(qR, FR);
+  if (useFlux) {
+    solver.flux(qL, FL);
+    solver.flux(qR, FR);
+  }
 
   // determine BgradQ from ncp
   double ncp[numberOfData] = {0.0};
-  if (solver.useNonConservativeProduct()) {
+  if (useNCP) {
     double Qavg[numberOfData];
     double gradQ[DIMENSIONS][numberOfData] = {0.0};
     for(int k=0; k < numberOfData; k++) {
@@ -131,12 +137,14 @@ double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, do
     }
     solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
   }
-  
-  for (int i = 0; i < numberOfVariables; i++) {
-    fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-             0.5 * s_max * (qL[i] - qR[i]);
 
-    if(solver.useNonConservativeProduct()) {
+  for (int i = 0; i < numberOfVariables; i++) {
+    fnL[i] = 0.5 * s_max * (qL[i] - qR[i]);
+    if(useFlux) {
+      fnL[i] += 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]);
+    }
+
+    if(useNCP) {
       fnR[i] = fnL[i] - 0.5 * ncp[i];
       fnL[i] = fnL[i] + 0.5 * ncp[i];
     } else {

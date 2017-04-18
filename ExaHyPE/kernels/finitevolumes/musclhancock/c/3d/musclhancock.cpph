@@ -221,7 +221,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     for (int j = patchBegin; j < patchEnd; j++) {
       for (int k = patchBegin-1; k < patchEnd; k++) {
         double s_max_x =
-            riemannsolvers::c::rusanov<SolverType>(solver,
+            riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
                 fL, fR,
                 wRx + idx_w(i, j, k, 0),
                 wLx + idx_w(i, j, k+1, 0),
@@ -242,7 +242,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   for(int i = patchBegin; i < patchEnd; i++) {
     for (int j = patchBegin-1; j < patchEnd; j++) {
       for (int k = patchBegin; k < patchEnd; k++) {
-        double s_max_y = riemannsolvers::c::rusanov<SolverType>(solver,
+        double s_max_y = riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
             fL, fR,
             wRy + idx_w(i, j, k, 0),
             wLy + idx_w(i, j+1, k, 0),
@@ -263,7 +263,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   for(int i = patchBegin-1; i < patchEnd; i++) {
     for (int j = patchBegin; j < patchEnd; j++) {
       for (int k = patchBegin; k < patchEnd; k++) {
-        double s_max_y = riemannsolvers::c::rusanov<SolverType>(solver,
+        double s_max_y = riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
             fL, fR,
             wRz + idx_w(i, j, k, 0),
             wLz + idx_w(i+1, j, k, 0),
@@ -283,23 +283,23 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Evolve, evaluate source, update cells
-  double ws[numberOfVariables]  = {0.0};
-  double src[numberOfVariables] = {0.0};
+  if(useSource || useNCP) {
+    double ws[numberOfVariables]  = {0.0};
+    double src[numberOfVariables] = {0.0};
+    
+    for (int i= patchBegin; i < patchEnd; i++) {
+      for (int j = patchBegin; j < patchEnd; j++) {
+        for (int k = patchBegin; k < patchEnd; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            ws[l] = luh[idx(i,j,k,l)] + 0.5 * dt * slopet[idx_w(i,j,k,l)]; // idx_w ~ idx_slopet
+          }
 
-  for (int i= patchBegin; i < patchEnd; i++) {
-    for (int j = patchBegin; j < patchEnd; j++) {
-      for (int k = patchBegin; k < patchEnd; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          ws[l] = luh[idx(i,j,k,l)] + 0.5 * dt * slopet[idx_w(i,j,k,l)]; // idx_w ~ idx_slopet
-        }
-
-        if(useSource || useNCP) {
           double* gradQ = slope + idx_slope(i, j, k, 0, 0); // const in time
           solver.fusedSource(ws, gradQ, src);
-        }
 
-        for(int l = 0; l < numberOfVariables; l++) {
-          luh_new[idx(i, j, k, l)] += dt * src[l];
+          for(int l = 0; l < numberOfVariables; l++) {
+            luh_new[idx(i, j, k, l)] += dt * src[l];
+          }
         }
       }
     }
