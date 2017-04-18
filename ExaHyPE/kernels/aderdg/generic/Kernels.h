@@ -108,7 +108,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
-template <bool useFlux, int numberOfVariables, int basisSize>
+template <int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double>& dx);
 
