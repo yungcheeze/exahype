@@ -30,15 +30,19 @@
 
 
 void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
+  // This guy usually should go into the header but it does not make sense to
+  // commit a whole header only because of one file.
+  static tarch::logging::Log _log("MyEulerSolver::init");
+
   // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 
   // Demonstration how to access parameters:
-  printf("EulerFlow was called with these parameters:\n");
-  for(size_t i=0; i<cmdlineargs.size(); i++)
-    printf("%i. %s\n", (int)i, cmdlineargs[i].c_str());
+  logInfo("init(...)", "EulerFlow was called with the following parameters:");
+  for(size_t i=0; i<cmdlineargs.size(); i++) {
+    logInfo("init(...)", "- " << cmdlineargs[i].c_str() );
+  }
 
-  static tarch::logging::Log _log("MyEulerSolver::init");
   // Until Parameter access works, we use ENVIRONMENT variables
   const char* _id = std::getenv("EXAHYPE_INITIALDATA");
   const char* _bc = std::getenv("EXAHYPE_BOUNDC");

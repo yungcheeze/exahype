@@ -43,7 +43,6 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseW
       "inserted trivial entry for " + peano::datatraversal::autotuning::toString(askingMethod)
       << ": " << _measurements[askingMethod].rbegin()->toString()
     );
-
   }
 }
 
@@ -706,6 +705,8 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
     );
   }
 
+  _measurements.clear();
+
   std::string str = "";
 
   bool        tagOpen = false;
@@ -747,6 +748,22 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
 
     // Older GCC versions require an explicit cast here
     tagOpen |= str.compare( "adapter-number=" + std::to_string( (long long)oracleNumber) )==0;
+  }
+
+
+  for (int i=0; i<static_cast<int>(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling); i++) {
+    peano::datatraversal::autotuning::MethodTrace askingMethod = peano::datatraversal::autotuning::toMethodTrace(i);
+    if (_measurements.count(askingMethod)==0) {
+      _measurements.insert( std::pair<peano::datatraversal::autotuning::MethodTrace,MethodTraceData >(askingMethod,MethodTraceData()) );
+      _measurements[askingMethod].push_back( DatabaseEntry(2) );
+      assertion( _measurements.count(askingMethod)==1 );
+      assertion2( _measurements[askingMethod].back().getCurrentGrainSize()>0, _measurements[askingMethod].back().toString(), toString(_activeMethodTrace) );
+      logDebug(
+        "getDatabaseEntry(int)",
+        "inserted trivial entry for " + peano::datatraversal::autotuning::toString(askingMethod)
+        << ": " << _measurements[askingMethod].rbegin()->toString()
+      );
+    }
   }
 
   assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );

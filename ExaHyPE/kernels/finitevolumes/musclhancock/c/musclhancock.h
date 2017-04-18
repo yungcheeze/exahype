@@ -20,6 +20,15 @@ namespace finitevolumes {
 namespace musclhancock {
 namespace c {
   /**
+   * This is the CFL factor for checking
+   * if the time step size estimated at the
+   * end of the last iteration is admissible.
+   *
+   * It can be chosen very close to one.
+   */
+  constexpr double CFL = 0.99;
+
+  /**
    * Returns 0 if a and b have opposite signs.
    * Returns the minimum of a and b if
    * they have the same sign.

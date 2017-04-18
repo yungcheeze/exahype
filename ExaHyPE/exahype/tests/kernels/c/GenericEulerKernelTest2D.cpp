@@ -542,7 +542,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double FL[nVar*basisSize] = {0.0}; // ~nVar
     double FR[nVar*basisSize] = {0.0};
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<true,GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -600,7 +600,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double **tempStateSizedSquareMatrices = new double*[1];
     tempStateSizedSquareMatrices[0]       = new double[1*nVar*nVar];
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<true,GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -667,7 +667,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double **tempStateSizedSquareMatrices = new double*[1];
     tempStateSizedSquareMatrices[0]       = new double[1*nVar*nVar];
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,

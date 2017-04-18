@@ -57,6 +57,11 @@ for cmd in "$@"; do
 			rm -r src/eu/exahype/node*
 			exec ./build.sh
 			;;
+		"toolkit-jar") # Just rebuild jar with new template files in toolkit
+			info "Creating Toolkit JAR"
+			cd Toolkit/src
+			make dist
+			;;
 		"libxsmm") # Checkout or recompile libxsmm
 			info "Cloning or updating Libxsmm"
 			[[ -e Libxsmm ]] || git clone https://github.com/hfp/libxsmm.git Libxsmm

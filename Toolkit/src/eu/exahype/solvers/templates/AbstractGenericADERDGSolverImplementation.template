@@ -146,15 +146,7 @@ void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* 
 
 void {{Project}}::Abstract{{Solver}}::surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeSurfaceIntegral}}
-#if defined(isLinear) || defined(isFortran)
   kernels::aderdg::generic::{{Language}}::surfaceIntegral{{NonlinearOrLinear}}<NumberOfVariables,Order+1>(lduh,lFhbnd,dx);
-#else
-  if(useConservativeFlux()) {
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<true,NumberOfVariables,Order+1>(lduh,lFhbnd,dx);
-  } else {
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<false,NumberOfVariables,Order+1>(lduh,lFhbnd,dx); // this is a no-op
-  }
-#endif
 {{AfterSurfaceIntegral}}
 }
 
@@ -293,10 +285,20 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
 #include "kernels/fusedMethods.cpph"
 
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  if(useNonConservativeProduct()) {
-    kernels::fusedSource<true, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+   #define FUSEDSOURCE(useSource, useNCP) \
+      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+  if(useAlgebraicSource()) {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(true, true);
+    } else {
+      FUSEDSOURCE(true, false);
+    }
   } else {
-    kernels::fusedSource<false, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(false, true);
+    } else {
+      FUSEDSOURCE(false, false);
+    }
   }
 }
 

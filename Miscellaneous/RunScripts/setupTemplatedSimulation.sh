@@ -19,6 +19,7 @@
 # (c) ExaHyPE, SvenK, 2017
 
 ME="$(basename "$0")"
+runscripts="$(dirname "$0")"
 info () { echo -e $ME: $@; } # print error/info message with name of script
 fail () { info $@; exit -1; } # exit after errormessage with name of script
 finish () { echo $@; exit 0; } # finish with message happily
@@ -50,62 +51,49 @@ set -e
 # compose and setup simulation parameter directory
 if [ -e "$SIMDIR" ]; then
 	info "Wiping existing simulation at '$SIMDIR'"
+	# TODO: Move content instead to somewhere else.
 	rm -r "$SIMDIR";
 fi
 mkdir -p "$SIMDIR"
 
 # convert possibly relative paths to absolute ones
-ExaBinary=$(readlink -f "$ExaBinary")
-ExaSpecfile=$(readlink -f "$ExaSpecfile")
-SIMDIR=$(readlink -f "$SIMDIR")
-LOGFILE=$(readlink -f "$LOGFILE")
+export ExaBinary=$(readlink -f "$ExaBinary")
+export ExaSpecfile=$(readlink -f "$ExaSpecfile")
+export SIMDIR=$(readlink -f "$SIMDIR")
+#LOGFILE=$(readlink -f "$LOGFILE")
 # and get the pure filenames
-BASE_ExaBinary=$(basename "$ExaBinary")
-BASE_ExaSpecfile=$(basename "$ExaSpecfile")
+export BASE_ExaBinary=$(basename "$ExaBinary")
+export BASE_ExaSpecfile=$(basename "$ExaSpecfile")
 
 # populate simulation directory with absolute symlinks
 ln -s "$ExaBinary" "$SIMDIR/"
 cp "$ExaSpecfile" "$SIMDIR/"
 
+# copy the run scripts
+cp $runscripts/RunScriptTemplates/*.sh $SIMDIR
+chmod 755 $SIMDIR/*.sh
+
 cd "$SIMDIR"
 
-if [[ $ExaDetachOutput == "Detach" ]]; then
-	info "Calling $BASE_ExaBinary, redirecting output to $LOGFILE"
-	exec > >(timestampize > "$LOGFILE") 2>&1
-else
-	info "Calling $BASE_ExaBinary, logging also to $LOGFILE"
-	exec > >(timestampize | tee "$LOGFILE") 2>&1
-fi
-
-runenv='ExaRun.env'
+#if [[ $ExaDetachOutput == "Detach" ]]; then
+#	info "Calling $BASE_ExaBinary, redirecting output to $LOGFILE"
+#	exec > >(timestampize > "$LOGFILE") 2>&1
+#else
+#	info "Calling $BASE_ExaBinary, logging also to $LOGFILE"
+#	exec > >(timestampize | tee "$LOGFILE") 2>&1
+#fi
+#
+#runenv='ExaRun.env'
 
 # setup a readable, correctly quoted environment file
+runenv="runsim.env"
 quoteenv() { perl -e 'foreach $k (sort(keys(%ENV))) { print "$k=\"$ENV{$k}\"\n"; }'; }
-quoteenv | grep -iE '^(Exa|Sim)' | tee $runenv
+quoteenv | grep -iE '^(Exa|Sim|Base)' > $runenv
 
-
+# dump all environment just for being sure to the simdir
 setupenv="setup.env"
-info "Dumping setup environment to $setupenv"
 env > $setupenv
 
+info "Finished setting up a simulation at $SIMDIR"
 
-###### IN THE MIDDLE OF THE WORK MOVING STUFF OVER TO EXARUN.SH
-
-
-newline
-newline
-
-info "Starting ExaHyPE on $(hostname) at $(date):"
-verbose $QRUN time ./$BASE_ExaBinary $BASE_ExaSpecfile \
-&& info "Finished ExaHyPE successfully" \
-|| fail "ExaHyPE binary failed!" 
-
-if silent compgen -G *vtk; then
-	info "Packing simulation outcome to results.tar.gzip"
-	silent tar cvfz results.tar.gzip *.vtk
-else
-	info "Not VTK output found, probably a failure in the ExaHyPE run"
-fi
-
-finish "Done."
 

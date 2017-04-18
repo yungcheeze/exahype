@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <sstream>
+#include <memory>
 
 
 std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
@@ -40,6 +41,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
 #include "peano/utils/Loop.h"
 #include "exahype/solvers/ADERDGSolver.h"
 #include "kernels/DGBasisFunctions.h"
+#include "kernels/KernelUtils.h"
 
 // HDF5 stuff
 #include "H5Cpp.h"
@@ -52,6 +54,7 @@ public:
   exahype::plotters::ADERDG2CarpetHDF5* device;
   FILE* fh;
   H5::H5File* hf;
+  H5::DataSpace patch_space, dtuple;
   
   std::string txtfilename;
   std::string h5filename;
@@ -79,11 +82,23 @@ public:
 	// write basic group
 	Group* parameters = new Group(hf->createGroup( "/Parameters and Global Attributes" ));
 	
-	int ranks = 1;
+	int ranks = 1; // TODO: extend for MPI.
 	
-	DataSpace dspace(H5S_SCALAR);
-	Attribute nioprocs = parameters->createAttribute("nioprocs", PredType::NATIVE_INT, dspace);
+	Attribute nioprocs = parameters->createAttribute("nioprocs", PredType::NATIVE_INT, H5S_SCALAR);
 	nioprocs.write(PredType::NATIVE_INT, &ranks);
+	
+	// prepare common dataspaces, dimension agnostic and so.
+	
+	// this is the dataspace describing how to write a patch/cell/component
+	const int dims_rank = DIMENSIONS;
+	hsize_t dims[dims_rank];
+	std::fill_n(dims, DIMENSIONS, device->order+1);
+	patch_space = DataSpace(dims_rank, dims);
+	
+	// this is just a vector of rank 1 with DIMENSIONS entries
+	const int tupleDim_rank = 1;
+	hsize_t tupleDim_len[tupleDim_rank] = {DIMENSIONS};
+	dtuple = DataSpace(tupleDim_rank, tupleDim_len);
   }
 
   /**
@@ -100,47 +115,39 @@ public:
         using namespace H5;
 	
 	const int order = device->order;
-	const int rank = 2; // DIMENSIONS
-	hsize_t  dims[rank] = {order+1, order+1};
-	DataSpace patch_dataspace(rank, dims);
-	kernels::idx2 mappedIdx(order+1, order+1);
-	
+
 	// the name must contain a "::"
-	std::string name("EXA::rho");
+	std::string name("EXA::rho"); // TODO: get real field name
 	
 	char component_name[100];
 	sprintf(component_name, "%s it=%d tl=0 m=0 rl=0 c=%d", name.c_str(), iteration, component);
 	
-	// Transpose the 2D data.
-	// This has to be done in a more intelligent way
-	double *transposedCell = new double[mappedIdx.size];
+	// Transpose the data.
+	// TODO: I'm sure HDF5 provides a more performant way to interpret the different data layout.
+	double *transposedCell = new double[device->mappedIdx->size];
 	dfor(i,order+1) {
-		transposedCell[mappedIdx(i(1),i(0))] = mappedCell[mappedIdx(i(0),i(1))];
+		#if DIMENSIONS==2
+		transposedCell[device->mappedIdx->get(i(1),i(0))] = mappedCell[device->mappedIdx->get(i(0),i(1))];
+		#else
+		transposedCell[device->mappedIdx->get(i(2),i(1),i(0))] = mappedCell[device->mappedIdx->get(i(0),i(1),i(2))];
+		#endif
 	}
 	
-	DataSet table = hf->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_dataspace);
+	DataSet table = hf->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_space);
 	table.write(transposedCell, PredType::NATIVE_DOUBLE);
 	
 	delete[] transposedCell;
 	
-	// write the meat information about the new table
-	
-	//hsize_t dtuple_len[rank] = {1,1};
-	//DataSpace dtuple(rank, dtuple_len);
-	
-	// tuple/vector with DIMENSIONS elements
-	assert(DIMENSIONS == 2);
-	hsize_t tupleDim_len[1] = {DIMENSIONS};
-	DataSpace tupleDim(sizeof(tupleDim_len)/sizeof(hsize_t), tupleDim_len);
-	
-	Attribute origin = table.createAttribute("origin", PredType::NATIVE_DOUBLE, tupleDim);
+	// write all meta information about the table
+
+	Attribute origin = table.createAttribute("origin", PredType::NATIVE_DOUBLE, dtuple);
 	origin.write(PredType::NATIVE_DOUBLE, offsetOfPatch.data());
 	
-	double iorigin_data[rank] = {0.,0.};
-	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_INT, tupleDim);
-	iorigin.write(PredType::NATIVE_INT, &iorigin_data);
+	dvec iorigin_data = 0.0;
+	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_INT, dtuple);
+	iorigin.write(PredType::NATIVE_INT, iorigin_data.data());
 	
-	int level_data = 0;
+	int level_data = 0; // TODO: Read out real cell level
 	Attribute level = table.createAttribute("level", PredType::NATIVE_INT, H5S_SCALAR);
 	level.write(PredType::NATIVE_INT, &level_data);
 	
@@ -152,17 +159,21 @@ public:
 
 	// dx in terms of Cactus: Real seperation from each value
 	dvec dx = 1./(order ) * sizeOfPatch;
-	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, tupleDim);
+	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, dtuple);
 	delta.write(PredType::NATIVE_DOUBLE, dx.data()); // issue: conversion from double to float
 	
 	const int max_string_length = 60;
-	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length);
+	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length); // todo: use name.size().
 	Attribute aname = table.createAttribute("name", t_str, H5S_SCALAR);
 	aname.write(t_str, name.c_str());
 
 	// alternatively, also write to text file for comparison
 	dfor(i,order+1) {
-		fprintf(fh, "%d %d %f\n", i(0), i(1), mappedCell[mappedIdx(i(0),i(1))]);
+		#if DIMENSIONS==2
+		fprintf(fh, "%d %d %f\n", i(0), i(1), mappedCell[device->mappedIdx->get(i(0),i(1))]);
+		#else
+		fprintf(fh, "%d %d %d %f\n", i(0), i(1), i(2), mappedCell[device->mappedIdx->get(i(0),i(1),i(2))]);
+		#endif
 	}
   }
 
@@ -189,6 +200,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& _filename, in
 	select            = _select;
 	writtenUnknowns   = _writtenUnknowns;
 	iteration         = 0;
+	mappedIdx         = new kernels::index((DIMENSIONS==2 ? 0 : order)+1, order+1, order+1);
 	
 	// todo at this place: Accept 3D slicing or so, cf. ADERDG2CartesianVTK
 	
@@ -216,13 +228,14 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
     double* u,
     double timeStamp) {
 
-    kernels::idx2 mappedIdx(order+1, order+1);
-    double* mappedCell  = new double[mappedIdx.size];
+    // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
+    double* mappedCell  = new double[mappedIdx->size];
 
     interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
-
     writer->plotPatch(offsetOfPatch, sizeOfPatch, mappedCell, timeStamp, iteration, component);
     component++;
+    
+    delete[] mappedCell;
 }
 
 
@@ -246,11 +259,9 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
   double *mappedCell,
   double timeStamp
 ) {
-  // the layout of an ADERDG cell, assuming 2D here for the time being.
-  assert(DIMENSIONS==2);
   // make sure we only map to ONE written unknown, as this is how CarpetHDF5 works in the moment.
   assert(writtenUnknowns == 1);
-  kernels::idx2 mappedIdx(order+1, order+1);
+  
 
   double* interpoland = new double[solverUnknowns];
   //double* mappedCell  = new double[mappedIdx.size];
@@ -261,17 +272,23 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
       interpoland[unknown] = 0.0;
       dfor(ii,order+1) { // Gauss-Legendre node indices
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
-        interpoland[unknown] += kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
-                 kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
-                 #if DIMENSIONS==3
-                 kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
-                 #endif
-                 u[iGauss * solverUnknowns + unknown];
+        interpoland[unknown] +=
+		kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
+		kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
+		#if DIMENSIONS==3
+		kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
+		#endif
+		u[iGauss * solverUnknowns + unknown];
         assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
       }
     }
 
-    double* value = mappedCell + mappedIdx(i(0), i(1));
+    double *value = mappedCell;
+    #if DIMENSIONS==3
+    value += mappedIdx->get(i(2),i(1),i(0));
+    #else
+    value += mappedIdx->get(i(1),i(0));
+    #endif
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
     _postProcessing->mapQuantities(
       offsetOfPatch,

@@ -62,8 +62,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   const double irho = 1./vars.rho();
   const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
 
-  //f.rho ( vars.j()                                 );
-  f.rho( tarch::la::Vector<DIMENSIONS,double>(0.0) ); // handle rho with NCP
+  f.rho ( vars.j()                                 );
   f.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
   f.E   ( irho * (vars.E() + p) * vars.j()         );
 }

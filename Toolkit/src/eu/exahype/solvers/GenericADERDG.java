@@ -131,7 +131,7 @@ public class GenericADERDG implements Solver {
 
     String eigenvalues = "";
     for (int i = 0; i < _numberOfVariables; i++) {
-      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 1.0;";
       if (i<_numberOfVariables-1) eigenvalues += "\n";
     }
 
