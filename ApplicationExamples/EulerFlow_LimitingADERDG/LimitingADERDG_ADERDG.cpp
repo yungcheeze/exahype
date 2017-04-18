@@ -87,11 +87,5 @@ bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(const double* const QM
     if (!std::isfinite(QMax[i])) return false;
   }
 
-  // geometry based limiter criterion
-  if (tarch::la::smallerEquals(std::abs(center[0]-0.5), 0.1) &&
-      tarch::la::smallerEquals(std::abs(center[1]-0.5), 0.1) ) {
-    return false;
-  }
-
   return true;
 }
