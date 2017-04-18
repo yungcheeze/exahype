@@ -9,6 +9,7 @@
 
 #include "kernels/finitevolumes/commons/c/commons.h"
 #include "kernels/finitevolumes/{{FiniteVolumesType}}/c/{{FiniteVolumesType}}.h"
+#include "kernels/finitevolumes/riemannsolvers/c/riemannsolvers.h"
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
@@ -108,6 +109,30 @@ void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,con
 }
 
 
+void {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
+  // Default FV Riemann Solver
+  #define RUSANOV(useNCP, useFlux) \
+      kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
+          *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
+
+  // TODO: As always, this guard <-> templating interface is not useful.
+  if(useNonConservativeProduct()) {
+    if(useConservativeFlux()) {
+      RUSANOV(true, true);
+    } else {
+      RUSANOV(true, false);
+    }
+  } else {
+    if(useConservativeFlux()) {
+      RUSANOV(false, true);
+    } else {
+      RUSANOV(false, false);
+    }
+  }
+}
+
+
+
 void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
@@ -128,10 +153,20 @@ void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
 
 
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  if(useNonConservativeProduct()) {
-    kernels::fusedSource<true, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+   #define FUSEDSOURCE(useSource, useNCP) \
+      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+  if(useSource()) {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(true, true);
+    } else {
+      FUSEDSOURCE(true, false);
+    }
   } else {
-    kernels::fusedSource<false, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(false, true);
+    } else {
+      FUSEDSOURCE(false, false);
+    }
   }
 }
 

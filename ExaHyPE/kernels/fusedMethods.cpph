@@ -5,6 +5,7 @@
  **/
 
 #include <memory>
+#include <algorithm>
 #include "kernels/KernelUtils.h"
 
 namespace kernels {
@@ -13,10 +14,14 @@ namespace kernels {
  * The fusedSource is since April the successor of S = algebraicSource - NCP.
  * Actually the same definition holds for the FV kernels.
  **/
-template <bool useNCP, typename SolverType>
+template <bool useSource, bool useNCP, typename SolverType>
 void fusedSource(SolverType& solver, const double* const Q, const double* const gradQ, double* S) {
 	constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-	solver.algebraicSource(Q, S);
+	if(useSource) {
+		solver.algebraicSource(Q, S);
+	} else {
+		std::fill_n(S, numberOfVariables, 0.0);
+	}
 	if(useNCP) {
 		double ncp[numberOfVariables];
 		solver.nonConservativeProduct(Q, gradQ, ncp);
