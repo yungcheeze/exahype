@@ -23,6 +23,10 @@ namespace exahype {
   }
 }
 
+namespace kernels {
+  class index; // instead #include "kernels/KernelUtils.h"
+}
+
 /**
  * <h2>Writing CarpetHDF5 files which are compatible to Cactus/EinsteinToolkit</h2>
  * 
@@ -81,6 +85,7 @@ class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::
   double        time;
   int           iteration;
   int           component;
+  kernels::index *mappedIdx;
 
   /**
    * Pimpl idiom: In order to avoid any HDF5 dependency all HDF5 logic is hidden inside this
