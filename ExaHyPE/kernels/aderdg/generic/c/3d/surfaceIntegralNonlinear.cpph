@@ -18,7 +18,7 @@
 
 #if DIMENSIONS == 3
 
-template <bool useFlux/*unused*/, int numberOfVariables, int basisSize>
+template <int numberOfVariables, int basisSize>
 void kernels::aderdg::generic::c::surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double> &dx) {
   constexpr int order = basisSize - 1;
