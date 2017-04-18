@@ -102,7 +102,7 @@ RECURSIVE SUBROUTINE PDEEigenvalues(L,Q,n)
   USE Parameters, ONLY :  nVar, nDim
   USE iso_c_binding
   IMPLICIT NONE
-  REAL :: L(nVar), n(nDim), Q(nVar), V(nVar)
+  REAL :: L(nVar), n(3), Q(nVar), V(nVar)
   INTENT(IN)  :: Q,n
   INTENT(OUT) :: L 
   REAL  :: lam,mu,irho
