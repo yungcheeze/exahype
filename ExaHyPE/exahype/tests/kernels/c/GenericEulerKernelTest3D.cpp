@@ -305,7 +305,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
   }
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack | FBottom | FTop ]
-  kernels::aderdg::generic::c::surfaceIntegralNonlinear<true,NumberOfVariables,Order+1>(
+  kernels::aderdg::generic::c::surfaceIntegralNonlinear<NumberOfVariables,Order+1>(
       lduh, lFhbnd, dx[0]);
 
   for (int i = 0; i < 320; i++) {

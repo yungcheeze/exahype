@@ -295,7 +295,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
         80 * sizeof(double));
 
     // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<true, nVar, basisSize>(
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear<nVar, basisSize>(
         lduh, lFhbnd, dx[0]
         );
 
@@ -320,7 +320,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
         ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
         80 * sizeof(double));
 
-    kernels::aderdg::generic::c::surfaceIntegralNonlinear<true, nVar, basisSize>(
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear<nVar, basisSize>(
         lduh, ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::
                   lFhbnd_in,
         dx[0]
