@@ -26,6 +26,11 @@ namespace generic {
 namespace c {
 
   /**
+   * Here, we implement a very simple Rusanov scheme with scalar dissipation
+   * (smax*Id).
+   * We can change this into a more sophisticated Osher or HLLEM Riemann solver
+   * whenever needed!
+   *
    * We need to consider material parameters
    * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
    * We don't need to consider material parameters
@@ -70,17 +75,7 @@ namespace c {
     solver.eigenvalues(QavR, direction, LR);
 
     double Qavg[numberOfData];
-    /*
-// Wurde nur bei matrixB verwendet, gemittelt ueber die gesamte Flaeche/Kante
-for(int k=0; k < numberOfVariables; k++) {
-Qavg[k] = (QavL[k] + QavR[k]) / 2;
-}
-     */
 
-    // Here, we implement a very simple Rusanov scheme with scalar dissipation
-    // (smax*Id).
-    // We can change this into a more sophisticated Osher or HLLEM Riemann solver
-    // whenever needed!
     // skip parameters
     std::transform(LL, LL + numberOfVariables, LL, std::abs<double>);
     std::transform(LR, LR + numberOfVariables, LR, std::abs<double>);
@@ -88,24 +83,11 @@ Qavg[k] = (QavL[k] + QavR[k]) / 2;
     const double* smax_R = std::max_element(LR, LR + numberOfVariables);
     const double smax    = std::max(*smax_L, *smax_R);
 
-    //double* Bn  = tempStateSizedSquareMatrices[0];
-    //double* ncp = tempStateSizedVectors[4];
-    //idx2 idx_Bn(numberOfVariables, numberOfVariables);
-    /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
     double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
-//    double* gradQ = new double[DIMENSIONS*numberOfVariables];    
     double ncp[numberOfVariables]               = {0.0};
-    /*
-if(useCoefficientMatrix) {
-solver.coefficientMatrix(Qavg, direction, Bn);
-}
-     */
 
-    // This comment is not true:
-    // We now compute the numerical flux. Note that the scheme is at the moment
-    // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
-    // this will be converted into the left and right fluctuations.
-
+    // compute fluxes (and fluctuations for non-conservative PDEs)
     {
       idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
       idx3 idx_QLR(basisSize, basisSize, numberOfData);
