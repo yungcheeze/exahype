@@ -178,7 +178,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {
       double s_max_x =
-          riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
+          solver.riemannSolver(
               fL, fR,
               wRx + idx_w(j, k, 0),
               wLx + idx_w(j, k+1, 0),
@@ -197,7 +197,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
-      double s_max_y = riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(solver,
+      double s_max_y = solver.riemannSolver(
           fL, fR,
           wRy + idx_w(j, k, 0),
           wLy + idx_w(j+1, k, 0),
