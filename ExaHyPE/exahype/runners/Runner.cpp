@@ -556,66 +556,66 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     printTimeStepInfo(-1,repository);
 
     validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
-
-    const double simulationEndTime = _parser.getSimulationEndTime();
-
-    logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-    logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-
-    while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
-        tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
-      // see issue #103
-      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
-          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-
-      if (_parser.getFuseAlgorithmicSteps()) {
-        repository.getState().setTimeStepSizeWeightForPredictionRerun(
-            _parser.getFuseAlgorithmicStepsFactor());
-
-        int numberOfStepsToRun = 1;
-        if (plot) {
-          numberOfStepsToRun = 0;
-        }
-        else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
-          /**
-           * This computation is optimistic. If we were pessimistic, we had to
-           * use the max solver time step size. However, this is not necessary
-           * here, as we half the time steps anyway.
-           */
-          if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-            const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
-            numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
-          }
-          numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
-        }
-
-        runOneTimeStampWithFusedAlgorithmicSteps(
-          repository,
-          numberOfStepsToRun,
-          _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
-        );
-        printTimeStepInfo(numberOfStepsToRun,repository);
-      } else {
-        runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
-      }
-
-      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
-      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
-        static int dumpCounter = -1;
-        dumpCounter++;
-        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
-      }
-      #endif
-
-      logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
-    }
-    if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-      logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
-    }
-
-    repository.logIterationStatistics(false);
-  }
+//
+//    const double simulationEndTime = _parser.getSimulationEndTime();
+//
+//    logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+//    logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+//
+//    while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+//        tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+//      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
+//      // see issue #103
+//      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
+//          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+//
+//      if (_parser.getFuseAlgorithmicSteps()) {
+//        repository.getState().setTimeStepSizeWeightForPredictionRerun(
+//            _parser.getFuseAlgorithmicStepsFactor());
+//
+//        int numberOfStepsToRun = 1;
+//        if (plot) {
+//          numberOfStepsToRun = 0;
+//        }
+//        else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
+//          /**
+//           * This computation is optimistic. If we were pessimistic, we had to
+//           * use the max solver time step size. However, this is not necessary
+//           * here, as we half the time steps anyway.
+//           */
+//          if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+//            const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+//            numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
+//          }
+//          numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
+//        }
+//
+//        runOneTimeStampWithFusedAlgorithmicSteps(
+//          repository,
+//          numberOfStepsToRun,
+//          _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
+//        );
+//        printTimeStepInfo(numberOfStepsToRun,repository);
+//      } else {
+//        runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
+//      }
+//
+//      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
+//      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
+//        static int dumpCounter = -1;
+//        dumpCounter++;
+//        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
+//      }
+//      #endif
+//
+//      logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+//    }
+//    if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+//      logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+//    }
+//
+//    repository.logIterationStatistics(false);
+//  }
 
   repository.terminate();
 

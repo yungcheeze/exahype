@@ -170,44 +170,26 @@ double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
 bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimiterStatus(
     SolverPatch& solverPatch,
     const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const {
-  // left,right,front,back,(bottom,top)
-  #if DIMENSIONS == 2
-  constexpr int neighbourPositions[4] = {3, 5, 1, 7};
-  #else
-  constexpr int neighbourPositions[6] = {12, 14, 10, 16, 4, 22};
-  #endif
 
-  for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
-    const int neighbourElement =
-        neighbourCellDescriptionsIndices[neighbourPositions[i]];
-    if (SolverHeap::getInstance().isValidIndex(neighbourElement)) {
-      for (SolverPatch& neighbourSolverPatch :
-          SolverHeap::getInstance().getData(neighbourElement)) {
-        if (neighbourSolverPatch.getSolverNumber() == solverPatch.getSolverNumber()) {
-          SolverPatch::LimiterStatus limiterStatus = determineLimiterStatus(solverPatch);
-          SolverPatch::LimiterStatus neighbourLimiterStatus = determineLimiterStatus(neighbourSolverPatch);
+  dfor3(v)
+    const int vScalar = peano::utils::dLinearised(v,3);
+    if (!tarch::la::equals(v,1) &&
+        SolverHeap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[vScalar])) {
+      const int neighbourElement =
+          _solver->tryGetElement(neighbourCellDescriptionsIndices[vScalar],solverPatch.getSolverNumber());
+      if (neighbourElement!=exahype::solvers::Solver::NotFound) {
+        SolverPatch& neighbourSolverPatch =
+            _solver->getCellDescription(neighbourCellDescriptionsIndices[vScalar],neighbourElement);
 
-          switch (neighbourSolverPatch.getType()) {
-            case SolverPatch::Ancestor:
-            case SolverPatch::EmptyAncestor:
-              if (
-                  (limiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                      limiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-                      ||
-                      (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled ||
-                          neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell)
-              ) {
-                solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
-                return true;
-              }
-              break;
-            default:
-              break;
-          }
+        SolverPatch::LimiterStatus neighbourLimiterStatus = determineLimiterStatus(neighbourSolverPatch);
+        if (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled)
+        ) {
+          solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+          return true;
         }
       }
     }
-  }
+  enddforx
 
   return false;
 }
@@ -216,9 +198,9 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimit
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
   const int solverElement =
@@ -227,6 +209,11 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimit
   if (solverElement!=exahype::solvers::Solver::NotFound) {
     SolverPatch& solverPatch =
         _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
+
+    if (solverPatch.getMergedLimiterStatus(0)==SolverPatch::LimiterStatus::Troubled
+        && solverPatch.getLevel() > _coarsestMeshLevel+_maximumAdaptiveMeshDepth) {
+      return true;
+    }
 
     #ifdef Parallel
     _solver->ensureConsistencyOfParentIndex(
@@ -263,24 +250,31 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  return _solver->markForRefinement(
+  bool refineFineGridCell = _solver->markForRefinement(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridVertices,coarseGridVerticesEnumerator,coarseGridCell,
       fineGridPositionOfCell,solverNumber);
+
+  refineFineGridCell |= markForRefinementBasedOnMergedLimiterStatus(
+      fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
+      coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
+      fineGridPositionOfCell,solverNumber);
+
+  return refineFineGridCell;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
   return _solver->updateStateInEnterCell(
@@ -293,9 +287,9 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
   const int solverElement = _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -326,9 +320,9 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) {
   _solver->finaliseStateUpdates(
