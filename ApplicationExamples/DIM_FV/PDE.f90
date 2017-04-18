@@ -51,11 +51,7 @@ RECURSIVE SUBROUTINE PDENCP(BgradQ,Q,gradQ)
     mu   = Q(11) 
     irho = 1./Q(12)
     IF(Q(13)<=1e-3) THEN
-        ialpha = 0.0
-        u = 0.0 
-        AQx = 0.0 
-        BQy = 0.0
-        CQz = 0.0 
+        BgradQ = 0.0  
         RETURN 
         !
     ELSE

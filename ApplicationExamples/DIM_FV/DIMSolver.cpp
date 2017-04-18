@@ -33,15 +33,14 @@ exahype::solvers::Solver::RefinementControl DIM::DIMSolver::refinementCriterion(
 }
 
 
-void DIM::DIMSolver::eigenvalues(const double* const Q, const int dIndex, double* lambda) {
+void __attribute__((optimize("O0"))) DIM::DIMSolver::eigenvalues(const double* const Q, const int dIndex, double* lambda) {
   // Dimensions             = 2
   // Number of variables    = 14 + #parameters
   
   double nv[3] = {0.};
   nv[dIndex] = 1;
   pdeeigenvalues_(lambda, Q, nv);
-//  std::fill_n(lambda, NumberOfVariables, 3);
-  
+    
 }
 
 /* void DIM::DIMSolver::flux(const double* const Q, double** F) {
@@ -93,28 +92,11 @@ void DIM::DIMSolver::boundaryValues(
   // Number of variables    = 14 + #parameters
 
    initialdata_(x, &t, stateOutside);
-
-  // @todo Please implement/augment if required
-  /*stateOutside[ 0] = 0.0;
-  stateOutside[ 1] = 0.0;
-  stateOutside[ 2] = 0.0;
-  stateOutside[ 3] = 0.0;
-  stateOutside[ 4] = 0.0;
-  stateOutside[ 5] = 0.0;
-  stateOutside[ 6] = 0.0;
-  stateOutside[ 7] = 0.0;
-  stateOutside[ 8] = 0.0;
-  stateOutside[ 9] = 0.0;
-  stateOutside[10] = 0.0;
-  stateOutside[11] = 0.0;
-  stateOutside[12] = 0.0;
-  stateOutside[13] = 0.0; */
   
 }
 
 void  __attribute__((optimize("O0"))) DIM::DIMSolver::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-  pdencp_(BgradQ, Q, gradQ);
-
+    pdencp_(BgradQ, Q, gradQ);
 }
 
 void  __attribute__((optimize("O0"))) DIM::DIMSolver::algebraicSource(const double* const Q, double* S) {
