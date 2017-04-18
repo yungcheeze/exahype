@@ -59,7 +59,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
   constexpr int patchBegin         = ghostLayerWidth; // patchBegin cell is inside domain
   constexpr int patchEnd           = patchBegin+patchSize; // patchEnd cell is outside domain
-  constexpr double cflFactor       = SolverType::CFL;
+  constexpr double cflFactor       = CFL; // This is not SolverType::CFL; see the docu.
 
   const double cellSize[3] = {dx[0]/patchSize, dx[1]/patchSize, dx[2]/patchSize};
 
