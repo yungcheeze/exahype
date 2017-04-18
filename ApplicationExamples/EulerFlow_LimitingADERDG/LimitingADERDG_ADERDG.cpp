@@ -78,13 +78,19 @@ exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refine
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
+bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
 
   for (int i=0; i<5; ++i) {
     if (!std::isfinite(QMin[i])) return false;
     if (!std::isfinite(QMax[i])) return false;
+  }
+
+  // geometry based limiter criterion
+  if (tarch::la::smallerEquals(std::abs(center[0]-0.5), 0.1) &&
+      tarch::la::smallerEquals(std::abs(center[1]-0.5), 0.1) ) {
+    return false;
   }
 
   return true;

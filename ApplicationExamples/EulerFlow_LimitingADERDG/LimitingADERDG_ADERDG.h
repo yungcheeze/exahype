@@ -126,7 +126,7 @@ class Euler::LimitingADERDG_ADERDG: public Euler::AbstractLimitingADERDG_ADERDG 
      */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
     
-    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const override;
+    bool isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const override;
 
 };
 
