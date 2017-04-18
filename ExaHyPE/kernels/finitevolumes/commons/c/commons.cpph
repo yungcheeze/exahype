@@ -502,13 +502,12 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -615,13 +614,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -872,13 +870,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loop,
