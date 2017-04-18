@@ -109,10 +109,10 @@ void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,con
 }
 
 
-void {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
+double {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
   // Default FV Riemann Solver
   #define RUSANOV(useNCP, useFlux) \
-      kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
+      return kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
           *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
 
   // TODO: As always, this guard <-> templating interface is not useful.

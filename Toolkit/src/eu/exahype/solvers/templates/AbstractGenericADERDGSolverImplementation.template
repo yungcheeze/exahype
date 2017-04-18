@@ -293,10 +293,20 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
 #include "kernels/fusedMethods.cpph"
 
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  if(useNonConservativeProduct()) {
-    kernels::fusedSource<true, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+   #define FUSEDSOURCE(useSource, useNCP) \
+      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+  if(useAlgebraicSource()) {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(true, true);
+    } else {
+      FUSEDSOURCE(true, false);
+    }
   } else {
-    kernels::fusedSource<false, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(false, true);
+    } else {
+      FUSEDSOURCE(false, false);
+    }
   }
 }
 

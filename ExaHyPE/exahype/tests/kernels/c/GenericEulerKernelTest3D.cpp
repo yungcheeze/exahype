@@ -456,15 +456,13 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     }
   }
 
-  _setNcpAndMatrixBToZero=true;
-  kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
       dt,
       1  // normalNonZero
   );
-  _setNcpAndMatrixBToZero=false;
 
   for (int i = 0; i < nVar*basisSize2; i++) {
     validateNumericalEqualsWithEpsWithParams1(

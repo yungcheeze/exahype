@@ -61,8 +61,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
     const double s_max_x = 
-        riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
-            solver,
+        solver.riemannSolver(
             fL, fR,
             luh + idx(i,j, k, 0),
             luh + idx(i,j, k+1, 0), 
@@ -85,8 +84,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin-1; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_y =
-      riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
-        solver,
+      solver.riemannSolver(
         fL, fR,
         luh + idx(i, j, k,0),
         luh + idx(i, j+1, k,0), 
@@ -107,8 +105,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_z =
-      riemannsolvers::c::rusanov<useNCP, useFlux, SolverType>(
-        solver,
+      solver.riemannSolver(
         fL, fR,
         luh + idx(i, j,k,0),
         luh + idx(i+1, j,k,0), 
