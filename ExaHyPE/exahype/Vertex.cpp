@@ -22,7 +22,9 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+const int exahype::Vertex::InvalidMetadataEntry = -1;
 
+const int exahype::Vertex::MetadataPerSolver = 2;
 
 exahype::Vertex::Vertex() : Base() {
   _vertexData.setCellDescriptionsIndex(
@@ -248,17 +250,34 @@ exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescr
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
     encodedMetaData[MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
     encodedMetaData[MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getMergedLimiterStatus(0));
+    // assertion: p.getMergedLimiterStatus(0) = p.getMergedLimiterStatus(i) TODO
   }
   // FV
   const unsigned int numberOfADERDGPatches =
       exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).size();
-
   for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
     encodedMetaData[numberOfADERDGPatches + MetadataPerSolver*p.getSolverNumber() + 0]
                     = static_cast<int>(p.getType()); // Implicit conversion.
   }
   return encodedMetaData;
 }
+
+bool exahype::Vertex::hasToSendMetadataDuringMeshRefinement(
+  const tarch::la::Vector<DIMENSIONS,int>& src,
+  const tarch::la::Vector<DIMENSIONS,int>& dest,
+  const int toRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return !tarch::la::equals(dest, src) &&
+         adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
+         adjacentRanks(destScalar)   == toRank &&
+         adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
+         (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
+         State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
+}
+
 
 bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<DIMENSIONS,int>& src,
@@ -299,6 +318,22 @@ bool exahype::Vertex::hasToReceiveMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
+      adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
+      adjacentRanks(srcScalar)    == fromRank &&
+      adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
+      (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
+       State::isForkingRank(adjacentRanks(destScalar)));
+}
+
+bool exahype::Vertex::hasToReceiveMetadataDuringMeshRefinement(
+  const tarch::la::Vector<DIMENSIONS,int>& src,
+  const tarch::la::Vector<DIMENSIONS,int>& dest,
+  const int fromRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return !tarch::la::equals(dest, src) &&
       adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
       adjacentRanks(srcScalar)    == fromRank &&
       adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&

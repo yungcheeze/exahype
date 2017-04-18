@@ -1650,7 +1650,10 @@ public:
   // NEIGHBOUR
   ///////////////////////////////////
   void mergeWithNeighbourMetadata(
-      const int neighbourTypeAsInt,
+      const int* const metadata,
+      const int metadataSize,
+      const tarch::la::Vector<DIMENSIONS, int>& src,
+      const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
       const int element) override;
 

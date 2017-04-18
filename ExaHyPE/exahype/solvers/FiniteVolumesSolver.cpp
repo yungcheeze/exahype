@@ -956,13 +956,20 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 // NEIGHBOUR
 ///////////////////////////////////
 void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourMetadata(
-      const int neighbourTypeAsInt,
-      const int cellDescriptionsIndex,
-      const int element) {
+    const int* const metadata,
+    const int metadataSize,
+    const tarch::la::Vector<DIMENSIONS, int>& src,
+    const tarch::la::Vector<DIMENSIONS, int>& dest,
+    const int cellDescriptionsIndex,
+    const int element) {
+  if (tarch::la::countEqualEntries(src,dest)!=DIMENSIONS-1) {
+    return;
+  }
+
   CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+      static_cast<CellDescription::Type>(metadata[exahype::Vertex::MetadataCellType]);
   switch(p.getType()) {
   case CellDescription::Cell:
     if (p.getRefinementEvent()==CellDescription::None &&

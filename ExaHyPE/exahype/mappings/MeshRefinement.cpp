@@ -413,8 +413,9 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
-  if (exahype::mappings::MeshRefinement::FirstIteration) return;
-
+  if (exahype::mappings::MeshRefinement::FirstIteration) {
+    return;
+  }
   if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
     return;
   }
@@ -431,67 +432,40 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar = TWO_POWER_D - mySrcScalar - 1;
 
-      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+      if (vertex.hasToReceiveMetadataDuringMeshRefinement(src,dest,fromRank)) {
         logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
                  fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                  << vertex.getAdjacentRanks());
 
         int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::solvers::RegisteredSolvers.size());
+            createData(0,exahype::Vertex::MetadataPerSolver * exahype::solvers::RegisteredSolvers.size());
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
-        MetadataHeap::HeapEntries& neighbourCellTypes = MetadataHeap::getInstance().
+        MetadataHeap::HeapEntries& metadataMessage = MetadataHeap::getInstance().
             getData(receivedMetadataIndex);
 
         // Work with the neighbour cell type
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-          if (neighbourCellTypes[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
+          if (metadataMessage[exahype::Vertex::MetadataPerSolver*solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
             int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
             if (element!=exahype::solvers::Solver::NotFound) {
               solver->mergeWithNeighbourMetadata(
-                  neighbourCellTypes[solverNumber].getU(),
+                  &metadataMessage[exahype::Vertex::MetadataPerSolver*solverNumber].getU(),
+                  exahype::Vertex::MetadataPerSolver,
+                  src, dest,
                   vertex.getCellDescriptionsIndex()[destScalar],element);
-            }
-          }
-
-          // LimiterStatusSpreading
-          if (
-              !LimiterStatusSpreading::FirstIteration
-              &&
-              (MeshRefinement::Mode==MeshRefinement::RefinementMode::Initial ||
-               MeshRefinement::Mode==MeshRefinement::RefinementMode::APosteriori)
-          ) {
-            if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
-              exahype::mappings::LimiterStatusSpreading::mergeNeighourMergedLimiterStatus(
-                  fromRank,
-                  src,dest,
-                  vertex.getCellDescriptionsIndex()[srcScalar],
-                  vertex.getCellDescriptionsIndex()[destScalar],
-                  fineGridX,level,
-                  neighbourCellTypes);
-
-              vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D); // !!! Do not forget this
-              vertex.setMergePerformed(src,dest,true);
-            } else {
-              exahype::mappings::LimiterStatusSpreading::dropNeighbourMergedLimiterStatus(
-                  fromRank,
-                  src,dest,
-                  vertex.getCellDescriptionsIndex()[srcScalar],
-                  vertex.getCellDescriptionsIndex()[destScalar],
-                  fineGridX,level,
-                  neighbourCellTypes);
             }
           }
 
           logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
           logDebug("mergeWithNeighbour(...)","neighbourTypeAsInt: "
-                   << neighbourCellTypes[solverNumber].getU());
+                   << metadataMessage[solverNumber].getU());
         }
 
         // Clean up
@@ -524,7 +498,7 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      if (vertex.hasToSendMetadataDuringMeshRefinement(src,dest,toRank)) {
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
         if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
           logDebug("prepareSendToNeighbour(...)","[metadata] sent to rank "<<toRank<<", x:"<<
@@ -540,33 +514,6 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
 
           exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
               toRank,peano::heap::MessageType::NeighbourCommunication,x,level);
-        }
-
-        // LimiterStatusSpreading
-        if (
-            MeshRefinement::Mode==MeshRefinement::RefinementMode::Initial ||
-            MeshRefinement::Mode==MeshRefinement::RefinementMode::APosteriori
-        ) {
-          dfor2(dest)
-            dfor2(src)
-              if (vertex.hasToSendMetadata(src,dest,toRank)) {
-                vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-                if (vertex.hasToSendDataToNeighbour(src,dest)) {
-                  exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbour(
-                      toRank,src,dest,
-                      vertex.getCellDescriptionsIndex()[srcScalar],
-                      vertex.getCellDescriptionsIndex()[destScalar],
-                      x,level);
-                } else {
-                  exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
-                      toRank,src,dest,
-                      vertex.getCellDescriptionsIndex()[srcScalar],
-                      vertex.getCellDescriptionsIndex()[destScalar],
-                      x,level);
-                }
-              }
-            enddforx
-          enddforx
         }
       }
     enddforx

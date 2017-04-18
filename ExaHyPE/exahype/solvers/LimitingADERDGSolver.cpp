@@ -1629,20 +1629,55 @@ const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerForkOrJoinCommu
 const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerMasterWorkerCommunication = 0;
 
 ///////////////////////////////////
-// NEIGHBOUR - Time marching
+// NEIGHBOUR - Mesh refinement
 ///////////////////////////////////
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
-      const int neighbourTypeAsInt,
+      const int* const metadata,
+      const int metadataSize,
+      const tarch::la::Vector<DIMENSIONS, int>& src,
+      const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
       const int element) {
   const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
   if (limiterElement!=exahype::solvers::Solver::NotFound) {
-    _limiter->mergeWithNeighbourMetadata(neighbourTypeAsInt,cellDescriptionsIndex,limiterElement);
+    _limiter->mergeWithNeighbourMetadata(metadata,metadataSize,src,dest,cellDescriptionsIndex,limiterElement);
   } // There is no drop method for metadata necessary
+  _solver->mergeWithNeighbourMetadata(metadata,metadataSize,src,dest,cellDescriptionsIndex,element);
 
-  _solver->mergeWithNeighbourMetadata(neighbourTypeAsInt,cellDescriptionsIndex,element);
+  // Refine according to the merged limiter status
+  const SolverPatch::LimiterStatus neighbourMergedLimiterStatus =
+     static_cast<SolverPatch::LimiterStatus>(metadata[exahype::Vertex::MetadataLimiterStatus]);
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  // TODO(Dominic)
+  if (
+      neighbourMergedLimiterStatus==SolverPatch::LimiterStatus::Troubled
+      &&
+      solverPatch.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth
+      &&
+      solverPatch.getType()==SolverPatch::Type::Cell
+      &&
+      (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None
+      || solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
+  ) {
+    solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
+  }
+
+  // TODO(Dominic)
+  if (tarch::la::equals(src,dest)==DIMENSIONS-1) {
+    // actually merge the limiter status
+    const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+    const int faceIndex = 2 * normalOfExchangedFace +
+        (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+                                                                            // |src|dest| : 1; |dest|src| : 0
+
+    mergeWithLimiterStatus(solverPatch,faceIndex,neighbourMergedLimiterStatus);
+  }
 }
 
+///////////////////////////////////
+// NEIGHBOUR - Time marching
+///////////////////////////////////
 void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbour(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,

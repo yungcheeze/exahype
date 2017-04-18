@@ -36,20 +36,6 @@ namespace exahype {
    * Forward declaration
    */
   class VertexOperations;
-
-  /**
-   * Defines an invalid metadata entry.
-   */
-  const int InvalidMetadataEntry = -1;
-
-  /**
-   * Defines the length of the metadata
-   * we send out per sovler.
-   *
-   * First entry cell type
-   * Second entry limiter status.
-   */
-  const int MetadataPerSolver = 2;
 }
 
 /**
@@ -70,6 +56,23 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
   friend class VertexOperations;
  public:
+  /**
+   * Defines an invalid metadata entry.
+   */
+  constexpr int InvalidMetadataEntry = -1;
+
+  /**
+   * Defines the length of the metadata
+   * we send out per sovler.
+   *
+   * First entry cell type
+   * Second entry limiter status.
+   */
+  constexpr int MetadataPerSolver = 2;
+
+  constexpr int MetadataCellType      = 0;
+  constexpr int MetadataLimiterStatus = 1;
+
 
   /**
    * Default Constructor
@@ -274,6 +277,15 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int toRank);
 
   /**
+   * Similar to hasToSendMetadata but does also
+   * send over edges and corners.
+   */
+  bool hasToSendMetadataDuringMeshRefinement(
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const int toRank);
+
+  /**
    * Similar to hasToSendMetadata. However ignores
    * that the dest rank in the adjacency information
    * might be a forking/joining one.
@@ -316,6 +328,15 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int fromRank);
+
+  /**
+   * Similar to hasToReceiveMetadata but
+   * does also receive metadata over edges and corners.
+   */
+  bool hasToReceiveMetadataDuringMeshRefinement(
+        const tarch::la::Vector<DIMENSIONS,int>& src,
+        const tarch::la::Vector<DIMENSIONS,int>& dest,
+        const int fromRank);
 
   /**
    * Similar to hasToReceiveMetadata. However ignores

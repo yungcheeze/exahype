@@ -738,20 +738,27 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
-    #ifdef Parallel
-    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-    #endif
-    #if defined(Asserts) || defined(Debug)
-    int coarseGridCellElement =
-        tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-    #endif
-    assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
-        fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
-        fineGridCellDescription.toString(),fineGridCell.toString(),
-        coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+    switch (fineGridCellDescription.getMergedLimiterStatus(0)) {
+      // assertion: mergedLimiterStatus has been unified
+      case CellDescription::LimiterStatus::Ok:
+      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+        #ifdef Parallel
+        ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+        #endif
+        #if defined(Asserts) || defined(Debug)
+        int coarseGridCellElement =
+            tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+        #endif
+        assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
+            fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+            fineGridCellDescription.toString(),fineGridCell.toString(),
+            coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
-    // marking for refinement
-    return markForRefinement(fineGridCellDescription);
+        // marking for refinement
+        return markForRefinement(fineGridCellDescription);
+      default:
+        return false;
+    }
   }
 
   return false;
@@ -2679,13 +2686,20 @@ void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
 // NEIGHBOUR
 ///////////////////////////////////
 void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
-      const int neighbourTypeAsInt,
-      const int cellDescriptionsIndex,
-      const int element) {
+    const int* const metadata,
+    const int metadataSize,
+    const tarch::la::Vector<DIMENSIONS, int>& src,
+    const tarch::la::Vector<DIMENSIONS, int>& dest,
+    const int cellDescriptionsIndex,
+    const int element) {
+  if (tarch::la::countEqualEntries(src,dest)!=DIMENSIONS-1) { // only consider faces
+    return;
+  }
+
   CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+      static_cast<CellDescription::Type>(metadata[exahype::Vertex::MetadataCellType]);
   switch(p.getType()) {
     case CellDescription::Cell:
       if (p.getRefinementEvent()==CellDescription::None &&
