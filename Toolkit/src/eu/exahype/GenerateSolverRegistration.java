@@ -301,7 +301,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
 
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + solverNameFV+"(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + solverNameFV+"(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getMaximumMeshDepth("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": "")+
                           ",cmdlineargs");
       if (node.getConstants()!=null) {
