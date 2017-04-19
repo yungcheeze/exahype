@@ -38,16 +38,38 @@ namespace kernels {
  * output without even knowing. There are also readers included into Visit and Amira for
  * opening the CarpetHDF5 file format.
  *
- * <h3>Current limitation</h3>
- *
- * Currently, we print only 2D. The extension to 3D is trivial.
+ * <h3>Output format variants</h3>
  * 
- * Currently, we print only one field. Printing several fields in a single file is supported, but
- * not in the same table/mesh. We will extend this.
+ * The writer has two major flags to trigger the way how H5 files are produced:
  * 
- * Currently, we print all timesteps in a single file and one file per MPI rank. This is also what
- * Cactus does, but we're free to split files once they get to large.
+ * <strong> oneFilePerTimestep </strong> mimics the way how ExaHyPE produces VTK files: There is
+ * always (at least) one file per timestep. This is <em>not</em> the way how the CarpetHDF5 file
+ * format works and you will have to join the HDF5 files with tools like h5join (shipped with
+ * Carpet/Cactus) in order to read these files with ordinary writers. Nevertheless this is helpful
+ * for debugging or immediately opening single timestep snapshots in Visit.
+ * 
+ * <strong> allUnknownsInOneFile </strong> allows you to reduce the number of H5 files by putting
+ * the (vector of) all written unknowns in a single file. This also mimics how ExaHyPE's VTK files
+ * look like. In contrast, in Cactus one typically has one hdf5 file per group/per physical field.
+ * This allows easily to copy only the interesting fields from a supercomputer.
  *
+ * <h3>General limitations</h3>
+ * 
+ * <strong> No global MPI writing </strong> Currently, each MPI rank produces its own file. In
+ * contrast, in Cactus there is by default a single file accross all ranks. Again, files can be
+ * easily merged with standard cactus tools.
+ *
+ * <strong> Structure of array vs. array of structures </strong>
+ * The CarpetHDF5 file format directly resembles the closest way how to dump Cactus memory into files.
+ * Cactus stores structures of arrays, for instance the four hydro variables {rho,velx,vely,velz,eps}
+ * are stored as four big arrays in Cactus. In contrast, ExaHyPE stores arrays of structures, hence
+ * in principle one big array where at each point there are the four variables. For this very reason,
+ * producing CarpetHDF5 files comes with a lot of overhead, ie. a needless amount of over and over
+ * repeated metadata and way too much components.
+ *
+ * By no means this is the fault of the HDF5 binary table format but really the way how CarpetHDF5
+ * works or can be "maximally streched" to also fit ExaHyPE in.
+ * 
  * <h3>How to build this plotter into your release</h3>
  * 
  * By default, this plotter is excluded from compiling. If you enable it in your spec file, the code
@@ -85,7 +107,8 @@ class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::
   double        time;
   int           iteration;
   int           component;
-  kernels::index *mappedIdx;
+  kernels::index *writtenCellIdx, *singleFieldIdx;
+  char**        writtenQuantitiesNames;
 
   /**
    * Pimpl idiom: In order to avoid any HDF5 dependency all HDF5 logic is hidden inside this
