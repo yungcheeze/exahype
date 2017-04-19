@@ -37,7 +37,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     class Fluxes;
 {{NamingSchemes}}    
     
-    Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
     /**
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
