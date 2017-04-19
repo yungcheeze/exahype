@@ -138,7 +138,8 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  COMPILER_CFLAGS   += -O3 -no-ipo -ip
 	endif
 
-	ifeq ($(call tolower,$(SHAREDMEM)),)
+	ifeq ($(call tolower,$(SHAREDMEM)),TBB)
+	else
 	  COMPILER_CFLAGS   += -fno-rtti  
 	  COMPILER_LFLAGS   += -lrt
 	endif
@@ -191,7 +192,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	LINK_FORTRAN      += -lgfortran
 
 	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
-	COMPILER_LFLAGS   += -lrt
+	COMPILER_LFLAGS   += 
 	
 	ifeq ($(call tolower,$(MODE)),debug)
 	  COMPILER_CFLAGS   += -O0 -ggdb
@@ -205,8 +206,9 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  COMPILER_CFLAGS   += -O3
 	endif
 
-	ifeq ($(call tolower,$(SHAREDMEM)),)
+	ifeq ($(call tolower,$(SHAREDMEM)),TBB)
 	  COMPILER_CFLAGS   += -fno-rtti
+	  COMPILER_LFLAGS   += -lrt
 	endif
 
 	ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
