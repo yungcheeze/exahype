@@ -189,7 +189,6 @@ void exahype::Parser::invalidate() {
   _interpretationErrorOccured = true;
 }
 
-
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
   assertion(isValid());
@@ -690,13 +689,35 @@ double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
       getTokenAfter("solver", solverNumber + 1, "maximum-mesh-size", 1, 0);
   result = atof(token.c_str());
   if (tarch::la::smallerEquals(result, 0.0)) {
-    logError("getMaximumMeshSize()",
+    logError("getMaximumMeshSize(int)",
              "'" << getIdentifier(solverNumber)
                  << "': 'maximum-mesh-size': Value must be greater than zero.");
     _interpretationErrorOccured = true;
   }
 
   logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
+  return result;
+}
+
+double exahype::Parser::getMaximumMeshDepth(int solverNumber) const {
+  std::string token;
+  int result;
+
+  token = getTokenAfter("solver", solverNumber + 1, "maximum-mesh-depth", 1, 0);
+
+  if (token==_noTokenFound) {
+    return 0;
+  }
+
+  result = std::atoi(token.c_str());
+  if (tarch::la::smaller(result, 0)) {
+    logError("getMaximumMeshDepth(int)",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'maximum-mesh-depth': Value must be greater than or equal to zero.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getMaximumMeshDepth()", "found maximum mesh size " << result);
   return result;
 }
 

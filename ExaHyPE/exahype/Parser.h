@@ -281,6 +281,15 @@ class exahype::Parser {
   double getMaximumMeshSize(int solverNumber) const;
 
   /**
+   * \return The maximum adaptive mesh depth as specified
+   * by the user.
+   *
+   * \note I fthe user has not specified an adaptive
+   * mesh depth, 0 is returned.
+   */
+  double getMaximumMeshDepth(int solverNumber) const;
+
+  /**
    * Prints a summary of the parameters read in for a solver.
    */
   void logSolverDetails(int solverNumber) const;
