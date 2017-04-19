@@ -22,10 +22,6 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
-const int exahype::Vertex::InvalidMetadataEntry = -1;
-
-const int exahype::Vertex::MetadataPerSolver = 2;
-
 exahype::Vertex::Vertex() : Base() {
   _vertexData.setCellDescriptionsIndex(
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance()

@@ -330,27 +330,19 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
              numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, maximumAdaptiveMeshDepth,
              timeStepping, std::move(profiler)),
-     _coarsestGridLevel(3),
-     _maximumGridDepth(maximumGridDepth),
-     _previousMinCorrectorTimeStepSize(std::numeric_limits<double>::max(),
-     _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
-     _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
-     _minPredictorTimeStamp(std::numeric_limits<double>::max()),
-     _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
-     _minNextPredictorTimeStepSize(std::numeric_limits<double>::max(),
-     _dofPerFace(numberOfVariables *
-          power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-     _dofPerCellBoundary(DIMENSIONS_TIMES_TWO * _dofPerFace),
-     _dofPerCell(numberOfVariables *
-          power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-     _fluxDofPerCell(_dofPerCell *
-              (DIMENSIONS + 1)),  // +1 for sources
-     _spaceTimeDofPerCell(numberOfVariables *
-                   power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-     _spaceTimeFluxDofPerCell(_spaceTimeDofPerCell *
-                       (DIMENSIONS + 1)),  // +1 for sources
-     _dataPointsPerCell((numberOfVariables+numberOfParameters) *
-     power(nodesPerCoordinateAxis, DIMENSIONS + 0))) {
+     _previousMinCorrectorTimeStepSize( std::numeric_limits<double>::max() ),
+     _minCorrectorTimeStamp( std::numeric_limits<double>::max() ),
+     _minCorrectorTimeStepSize( std::numeric_limits<double>::max() ),
+     _minPredictorTimeStamp( std::numeric_limits<double>::max() ),
+     _minPredictorTimeStepSize( std::numeric_limits<double>::max() ),
+     _minNextPredictorTimeStepSize( std::numeric_limits<double>::max() ),
+     _dofPerFace( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1) ),
+     _dofPerCellBoundary( DIMENSIONS_TIMES_TWO * _dofPerFace ),
+     _dofPerCell( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0) ),
+     _fluxDofPerCell( _dofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
+     _spaceTimeDofPerCell( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1) ),
+     _spaceTimeFluxDofPerCell( _spaceTimeDofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
+     _dataPointsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)) {
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
@@ -652,16 +644,16 @@ void exahype::solvers::ADERDGSolver::updateMinNextTimeStepSize( double value ) {
   updateMinNextPredictorTimeStepSize(value);
 }
 
-void exahype::solvers::ADERDGSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+void exahype::solvers::ADERDGSolver::initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
   _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
 
   setPreviousMinCorrectorTimeStepSize(0.0);
   setMinCorrectorTimeStepSize(0.0);
   setMinPredictorTimeStepSize(0.0);
 
-  setPreviousMinCorrectorTimeStamp(value);
-  setMinCorrectorTimeStamp(value);
-  setMinPredictorTimeStamp(value);
+  setPreviousMinCorrectorTimeStamp(timeStamp);
+  setMinCorrectorTimeStamp(timeStamp);
+  setMinPredictorTimeStamp(timeStamp);
 }
 
 void exahype::solvers::ADERDGSolver::initFusedSolverTimeStepSizes() {
@@ -730,7 +722,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
   // Fine grid cell based uniform mesh refinement.
-  int fineGridCellElement =
+  const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
   // Fine grid cell based adaptive mesh refinement operations.
@@ -741,7 +733,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     switch (fineGridCellDescription.getMergedLimiterStatus(0)) {
       // assertion: mergedLimiterStatus has been unified
       case CellDescription::LimiterStatus::Ok:
-      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
         #ifdef Parallel
         ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
         #endif
@@ -756,6 +748,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
 
         // marking for refinement
         return markForRefinement(fineGridCellDescription);
+      }
       default:
         return false;
     }
@@ -1272,7 +1265,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
       subcellIndex);
 
   // previous solution
-  assertion(DataHeap::getInstance().isValidIndex(fineGridCellDescription.getPreviousSolution());
+  assertion(DataHeap::getInstance().isValidIndex(fineGridCellDescription.getPreviousSolution()));
   double* previousSolutionFine   = DataHeap::getInstance().getData(
       fineGridCellDescription.getPreviousSolution()).data();
   double* previousSolutionCoarse = DataHeap::getInstance().getData(

@@ -1279,7 +1279,7 @@ public:
 
   void updateMinNextTimeStepSize( double value ) override;
 
-  void initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) override;
+  void initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) override;
 
   void initFusedSolverTimeStepSizes();
 

@@ -64,7 +64,7 @@
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
-exahype::runners::Runner::Runner(Parser& parser) : _parser(parser) {}
+exahype::runners::Runner::Runner(Parser& parser) : _parser(parser), _boundingBoxSize(0.0) {}
 
 exahype::runners::Runner::~Runner() {}
 
@@ -347,7 +347,7 @@ int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
 }
 
 
-exahype::repositories::Repository* exahype::runners::Runner::createRepository() const {
+exahype::repositories::Repository* exahype::runners::Runner::createRepository() {
   // Geometry is static as we need it survive the whole simulation time.
   static peano::geometry::Hexahedron geometry(
       _parser.getDomainSize(),
@@ -378,6 +378,9 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
   }
   #endif
+
+  _boundingBoxSize = boundingBoxSize;
+
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
       boundingBoxSize,
@@ -516,7 +519,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface::writeHeader();
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
-    initSolverTimeStepData();
+    initSolvers(_boundingBoxSize);
     repository.getState().switchToPreAMRContext();
     createGrid(repository);
     /*
@@ -530,7 +533,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
      * since we receive here the metadata
      * that was sent in the last iteration of the grid setup.
      */
-    initSolverTimeStepData();
+    initSolvers(_boundingBoxSize);
 
     logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
@@ -540,7 +543,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
     if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-      initSolverTimeStepData();
+      initSolvers(_boundingBoxSize);
       updateLimiterDomain(repository);
     }
 
@@ -644,16 +647,16 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 //    }
 //
 //    repository.logIterationStatistics(false);
-//  }
+  }
 
   repository.terminate();
 
   return 0;
 }
 
-void exahype::runners::Runner::initSolverTimeStepData() {
+void exahype::runners::Runner::initSolvers(const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initSolver(0.0);
+    p->initSolver(0.0,boundingBox);
   }
 }
 

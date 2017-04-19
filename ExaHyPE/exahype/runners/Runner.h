@@ -38,6 +38,8 @@ class exahype::runners::Runner {
 
   exahype::Parser& _parser;
 
+  tarch::la::Vector<DIMENSIONS,double> _boundingBoxSize;
+
   /**
    * Setup the oracles for the shared memory parallelisation. Different
    * oracles can be employed:
@@ -84,7 +86,7 @@ class exahype::runners::Runner {
    * Reset all time stamps to zero. Runs through the solver registry only,
    * i.e. no grid traversal is required.
    */
-  void initSolverTimeStepData();
+  void initSolvers(const tarch::la::Vector<DIMENSIONS,double>& boundingBox);
 
   void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;
 
@@ -175,8 +177,11 @@ class exahype::runners::Runner {
   /**
    * Sets up the geometry, hands it over to a new instance of the repository
    * and returns the repository.
+   *
+   * Sets the _boundingBoxSize field to the
+   * bounding box used for the repository.
    */
-  exahype::repositories::Repository* createRepository() const;
+  exahype::repositories::Repository* createRepository();
 
   /**
    * Constructs the initial computational grid

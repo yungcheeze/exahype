@@ -59,7 +59,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   /**
    * Defines an invalid metadata entry.
    */
-  constexpr int InvalidMetadataEntry = -1;
+  static constexpr int InvalidMetadataEntry = -1;
 
   /**
    * Defines the length of the metadata
@@ -68,11 +68,10 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * First entry cell type
    * Second entry limiter status.
    */
-  constexpr int MetadataPerSolver = 2;
+  static constexpr int MetadataPerSolver = 2;
 
-  constexpr int MetadataCellType      = 0;
-  constexpr int MetadataLimiterStatus = 1;
-
+  static constexpr int MetadataCellType      = 0;
+  static constexpr int MetadataLimiterStatus = 1;
 
   /**
    * Default Constructor

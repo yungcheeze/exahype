@@ -261,9 +261,9 @@ void exahype::mappings::MeshRefinement::enterCell(
                       fineGridCell,
                       fineGridVertices,
                       fineGridVerticesEnumerator,
+                      coarseGridCell,
                       coarseGridVertices,
                       coarseGridVerticesEnumerator,
-                      coarseGridCell,
                       fineGridPositionOfCell,
                       solverNumber);
         break;
@@ -276,9 +276,9 @@ void exahype::mappings::MeshRefinement::enterCell(
             fineGridCell,
             fineGridVertices,
             fineGridVerticesEnumerator,
+            coarseGridCell,
             coarseGridVertices,
             coarseGridVerticesEnumerator,
-            coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
 
@@ -322,9 +322,9 @@ void exahype::mappings::MeshRefinement::leaveCell(
             fineGridCell,
             fineGridVertices,
             fineGridVerticesEnumerator,
+            coarseGridCell,
             coarseGridVertices,
             coarseGridVerticesEnumerator,
-            coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
 

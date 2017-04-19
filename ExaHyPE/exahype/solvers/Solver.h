@@ -326,7 +326,7 @@ class exahype::solvers::Solver {
    * the finest mesh level the solver might occupy during the
    * simulation.
    */
-  int _maximumAdaptiveMeshDepth;
+  const int _maximumAdaptiveMeshDepth;
 
   /**
    * The minimum extent in each coordinate direction at least one cell in the grid has.
@@ -561,7 +561,7 @@ class exahype::solvers::Solver {
    * The maximum adaptive refinement level is defined
    * with respect to this level.
    */
-  virtual void initSolver(double timeStamp, tarch::la::Vector<DIMENSIONS,double>& boundingBox) = 0;
+  virtual void initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

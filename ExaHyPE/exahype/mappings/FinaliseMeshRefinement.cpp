@@ -134,9 +134,9 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
             fineGridCell,
             fineGridVertices,
             fineGridVerticesEnumerator,
+            coarseGridCell,
             coarseGridVertices,
             coarseGridVerticesEnumerator,
-            coarseGridCell,
             fineGridPositionOfCell,
             solverNumber);
       }

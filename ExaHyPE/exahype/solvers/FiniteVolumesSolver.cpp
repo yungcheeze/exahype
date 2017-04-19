@@ -43,15 +43,15 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
              numberOfVariables, numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, maximumAdaptiveMeshDepth,
              timeStepping, std::move(profiler)),
-            _previousMinTimeStepSize(std::numeric_limits<double>::max()),
-            _minTimeStamp(std::numeric_limits<double>::max()),
-            _minTimeStepSize(std::numeric_limits<double>::max()),
-            _minNextTimeStepSize(std::numeric_limits<double>::max()
-            _dataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-            _ghostLayerWidth(ghostLayerWidth),
-            _ghostDataPerPatch((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
-            _dataPerPatchFace(_ghostLayerWidth*(numberOfVariables+numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-            _dataPerPatchBoundary(DIMENSIONS_TIMES_TWO *_dataPerPatchFace)) {
+            _previousMinTimeStepSize( std::numeric_limits<double>::max() ),
+            _minTimeStamp( std::numeric_limits<double>::max() ),
+            _minTimeStepSize( std::numeric_limits<double>::max() ),
+            _minNextTimeStepSize( std::numeric_limits<double>::max() ),
+            _ghostLayerWidth( ghostLayerWidth ),
+            _dataPerPatch( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0) ),
+            _ghostDataPerPatch( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch ),
+            _dataPerPatchFace( _ghostLayerWidth*(numberOfVariables+numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1) ),
+            _dataPerPatchBoundary( DIMENSIONS_TIMES_TWO *_dataPerPatchFace) {
   assertion3(_dataPerPatch > 0, numberOfVariables, numberOfParameters,
              nodesPerCoordinateAxis);
   // register tags with profiler
@@ -93,12 +93,12 @@ void exahype::solvers::FiniteVolumesSolver::updateMinNextTimeStepSize(
   _minNextTimeStepSize = std::min(_minNextTimeStepSize, value);
 }
 
-void exahype::solvers::FiniteVolumesSolver::initSolver(double value, tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+void exahype::solvers::FiniteVolumesSolver::initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
   _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
 
   _previousMinTimeStepSize = 0.0;
   _minTimeStepSize = 0.0;
-  _minTimeStamp = value;
+  _minTimeStamp = timeStamp;
 }
 
 void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
