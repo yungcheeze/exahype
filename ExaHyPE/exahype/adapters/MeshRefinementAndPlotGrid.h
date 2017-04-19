@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_LimiterStatusSpreading_H_
-#define EXAHYPE_ADAPTERS_LimiterStatusSpreading_H_
+#ifndef EXAHYPE_ADAPTERS_MeshRefinementAndPlotGrid_H_
+#define EXAHYPE_ADAPTERS_MeshRefinementAndPlotGrid_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,13 +18,19 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/LimiterStatusSpreading.h"
+ #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/MeshRefinement.h"
+ #include "exahype/mappings/InitialCondition.h"
+ #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
+ #include "exahype/mappings/LoadBalancing.h"
+ #include "exahype/mappings/PostProcessing.h"
+ #include "exahype/adapters/MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class LimiterStatusSpreading;
+        class MeshRefinementAndPlotGrid;
       } 
 }
 
@@ -36,11 +42,23 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::LimiterStatusSpreading {
+class exahype::adapters::MeshRefinementAndPlotGrid {
   private:
-    typedef mappings::LimiterStatusSpreading Mapping0;
+    typedef mappings::PreProcessing Mapping0;
+    typedef mappings::MeshRefinement Mapping1;
+    typedef mappings::InitialCondition Mapping2;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping3;
+    typedef mappings::LoadBalancing Mapping4;
+    typedef mappings::PostProcessing Mapping5;
+    typedef adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6 Mapping6;
 
-     Mapping0  _map2LimiterStatusSpreading;
+     Mapping0  _map2PreProcessing;
+     Mapping1  _map2MeshRefinement;
+     Mapping2  _map2InitialCondition;
+     Mapping3  _map2AugmentedAMRTreePlot2d;
+     Mapping4  _map2LoadBalancing;
+     Mapping5  _map2PostProcessing;
+     Mapping6  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6;
 
 
   public:
@@ -52,16 +70,16 @@ class exahype::adapters::LimiterStatusSpreading {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    LimiterStatusSpreading();
+    MeshRefinementAndPlotGrid();
 
     #if defined(SharedMemoryParallelisation)
-    LimiterStatusSpreading(const LimiterStatusSpreading& masterThread);
+    MeshRefinementAndPlotGrid(const MeshRefinementAndPlotGrid& masterThread);
     #endif
 
-    virtual ~LimiterStatusSpreading();
+    virtual ~MeshRefinementAndPlotGrid();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const LimiterStatusSpreading& workerThread);
+    void mergeWithWorkerThread(const MeshRefinementAndPlotGrid& workerThread);
     #endif
 
     void createInnerVertex(

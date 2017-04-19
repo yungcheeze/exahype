@@ -70,6 +70,7 @@ class exahype::repositories::Repository {
      * Switch to another event handle.
      */
     virtual void switchToMeshRefinement() = 0;    
+    virtual void switchToMeshRefinementAndPlotGrid() = 0;    
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
     virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation() = 0;    
@@ -93,6 +94,7 @@ class exahype::repositories::Repository {
     virtual void switchToFinaliseMeshRefinementAndSubcellSending() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
+    virtual bool isActiveAdapterMeshRefinementAndPlotGrid() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const = 0;
