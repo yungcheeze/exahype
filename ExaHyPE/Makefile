@@ -152,15 +152,15 @@ ifeq ($(call tolower,$(COMPILER)),intel)
       COMPILER_LFLAGS += -xHost
 	else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
 	  COMPILER_CFLAGS += -mmic
-	  COMPILER_LFLAGS += -mmic -lrt
+	  COMPILER_LFLAGS += -mmic
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
 	  COMPILER_CFLAGS += -xMIC-AVX512 -fma
       FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
-      COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+      COMPILER_LFLAGS += -xMIC-AVX512 -fma
     else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
 	  COMPILER_CFLAGS += -xCORE-AVX2 -fma
 	  FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
-      COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+      COMPILER_LFLAGS += -xCORE-AVX2 -fma
     else
       $(error Unknown option for variable [ARCHITECTURE])
     endif
@@ -207,6 +207,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),TBB)
+	else
 	  COMPILER_CFLAGS   += -fno-rtti
 	  COMPILER_LFLAGS   += -lrt
 	endif
@@ -219,10 +220,10 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  COMPILER_LFLAGS += -march=native
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
 	  COMPILER_CFLAGS += -march=knl
-	  COMPILER_LFLAGS += -march=knl -lrt
+	  COMPILER_LFLAGS += -march=knl
 	else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
 	  COMPILER_CFLAGS += -march=haswell
-      COMPILER_LFLAGS += -march=haswell -lrt
+      COMPILER_LFLAGS += -march=haswell
     else
 	  $(error Unknown option for variable [ARCHITECTURE])
 	endif
