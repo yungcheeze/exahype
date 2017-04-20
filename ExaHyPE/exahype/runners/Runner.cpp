@@ -495,13 +495,7 @@ void exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     #endif
   }
 
-  // TODO(Dominic): For testing purposes
-  repository.iterate(10);
-
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
-
-  repository.switchToPlotAugmentedAMRGrid();
-  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -527,7 +521,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 //    createGrid(repository);
 
     initialiseMesh(repository);
-    repository.iterate();
 
     /*
      * Set ADER-DG corrector time stamp and finite volumes time stamp.
@@ -781,6 +774,7 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
   repository.getState().switchToPreAMRContext();
   createMesh(repository);
+  repository.iterate(2); // a few extra iterations
 
   logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 

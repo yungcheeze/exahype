@@ -165,12 +165,10 @@ void exahype::mappings::Sending::leaveCell(
 
       int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[solverNumber];
+        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
         exahype::solvers::Solver::SubcellPosition subcellPosition =
-            solver->computeSubcellPositionOfCellOrAncestor(
-                fineGridCell.getCellDescriptionsIndex(),element);
+            solver->computeSubcellPositionOfCellOrAncestor(fineGridCell.getCellDescriptionsIndex(),element);
 
         if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound &&
             exahype::amr::onBoundaryOfParent(
