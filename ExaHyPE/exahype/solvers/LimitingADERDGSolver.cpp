@@ -1018,8 +1018,7 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
 
               lock.free();
 
-              limiterElement = _limiter->tryGetElement(
-                  fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
+              limiterElement = _limiter->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
 
               assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getPreviousSolution()),solverPatch.toString());
               assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),solverPatch.toString());
@@ -1036,7 +1035,7 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
                   limiterSolution); // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
             } else {
               limiterPatch = &_limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
-              _limiter->rollbackSolution(cellDescriptionsIndex,limiterElement,fineGridVertices,fineGridVerticesEnumerator);
+//              _limiter->rollbackSolution(cellDescriptionsIndex,limiterElement,fineGridVertices,fineGridVerticesEnumerator);
             }
 
             // Copy more geometry information from the solver patch
@@ -1285,18 +1284,22 @@ void exahype::solvers::LimitingADERDGSolver::prolongateDataAndPrepareDataRestric
     case SolverPatch::LimiterStatus::Ok:
       _solver->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,element);
       break;
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
-    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      _solver->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,element);
+      //  _solver->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,element);
 
-      // not necessary anymore
+      // TODO not necessary anymore
 //      limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());7
 //      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
 //      _limiter->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,limiterElement);
       break;
+    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+      // do nothing;
     case SolverPatch::LimiterStatus::Troubled:
-
-      // not necessary anymore
+      // TODO(Dominic): We will have troubled ancestors in the grid
+      if (solverPatch.getType()==SolverPatch::Type::Ancestor) {
+        _solver->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,element);
+      }
+      // TODO not necessary anymore
 //      limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
 //      assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
 //      _limiter->prolongateDataAndPrepareDataRestriction(cellDescriptionsIndex,limiterElement);
@@ -1360,13 +1363,22 @@ void exahype::solvers::LimitingADERDGSolver::restrictData(
       break;
     case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
     case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
-      // do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
+      if (solverPatch.getType()==SolverPatch::Type::Cell ||
+                solverPatch.getType()==SolverPatch::Type::Ancestor) {
+        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
+      }
+      // TODO do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
       //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
       //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());
       //      _limiter->restrictData(cellDescriptionsIndex,limiterElement,parentCellDescriptionsIndex,parentLimiterElement,subcellIndex);
       break;
     case SolverPatch::LimiterStatus::Troubled:
+      // TODO(Dominic): We will have troubled ancestors in the grid
+      if (solverPatch.getType()==SolverPatch::Type::Cell ||
+          solverPatch.getType()==SolverPatch::Type::Ancestor) {
+        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
+      }
+
       // do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
       //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
       //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());

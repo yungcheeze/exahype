@@ -436,7 +436,7 @@ int exahype::runners::Runner::run() {
 
 void exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
   int gridSetupIterations = 0;
-  repository.switchToMeshRefinementAndPlotGrid();
+  repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
@@ -494,6 +494,9 @@ void exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     }
     #endif
   }
+
+  // TODO(Dominic): For testing purposes
+  repository.iterate(10);
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
