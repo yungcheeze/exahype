@@ -848,7 +848,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double lFhbnd[80];  // nVar * nDOFy * 4
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,false,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
