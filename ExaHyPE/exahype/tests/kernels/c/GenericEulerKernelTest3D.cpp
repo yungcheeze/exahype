@@ -182,7 +182,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
     lFhi_z[i + 3] = 3.;
   }
 
-  kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(
+  kernels::aderdg::generic::c::volumeIntegralLinear<false,false,NumberOfVariables,Order+1>(
       lduh, lFhi, dx);
 
   for (int i = 0; i < 320; i++) {
@@ -561,7 +561,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double lFhbnd[480] = {0.0};  // nVar * nDOFy * nDOF_z * 6
 
   // TODO(Dominic): Fix test
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,false,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,

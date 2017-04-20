@@ -98,7 +98,7 @@ void spaceTimePredictorNonlinear(
 template <typename SolverType>
 void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);
 
-template <int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
