@@ -80,6 +80,7 @@ event-mapping:
 adapter:
   name: MeshRefinement
   merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
   // Initial Condition comes after "MeshRefinement" since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
@@ -91,6 +92,7 @@ adapter:
 adapter:
   name: MeshRefinementAndPlotGrid
   merge-with-user-defined-mapping: PreProcessing
+  merge-with-user-defined-mapping: Merging                 // Merge Time Step data
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
   // Initial Condition comes after "MeshRefinement" since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
