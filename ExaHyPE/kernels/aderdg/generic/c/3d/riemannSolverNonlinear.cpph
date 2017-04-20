@@ -25,48 +25,6 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-<<<<<<< HEAD
-  /**
-   * Here, we implement a very simple Rusanov scheme with scalar dissipation
-   * (smax*Id).
-   * We can change this into a more sophisticated Osher or HLLEM Riemann solver
-   * whenever needed!
-   *
-   * We need to consider material parameters
-   * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
-   * We don't need to consider material parameters
-   * in FL,FR,tempStateSizedSquareMatrices,
-   */
-  template <bool useNCP, typename SolverType>
-  void riemannSolverNonlinear(SolverType& solver,
-                              double* FL, double* FR, const double* const QL,
-                              const double* const QR,
-                              double* tempFaceUnknownsArray,
-                              double** tempStateSizedVectors,
-                              double** tempStateSizedSquareMatrices,
-                              const double dt,
-                              const int direction) {
-    constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-    constexpr int numberOfParameters = SolverType::NumberOfParameters;
-    constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-    constexpr int order              = SolverType::Order;
-    constexpr int basisSize          = order+1;
-
-    // Compute the average variables and parameters from the left and the right
-    double QavL[numberOfData] = {0.0};
-    double QavR[numberOfData] = {0.0};
-    {
-      idx3 idx_QLR(basisSize, basisSize, numberOfData);
-      for (int i = 0; i < basisSize; i++) {
-        for (int j = 0; j < basisSize; j++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-              kernels::gaussLegendreWeights[order][j];
-
-          for (int k = 0; k < numberOfData; k++) {
-            QavL[k] += weight * QL[idx_QLR(i, j, k)];
-            QavR[k] += weight * QR[idx_QLR(i, j, k)];
-          }
-=======
 /**
 * We implement a very simple Rusanov scheme with scalar dissipation
 * (smax*Id).
@@ -105,47 +63,11 @@ void riemannSolverNonlinear(SolverType& solver,
         for (int k = 0; k < numberOfData; k++) {
           QavL[k] += weight * QL[idx_QLR(i, j, k)];
           QavR[k] += weight * QR[idx_QLR(i, j, k)];
->>>>>>> master
         }
       }
     }
   }
 
-<<<<<<< HEAD
-    double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
-    double LR[numberOfVariables] = {0.0};
-    solver.eigenvalues(QavL, direction, LL);
-    solver.eigenvalues(QavR, direction, LR);
-
-    double Qavg[numberOfData];
-
-    // skip parameters
-    std::transform(LL, LL + numberOfVariables, LL, std::abs<double>);
-    std::transform(LR, LR + numberOfVariables, LR, std::abs<double>);
-    const double* smax_L = std::max_element(LL, LL + numberOfVariables);
-    const double* smax_R = std::max_element(LR, LR + numberOfVariables);
-    const double smax    = std::max(*smax_L, *smax_R);
-
-    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-    double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
-    double ncp[numberOfVariables]               = {0.0};
-
-    // compute fluxes (and fluctuations for non-conservative PDEs)
-    {
-      idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
-      idx3 idx_QLR(basisSize, basisSize, numberOfData);
-
-      for (int i = 0; i < basisSize; i++) {
-        for (int j = 0; j < basisSize; j++) {
-
-          if(useNCP) { // we don't use matrixB but the NCP call here.
-            for(int l=0; l < numberOfVariables; l++) {
-              gradQ[direction][l] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
-              Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
-            }
-            
-            solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
-=======
   double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
   double LR[numberOfVariables] = {0.0};
   solver.eigenvalues(QavL, direction, LL);
@@ -174,7 +96,6 @@ void riemannSolverNonlinear(SolverType& solver,
           for(int l=0; l < numberOfVariables; l++) {
             gradQ[direction][l] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
             Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
->>>>>>> master
           }
 
           solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
