@@ -1355,38 +1355,40 @@ void exahype::solvers::LimitingADERDGSolver::restrictData(
     const int parentCellDescriptionsIndex,
     const int parentElement,
     const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
-  switch(solverPatch.getLimiterStatus()) {
-    case SolverPatch::LimiterStatus::Ok:
-      _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
-      break;
-    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
-    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      if (solverPatch.getType()==SolverPatch::Type::Cell ||
-                solverPatch.getType()==SolverPatch::Type::Ancestor) {
-        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
-      }
-      // TODO do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
-      //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());
-      //      _limiter->restrictData(cellDescriptionsIndex,limiterElement,parentCellDescriptionsIndex,parentLimiterElement,subcellIndex);
-      break;
-    case SolverPatch::LimiterStatus::Troubled:
-      // TODO(Dominic): We will have troubled ancestors in the grid
-      if (solverPatch.getType()==SolverPatch::Type::Cell ||
-          solverPatch.getType()==SolverPatch::Type::Ancestor) {
-        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
-      }
+  _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
 
-      // do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
-      //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());
-      //      _limiter->restrictData(cellDescriptionsIndex,limiterElement,parentCellDescriptionsIndex,parentLimiterElement,subcellIndex);
-      break;
-  }
-
-  mergeLimiterStatusWithAncestors(cellDescriptionsIndex,element);
+//  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+//
+//  switch(solverPatch.getLimiterStatus()) {
+//    case SolverPatch::LimiterStatus::Ok:
+//      _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
+//      break;
+//    case SolverPatch::LimiterStatus::NeighbourIsTroubledCell:
+//    case SolverPatch::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+//      if (solverPatch.getType()==SolverPatch::Type::Cell ||
+//          solverPatch.getType()==SolverPatch::Type::Ancestor) {
+//        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
+//      }
+//      // TODO do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
+//      //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+//      //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());
+//      //      _limiter->restrictData(cellDescriptionsIndex,limiterElement,parentCellDescriptionsIndex,parentLimiterElement,subcellIndex);
+//      break;
+//    case SolverPatch::LimiterStatus::Troubled:
+//      // TODO(Dominic): We will have troubled ancestors in the grid
+//      if (solverPatch.getType()==SolverPatch::Type::Cell ||
+//          solverPatch.getType()==SolverPatch::Type::Ancestor) {
+//        _solver->restrictData(cellDescriptionsIndex,element,parentCellDescriptionsIndex,parentElement,subcellIndex);
+//      }
+//
+//      // do nothing' code below was need for Michael D.'s Dual-AMR Limiting.
+//      //      limiterElement       = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+//      //      parentLimiterElement = tryGetLimiterElement(parentCellDescriptionsIndex,solverPatch.getSolverNumber());
+//      //      _limiter->restrictData(cellDescriptionsIndex,limiterElement,parentCellDescriptionsIndex,parentLimiterElement,subcellIndex);
+//      break;
+//  }
+//  mergeLimiterStatusWithAncestors(cellDescriptionsIndex,element);
 }
 
 
