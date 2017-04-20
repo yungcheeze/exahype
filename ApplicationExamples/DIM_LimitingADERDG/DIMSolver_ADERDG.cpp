@@ -6,6 +6,8 @@
 
 #include "InitialData.h"
 
+#include "peano/utils/Loop.h"
+
 // #include "Limiter.h"
 
 #include <cstring> // memset
@@ -17,9 +19,28 @@ tarch::logging::Log DIM::DIMSolver_ADERDG::_log( "DIM::DIMSolver_ADERDG" );
 bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
   // True == NoLimiter, False == Limiter
   const ReadOnlyVariables qmin(QMin);
-/*
+
 // Limiter based on the center of the cell
-if(center[0]*center[0]+center[1]*center[1]<0.25*0.25)
+
+/*
+const double rad = 0.25;
+
+// points
+int outsidePoints = 0;
+
+tarch::la::Vector<DIMENSIONS,double> offset = center-0.5*dx;
+dfor2(p)
+  tarch::la::Vector<DIMENSIONS,double> corner=offset;
+  #if DIMENSIONS==3
+  corner[2]+=p[2]*dx[2];
+  #endif
+  corner[1]+=p[1]*dx[1];
+  corner[0]+=p[0]*dx[0];
+  
+  outsidePoints += (tarch::la::norm2(corner)>rad) ? 1 : 0;
+enddforx
+
+if (outsidePoints>0 && outsidePoints<TWO_POWER_D) 
 {
   return false;
 }
@@ -28,7 +49,17 @@ else
   return true; 
 }
 */
+if(tarch::la::norm2(center)<0.32 && 
+tarch::la::norm2(center)>0.2 )
+{
+  return false;
+}
+else
+{
+  return true; 
+}
 
+/*
 // Physical admissibility criteria done in C++
 if(QMin[ 12]<0.99999 && QMax[ 12]>0.00001)
 {
@@ -36,7 +67,7 @@ if(QMin[ 12]<0.99999 && QMax[ 12]>0.00001)
 }else{
   return true; 
 }
-
+*/
 /*
 // Physical admissibility critedia done in fortran
 int status;
