@@ -33,7 +33,7 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
      */
     static tarch::logging::Log _log;
   public:
-    DIMSolver_ADERDG(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    DIMSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.
