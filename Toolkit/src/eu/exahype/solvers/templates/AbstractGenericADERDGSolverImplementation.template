@@ -53,7 +53,29 @@ void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* 
   kernels::aderdg::generic::fortran::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
 #else
 #ifdef isLinear
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+
+#define STPL(usePointSource, useSource, useFlux, useNCP)				\
+        kernels::aderdg::generic::c::spaceTimePredictorLinear<usePointSource, useSource, useFlux, useNCP, {{Solver}}>( \
+           *static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd, \
+           tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+
+ if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,true,true);
+ if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,true,false);
+ if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,false,true);
+ if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,false,false);
+ if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,true,true);
+ if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,true,false);
+ if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,false,true);
+ if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,false,false);
+ if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,true,true);
+ if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,true,false);
+ if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,false,true);
+ if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,false,false);
+ if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,true,true);
+ if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,true,false);
+ if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,false,true);
+ if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,false,false);
+
 #else
 
   // For some reason, we compile here the SpaceTimepRedictorNonLinear (STPNL) for all possible
@@ -118,26 +140,29 @@ void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* 
 #endif
 #ifndef isFortran
 #ifdef isLinear
-  kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(lduh,lFhi,dx);
+#define VI(useSource, useFlux) \
+	  kernels::aderdg::generic::c::volumeIntegralLinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+
 #else
 
-#define VINL(useSource, useFlux) \
-    kernels::aderdg::generic::c::volumeIntegralNonlinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+#define VI(useSource, useFlux) \
+	    kernels::aderdg::generic::c::volumeIntegralNonlinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+#endif // isLinear
   
   if(useAlgebraicSource() || useNonConservativeProduct()) {
     if(useConservativeFlux()) {
-      VINL(true, true);
-    } else {
-      VINL(true, false);
-    }
+      VI(true, true);
+    } 	else {
+      VI(true, false);
+    } 
   } else {
     if(useConservativeFlux()) {
-      VINL(false, true);
-    } else {
-      VINL(false, false);
+      VI(false, true);
+    } else {			 
+      VI(false, false);
     }
   }
-#endif // isLinear
+
 #endif // !isFortran
 {{AfterVolumeIntegral}}
 }
@@ -161,7 +186,11 @@ void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const 
 #endif
 #ifndef isFortran
 #ifdef isLinear
-   kernels::aderdg::generic::c::riemannSolverLinear<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  if(useNonConservativeProduct()) {
+   kernels::aderdg::generic::c::riemannSolverLinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  } else {
+   kernels::aderdg::generic::c::riemannSolverLinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  }
 #else
   if(useNonConservativeProduct()) {
     kernels::aderdg::generic::c::riemannSolverNonlinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);

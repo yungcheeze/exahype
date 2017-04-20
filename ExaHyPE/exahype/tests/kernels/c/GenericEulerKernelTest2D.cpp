@@ -390,7 +390,7 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
       }
     }
 
-    kernels::aderdg::generic::c::riemannSolverLinear<GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverLinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR,
         QL,
@@ -459,7 +459,7 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
       }
     }
 
-    kernels::aderdg::generic::c::riemannSolverLinear<GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverLinear<false,GenericEulerKernelTest>(
         *this,
         FL, FR,
         QL,
@@ -712,7 +712,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
                     3.70370370370370349811e-02};  // mesh spacing
     // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[160]
 
-    kernels::aderdg::generic::c::volumeIntegralLinear<nVar,basisSize>(
+    kernels::aderdg::generic::c::volumeIntegralLinear<false,false,nVar,basisSize>(
         lduh,
         ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0]
@@ -744,7 +744,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
     // output:
     double lduh[80];  // intentionally left uninitialised
 
-    kernels::aderdg::generic::c::volumeIntegralLinear<5,4>(lduh, lFhi, dx[0]);
+    kernels::aderdg::generic::c::volumeIntegralLinear<false,false,5,4>(lduh, lFhi, dx[0]);
 
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -848,7 +848,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double lFhbnd[80];  // nVar * nDOFy * 4
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
