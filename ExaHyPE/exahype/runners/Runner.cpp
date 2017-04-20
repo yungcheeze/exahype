@@ -537,7 +537,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
      * since we receive here the metadata
      * that was sent in the last iteration of the grid setup.
      */
-    initSolvers(_boundingBoxSize);
+//    initSolvers(_boundingBoxSize);
+//
+//    repository.switchToInitialConditionAndTimeStepSizeComputation();
+//    repository.iterate();
 
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
@@ -582,65 +585,65 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     printTimeStepInfo(-1,repository);
 
     validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
-//
-//    const double simulationEndTime = _parser.getSimulationEndTime();
-//
-//    logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-//    logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-//
-//    while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
-//        tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-//      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
-//      // see issue #103
-//      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
-//          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-//
-//      if (_parser.getFuseAlgorithmicSteps()) {
-//        repository.getState().setTimeStepSizeWeightForPredictionRerun(
-//            _parser.getFuseAlgorithmicStepsFactor());
-//
-//        int numberOfStepsToRun = 1;
-//        if (plot) {
-//          numberOfStepsToRun = 0;
-//        }
-//        else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
-//          /**
-//           * This computation is optimistic. If we were pessimistic, we had to
-//           * use the max solver time step size. However, this is not necessary
-//           * here, as we half the time steps anyway.
-//           */
-//          if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-//            const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
-//            numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
-//          }
-//          numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
-//        }
-//
-//        runOneTimeStampWithFusedAlgorithmicSteps(
-//          repository,
-//          numberOfStepsToRun,
-//          _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
-//        );
-//        printTimeStepInfo(numberOfStepsToRun,repository);
-//      } else {
-//        runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
-//      }
-//
-//      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
-//      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
-//        static int dumpCounter = -1;
-//        dumpCounter++;
-//        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
-//      }
-//      #endif
-//
-//      logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
-//    }
-//    if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-//      logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
-//    }
-//
-//    repository.logIterationStatistics(false);
+
+    const double simulationEndTime = _parser.getSimulationEndTime();
+
+    logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+    logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+
+    while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+        tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
+      // see issue #103
+      bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
+          solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+
+      if (_parser.getFuseAlgorithmicSteps()) {
+        repository.getState().setTimeStepSizeWeightForPredictionRerun(
+            _parser.getFuseAlgorithmicStepsFactor());
+
+        int numberOfStepsToRun = 1;
+        if (plot) {
+          numberOfStepsToRun = 0;
+        }
+        else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
+          /**
+           * This computation is optimistic. If we were pessimistic, we had to
+           * use the max solver time step size. However, this is not necessary
+           * here, as we half the time steps anyway.
+           */
+          if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+            const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+            numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
+          }
+          numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
+        }
+
+        runOneTimeStepWithFusedAlgorithmicSteps(
+          repository,
+          numberOfStepsToRun,
+          _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
+        );
+        printTimeStepInfo(numberOfStepsToRun,repository);
+      } else {
+        runOneTimeStepWithThreeSeparateAlgorithmicSteps(repository, plot);
+      }
+
+      #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
+      if (sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::hasLearnedSinceLastQuery()) {
+        static int dumpCounter = -1;
+        dumpCounter++;
+        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics( _parser.getMulticorePropertiesFile() + "-dump-" + std::to_string(dumpCounter) );
+      }
+      #endif
+
+      logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+    }
+    if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+      logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+    }
+
+    repository.logIterationStatistics(false);
   }
 
   repository.terminate();
@@ -778,8 +781,9 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
 
   logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","finalise mesh refinement and compute first time step size");
   repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
+  repository.iterate();
   // finalise mesh refinment and send the data; replace with reinitialisation again
 
   repository.getState().switchToReinitialisationContext();
@@ -941,7 +945,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 }
 
 
-void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
+void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
   /*
    * The adapter below performs the following steps:
@@ -966,9 +970,10 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 
-  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-    updateLimiterDomainFusedTimeStepping(repository);
-  }
+  // TODO(Dominic): Commented out will be merged with the mesh refinement
+//  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+//    updateLimiterDomainFusedTimeStepping(repository);
+//  }
 
   // We consider the limiter status in our mesh
   // refinement criterion. We enforce that the
@@ -976,7 +981,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
   // by additional mesh refinement.
   bool gridUpdate = false;
   while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
-    logInfo("runOneTimeStampWithFusedAlgorithmicSteps(...)","update grid");
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
     repository.switchToMergeTimeStepDataDropFaceData(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
@@ -1018,33 +1023,34 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
   }
 }
 
-void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
+void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
 
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update solution");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update solution");
 
   repository.getState().switchToSolutionUpdateContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
   repository.iterate();
 
+  // TODO(Dominic): Will be merged with the mesh refinement
   // We mimic the flow of the fused time stepping scheme here
   // a little. Updating the limiter domain is thus done after the time step
   // size computation.
-  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-    updateLimiterDomain(repository);
-  }
+//  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+//    updateLimiterDomain(repository);
+//  }
 
   // We mimic the flow of the fused time stepping scheme here
   // a little. Updating grid is thus done after the time step
@@ -1055,7 +1061,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // limiter is only active on the finest mesh level
   // by mesh refinement.
   while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
-    logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
+    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToPreAMRContext();
     repository.switchToMergeTimeStepData();

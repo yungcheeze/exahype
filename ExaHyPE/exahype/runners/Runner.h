@@ -127,7 +127,7 @@ class exahype::runners::Runner {
    * @param numberOfStepsToRun Number of steps to run. If you hand in 0, then
    *           it runs one time step plus does a plot.
    */
-  void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
+  void runOneTimeStepWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
 
   /**
    * If the repository state indicates that a time update did
@@ -175,7 +175,7 @@ class exahype::runners::Runner {
    *
    * @param plot      Do plot in the after the corrector has been applied
    */
-  void runOneTimeStampWithThreeSeparateAlgorithmicSteps(
+  void runOneTimeStepWithThreeSeparateAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
   void validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const;

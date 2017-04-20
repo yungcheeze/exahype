@@ -123,18 +123,21 @@ void exahype::mappings::Reinitialisation::beginIteration(
 
 void exahype::mappings::Reinitialisation::endIteration(
     exahype::State& solverState) {
-  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->rollbackToPreviousTimeStep();
+  // TODO(Dominic): Rollback
 
-        if (!exahype::State::fuseADERDGPhases()) {
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              reconstructStandardTimeSteppingDataAfterRollback();
-        }
-      }
-  }
+//  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+//      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+//
+//      if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+//        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->rollbackToPreviousTimeStep();
+//
+//        if (!exahype::State::fuseADERDGPhases()) {
+//          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+//              reconstructStandardTimeSteppingDataAfterRollback();
+//        }
+//      }
+//  }
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
   logInfo("endIteration(...)","interior face merges: " << _interiorFaceMerges);
@@ -161,19 +164,24 @@ void exahype::mappings::Reinitialisation::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-           && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+           //&& static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+          // TODO(Dominic): Move this into mesh refinement
+
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
 
-          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
-          if (!exahype::State::fuseADERDGPhases()) {
-            limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
-          }
+//          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
+//          if (!exahype::State::fuseADERDGPhases()) {
+//            limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
+//          }
 
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
+
+          // must be after the reinitialisation
+          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(), element);
         }
 
         solver->prepareNextNeighbourMerging(
