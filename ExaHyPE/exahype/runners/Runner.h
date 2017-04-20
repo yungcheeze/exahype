@@ -150,6 +150,12 @@ class exahype::runners::Runner {
   void updateLimiterDomain(exahype::repositories::Repository& repository);
 
   /**
+   * Run the three (four for MPI) adapters necessary for initialising the
+   * limiter domain.
+   */
+  void initialiseMesh(exahype::repositories::Repository& repository);
+
+  /**
    * Run the three (four for MPI) adapters necessary for updating the
    * limiter domain.
    *
@@ -205,7 +211,7 @@ class exahype::runners::Runner {
    * TODO(Dominic): We might not need a few of the other checks anymore after I
    * have introduced the grid refinement requested flag.
    */
-  void createGrid(exahype::repositories::Repository& repository);
+  void createMesh(exahype::repositories::Repository& repository);
 
   /**
    * Run through all the solvers and identify the coarsest grid level in the tree

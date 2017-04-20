@@ -656,6 +656,7 @@ class exahype::solvers::Solver {
         exahype::Vertex* const coarseGridVertices,
         const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
         const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+        const bool initialGrid,
         const int solverNumber) = 0;
 
   /**

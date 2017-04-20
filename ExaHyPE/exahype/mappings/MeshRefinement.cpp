@@ -252,24 +252,24 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    bool refinementRequested = false;
-
-    switch (MeshRefinement::Mode) {
-      case MeshRefinement::RefinementMode::Initial:
-        refineFineGridCell |=
-                  solver->markForRefinement( // TODO(Dominic): Consider the maximum refinement depth here
-                      fineGridCell,
-                      fineGridVertices,
-                      fineGridVerticesEnumerator,
-                      coarseGridCell,
-                      coarseGridVertices,
-                      coarseGridVerticesEnumerator,
-                      fineGridPositionOfCell,
-                      solverNumber);
-        break;
-      default:
-        break;
-    }
+//    switch (MeshRefinement::Mode) {
+//      case MeshRefinement::RefinementMode::Initial:
+//
+//        break;
+//      default:
+//        break;
+//    }
+    refineFineGridCell |=
+        solver->markForRefinement( // TODO(Dominic): Consider the maximum refinement depth here
+            fineGridCell,
+            fineGridVertices,
+            fineGridVerticesEnumerator,
+            coarseGridCell,
+            coarseGridVertices,
+            coarseGridVerticesEnumerator,
+            fineGridPositionOfCell,
+            MeshRefinement::Mode==RefinementMode::Initial,
+            solverNumber);
 
     refineFineGridCell |=
         solver->updateStateInEnterCell(

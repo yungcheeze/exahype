@@ -720,6 +720,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const bool initialGrid,
     const int solverNumber) {
   // Fine grid cell based uniform mesh refinement.
   const int fineGridCellElement =
@@ -730,27 +731,29 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
-    switch (fineGridCellDescription.getMergedLimiterStatus(0)) {
-      // assertion: mergedLimiterStatus has been unified
-      case CellDescription::LimiterStatus::Ok:
-      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
-        #ifdef Parallel
-        ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-        #endif
-        #if defined(Asserts) || defined(Debug)
-        int coarseGridCellElement =
-            tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-        #endif
-        assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
-            fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
-            fineGridCellDescription.toString(),fineGridCell.toString(),
-            coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+    if (fineGridCellDescription.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth) {
+      switch (fineGridCellDescription.getMergedLimiterStatus(0)) {
+        // assertion: mergedLimiterStatus has been unified
+        case CellDescription::LimiterStatus::Ok:
+        case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+          #ifdef Parallel
+          ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+          #endif
+          #if defined(Asserts) || defined(Debug)
+          int coarseGridCellElement =
+              tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+          #endif
+          assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
+                     fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+                     fineGridCellDescription.toString(),fineGridCell.toString(),
+                     coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
-        // marking for refinement
-        return markForRefinement(fineGridCellDescription);
+          // marking for refinement
+          return markForRefinement(fineGridCellDescription);
+        }
+        default:
+          return false;
       }
-      default:
-        return false;
     }
   }
 

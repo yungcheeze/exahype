@@ -434,9 +434,9 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
-void exahype::runners::Runner::createGrid(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
   int gridSetupIterations = 0;
-  repository.switchToMeshRefinement();
+  repository.switchToMeshRefinementAndPlotGrid();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
@@ -497,8 +497,8 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
-//  repository.switchToPlotAugmentedAMRGrid();
-//  repository.iterate(); // For debugging purposes
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -520,8 +520,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
     initSolvers(_boundingBoxSize);
-    repository.getState().switchToPreAMRContext();
-    createGrid(repository);
+//    repository.getState().switchToPreAMRContext();
+//    createGrid(repository);
+
+    initialiseMesh(repository);
+    repository.iterate();
+
     /*
      * Set ADER-DG corrector time stamp and finite volumes time stamp.
      * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
@@ -535,17 +539,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
      */
     initSolvers(_boundingBoxSize);
 
-    logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-    repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
-    repository.switchToInitialConditionAndTimeStepSizeComputation();
-    repository.iterate();
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
-
-    if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-      initSolvers(_boundingBoxSize);
-      updateLimiterDomain(repository);
-    }
 
     bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
@@ -763,6 +757,37 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
 //  logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
+void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository& repository) {
+  /**
+   * We need to gather information from all neighbours
+   * of a cell before we can determine the unified
+   * limiter status value of the cell.
+   *u
+   * We thus need two extra iterations to send and receive
+   * the limiter status of remote neighbours.
+   */
+//  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
+//  repository.switchToMergeTimeStepDataDropFaceData();
+//  repository.iterate(); // spread limiter status once TODO(Dominic):
+
+
+  // We refine here using the previous solution (which is valid)
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
+  repository.getState().switchToPreAMRContext();
+  createMesh(repository);
+
+  logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
+
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
+  repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
+  // finalise mesh refinment and send the data; replace with reinitialisation again
+
+  repository.getState().switchToReinitialisationContext();
+  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
+  repository.switchToReinitialisation();
+  repository.iterate();
+}
+
 void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
   /**
    * We need to gather information from all neighbours
@@ -772,14 +797,15 @@ void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::rep
    * We thus need two extra iterations to send and receive
    * the limiter status of remote neighbours.
    */
-  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
-  repository.switchToMergeTimeStepDataDropFaceData();
-  repository.iterate(); // spread limiter status once TODO(Dominic):
+//  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
+//  repository.switchToMergeTimeStepDataDropFaceData();
+//  repository.iterate(); // spread limiter status once TODO(Dominic):
 
 
   // We refine here using the previous solution (which is valid)
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
-  createGrid(repository);
+  repository.getState().switchToPreAMRContext();
+  createMesh(repository);
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
   repository.switchToFinaliseMeshRefinementAndSubcellSending();
@@ -956,7 +982,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.switchToMergeTimeStepDataDropFaceData(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
     repository.iterate();
 
-    createGrid(repository);
+    createMesh(repository);
 
     repository.getState().switchToPostAMRContext();
     repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
@@ -1035,7 +1061,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     repository.switchToMergeTimeStepData();
     repository.iterate();
 
-    createGrid(repository);
+    createMesh(repository);
 
     repository.getState().switchToPostAMRContext();
     repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();

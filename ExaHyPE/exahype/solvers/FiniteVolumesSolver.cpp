@@ -227,6 +227,7 @@ bool exahype::solvers::FiniteVolumesSolver::markForRefinement(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const bool initialGrid,
     const int solverNumber) {
   // do nothing
   return false;

@@ -225,6 +225,9 @@ private:
    */
   void updateMergedLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
+  void mergeMergedLimiterStatusWithNeighbours(SolverPatch& solverPatch,
+                                              const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices);
+
   /**
    * Based on the limiter status of a solver patch
    * and the solver patch's type, we perform the
@@ -504,6 +507,17 @@ public:
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
   bool markForRefinementBasedOnMergedLimiterStatus(
+        exahype::Cell& fineGridCell,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+        const bool initialGrid,
+        const int solverNumber);
+
+  void mergeMergedLimiterStatusWithNeighbours(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -521,6 +535,7 @@ public:
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
       const int solverNumber) override;
 
   bool updateStateInEnterCell(
@@ -837,17 +852,6 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
-  /**
-   *
-   */
-  void mergeLimiterStatusOfNeighbours(
-        const int                                 cellDescriptionsIndex1,
-        const int                                 element1,
-        const int                                 cellDescriptionsIndex2,
-        const int                                 element2,
-        const tarch::la::Vector<DIMENSIONS, int>& pos1,
-        const tarch::la::Vector<DIMENSIONS, int>& pos2);
-
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
