@@ -61,7 +61,7 @@ exahype-project  ElasticWave
     variables const   = v:2,s:3
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 1.5
+    maximum-mesh-size = 6
     time-stepping     = globalfixed
     kernel const      = generic::fluxes::linear
     language const    = C
@@ -106,7 +106,7 @@ exahype-project  ElasticWave
       time            = 0.0
       repeat          = 0.01
       output          = ./seismogram
-      select          = {x:0.0,y:16.0}
+      select          = x:0.0,y:11.0
     end plot
    
   end solver
