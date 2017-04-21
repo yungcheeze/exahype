@@ -343,7 +343,8 @@ private:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
       CellDescription& coarseGridCellDescription,
-      const int coarseGridCellDescriptionsIndex);
+      const int coarseGridCellDescriptionsIndex,
+      const bool initialGrid);
 
   /**
    * Prolongates Volume data from a parent cell description to
@@ -370,7 +371,8 @@ private:
   void prolongateVolumeData(
       CellDescription&       fineGridCellDescription,
       const CellDescription& coarseGridCellDescription,
-      const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex);
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+      const bool initialGrid);
 
   /**
    * Restricts Volume data from \p cellDescription to
@@ -1329,6 +1331,7 @@ public:
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const bool initialGrid,
       const int solverNumber) override;
 
   bool updateStateInLeaveCell(

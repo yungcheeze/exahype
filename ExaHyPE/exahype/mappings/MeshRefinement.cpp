@@ -280,6 +280,7 @@ void exahype::mappings::MeshRefinement::enterCell(
             coarseGridVertices,
             coarseGridVerticesEnumerator,
             fineGridPositionOfCell,
+            MeshRefinement::Mode==RefinementMode::Initial,
             solverNumber);
 
     const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);

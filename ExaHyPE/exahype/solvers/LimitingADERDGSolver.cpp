@@ -279,14 +279,10 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnMergedLimit
         solverPatch.getLevel() < _coarsestMeshLevel+_maximumAdaptiveMeshDepth
         &&
         (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None ||
+         solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
       if (solverPatch.getMergedLimiterStatus(0)==SolverPatch::LimiterStatus::Troubled) {
-        if (initialGrid) {
-          for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-            solverPatch.setMergedLimiterStatus(i,SolverPatch::LimiterStatus::Ok);
-          }
-        }
         solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
         return true;
       }
@@ -364,11 +360,12 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const bool initialGrid,
     const int solverNumber)  {
   return _solver->updateStateInEnterCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
-      fineGridPositionOfCell,solverNumber);
+      fineGridPositionOfCell,initialGrid,solverNumber);
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(

@@ -771,6 +771,7 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    const bool initialGrid,
     const int solverNumber) {
   bool refineFineGridCell = false;
 
@@ -845,7 +846,8 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
             coarseGridCellDescription,coarseGridCell.getCellDescriptionsIndex());
     addNewCellIfRefinementRequested(
         fineGridCell,fineGridVertices,fineGridVerticesEnumerator,fineGridPositionOfCell,
-        coarseGridCellDescription,coarseGridCell.getCellDescriptionsIndex());
+        coarseGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),
+        initialGrid);
   }
 
   return refineFineGridCell;
@@ -1210,7 +1212,8 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
     CellDescription& coarseGridCellDescription,
-    const int coarseGridCellDescriptionsIndex) {
+    const int coarseGridCellDescriptionsIndex,
+    const bool initialGrid) {
   if (coarseGridCellDescription.getRefinementEvent()==CellDescription::RefiningRequested ||
       coarseGridCellDescription.getRefinementEvent()==CellDescription::Refining) {
     assertion1(coarseGridCellDescription.getType()==CellDescription::Cell,
@@ -1229,7 +1232,7 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
       CellDescription& fineGridCellDescription =
           getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
       prolongateVolumeData(
-          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell);
+          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell,initialGrid);
     } else {
       CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
       assertion2(fineGridCellDescription.getType()==CellDescription::EmptyDescendant
@@ -1242,7 +1245,7 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
       ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
 
       prolongateVolumeData(
-          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell);
+          fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell,initialGrid);
     }
 
     coarseGridCellDescription.setRefinementEvent(CellDescription::Refining);
@@ -1252,7 +1255,8 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
 void exahype::solvers::ADERDGSolver::prolongateVolumeData(
     CellDescription&       fineGridCellDescription,
     const CellDescription& coarseGridCellDescription,
-  const tarch::la::Vector<DIMENSIONS, int>&        subcellIndex) {
+  const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+  const bool initialGrid) {
   const int levelFine = fineGridCellDescription.getLevel();
   const int levelCoarse = coarseGridCellDescription.getLevel();
   assertion(levelCoarse < levelFine);
@@ -1283,7 +1287,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   fineGridCellDescription.setCorrectorTimeStepSize(coarseGridCellDescription.getCorrectorTimeStepSize());
   fineGridCellDescription.setPredictorTimeStepSize(coarseGridCellDescription.getPredictorTimeStepSize());
 
-  // Dominic: This is a little inconsistent since I orignally tried to hide
+  // TODO Dominic: This is a little inconsistent since I orignally tried to hide
   // the limiting from the pure ADER-DG scheme
   fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
   fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
@@ -1291,14 +1295,20 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
     fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Ok);
   }
-  if (coarseGridCellDescription.getMergedLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
-    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-      fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Troubled);
-    }
 
-    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-      assertion(coarseGridCellDescription.getMergedLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
-    } // Dead code elimination will get rid of this line
+  // TODO Dominic: During the inital mesh build where we only refine
+  // according to the PAD, we don't want to have a too broad refined area.
+  // We thus do not flag children cells with troubled
+  if (!initialGrid) {
+    if (coarseGridCellDescription.getMergedLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
+      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+        fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Troubled);
+      }
+
+      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+        assertion(coarseGridCellDescription.getMergedLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
+      } // Dead code elimination will get rid of this line
+    }
   }
 }
 
@@ -2406,7 +2416,7 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     assertion5(tarch::la::equals(p.getCorrectorTimeStepSize(),0.0) || std::isfinite(FOut[i]),p.toString(),faceIndex,normalDirection,i,FOut[i]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
-  // @todo(Dominic): Add to docu why we need this. Left or right input
+  // @todo(Dominic): Add to docu why we need this. Left or right inpclut
   if (faceIndex % 2 == 0) {
     riemannSolver(FOut, FIn, QOut, QIn,
         tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
