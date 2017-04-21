@@ -426,14 +426,18 @@ class exahype::records::ADERDGCellDescription {
   };
   
   /**
-   * The cell descriptions limiter status.
+   * The cell descriptions previous limiter status.
    */
-  parallelise persistent LimiterStatus limiterStatus;
+  parallelise persistent LimiterStatus previousLimiterStatus;
   
   /**
-   * Here, we store the results of the limiter status merging.
+   * Here we store the results of the limiter status merging
+   * between neighbouring cells per face, edge, and corner.
+   * 
+   * The actual limiter status of a cell is computed from the 
+   * 3^d limiter status values. It is never stored explicitly.
    */
-  parallelise persistent LimiterStatus facewiseLimiterStatus[THREE_POWER_D];
+  parallelise persistent LimiterStatus limiterStatus[THREE_POWER_D];
 
   enum CompressionState {
     Uncompressed,
