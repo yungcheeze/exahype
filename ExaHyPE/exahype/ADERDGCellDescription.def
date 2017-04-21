@@ -10,6 +10,7 @@ Packed-Type: int hint-size 32;
 
 Constant: DIMENSIONS hint-value 3;
 Constant: DIMENSIONS_TIMES_TWO hint-value 6;
+Constant: THREE_POWER_D hint-value 27;
 
 class exahype::records::ADERDGCellDescription {
   /**
@@ -432,7 +433,7 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Here, we store the results of the limiter status merging.
    */
-  parallelise persistent LimiterStatus mergedLimiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent LimiterStatus facewiseLimiterStatus[THREE_POWER_D];
 
   enum CompressionState {
     Uncompressed,
