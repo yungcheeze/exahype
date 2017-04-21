@@ -109,7 +109,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
 
           // uses lock inside
           limitingADERDGSolver->mergeLimiterStatusWithAncestors(fineGridCell.getCellDescriptionsIndex(),element);
@@ -227,7 +227,7 @@ void exahype::mappings::LimiterStatusSpreading::dropNeighbourMergedLimiterStatus
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->dropNeighbourMergedLimiterStatus(
+      limitingADERDGSolver->dropNeighbourLimiterStatus(
           fromRank,src,dest,x,level);
     }
   }
@@ -255,10 +255,10 @@ void exahype::mappings::LimiterStatusSpreading::mergeNeighourMergedLimiterStatus
       if (element!=exahype::solvers::Solver::NotFound
           && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDGSolver->mergeWithNeighbourMergedLimiterStatus(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
+        limitingADERDGSolver->mergeWithNeighbourLimiterStatus(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
       } else {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-        limitingADERDGSolver->dropNeighbourMergedLimiterStatus(fromRank,src,dest,x,level);
+        limitingADERDGSolver->dropNeighbourLimiterStatus(fromRank,src,dest,x,level);
       }
     }
   }
@@ -315,7 +315,7 @@ void exahype::mappings::LimiterStatusSpreading::sendEmptyDataInsteadOfMergedLimi
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+      limitingADERDGSolver->sendEmptyDataInsteadOfLimiterStatusToNeighbour(
           toRank,src,dest,x,level);
     }
   }
@@ -352,9 +352,9 @@ void exahype::mappings::LimiterStatusSpreading::sendMergedLimiterStatusToNeighbo
 
       int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
-        limitingADERDGSolver->sendMergedLimiterStatusToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
+        limitingADERDGSolver->sendLimiterStatusToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
       } else {
-        limitingADERDGSolver->sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+        limitingADERDGSolver->sendEmptyDataInsteadOfLimiterStatusToNeighbour(
             toRank,src,dest,x,level);
       }
     }

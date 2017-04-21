@@ -662,6 +662,25 @@ public:
   }
 
   /**
+   * Determine a unified limiter status of a cell description.
+   *
+   * <h2>Determining the unified value</h2>
+   * If all of the merged limiter status fields
+   * are set to Troubled, the limiter status is Troubled.
+   * (There is either all or none of the statuses set to Troubled.)
+   *
+   * Otherwise, if at least one of the merged statuses is set to NeighbourOfTroubledCell,
+   * the status is set to NeighbourOfTroubledCell.
+   *
+   * Otherwise, if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
+   * the status is set to NeighbourIsNeighbourOfTroubledCell.
+   *
+   * \note The ADERdGSolver needs to know about the limiter status during mesh initialisation and
+   * refinement operations.
+   */
+  static CellDescription::LimiterStatus determineLimiterStatus(CellDescription& cellDescription);
+
+  /**
    * Construct an ADERDGSolver.
    *
    * \param identifier             An identifier for this solver.

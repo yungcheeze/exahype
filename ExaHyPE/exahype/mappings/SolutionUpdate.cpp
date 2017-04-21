@@ -141,7 +141,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
+              updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
           _solverFlags._limiterDomainHasChanged[i] |= limiterDomainHasChanged;
         }
 

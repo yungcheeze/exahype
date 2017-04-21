@@ -170,7 +170,7 @@ void exahype::mappings::Reinitialisation::enterCell(
 
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERDGSolver->updateMergedLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
+          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
 
 //          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
 //          if (!exahype::State::fuseADERDGPhases()) {
@@ -181,7 +181,7 @@ void exahype::mappings::Reinitialisation::enterCell(
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
 
           // must be after the reinitialisation
-          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(), element);
+          limitingADERDGSolver->updatePreviousLimiterStatus(fineGridCell.getCellDescriptionsIndex(), element);
         }
 
         solver->prepareNextNeighbourMerging(

@@ -320,6 +320,47 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   }
 }
 
+/**
+ * Iterate over the merged limiter statuses per face and
+ * determine a unique value.
+ */
+exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
+exahype::solvers::ADERDGSolver::determineLimiterStatus(CellDescription& cellDescription) {
+  // 1. Determine new limiter status.
+  CellDescription::LimiterStatus limiterStatus = CellDescription::LimiterStatus::Ok;
+  for (int i=0; i<THREE_POWER_D; i++) {
+    switch (limiterStatus) {
+    case CellDescription::LimiterStatus::Ok:
+      switch (cellDescription.getLimiterStatus(i)) {
+      case CellDescription::LimiterStatus::Troubled:
+        limiterStatus = CellDescription::LimiterStatus::Troubled;
+        break;
+      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+        limiterStatus = CellDescription::LimiterStatus::NeighbourIsTroubledCell;
+        break;
+      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+        limiterStatus = CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell;
+        break;
+      default:
+        break;
+      }
+      break;
+    case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
+      switch (cellDescription.getLimiterStatus(i)) {
+      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
+        limiterStatus = CellDescription::LimiterStatus::NeighbourIsTroubledCell;
+        break;
+      default:
+        break;
+      }
+      break;
+      default:
+        break;
+    }
+  }
+  return limiterStatus;
+}
+
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
     int numberOfParameters, int nodesPerCoordinateAxis,
@@ -732,7 +773,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
     if (fineGridCellDescription.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth) {
-      switch (fineGridCellDescription.getMergedLimiterStatus(0)) {
+      switch (determineLimiterStatus(fineGridCellDescription)) {
         // assertion: mergedLimiterStatus has been unified
         case CellDescription::LimiterStatus::Ok:
         case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
@@ -1292,21 +1333,21 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
   fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
 
-  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Ok);
+  for (int i=0; i<THREE_POWER_D; i++) {
+    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
   }
 
   // TODO Dominic: During the inital mesh build where we only refine
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
   if (!initialGrid) {
-    if (coarseGridCellDescription.getMergedLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        fineGridCellDescription.setMergedLimiterStatus(CellDescription::LimiterStatus::Troubled);
+    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
+      for (int i=0; i<THREE_POWER_D; i++) {
+        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
       }
 
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        assertion(coarseGridCellDescription.getMergedLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
+      for (int i=0; i<THREE_POWER_D; i++) {
+        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
       } // Dead code elimination will get rid of this line
     }
   }

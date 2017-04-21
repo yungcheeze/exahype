@@ -160,25 +160,6 @@ private:
       const SolverPatch::LimiterStatus& neighbourOfNeighbourLimiterStatus) const;
 
   /**
-   * Determine a unified limiter status of a solver patch after a limiter status spreading
-   * iteration.
-   *
-   * <h2>Determining the unified value</h2>
-   * If all of the merged limiter status fields
-   * are set to Troubled, the limiter status is changed to Troubled.
-   * (There is either all or none of the statuses set to Troubled.)
-   *
-   * Otherwise and if at least one of the merged statuses is set to NeighbourOfTroubledCell,
-   * the status is set to NeighbourOfTroubledCell.
-   *
-   * Otherwise and if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
-   * the status is set to NeighbourIsNeighbourOfTroubledCell.
-   *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
-   */
-  exahype::solvers::LimitingADERDGSolver::SolverPatch::LimiterStatus determineLimiterStatus(SolverPatch& solverPatch) const;
-
-  /**
    * Checks if the updated solution
    * of the ADER-DG solver contains unphysical oscillations (false)
    * or not (true).
@@ -223,9 +204,9 @@ private:
    * Updates the merged limiter status based on the cell-local ADER-DG solution
    * values,
    */
-  void updateMergedLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
+  void updateLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
-  void mergeMergedLimiterStatusWithNeighbours(SolverPatch& solverPatch,
+  void mergeLimiterStatusWithNeighbours(SolverPatch& solverPatch,
                                               const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices);
 
   /**
@@ -246,7 +227,7 @@ private:
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
-  bool markForRefinementBasedOnMergedLimiterStatus(
+  bool markForRefinementBasedOnLimiterStatus(
       SolverPatch& solverPatch,
       const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const;
 
@@ -333,7 +314,7 @@ private:
 //   * with the communication of the solver
 //   * metadata.
 //   */
-//  void sendMergedLimiterStatusToNeighbour(
+//  void sendLimiterStatusToNeighbour(
 //      const int                                     toRank,
 //      const int                                     cellDescriptionsIndex,
 //      const int                                     element,
@@ -506,7 +487,7 @@ public:
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
    */
-  bool markForRefinementBasedOnMergedLimiterStatus(
+  bool markForRefinementBasedOnLimiterStatus(
         exahype::Cell& fineGridCell,
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -517,7 +498,7 @@ public:
         const bool initialGrid,
         const int solverNumber);
 
-  void mergeMergedLimiterStatusWithNeighbours(
+  void mergeLimiterStatusWithNeighbours(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -663,18 +644,18 @@ public:
    * the solution values stored for a solver patch.
    *
    * This method then invokes
-   * ::determinMergedLimiterStatusAfterSolutionUpdate(SolverPatch&,const bool)
+   * ::determinLimiterStatusAfterSolutionUpdate(SolverPatch&,const bool)
    * with the result of these checks.
    */
-  bool updateMergedLimiterStatusAndMinAndMaxAfterSolutionUpdate(
+  bool updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
-   * Similar to ::determineMergedLimiterStatusAfterSolutionUpdate(const int,const int)
+   * Similar to ::determineLimiterStatusAfterSolutionUpdate(const int,const int)
    * but does not evaluate the discrete maximum principle.
    */
-  bool updateMergedLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+  bool updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,
       const int element);
 
@@ -689,7 +670,7 @@ public:
    * changes its status to Troubled. Or, if a patch with status Troubled changes its
    * status to Ok.
    */
-  bool determineMergedLimiterStatusAfterSolutionUpdate(
+  bool determineLimiterStatusAfterSolutionUpdate(
       SolverPatch& solverPatch,const bool isTroubled) const;
 
   /**
@@ -698,7 +679,7 @@ public:
    *
    * \see ::determineLimiterStatus
    */
-  void updateMergedLimiterStatus(
+  void updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
   /**
@@ -707,7 +688,7 @@ public:
    *
    * \see ::determineLimiterStatus
    */
-  void updateLimiterStatus(
+  void updatePreviousLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
   /**
@@ -1114,7 +1095,7 @@ public:
    *
    * @deprecated see mergeWithNeighbourMetadata
    */
-  void mergeWithNeighbourMergedLimiterStatus(
+  void mergeWithNeighbourLimiterStatus(
       const int                                    fromRank,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
@@ -1130,7 +1111,7 @@ public:
    * \see exahype::solvers::Solver::dropNeighbourData
    * for details on the parameters.
    */
-  void dropNeighbourMergedLimiterStatus(
+  void dropNeighbourLimiterStatus(
       const int                                    fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
@@ -1144,7 +1125,7 @@ public:
    * \see exahype::solvers::Solver::sendDataToNeighbour
    * for details on the parameters.
    */
-  void sendMergedLimiterStatusToNeighbour(
+  void sendLimiterStatusToNeighbour(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
@@ -1161,7 +1142,7 @@ public:
    *  \see exahype::solvers::Solver::sendEmptyDataToNeighbour
    * for details on the parameters.
    */
-  void sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
+  void sendEmptyDataInsteadOfLimiterStatusToNeighbour(
       const int                                     toRank,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,

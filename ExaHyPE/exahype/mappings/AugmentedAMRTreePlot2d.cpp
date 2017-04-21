@@ -20,7 +20,7 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 #ifdef Parallel
 #include "tarch/parallel/Node.h"
@@ -377,7 +377,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
           _limiterStatusWriter->plotCell(
-              cellIndex, static_cast<int>(pFine.getMergedLimiterStatus(0)));
+              cellIndex, static_cast<int>(exahype::solvers::ADERDGSolver::determineLimiterStatus(pFine)));
           solverFound = true;
         }
       }
