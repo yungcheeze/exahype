@@ -207,6 +207,8 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),TBB)
+	  COMPILER_CFLAGS += 
+	  COMPILER_LFLAGS += 
 	else
 	  COMPILER_CFLAGS   += -fno-rtti
 	  COMPILER_LFLAGS   += -lrt
