@@ -89,15 +89,16 @@
    std::string exahype::records::ADERDGCellDescription::toString(const LimiterStatus& param) {
       switch (param) {
          case Ok: return "Ok";
-         case NeighbourIsNeighbourOfTroubledCell: return "NeighbourIsNeighbourOfTroubledCell";
-         case NeighbourIsTroubledCell: return "NeighbourIsTroubledCell";
+         case NeighbourOfOk: return "NeighbourOfOk";
+         case NeighbourOfTroubled2: return "NeighbourOfTroubled2";
+         case NeighbourOfTroubled1: return "NeighbourOfTroubled1";
          case Troubled: return "Troubled";
       }
       return "undefined";
    }
    
    std::string exahype::records::ADERDGCellDescription::getLimiterStatusMapping() {
-      return "LimiterStatus(Ok=0,NeighbourIsNeighbourOfTroubledCell=1,NeighbourIsTroubledCell=2,Troubled=3)";
+      return "LimiterStatus(Ok=0,NeighbourOfOk=1,NeighbourOfTroubled2=2,NeighbourOfTroubled1=3,Troubled=4)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
       switch (param) {
@@ -2570,15 +2571,16 @@
       std::string exahype::records::ADERDGCellDescription::toString(const LimiterStatus& param) {
          switch (param) {
             case Ok: return "Ok";
-            case NeighbourIsNeighbourOfTroubledCell: return "NeighbourIsNeighbourOfTroubledCell";
-            case NeighbourIsTroubledCell: return "NeighbourIsTroubledCell";
+            case NeighbourOfOk: return "NeighbourOfOk";
+            case NeighbourOfTroubled2: return "NeighbourOfTroubled2";
+            case NeighbourOfTroubled1: return "NeighbourOfTroubled1";
             case Troubled: return "Troubled";
          }
          return "undefined";
       }
       
       std::string exahype::records::ADERDGCellDescription::getLimiterStatusMapping() {
-         return "LimiterStatus(Ok=0,NeighbourIsNeighbourOfTroubledCell=1,NeighbourIsTroubledCell=2,Troubled=3)";
+         return "LimiterStatus(Ok=0,NeighbourOfOk=1,NeighbourOfTroubled2=2,NeighbourOfTroubled1=3,Troubled=4)";
       }
       std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
          switch (param) {

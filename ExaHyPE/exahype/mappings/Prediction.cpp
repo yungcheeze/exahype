@@ -170,8 +170,9 @@ void exahype::mappings::Prediction::enterCell(
                 fineGridVertices,fineGridVerticesEnumerator);
 
             if (cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
+                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled1
+                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2
+                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfOk) {
               performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
             }
           } break;

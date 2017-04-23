@@ -326,39 +326,53 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
  */
 exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
 exahype::solvers::ADERDGSolver::determineLimiterStatus(CellDescription& cellDescription) {
-  // 1. Determine new limiter status.
-  CellDescription::LimiterStatus limiterStatus = CellDescription::LimiterStatus::Ok;
+  // Assumes increasing value of limiter status the closer we get to troubled cell
+  int limiterStatusAsInt = static_cast<int>(CellDescription::LimiterStatus::Ok);
   for (int i=0; i<THREE_POWER_D; i++) {
-    switch (limiterStatus) {
-    case CellDescription::LimiterStatus::Ok:
-      switch (cellDescription.getLimiterStatus(i)) {
-      case CellDescription::LimiterStatus::Troubled:
-        limiterStatus = CellDescription::LimiterStatus::Troubled;
-        break;
-      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
-        limiterStatus = CellDescription::LimiterStatus::NeighbourIsTroubledCell;
-        break;
-      case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-        limiterStatus = CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell;
-        break;
-      default:
-        break;
-      }
-      break;
-    case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell:
-      switch (cellDescription.getLimiterStatus(i)) {
-      case CellDescription::LimiterStatus::NeighbourIsTroubledCell:
-        limiterStatus = CellDescription::LimiterStatus::NeighbourIsTroubledCell;
-        break;
-      default:
-        break;
-      }
-      break;
-      default:
-        break;
-    }
+    limiterStatusAsInt = std::max( limiterStatusAsInt, static_cast<int>(cellDescription.getLimiterStatus(i)) );
   }
-  return limiterStatus;
+
+  return static_cast<CellDescription::LimiterStatus>(limiterStatusAsInt);
+
+  // old code for reference
+// 1. Determine new limiter status.
+//  CellDescription::LimiterStatus limiterStatus = CellDescription::LimiterStatus::Ok;
+//  for (int i=0; i<THREE_POWER_D; i++) {
+//    switch (limiterStatus) {
+//    case CellDescription::LimiterStatus::Ok:
+//      switch (cellDescription.getLimiterStatus(i)) {
+//      case CellDescription::LimiterStatus::Troubled:
+//        limiterStatus = CellDescription::LimiterStatus::Troubled;
+//        break;
+//      case CellDescription::LimiterStatus::NeighbourOfTroubled1:
+//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled1;
+//        break;
+//      case CellDescription::LimiterStatus::NeighbourOfTroubled2:
+//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled2;
+//        break;
+//      case CellDescription::LimiterStatus::NeighbourOfOk:
+//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfOk;
+//        break;
+//      default:
+//        break;
+//      }
+//      break;
+//    case CellDescription::LimiterStatus::NeighbourOfOk:
+//      switch (cellDescription.getLimiterStatus(i)) {
+//      case CellDescription::LimiterStatus::NeighbourOfTroubled1:
+//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled1;
+//        break;
+//      default:
+//        break;
+//      }
+//      break;
+//      default:
+//        break;
+//    }
+//  }
+//
+//
+//  return limiterStatus;
 }
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
@@ -776,7 +790,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
       switch (determineLimiterStatus(fineGridCellDescription)) {
         // assertion: mergedLimiterStatus has been unified
         case CellDescription::LimiterStatus::Ok:
-        case CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+        case CellDescription::LimiterStatus::NeighbourOfOk: {
           #ifdef Parallel
           ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
           #endif

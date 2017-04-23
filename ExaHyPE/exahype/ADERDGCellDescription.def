@@ -405,22 +405,40 @@ class exahype::records::ADERDGCellDescription {
     /**
      * A cell holds a physically admissible ADER-DG solution
      * that satisfies a discrete maximum principle.
+     * 
+     * This cell's dominant solver is ADER-DG solver
      */
     Ok,
     /**
      * A cell can obtain this status only during the limiter
      * status spreading stage. It indicates that the cell
-     * is direct neighbour to the neighbour of a troubled cell. 
+     * is a direkt neighbour to a Ok cell and 
+     * direct neighbour to the second neighbour of a troubled cell
+     * (NeighbourOfTroubled2).
+     * 
+     * This cell's dominant solver is ADER-DG solver.
      */
-    NeighbourIsNeighbourOfTroubledCell,
+    NeighbourOfOk,
     /**
      * A cell can obtain this status only during the limiter
      * status spreading stage. It indicates that the cell
-     * is direct neighbour to a troubled cell. 
+     * is direct neighbour to a neighbour of a troubled cell (NeighbourOfTroubled1).
+     * 
+     * This cell's dominant solver is the FV solver. 
      */
-    NeighbourIsTroubledCell,
+    NeighbourOfTroubled2,
     /**
-     * A cell (still) holds a physically wrong ADER-DG solution. 
+     * A cell can obtain this status only during the limiter
+     * status spreading stage. It indicates that the cell
+     * is direct neighbour to a troubled cell.
+     * 
+     * This cell's dominant solver is the FV solver. 
+     */
+    NeighbourOfTroubled1,
+    /**
+     * A cell (still) holds a physically wrong ADER-DG solution.
+     * 
+     * This cell's dominant solver is the FV solver. 
      */
     Troubled
   };

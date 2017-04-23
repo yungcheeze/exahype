@@ -356,10 +356,11 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
     switch(solverPatch.getPreviousLimiterStatus()) {
-      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: // TODO(Dominic): Plot FVM solution instead
+      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:             // TODO(Dominic): Plot FVM solution instead
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled1: // TODO(Dominic): Plot FVM solution instead
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Plot FVM solution instead
       case exahype::records::ADERDGCellDescription::LimiterStatus::Ok:
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell: {
+      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfOk: {
         double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
         plotADERDGPatch(

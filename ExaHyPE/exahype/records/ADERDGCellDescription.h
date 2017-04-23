@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/04/2017 15:26
+    * @date   23/04/2017 17:56
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum LimiterStatus {
-            Ok = 0, NeighbourIsNeighbourOfTroubledCell = 1, NeighbourIsTroubledCell = 2, Troubled = 3
+            Ok = 0, NeighbourOfOk = 1, NeighbourOfTroubled2 = 2, NeighbourOfTroubled1 = 3, Troubled = 4
          };
          
          enum RefinementEvent {
@@ -2712,7 +2712,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/04/2017 15:26
+    * @date   23/04/2017 17:56
     */
    class exahype::records::ADERDGCellDescriptionPacked { 
       
@@ -5583,7 +5583,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   21/04/2017 15:26
+       * @date   23/04/2017 17:56
        */
       class exahype::records::ADERDGCellDescription { 
          
@@ -5596,7 +5596,7 @@ namespace exahype {
             };
             
             enum LimiterStatus {
-               Ok = 0, NeighbourIsNeighbourOfTroubledCell = 1, NeighbourIsTroubledCell = 2, Troubled = 3
+               Ok = 0, NeighbourOfOk = 1, NeighbourOfTroubled2 = 2, NeighbourOfTroubled1 = 3, Troubled = 4
             };
             
             enum RefinementEvent {
@@ -7992,7 +7992,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   21/04/2017 15:26
+       * @date   23/04/2017 17:56
        */
       class exahype::records::ADERDGCellDescriptionPacked { 
          
