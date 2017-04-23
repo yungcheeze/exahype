@@ -183,14 +183,15 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
 
         SolverPatch::LimiterStatus neighbourLimiterStatus = ADERDGSolver::determineLimiterStatus(neighbourSolverPatch);
 
-        if (
-            neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled
-            ||
-            (neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell &&
-                tarch::la::countEqualEntries(v,center)==DIMENSIONS-1)
-        ) {
-          mergeWithLimiterStatus(solverPatch,vScalar,neighbourLimiterStatus);
-        }
+        mergeWithLimiterStatus(solverPatch,vScalar,neighbourLimiterStatus);
+//        if (
+//            neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled
+//            ||
+//            (neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourIsTroubledCell &&
+//                tarch::la::countEqualEntries(v,center)==DIMENSIONS-1)
+//        ) {
+//
+//        }
       }
     }
   enddforx
@@ -237,6 +238,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
 
 bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStatus(
     SolverPatch& solverPatch,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const {
   dfor3(v)
     if (!tarch::la::equals(v,1) &&
@@ -247,8 +249,15 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
         SolverPatch& neighbourSolverPatch =
             _solver->getCellDescription(neighbourCellDescriptionsIndices[vScalar],neighbourElement);
 
+        // TODO(Dominic): Only refine if
+        // fineGridPositionOfCell of troubled neighbour is !=1 during initial grid setup
+
         SolverPatch::LimiterStatus neighbourLimiterStatus = ADERDGSolver::determineLimiterStatus(neighbourSolverPatch);
-        if (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled) {
+        if (neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled
+            &&
+            (solverPatch.getLevel()==_coarsestMeshLevel+_maximumAdaptiveMeshDepth-1
+            || !tarch::la::equals(fineGridPositionOfCell+v-1,1))
+        ) {
           solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
           return true;
         }
@@ -314,7 +323,7 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
             multiscalelinkedcell::getIndicesAroundCell(
                 indicesAdjacentToFineGridVertices);
 
-        return markForRefinementBasedOnLimiterStatus(solverPatch,neighbourCellDescriptionsIndices);
+        return markForRefinementBasedOnLimiterStatus(solverPatch,fineGridPositionOfCell,neighbourCellDescriptionsIndices);
       }
     }
   }

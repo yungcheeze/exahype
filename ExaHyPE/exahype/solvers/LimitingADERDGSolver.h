@@ -214,7 +214,7 @@ private:
    * and the solver patch's type, we perform the
    * following actions:
    *
-   * | New Status | Type                        | Action                                                                                           |
+   * | LimiterStatus | Type                     | Action                                                                                           |
    * ----------------------------------------------------------------------------------------------------------------------------------------------|
    * | O/NNT      | Any                         | Do nothing.                                                                                      |
    * | T/NT       | Cell                        | Set RefinementRequested event on parent cell if its current event is None or AugmentingRequested |
@@ -229,6 +229,7 @@ private:
    */
   bool markForRefinementBasedOnLimiterStatus(
       SolverPatch& solverPatch,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const;
 
 #ifdef Parallel
