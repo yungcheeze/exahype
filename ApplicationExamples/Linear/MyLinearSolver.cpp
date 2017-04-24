@@ -32,7 +32,7 @@ void Linear::MyLinearSolver::adjustPointSolution(const double* const x,const dou
 
   Variables vars(Q);
 
-  vars.p() = std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
+  vars.p() = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5)+(x[1]-0.5)*(x[1]-0.5))/0.01);
   //  vars.p()=0;
   vars.v(0,0);
 }
@@ -43,10 +43,12 @@ void Linear::MyLinearSolver::eigenvalues(const double* const Q,const int d,doubl
   
   // @todo Please implement/augment if required
 
+  double cp = 6.0;
+
   static tarch::logging::Log _log("MyLinearSolver::eigenvalues");
-  lambda[0] = 1.0;
-  lambda[1] = 1.0;
-  lambda[2] = 1.0;
+  lambda[0] =  cp;
+  lambda[1] = -cp;
+  lambda[2] =  0;
 }
 
 
@@ -74,14 +76,23 @@ void Linear::MyLinearSolver::boundaryValues(const double* const x,const double t
   // Number of variables    = 3 + #parameters
 
   // @todo Please implement/augment if required
-static tarch::logging::Log _log("MyLinearSolver::boundaryValues");
+  static tarch::logging::Log _log("MyLinearSolver::boundaryValues");
 
-stateOut[0] = stateIn[0];
-stateOut[1] = stateIn[1];
-stateOut[2] = stateIn[2];
-fluxOut[0] =  fluxIn[0];
-fluxOut[1] = fluxIn[1];
-fluxOut[2] = fluxIn[2];
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  fluxOut[0] =  fluxIn[0];
+  fluxOut[1] = fluxIn[1];
+  fluxOut[2] = fluxIn[2];
+    
+  if (faceIndex == 0){
+    stateOut[0] = 0*stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    fluxOut[0] =  fluxIn[0];
+    fluxOut[1] = 0*fluxIn[1];
+    fluxOut[2] = 0*fluxIn[2];
+  }
 }
 
 
@@ -95,20 +106,28 @@ void Linear::MyLinearSolver::nonConservativeProduct(const double* const Q,const 
   kernels::idx2 idx(DIMENSIONS, NumberOfVariables);
 
   static tarch::logging::Log _log("MyLinearSolver::nonConservativeProduct");
-
-  BgradQ[0] = -gradQ[1];
-  BgradQ[1] = -gradQ[0];
+  
+  double cp = 6.0;
+  double rho = 2.7;
+  double lam = rho*cp*cp;
+  
+  BgradQ[0] = -lam*gradQ[1];
+  BgradQ[1] = -1/rho*gradQ[0];
   BgradQ[2] = 0;
 
-  BgradQ[3]= -gradQ[5];
+  BgradQ[3]= -lam*gradQ[5];
   BgradQ[4]= 0;
-  BgradQ[5]= -gradQ[3];
+  BgradQ[5]= -1/rho*gradQ[3];
 
 }
 
 
 void Linear::MyLinearSolver::coefficientMatrix(const double* const Q,const int d,double* Bn){
   static tarch::logging::Log _log("MyLinearSolver::coefficientMatrix");
+
+  double cp = 6.0;
+  double rho = 2.7;
+  double lam = rho*cp*cp;
 
   double nv[2] = {0.0};
 
@@ -124,11 +143,11 @@ void Linear::MyLinearSolver::coefficientMatrix(const double* const Q,const int d
     }
   }
   
-  B1[0][1] = -1.0; 
-  B1[1][0] = -1.0;
+  B1[0][1] = -lam; 
+  B1[1][0] = -1/rho;
   
-  B2[0][2] = -1.0; 
-  B2[2][0] = -1.0;
+  B2[0][2] = -lam; 
+  B2[2][0] = -1/rho;
   
   for(int i=0; i<3; i++) {
     for(int j=0; j<3; j++) {
@@ -154,55 +173,40 @@ void Linear::MyLinearSolver::riemannSolver(double* FL,double* FR,const double* c
 
   double n[2]={0,0};
   n[normalNonZeroIndex]=1;
-
+  double cp = 6.0;
+  double rho = 2.7;
+  double lam = rho*cp*cp;
 
     for (int i = 0; i < basisSize; i++) {
-      double v_p=QL[idx_QLR(i,1)]*n[0]+QL[idx_QLR(i,2)]*n[1];
-
-      double v_m=QR[idx_QLR(i,1)]*n[0]+QR[idx_QLR(i,2)]*n[1];
-
-      // printf("QR1: %f \n",QR[idx_QLR(i,1)]);
-      // printf("QR2: %f \n",QR[idx_QLR(i,2)]);
-      // printf("n1: %f \n",n[0]);
-      // printf("n2: %f \n",n[1]);
-      // printf("nnZI: %d \n",normalNonZeroIndex);
       
-      //      printf("v_p: %f \n",v_p);
-      //      printf("v_m: %f \n",v_m);
+      double v_m=QL[idx_QLR(i,1)]*n[0]+QL[idx_QLR(i,2)]*n[1];
+      double v_p=QR[idx_QLR(i,1)]*n[0]+QR[idx_QLR(i,2)]*n[1];
 
-      double sigma_p = QL[idx_QLR(i,0)];
-      double sigma_m = QR[idx_QLR(i,0)];
+      double sigma_m = QL[idx_QLR(i,0)];
+      double sigma_p = QR[idx_QLR(i,0)];
 
-      //      printf("sigma_p: %f \n",sigma_p);
-      //      printf("sigma_m: %f \n",sigma_m);
 
-      double z_p=1.0;
-      double z_m=1.0;
+      double z_p=rho*cp;
+      double z_m=rho*cp;
 
       double v_hat_p=0;
       double v_hat_m=0;
       double sigma_hat_p=0;
       double sigma_hat_m=0;
 
-      // riemannSolver_Nodal(v_p,v_m, sigma_p, sigma_m, z_p , z_m, v_hat_p , v_hat_m, sigma_hat_p, sigma_hat_m);
-
-      v_hat_p= v_m;
-      v_hat_m= v_p;
-      sigma_hat_m=sigma_p;
-      sigma_hat_p=sigma_m;
-
-      FR[idx_FLR(i, 0)] = -0.5*(z_m *(v_m-v_hat_m) - (sigma_m-sigma_hat_m));
-      FL[idx_FLR(i, 0)] = 0.5*(z_p *(v_p-v_hat_p) + (sigma_p-sigma_hat_p));
-
-      // printf("FR: %f \n",FR[idx_FLR(i, 0)]);
-      // printf("FL: %f \n",FL[idx_FLR(i, 0)]);
+      
+      riemannSolver_Nodal(v_p,v_m, sigma_p, sigma_m, z_p , z_m, v_hat_p , v_hat_m, sigma_hat_p, sigma_hat_m);
 
 
-      FR[idx_FLR(i, 1)] = 0.5*((v_m-v_hat_m) - (sigma_m-sigma_hat_m)/z_m)*n[0];
-      FL[idx_FLR(i, 1)] = 0.5*((v_p-v_hat_p) + (sigma_p-sigma_hat_p)/z_p)*n[0];
+      FR[idx_FLR(i, 0)] = -0.5*lam*((v_p-v_hat_p) - (sigma_p-sigma_hat_p)/z_p);
+      FL[idx_FLR(i, 0)] =  0.5*lam*((v_m-v_hat_m) + (sigma_m-sigma_hat_m)/z_m);
 
-      FR[idx_FLR(i, 2)] = 0.5*((v_m-v_hat_m) - (sigma_m-sigma_hat_m)/z_m)*n[1];
-      FL[idx_FLR(i, 2)] = 0.5*((v_p-v_hat_p) + (sigma_p-sigma_hat_p)/z_p)*n[1];
+
+      FR[idx_FLR(i, 1)] = 0.5/rho*(z_p*(v_p-v_hat_p) - (sigma_p-sigma_hat_p))*n[0];
+      FL[idx_FLR(i, 1)] = 0.5/rho*(z_m*(v_m-v_hat_m) + (sigma_m-sigma_hat_m))*n[0];
+
+      FR[idx_FLR(i, 2)] = 0.5/rho*(z_p*(v_p-v_hat_p) - (sigma_p-sigma_hat_p))*n[1];
+      FL[idx_FLR(i, 2)] = 0.5/rho*(z_m*(v_m-v_hat_m) + (sigma_m-sigma_hat_m))*n[1];
 
     }
 
@@ -236,23 +240,24 @@ void Linear::MyLinearSolver::pointSource(const double* const x,const double t,co
 
 
 
- void Linear::MyLinearSolver::riemannSolver_Nodal(double v_p,double v_m, double sigma_p, double sigma_m, double z_p , double z_m, double v_hat_p , double v_hat_m, double sigma_hat_p, double sigma_hat_m){
+ void Linear::MyLinearSolver::riemannSolver_Nodal(double v_p,double v_m, double sigma_p, double sigma_m, double z_p , double z_m, double& v_hat_p , double& v_hat_m, double& sigma_hat_p, double& sigma_hat_m){
    double p=0;
    double q=0;
    double phi=0;
    double v_hat=0;
    double eta=0;
 
-   p=z_p*v_m + sigma_m;
-   q=z_m*v_p - sigma_p;
+   p=z_m*v_p + sigma_p;
+   q=z_p*v_m - sigma_m;
 
    eta=(z_p*z_m)/(z_p+z_m);
 
-   phi= p/z_p - q/z_m;
+   phi= eta*(p/z_p - q/z_m);
 
    sigma_hat_p=phi;
    sigma_hat_m=phi;
 
    v_hat_m=(p-phi)/z_p;
    v_hat_p=(q+phi)/z_m;
+
  }
