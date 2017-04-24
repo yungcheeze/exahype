@@ -244,15 +244,15 @@ exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescr
 
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
-    encodedMetaData[MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getMergedLimiterStatus(0));
+    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
+    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getLimiterStatus(0));
     // assertion: p.getMergedLimiterStatus(0) = p.getMergedLimiterStatus(i) TODO
   }
   // FV
   const unsigned int numberOfADERDGPatches =
       exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).size();
   for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[numberOfADERDGPatches + MetadataPerSolver*p.getSolverNumber() + 0]
+    encodedMetaData[numberOfADERDGPatches + exahype::MetadataPerSolver*p.getSolverNumber() + 0]
                     = static_cast<int>(p.getType()); // Implicit conversion.
   }
   return encodedMetaData;
@@ -506,18 +506,18 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
 #ifdef Parallel
 exahype::MetadataHeap::HeapEntries exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries() {
     exahype::MetadataHeap::HeapEntries encodedMetaData(
-        exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver,
-        exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
+        exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver,
+        exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver);
     std::fill_n(encodedMetaData.begin(),encodedMetaData.size(),InvalidMetadataEntry); // Implicit conversion.
     return encodedMetaData;
 }
 
 
 bool exahype::Vertex::isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
-   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
+   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver);
 
    for (auto& m : sequence)
-     if (m.getU()==InvalidMetadataEntry)
+     if (m.getU()==exahype::InvalidMetadataEntry)
        return false;
 
    return true;

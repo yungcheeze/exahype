@@ -272,7 +272,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
           // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
-          int receivedMetadataIndex = MetadataHeap::getInstance().
+          const int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
           MetadataHeap::getInstance().receiveData(
               receivedMetadataIndex,
@@ -335,9 +335,14 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    if (receivedMetadata[exahype::Vertex::MetadataPerSolver*solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+    const int offset = exahype::MetadataPerSolver*solverNumber;
+    if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       assertion1(element>=0,element);
+
+      exahype::MetadataHeap::HeapEntries metadataPortion(
+          receivedMetadata.begin()+offset,
+          receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
 
       logDebug(
           "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
@@ -345,7 +350,8 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
           ", src=" << src << ", dest=" << dest);
 
       solver->mergeWithNeighbourData(
-          fromRank,receivedMetadata[solverNumber].getU(),
+          fromRank,
+          metadataPortion,
           destCellDescriptionIndex,element,src,dest,
           _temporaryVariables._tempFaceUnknowns[solverNumber],
           _temporaryVariables._tempStateSizedVectors[solverNumber],
@@ -505,13 +511,19 @@ void exahype::mappings::Merging::receiveDataFromMaster(
 
       int solverNumber=0;
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
 
+        const int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
+        const int offset  = exahype::MetadataPerSolver*solverNumber;
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
+            receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+
+          exahype::MetadataHeap::HeapEntries metadataPortion(
+              receivedMetadata.begin()+offset,
+              receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+
           solver->mergeWithMasterData(
                     tarch::parallel::NodePool::getInstance().getMasterRank(),
-                    receivedMetadata[solverNumber].getU(),
+                    metadataPortion,
                     receivedCell.getCellDescriptionsIndex(),element,
                     receivedVerticesEnumerator.getCellCenter(),
                     receivedVerticesEnumerator.getLevel());

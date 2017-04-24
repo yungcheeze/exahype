@@ -2747,12 +2747,11 @@ void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
 // NEIGHBOUR
 ///////////////////////////////////
 void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
-    const int* const metadata,
-    const int metadataSize,
+    const exahype::MetadataHeap::HeapEntries& neighbourMetadata,
     const tarch::la::Vector<DIMENSIONS, int>& src,
     const tarch::la::Vector<DIMENSIONS, int>& dest,
-    const int cellDescriptionsIndex,
-    const int element) {
+    const int                                 cellDescriptionsIndex,
+    const int                                 element) {
   if (tarch::la::countEqualEntries(src,dest)!=DIMENSIONS-1) { // only consider faces
     return;
   }
@@ -2760,7 +2759,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
   CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(metadata[exahype::Vertex::MetadataCellType]);
+      static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
   switch(p.getType()) {
     case CellDescription::Cell:
       if (p.getRefinementEvent()==CellDescription::None &&
@@ -2891,7 +2890,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
 
 void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const int                                    fromRank,
-    const int                                    neighbourTypeAsInt,
+    const MetadataHeap::HeapEntries&             neighbourMetadata,
     const int                                    cellDescriptionsIndex,
     const int                                    element,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -2912,7 +2911,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+      static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
 
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
@@ -3228,7 +3227,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
 
 void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                     workerRank,
-    const int                                     workerTypeAsInt,
+    const MetadataHeap::HeapEntries&              workerMetadata,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -3242,6 +3241,8 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  const CellDescription::Type workerType =
+      static_cast<CellDescription::Type>(workerMetadata[exahype::MetadataCellType].getU());
 
   // The following two assertions assert that cell descriptions on both ranks are together of
   // type Cell, Descendant, EmptyAncestor, or Ancestor.
@@ -3250,21 +3251,20 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
              || cellDescription.getType()==CellDescription::Type::Ancestor
              || cellDescription.getType()==CellDescription::Type::EmptyAncestor
              || cellDescription.getType()==CellDescription::Type::Descendant,
-             cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
+             cellDescription.toString(),CellDescription::toString(workerType),tarch::parallel::Node::getInstance().getRank(),workerRank);
   assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-               && static_cast<CellDescription::Type>(workerTypeAsInt)!=CellDescription::Type::EmptyDescendant
-               && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::EmptyAncestor
+               && workerType!=CellDescription::Type::EmptyDescendant
+               && !(workerType==CellDescription::Type::EmptyAncestor
                    && cellDescription.getType()==CellDescription::Type::Ancestor)
-                   && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::Ancestor &&
+                   && !(workerType==CellDescription::Type::Ancestor &&
                        cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-                       cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
+                       cellDescription.toString(),CellDescription::toString(workerType),
+                       tarch::parallel::Node::getInstance().getRank(),workerRank);
 
   if (cellDescription.getType()==CellDescription::Type::Ancestor) {
     logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
              cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
              ", cell: "<< x << ", level: " << level);
-
-
 
     // No inverted message order since we do synchronous data exchange.
     // Order: extrapolatedPredictor,fluctuations.
@@ -3472,7 +3472,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                     masterRank,
-    const int                                     masterTypeAsInt,
+    const MetadataHeap::HeapEntries&              masterMetadata,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -3483,6 +3483,8 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  const CellDescription::Type masterType =
+      static_cast<CellDescription::Type>(masterMetadata[exahype::MetadataCellType].getU());
 
   // The following two assertions assert that cell descriptions on both ranks are together of
   // type Cell, Descendant, EmptyAncestor, or Ancestor.
@@ -3491,14 +3493,16 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
              || cellDescription.getType()==CellDescription::Type::Ancestor
              || cellDescription.getType()==CellDescription::Type::EmptyAncestor
              || cellDescription.getType()==CellDescription::Type::Descendant,
-             cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
+             cellDescription.toString(),CellDescription::toString(masterType),
+             tarch::parallel::Node::getInstance().getRank(),masterRank);
   assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-             && static_cast<CellDescription::Type>(masterTypeAsInt)!=CellDescription::Type::EmptyDescendant
-             && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::EmptyAncestor
+             && masterType!=CellDescription::Type::EmptyDescendant
+             && !(masterType==CellDescription::Type::EmptyAncestor
                  && cellDescription.getType()==CellDescription::Type::Ancestor)
-                 && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::Ancestor &&
+                 && !(masterType==CellDescription::Type::Ancestor &&
                      cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-                     cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
+                     cellDescription.toString(),CellDescription::toString(masterType),
+                     tarch::parallel::Node::getInstance().getRank(),masterRank);
 
   if (cellDescription.getType()==CellDescription::Descendant) {
     logDebug("mergeWithMasterData(...)","Received face data for solver " <<

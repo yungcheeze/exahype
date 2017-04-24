@@ -166,7 +166,7 @@ class exahype::mappings::SolutionRecomputation {
       const int                                    destCellDescriptionIndex,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level,
-      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
 
   /**
    * TODO(Dominic): Add docu.
@@ -179,7 +179,7 @@ class exahype::mappings::SolutionRecomputation {
       const int                                    destCellDescriptionIndex,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level,
-      const exahype::MetadataHeap::HeapEntries&    receivedMetadata);
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
 
  public:
   /**

@@ -710,8 +710,7 @@ public:
   // NEIGHBOUR
   ///////////////////////////////////
   void mergeWithNeighbourMetadata(
-      const int* const metadata,
-      const int metadataSize,
+      const exahype::MetadataHeap::HeapEntries& metadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
@@ -735,7 +734,7 @@ public:
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
-      const int                                    neighbourTypeAsInt,
+      const MetadataHeap::HeapEntries&             neighbourMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -809,7 +808,7 @@ public:
 
   void mergeWithWorkerData(
       const int                                    workerRank,
-      const int                                    workerTypeAsInt,
+      const exahype::MetadataHeap::HeapEntries&    workerMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -847,7 +846,7 @@ public:
 
   void mergeWithMasterData(
       const int                                     masterRank,
-      const int                                     masterTypeAsInt,
+      const exahype::MetadataHeap::HeapEntries&     masterMetadata,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,

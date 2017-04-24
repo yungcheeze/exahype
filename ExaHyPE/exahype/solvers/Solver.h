@@ -59,6 +59,32 @@ namespace exahype {
    */
   typedef peano::heap::PlainDoubleHeap DataHeap;
 
+  #ifdef Parallel
+  /**
+   * We abuse this heap to send and receive metadata from one MPI rank to the other.
+   * We never actually store data on this heap.
+   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
+   */
+  typedef peano::heap::PlainIntegerHeap MetadataHeap; // TODO(Dominic): Use RLE heap.
+
+  /**
+   * Defines an invalid metadata entry.
+   */
+  static constexpr int InvalidMetadataEntry = -1;
+
+  /**
+   * Defines the length of the metadata
+   * we send out per sovler.
+   *
+   * First entry cell type
+   * Second entry limiter status.
+   */
+  static constexpr int MetadataPerSolver = 2;
+
+  static constexpr int MetadataCellType      = 0;
+  static constexpr int MetadataLimiterStatus = 1;
+  #endif
+
   namespace solvers {
     class Solver;
 
@@ -1024,7 +1050,8 @@ class exahype::solvers::Solver {
    * cellDescriptionsIndex with metadata.
    *
    * Currently, the neighbour metadata is only the neighbour
-   * type as int \p neighbourTypeAsInt.
+   * type as int \p neighbourTypeAsInt and
+   * the neighbour's limiter status as int.
    *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
@@ -1032,8 +1059,7 @@ class exahype::solvers::Solver {
    *                    This is not the solver number.
    */
   virtual void mergeWithNeighbourMetadata(
-      const int* const metadata,
-      const int metadataSize,
+      const MetadataHeap::HeapEntries&  neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
@@ -1062,7 +1088,7 @@ class exahype::solvers::Solver {
    */
   virtual void mergeWithNeighbourData(
       const int                                    fromRank,
-      const int                                    neighbourTypeAsInt,
+      const MetadataHeap::HeapEntries&             neighbourMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1254,7 +1280,7 @@ class exahype::solvers::Solver {
    */
   virtual void mergeWithWorkerData(
       const int                                    workerRank,
-      const int                                    workerTypeAsInt,
+      const MetadataHeap::HeapEntries&             workerMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -1333,7 +1359,7 @@ class exahype::solvers::Solver {
    */
   virtual void mergeWithMasterData(
       const int                                    masterRank,
-      const int                                    masterTypeAsInt,
+      const MetadataHeap::HeapEntries&             masterMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,

@@ -13,6 +13,8 @@
  
 #include "exahype/mappings/SolutionRecomputation.h"
 
+#include <algorithm>
+
 #include "tarch/multicore/Loop.h"
 
 #include "peano/utils/Globals.h"
@@ -383,7 +385,7 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level,
-    const exahype::MetadataHeap::HeapEntries&    receivedMetadata) {
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
@@ -417,18 +419,24 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
         && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
-      int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
+      const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
+      const int offset  = exahype::MetadataPerSolver*solverNumber;
 
       if (element!=exahype::solvers::Solver::NotFound
-          && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+          && receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
         logDebug("mergeWithNeighbourData(...)", "receive data for solver " << solverNumber << " from rank " <<
                       fromRank << " at vertex x=" << x << ", level=" << level <<
                       ", src=" << src << ", dest=" << dest);
 
+        exahype::MetadataHeap::HeapEntries metadataPortion(
+                  receivedMetadata.begin()+offset,
+                  receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+
         limitingADERDGSolver->mergeWithNeighbourDataBasedOnLimiterStatus(
-            fromRank,receivedMetadata[solverNumber].getU(),
+            fromRank,
+            metadataPortion,
             destCellDescriptionIndex,element,src,dest,
             true, /* isRecomputation */
             _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],

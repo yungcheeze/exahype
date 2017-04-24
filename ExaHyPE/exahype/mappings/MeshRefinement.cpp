@@ -394,34 +394,38 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
       tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
       int destScalar = TWO_POWER_D - myDestScalar - 1;
-      int srcScalar = TWO_POWER_D - mySrcScalar - 1;
 
       if (vertex.hasToReceiveMetadataDuringMeshRefinement(src,dest,fromRank)) {
         logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
                  fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                  << vertex.getAdjacentRanks());
 
-        int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::Vertex::MetadataPerSolver * exahype::solvers::RegisteredSolvers.size());
+        const int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::MetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
-        MetadataHeap::HeapEntries& metadataMessage = MetadataHeap::getInstance().
+        MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().
             getData(receivedMetadataIndex);
 
         // Work with the neighbour cell type
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-          if (metadataMessage[exahype::Vertex::MetadataPerSolver*solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
-            int element = solver->tryGetElement(
+          if (receivedMetadata[exahype::MetadataPerSolver *solverNumber].getU()!=exahype::InvalidMetadataEntry) {
+            const int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
+            const int offset  = exahype::MetadataPerSolver*solverNumber;
             if (element!=exahype::solvers::Solver::NotFound) {
+
+              exahype::MetadataHeap::HeapEntries metadataPortion(
+                        receivedMetadata.begin()+offset,
+                        receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+
               solver->mergeWithNeighbourMetadata(
-                  &metadataMessage[exahype::Vertex::MetadataPerSolver*solverNumber].getU(),
-                  exahype::Vertex::MetadataPerSolver,
+                  metadataPortion,
                   src, dest,
                   vertex.getCellDescriptionsIndex()[destScalar],element);
             }
@@ -429,7 +433,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
 
           logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
           logDebug("mergeWithNeighbour(...)","neighbourTypeAsInt: "
-                   << metadataMessage[solverNumber].getU());
+                   << receivedMetadata[solverNumber].getU());
         }
 
         // Clean up

@@ -23,13 +23,6 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
-  /**
-   * We abuse this heap to send and receive metadata from one MPI rank to the other.
-   * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
-   */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Use RLE heap.
-
   class Vertex;
 
   /**
@@ -56,23 +49,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
   friend class VertexOperations;
  public:
-  /**
-   * Defines an invalid metadata entry.
-   */
-  static constexpr int InvalidMetadataEntry = -1;
-
-  /**
-   * Defines the length of the metadata
-   * we send out per sovler.
-   *
-   * First entry cell type
-   * Second entry limiter status.
-   */
-  static constexpr int MetadataPerSolver = 2;
-
-  static constexpr int MetadataCellType      = 0;
-  static constexpr int MetadataLimiterStatus = 1;
-
   /**
    * Default Constructor
    *

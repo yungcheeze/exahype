@@ -1675,12 +1675,11 @@ public:
   // NEIGHBOUR
   ///////////////////////////////////
   void mergeWithNeighbourMetadata(
-      const int* const metadata,
-      const int metadataSize,
+      const MetadataHeap::HeapEntries&          neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
-      const int cellDescriptionsIndex,
-      const int element) override;
+      const int                                 cellDescriptionsIndex,
+      const int                                 element) override;
 
   void sendDataToNeighbour(
       const int                                    toRank,
@@ -1700,7 +1699,7 @@ public:
 
   void mergeWithNeighbourData(
       const int                                    fromRank,
-      const int                                    neighbourTypeAsInt,
+      const MetadataHeap::HeapEntries&             neighbourMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1781,7 +1780,7 @@ public:
 
   void mergeWithWorkerData(
       const int                                     workerRank,
-      const int                                     workerTypeAsInt,
+      const MetadataHeap::HeapEntries&              workerMetadata,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -1820,7 +1819,7 @@ public:
 
   void mergeWithMasterData(
       const int                                    masterRank,
-      const int                                    masterTypeAsInt,
+      const MetadataHeap::HeapEntries&             masterMetadata,
       const int                                    cellDescriptionsIndex,
       const int                                    element,
       const tarch::la::Vector<DIMENSIONS, double>& x,

@@ -14,6 +14,7 @@
 #include "exahype/mappings/Sending.h"
 
 #include <limits>
+#include <algorithm>
 
 #include "tarch/multicore/Loop.h"
 #include "tarch/multicore/Lock.h"
@@ -100,8 +101,8 @@ void exahype::mappings::Sending::beginIteration(
   if (_localState.getSendMode()!=exahype::records::State::SendMode::SendNothing) {
     exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
     exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
-    DataHeap::getInstance().startToSendSynchronousData();
-    MetadataHeap::getInstance().startToSendSynchronousData();
+    exahype::MetadataHeap::getInstance().startToSendSynchronousData();
+    exahype::DataHeap::getInstance().startToSendSynchronousData();
   }
   #endif
 
@@ -236,7 +237,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
   }
 
   auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
-  MetadataHeap::getInstance().sendData(
+  exahype::MetadataHeap::getInstance().sendData(
       encodedMetadata, toRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
 }
@@ -264,7 +265,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
   }
 
   auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
-  MetadataHeap::getInstance().sendData(
+  exahype::MetadataHeap::getInstance().sendData(
       encodedMetadata, toRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
 }
@@ -361,25 +362,31 @@ void exahype::mappings::Sending::mergeWithMaster(
     // TODO(Dominic): Add to docu, we only know from the worker grid cell if it is inside.
     // I encountered a problem where workerGridCell.isInside() != fineGridCell.isInside()
     if (workerGridCell.isInside() && fineGridCell.isInitialised()) {
-      int receivedMetadataIndex = exahype::MetadataHeap::getInstance().createData(
-          0,exahype::solvers::RegisteredSolvers.size());
+      const int receivedMetadataIndex =
+          exahype::MetadataHeap::getInstance().createData(
+              0,exahype::solvers::RegisteredSolvers.size());
       exahype::MetadataHeap::getInstance().receiveData(
           receivedMetadataIndex,worker,
           fineGridVerticesEnumerator.getCellCenter(),
           fineGridVerticesEnumerator.getLevel(),
           peano::heap::MessageType::MasterWorkerCommunication);
-      MetadataHeap::HeapEntries& receivedMetadata =
-          MetadataHeap::getInstance().getData(receivedMetadataIndex);
+      exahype::MetadataHeap::HeapEntries& receivedMetadata =
+          exahype::MetadataHeap::getInstance().getData(receivedMetadataIndex);
 
-      int solverNumber=0;
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+        const int offset  = exahype::MetadataPerSolver*solverNumber;
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
+            receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+          exahype::MetadataHeap::HeapEntries metadataPortion(
+              receivedMetadata.begin()+offset,
+              receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+
           solver->mergeWithWorkerData(
               worker,
-              receivedMetadata[solverNumber].getU(),
+              metadataPortion,
               fineGridCell.getCellDescriptionsIndex(),element,
               fineGridVerticesEnumerator.getCellCenter(),
               fineGridVerticesEnumerator.getLevel());

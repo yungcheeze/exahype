@@ -24,8 +24,6 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
-#include "exahype/mappings/LimiterStatusSpreading.h"
-
 #include "exahype/mappings/MeshRefinement.h"
 
 peano::CommunicationSpecification

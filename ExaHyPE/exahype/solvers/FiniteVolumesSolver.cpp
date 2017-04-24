@@ -958,8 +958,7 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 // NEIGHBOUR
 ///////////////////////////////////
 void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourMetadata(
-    const int* const metadata,
-    const int metadataSize,
+    const exahype::MetadataHeap::HeapEntries& metadata,
     const tarch::la::Vector<DIMENSIONS, int>& src,
     const tarch::la::Vector<DIMENSIONS, int>& dest,
     const int cellDescriptionsIndex,
@@ -971,7 +970,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourMetadata(
   CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
 
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(metadata[exahype::Vertex::MetadataCellType]);
+      static_cast<CellDescription::Type>(metadata[exahype::MetadataCellType].getU());
   switch(p.getType()) {
   case CellDescription::Cell:
     if (p.getRefinementEvent()==CellDescription::None &&
@@ -1080,7 +1079,7 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     const int                                    fromRank,
-    const int                                    neighbourTypeAsInt,
+    const MetadataHeap::HeapEntries&             neighbourMetadata,
     const int                                    cellDescriptionsIndex,
     const int                                    element,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -1100,7 +1099,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
   synchroniseTimeStepping(cellDescription);
   CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+      static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
 
   #if defined(Asserts) || defined(Debug)
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
@@ -1335,7 +1334,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                     workerRank,
-    const int                                     workerTypeAsInt,
+    const exahype::MetadataHeap::HeapEntries&     workerMetadata,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -1348,69 +1347,10 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
-  // TODO(Dominic): Please implement.
-//  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
-//
-//  // The following two assertions assert that cell descriptions on both ranks are together of
-//  // type Cell, Descendant, EmptyAncestor, or Ancestor.
-//  // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
-//  assertion4(cellDescription.getType()==CellDescription::Type::Cell
-//             || cellDescription.getType()==CellDescription::Type::Ancestor
-//             || cellDescription.getType()==CellDescription::Type::EmptyAncestor
-//             || cellDescription.getType()==CellDescription::Type::Descendant,
-//             cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
-//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-//               && static_cast<CellDescription::Type>(workerTypeAsInt)!=CellDescription::Type::EmptyDescendant
-//               && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::EmptyAncestor
-//                   && cellDescription.getType()==CellDescription::Type::Ancestor)
-//                   && !(static_cast<CellDescription::Type>(workerTypeAsInt)==CellDescription::Type::Ancestor &&
-//                       cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-//                       cellDescription.toString(),workerTypeAsInt,tarch::parallel::Node::getInstance().getRank(),workerRank);
-//
-//  if (cellDescription.getType()==CellDescription::Type::Ancestor) {
-//    logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
-//             cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
-//             ", cell: "<< x << ", level: " << level);
-//
-//
-//
-//    // No inverted message order since we do synchronous data exchange.
-//    // Order: extrapolatedPredictor,fluctuations.
-//    // Make sure you clear the arrays before you append(!) data via receive!
-//    DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).clear();
-//    DataHeap::getInstance().getData(cellDescription.getFluctuation()).clear();
-//
-//    DataHeap::getInstance().receiveData(
-//        cellDescription.getExtrapolatedPredictor(), workerRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//    DataHeap::getInstance().receiveData(
-//        cellDescription.getFluctuation(), workerRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//
-//    exahype::solvers::Solver::SubcellPosition subcellPosition =
-//        computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
-//
-//    // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
-//    if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
-//      #if defined(Debug)
-//      CellDescription& parentCellDescription =
-//          getCellDescription(subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement);
-//      #endif
-//
-//      logDebug("mergeWithWorkerData(...)","Restricting face data for solver " <<
-//               cellDescription.getSolverNumber() << " from Rank "<<workerRank<<
-//               " from cell="<< x << ", level=" << level <<
-//               " to cell="<<parentCellDescription.getOffset()+0.5*parentCellDescription.getSize() <<
-//               " level="<<parentCellDescription.getLevel());
-//
-//      restrictData(
-//          cellDescriptionsIndex,element,
-//          subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement,
-//          subcellPosition.subcellIndex);
-//    }
-//  } else  {
-    dropWorkerData(workerRank,x,level);
-//  }
+  // TODO(Dominic): Implementation is similar to ADER-DG code if someone wants to
+  // implement AMR for the pure finite volumes scheme
+
+  dropWorkerData(workerRank,x,level);
 }
 
 void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
@@ -1570,7 +1510,7 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
     const int                                     masterRank,
-    const int                                     masterTypeAsInt,
+    const exahype::MetadataHeap::HeapEntries&     masterMetadata,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -1580,40 +1520,9 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
       element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
-  // TODO(Dominic): Please implement!
-  //  CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
-  // The following two assertions assert that cell descriptions on both ranks are together of
-  // type Cell, Descendant, EmptyAncestor, or Ancestor.
-  // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
-//  assertion4(cellDescription.getType()==CellDescription::Type::Cell
-//      || cellDescription.getType()==CellDescription::Type::Ancestor
-//      || cellDescription.getType()==CellDescription::Type::EmptyAncestor
-//      || cellDescription.getType()==CellDescription::Type::Descendant,
-//      cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
-//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-//      && static_cast<CellDescription::Type>(masterTypeAsInt)!=CellDescription::Type::EmptyDescendant
-//      && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::EmptyAncestor
-//          && cellDescription.getType()==CellDescription::Type::Ancestor)
-//          && !(static_cast<CellDescription::Type>(masterTypeAsInt)==CellDescription::Type::Ancestor &&
-//              cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-//              cellDescription.toString(),masterTypeAsInt,tarch::parallel::Node::getInstance().getRank(),masterRank);
-//
-//  if (cellDescription.getType()==CellDescription::Descendant) {
-//    logDebug("mergeWithMasterData(...)","Received face data for solver " <<
-//        cellDescription.getSolverNumber() << " from rank "<<masterRank<<
-//        ", cell: "<< x << ", level: " << level);
-//
-//    // No inverted send and receives order since we do synchronous data exchange.
-//    // Order: extraplolatedPredictor,fluctuations
-//    DataHeap::getInstance().receiveData(
-//        cellDescription.getExtrapolatedPredictor(), masterRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//    DataHeap::getInstance().receiveData(
-//        cellDescription.getFluctuation(), masterRank, x, level,
-//        peano::heap::MessageType::MasterWorkerCommunication);
-//  } else {
-    dropMasterData(masterRank,x,level);
-//  }
+  // TODO(Dominic): See ADER-DG solver if you want to implement AMR for the FV solver
+
+  dropMasterData(masterRank,x,level);
 }
 
 void exahype::solvers::FiniteVolumesSolver::dropMasterData(

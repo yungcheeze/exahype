@@ -24,8 +24,6 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
-#include "exahype/mappings/LimiterStatusSpreading.h"
-
 peano::CommunicationSpecification
 exahype::mappings::SubcellSending::communicationSpecification() {
   return peano::CommunicationSpecification(
