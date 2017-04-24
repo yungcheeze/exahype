@@ -200,7 +200,7 @@ private:
    */
   void updateLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
-  void mergeLimiterStatusWithNeighbours(SolverPatch& solverPatch,
+  void mergeWithLimiterStatusOfNeighbours(SolverPatch& solverPatch,
                                               const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices);
 
   /**
@@ -493,7 +493,7 @@ public:
         const bool initialGrid,
         const int solverNumber);
 
-  void mergeLimiterStatusWithNeighbours(
+  void mergeWithLimiterStatusOfNeighbours(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,

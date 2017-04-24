@@ -169,7 +169,7 @@ double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
-void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
+void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatusOfNeighbours(
     SolverPatch& solverPatch,
     const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) {
   tarch::la::Vector<DIMENSIONS,int> center(1);
@@ -182,13 +182,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
             _solver->getCellDescription(neighbourCellDescriptionsIndices[vScalar],neighbourElement);
         SolverPatch::LimiterStatus neighbourLimiterStatus = ADERDGSolver::determineLimiterStatus(neighbourSolverPatch);
 
-        if (
-            ( neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled
-            || neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourOfTroubled1
-            ||neighbourLimiterStatus==SolverPatch::LimiterStatus::NeighbourOfTroubled2)
-            &&
-            tarch::la::countEqualEntries(v,center)==DIMENSIONS-1
-        ) {
+        if (tarch::la::countEqualEntries(v,center)==DIMENSIONS-1) {
           mergeWithLimiterStatus(solverPatch,vScalar,neighbourLimiterStatus);
         }
       }
@@ -196,7 +190,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
   enddforx
 }
 
-void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
+void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatusOfNeighbours(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -227,7 +221,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithNeighbours(
             multiscalelinkedcell::getIndicesAroundCell(
                 indicesAdjacentToFineGridVertices);
 
-        mergeLimiterStatusWithNeighbours(solverPatch,neighbourCellDescriptionsIndices);
+        mergeWithLimiterStatusOfNeighbours(solverPatch,neighbourCellDescriptionsIndices);
 
         updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),solverElement);
       }
@@ -354,7 +348,7 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
       solverNumber);
 
   // TODO(Dominic): Minimise signature
-  mergeLimiterStatusWithNeighbours(
+  mergeWithLimiterStatusOfNeighbours(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
       fineGridPositionOfCell,solverNumber);
@@ -1705,14 +1699,14 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
 
   // TODO(Dominic)
   if (tarch::la::equals(src,dest)==DIMENSIONS-1) {
-    // actually merge the limiter status
-    const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-    const int faceIndex = 2 * normalOfExchangedFace +
-        (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-                                                                            // |src|dest| : 1; |dest|src| : 0
-
-    mergeWithLimiterStatus(solverPatch,faceIndex,neighbourLimiterStatus);
+    const int direction = peano::utils::dLinearised(src-dest+1,3);
+    // old code keep for reference in case we go back to face index
+    // const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+    // assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+    // const int faceIndex = 2 * normalOfExchangedFace +
+    //        (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+    //                                                                            // |src|dest| : 1; |dest|src| : 0
+    mergeWithLimiterStatus(solverPatch,direction,neighbourLimiterStatus);
   }
 }
 
