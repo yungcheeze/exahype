@@ -36,6 +36,8 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
+    class VariableShortcuts;
+    class VariableNames;
 {{NamingSchemes}}
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
