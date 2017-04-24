@@ -27,6 +27,8 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
+#include "exahype/solvers/Solver.h"
+
 #include "exahype/solvers/TemporaryVariables.h"
 
 namespace exahype {
@@ -155,6 +157,7 @@ class exahype::mappings::SolutionRecomputation {
    */
   void deleteTemporaryVariables();
 
+  #ifdef Parallel
   /**
    * TODO(Dominic): Add docu.
    */
@@ -180,6 +183,7 @@ class exahype::mappings::SolutionRecomputation {
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level,
       const exahype::MetadataHeap::HeapEntries& receivedMetadata);
+  #endif
 
  public:
   /**

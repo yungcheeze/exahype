@@ -101,7 +101,6 @@ void exahype::mappings::MeshRefinement::beginIteration(
   exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
-  MetadataHeap::getInstance().setName("MetadataHeap");
 
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -114,8 +113,9 @@ void exahype::mappings::MeshRefinement::beginIteration(
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
   DataHeap::getInstance().finishedToSendSynchronousData();
-  MetadataHeap::getInstance().finishedToSendSynchronousData();
 
+  MetadataHeap::getInstance().setName("MetadataHeap");
+  MetadataHeap::getInstance().finishedToSendSynchronousData();
   if (! MetadataHeap::getInstance().validateThatIncomingJoinBuffersAreEmpty() ) {
       exit(-1);
   }

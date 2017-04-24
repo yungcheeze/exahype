@@ -1691,8 +1691,9 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
       &&
       solverPatch.getType()==SolverPatch::Type::Cell
       &&
-      (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None
-      || solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
+      (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None ||
+      solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
+      solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
   ) {
     solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
   }
