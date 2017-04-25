@@ -335,46 +335,6 @@ exahype::solvers::ADERDGSolver::determineLimiterStatus(CellDescription& cellDesc
   }
 
   return static_cast<CellDescription::LimiterStatus>(limiterStatusAsInt);
-
-  // old code for reference
-// 1. Determine new limiter status.
-//  CellDescription::LimiterStatus limiterStatus = CellDescription::LimiterStatus::Ok;
-//  for (int i=0; i<THREE_POWER_D; i++) {
-//    switch (limiterStatus) {
-//    case CellDescription::LimiterStatus::Ok:
-//      switch (cellDescription.getLimiterStatus(i)) {
-//      case CellDescription::LimiterStatus::Troubled:
-//        limiterStatus = CellDescription::LimiterStatus::Troubled;
-//        break;
-//      case CellDescription::LimiterStatus::NeighbourOfTroubled1:
-//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled1;
-//        break;
-//      case CellDescription::LimiterStatus::NeighbourOfTroubled2:
-//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled2;
-//        break;
-//      case CellDescription::LimiterStatus::NeighbourOfOk:
-//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfOk;
-//        break;
-//      default:
-//        break;
-//      }
-//      break;
-//    case CellDescription::LimiterStatus::NeighbourOfOk:
-//      switch (cellDescription.getLimiterStatus(i)) {
-//      case CellDescription::LimiterStatus::NeighbourOfTroubled1:
-//        limiterStatus = CellDescription::LimiterStatus::NeighbourOfTroubled1;
-//        break;
-//      default:
-//        break;
-//      }
-//      break;
-//      default:
-//        break;
-//    }
-//  }
-//
-//
-//  return limiterStatus;
 }
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
@@ -1346,27 +1306,31 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 
   // TODO Dominic: This is a little inconsistent since I orignally tried to hide
   // the limiting from the pure ADER-DG scheme
-  fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
-  fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
+  fineGridCellDescription.setPreviousLimiterStatus(coarseGridCellDescription.getPreviousLimiterStatus());
+  const CellDescription::LimiterStatus limiterStatus = determineLimiterStatus(fineGridCellDescription);
 
   for (int i=0; i<THREE_POWER_D; i++) {
-    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
+    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
   }
 
-  // TODO Dominic: During the inital mesh build where we only refine
-  // according to the PAD, we don't want to have a too broad refined area.
-  // We thus do not flag children cells with troubled
-  if (!initialGrid) {
-    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
-      for (int i=0; i<THREE_POWER_D; i++) {
-        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
-      }
-
-      for (int i=0; i<THREE_POWER_D; i++) {
-        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
-      } // Dead code elimination will get rid of this line
-    }
-  }
+//  for (int i=0; i<THREE_POWER_D; i++) {
+//    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
+//  }
+//
+//  // TODO Dominic: During the inital mesh build where we only refine
+//  // according to the PAD, we don't want to have a too broad refined area.
+//  // We thus do not flag children cells with troubled
+//  if (!initialGrid) {
+//    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
+//      for (int i=0; i<THREE_POWER_D; i++) {
+//        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
+//      }
+//
+//      for (int i=0; i<THREE_POWER_D; i++) {
+//        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
+//      } // Dead code elimination will get rid of this line
+//    }
+//  }
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(

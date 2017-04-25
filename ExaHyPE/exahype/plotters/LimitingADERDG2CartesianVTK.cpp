@@ -367,7 +367,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
             solverPatch.getOffset(),
             solverPatch.getSize(), solverSolution,
             solverPatch.getCorrectorTimeStamp(),
-            static_cast<int>(solverPatch.getPreviousLimiterStatus()));
+            static_cast<int>(exahype::solvers::ADERDGSolver::determineLimiterStatus(solverPatch)));
       } break;
 //      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
 //      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {

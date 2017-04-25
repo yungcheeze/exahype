@@ -202,7 +202,7 @@ void exahype::mappings::SubcellSending::sendDataToNeighbour(
 
         logDebug("sendDataToNeighbour(...)", "send data for solver " << solverNumber << " to rank " <<
                 toRank << " at vertex x=" << x << ", level=" << level <<
-                ", src=" << src << ", dest=" << dest);
+                ", source=" << src << ", destination=" << dest);
 
         limitingADERDGSolver->sendDataToNeighbourBasedOnLimiterStatus(
             toRank,srcCellDescriptionIndex,element,src,dest,
@@ -212,7 +212,7 @@ void exahype::mappings::SubcellSending::sendDataToNeighbour(
 
         logDebug("sendDataToNeighbour(...)", "send empty data for solver " << solverNumber << " to rank " <<
                  toRank << " at vertex x=" << x << ", level=" << level <<
-                 ", src=" << src << ", dest=" << dest);
+                 ", source=" << src << ", destination=" << dest);
 
         limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(
             toRank,src,dest,x,level);

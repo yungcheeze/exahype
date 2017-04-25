@@ -123,24 +123,22 @@ private:
       const int faceIndexRight) const;
 
   /**
-   * Determine a new merged limiter status based on the neighbours merged
-   * limiter status.
+   * Determine a new limiter status for the given direction based on the neighbour's
+   * limiter status and the cell's reduced limiter status.
    *
-   * This method is used during the limiter status spreading.
-   * It assumes that the merged limiter statuses are initialised with
-   * Ok or Troubled before the spreading.
-   * It further assumes that a unique value is written again to
-   * the merged limiter status fields after the limiter status of all neighbours
-   * of a solver patch have been merged with the limiter status of the patch.
-   * (see exahype::solvers::LimitingADERDG::updateLimiterStatus).
+   * Computes the new limiter status \f$ L_\rm{new} \f$ per direction
+   * according to:
    *
-   * Determining the merged limiter status:
-   * | Status     | Neighbour's Status | Merged Status |
-   * --------------------------------------------------|
-   * | O          | O/NNT              | O
-   * | ~          | T                  | NT
-   * | ~          | NT                 | NNT
-   * | NNT        | T                  | NT
+   * \f[
+   *  L_\rm{new} = \begin{cases}
+   *  T & L = T \\
+   *  \max \left( 0, \max \left( L, L_\rm{neighbour} \right) -1 \right) & \rm{else}
+   *   \end{cases}
+   * \f]
+   *
+   * with \f$ L \f$, \f$ L_\rm{neighbour} \f$, denoting the current limiter status
+   * of the cell and the neighbour, respectively, and \f$  T  \f$ indicates the status
+   * of a troubled cell.
    */
   void mergeWithLimiterStatus(
       SolverPatch& solverPatch,
@@ -655,15 +653,18 @@ public:
       const int element);
 
   /**
-   * Update the merged limiter status based on
-   * the cell-local solution values.
+   * Update the limiter status based on the cell-local solution values.
+   * If a cell
    *
    * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
    *
-   * \return True if the limiter domain changes in the cell, i.e.,
-   * if a patch with status Ok,NeighbourIsTroubled, or NeighbourOfNeighbourIsTroubled
-   * changes its status to Troubled. Or, if a patch with status Troubled changes its
-   * status to Ok.
+   * \return True if the limiter domain changes irregularly in the cell, i.e.,
+   * if a patch with status Ok, NeighbourOfOk
+   * changes its status to Troubled.
+   *
+   * If the limiter status changes regularly, i.e., from NeighbourOfTroubled1
+   * to Troubled or from Troubled to NeighbourOfOk, this
+   * methods returns false.
    */
   bool determineLimiterStatusAfterSolutionUpdate(
       SolverPatch& solverPatch,const bool isTroubled) const;
