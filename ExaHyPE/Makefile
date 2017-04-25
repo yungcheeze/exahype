@@ -187,7 +187,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp -Wall -Wno-tabs -Wno-unused-variable
 	# REMOVING "-O3"  as it creates compiler bugs!
 	LINK_FORTRAN      += -lgfortran
 
