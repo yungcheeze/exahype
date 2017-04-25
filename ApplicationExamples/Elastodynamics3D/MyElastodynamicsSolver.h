@@ -131,7 +131,7 @@ class Elastodynamics::MyElastodynamicsSolver: public Elastodynamics::AbstractMyE
 
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
     virtual bool useCoefficientMatrix() const {return true;}
-    virtual bool usePointSource()            const {return false;}
+    virtual bool usePointSource()            const {return true;}
     virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
 
     void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
@@ -139,6 +139,8 @@ class Elastodynamics::MyElastodynamicsSolver: public Elastodynamics::AbstractMyE
     void riemannSolver_Nodal(double v_p,double v_m, double sigma_p, double sigma_m, double z_p , double z_m, double& v_hat_p , double& v_hat_m, double& sigma_hat_p, double& sigma_hat_m);
     void localBasis(double* n, double * m, double* l, int d);
     void Gram_Schmidt(double* y, double* z);
+    void riemannSolver_BC0(double v, double sigma, double z, double r, double& v_hat, double& sigma_hat);
+    void riemannSolver_BCn(double v, double sigma, double z, double r, double& v_hat, double& sigma_hat);
 };
 
 #endif // __MyElastodynamicsSolver_CLASS_HEADER__

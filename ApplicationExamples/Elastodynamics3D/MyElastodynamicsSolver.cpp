@@ -31,9 +31,9 @@ void Elastodynamics::MyElastodynamicsSolver::adjustPointSolution(const double* c
   static tarch::logging::Log _log("MyElastodynamicsSolver::adjustPointSolution");
    Variables vars(Q);
    
-   Q[0] = std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
-   Q[1] = std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
-   Q[2] = std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+   Q[0] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+   Q[1] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
+   Q[2] = 0*std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/0.01);
    
    Q[3] = 0.0;
    Q[4] = 0.0;
@@ -107,6 +107,19 @@ void Elastodynamics::MyElastodynamicsSolver::boundaryValues(const double* const 
   // Number of variables    = 9 + #parameters
 
   // @todo Please implement/augment if required
+
+  double cp = 6.0;
+  double cs = 3.343;
+  
+  double rho = 2.7;
+
+  double n[3] = {0,0,0};
+  n[normalNonZero] = 1.;
+
+  // extract local s-wave and p-wave impedances
+  double zp=rho*cp;
+  double zs=rho*cs;
+  
   stateOut[0] = 0.0;
   stateOut[1] = 0.0;
   stateOut[2] = 0.0;
@@ -126,6 +139,72 @@ void Elastodynamics::MyElastodynamicsSolver::boundaryValues(const double* const 
   fluxOut[6] = 0.0;
   fluxOut[7] = 0.0;
   fluxOut[8] = 0.0;
+
+  if (faceIndex == 0) {
+
+    stateOut[0] = stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    stateOut[3] = stateIn[3];
+    stateOut[4] = stateIn[4];
+    stateOut[5] = stateIn[5];
+    stateOut[6] = stateIn[6];
+    stateOut[7] = stateIn[7];
+    stateOut[8] = stateIn[8];
+    
+    fluxOut[0] = fluxIn[0];
+    fluxOut[1] = fluxIn[1];
+    fluxOut[2] = fluxIn[2];
+    fluxOut[3] = fluxIn[3];
+    fluxOut[4] = fluxIn[4];
+    fluxOut[5] = fluxIn[5];
+    fluxOut[6] = fluxIn[6];
+    fluxOut[7] = fluxIn[7];
+    fluxOut[8] = fluxIn[8];
+    
+    double v_x =  stateIn[0];
+    double v_y =  stateIn[1];
+    double v_z =  stateIn[2];
+    
+    double sigma_xx =  stateIn[3];
+    double sigma_yy =  stateIn[4];
+    double sigma_zz =  stateIn[5];
+
+    double sigma_xy =  stateIn[6];
+    double sigma_xz =  stateIn[7];
+    double sigma_yz =  stateIn[8];
+
+    // extract traction: Tx, Ty, Tz
+    // double Tx =  0.;
+    // double Ty =  0.;
+    // double Tz =  0.;
+
+    double vx_hat =  0.;
+    double vy_hat =  0.;
+    double vz_hat =  0.;
+
+    double sigma_xx_hat =  0.;
+    double sigma_xy_hat =  0.;
+    double sigma_xz_hat =  0.;
+
+    double r = 1.;
+    
+    riemannSolver_BC0(v_x, sigma_xx, zp, r, vx_hat, sigma_xx_hat);
+    riemannSolver_BC0(v_y, sigma_xy, zs, r, vy_hat, sigma_xy_hat);
+    riemannSolver_BC0(v_z, sigma_xz, zs, r, vz_hat, sigma_xz_hat);
+
+    stateOut[0] = vx_hat;
+    stateOut[1] = vy_hat;
+    stateOut[2] = vz_hat;
+
+    stateOut[3] = sigma_xx_hat;
+    stateOut[6] = sigma_xy_hat;
+    stateOut[7] = sigma_xz_hat;
+
+    
+    
+      
+  }
 }
 
 exahype::solvers::Solver::RefinementControl Elastodynamics::MyElastodynamicsSolver::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
@@ -165,7 +244,7 @@ void Elastodynamics::MyElastodynamicsSolver::nonConservativeProduct(const double
   BgradQ[5] = -lam*Qx[0];
   BgradQ[6] = -mu*Qx[1];
   BgradQ[7] = -mu*Qx[2];
-  BgradQ[8] = 0.0;
+  BgradQ[8] =  0.0;
 
   BgradQ[9]  = -1.0/rho*Qy[6];
   BgradQ[10] = -1.0/rho*Qy[4];
@@ -183,7 +262,7 @@ void Elastodynamics::MyElastodynamicsSolver::nonConservativeProduct(const double
   BgradQ[21] = -lam*Qz[2];
   BgradQ[22] = -lam*Qz[2];
   BgradQ[23] = -(lam+2.0*mu)*Qz[2];
-  BgradQ[24] = 0.0;
+  BgradQ[24] = - 0.0;
   BgradQ[25] = -mu*Qz[0];
   BgradQ[26] = -mu*Qz[1];
 }
@@ -386,7 +465,7 @@ void Elastodynamics::MyElastodynamicsSolver::riemannSolver(double* FL,double* FR
     riemannSolver_Nodal(vm_p,vm_m, Tm_p, Tm_m, zs_p , zs_m, vm_hat_p , vm_hat_m, Tm_hat_p, Tm_hat_m);
     riemannSolver_Nodal(vl_p,vl_m, Tl_p, Tl_m, zs_p , zs_m, vl_hat_p , vl_hat_m, Tl_hat_p, Tl_hat_m);
 
-    // generate fluctuations in the local basis coordinates: n, m
+    // generate fluctuations in the local basis coordinates: n, m, l.
     double FLn = 0.5*(zp_m*(vn_m-vn_hat_m) + (Tn_m-Tn_hat_m));
     double FLm = 0.5*(zs_m*(vm_m-vm_hat_m) + (Tm_m-Tm_hat_m));
     double FLl = 0.5*(zs_m*(vl_m-vl_hat_m) + (Tl_m-Tl_hat_m));
@@ -404,7 +483,7 @@ void Elastodynamics::MyElastodynamicsSolver::riemannSolver(double* FL,double* FR
     double FR_l = 0.5/zs_p*(zs_p*(vl_p-vl_hat_p) - (Tl_p-Tl_hat_p));
 
     
-    // rotate back to the physical coordinates x, y
+    // rotate back to the physical coordinates x, y, z
     double FLx = n[0]*FLn + m[0]*FLm + l[0]*FLl;
     double FLy = n[1]*FLn + m[1]*FLm + l[1]*FLl;
     double FLz = n[2]*FLn + m[2]*FLm + l[2]*FLl;
@@ -475,9 +554,9 @@ void Elastodynamics::MyElastodynamicsSolver::pointSource(const double* const x,c
 
   //f = M0*t/(t0*t0)*std::exp(-t/t0);
 
-  x0[0] = 5.;
-  x0[1] = 5.;
-  x0[2] = 5.;
+  x0[0] = 0.5;
+  x0[1] = 0.5;
+  x0[2] = 0.5;
 
   //double exp0 = std::exp(-sqrt((x[0] - x0[0]) * (x[0] - x0[0]) + (x[1] - x0[1]) * (x[1] - x0[1]) +
   //                 (x[2] - x0[2]) * (x[2] - x0[2])) /((0.25)*(0.25)));
@@ -490,12 +569,8 @@ void Elastodynamics::MyElastodynamicsSolver::pointSource(const double* const x,c
   forceVector[5] = 1.*f;
   forceVector[6] = 0.0;
   forceVector[7] = 0.0;
-  forceVector[8] = 0.0*f;
+  forceVector[8] = 0.0;
 }
-
-
-
-
 
 
 
@@ -580,3 +655,23 @@ void Elastodynamics::MyElastodynamicsSolver::localBasis(double* n, double * m, d
     }
   
 }
+
+
+void Elastodynamics::MyElastodynamicsSolver::riemannSolver_BC0(double v, double sigma, double z,  double r, double& v_hat, double& sigma_hat){
+  
+   double p = 0.5*(z*v + sigma);
+
+   v_hat = (1+r)/z*p;
+   sigma_hat = (1-r)*p;
+
+ }
+
+
+void Elastodynamics::MyElastodynamicsSolver::riemannSolver_BCn(double v,double sigma, double z, double r, double& v_hat, double& sigma_hat){
+  
+   double q = 0.5*(z*v - sigma);
+
+   v_hat = (1+r)/z*q;
+   sigma_hat = -(1-r)*q;
+
+ }
