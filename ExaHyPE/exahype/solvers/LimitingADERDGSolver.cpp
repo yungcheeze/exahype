@@ -665,42 +665,6 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
     }
   }
 
-// Old code keep a while for reference
-//  switch (solverPatch.getPreviousLimiterStatus()) {
-//  case SolverPatch::LimiterStatus::Ok:
-//  case SolverPatch::LimiterStatus::NeighbourOfOk:
-//  case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
-//    if (isTroubled) {
-//      irregularLimiterDomainChange=true;
-//
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::Troubled);
-//      }
-//    }
-//    // do nothing
-//    break;
-//  case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-//    if (isTroubled) {
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::Troubled);
-//      }
-//    }
-//    break;
-//  case SolverPatch::LimiterStatus::Troubled:
-//    if (!isTroubled) {
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::NeighbourOfOk);
-//      }
-//    } else {
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::Troubled);
-//      }
-//    }
-//    break;
-//  default:
-//    break;
-//  }
-
   return irregularLimiterDomainChange;
 }
 
@@ -722,21 +686,15 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAnd
 
   // 2. Copy the result on the other faces as well
   for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
-    std::copy(
-        solutionMin,
-        solutionMin+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMin,_numberOfVariables,
         solutionMin+i*_numberOfVariables);
-    std::copy(
-        solutionMax,
-        solutionMax+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMax,_numberOfVariables,
         solutionMax+i*_numberOfVariables);
   }
 
-  if (dmpIsSatisfied) {
-    return true;
-  }
-
-  return false;
+  return dmpIsSatisfied;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::evaluatePhysicalAdmissibilityCriterion(SolverPatch& solverPatch) {
@@ -789,13 +747,11 @@ void exahype::solvers::LimitingADERDGSolver::determineSolverMinAndMax(SolverPatc
 
   // Copy the result on the other faces as well
   for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
-    std::copy(
-        solutionMin,
-        solutionMin+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMin,_numberOfVariables,
         solutionMin+i*_numberOfVariables);
-    std::copy(
-        solutionMax,
-        solutionMax+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMax,_numberOfVariables,
         solutionMax+i*_numberOfVariables);
   }
 }
@@ -815,13 +771,11 @@ void exahype::solvers::LimitingADERDGSolver::determineLimiterMinAndMax(SolverPat
 
   // Copy the result on the other faces as well
   for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
-    std::copy(
-        solutionMin,
-        solutionMin+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMin,_numberOfVariables, // past-the-end element
         solutionMin+i*_numberOfVariables);
-    std::copy(
-        solutionMax,
-        solutionMax+_numberOfVariables, // past-the-end element
+    std::copy_n(
+        solutionMax,_numberOfVariables, // past-the-end element
         solutionMax+i*_numberOfVariables);
   }
 }
