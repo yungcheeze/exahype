@@ -464,11 +464,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::endIteration(
   
   std::ostringstream snapshotFileName;
   snapshotFileName << "grid"
-                   #ifdef Parallel
-                   << "-rank-" << tarch::parallel::Node::getInstance().getRank()
-                   #endif
-                   << "-" << _snapshotCounter
-                   << ".vtk";
+                   << "-" << _snapshotCounter;
   _vtkWriter->writeToFile( snapshotFileName.str() );
   
   _snapshotCounter++;                  
