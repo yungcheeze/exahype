@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   24/04/2017 12:21
+    * @date   27/04/2017 15:45
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum LimiterStatus {
-            Ok = 0, NeighbourOfOk = 1, NeighbourOfTroubled2 = 2, NeighbourOfTroubled1 = 3, Troubled = 4
+            Ok = 0, NeighbourOfTroubled4 = 1, NeighbourOfTroubled3 = 2, NeighbourOfTroubled2 = 3, NeighbourOfTroubled1 = 4, Troubled = 5
          };
          
          enum RefinementEvent {
@@ -117,9 +117,9 @@ namespace exahype {
             int _solutionMax;
             LimiterStatus _previousLimiterStatus;
             #ifdef UseManualAlignment
-            tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
             #endif
             CompressionState _compressionState;
             int _bytesPerDoFInPreviousSolution;
@@ -135,7 +135,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -1107,7 +1107,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1136,7 +1136,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+            inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1284,7 +1284,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -2415,7 +2415,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2444,7 +2444,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+            inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2460,7 +2460,7 @@ namespace exahype {
  #endif 
  {
                assertion(elementIndex>=0);
-               assertion(elementIndex<THREE_POWER_D);
+               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                return _persistentRecords._limiterStatus[elementIndex];
                
             }
@@ -2473,7 +2473,7 @@ namespace exahype {
  #endif 
  {
                assertion(elementIndex>=0);
-               assertion(elementIndex<THREE_POWER_D);
+               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
                
             }
@@ -2712,7 +2712,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   24/04/2017 12:21
+    * @date   27/04/2017 15:45
     */
    class exahype::records::ADERDGCellDescriptionPacked { 
       
@@ -2758,7 +2758,7 @@ namespace exahype {
             int _solutionMin;
             int _solutionMax;
             LimiterStatus _previousLimiterStatus;
-            tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
             
             /** mapping of records:
             || Member 	|| startbit 	|| length
@@ -2792,7 +2792,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -3807,7 +3807,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3836,7 +3836,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+            inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4043,7 +4043,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -5231,7 +5231,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5260,7 +5260,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+            inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5276,7 +5276,7 @@ namespace exahype {
  #endif 
  {
                assertion(elementIndex>=0);
-               assertion(elementIndex<THREE_POWER_D);
+               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                return _persistentRecords._limiterStatus[elementIndex];
                
             }
@@ -5289,7 +5289,7 @@ namespace exahype {
  #endif 
  {
                assertion(elementIndex>=0);
-               assertion(elementIndex<THREE_POWER_D);
+               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
                
             }
@@ -5583,7 +5583,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   24/04/2017 12:21
+       * @date   27/04/2017 15:45
        */
       class exahype::records::ADERDGCellDescription { 
          
@@ -5596,7 +5596,7 @@ namespace exahype {
             };
             
             enum LimiterStatus {
-               Ok = 0, NeighbourOfOk = 1, NeighbourOfTroubled2 = 2, NeighbourOfTroubled1 = 3, Troubled = 4
+               Ok = 0, NeighbourOfTroubled4 = 1, NeighbourOfTroubled3 = 2, NeighbourOfTroubled2 = 3, NeighbourOfTroubled1 = 4, Troubled = 5
             };
             
             enum RefinementEvent {
@@ -5659,9 +5659,9 @@ namespace exahype {
                int _solutionMax;
                LimiterStatus _previousLimiterStatus;
                #ifdef UseManualAlignment
-               tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus __attribute__((aligned(VectorisationAlignment)));
                #else
-               tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus;
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
                #endif
                CompressionState _compressionState;
                int _bytesPerDoFInPreviousSolution;
@@ -5677,7 +5677,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
@@ -6531,7 +6531,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6560,7 +6560,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+               inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6708,7 +6708,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -7695,7 +7695,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7724,7 +7724,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+               inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7740,7 +7740,7 @@ namespace exahype {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<THREE_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._limiterStatus[elementIndex];
                   
                }
@@ -7753,7 +7753,7 @@ namespace exahype {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<THREE_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
                   
                }
@@ -7992,7 +7992,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   24/04/2017 12:21
+       * @date   27/04/2017 15:45
        */
       class exahype::records::ADERDGCellDescriptionPacked { 
          
@@ -8036,7 +8036,7 @@ namespace exahype {
                int _solutionMin;
                int _solutionMax;
                LimiterStatus _previousLimiterStatus;
-               tarch::la::Vector<THREE_POWER_D,LimiterStatus> _limiterStatus;
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _limiterStatus;
                
                /** mapping of records:
                || Member 	|| startbit 	|| length
@@ -8068,7 +8068,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
@@ -8959,7 +8959,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -8988,7 +8988,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+               inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9195,7 +9195,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const LimiterStatus& previousLimiterStatus, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -10233,7 +10233,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<THREE_POWER_D,LimiterStatus> getLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10262,7 +10262,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setLimiterStatus(const tarch::la::Vector<THREE_POWER_D,LimiterStatus>& limiterStatus) 
+               inline void setLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10278,7 +10278,7 @@ namespace exahype {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<THREE_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._limiterStatus[elementIndex];
                   
                }
@@ -10291,7 +10291,7 @@ namespace exahype {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<THREE_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   _persistentRecords._limiterStatus[elementIndex]= limiterStatus;
                   
                }

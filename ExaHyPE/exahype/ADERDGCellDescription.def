@@ -409,29 +409,19 @@ class exahype::records::ADERDGCellDescription {
      * This cell's dominant solver is ADER-DG solver
      */
     Ok,
-    /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is a direkt neighbour to a Ok cell and 
-     * direct neighbour to the second neighbour of a troubled cell
-     * (NeighbourOfTroubled2).
-     * 
+    /** 
      * This cell's dominant solver is ADER-DG solver.
      */
-    NeighbourOfOk,
+    NeighbourOfTroubled4,
     /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is direct neighbour to a neighbour of a troubled cell (NeighbourOfTroubled1).
-     * 
+     * This cell's dominant solver is ADER-DG solver.
+     */
+    NeighbourOfTroubled3,
+    /**
      * This cell's dominant solver is the FV solver. 
      */
     NeighbourOfTroubled2,
     /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is direct neighbour to a troubled cell.
-     * 
      * This cell's dominant solver is the FV solver. 
      */
     NeighbourOfTroubled1,
@@ -453,9 +443,9 @@ class exahype::records::ADERDGCellDescription {
    * between neighbouring cells per face, edge, and corner.
    * 
    * The actual limiter status of a cell is computed from the 
-   * 3^d limiter status values. It is never stored explicitly.
+   * 2*d limiter status values. It is never stored explicitly.
    */
-  parallelise persistent LimiterStatus limiterStatus[THREE_POWER_D];
+  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
 
   enum CompressionState {
     Uncompressed,
