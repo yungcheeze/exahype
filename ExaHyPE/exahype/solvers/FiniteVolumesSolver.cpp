@@ -276,7 +276,7 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
               coarseGridCellDescriptionsIndex,
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getVertexPosition());
-  int fineGridCellElement =
+  const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
   CellDescription& fineGridCellDescription =
@@ -286,6 +286,39 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
             fineGridCellDescription,
             fineGridVertices,
             fineGridVerticesEnumerator);
+}
+
+void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
+    const int cellDescriptionsIndex,
+    const int solverNumber,
+    const exahype::records::FiniteVolumesCellDescription::Type cellType,
+    const exahype::records::FiniteVolumesCellDescription::RefinementEvent refinementEvent,
+    const int level,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+    const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion2(static_cast<unsigned int>(solverNumber) < solvers::RegisteredSolvers.size(),
+             solverNumber, exahype::solvers::RegisteredSolvers.size());
+
+  CellDescription newCellDescription;
+  newCellDescription.setSolverNumber(solverNumber);
+
+  // Default AMR settings
+  newCellDescription.setType(cellType);
+  newCellDescription.setLevel(level);
+  newCellDescription.setRefinementEvent(refinementEvent);
+  // newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
+
+  // Pass geometry information to the cellDescription description
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
+
+  // Default field data indices
+  newCellDescription.setSolution(-1);
+  newCellDescription.setPreviousSolution(-1);
+
+  Heap::getInstance().getData(cellDescriptionsIndex).push_back(newCellDescription);
 }
 
 void exahype::solvers::FiniteVolumesSolver::ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {

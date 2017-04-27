@@ -92,6 +92,109 @@ double exahype::solvers::ADERDGSolver::CompressionAccuracy = 0.0;
 
 bool exahype::solvers::ADERDGSolver::SpawnCompressionAsBackgroundThread = false;
 
+void exahype::solvers::ADERDGSolver::addNewCellDescription(
+  const int cellDescriptionsIndex,
+  const int                                      solverNumber,
+  const exahype::records::ADERDGCellDescription::Type cellType,
+  const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
+  const int                                     level,
+  const int                                     parentIndex,
+  const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+  const tarch::la::Vector<DIMENSIONS, double>&  cellOffset) {
+
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion2(parentIndex == -1 || parentIndex != cellDescriptionsIndex, parentIndex, cellDescriptionsIndex);
+  assertion2(parentIndex != cellDescriptionsIndex, parentIndex, cellDescriptionsIndex);
+
+  assertion2(static_cast<unsigned int>(solverNumber) < solvers::RegisteredSolvers.size(),
+             solverNumber, exahype::solvers::RegisteredSolvers.size());
+
+  CellDescription newCellDescription;
+  newCellDescription.setSolverNumber(solverNumber);
+
+  // Default AMR settings
+  newCellDescription.setType(cellType);
+  newCellDescription.setParentIndex(parentIndex);
+  newCellDescription.setLevel(level);
+  newCellDescription.setRefinementEvent(refinementEvent);
+
+  std::bitset<DIMENSIONS_TIMES_TWO>
+      riemannSolvePerformed;  // default construction: no bit set
+  newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+
+  // Pass geometry information to the cellDescription description
+  newCellDescription.setSize(cellSize);
+  newCellDescription.setOffset(cellOffset);
+
+  // Initialise MPI helper variables
+  #ifdef Parallel
+  newCellDescription.setHasToHoldDataForNeighbourCommunication(false);
+  newCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
+  for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
+    newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
+  }
+  #endif
+
+  // Default field data indices
+  newCellDescription.setSolution(-1);
+  newCellDescription.setUpdate(-1);
+  newCellDescription.setExtrapolatedPredictor(-1);
+  newCellDescription.setFluctuation(-1);
+
+  // Limiter meta data (oscillations identificator)
+  newCellDescription.setPreviousLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
+  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
+  newCellDescription.setSolutionMin(-1);
+  newCellDescription.setSolutionMax(-1);
+
+  // Compression
+  newCellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CompressionState::Uncompressed);
+  newCellDescription.setSolutionAverages(-1);
+  newCellDescription.setUpdateAverages(-1);
+  newCellDescription.setExtrapolatedPredictorAverages(-1);
+  newCellDescription.setFluctuationAverages(-1);
+
+  newCellDescription.setSolutionCompressed(-1);
+  newCellDescription.setUpdateCompressed(-1);
+  newCellDescription.setExtrapolatedPredictorCompressed(-1);
+  newCellDescription.setFluctuationCompressed(-1);
+
+  ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).push_back(newCellDescription);
+}
+
+/**
+ * Returns the ADERDGCellDescription heap vector
+ * at address \p cellDescriptionsIndex.
+ */
+exahype::solvers::ADERDGSolver::Heap::HeapEntries& exahype::solvers::ADERDGSolver::getCellDescriptions(
+    const int cellDescriptionsIndex) {
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+
+  return Heap::getInstance().getData(cellDescriptionsIndex);
+}
+
+/**
+ * Returns the ADERDGCellDescription with index \p element
+ * in the heap vector at address \p cellDescriptionsIndex.
+ */
+exahype::solvers::ADERDGSolver::CellDescription& exahype::solvers::ADERDGSolver::getCellDescription(
+    const int cellDescriptionsIndex,
+    const int element) {
+  assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
+  assertion2(element>=0,cellDescriptionsIndex,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
+
+  return Heap::getInstance().getData(cellDescriptionsIndex)[element];
+}
+
+/**
+ * Returns if a ADERDGCellDescription type holds face data.
+ */
+bool exahype::solvers::ADERDGSolver::holdsFaceData(const exahype::solvers::ADERDGSolver::CellDescription::Type& cellDescriptionType) {
+  return cellDescriptionType==CellDescription::Cell       ||
+      cellDescriptionType==CellDescription::Ancestor   ||
+      cellDescriptionType==CellDescription::Descendant;
+}
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
 

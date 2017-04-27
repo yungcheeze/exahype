@@ -670,10 +670,13 @@ public:
    * On the other hand, allocate a limiter patch for solver
    * patches of type Cell that are flagged with a limiter
    * status other than Ok.
+   *
+   * \return true if a limiter patch was allocated. Return false
+   * otherwise.
    */
-  void allocateOrDeallocateLimiterPatch(
-          exahype::Cell& fineGridCell,
-          const int solverNumber) const;
+  bool allocateOrDeallocateLimiterPatch(
+      const int cellDescriptionsIndex,
+      const int solverNumber) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.

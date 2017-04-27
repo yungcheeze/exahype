@@ -188,28 +188,21 @@ public:
    }
 
    /**
-    * Checks if no unnecessary memory is allocated for the cell description.
-    * If this is not the case, it deallocates the unnecessarily allocated memory.
+    * Push a new cell description to the back
+    * of the heap vector at \p cellDescriptionsIndex.
+    *
+    * \param TODO docu
     */
-   void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+   static void addNewCellDescription(
+       const int cellDescriptionsIndex,
+       const int solverNumber,
+       const CellDescription::Type cellType,
+       const CellDescription::RefinementEvent refinementEvent,
+       const int level,
+       const int parentIndex,
+       const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+       const tarch::la::Vector<DIMENSIONS, double>&  cellOffset);
 
-   /**
-    * Checks if all the necessary memory is allocated for the cell description.
-    * If this is not the case, it allocates the necessary
-    * memory for the cell description.
-    */
-   void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-   /**
-    * Initialise cell description of type Cell.
-    * Initialise the refinement event with None.
-    */
-   void addNewCell(
-       exahype::Cell& fineGridCell,
-       exahype::Vertex* const fineGridVertices,
-       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-       const int coarseGridCellDescriptionsIndex,
-       const int solverNumber);
 
    /**
     * Returns if a ADERDGCellDescription type holds face data.
@@ -343,8 +336,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
-
-
 
 
   /**
@@ -498,6 +489,31 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
+  /**
+   * Initialise cell description of type Cell.
+   * Initialise the refinement event with None.
+   */
+  void addNewCell(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int coarseGridCellDescriptionsIndex,
+      const int solverNumber);
+
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   */
+  void ensureNecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+
   bool markForRefinement(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,

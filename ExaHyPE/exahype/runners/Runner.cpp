@@ -761,7 +761,7 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
   repository.getState().switchToPreAMRContext();
   createMesh(repository);
-  repository.iterate(3); // a few extra iterations
+  repository.iterate(3); // a few extra iterations for the limiter status spreading
 
   logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
@@ -770,24 +770,24 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   repository.iterate();
 }
 
-void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories::Repository& repository) {
   // We refine here using the previous solution (which is valid)
-//  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
+//  logInfo("updateMeshFusedTimeStepping(...)","perform a-posteriori refinement");
 //  repository.getState().switchToPreAMRContext(); // TODO(Dominic): Adjust context for MPI
 //  createMesh(repository);
-//  repository.iterate(2); // a few extra iterations
+//  repository.iterate(3); // a few extra iterations for the limiter status spreading
 //
-//  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
+//  logInfo("updateMeshFusedTimeStepping(...)","send subcell data to neighbours");
 //  repository.switchToFinaliseMeshRefinementAndSubcellSending();
 //  repository.iterate();
 //
 //  // TODO(Dominic): Be careful that the rollback does not
 //  repository.getState().switchToReinitialisationContext();
-//  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
+//  logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells");
 //  repository.switchToReinitialisation();
 //  repository.iterate();
 //
-//  logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
+//  logInfo("updateMeshFusedTimeStepping(...)","recompute solution in troubled cells");
 //  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
 //  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
 //  repository.iterate();
@@ -939,7 +939,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
 
   // TODO(Dominic): Commented out will be merged with the mesh refinement
 //  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-//    updateLimiterDomainFusedTimeStepping(repository);
+//    updateMeshFusedTimeStepping(repository);
 //  }
 
   // We consider the limiter status in our mesh

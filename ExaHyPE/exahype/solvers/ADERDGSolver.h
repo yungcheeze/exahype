@@ -214,16 +214,6 @@ private:
       CellDescription& pFine);
 
   /**
-   * Check if cell descriptions of type Ancestor or Descendant need to hold
-   * data or not based on virtual refinement criterion.
-   * Then, allocate the necessary memory or deallocate the unnecessary memory.
-   */
-  void ensureOnlyNecessaryMemoryIsAllocated(
-      CellDescription& fineGridCellDescription,
-      const exahype::solvers::Solver::AugmentationControl& augmentationControl,
-      const bool onMasterWorkerBoundary);
-
-  /**
    * TODO(Dominic): Add docu.
    */
   bool markForAugmentation(
@@ -493,23 +483,6 @@ private:
       double**  tempStateSizedVectors,
       double**  tempStateSizedSquareMatrices);
 
-  /**
-   * Checks if no unnecessary memory is allocated for the cell description.
-   * If this is not the case, it deallocates the unnecessarily allocated memory.
-   *
-   * \note This operation is thread safe as we serialise it.
-   */
-  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
-
-  /**
-   * Checks if all the necessary memory is allocated for the cell description.
-   * If this is not the case, it allocates the necessary
-   * memory for the cell description.
-   *
-   * \note This operation is thread safe as we serialise it.
-   */
-  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
-
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.
@@ -631,37 +604,42 @@ private:
   };
 
 public:
+
   /**
-   * Returns the ADERDGCellDescription.
+   * Push a new cell description to the back
+   * of the heap vector at \p cellDescriptionsIndex.
+   *
+   * \param TODO docu
+   */
+  static void addNewCellDescription(
+      const int cellDescriptionsIndex,
+      const int                                      solverNumber,
+      const exahype::records::ADERDGCellDescription::Type cellType,
+      const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
+      const int                                     level,
+      const int                                     parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
+      const tarch::la::Vector<DIMENSIONS, double>&  cellOffset);
+
+  /**
+   * Returns the ADERDGCellDescription heap vector
+   * at address \p cellDescriptionsIndex.
    */
   static Heap::HeapEntries& getCellDescriptions(
-      const int cellDescriptionsIndex) {
-    assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-    return Heap::getInstance().getData(cellDescriptionsIndex);
-  }
+      const int cellDescriptionsIndex);
 
   /**
-   * Returns the ADERDGCellDescription.
+   * Returns the ADERDGCellDescription with index \p element
+   * in the heap vector at address \p cellDescriptionsIndex.
    */
   static CellDescription& getCellDescription(
       const int cellDescriptionsIndex,
-      const int element) {
-    assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
-    assertion2(element>=0,cellDescriptionsIndex,element);
-    assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
-
-    return Heap::getInstance().getData(cellDescriptionsIndex)[element];
-  }
+      const int element);
 
   /**
    * Returns if a ADERDGCellDescription type holds face data.
    */
-  static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
-    return cellDescriptionType==CellDescription::Cell       ||
-        cellDescriptionType==CellDescription::Ancestor   ||
-        cellDescriptionType==CellDescription::Descendant;
-  }
+  static bool holdsFaceData(const CellDescription::Type& cellDescriptionType);
 
   /**
    * Determine a unified limiter status of a cell description.
@@ -781,6 +759,34 @@ public:
    * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
    */
   int getSpaceTimeDataPerCell() const;
+
+  /**
+   * Check if cell descriptions of type Ancestor or Descendant need to hold
+   * data or not based on virtual refinement criterion.
+   * Then, allocate the necessary memory or deallocate the unnecessary memory.
+   */
+  void ensureOnlyNecessaryMemoryIsAllocated(
+      CellDescription& fineGridCellDescription,
+      const exahype::solvers::Solver::AugmentationControl& augmentationControl,
+      const bool onMasterWorkerBoundary);
+
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   *
+   * \note This operation is thread safe as we serialise it.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   *
+   * \note This operation is thread safe as we serialise it.
+   */
+  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
+
 
   /**
    * Getter for the size of the array allocated that can be overriden
