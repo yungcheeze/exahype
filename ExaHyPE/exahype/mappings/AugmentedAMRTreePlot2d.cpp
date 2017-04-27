@@ -97,6 +97,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
       _cellRefinementEventWriter(0),
       _cellDataWriter(0),
       _limiterStatusWriter(0),
+      _previousLimiterStatusWriter(0),
       _cellCounter(0) {}
 
 exahype::mappings::AugmentedAMRTreePlot2d::~AugmentedAMRTreePlot2d() {}
@@ -113,6 +114,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
       _cellDataWriter(masterThread._cellDataWriter),
       _limiterStatusWriter(masterThread._limiterStatusWriter),
+      _previousLimiterStatusWriter(0),
       _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
@@ -378,6 +380,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
           _limiterStatusWriter->plotCell(
               cellIndex, static_cast<int>(exahype::solvers::ADERDGSolver::determineLimiterStatus(pFine)));
+          _previousLimiterStatusWriter->plotCell(
+              cellIndex, static_cast<int>(pFine.getPreviousLimiterStatus()));
           solverFound = true;
         }
       }
@@ -387,6 +391,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         _cellRefinementEventWriter->plotCell(cellIndex, -1);
         _cellDataWriter->plotCell(cellIndex, 0);
         _limiterStatusWriter->plotCell(cellIndex, -1);
+        _previousLimiterStatusWriter->plotCell(cellIndex,-1);
       }
 
     } else {
@@ -396,6 +401,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
       _cellDataWriter->plotCell(cellIndex, 0);
       _limiterStatusWriter->plotCell(cellIndex, -1);
+      _previousLimiterStatusWriter->plotCell(cellIndex,-1);
     }
 
     _cellCounter++;
@@ -438,7 +444,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
   _limiterStatusWriter = _vtkWriter->createCellDataWriter(
-      "Limiter-Status(Ok=0,NeighbourOfNeighbourOfTroubled=1,NeighbourOfTroubled=2,Troubled=3)", 1);
+      "Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
+  _previousLimiterStatusWriter = _vtkWriter->createCellDataWriter(
+      "Previous-Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
@@ -451,6 +459,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _cellRefinementEventWriter->close();
   _cellDataWriter->close();
   _limiterStatusWriter->close();
+  _previousLimiterStatusWriter->close();
   _cellNumberWriter->close();
 
   delete _vertexWriter;
@@ -462,6 +471,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _cellNumberWriter;
   delete _cellDataWriter;
   delete _limiterStatusWriter;
+  delete _previousLimiterStatusWriter;
 
   _vertexWriter = 0;
   _cellWriter = 0;

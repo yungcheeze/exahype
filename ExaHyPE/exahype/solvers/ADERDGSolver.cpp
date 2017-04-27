@@ -330,7 +330,7 @@ exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
 exahype::solvers::ADERDGSolver::determineLimiterStatus(CellDescription& cellDescription) {
   // Assumes increasing value of limiter status the closer we get to troubled cell
   int limiterStatusAsInt = static_cast<int>(CellDescription::LimiterStatus::Ok);
-  for (int i=0; i<THREE_POWER_D; i++) {
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
     limiterStatusAsInt = std::max( limiterStatusAsInt, static_cast<int>(cellDescription.getLimiterStatus(i)) );
   }
 
@@ -751,8 +751,9 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     if (fineGridCellDescription.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth) {
       switch (determineLimiterStatus(fineGridCellDescription)) {
         // assertion: mergedLimiterStatus has been unified
-        case CellDescription::LimiterStatus::Ok:
-        case CellDescription::LimiterStatus::NeighbourOfOk: {
+        case CellDescription::LimiterStatus::NeighbourOfTroubled3:
+        case CellDescription::LimiterStatus::NeighbourOfTroubled4:
+        case CellDescription::LimiterStatus::Ok: {
           #ifdef Parallel
           ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
           #endif
@@ -1306,31 +1307,31 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 
   // TODO Dominic: This is a little inconsistent since I orignally tried to hide
   // the limiting from the pure ADER-DG scheme
-  fineGridCellDescription.setPreviousLimiterStatus(coarseGridCellDescription.getPreviousLimiterStatus());
-  const CellDescription::LimiterStatus limiterStatus = determineLimiterStatus(fineGridCellDescription);
+//  fineGridCellDescription.setPreviousLimiterStatus(coarseGridCellDescription.getPreviousLimiterStatus());
+//  const CellDescription::LimiterStatus limiterStatus = determineLimiterStatus(fineGridCellDescription);
+//
+//  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+//    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
+//  }
 
-  for (int i=0; i<THREE_POWER_D; i++) {
-    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
   }
 
-//  for (int i=0; i<THREE_POWER_D; i++) {
-//    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
-//  }
-//
-//  // TODO Dominic: During the inital mesh build where we only refine
-//  // according to the PAD, we don't want to have a too broad refined area.
-//  // We thus do not flag children cells with troubled
-//  if (!initialGrid) {
-//    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
-//      }
-//
-//      for (int i=0; i<THREE_POWER_D; i++) {
-//        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
-//      } // Dead code elimination will get rid of this line
-//    }
-//  }
+  // TODO Dominic: During the inital mesh build where we only refine
+  // according to the PAD, we don't want to have a too broad refined area.
+  // We thus do not flag children cells with troubled
+  if (!initialGrid) {
+    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
+      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
+      }
+
+      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
+      } // Dead code elimination will get rid of this line
+    }
+  }
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(
@@ -1431,6 +1432,7 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
       fineGridCellDescription.setType(CellDescription::EmptyAncestor);
       fineGridCellDescription.setRefinementEvent(CellDescription::None);
       fineGridCellDescription.setNewlyCreated(true);
+
       ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
       break;
     case CellDescription::ChangeChildrenToDescendantsRequested:

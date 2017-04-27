@@ -198,30 +198,8 @@ private:
    */
   void updateLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
-  void mergeWithLimiterStatusOfNeighbours(SolverPatch& solverPatch,
-                                              const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices);
-
-  /**
-   * Based on the limiter status of a solver patch
-   * and the solver patch's type, we perform the
-   * following actions:
-   *
-   * | LimiterStatus | Type                     | Action                                                                                           |
-   * ----------------------------------------------------------------------------------------------------------------------------------------------|
-   * | O/NNT      | Any                         | Do nothing.                                                                                      |
-   * | T/NT       | Cell                        | Set RefinementRequested event on parent cell if its current event is None or AugmentingRequested |
-   * | T/NT       | Descendant                  | Set RefinementRequested event if current event is None or AugmentingRequested                    |
-   * | T/NT       | Else                        | Do nothing                                                                                       |
-   *
-   * \note Currently we assume that the problem and load-balancing is so well-behaved that
-   * we always find a Cell as parent of a Descendant on the same MPI rank. We further do not
-   * consider Master-Worker boundaries in the lookup of the parent.
-   *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
-   */
-  bool markForRefinementBasedOnLimiterStatus(
+  void mergeWithLimiterStatusOfNeighbours(
       SolverPatch& solverPatch,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const;
 
 #ifdef Parallel
@@ -318,7 +296,7 @@ private:
 #endif
 
 public:
-  static bool limiterDomainOfOneSolverHasChanged();
+  static bool irregularChangeOfLimiterDomainOfOneSolver();
 
   /**
    * Create a limiting ADER-DG solver.
@@ -492,14 +470,10 @@ public:
         const int solverNumber);
 
   void mergeWithLimiterStatusOfNeighbours(
-      exahype::Cell& fineGridCell,
+      const int cellDescriptionsIndex,
+      const int element,
       exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      const int solverNumber);
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
 
   bool markForRefinement(
       exahype::Cell& fineGridCell,
@@ -659,11 +633,11 @@ public:
    * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
    *
    * \return True if the limiter domain changes irregularly in the cell, i.e.,
-   * if a patch with status Ok, NeighbourOfOk
+   * if a patch with status Ok, NeighbourOfTroubled3, NeighbourOfTroubled4
    * changes its status to Troubled.
    *
    * If the limiter status changes regularly, i.e., from NeighbourOfTroubled1
-   * to Troubled or from Troubled to NeighbourOfOk, this
+   * to Troubled or from Troubled to NeighbourOfTroubled3, NeighbourOfTroubled4, this
    * methods returns false.
    */
   bool determineLimiterStatusAfterSolutionUpdate(
@@ -686,6 +660,20 @@ public:
    */
   void updatePreviousLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
+
+
+  /**
+   * Deallocates the limiter patch for solver patches
+   * that are either not of type Cell or flagged with limiter status
+   * Ok.
+   *
+   * On the other hand, allocate a limiter patch for solver
+   * patches of type Cell that are flagged with a limiter
+   * status other than Ok.
+   */
+  void allocateOrDeallocateLimiterPatch(
+          exahype::Cell& fineGridCell,
+          const int solverNumber) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.

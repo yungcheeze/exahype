@@ -152,9 +152,10 @@ void exahype::mappings::Prediction::enterCell(
 
         switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
           case exahype::solvers::Solver::Type::ADERDG: {
-            exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+            auto* solver = static_cast<exahype::solvers::ADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+
+            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
@@ -162,9 +163,10 @@ void exahype::mappings::Prediction::enterCell(
             performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
           } break;
           case exahype::solvers::Solver::Type::LimitingADERDG: {
-            exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
+            auto* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+
+            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
@@ -172,7 +174,8 @@ void exahype::mappings::Prediction::enterCell(
             if (cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
                 || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled1
                 || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfOk) {
+                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled3
+                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled4) {
               performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
             }
           } break;

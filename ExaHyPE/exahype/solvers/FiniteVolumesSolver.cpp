@@ -15,6 +15,7 @@
 
 #include <string>
 #include <limits>
+#include <iomanip>
 
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
@@ -545,9 +546,9 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
       cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
 
   // cellDescription.getTimeStepSize() = 0 is an initial condition
-  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize) );
-  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize) );
-  assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max() );
+  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
+  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isinf(admissibleTimeStepSize), cellDescription.toString(), cellDescriptionsIndex );
+  assertion2( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || admissibleTimeStepSize<std::numeric_limits<double>::max(), cellDescription.toString(), cellDescriptionsIndex );
 
   if ( !tarch::la::equals(cellDescription.getTimeStepSize(), 0.0) && tarch::la::smaller(admissibleTimeStepSize,cellDescription.getTimeStepSize()) ) { //TODO JMG 1.001 factor to prevent same dt computation to throw logerror
     logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<
@@ -1567,7 +1568,7 @@ void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesSolution(
     std::cout <<  "unknown=" << unknown << std::endl;
     dfor(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth) {
       int iScalar = peano::utils::dLinearisedWithoutLookup(i,_nodesPerCoordinateAxis+2*_ghostLayerWidth)*_numberOfVariables+unknown;
-      std::cout << solution[iScalar] << ",";
+      std::cout << std::setprecision(3) << solution[iScalar] << ",";
       if (i(0)==_nodesPerCoordinateAxis+2*_ghostLayerWidth-1) {
         std::cout << std::endl;
       }

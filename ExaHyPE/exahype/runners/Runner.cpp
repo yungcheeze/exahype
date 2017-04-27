@@ -757,77 +757,40 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
 }
 
 void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository& repository) {
-  /**
-   * We need to gather information from all neighbours
-   * of a cell before we can determine the unified
-   * limiter status value of the cell.
-   *u
-   * We thus need two extra iterations to send and receive
-   * the limiter status of remote neighbours.
-   */
-//  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
-//  repository.switchToMergeTimeStepDataDropFaceData();
-//  repository.iterate(); // spread limiter status once TODO(Dominic):
-
-
   // We refine here using the previous solution (which is valid)
   logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
   repository.getState().switchToPreAMRContext();
   createMesh(repository);
-  repository.iterate(2); // a few extra iterations
+  repository.iterate(3); // a few extra iterations
 
   logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
   logInfo("updateLimiterDomainFusedTimeStepping(...)","finalise mesh refinement and compute first time step size");
   repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
   repository.iterate();
-  // finalise mesh refinment and send the data; replace with reinitialisation again
-
-  repository.getState().switchToReinitialisationContext();
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
-  repository.switchToReinitialisation();
-  repository.iterate();
 }
 
 void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
-  /**
-   * We need to gather information from all neighbours
-   * of a cell before we can determine the unified
-   * limiter status value of the cell.
-   *
-   * We thus need two extra iterations to send and receive
-   * the limiter status of remote neighbours.
-   */
-//  repository.getState().switchToLimiterStatusSpreadingFusedTimeSteppingContext();
-//  repository.switchToMergeTimeStepDataDropFaceData();
-//  repository.iterate(); // spread limiter status once TODO(Dominic):
-
-
   // We refine here using the previous solution (which is valid)
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
-  repository.getState().switchToPreAMRContext();
-  createMesh(repository);
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
-  repository.switchToFinaliseMeshRefinementAndSubcellSending();
-  // finalise mesh refinment and send the data; replace with reinitialisation again
-  repository.iterate();
-
-//  logInfo("updateLimiterDomainFusedTimeStepping(...)","spread limiter status");
-//    repository.switchToLimiterStatusSpreading();
-//    repository.iterate(2);
+//  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
+//  repository.getState().switchToPreAMRContext(); // TODO(Dominic): Adjust context for MPI
+//  createMesh(repository);
+//  repository.iterate(2); // a few extra iterations
 //
-//    // TODO(Dominic): Be careful that the rollback does not
-//    repository.getState().switchToReinitialisationContext();
-//    logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
-//    repository.switchToReinitialisation();
-//    repository.iterate();
-
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
-  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
-  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-  repository.iterate();
+//  logInfo("updateLimiterDomainFusedTimeStepping(...)","send subcell data to neighbours");
+//  repository.switchToFinaliseMeshRefinementAndSubcellSending();
+//  repository.iterate();
+//
+//  // TODO(Dominic): Be careful that the rollback does not
+//  repository.getState().switchToReinitialisationContext();
+//  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
+//  repository.switchToReinitialisation();
+//  repository.iterate();
+//
+//  logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
+//  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
+//  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+//  repository.iterate();
 }
 
 void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {
@@ -958,8 +921,15 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
+
+  // TODO(Dominic): Remove
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate();
+
+  std::cout << "irregularChangeoFLimiterDomain="<<exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() << std::endl;
+
   repository.getState().switchToADERDGTimeStepContext();
-  if (numberOfStepsToRun==0) {
+  if (true || numberOfStepsToRun==0) { // TODO(Dominic): Remove true
     repository.switchToPlotAndADERDGTimeStep();
     repository.iterate();
   } else {

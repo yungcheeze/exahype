@@ -162,13 +162,13 @@ private:
    * the the fine grid cell functions as a compute cell (Cell) for the solver.
    * Please see the discussion in the class header.
    *
-   * <h2>Limiting ADER-DG solver</h2>
-   * We only perform a predictor computation if the cell description's limiter status is of type
-   * Ok, NeighbourIsTroubledCell, or NeighbourIsNeighbourOfTroubledCell. These
-   * cells require time-extrapolated boundary-extrapolated solution values from their neighbours
-   * to compute the normal fluxes/fluctuations at the cell boundary.
+   * <h2>LimitingADERDGSolver</h2>
+   * We only perform a predictor computation if the cell description's limiter status is not
+   * set to Troubled.
    * Cell descriptions with limiter status Troubled do not hold a valid ADER-DG solution and thus
    * cannot provide these data.
+   * The other cells require time-extrapolated boundary-extrapolated solution values from their neighbours
+   * to compute the normal fluxes/fluctuations at the cell boundary.
    *
    * @see enterCellSpecification()
    */

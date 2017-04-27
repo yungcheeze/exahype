@@ -395,7 +395,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
       tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
       int destScalar = TWO_POWER_D - myDestScalar - 1;
 
-      if (vertex.hasToReceiveMetadataDuringMeshRefinement(src,dest,fromRank)) {
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
         logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
                  fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                  << vertex.getAdjacentRanks());
@@ -466,7 +466,7 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadataDuringMeshRefinement(src,dest,toRank)) {
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
         if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
           logDebug("prepareSendToNeighbour(...)","[metadata] sent to rank "<<toRank<<", x:"<<

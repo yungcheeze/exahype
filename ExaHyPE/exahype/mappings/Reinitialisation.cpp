@@ -163,22 +163,18 @@ void exahype::mappings::Reinitialisation::enterCell(
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
         if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-           //&& static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
-          // TODO(Dominic): Move this into mesh refinement
-
           auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); // update before reinitialisation
+//          limitingADERDGSolver->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element); //  TODO(Dominic): Not necessary anymore
 
-//          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
-//          if (!exahype::State::fuseADERDGPhases()) {
-//            limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
-//          }
+          limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
+          if (!exahype::State::fuseADERDGPhases()) {
+            limitingADERDGSolver->reconstructStandardTimeSteppingDataAfterRollback(fineGridCell.getCellDescriptionsIndex(),element);
+          }
 
           limitingADERDGSolver->reinitialiseSolvers(fineGridCell.getCellDescriptionsIndex(),element,
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator); // TODO(Dominic): Probably need to merge those
 
-          // must be after the reinitialisation
           limitingADERDGSolver->updatePreviousLimiterStatus(fineGridCell.getCellDescriptionsIndex(), element);
         }
 
