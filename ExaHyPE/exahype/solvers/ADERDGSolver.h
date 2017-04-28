@@ -326,6 +326,8 @@ private:
    *
    * Further sets the refinement event on a coarse grid Cell to Refining
    * if the first new Cell was initialised on the fine grid.
+   *
+   * \note This operations is not thread-safe
    */
   void addNewCellIfRefinementRequested(
       exahype::Cell& fineGridCell,
@@ -642,6 +644,14 @@ public:
   static bool holdsFaceData(const CellDescription::Type& cellDescriptionType);
 
   /**
+   * \note a LimiterStatus enum for the given integer.
+   *
+   * \note It makes only sense to use this method if a corresponding
+   * celldescriptions is at the finest level of the mesh.
+   */
+  static CellDescription::LimiterStatus toLimiterStatusEnum(const int limiterStatusAsInt);
+
+  /**
    * Determine a unified limiter status of a cell description.
    *
    * <h2>Determining the unified value</h2>
@@ -658,7 +668,7 @@ public:
    * \note The ADERdGSolver needs to know about the limiter status during mesh initialisation and
    * refinement operations.
    */
-  static CellDescription::LimiterStatus determineLimiterStatus(CellDescription& cellDescription);
+  static int determineLimiterStatus(CellDescription& cellDescription);
 
   /**
    * Overwrites the facewise limiter status values at the

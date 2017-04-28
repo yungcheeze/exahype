@@ -142,9 +142,9 @@ void exahype::solvers::ADERDGSolver::addNewCellDescription(
   newCellDescription.setFluctuation(-1);
 
   // Limiter meta data (oscillations identificator)
-  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
-  newCellDescription.setPreviousLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
-  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
+  newCellDescription.setLimiterStatus(0); // 0 is CellDescription::LimiterStatus::Ok
+  newCellDescription.setPreviousLimiterStatus(0);
+  newCellDescription.setFacewiseLimiterStatus(0);
   newCellDescription.setSolutionMin(-1);
   newCellDescription.setSolutionMax(-1);
 
@@ -426,26 +426,39 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   }
 }
 
-/**
- * Iterate over the merged limiter statuses per face and
- * determine a unique value.
- */
 exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
-exahype::solvers::ADERDGSolver::determineLimiterStatus(
-    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
-  // Assumes increasing value of limiter status the closer we get to troubled cell
-  int limiterStatusAsInt = static_cast<int>(CellDescription::LimiterStatus::Ok);
-  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    limiterStatusAsInt = std::max( limiterStatusAsInt, static_cast<int>(cellDescription.getFacewiseLimiterStatus(i)) );
-  }
+exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
+  assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
+  assertion1( limiterStatusAsInt <=
+      static_cast<int>(CellDescription::LimiterStatus::Troubled),
+      limiterStatusAsInt);
 
   return static_cast<CellDescription::LimiterStatus>(limiterStatusAsInt);
 }
 
+/**
+ * Iterate over the merged limiter statuses per face and
+ * determine a unique value.
+ */
+int
+exahype::solvers::ADERDGSolver::determineLimiterStatus(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  // Assumes increasing value of limiter status the closer we get to troubled cell
+  int limiterStatusAsInt = 0;
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    limiterStatusAsInt = std::max( limiterStatusAsInt, cellDescription.getFacewiseLimiterStatus(i) );
+  }
+
+  return limiterStatusAsInt;
+}
+
 void exahype::solvers::ADERDGSolver::writeLimiterStatusOnBoundary(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
-  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    cellDescription.setFacewiseLimiterStatus(i,cellDescription.getLimiterStatus());
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    cellDescription.setFacewiseLimiterStatus(faceIndex,0); // 0 is CellDescription::LimiterStatus::0k
+    if (cellDescription.getIsInside(faceIndex)) {
+      cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
+    }
   }
 }
 
@@ -1418,7 +1431,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   fineGridCellDescription.setCorrectorTimeStepSize(coarseGridCellDescription.getCorrectorTimeStepSize());
   fineGridCellDescription.setPredictorTimeStepSize(coarseGridCellDescription.getPredictorTimeStepSize());
 
-  // TODO Dominic: This is a little inconsistent since I orignally tried to hide
+  // TODO Dominic: This is a little inconsistent since I orignially tried to hide
   // the limiting from the pure ADER-DG scheme
 //  fineGridCellDescription.setPreviousLimiterStatus(coarseGridCellDescription.getPreviousLimiterStatus());
 //  const CellDescription::LimiterStatus limiterStatus = determineLimiterStatus(fineGridCellDescription);
@@ -1539,8 +1552,12 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
       fineGridCellDescription.setType(CellDescription::EmptyAncestor);
       fineGridCellDescription.setRefinementEvent(CellDescription::None);
       fineGridCellDescription.setNewlyCreated(true);
-
       ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
+
+      // TODO(Dominic): Add to docu
+      fineGridCellDescription.setLimiterStatus(
+          std::max(0, fineGridCellDescription.getLimiterStatus()-2) );
+      writeLimiterStatusOnBoundary(fineGridCellDescription);
       break;
     case CellDescription::ChangeChildrenToDescendantsRequested:
       fineGridCellDescription.setType(CellDescription::Cell);

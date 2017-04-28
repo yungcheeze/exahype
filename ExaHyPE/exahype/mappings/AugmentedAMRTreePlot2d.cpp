@@ -378,11 +378,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               cellIndex,
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
-          _limiterStatusWriter->plotCell(
-              cellIndex, static_cast<int>(pFine.getLimiterStatus()));
-//              cellIndex, static_cast<int>(exahype::solvers::ADERDGSolver::determineLimiterStatus(pFine)));
-          _previousLimiterStatusWriter->plotCell(
-              cellIndex, static_cast<int>(pFine.getPreviousLimiterStatus()));
+          _limiterStatusWriter->plotCell(cellIndex, pFine.getLimiterStatus());
+
+          _previousLimiterStatusWriter->plotCell(cellIndex, pFine.getPreviousLimiterStatus());
           solverFound = true;
         }
       }

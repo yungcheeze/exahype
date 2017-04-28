@@ -782,10 +782,14 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   repository.getState().switchToUpdateMeshContext(); // TODO(Dominic): Adjust context for MPI
   createMesh(repository);
 
+//  printTimeStepInfo(-1,repository);
+
   logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send subcell data to neighbours");
   repository.getState().switchToReinitialisationContext();
   repository.switchToFinaliseMeshRefinementAndReinitialisation();
   repository.iterate();
+
+//  printTimeStepInfo(-1,repository);
 
   logInfo("updateMeshFusedTimeStepping(...)","recompute solution in troubled cells");
   repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();

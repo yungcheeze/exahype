@@ -355,23 +355,26 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
   auto& solverPatch = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    switch(exahype::solvers::ADERDGSolver::determineLimiterStatus(solverPatch)) {
-      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:             // TODO(Dominic): Plot FVM solution instead
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled1: // TODO(Dominic): Plot FVM solution instead
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Plot FVM solution instead
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled3:
-      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourOfTroubled4:
-      case exahype::records::ADERDGCellDescription::LimiterStatus::Ok: {
+    typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
+    LimiterStatus limiterStatus = static_cast<LimiterStatus>(solverPatch.getLimiterStatus());
+
+    switch(limiterStatus) {
+      case LimiterStatus::Troubled:             // TODO(Dominic): Plot FVM solution instead
+      case LimiterStatus::NeighbourOfTroubled1: // TODO(Dominic): Plot FVM solution instead
+      case LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Plot FVM solution instead
+      case LimiterStatus::NeighbourOfTroubled3:
+      case LimiterStatus::NeighbourOfTroubled4:
+      case LimiterStatus::Ok: {
         double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
 
         plotADERDGPatch(
             solverPatch.getOffset(),
             solverPatch.getSize(), solverSolution,
             solverPatch.getCorrectorTimeStamp(),
-            static_cast<int>(exahype::solvers::ADERDGSolver::determineLimiterStatus(solverPatch)));
+            solverPatch.getLimiterStatus());
       } break;
-//      case exahype::records::ADERDGCellDescription::LimiterStatus::Troubled:
-//      case exahype::records::ADERDGCellDescription::LimiterStatus::NeighbourIsTroubledCell: {
+//      case LimiterStatus::Troubled:
+//      case LimiterStatus::NeighbourIsTroubledCell: {
 //        auto* limitingADERDGSolver =
 //            static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //                exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]);

@@ -136,7 +136,7 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      solver->zeroTimeStepSizes();
+//      solver->zeroTimeStepSizes();
       solver->setNextGridUpdateRequested();
   }
 

@@ -143,13 +143,7 @@ private:
   void mergeWithLimiterStatus(
       SolverPatch& solverPatch,
       const int faceIndex,
-      const SolverPatch::LimiterStatus& neighbourLimiterStatus) const;
-
-  void mergeWithNeighbourLimiterStatus(
-      SolverPatch& solverPatch,
-      const int faceIndex,
-      const SolverPatch::LimiterStatus& neighbourLimiterStatus,
-      const SolverPatch::LimiterStatus& neighbourOfNeighbourLimiterStatus) const;
+      const int neighbourLimiterStatus) const;
 
   /**
    * Checks if the updated solution
@@ -958,7 +952,7 @@ public:
   void mergeWithBoundaryDataBasedOnLimiterStatus(
         const int                                 cellDescriptionsIndex,
         const int                                 element,
-        const SolverPatch::LimiterStatus&         limiterStatus,
+        const int                                 limiterStatusAsInt,
         const tarch::la::Vector<DIMENSIONS, int>& posCell,
         const tarch::la::Vector<DIMENSIONS, int>& posBoundary,
         const bool                                isRecomputation,
@@ -1082,72 +1076,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  ///////////////////////////////////////
-  // NEIGHBOUR - Limiter status spreading
-  ///////////////////////////////////////
-
-  /**
-   * Receive and merge the merged limiter status sent
-   * by the neighbour at position \p src - \p dest.
-   *
-   * see exahype::solvers::Solver::mergeWithNeighbourData
-   * for details on the parameters.
-   *
-   * @deprecated see mergeWithNeighbourMetadata
-   */
-  void mergeWithNeighbourLimiterStatus(
-      const int                                    fromRank,
-      const int                                    cellDescriptionsIndex,
-      const int                                    element,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) const;
-
-  /**
-   * Drop the merged limiter status sent
-   * by the neighbour at position \p src - \p dest.
-   *
-   * \see exahype::solvers::Solver::dropNeighbourData
-   * for details on the parameters.
-   */
-  void dropNeighbourLimiterStatus(
-      const int                                    fromRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level) const;
-
-  /**
-   *  Send the merged limiter status at position \p dest- \p src to
-   *  the corresponding neighbour.
-   *
-   * \see exahype::solvers::Solver::sendDataToNeighbour
-   * for details on the parameters.
-   */
-  void sendLimiterStatusToNeighbour(
-      const int                                     toRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) const;
-
-  /**
-   *  Send an empty array instead of
-   *  the merged limiter status at position \p dest- \p src to
-   *  the corresponding neighbour.
-   *
-   *  \see exahype::solvers::Solver::sendEmptyDataToNeighbour
-   * for details on the parameters.
-   */
-  void sendEmptyDataInsteadOfLimiterStatusToNeighbour(
-      const int                                     toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) const;
 
   ///////////////////////////////////////
   // NEIGHBOUR - Solution Recomputation
