@@ -335,7 +335,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-#if DIMENSIONS == 2
+    #if DIMENSIONS == 2
     double offsetZ = coarseGridVerticesEnumerator.getLevel()+1;
 
     int vertexIndex[TWO_POWER_D];
@@ -406,7 +406,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     }
 
     _cellCounter++;
-#endif
+    #endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::leaveCell(
