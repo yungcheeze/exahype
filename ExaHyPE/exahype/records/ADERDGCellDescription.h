@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   28/04/2017 14:33
+    * @date   28/04/2017 17:43
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -116,12 +116,12 @@ namespace exahype {
             int _solutionMin;
             int _solutionMax;
             #ifdef UseManualAlignment
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus;
             #endif
-            LimiterStatus _limiterStatus;
-            LimiterStatus _previousLimiterStatus;
+            int _limiterStatus;
+            int _previousLimiterStatus;
             CompressionState _compressionState;
             int _bytesPerDoFInPreviousSolution;
             int _bytesPerDoFInSolution;
@@ -136,7 +136,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -1088,7 +1088,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1117,7 +1117,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1127,7 +1127,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getLimiterStatus() const 
+            inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1137,7 +1137,7 @@ namespace exahype {
             
             
             
-            inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+            inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1147,7 +1147,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getPreviousLimiterStatus() const 
+            inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1157,7 +1157,7 @@ namespace exahype {
             
             
             
-            inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+            inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1305,7 +1305,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -2416,7 +2416,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2445,7 +2445,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2455,7 +2455,7 @@ namespace exahype {
             
             
             
-            inline exahype::records::ADERDGCellDescription::LimiterStatus getFacewiseLimiterStatus(int elementIndex) const 
+            inline int getFacewiseLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2468,7 +2468,7 @@ namespace exahype {
             
             
             
-            inline void setFacewiseLimiterStatus(int elementIndex, const LimiterStatus& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(int elementIndex, const int& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2481,7 +2481,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getLimiterStatus() const 
+            inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2491,7 +2491,7 @@ namespace exahype {
             
             
             
-            inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+            inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2501,7 +2501,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getPreviousLimiterStatus() const 
+            inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2511,7 +2511,7 @@ namespace exahype {
             
             
             
-            inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+            inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2753,7 +2753,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   28/04/2017 14:33
+    * @date   28/04/2017 17:43
     */
    class exahype::records::ADERDGCellDescriptionPacked { 
       
@@ -2798,9 +2798,9 @@ namespace exahype {
             int _fluctuationCompressed;
             int _solutionMin;
             int _solutionMax;
-            tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus;
-            LimiterStatus _limiterStatus;
-            LimiterStatus _previousLimiterStatus;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus;
+            int _limiterStatus;
+            int _previousLimiterStatus;
             
             /** mapping of records:
             || Member 	|| startbit 	|| length
@@ -2834,7 +2834,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             
             inline int getSolverNumber() const 
@@ -3829,7 +3829,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3858,7 +3858,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3868,7 +3868,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getLimiterStatus() const 
+            inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3878,7 +3878,7 @@ namespace exahype {
             
             
             
-            inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+            inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3888,7 +3888,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getPreviousLimiterStatus() const 
+            inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3898,7 +3898,7 @@ namespace exahype {
             
             
             
-            inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+            inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4105,7 +4105,7 @@ namespace exahype {
             /**
              * Generated
              */
-            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+            ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& adjacentToRemoteRank, const bool& hasToHoldDataForNeighbourCommunication, const bool& hasToHoldDataForMasterWorkerCommunication, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
             
             /**
              * Generated
@@ -5273,7 +5273,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5302,7 +5302,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5312,7 +5312,7 @@ namespace exahype {
             
             
             
-            inline exahype::records::ADERDGCellDescription::LimiterStatus getFacewiseLimiterStatus(int elementIndex) const 
+            inline int getFacewiseLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5325,7 +5325,7 @@ namespace exahype {
             
             
             
-            inline void setFacewiseLimiterStatus(int elementIndex, const LimiterStatus& facewiseLimiterStatus) 
+            inline void setFacewiseLimiterStatus(int elementIndex, const int& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5338,7 +5338,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getLimiterStatus() const 
+            inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5348,7 +5348,7 @@ namespace exahype {
             
             
             
-            inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+            inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5358,7 +5358,7 @@ namespace exahype {
             
             
             
-            inline LimiterStatus getPreviousLimiterStatus() const 
+            inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5368,7 +5368,7 @@ namespace exahype {
             
             
             
-            inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+            inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -5665,7 +5665,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   28/04/2017 14:33
+       * @date   28/04/2017 17:43
        */
       class exahype::records::ADERDGCellDescription { 
          
@@ -5740,12 +5740,12 @@ namespace exahype {
                int _solutionMin;
                int _solutionMax;
                #ifdef UseManualAlignment
-               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus __attribute__((aligned(VectorisationAlignment)));
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus __attribute__((aligned(VectorisationAlignment)));
                #else
-               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus;
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus;
                #endif
-               LimiterStatus _limiterStatus;
-               LimiterStatus _previousLimiterStatus;
+               int _limiterStatus;
+               int _previousLimiterStatus;
                CompressionState _compressionState;
                int _bytesPerDoFInPreviousSolution;
                int _bytesPerDoFInSolution;
@@ -5760,7 +5760,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
@@ -6594,7 +6594,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6623,7 +6623,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6633,7 +6633,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getLimiterStatus() const 
+               inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6643,7 +6643,7 @@ namespace exahype {
                
                
                
-               inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+               inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6653,7 +6653,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getPreviousLimiterStatus() const 
+               inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6663,7 +6663,7 @@ namespace exahype {
                
                
                
-               inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+               inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -6811,7 +6811,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -7778,7 +7778,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7807,7 +7807,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7817,7 +7817,7 @@ namespace exahype {
                
                
                
-               inline exahype::records::ADERDGCellDescription::LimiterStatus getFacewiseLimiterStatus(int elementIndex) const 
+               inline int getFacewiseLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7830,7 +7830,7 @@ namespace exahype {
                
                
                
-               inline void setFacewiseLimiterStatus(int elementIndex, const LimiterStatus& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(int elementIndex, const int& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7843,7 +7843,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getLimiterStatus() const 
+               inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7853,7 +7853,7 @@ namespace exahype {
                
                
                
-               inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+               inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7863,7 +7863,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getPreviousLimiterStatus() const 
+               inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -7873,7 +7873,7 @@ namespace exahype {
                
                
                
-               inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+               inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -8115,7 +8115,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   28/04/2017 14:33
+       * @date   28/04/2017 17:43
        */
       class exahype::records::ADERDGCellDescriptionPacked { 
          
@@ -8158,9 +8158,9 @@ namespace exahype {
                int _fluctuationCompressed;
                int _solutionMin;
                int _solutionMax;
-               tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> _facewiseLimiterStatus;
-               LimiterStatus _limiterStatus;
-               LimiterStatus _previousLimiterStatus;
+               tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _facewiseLimiterStatus;
+               int _limiterStatus;
+               int _previousLimiterStatus;
                
                /** mapping of records:
                || Member 	|| startbit 	|| length
@@ -8192,7 +8192,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                
                inline int getSolverNumber() const 
@@ -9063,7 +9063,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9092,7 +9092,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9102,7 +9102,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getLimiterStatus() const 
+               inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9112,7 +9112,7 @@ namespace exahype {
                
                
                
-               inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+               inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9122,7 +9122,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getPreviousLimiterStatus() const 
+               inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9132,7 +9132,7 @@ namespace exahype {
                
                
                
-               inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+               inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -9339,7 +9339,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus, const LimiterStatus& limiterStatus, const LimiterStatus& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const int& parentIndex, const bool& newlyCreated, const Type& type, const RefinementEvent& refinementEvent, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& previousCorrectorTimeStamp, const double& previousCorrectorTimeStepSize, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const int& solution, const int& solutionAverages, const int& solutionCompressed, const int& previousSolution, const int& previousSolutionAverages, const int& previousSolutionCompressed, const int& update, const int& updateAverages, const int& updateCompressed, const int& extrapolatedPredictor, const int& extrapolatedPredictorAverages, const int& extrapolatedPredictorCompressed, const int& fluctuation, const int& fluctuationAverages, const int& fluctuationCompressed, const int& solutionMin, const int& solutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus, const int& limiterStatus, const int& previousLimiterStatus, const CompressionState& compressionState, const int& bytesPerDoFInPreviousSolution, const int& bytesPerDoFInSolution, const int& bytesPerDoFInUpdate, const int& bytesPerDoFInExtrapolatedPredictor, const int& bytesPerDoFInFluctuation);
                
                /**
                 * Generated
@@ -10357,7 +10357,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus> getFacewiseLimiterStatus() const 
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFacewiseLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10386,7 +10386,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,LimiterStatus>& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10396,7 +10396,7 @@ namespace exahype {
                
                
                
-               inline exahype::records::ADERDGCellDescription::LimiterStatus getFacewiseLimiterStatus(int elementIndex) const 
+               inline int getFacewiseLimiterStatus(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10409,7 +10409,7 @@ namespace exahype {
                
                
                
-               inline void setFacewiseLimiterStatus(int elementIndex, const LimiterStatus& facewiseLimiterStatus) 
+               inline void setFacewiseLimiterStatus(int elementIndex, const int& facewiseLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10422,7 +10422,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getLimiterStatus() const 
+               inline int getLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10432,7 +10432,7 @@ namespace exahype {
                
                
                
-               inline void setLimiterStatus(const LimiterStatus& limiterStatus) 
+               inline void setLimiterStatus(const int& limiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10442,7 +10442,7 @@ namespace exahype {
                
                
                
-               inline LimiterStatus getPreviousLimiterStatus() const 
+               inline int getPreviousLimiterStatus() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -10452,7 +10452,7 @@ namespace exahype {
                
                
                
-               inline void setPreviousLimiterStatus(const LimiterStatus& previousLimiterStatus) 
+               inline void setPreviousLimiterStatus(const int& previousLimiterStatus) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
