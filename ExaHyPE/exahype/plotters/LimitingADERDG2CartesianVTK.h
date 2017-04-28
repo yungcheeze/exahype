@@ -60,6 +60,8 @@ private:
   tarch::plotter::griddata::Writer::CellDataWriter*                          _timeStampCellDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*                          _cellLimiterStatusWriter;
   tarch::plotter::griddata::Writer::VertexDataWriter*                        _vertexLimiterStatusWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*                          _cellPreviousLimiterStatusWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*                        _vertexPreviousLimiterStatusWriter;
 
   void writeTimeStampDataToADERDGPatch( double timeStamp, int vertexIndex );
 
@@ -69,7 +71,8 @@ private:
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
       double* u,
       double timeStamp,
-      const int limiterStatus
+      const int limiterStatus,
+      const int previousLimiterStatusAsInt
   );
 
   void plotCellData(
@@ -78,7 +81,8 @@ private:
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
       double* u,
       double timeStamp,
-      const int limiterStatusAsInt
+      const int limiterStatusAsInt,
+      const int previousLimiterStatusAsInt
   );
 public:
   LimitingADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
@@ -96,7 +100,8 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp,
-      const int limiterStatusAsInt);
+      const int limiterStatusAsInt,
+      const int previousLimiterStatusAsInt);
 
   /**
    * Plot a finite volumes solution.

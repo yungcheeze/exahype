@@ -570,14 +570,16 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex,"updateSolution");
 
-  if (cellDescriptionsIndex==468) {
-    std::cout << "[pre] solution:" << std::endl;
-    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
-
-    ADERDGSolver::CellDescription& aderPatch =
-        ADERDGSolver::getCellDescription(cellDescriptionsIndex,cellDescription.getSolverNumber());
-    logInfo("updateSolution(...)","aderPatch="<<aderPatch.toString());
-  }
+  //    std::cout << "[pre] solution:" << std::endl;
+  //    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+//  if (cellDescriptionsIndex==468) {
+//    std::cout << "[pre] solution:" << std::endl;
+//    printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
+//
+//    ADERDGSolver::CellDescription& aderPatch =
+//        ADERDGSolver::getCellDescription(cellDescriptionsIndex,cellDescription.getSolverNumber());
+//    logInfo("updateSolution(...)","aderPatch="<<aderPatch.toString());
+//  }
 
   double admissibleTimeStepSize=0;
   solutionUpdate(

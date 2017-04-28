@@ -928,6 +928,13 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
           fineGridVertices,fineGridVerticesEnumerator);
       // 2. Project FV solution on ADER-DG space
       projectFVSolutionOnDGSpace(solverPatch,limiterPatch);
+
+      // TODO(Dominic): Remove after debugging
+      tarch::la::Vector<DIMENSIONS,double> poi(0.259259,-0.407407);
+      if (tarch::la::equals(limiterPatch.getOffset(),poi,1e-3)) {
+        _limiter->printFiniteVolumesSolution(limiterPatch);
+      }
+
     } break;
     case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4: { // TODO(Dominic): Add to docu: Here, were just went back one time step to supply the NT neighbours with old limiter unknowns.

@@ -45,7 +45,7 @@ exahype-project DIM
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
@@ -58,7 +58,8 @@ exahype-project DIM
     /* gamma is actually parts of a matrix... */
     variables const                = sigma:6,vel:3,lambda:1,mu:1,rho:1,alpha:1,xi:1
     order const                    = 3
-    maximum-mesh-size              = 0.05
+    maximum-mesh-size              = 0.08
+    maximum-mesh-depth             = 0
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
@@ -70,7 +71,7 @@ exahype-project DIM
     plot vtk::Cartesian::vertices::limited::binary PrimitiveWriter
       variables const = 14
       time      = 0.0
-      repeat    = 0.01
+      repeat    = 1e-5
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
