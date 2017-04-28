@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndSubcellSending_H_
-#define EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndSubcellSending_H_
+#ifndef EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndReinitialisation_H_
+#define EXAHYPE_ADAPTERS_FinaliseMeshRefinementAndReinitialisation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -20,14 +20,14 @@
 
  #include "exahype/mappings/FinaliseMeshRefinement.h"
  #include "exahype/mappings/PreProcessing.h"
- #include "exahype/mappings/SubcellSending.h"
+ #include "exahype/mappings/Reinitialisation.h"
  #include "exahype/mappings/PostProcessing.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class FinaliseMeshRefinementAndSubcellSending;
+        class FinaliseMeshRefinementAndReinitialisation;
       } 
 }
 
@@ -39,16 +39,16 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::FinaliseMeshRefinementAndSubcellSending {
+class exahype::adapters::FinaliseMeshRefinementAndReinitialisation {
   private:
     typedef mappings::FinaliseMeshRefinement Mapping0;
     typedef mappings::PreProcessing Mapping1;
-    typedef mappings::SubcellSending Mapping2;
+    typedef mappings::Reinitialisation Mapping2;
     typedef mappings::PostProcessing Mapping3;
 
      Mapping0  _map2FinaliseMeshRefinement;
      Mapping1  _map2PreProcessing;
-     Mapping2  _map2SubcellSending;
+     Mapping2  _map2Reinitialisation;
      Mapping3  _map2PostProcessing;
 
 
@@ -61,16 +61,16 @@ class exahype::adapters::FinaliseMeshRefinementAndSubcellSending {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    FinaliseMeshRefinementAndSubcellSending();
+    FinaliseMeshRefinementAndReinitialisation();
 
     #if defined(SharedMemoryParallelisation)
-    FinaliseMeshRefinementAndSubcellSending(const FinaliseMeshRefinementAndSubcellSending& masterThread);
+    FinaliseMeshRefinementAndReinitialisation(const FinaliseMeshRefinementAndReinitialisation& masterThread);
     #endif
 
-    virtual ~FinaliseMeshRefinementAndSubcellSending();
+    virtual ~FinaliseMeshRefinementAndReinitialisation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const FinaliseMeshRefinementAndSubcellSending& workerThread);
+    void mergeWithWorkerThread(const FinaliseMeshRefinementAndReinitialisation& workerThread);
     #endif
 
     void createInnerVertex(

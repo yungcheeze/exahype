@@ -90,7 +90,7 @@ class exahype::repositories::Repository {
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
     virtual void switchToMergeTimeStepData() = 0;    
     virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
-    virtual void switchToFinaliseMeshRefinementAndSubcellSending() = 0;    
+    virtual void switchToFinaliseMeshRefinementAndReinitialisation() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterMeshRefinementAndPlotGrid() const = 0;
@@ -113,7 +113,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterMergeTimeStepData() const = 0;
     virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;
-    virtual bool isActiveAdapterFinaliseMeshRefinementAndSubcellSending() const = 0;
+    virtual bool isActiveAdapterFinaliseMeshRefinementAndReinitialisation() const = 0;
 
 
     /**

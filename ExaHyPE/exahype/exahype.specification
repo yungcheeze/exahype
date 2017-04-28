@@ -55,9 +55,6 @@ event-mapping:
   name: Reinitialisation
   
 event-mapping:
-  name: SubcellSending
-  
-event-mapping:
   name: SolutionRecomputation
 
 // GridUpdate   
@@ -261,8 +258,8 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing
   
 adapter:
-  name: FinaliseMeshRefinementAndSubcellSending
+  name: FinaliseMeshRefinementAndReinitialisation
   merge-with-user-defined-mapping: FinaliseMeshRefinement
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: SubcellSending
+  merge-with-user-defined-mapping: Reinitialisation
   merge-with-user-defined-mapping: PostProcessing

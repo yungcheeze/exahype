@@ -34,7 +34,7 @@
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/MergeTimeStepData.h" 
  #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
- #include "exahype/adapters/FinaliseMeshRefinementAndSubcellSending.h" 
+ #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h" 
 
 
 namespace peano {

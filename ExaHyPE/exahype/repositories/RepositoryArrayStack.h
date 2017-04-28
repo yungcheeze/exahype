@@ -37,7 +37,7 @@
  #include "exahype/adapters/FinaliseMeshRefinementAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/MergeTimeStepData.h" 
  #include "exahype/adapters/MergeTimeStepDataDropFaceData.h" 
- #include "exahype/adapters/FinaliseMeshRefinementAndSubcellSending.h" 
+ #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h" 
 
 
 
@@ -84,7 +84,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FinaliseMeshRefinementAndTimeStepSizeComputation> _gridWithFinaliseMeshRefinementAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MergeTimeStepData> _gridWithMergeTimeStepData;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MergeTimeStepDataDropFaceData> _gridWithMergeTimeStepDataDropFaceData;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FinaliseMeshRefinementAndSubcellSending> _gridWithFinaliseMeshRefinementAndSubcellSending;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FinaliseMeshRefinementAndReinitialisation> _gridWithFinaliseMeshRefinementAndReinitialisation;
 
   
    exahype::records::RepositoryState               _repositoryState;
@@ -110,7 +110,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureMergeTimeStepDataCPUTime;
     tarch::timing::Measurement _measureMergeTimeStepDataDropFaceDataCPUTime;
-    tarch::timing::Measurement _measureFinaliseMeshRefinementAndSubcellSendingCPUTime;
+    tarch::timing::Measurement _measureFinaliseMeshRefinementAndReinitialisationCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measureMeshRefinementAndPlotGridCalendarTime;
@@ -133,7 +133,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureFinaliseMeshRefinementAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureMergeTimeStepDataCalendarTime;
     tarch::timing::Measurement _measureMergeTimeStepDataDropFaceDataCalendarTime;
-    tarch::timing::Measurement _measureFinaliseMeshRefinementAndSubcellSendingCalendarTime;
+    tarch::timing::Measurement _measureFinaliseMeshRefinementAndReinitialisationCalendarTime;
 
 
   public:
@@ -200,7 +200,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation();    
     virtual void switchToMergeTimeStepData();    
     virtual void switchToMergeTimeStepDataDropFaceData();    
-    virtual void switchToFinaliseMeshRefinementAndSubcellSending();    
+    virtual void switchToFinaliseMeshRefinementAndReinitialisation();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterMeshRefinementAndPlotGrid() const;
@@ -223,7 +223,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterMergeTimeStepData() const;
     virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const;
-    virtual bool isActiveAdapterFinaliseMeshRefinementAndSubcellSending() const;
+    virtual bool isActiveAdapterFinaliseMeshRefinementAndReinitialisation() const;
 
      
     #ifdef Parallel
