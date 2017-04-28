@@ -1,8 +1,15 @@
 #include "ConservedWriter.h"
 
 
-GRMHD::ConservedWriter::ConservedWriter(GRMHDSolver&  solver) {
+GRMHD::ConservedWriter::ConservedWriter(GRMHDSolver_FV&  solver) {
   // @todo Please insert your code here
+}
+
+GRMHD::ConservedWriter::ConservedWriter(GRMHDSolver_ADERDG&  solver) {
+  // @todo Please insert your code here
+}
+
+GRMHD::ConservedWriter::ConservedWriter(exahype::solvers::LimitingADERDGSolver&  solver) {
 }
 
 

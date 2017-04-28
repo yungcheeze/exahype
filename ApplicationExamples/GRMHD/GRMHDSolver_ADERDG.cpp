@@ -1,7 +1,7 @@
 #include "GRMHDSolver_ADERDG.h"
 
 #include "GRMHDSolver_ADERDG_Variables.h"
-#include "Fortran/InitialData.h"
+#include "InitialData/InitialData.h"
 #include "Fortran/PDE.h"
 
 #include <cstring> // memset
@@ -13,19 +13,18 @@ const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
 
 
 void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
-  // @todo Please implement/augment if required
+  prepare_id();
 }
 
 exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
-   bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
+  bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
   insideExcisionBall = false;
   bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
   return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
 void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  // Fortran
-  initialdata_(x, &t, Q);
+  id->Interpolate(x, t, Q);
 }
 
 void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
@@ -64,7 +63,7 @@ void GRMHD::GRMHDSolver_ADERDG::boundaryValues(const double* const x,const doubl
      const double xi = kernels::gaussLegendreNodes[order][i];
      double ti = t + xi * dt;
 
-     initialdata_(x, &ti, Qgp);
+     id->Interpolate(x, ti, Qgp);
      pdeflux_(F[0], F[1], (nDim==3)?F[2]:nullptr, Qgp);
      for(int m=0; m < nVar; m++) {
         stateOut[m] += weight * Qgp[m];
@@ -79,6 +78,7 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+// only evaluated in Limiting context
 bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
@@ -94,17 +94,15 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,
 
 void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
-  
-  // why the hell do we need this here so it does not crash?
-  for(int i=0; i<NumberOfVariables; ++i) {
-    if(!std::isfinite(BgradQ[i])) {
-       printf("Nonfinite BgradQ[%d] = %f\n", i, BgradQ[i]);
-    }
-  }
 }
 
 
 void GRMHD::GRMHDSolver_ADERDG::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  // new scheme has no coefficient matrix
+  static tarch::logging::Log _log("GRMHDSolver");
+  logError("coefficientMatrix()", "ADERDG Coefficient Matrix invoked");
+  exit(-2);
+
   double nv[3] = {0.};
   nv[d] = 1;
   pdematrixb_(Bn, Q, nv);

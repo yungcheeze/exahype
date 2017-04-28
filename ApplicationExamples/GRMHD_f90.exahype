@@ -57,7 +57,7 @@ exahype-project GRMHD
 
   solver ADER-DG GRMHDSolver
     /* gamma is actually parts of a matrix... */
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     order const                    = 3
     maximum-mesh-size              = 0.3 
     time-stepping                  = global

@@ -6,13 +6,16 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
+
 namespace GRMHD{
   class ConservedWriter;
 
   /**
    * Forward declaration
    */
-  class GRMHDSolver;
+  class GRMHDSolver_ADERDG;
+  class GRMHDSolver_FV;
 }
 
 
@@ -20,7 +23,9 @@ namespace GRMHD{
 
 class GRMHD::ConservedWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  ConservedWriter(GRMHDSolver&  solver);
+  ConservedWriter(GRMHDSolver_ADERDG&  solver);
+  ConservedWriter(GRMHDSolver_FV&  solver);
+  ConservedWriter(exahype::solvers::LimitingADERDGSolver&  solver);
   virtual ~ConservedWriter();
   void startPlotting(double time) override;
   void finishPlotting() override;

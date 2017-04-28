@@ -24,7 +24,7 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD_FV
+  output-directory const           = ./ApplicationExamples/GRMHD
   architecture const               = noarch
   log-file                         = whatever.log
 
@@ -58,8 +58,8 @@ exahype-project GRMHD
     spawn-double-compression-as-background-thread = off
   end optimisation
 
-  solver Finite-Volumes GRMHDSolver
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
+  solver Finite-Volumes GRMHDSolver_FV
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     patch-size const               = 4
     maximum-mesh-size              = 0.5
     time-stepping                  = global

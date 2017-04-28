@@ -21,15 +21,15 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD_LimitingADERDG
+  output-directory const           = ./ApplicationExamples/GRMHD
   architecture const               = noarch
   log-file                         = whatever.log
 
   computational-domain
     dimension const                = 3
     width                          = 1.0, 1.0, 1.0
-    offset                         = 0.0, 0.0, 0.0
-    end-time                       = 2.1
+    offset                         = 1.0, 1.0, 1.0
+    end-time                       = 10.1
   end computational-domain
   
   shared-memory
@@ -40,7 +40,7 @@ exahype-project GRMHD
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:1}
+    configure                = {hotspot,fair,ranks_per_node:10}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -52,27 +52,22 @@ exahype-project GRMHD
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
-    spawn-double-compression-as-background-thread = off
+    spawn-double-compression-as-background-thread = on
   end optimisation
 
-  solver Limiting-ADER-DG GRMHDSolver
+  solver ADER-DG GRMHDSolver_ADERDG
     /* gamma is actually parts of a matrix... */
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     order const                    = 3
     maximum-mesh-size              = 0.9
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
 
-    limiter-kernel const           = generic::godunov 
-    limiter-language const         = C
-    dmp-relaxation-parameter       = 0.0001
-    dmp-difference-scaling         = 0.001
-
-    plot vtk::Legendre::vertices::ascii ConservedWriter
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.00166667
+      repeat    = 0.000666667
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
@@ -80,10 +75,19 @@ exahype-project GRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.00166667
+      repeat = 0.00066667
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
+
+    plot user::defined SphereIntegrals
+      variables const = 0
+      time = 0.0
+      repeat = 0.000666667  /*0.129329*/
+      output = ./global-sphere-integrals
+      select    = x:0.0,y:0.0
+    end plot
   end solver
+
 
 end exahype-project
