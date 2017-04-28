@@ -434,18 +434,26 @@ class exahype::records::ADERDGCellDescription {
   };
   
   /**
-   * The cell descriptions previous limiter status.
+   * Here we store the results of the limiter status merging
+   * between neighbouring cells (per face).
    */
-  parallelise persistent LimiterStatus previousLimiterStatus;
+  parallelise persistent LimiterStatus facewiseLimiterStatus[DIMENSIONS_TIMES_TWO];
   
   /**
-   * Here we store the results of the limiter status merging
-   * between neighbouring cells per face, edge, and corner.
-   * 
-   * The actual limiter status of a cell is computed from the 
-   * 2*d limiter status values. It is never stored explicitly.
+   * The cell descriptions limiter status which
+   * is a reduction of the facewiseLimiterStatus elements.
    */
-  parallelise persistent LimiterStatus limiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent LimiterStatus limiterStatus;
+  
+  /**
+   * The cell descriptions previous limiter status.
+   * 
+   * This field is only need for the troubled cell recomputation
+   * which must be performed after a irregular limiter domain
+   * change has occured, i.e. cells outside of the first(!) FV
+   * helper cell layer have been marked as troubled.
+   */
+  parallelise persistent LimiterStatus previousLimiterStatus;
 
   enum CompressionState {
     Uncompressed,
