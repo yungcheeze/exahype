@@ -210,15 +210,6 @@ private:
    */
   void projectDGSolutionOnFVSpace(SolverPatch& solverPatch,LimiterPatch& limiterPatch) const;
 
-  /**
-   * Loops over all direct neighbours and stores a
-   * merged limiter status value in the facewise limiter status
-   * array.
-   */
-  void mergeWithLimiterStatusOfNeighbours(
-      SolverPatch& solverPatch,
-      const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const;
-
 #ifdef Parallel
   /**
    * Data messages per neighbour communication.
@@ -485,12 +476,6 @@ public:
         const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
         const bool initialGrid,
         const int solverNumber);
-
-  void mergeWithLimiterStatusOfNeighbours(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
 
   bool markForRefinement(
       exahype::Cell& fineGridCell,
@@ -853,6 +838,14 @@ public:
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
+  void mergeNeighboursLimiterStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
   /**
    * Merge solver boundary data (and other values) of two adjacent
    * cells based on their limiter status.
@@ -900,7 +893,7 @@ public:
       const bool                                isRecomputation,
       double**                                  tempFaceUnknowns,
       double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices);
+      double**                                  tempStateSizedSquareMatrices) const;
 
   /**
    * Merges only the min max of two neighbours.

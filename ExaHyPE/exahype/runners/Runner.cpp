@@ -496,8 +496,8 @@ void exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   }
 
   // a few extra iterations for the limiter status spreading
-  repository.iterate(3);
-  gridSetupIterations+=3;
+  repository.iterate(4);
+  gridSetupIterations+=4;
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
