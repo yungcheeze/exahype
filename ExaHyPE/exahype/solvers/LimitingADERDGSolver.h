@@ -198,6 +198,23 @@ private:
    */
   void updateLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
+  /**
+   * Takes the FV solution from the limiter patch and projects it on the
+   * DG space, overwrites the DG solution on the solver patch with the projected values.
+   */
+  void projectFVSolutionOnDGSpace(SolverPatch& solverPatch,LimiterPatch& limiterPatch) const;
+
+  /**
+   * Takes the DG solution from the solver patch and projects it on the
+   * FV space, overwrites the FV solution on the limiter patch with the projected values.
+   */
+  void projectDGSolutionOnFVSpace(SolverPatch& solverPatch,LimiterPatch& limiterPatch) const;
+
+  /**
+   * Loops over all direct neighbours and stores a
+   * merged limiter status value in the facewise limiter status
+   * array.
+   */
   void mergeWithLimiterStatusOfNeighbours(
       SolverPatch& solverPatch,
       const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) const;
@@ -584,7 +601,8 @@ public:
    * already been determined.
    *
    * Before performing an update with the limiter,
-   * set the ADER-DG time step sizes.
+   * set the ADER-DG time step sizes for the limiter patch.
+   * (ADER-DG is always dictating the time step sizes.)
    *
    * \see determineLimiterStatusAfterLimiterStatusSpreading(...)
    */
@@ -671,12 +689,15 @@ public:
    * patches of type Cell that are flagged with a limiter
    * status other than Ok.
    *
+   * This method obtains the limiter status via
+   * ADERDGSolver::determineLimiterStatus
+   *
    * \return true if a limiter patch was allocated. Return false
    * otherwise.
    */
   bool allocateOrDeallocateLimiterPatch(
       const int cellDescriptionsIndex,
-      const int solverNumber) const;
+      const int solverElement) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.

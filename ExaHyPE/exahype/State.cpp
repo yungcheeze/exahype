@@ -190,7 +190,7 @@ bool exahype::State::continueToConstructGrid() const {
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
  }
 
- void exahype::State::switchToPreAMRContext() {
+ void exahype::State::switchToUpdateMeshContext() {
    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
@@ -233,7 +233,7 @@ bool exahype::State::continueToConstructGrid() const {
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
  }
 
- void exahype::State::switchToGridErasingContext() {
+ void exahype::State::switchToNeighbourDataDroppingContext() {
    _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::DropFaceData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);

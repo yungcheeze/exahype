@@ -134,7 +134,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToTimeStepSizeComputationContext();
 
-  void switchToPreAMRContext();
+  void switchToUpdateMeshContext();
 
   void switchToPostAMRContext();
 
@@ -162,7 +162,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
 
-  void switchToGridErasingContext();
+  void switchToNeighbourDataDroppingContext();
 
   void setStabilityConditionOfOneSolverWasViolated(bool state) ;
 

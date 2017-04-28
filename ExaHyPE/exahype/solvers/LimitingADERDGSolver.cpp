@@ -56,8 +56,8 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           _limiter(std::move(limiter)),
           _limiterDomainHasChanged(false),
           _nextLimiterDomainHasChanged(false),
-          _DMPMaximumRelaxationParameter(DMPRelaxationParameter), // TODO externalise
-          _DMPDifferenceScaling(DMPDifferenceScaling)           // TODO externalise
+          _DMPMaximumRelaxationParameter(DMPRelaxationParameter),
+          _DMPDifferenceScaling(DMPDifferenceScaling)
 {
   assertion(_solver->getNumberOfParameters() == 0);
 
@@ -94,10 +94,6 @@ void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
 
 void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _solver->startNewTimeStep();
-//  _limiter->setPreviousMinTimeStepSize(_solver->getPreviousMinCorrectorTimeStepSize());
-//  _limiter->setMinTimeStamp(_solver->getMinCorrectorTimeStamp()); // TODO(Dominic): This is actually only for output purposes
-//  _limiter->setMinTimeStepSize(_solver->getMinPredictorTimeStepSize()); // TODO(Dominic): This is actually only for output purposes
-//  _limiter->setMinNextTimeStepSize(_solver->getMinNextTimeStepSize()); // TODO(Dominic): This is actually only for output purposes
 
   _minCellSize     = _nextMinCellSize;
   _maxCellSize     = _nextMaxCellSize;
@@ -118,8 +114,6 @@ void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
   _solver->rollbackToPreviousTimeStep();
-//  _nextMinCellSize = std::numeric_limits<double>::max(); // TODO(Dominic): Revision
-//  _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }
 
 void exahype::solvers::LimitingADERDGSolver::reinitialiseTimeStepData() {
@@ -132,37 +126,27 @@ void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingData
 
 void exahype::solvers::LimitingADERDGSolver::updateNextMinCellSize(double minCellSize) {
   _solver->updateNextMinCellSize(minCellSize);
-//  _limiter->updateNextMinCellSize(minCellSize); // TODO(Dominic): Revision
-
-//  assertionEquals(_solver->getNextMinCellSize(),_limiter->getNextMinCellSize()); // TODO(Dominic): Revision
   _nextMinCellSize = _solver->getNextMinCellSize();
 }
 
 void exahype::solvers::LimitingADERDGSolver::updateNextMaxCellSize(double maxCellSize) {
   _solver->updateNextMaxCellSize(maxCellSize);
-//  _limiter->updateNextMaxCellSize(maxCellSize);
-
-//  assertionEquals(_solver->getNextMaxCellSize(),_limiter->getNextMaxCellSize()); // TODO(Dominic): Revision
   _nextMaxCellSize = _solver->getNextMaxCellSize();
 }
 
 double exahype::solvers::LimitingADERDGSolver::getNextMinCellSize() const {
-//  assertionEquals(_solver->getNextMinCellSize(),_limiter->getNextMinCellSize()); // TODO(Dominic): Revision
   return _solver->getNextMinCellSize();
 }
 
 double exahype::solvers::LimitingADERDGSolver::getNextMaxCellSize() const {
-//  assertionEquals(_solver->getNextMaxCellSize(),_limiter->getNextMaxCellSize()); // TODO(Dominic): Revision
   return _solver->getNextMaxCellSize();
 }
 
 double exahype::solvers::LimitingADERDGSolver::getMinCellSize() const {
-//  assertionEquals(_solver->getMinCellSize(),_limiter->getMinCellSize()); // TODO(Dominic): Revision
   return _solver->getMinCellSize();
 }
 
 double exahype::solvers::LimitingADERDGSolver::getMaxCellSize() const {
-//  assertionEquals(_solver->getMaxCellSize(),_limiter->getMaxCellSize()); // TODO(Dominic): Revision
   return _solver->getMaxCellSize();
 }
 
@@ -181,8 +165,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatusOfNeighbours(
       if (neighbourElement!=exahype::solvers::Solver::NotFound) {
         SolverPatch& neighbourSolverPatch =
             _solver->getCellDescription(neighbourCellDescriptionsIndices[vScalar],neighbourElement);
-        SolverPatch::LimiterStatus neighbourLimiterStatus =
-            exahype::solvers::ADERDGSolver::determineLimiterStatus(neighbourSolverPatch);
+        SolverPatch::LimiterStatus neighbourLimiterStatus = neighbourSolverPatch.getLimiterStatus();
 
         const int direction   = tarch::la::equalsReturnIndex(v,center);
         const int orientation = (1 + v(direction) - center(direction))/2;
@@ -213,6 +196,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatusOfNeighbours(
             indicesAdjacentToFineGridVertices);
 
     mergeWithLimiterStatusOfNeighbours(solverPatch,neighbourCellDescriptionsIndices);
+    solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
   }
 }
 
@@ -241,7 +225,7 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
-      switch (ADERDGSolver::determineLimiterStatus(solverPatch)) {
+      switch (solverPatch.getLimiterStatus()) {
         case SolverPatch::LimiterStatus::Troubled:
         case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
         case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
@@ -279,11 +263,13 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
       initialGrid,
       solverNumber);
 
-  const int element = _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-  if (element!=exahype::solvers::Solver::NotFound) {
+  const int solverElement = _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (solverElement!=exahype::solvers::Solver::NotFound) {
     mergeWithLimiterStatusOfNeighbours(
-        fineGridCell.getCellDescriptionsIndex(),element,
+        fineGridCell.getCellDescriptionsIndex(),solverElement,
         fineGridVertices,fineGridVerticesEnumerator);
+    allocateOrDeallocateLimiterPatch(
+        fineGridCell.getCellDescriptionsIndex(),solverElement);
   }
 
   return refineFineGridCell;
@@ -304,8 +290,6 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
           fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
           coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
           fineGridPositionOfCell,initialGrid,solverNumber);
-
-  allocateOrDeallocateLimiterPatch(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
   return refineFineGridCell;
 }
@@ -436,6 +420,9 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   const int limiterElement =
       _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
 
+  // 0. Write back the limiter status to the previous limiter status field
+  solverPatch.setPreviousLimiterStatus(solverPatch.getLimiterStatus());
+
   //   1. Update the solution in the cells
   SolverPatch::LimiterStatus limiterStatus =
       solverPatch.getPreviousLimiterStatus();
@@ -479,7 +466,6 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
       LimiterPatch& limiterPatch =
           _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
 
-      // TODO(Dominic): Add to docu: ADER-DG is always dictating the time step sizes
       limiterPatch.setPreviousTimeStepSize(solverPatch.getPreviousCorrectorTimeStepSize());
       limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
       limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
@@ -506,7 +492,7 @@ void exahype::solvers::LimitingADERDGSolver::updateSolution(
   }
 
   // 2. Write current limiter status to previous limiter status field
-  solverPatch.setPreviousLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
+  solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
 
   // 3. Allocate or deallocate a limiter patch according to the updated limiter status
   allocateOrDeallocateLimiterPatch(cellDescriptionsIndex,solverPatch.getSolverNumber());
@@ -590,6 +576,7 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
 
   SolverPatch::LimiterStatus limiterStatus =
       exahype::solvers::ADERDGSolver::determineLimiterStatus(solverPatch);
+  solverPatch.setLimiterStatus(limiterStatus);
 
   if (isTroubled) {
     switch (limiterStatus) {
@@ -598,14 +585,12 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
     case SolverPatch::LimiterStatus::Ok:
       irregularLimiterDomainChange=true;
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::Troubled);
-      }
+      solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
+      ADERDGSolver::writeLimiterStatusOnBoundary(solverPatch);
       break;
     case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::Troubled);
-      }
+      solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
+      ADERDGSolver::writeLimiterStatusOnBoundary(solverPatch);
       break;
     case SolverPatch::LimiterStatus::Troubled:
       // do nothing
@@ -621,9 +606,8 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
       // do nothing
       break;
     case SolverPatch::LimiterStatus::Troubled:
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        solverPatch.setLimiterStatus(i,SolverPatch::LimiterStatus::NeighbourOfTroubled1);
-      }
+      solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::NeighbourOfTroubled1);
+      ADERDGSolver::writeLimiterStatusOnBoundary(solverPatch);
       break;
     }
   }
@@ -677,9 +661,10 @@ void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(
     const int element) {
   SolverPatch& solverPatch =
       _solver->getCellDescription(cellDescriptionsIndex,element);
-  int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+  if (solverPatch.getType()==SolverPatch::Type::Cell) {
+    const int limiterElement = tryGetLimiterElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
 
-  switch(solverPatch.getPreviousLimiterStatus()) {
+    switch(solverPatch.getPreviousLimiterStatus()) {
     case SolverPatch::LimiterStatus::Ok:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
@@ -693,6 +678,7 @@ void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(
           _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
       determineLimiterMinAndMax(solverPatch,limiterPatch);
       break;
+    }
   }
 }
 
@@ -748,8 +734,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatus(
     SolverPatch& solverPatch,
     const int direction,
     const SolverPatch::LimiterStatus& otherLimiterStatus) const {
-  SolverPatch::LimiterStatus limiterStatus =
-      exahype::solvers::ADERDGSolver::determineLimiterStatus(solverPatch);
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
 
   const int limiterStatusAsInt      = static_cast<int>(limiterStatus);
   const int otherLimiterStatusAsInt = static_cast<int>(otherLimiterStatus);
@@ -763,7 +748,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatus(
                 0,
                 std::max( limiterStatusAsInt, otherLimiterStatusAsInt ) - 1
           );
-  solverPatch.setLimiterStatus( direction,static_cast<SolverPatch::LimiterStatus>(newLimiterStatusAsInt) );
+  solverPatch.setFacewiseLimiterStatus( direction,static_cast<SolverPatch::LimiterStatus>(newLimiterStatusAsInt) );
 
   // On coarser grid level, we use only four limiter statuses (T,NT1,NT2,Ok).
   if (solverPatch.getLevel() < _coarsestMeshLevel+_maximumAdaptiveMeshDepth
@@ -771,7 +756,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatus(
       newLimiterStatusAsInt <
       static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled2)
   ) {
-    solverPatch.setLimiterStatus(direction,SolverPatch::LimiterStatus::Ok);
+    solverPatch.setFacewiseLimiterStatus(direction,SolverPatch::LimiterStatus::Ok);
   }
 }
 
@@ -787,92 +772,89 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourLimiterStatus(
   if (limiterStatus==SolverPatch::LimiterStatus::Ok) {
     if (neighbourLimiterStatus==SolverPatch::LimiterStatus::Ok
         && neighbourOfNeighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled) {
-      solverPatch.setLimiterStatus(faceIndex,SolverPatch::LimiterStatus::NeighbourOfTroubled1);
+      solverPatch.setFacewiseLimiterStatus(faceIndex,SolverPatch::LimiterStatus::NeighbourOfTroubled1);
     }
   }
 }
 
 bool exahype::solvers::LimitingADERDGSolver::allocateOrDeallocateLimiterPatch(
         const int cellDescriptionsIndex,
-        const int solverNumber) const {
-  const int element = _solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+        const int solverElement) const {
+  assertion(solverElement!=exahype::solvers::Solver::NotFound);
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
-  if (element!=exahype::solvers::Solver::NotFound) {
-    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  const SolverPatch::LimiterStatus limiterStatus = ADERDGSolver::determineLimiterStatus(solverPatch);
+  int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,solverElement);
 
-    const SolverPatch::LimiterStatus limiterStatus = ADERDGSolver::determineLimiterStatus(solverPatch);
-    int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+  if (limiterElement!=exahype::solvers::Solver::NotFound) {
+    switch(solverPatch.getType()) {
+    case SolverPatch::Type::EmptyAncestor:
+    case SolverPatch::Type::Ancestor:
+    case SolverPatch::Type::Descendant:
+    case SolverPatch::Type::EmptyDescendant:
+    case SolverPatch::Type::Erased: {
+      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+      limiterPatch.setType(LimiterPatch::Type::Erased);
+      _limiter->ensureNoUnnecessaryMemoryIsAllocated(limiterPatch);
 
-    if (limiterElement!=exahype::solvers::Solver::NotFound) {
-      switch(solverPatch.getType()) {
-        case SolverPatch::Type::EmptyAncestor:
-        case SolverPatch::Type::Ancestor:
-        case SolverPatch::Type::Descendant:
-        case SolverPatch::Type::EmptyDescendant:
-        case SolverPatch::Type::Erased: {
-          LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-          limiterPatch.setType(LimiterPatch::Type::Erased);
-          _limiter->ensureNoUnnecessaryMemoryIsAllocated(limiterPatch);
+      tarch::multicore::Lock lock(_heapSemaphore);
+      LimiterHeap::getInstance().getData(cellDescriptionsIndex).erase(
+          LimiterHeap::getInstance().getData(cellDescriptionsIndex).begin()+limiterElement);
+      lock.free();
+    } break;
+    case SolverPatch::Type::Cell:
+      switch(limiterStatus) {
+      case SolverPatch::LimiterStatus::Ok: {
+        LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        limiterPatch.setType(LimiterPatch::Type::Erased);
+        _limiter->ensureNoUnnecessaryMemoryIsAllocated(limiterPatch);
 
-          tarch::multicore::Lock lock(_heapSemaphore);
-          LimiterHeap::getInstance().getData(cellDescriptionsIndex).erase(
-              LimiterHeap::getInstance().getData(cellDescriptionsIndex).begin()+limiterElement);
-          lock.free();
-        } break;
-        case SolverPatch::Type::Cell:
-          switch(limiterStatus) {
-            case SolverPatch::LimiterStatus::Ok: {
-              LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-              limiterPatch.setType(LimiterPatch::Type::Erased);
-              _limiter->ensureNoUnnecessaryMemoryIsAllocated(limiterPatch);
-
-              tarch::multicore::Lock lock(_heapSemaphore);
-              LimiterHeap::getInstance().getData(cellDescriptionsIndex).erase(
-                  LimiterHeap::getInstance().getData(cellDescriptionsIndex).begin()+limiterElement);
-              lock.free();
-            } break;
-            default:
-              // do nothing
-              break;
-          }
-          break;
+        tarch::multicore::Lock lock(_heapSemaphore);
+        LimiterHeap::getInstance().getData(cellDescriptionsIndex).erase(
+            LimiterHeap::getInstance().getData(cellDescriptionsIndex).begin()+limiterElement);
+        lock.free();
+      } break;
+      default:
+        // do nothing
+        break;
       }
+      break;
+    }
 
-    } else {
-      if (solverPatch.getType()==SolverPatch::Type::Cell) {
-        switch (limiterStatus) {
-          case SolverPatch::LimiterStatus::Troubled:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
-            tarch::multicore::Lock lock(_heapSemaphore);
-            exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
-                cellDescriptionsIndex,
-                solverPatch.getSolverNumber(),
-                LimiterPatch::Type::Cell,
-                LimiterPatch::RefinementEvent::None,
-                solverPatch.getLevel(),
-                solverPatch.getParentIndex(),
-                solverPatch.getSize(),
-                solverPatch.getOffset());
-            lock.free();
+  } else {
+    if (solverPatch.getType()==SolverPatch::Type::Cell) {
+      switch (limiterStatus) {
+      case SolverPatch::LimiterStatus::Troubled:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
+        tarch::multicore::Lock lock(_heapSemaphore);
+        exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
+            cellDescriptionsIndex,
+            solverPatch.getSolverNumber(),
+            LimiterPatch::Type::Cell,
+            LimiterPatch::RefinementEvent::None,
+            solverPatch.getLevel(),
+            solverPatch.getParentIndex(),
+            solverPatch.getSize(),
+            solverPatch.getOffset());
+        lock.free();
 
-            assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getPreviousSolution()),solverPatch.toString());
-            assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),solverPatch.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getPreviousSolution()),solverPatch.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),solverPatch.toString());
 
-            limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-            assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-            LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-            _limiter->ensureNecessaryMemoryIsAllocated(limiterPatch);
+        limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+        assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+        LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        _limiter->ensureNecessaryMemoryIsAllocated(limiterPatch);
 
-            // Copy more geometry information from the solver patch
-            limiterPatch.setIsInside(solverPatch.getIsInside());
-          } return true;
-          case SolverPatch::LimiterStatus::Ok:
-            // do nothing
-            break;
-        }
+        // Copy more geometry information from the solver patch
+        limiterPatch.setIsInside(solverPatch.getIsInside());
+      } return true;
+      case SolverPatch::LimiterStatus::Ok:
+        // do nothing
+        break;
       }
     }
   }
@@ -880,77 +862,92 @@ bool exahype::solvers::LimitingADERDGSolver::allocateOrDeallocateLimiterPatch(
   return false;
 }
 
-// TODO(Dominic): Change to pure initialisation method
-// or add initialgrid parameter
+void exahype::solvers::LimitingADERDGSolver::projectDGSolutionOnFVSpace(
+    SolverPatch& solverPatch,LimiterPatch& limiterPatch) const {
+  const double* solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
+  double*       limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
+
+  // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
+  kernels::limiter::generic::c::projectOnFVLimiterSpace(
+      solverSolution,_solver->getNumberOfVariables(),
+      _solver->getNodesPerCoordinateAxis(),
+      _limiter->getGhostLayerWidth(),
+      limiterSolution);
+}
+
 void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
     const int cellDescriptionsIndex,
-    const int element,
+    const int solverElement,
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const {
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+
+  // 0. Update the limiter status
+  solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
+  // 1. Ensure memory is allocated
+  allocateOrDeallocateLimiterPatch(cellDescriptionsIndex,solverElement);
 
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
-    SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
-    SolverPatch::LimiterStatus limiterStatus         = ADERDGSolver::determineLimiterStatus(solverPatch);
-
     int limiterElement = _limiter->tryGetElement(
         fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
 
-    switch (limiterStatus) {
-      case SolverPatch::LimiterStatus::Ok:
-        // do nothing
-        break;
-      case SolverPatch::LimiterStatus::Troubled:
+    switch (solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Troubled:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
+      // TODO(Dominic): Add to docu: We need to rollback the solution for this case since we need to supply the // NeighbourOfTroubled1 neighbours with solution values from the old time step.
+      switch (solverPatch.getPreviousLimiterStatus()) {
+      case SolverPatch::LimiterStatus::Troubled:  // TODO(Dominic): Add to docu: Here we work with a valid old FVM solution
       case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled2: {
+        assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+        _limiter->rollbackSolution(
+            fineGridCell.getCellDescriptionsIndex(),limiterElement,
+            fineGridVertices,fineGridVerticesEnumerator);
+      } break;
+      case SolverPatch::LimiterStatus::Ok: // TODO(Dominic): Add to docu: Here we work with a valid old ADER-DG solution
       case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-        // TODO(Dominic): Add to docu: We need to rollback the solution for this case since we need to supply the
-        // NeighbourOfTroubled1 neighbours with solution values from the old time step.
-        switch (previousLimiterStatus) {
-          case SolverPatch::LimiterStatus::Troubled:  // TODO(Dominic): Add to docu: Here we work with a valid old FVM solution
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
-            assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-            _limiter->rollbackSolution(
-                fineGridCell.getCellDescriptionsIndex(),limiterElement,
-                fineGridVertices,fineGridVerticesEnumerator);
-            break;
-          case SolverPatch::LimiterStatus::Ok: // TODO(Dominic): Add to docu: Here we work with a valid old ADER-DG solution
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-          case SolverPatch::LimiterStatus::NeighbourOfTroubled4: { // TODO(Dominic): Possibly dangerous if nans appear
-            _solver->rollbackSolution(
-                fineGridCell.getCellDescriptionsIndex(),element,
-                fineGridVertices,fineGridVerticesEnumerator);
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled4: { // TODO(Dominic): Possibly dangerous if nans appear
+        _solver->rollbackSolution(
+            fineGridCell.getCellDescriptionsIndex(),solverElement,
+            fineGridVertices,fineGridVerticesEnumerator);
 
-            if (previousLimiterStatus==SolverPatch::LimiterStatus::Ok) {
-              tarch::multicore::Lock lock(_heapSemaphore);
+        if (solverPatch.getPreviousLimiterStatus()==SolverPatch::LimiterStatus::Ok) {
+          const int limiterElement = _limiter->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
+          assertion1(limiterElement!=exahype::solvers::Solver::NotFound,solverPatch.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getPreviousSolution()),solverPatch.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),solverPatch.toString());
 
-              const int limiterElement = _limiter->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverPatch.getSolverNumber());
+          LimiterPatch& limiterPatch = _limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
 
-              assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getPreviousSolution()),solverPatch.toString());
-              assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),solverPatch.toString());
-              double* solverSolution = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-
-              LimiterPatch& limiterPatch = _limiter->getCellDescription(fineGridCell.getCellDescriptionsIndex(),limiterElement);
-              _limiter->ensureNecessaryMemoryIsAllocated(limiterPatch);
-
-              double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
-              kernels::limiter::generic::c::projectOnFVLimiterSpace(
-                  solverSolution,_solver->getNumberOfVariables(),
-                  _solver->getNodesPerCoordinateAxis(),
-                  _limiter->getGhostLayerWidth(),
-                  limiterSolution); // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-            } else {
-              _limiter->rollbackSolution(cellDescriptionsIndex,limiterElement,fineGridVertices,fineGridVerticesEnumerator);
-            }
-            break;
-          }
-          break;
+          projectDGSolutionOnFVSpace(solverPatch,limiterPatch);
+        } else {
+          _limiter->rollbackSolution(cellDescriptionsIndex,limiterElement,fineGridVertices,fineGridVerticesEnumerator);
         }
+      } break;
+      }
+    } break;
+    case SolverPatch::LimiterStatus::Ok: {
+      // do nothing
+    } break;
     }
   }
+}
+
+void exahype::solvers::LimitingADERDGSolver::projectFVSolutionOnDGSpace(
+    SolverPatch& solverPatch,LimiterPatch& limiterPatch) const {
+  const double* limiterSolution = DataHeap::getInstance().getData(limiterPatch.getSolution()).data();
+  double*       solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
+
+  // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
+  kernels::limiter::generic::c::projectOnDGSpace(
+      limiterSolution,_solver->getNumberOfVariables(),
+      _solver->getNodesPerCoordinateAxis(),
+      _limiter->getGhostLayerWidth(),
+      solverSolution);
 }
 
 void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
@@ -959,131 +956,53 @@ void exahype::solvers::LimitingADERDGSolver::recomputeSolution(
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
-  SolverPatch::LimiterStatus limiterStatus         = ADERDGSolver::determineLimiterStatus(solverPatch);
+  if (solverPatch.getType()==SolverPatch::Type::Cell) {
+    const int limiterElement =
+        _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
 
-  int limiterElement =
-      _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-  LimiterPatch* limiterPatch = nullptr;
-
-  double* solverSolution  = nullptr;
-  double* limiterSolution = nullptr;
-
-  switch (limiterStatus) {
-    case SolverPatch::LimiterStatus::Ok:
-      assertion(limiterElement==exahype::solvers::Solver::NotFound);
-      // do nothing
-      break;
-    ///
-    ///
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled4: // TODO(Dominic): Add to docu: Here, were just went back one time step to supply the NT neighbours with old limiter unknowns.
-      switch (previousLimiterStatus) {
-        case SolverPatch::LimiterStatus::Ok:
-        case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-        case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-          _solver->swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
-
-          assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-          limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-          solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-          limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
-
-          // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-          kernels::limiter::generic::c::projectOnFVLimiterSpace(
-              solverSolution,_solver->getNumberOfVariables(),
-              _solver->getNodesPerCoordinateAxis(),
-              _limiter->getGhostLayerWidth(),
-              limiterSolution);
-
-          break;
-        case SolverPatch::LimiterStatus::NeighbourOfTroubled1: // TODO(Dominic): Update docu
-        case SolverPatch::LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Update docu
-          _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
-
-          limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-          limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
-          solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-          // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-          kernels::limiter::generic::c::projectOnDGSpace(
-              limiterSolution,_solver->getNumberOfVariables(),
-              _solver->getNodesPerCoordinateAxis(),
-              _limiter->getGhostLayerWidth(),
-              solverSolution);
-          break;
-        case SolverPatch::LimiterStatus::Troubled: // TODO(Dominic): Update docu
-          _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
-
-          limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-          limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
-          solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-
-          // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-          kernels::limiter::generic::c::projectOnDGSpace(
-              limiterSolution,_solver->getNumberOfVariables(),
-              _solver->getNodesPerCoordinateAxis(),
-              _limiter->getGhostLayerWidth(),
-              solverSolution);
-          break;
-      }
-      break;
-    ////
-    ////
+    switch (solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Troubled:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled2: {
       assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-
-      limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-
+      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
       // Copy time step data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
-
+      limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+      limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
       // 1. Evolve solution to desired  time step again
       _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
-                               solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
-                               solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
-                               fineGridVertices,fineGridVerticesEnumerator);
-
+          solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
+          solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
+          fineGridVertices,fineGridVerticesEnumerator);
       // 2. Project FV solution on ADER-DG space
-      limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
-      solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-
-      // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-      kernels::limiter::generic::c::projectOnDGSpace(
-          limiterSolution,_solver->getNumberOfVariables(),
-          _solver->getNodesPerCoordinateAxis(),
-          _limiter->getGhostLayerWidth(),
-          solverSolution);
-
-      break;
-    ////
-    ////
-    case SolverPatch::LimiterStatus::Troubled:
-      assertion(limiterElement!=exahype::solvers::Solver::NotFound);
-
-      limiterPatch = &_limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-
-      // Copy time step data from the solver patch
-      limiterPatch->setTimeStamp(solverPatch.getCorrectorTimeStamp());
-      limiterPatch->setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
-
-      _limiter->updateSolution(cellDescriptionsIndex,limiterElement,
-                               solutionUpdateTemporaryVariables._tempStateSizedVectors[solverPatch.getSolverNumber()],
-                               solutionUpdateTemporaryVariables._tempUnknowns[solverPatch.getSolverNumber()],
-                               fineGridVertices,fineGridVerticesEnumerator);
-
-      limiterSolution = DataHeap::getInstance().getData(limiterPatch->getSolution()).data();
-      solverSolution  = DataHeap::getInstance().getData(solverPatch.getSolution()).data();
-
-      // TODO(Dominic): Add virtual method. The current implementation depends on a particular kernel.
-      kernels::limiter::generic::c::projectOnDGSpace(
-          limiterSolution,_solver->getNumberOfVariables(),
-          _solver->getNodesPerCoordinateAxis(),
-          _limiter->getGhostLayerWidth(),
-          solverSolution);
-
-      break;
+      projectFVSolutionOnDGSpace(solverPatch,limiterPatch);
+    } break;
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled4: { // TODO(Dominic): Add to docu: Here, were just went back one time step to supply the NT neighbours with old limiter unknowns.
+      switch (solverPatch.getPreviousLimiterStatus()) {
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
+      case SolverPatch::LimiterStatus::Ok: {
+        assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+        _solver->swapSolutionAndPreviousSolution(cellDescriptionsIndex,element);
+        LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        projectDGSolutionOnFVSpace(solverPatch,limiterPatch);
+      } break;
+      case SolverPatch::LimiterStatus::Troubled: // TODO(Dominic): Update docu
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled1:   // TODO(Dominic): Update docu
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled2: { // TODO(Dominic): Update docu
+        assertion(limiterElement!=exahype::solvers::Solver::NotFound);
+        _limiter->swapSolutionAndPreviousSolution(cellDescriptionsIndex,limiterElement);
+        LimiterPatch& limiterPatch    = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        projectFVSolutionOnDGSpace(solverPatch,limiterPatch);
+      } break;
+      }
+    } break;
+    case SolverPatch::LimiterStatus::Ok: {
+      assertion(limiterElement==exahype::solvers::Solver::NotFound);
+      // do nothing
+    }  break;
+    }
   }
 }
 
@@ -1095,31 +1014,27 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictor(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
 
-  if (solverPatch.getPredictorTimeStepSize() > 0) { // We want to skip the initial limiter domain setup
-    SolverPatch::LimiterStatus previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
-    SolverPatch::LimiterStatus limiterStatus         = ADERDGSolver::determineLimiterStatus(solverPatch);
-
-    switch (limiterStatus) {
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-      case SolverPatch::LimiterStatus::Ok:
-        switch (previousLimiterStatus) {
-          case SolverPatch::LimiterStatus::Troubled:
-            _solver->performPredictionAndVolumeIntegral(
-                solverPatch,
-                predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
-                predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
-                predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
-                predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
-                predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
-                predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
-            break;
-          default:
-            break;
-        }
-        break;
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled2: // TODO(Dominic): Optimise
+  if (solverPatch.getPredictorTimeStepSize() > 0) {
+    switch (solverPatch.getLimiterStatus()) {
+    case SolverPatch::LimiterStatus::Troubled:
+      // do nothing
+      break;
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+      _solver->performPredictionAndVolumeIntegral(
+          solverPatch,
+          predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
+          predictionTemporaryVariables._tempSpaceTimeFluxUnknowns[solverPatch.getSolverNumber()],
+          predictionTemporaryVariables._tempUnknowns             [solverPatch.getSolverNumber()],
+          predictionTemporaryVariables._tempFluxUnknowns         [solverPatch.getSolverNumber()],
+          predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
+          predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
+      break;
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+    case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
+    case SolverPatch::LimiterStatus::Ok:
+      switch (solverPatch.getPreviousLimiterStatus()) {
+      case SolverPatch::LimiterStatus::Troubled:
         _solver->performPredictionAndVolumeIntegral(
             solverPatch,
             predictionTemporaryVariables._tempSpaceTimeUnknowns    [solverPatch.getSolverNumber()],
@@ -1129,9 +1044,10 @@ void exahype::solvers::LimitingADERDGSolver::recomputePredictor(
             predictionTemporaryVariables._tempStateSizedVectors    [solverPatch.getSolverNumber()],
             predictionTemporaryVariables._tempPointForceSources    [solverPatch.getSolverNumber()]);
         break;
-      case SolverPatch::LimiterStatus::Troubled:
-        // do nothing
+      default:
         break;
+      }
+      break;
     }
   }
 }
@@ -1159,7 +1075,7 @@ void exahype::solvers::LimitingADERDGSolver::updateLimiterStatus(
   SolverPatch::LimiterStatus limiterStatus = ADERDGSolver::determineLimiterStatus(solverPatch);
 
   for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
-    solverPatch.setLimiterStatus(i,limiterStatus);
+    solverPatch.setFacewiseLimiterStatus(i,limiterStatus);
   }
 }
 
@@ -1235,7 +1151,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeLimiterStatusWithAncestors(
             subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
           const int faceIndex = 2*d + ((subcellIndex[d]==0) ? 0 : 1); // Do not remove brackets.
           tarch::multicore::Lock lock(_heapSemaphore); // TODO(Dominic): Use another semaphore?
-          mergeWithLimiterStatus(parentPatch,faceIndex,solverPatch.getLimiterStatus(faceIndex));
+          mergeWithLimiterStatus(parentPatch,faceIndex,solverPatch.getFacewiseLimiterStatus(faceIndex));
         }
       }
 
@@ -1373,18 +1289,12 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursBasedOnLimiterStatus
   const int limiterElement1 = tryGetLimiterElement(cellDescriptionsIndex1,solverPatch1.getSolverNumber());
   const int limiterElement2 = tryGetLimiterElement(cellDescriptionsIndex2,solverPatch2.getSolverNumber());
 
-  // TODO(Dominic): No, I confused myself
-  // I have to work here with the (previous) limiter status but have
-  // to merge the neighbour limiter status
-  // The new information comes in solely from the troubled cell
-  // flagging after the solution update
-
   // 0.a Merge the limiter status of the neighours
   const int direction    = tarch::la::equalsReturnIndex(pos1,pos2);
   const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
   const int orientation2 = 1-orientation1;
-  SolverPatch::LimiterStatus limiterStatus1 = solverPatch1.getPreviousLimiterStatus();
-  SolverPatch::LimiterStatus limiterStatus2 = solverPatch2.getPreviousLimiterStatus();
+  SolverPatch::LimiterStatus limiterStatus1 = solverPatch1.getLimiterStatus();
+  SolverPatch::LimiterStatus limiterStatus2 = solverPatch2.getLimiterStatus();
   mergeWithLimiterStatus(solverPatch1,2*direction+orientation1,limiterStatus2);
   mergeWithLimiterStatus(solverPatch2,2*direction+orientation2,limiterStatus1);
 
@@ -1529,7 +1439,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryData(
 
   mergeWithBoundaryDataBasedOnLimiterStatus(
       cellDescriptionsIndex,element,
-      solverPatch.getPreviousLimiterStatus(),
+      solverPatch.getLimiterStatus(),
       posCell,posBoundary,
       false, /* isRecomputation */
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
@@ -1683,14 +1593,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int                                    level) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus limiterStatus = ADERDGSolver::determineLimiterStatus(solverPatch);
-  if (isRecomputation) {
-    limiterStatus = solverPatch.getLimiterStatus(0);
-
-    for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
-      assertionEquals(limiterStatus,solverPatch.getLimiterStatus(i));
-    } // Dead code elimination will get rid of this loop if Asserts flag is not set.
-  }
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
 
   logDebug("sendDataToNeighbourBasedOnLimiterStatus(...)", "send data for solver " << _identifier << " from rank " <<
                toRank << " at vertex x=" << x << ", level=" << level <<
@@ -1774,14 +1677,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus limiterStatus = ADERDGSolver::determineLimiterStatus(solverPatch);
-  if (isRecomputation) {
-    limiterStatus = solverPatch.getLimiterStatus(0);
-
-    for (int i=0; i<DIMENSIONS_TIMES_TWO; ++i) {
-      assertionEquals(limiterStatus,solverPatch.getLimiterStatus(i));
-    } // Dead code elimination will get rid of this loop if Asserts flag is not set.
-  }
+  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
 
   logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
           fromRank << " at vertex x=" << x << ", level=" << level <<
@@ -1889,7 +1785,7 @@ void exahype::solvers::LimitingADERDGSolver::sendLimiterStatusToNeighbour(
                                                                           // |src|dest| : 1; |dest|src| : 0
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
   const double limiterStatusAsDouble =
-      static_cast<double>(solverPatch.getLimiterStatus(faceIndex));
+      static_cast<double>(solverPatch.getFacewiseLimiterStatus(faceIndex));
 
   DataHeap::getInstance().sendData(
       &limiterStatusAsDouble,1,toRank, x, level,

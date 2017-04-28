@@ -102,12 +102,13 @@ void exahype::mappings::MeshRefinement::beginIteration(
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
 
-  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-    solver->zeroTimeStepSizes();
-    assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
-  } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
+  // TODO(Dominic):
+//  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+//    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+//
+//    solver->zeroTimeStepSizes();
+//    assertion1(!solver->getNextGridUpdateRequested(),solver->toString());
+//  } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -252,13 +253,6 @@ void exahype::mappings::MeshRefinement::enterCell(
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-//    switch (MeshRefinement::Mode) {
-//      case MeshRefinement::RefinementMode::Initial:
-//
-//        break;
-//      default:
-//        break;
-//    }
     refineFineGridCell |=
         solver->markForRefinement( // TODO(Dominic): Consider the maximum refinement depth here
             fineGridCell,
@@ -283,10 +277,11 @@ void exahype::mappings::MeshRefinement::enterCell(
             MeshRefinement::Mode==RefinementMode::Initial,
             solverNumber);
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
-    }
+    // TODO(Dominic):
+//    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+//    if (element!=exahype::solvers::Solver::NotFound) {
+//      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+//    }
   }
 
   // Refine all adjacent vertices if necessary and possible.

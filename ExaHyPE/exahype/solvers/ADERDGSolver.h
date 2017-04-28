@@ -661,6 +661,13 @@ public:
   static CellDescription::LimiterStatus determineLimiterStatus(CellDescription& cellDescription);
 
   /**
+   * Overwrites the facewise limiter status values at the
+   * boundary with the cellwise limiter status value
+   * (cellDescription.getLimiterStatus()).
+   */
+  static void writeLimiterStatusOnBoundary(CellDescription& cellDescription);
+
+  /**
    * Construct an ADERDGSolver.
    *
    * \param identifier             An identifier for this solver.

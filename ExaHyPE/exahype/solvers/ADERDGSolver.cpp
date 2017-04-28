@@ -142,6 +142,7 @@ void exahype::solvers::ADERDGSolver::addNewCellDescription(
   newCellDescription.setFluctuation(-1);
 
   // Limiter meta data (oscillations identificator)
+  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
   newCellDescription.setPreviousLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok);
   newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
   newCellDescription.setSolutionMin(-1);
@@ -430,14 +431,22 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
  * determine a unique value.
  */
 exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
-exahype::solvers::ADERDGSolver::determineLimiterStatus(CellDescription& cellDescription) {
+exahype::solvers::ADERDGSolver::determineLimiterStatus(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
   // Assumes increasing value of limiter status the closer we get to troubled cell
   int limiterStatusAsInt = static_cast<int>(CellDescription::LimiterStatus::Ok);
   for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    limiterStatusAsInt = std::max( limiterStatusAsInt, static_cast<int>(cellDescription.getLimiterStatus(i)) );
+    limiterStatusAsInt = std::max( limiterStatusAsInt, static_cast<int>(cellDescription.getFacewiseLimiterStatus(i)) );
   }
 
   return static_cast<CellDescription::LimiterStatus>(limiterStatusAsInt);
+}
+
+void exahype::solvers::ADERDGSolver::writeLimiterStatusOnBoundary(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    cellDescription.setFacewiseLimiterStatus(i,cellDescription.getLimiterStatus());
+  }
 }
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
@@ -450,6 +459,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
              numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, maximumAdaptiveMeshDepth,
              timeStepping, std::move(profiler)),
+     _previousMinCorrectorTimeStamp( std::numeric_limits<double>::max() ),
      _previousMinCorrectorTimeStepSize( std::numeric_limits<double>::max() ),
      _minCorrectorTimeStamp( std::numeric_limits<double>::max() ),
      _minCorrectorTimeStepSize( std::numeric_limits<double>::max() ),
@@ -1417,22 +1427,16 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 //    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
 //  }
 
-  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-    fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Ok);
-  }
+  fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
+  writeLimiterStatusOnBoundary(fineGridCellDescription);
 
   // TODO Dominic: During the inital mesh build where we only refine
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
   if (!initialGrid) {
-    if (coarseGridCellDescription.getLimiterStatus(0)==CellDescription::LimiterStatus::Troubled) {
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        fineGridCellDescription.setLimiterStatus(i,CellDescription::LimiterStatus::Troubled);
-      }
-
-      for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-        assertion(coarseGridCellDescription.getLimiterStatus(i)==CellDescription::LimiterStatus::Troubled);
-      } // Dead code elimination will get rid of this line
+    if (coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
+      fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
+      writeLimiterStatusOnBoundary(fineGridCellDescription);
     }
   }
 }
@@ -2002,7 +2006,7 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
       useAdjustSolution(
         cellDescription.getOffset()+0.5*cellDescription.getSize(),
         cellDescription.getSize(),
-        cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+        cellDescription.getCorrectorTimeStamp(),
         cellDescription.getCorrectorTimeStepSize()
       )
       !=AdjustSolutionValue::No
@@ -2011,7 +2015,7 @@ void exahype::solvers::ADERDGSolver::setInitialConditions(
             luh,
             cellDescription.getOffset()+0.5*cellDescription.getSize(),
             cellDescription.getSize(),
-            cellDescription.getCorrectorTimeStamp()+cellDescription.getCorrectorTimeStepSize(),
+            cellDescription.getCorrectorTimeStamp(),
             cellDescription.getCorrectorTimeStepSize());
     }
 
