@@ -24,8 +24,6 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
-#include "exahype/mappings/MeshRefinement.h"
-
 peano::CommunicationSpecification
 exahype::mappings::Reinitialisation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -111,8 +109,6 @@ void exahype::mappings::Reinitialisation::mergeWithWorkerThread(
 
 void exahype::mappings::Reinitialisation::beginIteration(
     exahype::State& solverState) {
-  exahype::mappings::MeshRefinement::Mode=exahype::mappings::MeshRefinement::RefinementMode::APosteriori;
-
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;

@@ -240,6 +240,37 @@ void exahype::mappings::MeshRefinement::createCell(
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
 
+void exahype::mappings::MeshRefinement::mergeNeighboursLimiterStatus(exahype::Vertex& fineGridVertex) {
+  dfor2(pos1)
+    dfor2(pos2)
+      if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
+        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
+        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+          const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+          const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+          const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+          if (element2>=0 && element1>=0) {
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                mergeNeighboursLimiterStatus(
+                    cellDescriptionsIndex1,element1,
+                    cellDescriptionsIndex2,element2,
+                    pos1,pos2);
+          }
+        }
+        endpfor
+        grainSize.parallelSectionHasTerminated();
+
+        fineGridVertex.setMergePerformed(pos1,pos2,true);
+      }
+    enddforx
+  enddforx
+}
+
 void exahype::mappings::MeshRefinement::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,

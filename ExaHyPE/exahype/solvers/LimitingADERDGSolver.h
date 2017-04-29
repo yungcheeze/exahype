@@ -193,6 +193,85 @@ private:
   void updateLimiterStatusAfterSolutionUpdate(SolverPatch& solverPatch,const bool isTroubled);
 
   /**
+   * Deallocates a limiter patch.
+   */
+  void deallocateLimiterPatch(
+      const int cellDescriptionsIndex,
+      const int solverElement) const;
+
+  /**
+   * Allocates a new limiter patch.
+   *
+   * \return The index of the patch in the heap
+   * vector at address \p cellDescriptionsIndex.
+   */
+  int allocateLimiterPatch(
+          const int cellDescriptionsIndex,
+          const int solverElement) const;
+
+
+ /*
+  * Deallocate the limiter patch on all AMR related
+  * helper cells.
+  *
+  * It is safe to use this method during
+  * the mesh refinement iterations.
+  */
+  void deallocateLimiterPatchOnHelperCell(
+      const int cellDescriptionsIndex,
+      const int solverElement) const;
+
+  /**
+   * Deallocates the limiter patch for solver patches
+   * that of type Cell and flagged with limiter status
+   * Ok.
+   *
+   * \note This operation should never be performed during the mesh refinement
+   * iterations since then a limiter patch holding a valid FV solution
+   * might be removed in one of the first iteration but is
+   * then required after the limiter status spreading has converged to
+   * perform a troubled cell recomputation.
+   */
+  void ensureNoUnrequiredLimiterPatchIsAllocatedOnComputeCell(
+      const int cellDescriptionsIndex,
+      const int solverElement) const;
+
+  /*
+   * Ensures that a limiter patch is allocated
+   * on all compute cells (Cell) that are flagged
+   * with a limiter status other than Ok.
+   *
+   * It is safe to use this method during
+   * the mesh refinement iterations.
+   */
+  bool ensureRequiredLimiterPatchIsAllocated(
+          const int cellDescriptionsIndex,
+          const int solverElement) const;
+
+  /**
+   * Allocates a limiter patch and performs a DG to FV projection
+   */
+  bool allocateLimiterPatchAfterSolutionUpdate(
+      const int cellDescriptionsIndex,const int solverElement) const;
+
+  /**
+   * Update the limiter status based on the cell-local solution values.
+   * If a cell
+   *
+   * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
+   *
+   * \return True if the limiter domain changes irregularly in the cell, i.e.,
+   * if a patch with status Ok, NeighbourOfTroubled3, NeighbourOfTroubled4
+   * changes its status to Troubled.
+   *
+   * If the limiter status changes regularly, i.e., from NeighbourOfTroubled1
+   * to Troubled or from Troubled to NeighbourOfTroubled3, NeighbourOfTroubled4, this
+   * methods returns false.
+   */
+  bool determineLimiterStatusAfterSolutionUpdate(
+      SolverPatch& solverPatch,const bool isTroubled) const;
+
+  /**
    * Takes the FV solution from the limiter patch and projects it on the
    * DG space, overwrites the DG solution on the solver patch with the projected values.
    */
@@ -624,23 +703,6 @@ public:
       const int element);
 
   /**
-   * Update the limiter status based on the cell-local solution values.
-   * If a cell
-   *
-   * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
-   *
-   * \return True if the limiter domain changes irregularly in the cell, i.e.,
-   * if a patch with status Ok, NeighbourOfTroubled3, NeighbourOfTroubled4
-   * changes its status to Troubled.
-   *
-   * If the limiter status changes regularly, i.e., from NeighbourOfTroubled1
-   * to Troubled or from Troubled to NeighbourOfTroubled3, NeighbourOfTroubled4, this
-   * methods returns false.
-   */
-  bool determineLimiterStatusAfterSolutionUpdate(
-      SolverPatch& solverPatch,const bool isTroubled) const;
-
-  /**
    * Update the merged limiter status with a unified value based on
    * the merged limiter statuses per face of the cell.
    *
@@ -648,35 +710,6 @@ public:
    */
   void updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
-
-  /**
-   * Update the limiter status with a unified value based on
-   * the merged limiter statuses per face of the cell.
-   *
-   * \see ::determineLimiterStatus
-   */
-  void updatePreviousLimiterStatus(
-      const int cellDescriptionsIndex,const int element) const;
-
-
-  /**
-   * Deallocates the limiter patch for solver patches
-   * that are either not of type Cell or flagged with limiter status
-   * Ok.
-   *
-   * On the other hand, allocate a limiter patch for solver
-   * patches of type Cell that are flagged with a limiter
-   * status other than Ok.
-   *
-   * This method obtains the limiter status via
-   * ADERDGSolver::determineLimiterStatus
-   *
-   * \return true if a limiter patch was allocated. Return false
-   * otherwise.
-   */
-  bool allocateOrDeallocateLimiterPatch(
-      const int cellDescriptionsIndex,
-      const int solverElement) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.
@@ -874,6 +907,10 @@ public:
    * We thus do not need to merge these patches with neighbour data
    * in the recomputation phase.
    *
+   * \note Limiting is only performed on the finest level
+   * of the mesh. The other levels work only with the ADER-DG
+   * solver.
+   *
    * TODO(Dominic): Remove limiterstatus1 and limiterStatus2 argument.
    * They depend on the isRecomputation value
    */
@@ -890,21 +927,18 @@ public:
       double**                                  tempStateSizedSquareMatrices) const;
 
   /**
-   * Merges only the min max of two neighbours.
+   * Merges the min max of two neighbours sharing a face.
    *
    * This method is used to detect cells that are
    * troubled after the imposition of initial conditions.
    */
-  void mergeSolutionMinMax(
+  void mergeSolutionMinMaxOnFace(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
       const int                                 cellDescriptionsIndex2,
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2,
-      double**                                  tempFaceUnknowns,
-      double**                                  tempStateSizedVectors,
-      double**                                  tempStateSizedSquareMatrices);
+      const tarch::la::Vector<DIMENSIONS, int>& pos2);
 
   /**
    * Depending on the limiter status, we impose boundary conditions

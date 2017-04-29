@@ -145,6 +145,12 @@ public:
 
   static peano::CommunicationSpecification communicationSpecification();
 
+  /**
+   * Loop over all vertices and merge the limiter
+   * status between neighbours.
+   */
+  static void mergeNeighboursLimiterStatus(exahype::Vertex& fineGridVertex);
+
 #if defined(SharedMemoryParallelisation)
   /**
    * We copy over the veto flag from the master thread
