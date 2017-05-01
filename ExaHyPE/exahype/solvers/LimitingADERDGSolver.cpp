@@ -23,7 +23,7 @@ tarch::logging::Log exahype::solvers::LimitingADERDGSolver::_log("exahype::solve
 bool exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
-        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
       return true;
     }
   }
@@ -46,7 +46,8 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
     std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
     std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
     const double DMPRelaxationParameter,
-    const double DMPDifferenceScaling)
+    const double DMPDifferenceScaling,
+    const int iterationsToCureTroubledCell)
     :
     exahype::solvers::Solver(identifier, Solver::Type::LimitingADERDG, solver->getNumberOfVariables(),
         solver->getNumberOfParameters(), solver->getNodesPerCoordinateAxis(), solver->getMaximumMeshSize(),
@@ -54,10 +55,11 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           solver->getTimeStepping()),
           _solver(std::move(solver)),
           _limiter(std::move(limiter)),
-          _limiterDomainHasChanged(false),
-          _nextLimiterDomainHasChanged(false),
+          _limiterDomainChangedIrregularly(false),
+          _nextLimiterDomainChangedIrregularly(false),
           _DMPMaximumRelaxationParameter(DMPRelaxationParameter),
-          _DMPDifferenceScaling(DMPDifferenceScaling)
+          _DMPDifferenceScaling(DMPDifferenceScaling),
+          _iterationsToCureTroubledCell(iterationsToCureTroubledCell)
 {
   assertion(_solver->getNumberOfParameters() == 0);
 
@@ -102,14 +104,26 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
 
   setNextGridUpdateRequested();
 
-  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainHasChanged<<",_nextLimiterDomainHasChanged="<<_nextLimiterDomainHasChanged);
+  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChangedIrregularly<<",_nextLimiterDomainChangedIrregularly="<<_nextLimiterDomainChangedIrregularly);
 
-  _limiterDomainHasChanged     = _nextLimiterDomainHasChanged;
-  _nextLimiterDomainHasChanged = false;
+  _limiterDomainChangedIrregularly     = _nextLimiterDomainChangedIrregularly;
+  _nextLimiterDomainChangedIrregularly = false;
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
   _solver->zeroTimeStepSizes();
+}
+
+bool exahype::solvers::LimitingADERDGSolver::getLimiterDomainChangedIrregularly() const {
+  return _limiterDomainChangedIrregularly;
+}
+
+bool exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChangedIrregularly() const {
+  return _nextLimiterDomainChangedIrregularly;
+}
+
+void exahype::solvers::LimitingADERDGSolver::updateNextLimiterDomainChangedIrregularly(bool state) {
+  _nextLimiterDomainChangedIrregularly |= state;
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
@@ -242,7 +256,37 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
           coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
           fineGridPositionOfCell,initialGrid,solverNumber);
 
+  int coarseGridCellElement =
+      _solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (coarseGridCellElement!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& coarseGridSolverPatch = _solver->getCellDescription(
+        coarseGridCell.getCellDescriptionsIndex(),coarseGridCellElement);
+
+    vetoErasingChildrenRequestBasedOnLimiterStatus(
+        coarseGridSolverPatch,
+        fineGridCell.getCellDescriptionsIndex());
+  }
+
   return refineFineGridCell;
+}
+
+void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLimiterStatus(
+    SolverPatch& coarseGridSolverPatch,
+    const int fineGridCellDescriptionsIndex) const {
+  int fineGridCellElement = _solver->tryGetElement(fineGridCellDescriptionsIndex,
+                                                   coarseGridSolverPatch.getSolverNumber());
+  if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& fineGridSolverPatch = _solver->getCellDescription(
+        fineGridCellDescriptionsIndex,fineGridCellElement);
+
+    if (coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
+        &&
+        (fineGridSolverPatch.getLimiterStatus()!=SolverPatch::LimiterStatus::Ok ||
+         fineGridSolverPatch.getPreviousLimiterStatus()!=SolverPatch::LimiterStatus::Ok)
+    ) {
+      coarseGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
+    }
+  }
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
@@ -464,8 +508,9 @@ bool exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfte
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
-    bool solutionIsValid = evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(solverPatch) &&
-        evaluatePhysicalAdmissibilityCriterion(solverPatch); // after min and max was found
+    bool solutionIsValid =
+        evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(solverPatch)
+        && evaluatePhysicalAdmissibilityCriterion(solverPatch); // after min and max was found
 
     switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
@@ -480,7 +525,7 @@ bool exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfte
     case SolverPatch::LimiterStatus::Ok:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-      // Already computed.
+      // Keep the previously computed min and max values
       break;
     }
 
@@ -546,7 +591,9 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
   assertion1(solverPatch.getType()==SolverPatch::Type::Cell,solverPatch.toString());
 
   bool irregularLimiterDomainChange=false;
+
   if (isTroubled) {
+    solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell);
     switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
       // do nothing
@@ -567,8 +614,13 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
   } else {
     switch (solverPatch.getPreviousLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
-      // TODO(Dominic): There is a bug if I use NT1. Haven't understand yet why it is occuring
-      solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::NeighbourOfTroubled1);
+      solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
+      solverPatch.setIterationsToCureTroubledCell(
+          solverPatch.getIterationsToCureTroubledCell()-1);
+      if (solverPatch.getIterationsToCureTroubledCell()==0) {
+        solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::NeighbourOfTroubled1);
+        solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell); // TODO(Dominic): Probably not necessary
+      }
       ADERDGSolver::writeLimiterStatusOnBoundary(solverPatch);
       break;
     case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
@@ -585,7 +637,6 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
 
   return irregularLimiterDomainChange;
 }
-
 
 bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(SolverPatch& solverPatch) {
   double* solution = DataHeap::getInstance().getData(
@@ -866,6 +917,7 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
   ensureRequiredLimiterPatchIsAllocated(cellDescriptionsIndex,solverElement);
   ensureNoUnrequiredLimiterPatchIsAllocatedOnComputeCell(cellDescriptionsIndex,solverElement);
 
+  // 2. Rollback with limiter or solver solution depending on limiter status
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
     switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
@@ -916,6 +968,11 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
       assertion(limiterElement==exahype::solvers::Solver::NotFound);
     } break;
     }
+  }
+
+  // 3. Reset the iterationsToCure on all troubled cells to maximum value if cell is troubled
+  if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled) {
+    solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell);
   }
 }
 
@@ -1812,7 +1869,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
 
   // Send the information to master if limiter status has changed or not
   std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0); // TODO(Dominic): ugly
+  dataToSend.push_back(_limiterDomainChangedIrregularly ? 1.0 : -1.0); // TODO(Dominic): ugly
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1841,13 +1898,13 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
             tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
   bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  updateNextLimiterDomainHasChanged(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
+  updateNextLimiterDomainChangedIrregularly(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logDebug("mergeWithWorkerData(...)","_nextLimiterDomainHasChanged=" << _nextLimiterDomainHasChanged);
+    logDebug("mergeWithWorkerData(...)","_nextLimiterDomainChangedIrregularly=" << _nextLimiterDomainChangedIrregularly);
   }
 }
 
@@ -1931,7 +1988,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   // changed for this solver.
   // Send the information to master if limiter status has changed or not
   std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0);
+  dataToSend.push_back(_limiterDomainChangedIrregularly ? 1.0 : -1.0);
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1960,13 +2017,13 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
             tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
   bool masterLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  _limiterDomainHasChanged = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
+  _limiterDomainChangedIrregularly = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithMasterData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainHasChanged);
+    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainChangedIrregularly);
   }
 }
 

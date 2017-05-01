@@ -1653,9 +1653,14 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
     CellDescription&       coarseGridCellDescription,
     const CellDescription& fineGridCellDescription,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
-  const int levelFine = fineGridCellDescription.getLevel();
+  const int levelFine  = fineGridCellDescription.getLevel();
   const int levelCoarse = coarseGridCellDescription.getLevel();
   assertion(levelCoarse < levelFine);
+
+  assertion1(DataHeap::getInstance().isValidIndex(
+      fineGridCellDescription.getSolution()),fineGridCellDescription.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(
+      coarseGridCellDescription.getSolution()),coarseGridCellDescription.toString());
 
   double* luhFine   = DataHeap::getInstance().getData(
       fineGridCellDescription.getSolution()).data();

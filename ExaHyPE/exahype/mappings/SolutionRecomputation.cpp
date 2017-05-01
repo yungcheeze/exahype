@@ -179,7 +179,7 @@ void exahype::mappings::SolutionRecomputation::enterCell(
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+            && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
           auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERSolver->recomputeSolution(
@@ -228,7 +228,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
             auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
               const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
               const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
               const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
@@ -270,7 +270,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                        cellDescriptionsIndex1,cellDescriptionsIndex2,element1,element2); // TODO(Dominic): Move down
 
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+                && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
               if (element1 >= 0) {
                 auto& solverPatch1 = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
                     getSolver()->getCellDescription(cellDescriptionsIndex1,element1);
@@ -383,7 +383,7 @@ void exahype::mappings::SolutionRecomputation::dropNeighbourData(
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
       logDebug("dropNeighbourData(...)", "drop data for solver " << solverNumber << " from rank " <<
@@ -411,7 +411,7 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       const int offset  = exahype::MetadataPerSolver*solverNumber;
 

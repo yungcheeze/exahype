@@ -59,13 +59,13 @@ private:
    * This might be the case if either a cell has been
    * newly marked as troubled or healed.
    */
-  bool _limiterDomainHasChanged;
+  bool _limiterDomainChangedIrregularly;
 
   /**
    * The limiterDomainHasChanged for the next
    * iteration.
    */
-  bool _nextLimiterDomainHasChanged;
+  bool _nextLimiterDomainChangedIrregularly;
 
   /**
    * The maximum relaxation parameter
@@ -78,6 +78,23 @@ private:
    * used for the discrete maximum principle.
    */
   double _DMPDifferenceScaling;
+
+  /**
+   * A counter holding the number of iterations to
+   * cure a troubled cell.
+   * This counter will be initialised to a certain
+   * (user-dependent?) value if a cell is flagged as troubled.
+   *
+   * If the cell is not troubled for one iteration, the counter is
+   * decreased until it reaches 0. Then, the
+   * cell is considered as cured.
+   * Note that the counter can be reset to the maximum value
+   * in the meantime if the cell is marked again as troubled.
+   *
+   * This counter prevents that a cell is toggling between
+   * troubled and Ok (cured).
+   */
+  int _iterationsToCureTroubledCell;
 
   /**
    * TODO(Dominc): Remove after docu is recycled.
@@ -256,7 +273,14 @@ private:
 
   /**
    * Update the limiter status based on the cell-local solution values.
-   * If a cell
+   *
+   * If the new limiter status is changed to or remains troubled,
+   * set the iterationsToCureTroubledCell counter to a certain
+   * maximum value.
+   * If the limiter status changes from troubled to something else,
+   * decrease the iterationsToCureTroubledCell counter.
+   * If the counter is set to zero, change a troubled cell
+   * to NeighbourOfCellIsTroubled1.
    *
    * \param[in] isTroubled A bool indicating if the patch's solution is (still) troubled
    *
@@ -282,6 +306,15 @@ private:
    * FV space, overwrites the FV solution on the limiter patch with the projected values.
    */
   void projectDGSolutionOnFVSpace(SolverPatch& solverPatch,LimiterPatch& limiterPatch) const;
+
+  /**
+   * Vetoes an erasing request by the parent if the limiter
+   * status or previous limiter status of a child is anything
+   * other than Ok.
+   */
+  void vetoErasingChildrenRequestBasedOnLimiterStatus(
+      SolverPatch& coarseGridSolverPatch,
+      const int fineGridCellDescriptionsIndex) const;
 
 #ifdef Parallel
   /**
@@ -344,36 +377,10 @@ private:
    * for MPI where min and max value are explicitly exchanged through messages.
    */
   void mergeSolutionMinMaxOnFace(
-      SolverPatch&  cellDescription,
+      SolverPatch&  solverPatch,
       const int     faceIndex,
       const double* const min, const double* const  max) const;
 
-//  /**
-//   * Send the limiter status
-//   * of the solver patch \p element in heap array
-//   * \p cellDescriptionsIndex to the respective neighbour.
-//   *
-//   * \see exahype::solvers::Solver::sendDataToNeighbour
-//   * for a description of the parameters.
-//   *
-//   * <h2>Heap</h2>
-//   * We currently use the DoubleHeap to
-//   * communicate the enum.
-//   * While it would make sense to use the
-//   * MetadataHeap for this purpose,
-//   * there is a possibility of intermixing
-//   * the communication of the limiter status
-//   * with the communication of the solver
-//   * metadata.
-//   */
-//  void sendLimiterStatusToNeighbour(
-//      const int                                     toRank,
-//      const int                                     cellDescriptionsIndex,
-//      const int                                     element,
-//      const tarch::la::Vector<DIMENSIONS, int>&     src,
-//      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-//      const tarch::la::Vector<DIMENSIONS, double>&  x,
-//      const int                                     level) const;
 #endif
 
 public:
@@ -394,7 +401,8 @@ public:
       std::unique_ptr<exahype::solvers::ADERDGSolver> solver,
       std::unique_ptr<exahype::solvers::FiniteVolumesSolver> limiter,
       const double DMPRelaxationParameter=1e-4,
-      const double DMPDifferenceScaling=1e-3
+      const double DMPDifferenceScaling=1e-3,
+      const int iterationsToCureTroubledCell=2
       );
 
   virtual ~LimitingADERDGSolver() {
@@ -441,17 +449,11 @@ public:
 
   void zeroTimeStepSizes() override;
 
-  bool getLimiterDomainHasChanged() {
-    return _limiterDomainHasChanged;
-  }
+  bool getLimiterDomainChangedIrregularly() const;
 
-  bool getNextLimiterDomainHasChanged() {
-    return _nextLimiterDomainHasChanged;
-  }
+  bool getNextLimiterDomainChangedIrregularly() const;
 
-  void updateNextLimiterDomainHasChanged(bool state) {
-    _nextLimiterDomainHasChanged |= state;
-  }
+  void updateNextLimiterDomainChangedIrregularly(bool state);
 
   /**
    * Roll back the time step data to the
@@ -537,7 +539,7 @@ public:
    * we always find a Cell as parent of a Descendant on the same MPI rank. We further do not
    * consider Master-Worker boundaries in the lookup of the parent.
    *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   * Legend: O: Ok, T: Troubled, NT: NeighbourOfTroubled1..2, NNT: NeighbourOfTroubled3..4
    */
   bool markForRefinementBasedOnLimiterStatus(
         exahype::Cell& fineGridCell,
@@ -730,17 +732,20 @@ public:
    * | T/NT/NNT   | T/NT       | Roll back the limiter solution.                                                                                                               |
    * | ~          | O/NNT      | Roll back the solver solution. Initialise limiter patch if necessary. Project (old, valid) solver solution onto the limiter's solution space. |
    *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   * Legend: O: Ok, T: Troubled, NT: NeighbourOfTroubled1..2, NNT: NeighbourOfTroubled3..4
    *
    * We do not overwrite the old limiter status set in this method.
    * We compute the new limiter status based on the merged limiter statuses associated
    * with the faces.
    *
-   * TODO(Dominic)
-   * Adapters:
-   * LimitingADERDGSolver LimiterStatusSpreading
-   * LimitingADERDGSolver Reinitialisation
-   * LimitingADERDGSolver SolutionRecomputation
+   * <h2>Compute cell limiter patch deallocation</h2>
+   * It is only safe to deallocate unrequired compute cell limiter patches after
+   * the mesh refinement iterations since we might throw away valid
+   * FV values during the first iterations. However, then find out later
+   * that we need them after the limiter status diffusion
+   * has converged.
+   * Helper cell limiter patches can be deallocated during
+   * the mesh refinement iterations.
    */
   void reinitialiseSolvers(
       const int cellDescriptionsIndex,
@@ -766,23 +771,7 @@ public:
    * |T/NT       | Evolve FV solver. Project result onto the ADER-DG space. Recompute the space-time predictor if not initial recomputation.                                                                                  |
    * |NNT        | Evolve solver and project its solution onto the limiter solution space. (We had to do a rollback beforehand in the reinitialisation phase.) |
    *
-   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
-   *
-   * We do not overwrite the old limiter status set in this method.
-   * We compute the new limiter status based on the merged limiter statuses associated
-   * with the faces.
-   *
-   * <h2>Overlapping status spreading and reinitialisation with solution reconputation</h2>
-   * We can recompute the new solution in cells with status Troubled after one iteration
-   * since old solution values from direct neighbours are available then.
-   *
-   * We can recompute the
-   *
-   * TODO(Dominic)
-   * Adapters:
-   * LimitingADERDGSolver LimiterStatusSpreading
-   * LimitingADERDGSolver Reinitialisation
-   * LimitingADERDGSolver SolutionRecomputation
+   * Legend: O: Ok, T: Troubled, NT: NeighbourOfTroubled1..2, NNT: NeighbourOfTroubled3..4
    */
   void recomputeSolution(
       const int cellDescriptionsIndex,
