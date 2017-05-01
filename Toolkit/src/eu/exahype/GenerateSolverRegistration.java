@@ -316,7 +316,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  \n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back(\n"
           + "    new exahype::solvers::LimitingADERDGSolver(\""+_solverName+"\",std::move(aderdgSolver),std::move(finiteVolumesSolver),"
-                  + "parser.getDMPRelaxationParameter("+_kernelNumber+"),parser.getDMPDifferenceScaling("+_kernelNumber+"),parser.getStepsTillCured("+_kernelNumber+") );\n");
+                  + "parser.getDMPRelaxationParameter("+_kernelNumber+"),parser.getDMPDifferenceScaling("+_kernelNumber+"),parser.getStepsTillCured("+_kernelNumber+") ));\n");
       
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n");
       _methodBodyWriter.write("  }\n\n");
