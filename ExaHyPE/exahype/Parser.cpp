@@ -776,7 +776,7 @@ double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   return result;
 }
 
-double exahype::Parser::getStepsTillCured(int solverNumber) const {
+int exahype::Parser::getStepsTillCured(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
