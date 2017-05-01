@@ -776,6 +776,23 @@ double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   return result;
 }
 
+double exahype::Parser::getStepsTillCured(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getStepsTillCured()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'steps-till-cured': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getParameters()", "found steps-till-cured " << result);
+  return result;
+}
+
 std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
                                                      int plotterNumber) const {
   // We have to multiply with two as the token solver occurs twice (to open and
