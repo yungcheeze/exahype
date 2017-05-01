@@ -60,19 +60,21 @@ exahype-project  Euler
   solver Limiting-ADER-DG LimitingADERDG
     variables const          = rho:1,j:3,E:1
     order const              = 3
-    maximum-mesh-size        = 0.04
+    maximum-mesh-size        = 0.05
+    maximum-mesh-depth       = 0
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
-    limiter-kernel const     = generic::musclhancock
+    limiter-kernel const     = generic::godunov
     limiter-language const   = C
-    dmp-relaxation-parameter = 1e-2
+    dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
+    steps-till-cured         = 0
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
       time      = 0.0
-      repeat    = 0.01
+      repeat    = 1e-1
       output    = ./limitingaderg-dg
       select    = x:0.0,y:0.0
     end plot
