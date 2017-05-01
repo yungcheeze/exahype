@@ -83,6 +83,7 @@ Tokens
   token_language_limiter            = 'limiter-language';
   token_dmp_relaxation_parameter    = 'dmp-relaxation-parameter';
   token_dmp_difference_scaling      = 'dmp-difference-scaling';
+  token_steps_till_cured            = 'steps-till-cured';
 
   token_plot                        = 'plot';
   token_variable                    = 'variable';
@@ -353,58 +354,59 @@ Productions
   solver_list {->solver*} =
     {aderdg}
       [begin_token]:token_solver token_aderdg [name]:identifier
-        token_variables [variables_const]:token_const          [variables_equals]:token_equals          [variables]:variables
+        token_variables          [variables_const]:token_const            [variables_equals]:token_equals          [variables]:variables
         parameters_list?
         naming_schemes?
-        token_order     [order_const]:token_const              [order_equals]:token_equals              [order]:int_number
-        token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
+        token_order              [order_const]:token_const                [order_equals]:token_equals              [order]:int_number
+        token_maximum_mesh_size                                           [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         maximum_mesh_depth?
         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel    [kernel_const]:token_const             [kernel_equals]:token_equals             [kernel]:typename
-        token_language  [language_const]:token_const           [language_equals]:token_equals           [language]:identifier
+        token_kernel             [kernel_const]:token_const               [kernel_equals]:token_equals             [kernel]:typename
+        token_language           [language_const]:token_const             [language_equals]:token_equals           [language]:identifier
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.aderdg(name,variables,parameters_list.variables,naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.aderdg(name,variables,parameters_list.variables,naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {limiting_aderdg}
     [begin_token]:token_solver token_limiting_aderdg [name]:identifier
         token_variables [variables_const]:token_const                  [variables_equals]:token_equals                    [variables]:variables
         parameters_list?
         naming_schemes?
-        token_order [order_const]:token_const                      [order_equals]:token_equals                        [order]:int_number
-        token_maximum_mesh_size          [maximum_mesh_size_equals]:token_equals            [maximum_mesh_size]:float_number
+        token_order                      [order_const]:token_const             [order_equals]:token_equals                    [order]:int_number
+        token_maximum_mesh_size                                                [maximum_mesh_size_equals]:token_equals        [maximum_mesh_size]:float_number
         maximum_mesh_depth?
-        token_time_stepping              [time_stepping_equals]:token_equals                [time_stepping]:identifier
-        token_kernel         [kernel_const]:token_const                     [kernel_equals]:token_equals                       [kernel]:typename
-        token_language       [language_const]:token_const                   [language_equals]:token_equals                     [language]:identifier
-        token_kernel_limiter [kernel_limiter_const]:token_const             [kernel_limiter_equals]:token_equals               [kernel_limiter]:typename
-        token_language_limiter [language_limiter_const]:token_const         [language_limiter_equals]:token_equals             [language_limiter]:identifier
-        token_dmp_relaxation_parameter   [dmp_relaxation_parameter_equals]:token_equals     [dmp_relaxation_parameter]:float_number
-        token_dmp_difference_scaling     [dmp_difference_scaling_equals]:token_equals       [dmp_difference_scaling]:float_number
+        token_time_stepping              [time_stepping_equals]:token_equals   [time_stepping]:identifier
+        token_kernel                     [kernel_const]:token_const            [kernel_equals]:token_equals                   [kernel]:typename
+        token_language                   [language_const]:token_const          [language_equals]:token_equals                 [language]:identifier
+        token_kernel_limiter             [kernel_limiter_const]:token_const    [kernel_limiter_equals]:token_equals           [kernel_limiter]:typename
+        token_language_limiter           [language_limiter_const]:token_const  [language_limiter_equals]:token_equals         [language_limiter]:identifier
+        token_dmp_relaxation_parameter                                         [dmp_relaxation_parameter_equals]:token_equals [dmp_relaxation_parameter]:float_number
+        token_dmp_difference_scaling                                           [dmp_difference_scaling_equals]:token_equals   [dmp_difference_scaling]:float_number
+        token_steps_till_cured                                                 [steps_till_cured_equals]:token_equals         [steps_till_cured]:int_number
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,naming_schemes.naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
+      { -> [New solver.limiting_aderdg(name,variables,parameters_list.variables,naming_schemes.naming_schemes,order,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,kernel_limiter,language_limiter,dmp_relaxation_parameter,dmp_difference_scaling,steps_till_cured,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] }
     |  
     {finite_volumes}
       [begin_token]:token_solver token_finite_volumes [name]:identifier
-        token_variables  [variables_const]:token_const          [variables_equals]:token_equals          [variables]:variables
+        token_variables         [variables_const]:token_const            [variables_equals]:token_equals   [variables]:variables
         parameters_list?
         naming_schemes?
-        token_patch_size [patch_size_const]:token_const         [patch_size_equals]:token_equals         [patch_size]:int_number
+        token_patch_size        [patch_size_const]:token_const           [patch_size_equals]:token_equals  [patch_size]:int_number
         token_maximum_mesh_size [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
         maximum_mesh_depth?
         token_time_stepping     [time_stepping_equals]:token_equals      [time_stepping]:identifier
-        token_kernel     [kernel_const]:token_const             [kernel_equals]:token_equals             [kernel]:typename
-        token_language   [language_const]:token_const           [language_equals]:token_equals           [language]:identifier
+        token_kernel            [kernel_const]:token_const               [kernel_equals]:token_equals      [kernel]:typename
+        token_language          [language_const]:token_const             [language_equals]:token_equals    [language]:identifier
         constants_list?
         plot_solution_list?
       token_end [end_token]:token_solver
       solver_list?
-      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,naming_schemes.naming_schemes,patch_size,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,Null,Null,Null,Null,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
+      { -> [New solver.finite_volumes(name,variables,parameters_list.variables,naming_schemes.naming_schemes,patch_size,maximum_mesh_size,maximum_mesh_depth.int_number,time_stepping,kernel,language,constants_list.constants,[plot_solution_list.plot_solution]),solver_list.solver] };
     
   naming_schemes = 
     naming_scheme_list
@@ -593,9 +595,9 @@ Abstract Syntax Tree
     ;
   
   solver =
-      {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
-    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [constants]:constants? plot_solution*
+      {aderdg}           [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [constants]:constants? plot_solution*
+    | {finite_volumes}   [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [patch_size]:int_number [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [constants]:constants? plot_solution*
+    | {limiting_aderdg}  [name]:identifier [variables]:variables [parameters]:variables? [naming_schemes]:naming_schemes? [order]:int_number      [maximum_mesh_size]:float_number [maximum_mesh_depth]:int_number? [time_stepping]:identifier [kernel]:typename [language]:identifier [kernel_limiter]:typename? [language_limiter]:identifier? [dmp_relaxation_parameter]:float_number? [dmp_difference_scaling]:float_number? [steps_till_cured]:int_number? [constants]:constants? plot_solution*
     ;
 
   plot_solution =
