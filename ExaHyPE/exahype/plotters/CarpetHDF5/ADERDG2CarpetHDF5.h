@@ -19,7 +19,7 @@
 namespace exahype {
   namespace plotters {
     class ADERDG2CarpetHDF5;
-    class ADERDG2CarpetHDF5Writer;
+    class CarpetHDF5Writer;
   }
 }
 
@@ -98,27 +98,16 @@ namespace kernels {
  */
 class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::Device {
  public:
-  int           fileCounter;
-  std::string   filename;
-  int           order;
-  int           solverUnknowns;
-  int           writtenUnknowns;
-  std::string   select;
-  double        time;
-  int           iteration;
-  int           component;
-  kernels::index *writtenCellIdx, *singleFieldIdx;
-  char**        writtenQuantitiesNames;
-
   /**
    * Pimpl idiom: In order to avoid any HDF5 dependency all HDF5 logic is hidden inside this
    * class (instance).
    **/
-  ADERDG2CarpetHDF5Writer* writer;
+  CarpetHDF5Writer* writer;
 
   static std::string getIdentifier();
 
   ADERDG2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+
   virtual ~ADERDG2CarpetHDF5();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -134,7 +123,7 @@ class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::
   
   virtual void startPlotting( double time );
   virtual void finishPlotting();
-  
+
   // TODO: These ADER interpolating routines should be in some generic library
   void interpolateCartesianPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
