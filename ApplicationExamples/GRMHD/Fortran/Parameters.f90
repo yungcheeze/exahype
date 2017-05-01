@@ -23,13 +23,12 @@
     INTEGER, PARAMETER             :: nVar = 19                           ! The number of variables of the PDE system  
     
     
-    ! And even more parameters
-    
+    ! Ideal EOS:
     ! 4/3 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
-    REAL, PARAMETER                :: gamma = 4.0/3.0
+    ! 2.0 used for TOV stars
+    REAL, PARAMETER                :: gamma = 2.0 ! 4.0/3.0
       
-    ! Divergence cleaning.
-
+    ! Divergence cleaning:
     ! 1.0 used in ADERDG3D-SRMHD-Z4 by MD, 01.Nov2016
     ! Note that currently we don't add the contribution to the source.
     REAL, PARAMETER :: DivCleaning_a = 1.0

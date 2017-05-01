@@ -65,9 +65,20 @@ pizzatov::pizzatov() {
 	tov->compute_star();
 }
 
-void pizzatov::Interpolate(const double* x, double t, double* Q) {
+void pizzatov::Interpolate(const double* x, double t, double* Q) {	
 	double V[nVar];
 	tov->initial_data(x, V);
+	
+	// treatment of the atmostphere not done by PizzaTOV
+	const double atmo_rho = 1e-13;
+	const double atmo_press = 1e-7;
+	if(V[0] < atmo_rho) {
+		V[0] = atmo_rho;
+	}
+	if(V[4] < atmo_press) {
+		V[4] = atmo_press;
+	}
+	
 	pdeprim2cons_(Q, V);
 }
 

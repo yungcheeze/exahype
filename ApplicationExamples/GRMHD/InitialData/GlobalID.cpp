@@ -9,5 +9,6 @@ void prepare_id() {
 		// id already prepared
 		return;
 	}
-	id = new fortranid();
+	//id = new fortranid();
+	id = new pizzatov();
 }
