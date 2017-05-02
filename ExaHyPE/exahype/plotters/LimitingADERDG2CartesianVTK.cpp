@@ -373,7 +373,16 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
 
   if (solverPatch.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
     typedef exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus LimiterStatus;
-    LimiterStatus limiterStatus = static_cast<LimiterStatus>(solverPatch.getLimiterStatus());
+    int limiterStatus         = solverPatch.getLimiterStatus();
+    int previousLimiterStatus = solverPatch.getPreviousLimiterStatus();
+
+    // ignore limiter status on coarser mesh levels
+    assertion(static_cast<unsigned int>(solverPatch.getSolverNumber())
+        <exahype::solvers::RegisteredSolvers.size());
+    if (solverPatch.getLevel()
+        <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
+      limiterStatus = LimiterStatus::Ok;
+    }
 
     switch(limiterStatus) {
       case LimiterStatus::Troubled:             // TODO(Dominic): Plot FVM solution instead
@@ -388,8 +397,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
             solverPatch.getOffset(),
             solverPatch.getSize(), solverSolution,
             solverPatch.getCorrectorTimeStamp(),
-            solverPatch.getLimiterStatus(),
-            solverPatch.getPreviousLimiterStatus());
+            limiterStatus,
+            previousLimiterStatus);
       } break;
 //      case LimiterStatus::Troubled:
 //      case LimiterStatus::NeighbourIsTroubledCell: {
