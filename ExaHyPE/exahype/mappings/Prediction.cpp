@@ -171,11 +171,11 @@ void exahype::mappings::Prediction::enterCell(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
 
-            if (cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled1
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled3
-                || cellDescription.getPreviousLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled4) {
+            if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled1
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled3
+                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled4) {
               performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
             }
           } break;
