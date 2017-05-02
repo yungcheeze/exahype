@@ -363,7 +363,10 @@ void exahype::mappings::MeshRefinement::enterCell(
   if (refineFineGridCell) {
     dfor2(v)
       if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-              exahype::Vertex::Records::RefinementControl::Unrefined) {
+           exahype::Vertex::Records::RefinementControl::Unrefined
+           &&
+           !fineGridVertices[ fineGridVerticesEnumerator(v) ].isHangingNode()
+      ) {
         fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
       }
     enddforx
@@ -418,6 +421,8 @@ void exahype::mappings::MeshRefinement::leaveCell(
     dfor2(v)
     if (coarseGridVertices[ coarseGridVerticesEnumerator(v) ].getRefinementControl()==
         exahype::Vertex::Records::RefinementControl::Refined
+        &&
+        !coarseGridVertices[ coarseGridVerticesEnumerator(v) ].isHangingNode()
     ) {
       coarseGridVertices[ coarseGridVerticesEnumerator(v) ].erase();
     }
