@@ -140,6 +140,13 @@ private:
       const int faceIndexRight) const;
 
   /**
+   * Convert to 0..3 limiter status used on coarser mesh
+   * levels.
+   */
+  int convertToCoarserMeshLevelLimiterStatus(
+      const int limiterStatusAsInt) const;
+
+  /**
    * Determine a new limiter status for the given direction based on the neighbour's
    * limiter status and the cell's reduced limiter status.
    *
@@ -313,8 +320,9 @@ private:
    * other than Ok.
    */
   void vetoErasingChildrenRequestBasedOnLimiterStatus(
-      SolverPatch& coarseGridSolverPatch,
-      const int fineGridCellDescriptionsIndex) const;
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridSolverElement,
+      const int coarseGridCellDescriptionsIndex) const;
 
 #ifdef Parallel
   /**
@@ -523,6 +531,11 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
+
+  // TODO(Dominic): Add docu
+  bool evaluateLimiterStatusBasedRefinementCriterion(
+      const int cellDescriptionsIndex,const int solverElement) const;
+
   /**
    * Based on the limiter status of a solver patch
    * and the solver patch's type, we perform the
@@ -821,7 +834,13 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
-  void restrictData(
+  void restrictToNextParent(
+        const int fineGridCellDescriptionsIndex,
+        const int fineGridElement,
+        const int coarseGridCellDescriptionsIndex,
+        const int coarseGridElement) override;
+
+  void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
       const int parentCellDescriptionsIndex,
@@ -829,16 +848,17 @@ public:
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
   /**
-   * Restrict and merge the merged limiter status of a solver patch of
-   * type Cell or Ancestor with the next Ancestor and
-   * all the intermediate EmptyAncestors.
-   * Perform the merge only if the cell associated with the solver patch is
-   * adjacent to the boundary of the cell associated with the intermediate
-   * EmptyAncestors or next Ancestor.
+   * Restrict the limiter status of a cell
+   * up to the parent if the parent exists.
+   *
+   * \p This operation is always executed as
+   * a single-threaded operation.
    */
-  void mergeLimiterStatusWithAncestors(
+  void restrictLimiterStatus(
       const int cellDescriptionsIndex,
-      const int element);
+      const int element,
+      const int parentCellDescriptionsIndex,
+      const int parentElement) const;
 
   ///////////////////////////////////
   // NEIGHBOUR

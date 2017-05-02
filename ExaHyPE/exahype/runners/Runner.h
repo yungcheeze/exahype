@@ -161,7 +161,7 @@ class exahype::runners::Runner {
    *
    * TODO(Dominic): What can I fuse here?
    */
-  void updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
+  bool updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
 
   /**
    * This is different from the default predictor rerun since we do not
@@ -211,7 +211,7 @@ class exahype::runners::Runner {
    * TODO(Dominic): We might not need a few of the other checks anymore after I
    * have introduced the grid refinement requested flag.
    */
-  void createMesh(exahype::repositories::Repository& repository);
+  bool createMesh(exahype::repositories::Repository& repository);
 
   /**
    * Run through all the solvers and identify the coarsest grid level in the tree
