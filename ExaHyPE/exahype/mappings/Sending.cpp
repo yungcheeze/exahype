@@ -164,26 +164,35 @@ void exahype::mappings::Sending::leaveCell(
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (fineGridElement!=exahype::solvers::Solver::NotFound) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+        const int coarseGridElement =
+            solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+        if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
+          tarch::multicore::Lock lock(_semaphoreForRestriction);
+          solver->restrictToNextParent(
+              fineGridCell.getCellDescriptionsIndex(),fineGridElement,
+              coarseGridCell.getCellDescriptionsIndex(),coarseGridElement);
+          lock.free();
+        }
 
         exahype::solvers::Solver::SubcellPosition subcellPosition =
-            solver->computeSubcellPositionOfCellOrAncestor(fineGridCell.getCellDescriptionsIndex(),element);
-
+            solver->computeSubcellPositionOfCellOrAncestor(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
         if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound &&
             exahype::amr::onBoundaryOfParent(
                 subcellPosition.subcellIndex,subcellPosition.levelDifference)) {
           tarch::multicore::Lock lock(_semaphoreForRestriction);
-
-          solver->restrictData(fineGridCell.getCellDescriptionsIndex(),
-                               element,
+          solver->restrictToTopMostParent(fineGridCell.getCellDescriptionsIndex(),
+                               fineGridElement,
                                subcellPosition.parentCellDescriptionsIndex,
                                subcellPosition.parentElement,
                                subcellPosition.subcellIndex);
+          lock.free();
         }
 
-        solver->postProcess(fineGridCell.getCellDescriptionsIndex(),element);
+        solver->postProcess(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();

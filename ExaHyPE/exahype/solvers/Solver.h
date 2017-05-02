@@ -924,12 +924,37 @@ class exahype::solvers::Solver {
       const int element) = 0;
 
   /**
+   * Restricts data to the the next parent independent of
+   * the cell type of the fine grid and coarse grid cell.
    *
+   * \p This operation is always surrounded by
+   * a lock. No locks are required internally.
    *
    * \note This function assumes a bottom-up traversal of the grid and must thus
    * be called from the leaveCell(...) or ascend(...) mapping methods.
    */
-  virtual void restrictData(
+  virtual void restrictToNextParent(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) = 0;
+
+  /**
+   * Restrict face data to the top most parent which has allocated face data arrays (Ancestor)
+   * if and only if the fine grid cell (Cell) has a face which intersects with one of the top most parent
+   * cell's faces.
+   *
+   * \note This function is used to restrict face data to the top most
+   * parent. We skip all intermediate parents if they do not
+   * need to hold data (EmptyAncestor).
+   *
+   * \p This operation is always surrounded by
+   * a lock. No locks are required internally.
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be called from the leaveCell(...) or ascend(...) mapping methods.
+   */
+  virtual void restrictToTopMostParent(
         const int cellDescriptionsIndex,
         const int element,
         const int parentCellDescriptionsIndex,

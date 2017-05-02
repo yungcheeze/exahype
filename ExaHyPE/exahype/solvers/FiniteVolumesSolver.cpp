@@ -660,7 +660,15 @@ void exahype::solvers::FiniteVolumesSolver::prolongateDataAndPrepareDataRestrict
   assertionMsg(false,"Please implement!");
 }
 
-void exahype::solvers::FiniteVolumesSolver::restrictData(
+void exahype::solvers::FiniteVolumesSolver::restrictToNextParent(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) {
+  // do nothing
+}
+
+void exahype::solvers::FiniteVolumesSolver::restrictToTopMostParent(
     const int cellDescriptionsIndex,
     const int element,
     const int parentCellDescriptionsIndex,

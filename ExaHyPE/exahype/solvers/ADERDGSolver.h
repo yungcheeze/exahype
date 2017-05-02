@@ -248,6 +248,13 @@ private:
       CellDescription& coarseGridCellDescription,
       const int fineGridCellDescriptionsIndex);
 
+  /**
+   * Fills the solution and previous solution arrays
+   * with zeros.
+   */
+  void prepareVolumeDataRestriction(
+      CellDescription& cellDescription) const;
+
   /*
    * Starts of finish collective operations from a
    * fine cell description point of view.
@@ -1584,7 +1591,13 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
-  void restrictData(
+  void restrictToNextParent(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) override;
+
+  void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
       const int parentCellDescriptionsIndex,

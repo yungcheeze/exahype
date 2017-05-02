@@ -16,6 +16,7 @@
 
 
 #include <limits>
+#include <iomanip>
 
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
@@ -429,11 +430,11 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
 exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
 exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
   assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
-  assertion1( limiterStatusAsInt <=
-      static_cast<int>(CellDescription::LimiterStatus::Troubled),
-      limiterStatusAsInt);
+  const int newLimiterStatusAsInt=std::min(
+      limiterStatusAsInt,
+      static_cast<int>(CellDescription::LimiterStatus::Troubled) );
 
-  return static_cast<CellDescription::LimiterStatus>(limiterStatusAsInt);
+  return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
 }
 
 /**
@@ -1447,10 +1448,8 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
   if (!initialGrid) {
-    if (coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
-      fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
-      writeLimiterStatusOnBoundary(fineGridCellDescription);
-    }
+    fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
+    writeLimiterStatusOnBoundary(fineGridCellDescription);
   }
 }
 
@@ -1543,6 +1542,16 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
   return false;
 }
 
+void exahype::solvers::ADERDGSolver::prepareVolumeDataRestriction(
+    CellDescription& cellDescription) const {
+  double* solution =
+      DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+  std::fill_n(solution,_dataPointsPerCell,0.0);
+  double* previousSolution =
+      DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
+  std::fill_n(previousSolution,_dataPointsPerCell,0.0);
+}
+
 void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations(
      CellDescription& fineGridCellDescription) {
   switch (fineGridCellDescription.getRefinementEvent()) {
@@ -1553,15 +1562,11 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
       fineGridCellDescription.setRefinementEvent(CellDescription::None);
       fineGridCellDescription.setNewlyCreated(true);
       ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
-
-      // TODO(Dominic): Add to docu
-      fineGridCellDescription.setLimiterStatus(
-          std::max(0, fineGridCellDescription.getLimiterStatus()-2) );
-      writeLimiterStatusOnBoundary(fineGridCellDescription);
       break;
     case CellDescription::ChangeChildrenToDescendantsRequested:
       fineGridCellDescription.setType(CellDescription::Cell);
       ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
+      prepareVolumeDataRestriction(fineGridCellDescription);
       fineGridCellDescription.setRefinementEvent(CellDescription::ChangeChildrenToDescendants);
       break;
     case CellDescription::ChangeChildrenToDescendants:
@@ -1570,6 +1575,7 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
     case CellDescription::ErasingChildrenRequested:
       fineGridCellDescription.setType(CellDescription::Cell);
       ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
+      prepareVolumeDataRestriction(fineGridCellDescription);
       fineGridCellDescription.setRefinementEvent(CellDescription::ErasingChildren);
       break;
     case CellDescription::ErasingChildren:
@@ -1653,26 +1659,50 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
     CellDescription&       coarseGridCellDescription,
     const CellDescription& fineGridCellDescription,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
-  const int levelFine  = fineGridCellDescription.getLevel();
-  const int levelCoarse = coarseGridCellDescription.getLevel();
-  assertion(levelCoarse < levelFine);
-
+  assertion1(coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
+      coarseGridCellDescription.toString());
+  assertion1(fineGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
+        fineGridCellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(
       fineGridCellDescription.getSolution()),fineGridCellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(
       coarseGridCellDescription.getSolution()),coarseGridCellDescription.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(
+      fineGridCellDescription.getPreviousSolution()),fineGridCellDescription.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(
+      coarseGridCellDescription.getPreviousSolution()),coarseGridCellDescription.toString());
 
-  double* luhFine   = DataHeap::getInstance().getData(
+  const int levelFine  = fineGridCellDescription.getLevel();
+  const int levelCoarse = coarseGridCellDescription.getLevel();
+  assertion(levelCoarse < levelFine);
+
+  // restrict current solution
+  double* solutionFine   = DataHeap::getInstance().getData(
       fineGridCellDescription.getSolution()).data();
-  double* luhCoarse = DataHeap::getInstance().getData(
+  double* solutionCoarse = DataHeap::getInstance().getData(
       coarseGridCellDescription.getSolution()).data();
-
   volumeUnknownsRestriction(
-      luhCoarse,luhFine,
+      solutionCoarse,solutionFine,
       levelCoarse,levelFine,
       subcellIndex);
 
-  // TODO(Dominic): What to do in this case with the time step data for anarchic time stepping?
+  // restrict next solution
+  double* previousSolutionFine   = DataHeap::getInstance().getData(
+      fineGridCellDescription.getPreviousSolution()).data();
+  double* previousSolutionCoarse = DataHeap::getInstance().getData(
+      coarseGridCellDescription.getPreviousSolution()).data();
+  volumeUnknownsRestriction(
+      previousSolutionCoarse,previousSolutionFine,
+      levelCoarse,levelFine,
+      subcellIndex);
+
+  // TODO(Dominic): What to do with the time step data for anarchic time stepping?
+  // Tobias proposed some waiting procedure. Until they all have reached
+  // a certain time level.
+//  coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
+//  coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
+//  coarseGridCellDescription.setCorrectorTimeStepSize(fineGridCellDescription.getCorrectorTimeStepSize());
+//  coarseGridCellDescription.setPredictorTimeStepSize(fineGridCellDescription.getPredictorTimeStepSize());
 }
 
 void exahype::solvers::ADERDGSolver::finaliseStateUpdates(
@@ -2279,7 +2309,15 @@ void exahype::solvers::ADERDGSolver::prolongateDataAndPrepareDataRestriction(
           cellDescription.toString());
 }
 
-void exahype::solvers::ADERDGSolver::restrictData(
+void exahype::solvers::ADERDGSolver::restrictToNextParent(
+      const int fineGridCellDescriptionsIndex,
+      const int fineGridElement,
+      const int coarseGridCellDescriptionsIndex,
+      const int coarseGridElement) {
+  // do nothing
+}
+
+void exahype::solvers::ADERDGSolver::restrictToTopMostParent(
                   const int cellDescriptionsIndex,
                   const int element,
                   const int parentCellDescriptionsIndex,
@@ -2389,6 +2427,53 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     },
     true
   );
+
+  if (cellDescriptionsIndex1==344 &&
+      cellDescriptionsIndex2==345 &&
+      tarch::la::equals(pLeft.getCorrectorTimeStamp(),0.0106518,1e-5)) {
+    double* QLeft                 = DataHeap::getInstance().getData(pLeft.getExtrapolatedPredictor()).data();
+    double* QRight                = DataHeap::getInstance().getData(pRight.getExtrapolatedPredictor()).data();
+    double* fLeft                 = DataHeap::getInstance().getData(pLeft.getFluctuation()).data();
+    double* fRight                = DataHeap::getInstance().getData(pRight.getFluctuation()).data();
+    double* solutionRight         = DataHeap::getInstance().getData(pRight.getSolution()).data();
+    double* previousSolutionRight = DataHeap::getInstance().getData(pRight.getPreviousSolution()).data();
+
+    std::cout << "fLeft=";
+    for(int i=0; i<_dofPerCellBoundary; i++) {
+      std::cout << std::setprecision(2) << fLeft[i] << ",";
+    }
+    std::cout << std::endl;
+
+    std::cout << "fRight=";
+    for(int i=0; i<_dofPerCellBoundary; i++) {
+      std::cout << std::setprecision(2) << fRight[i] << ",";
+    }
+    std::cout << std::endl;
+
+    std::cout << "QLeft=";
+    for(int i=0; i<getDataPerCellBoundary(); i++) {
+      std::cout << std::setprecision(2) << QLeft[i] << ",";
+    }
+    std::cout << std::endl;
+
+    std::cout << "QRight=";
+    for(int i=0; i<getDataPerCellBoundary(); i++) {
+      std::cout << std::setprecision(2) << QRight[i] << ",";
+    }
+    std::cout << std::endl;
+
+//    std::cout << "solutionRight=";
+//    for(int i=0; i<_dataPointsPerCell; i++) {
+//      std::cout << std::setprecision(2) << solutionRight[i] << ",";
+//    }
+//    std::cout << std::endl;
+//
+//    std::cout << "previousSolutionRight=";
+//    for(int i=0; i<_dataPointsPerCell; i++) {
+//      std::cout << std::setprecision(2) << previousSolutionRight[i] << ",";
+//    }
+//    std::cout << std::endl;
+  }
 
   solveRiemannProblemAtInterface(
       pLeft,pRight,faceIndexLeft,faceIndexRight,
@@ -3423,7 +3508,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
                " to cell="<<parentCellDescription.getOffset()+0.5*parentCellDescription.getSize() <<
                " level="<<parentCellDescription.getLevel());
 
-      restrictData(
+      restrictToTopMostParent(
           cellDescriptionsIndex,element,
           subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement,
           subcellPosition.subcellIndex);

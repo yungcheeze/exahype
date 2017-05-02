@@ -635,7 +635,13 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
-  void restrictData(
+  void restrictToNextParent(
+        const int fineGridCellDescriptionsIndex,
+        const int fineGridElement,
+        const int coarseGridCellDescriptionsIndex,
+        const int coarseGridElement) override;
+
+  void restrictToTopMostParent(
       const int cellDescriptionsIndex,
       const int element,
       const int parentCellDescriptionsIndex,
