@@ -106,7 +106,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpiifort
 	  else
@@ -177,7 +177,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpifort
 	  else
