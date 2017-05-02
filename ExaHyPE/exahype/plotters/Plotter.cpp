@@ -22,6 +22,7 @@
 #include "exahype/plotters/ADERDG2CarpetHDF5.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
+#include "exahype/plotters/LimitingADERDGSubcells2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 
@@ -302,6 +303,17 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( LimitingADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new LimitingADERDG2CartesianCellsVTKBinary(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
+      }
+
+      if (_identifier.compare( LimitingADERDGSubcells2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+        _device = new LimitingADERDGSubcells2CartesianCellsVTKAscii(
+            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
+                solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
+      }
+      if (_identifier.compare( LimitingADERDGSubcells2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+        _device = new LimitingADERDGSubcells2CartesianCellsVTKBinary(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }

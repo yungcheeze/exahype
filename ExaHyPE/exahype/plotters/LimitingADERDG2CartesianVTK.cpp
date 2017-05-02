@@ -381,7 +381,8 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotPatch(const int cellDes
         <exahype::solvers::RegisteredSolvers.size());
     if (solverPatch.getLevel()
         <exahype::solvers::RegisteredSolvers[solverPatch.getSolverNumber()]->getMaximumAdaptiveMeshLevel()) {
-      limiterStatus = LimiterStatus::Ok;
+      limiterStatus         = LimiterStatus::Ok;
+      previousLimiterStatus = LimiterStatus::Ok;
     }
 
     switch(limiterStatus) {

@@ -69,15 +69,24 @@ exahype-project  Euler
     limiter-language const   = C
     dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 0
+    steps-till-cured         = 20
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
       time      = 0.0
-      repeat    = 1e-1
+      repeat    = 0.1e-1
       output    = ./limitingaderg-dg
       select    = x:0.0,y:0.0
     end plot
+    
+    plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 0.1e-1
+      output    = ./limitingaderg-fv
+      select    = x:0.0,y:0.0
+    end plot
+    
   end solver
 
 end exahype-project
