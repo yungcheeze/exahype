@@ -44,19 +44,7 @@ DEFAULT_SKIP_TOOLKIT="No"
 DEFAULT_MAKE_NPROC="$(has nproc && nproc || echo 1)"
 
 # Allow to store information how to compile on specific machines
-HOST_INFO_FILE="$HOME/.hostname"
-if [[ -e "$HOST_INFO_FILE" ]]; then
-	CLUSTERNAME="$(< $HOST_INFO_FILE)"
-	CLUSTERCONFIG="$buildscripts/../ClusterConfigs/${CLUSTERNAME}.cfg"
-	if [[ -e $CLUSTERCONFIG ]]; then
-		echo "Loading cluster configuration for $CLUSTERNAME"
-		source $CLUSTERCONFIG
-		has module && module list
-	else
-		echo "Cluster $CLUSTERNAME detected, but no ClusterConfig present."
-		# echo "Create one at $CLUSTERCONFIG if you like."
-	fi
-fi
+source $buildscripts/load-clusterconfig.sh
 
 # all default variables can be overwritten by specifying them as
 # environment variables
