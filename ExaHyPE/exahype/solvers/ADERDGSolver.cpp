@@ -875,30 +875,21 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
-    if (fineGridCellDescription.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth) {
-      switch (determineLimiterStatus(fineGridCellDescription)) {
-        // assertion: mergedLimiterStatus has been unified
-        case CellDescription::LimiterStatus::NeighbourOfTroubled3:
-        case CellDescription::LimiterStatus::NeighbourOfTroubled4:
-        case CellDescription::LimiterStatus::Ok: {
-          #ifdef Parallel
-          ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-          #endif
-          #if defined(Asserts) || defined(Debug)
-          int coarseGridCellElement =
-              tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-          #endif
-          assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
-                     fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
-                     fineGridCellDescription.toString(),fineGridCell.toString(),
-                     coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+    if (fineGridCellDescription.getLevel()<getMaximumAdaptiveMeshLevel()) {
+       #ifdef Parallel
+       ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+       #endif
+       #if defined(Asserts) || defined(Debug)
+       int coarseGridCellElement =
+           tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+       #endif
+       assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
+                  fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+                  fineGridCellDescription.toString(),fineGridCell.toString(),
+                  coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
 
-          // marking for refinement
-          return markForRefinement(fineGridCellDescription);
-        }
-        default:
-          return false;
-      }
+       // marking for refinement
+       return markForRefinement(fineGridCellDescription);
     }
   }
 
@@ -1442,15 +1433,16 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 //  }
 
   fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
-  writeLimiterStatusOnBoundary(fineGridCellDescription);
 
   // TODO Dominic: During the inital mesh build where we only refine
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
-  if (!initialGrid) {
-    fineGridCellDescription.setLimiterStatus(coarseGridCellDescription.getLimiterStatus());
-    writeLimiterStatusOnBoundary(fineGridCellDescription);
+  if (!initialGrid
+      &&
+      coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
+    fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
   }
+  writeLimiterStatusOnBoundary(fineGridCellDescription);
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(
@@ -1659,8 +1651,8 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
     CellDescription&       coarseGridCellDescription,
     const CellDescription& fineGridCellDescription,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
-  assertion1(coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
-      coarseGridCellDescription.toString());
+//  assertion1(coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
+//      coarseGridCellDescription.toString()); // TODO(Dominic): Does not always apply see veto
   assertion1(fineGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Ok,
         fineGridCellDescription.toString());
   assertion1(DataHeap::getInstance().isValidIndex(

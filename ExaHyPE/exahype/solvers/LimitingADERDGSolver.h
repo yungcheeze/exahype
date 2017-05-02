@@ -262,7 +262,8 @@ private:
 
   /*
    * Ensures that a limiter patch is allocated
-   * on all compute cells (Cell) that are flagged
+   * on all compute cells (Cell) on the finest mesh
+   * level that are flagged
    * with a limiter status other than Ok.
    *
    * It is safe to use this method during
