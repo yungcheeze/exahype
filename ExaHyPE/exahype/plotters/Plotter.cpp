@@ -19,7 +19,8 @@
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
-#include "exahype/plotters/ADERDG2CarpetHDF5.h"
+#include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
+#include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
@@ -128,7 +129,8 @@ exahype::plotters::Plotter::Plotter(
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
 
-  switch (solvers::RegisteredSolvers[_solver]->getType()) {
+  exahype::solvers::Solver::Type solvertype = solvers::RegisteredSolvers[_solver]->getType();
+  switch (solvertype) {
     case exahype::solvers::Solver::Type::ADERDG:
       /**
        * This is actually some kind of switch expression though switches do
@@ -240,6 +242,9 @@ exahype::plotters::Plotter::Plotter(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new FiniteVolume2CarpetHDF5(postProcessing);
+      }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
       /**
@@ -277,6 +282,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCSV(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new ADERDG2CarpetHDF5(postProcessing); // untested
       }
 
       /**
