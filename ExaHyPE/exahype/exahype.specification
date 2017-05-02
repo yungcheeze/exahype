@@ -130,6 +130,7 @@ adapter:
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data
   merge-with-user-defined-mapping: PostProcessing
   
@@ -167,6 +168,7 @@ adapter:
   // needs corrector time step size
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 

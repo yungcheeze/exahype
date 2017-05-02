@@ -20,6 +20,7 @@
 
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
@@ -45,17 +46,19 @@ class exahype::adapters::PlotAndADERDGTimeStep {
   private:
     typedef mappings::Merging Mapping0;
     typedef mappings::Plot Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::Prediction Mapping3;
-    typedef mappings::TimeStepSizeComputation Mapping4;
-    typedef mappings::Sending Mapping5;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping2;
+    typedef mappings::SolutionUpdate Mapping3;
+    typedef mappings::Prediction Mapping4;
+    typedef mappings::TimeStepSizeComputation Mapping5;
+    typedef mappings::Sending Mapping6;
 
      Mapping0  _map2Merging;
      Mapping1  _map2Plot;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2Prediction;
-     Mapping4  _map2TimeStepSizeComputation;
-     Mapping5  _map2Sending;
+     Mapping2  _map2AugmentedAMRTreePlot2d;
+     Mapping3  _map2SolutionUpdate;
+     Mapping4  _map2Prediction;
+     Mapping5  _map2TimeStepSizeComputation;
+     Mapping6  _map2Sending;
 
 
   public:
