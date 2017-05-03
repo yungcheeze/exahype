@@ -3663,7 +3663,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInPreviousSolution(compressionOfPreviousSolution);
       if (compressionOfPreviousSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setPreviousSolutionCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getPreviousSolutionCompressed()>=0 );
         lock.free();
 
@@ -3695,7 +3695,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInSolution(compressionOfSolution);
       if (compressionOfSolution<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries));
+        cellDescription.setSolutionCompressed(CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries));
         assertion1( cellDescription.getSolutionCompressed()>=0, cellDescription.getSolutionCompressed() );
         lock.free();
 
@@ -3728,7 +3728,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInUpdate(compressionOfUpdate);
       if (compressionOfUpdate<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setUpdateCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getUpdateCompressed()>=0 );
         lock.free();
 
@@ -3760,7 +3760,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInExtrapolatedPredictor(compressionOfExtrapolatedPredictor);
       if (compressionOfExtrapolatedPredictor<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setExtrapolatedPredictorCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setExtrapolatedPredictorCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getExtrapolatedPredictorCompressed()>=0 );
         lock.free();
 
@@ -3792,7 +3792,7 @@ void exahype::solvers::ADERDGSolver::putUnknownsIntoByteStream(exahype::records:
       cellDescription.setBytesPerDoFInFluctuation(compressionOfFluctuation);
       if (compressionOfFluctuation<7) {
         tarch::multicore::Lock lock(_heapSemaphore);
-        cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData(0,0,CompressedDataHeap::Allocation::UseOnlyRecycledEntries) );
+        cellDescription.setFluctuationCompressed( CompressedDataHeap::getInstance().createData(0,0,peano::heap::Allocation::UseOnlyRecycledEntries) );
         assertion( cellDescription.getFluctuationCompressed()>=0 );
         lock.free();
 
