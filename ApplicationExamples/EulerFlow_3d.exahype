@@ -26,7 +26,7 @@ exahype-project  Euler
   architecture const               = noarch
 
   computational-domain
-    dimension const                = 3
+    dimension const          = 3
     width                    = 15.0, 15.0, 15.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.1
@@ -52,6 +52,8 @@ exahype-project  Euler
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = on
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
   end optimisation
 
   solver ADER-DG MyEulerSolver
@@ -63,7 +65,7 @@ exahype-project  Euler
     kernel const            = generic::fluxes::nonlinear
     language const          = C
 
-    plot vtk::Cartesian::cells::ascii
+    plot vtk::Cartesian::cells::ascii ConservedWriter
       variables const = 5
       time      = 0.0
       repeat    = 0.05
@@ -73,7 +75,7 @@ exahype-project  Euler
 
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
       repeat = 0.05
@@ -81,7 +83,7 @@ exahype-project  Euler
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
       variables const = 5
       time      = 0.0
       repeat    = 0.05
@@ -89,7 +91,7 @@ exahype-project  Euler
       select    = x:0.0,y:0.0
     end plot
 
-    plot vtk::Cartesian::vertices::ascii
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
       variables const = 5
       time      = 0.0
       repeat    = 0.05
@@ -98,12 +100,12 @@ exahype-project  Euler
     end plot
 
     /* Do not need the time series for a point in the moment
-    plot probe::ascii
+    plot probe::ascii ProbeWriter
       variables const = 5
       time      = 0.0
       repeat    = 0.05
       output    = ./seismogram
-      select    = {x:0.2,y:0.2}
+      select    = x:0.2,y:0.2
     end plot
     */
   end solver
