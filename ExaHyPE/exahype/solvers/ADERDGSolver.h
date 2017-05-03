@@ -969,37 +969,6 @@ public:
       const double t,
       const double dt) const = 0;
 
-  virtual bool usePointSource()            const = 0;
-      
-  virtual bool useAlgebraicSource()        const = 0;
-  virtual bool useNonConservativeProduct() const = 0;
-
-  /**
-   * Compute the Algebraic Sourceterms.
-   *
-   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-   *                 as C array (already allocated).
-   * \param[inout] S the source point as C array (already allocated).
-   */
-  virtual void algebraicSource(const double* const Q,double* S) = 0;
-
-  /**
-    * Non Conservative Product
-    *
-    * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
-    * use the ADER-DG kernels for nonlinear PDEs. If you use
-    * the kernels for linear PDEs, it is a tensor with dimensions
-    * Dim x NumberOfVariables.
-    *
-    */
-  virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
-
-
-  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
-
-
-  virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) = 0;
-
 
   /**
    * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
@@ -1020,6 +989,17 @@ public:
       const double t,
       const double dt,
       double* luh) = 0;
+
+  /**
+   * Sven:
+   * I really have the feeling this is a leftover which should not be there.
+   **/
+  virtual void pointSource(
+    const double t,
+    const double dt, 
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx, 
+    double* tempPointForceSources);
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -1097,13 +1077,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
   ///@}
   
-  //TODO KD
-  virtual void pointSource(
-    const double t,
-    const double dt, 
-    const tarch::la::Vector<DIMENSIONS,double>& center,
-    const tarch::la::Vector<DIMENSIONS,double>& dx, 
-    double* tempPointForceSources);
 
 
   /**
