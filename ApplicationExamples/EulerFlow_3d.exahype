@@ -57,7 +57,7 @@ exahype-project  Euler
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables const         = 5
+    variables const         = rho:1,j:3,E:1
     order const             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 3.0
