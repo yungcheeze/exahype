@@ -1604,8 +1604,8 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
         fineGridCellDescription,
         fineGridPositionOfCell);
     // TODO(Dominic): Reconsider for anarchic time stepping.
-    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
-    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
+//    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
+//    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
 
     // erase cell description // or change to descendant
     fineGridCellDescription.setType(CellDescription::Erased);
@@ -1624,8 +1624,8 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
         fineGridCellDescription,
         fineGridPositionOfCell);
     // TODO(Dominic): Reconsider for anarchic time stepping.
-    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
-    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
+//    coarseGridCellDescription.setCorrectorTimeStamp(fineGridCellDescription.getCorrectorTimeStamp());
+//    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
 
     // erase cell description // or change to descendant
     fineGridCellDescription.setType(CellDescription::EmptyDescendant);
@@ -2380,95 +2380,37 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
     double**                                  tempStateSizedVectors,
     double**                                  tempStateSizedSquareMatrices) {
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
-  // !!! In Riemann solve we consider "left" face of "right" cell and
-  // "right" face of "left" cell. !!!
-  const int normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
-  assertion(normalDirection >= 0 && normalDirection < DIMENSIONS);
-  const int faceIndex1 = 2 * normalDirection +
-      (pos2(normalDirection) > pos1(normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-  const int faceIndex2 = 2 * normalDirection +
-      (pos1(normalDirection) > pos2(normalDirection) ? 1 : 0);   // !!! Be aware of the ">" !!!
+  const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
+  const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+  const int orientation2 = 1-orientation1;
 
-  int cellDescriptionsIndexLeft  = cellDescriptionsIndex1;
-  int elementLeft                = element1;
-  int faceIndexLeft              = faceIndex1;
+  const int indexOfRightFaceOfLeftCell = 2*direction+1;
+  const int indexOfLeftFaceOfRightCell = 2*direction+0;
 
-  int cellDescriptionsIndexRight = cellDescriptionsIndex2;
-  int elementRight               = element2;
-  int faceIndexRight             = faceIndex2;
-
-  if (pos1(normalDirection) > pos2(normalDirection)) {
-    cellDescriptionsIndexLeft  = cellDescriptionsIndex2;
-    elementLeft                = element2;
-    faceIndexLeft              = faceIndex2;
-
-    cellDescriptionsIndexRight = cellDescriptionsIndex1;
-    elementRight               = element1;
-    faceIndexRight             = faceIndex1;
-  }
-
-  CellDescription& pLeft  = getCellDescription(cellDescriptionsIndexLeft,elementLeft);
-  CellDescription& pRight = getCellDescription(cellDescriptionsIndexRight,elementRight);
+  CellDescription& cellDescriptionLeft  =
+      (orientation1==1) ?
+          getCellDescription(cellDescriptionsIndex1,element1)
+          :
+          getCellDescription(cellDescriptionsIndex2,element2);
+  CellDescription& cellDescriptionRight =
+      (orientation1==1)
+          ?
+          getCellDescription(cellDescriptionsIndex2,element2)
+          :
+          getCellDescription(cellDescriptionsIndex1,element1);
 
   peano::datatraversal::TaskSet uncompression(
     [&] () -> void {
-      uncompress(pLeft);
+      uncompress(cellDescriptionLeft);
     },
     [&] () -> void {
-      uncompress(pRight);
+      uncompress(cellDescriptionRight);
     },
     true
   );
 
-  if (cellDescriptionsIndex1==344 &&
-      cellDescriptionsIndex2==345 &&
-      tarch::la::equals(pLeft.getCorrectorTimeStamp(),0.0106518,1e-5)) {
-    double* QLeft                 = DataHeap::getInstance().getData(pLeft.getExtrapolatedPredictor()).data();
-    double* QRight                = DataHeap::getInstance().getData(pRight.getExtrapolatedPredictor()).data();
-    double* fLeft                 = DataHeap::getInstance().getData(pLeft.getFluctuation()).data();
-    double* fRight                = DataHeap::getInstance().getData(pRight.getFluctuation()).data();
-    double* solutionRight         = DataHeap::getInstance().getData(pRight.getSolution()).data();
-    double* previousSolutionRight = DataHeap::getInstance().getData(pRight.getPreviousSolution()).data();
-
-    std::cout << "fLeft=";
-    for(int i=0; i<_dofPerCellBoundary; i++) {
-      std::cout << std::setprecision(2) << fLeft[i] << ",";
-    }
-    std::cout << std::endl;
-
-    std::cout << "fRight=";
-    for(int i=0; i<_dofPerCellBoundary; i++) {
-      std::cout << std::setprecision(2) << fRight[i] << ",";
-    }
-    std::cout << std::endl;
-
-    std::cout << "QLeft=";
-    for(int i=0; i<getDataPerCellBoundary(); i++) {
-      std::cout << std::setprecision(2) << QLeft[i] << ",";
-    }
-    std::cout << std::endl;
-
-    std::cout << "QRight=";
-    for(int i=0; i<getDataPerCellBoundary(); i++) {
-      std::cout << std::setprecision(2) << QRight[i] << ",";
-    }
-    std::cout << std::endl;
-
-//    std::cout << "solutionRight=";
-//    for(int i=0; i<_dataPointsPerCell; i++) {
-//      std::cout << std::setprecision(2) << solutionRight[i] << ",";
-//    }
-//    std::cout << std::endl;
-//
-//    std::cout << "previousSolutionRight=";
-//    for(int i=0; i<_dataPointsPerCell; i++) {
-//      std::cout << std::setprecision(2) << previousSolutionRight[i] << ",";
-//    }
-//    std::cout << std::endl;
-  }
-
   solveRiemannProblemAtInterface(
-      pLeft,pRight,faceIndexLeft,faceIndexRight,
+      cellDescriptionLeft,cellDescriptionRight,indexOfRightFaceOfLeftCell,indexOfLeftFaceOfRightCell,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
 }
 
@@ -2571,16 +2513,13 @@ void exahype::solvers::ADERDGSolver::mergeWithBoundaryData(
       getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==CellDescription::Cell) {
-    // !!! Left face of right cell.
-    const int normalOfExchangedFace = tarch::la::equalsReturnIndex(posCell, posBoundary);
-    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-    const int faceIndex = 2 * normalOfExchangedFace +
-        (posCell(normalOfExchangedFace) < posBoundary(normalOfExchangedFace) ? 1 : 0);
+    const int direction   = tarch::la::equalsReturnIndex(posCell, posBoundary);
+    const int orientation = (1 + posBoundary(direction) - posCell(direction))/2;
 
     uncompress(cellDescription);
 
     applyBoundaryConditions(
-        cellDescription,faceIndex,
+        cellDescription,2*direction+orientation,
         tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices);
   }
 }
