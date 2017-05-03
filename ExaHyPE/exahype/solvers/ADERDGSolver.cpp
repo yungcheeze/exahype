@@ -1432,6 +1432,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 //    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
 //  }
 
+  fineGridCellDescription.setPreviousLimiterStatus(CellDescription::LimiterStatus::Ok);
   fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
 
   // TODO Dominic: During the inital mesh build where we only refine
@@ -1441,6 +1442,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
       &&
       coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
     fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
+    // TODO(Dominic): Bug: Cell is regarded as troubled but limiter patch is not allocated. Should not happen
   }
   writeLimiterStatusOnBoundary(fineGridCellDescription);
 }
@@ -1687,6 +1689,16 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
       previousSolutionCoarse,previousSolutionFine,
       levelCoarse,levelFine,
       subcellIndex);
+
+  // Reset the min and max
+  double* solutionMin = DataHeap::getInstance().getData(
+        coarseGridCellDescription.getSolutionMin()).data();
+  std::fill_n(solutionMin,DIMENSIONS_TIMES_TWO*_numberOfVariables,
+      std::numeric_limits<double>::max());
+  double* solutionMax = DataHeap::getInstance().getData(
+      coarseGridCellDescription.getSolutionMax()).data();
+  std::fill_n(solutionMax,DIMENSIONS_TIMES_TWO*_numberOfVariables,
+      -std::numeric_limits<double>::max()); // Be aware of "-"
 
   // TODO(Dominic): What to do with the time step data for anarchic time stepping?
   // Tobias proposed some waiting procedure. Until they all have reached
@@ -2382,7 +2394,6 @@ void exahype::solvers::ADERDGSolver::mergeNeighbours(
   assertion1(tarch::la::countEqualEntries(pos1,pos2)==(DIMENSIONS-1),tarch::la::countEqualEntries(pos1,pos2));
   const int direction    = tarch::la::equalsReturnIndex(pos1, pos2);
   const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
-  const int orientation2 = 1-orientation1;
 
   const int indexOfRightFaceOfLeftCell = 2*direction+1;
   const int indexOfLeftFaceOfRightCell = 2*direction+0;

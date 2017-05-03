@@ -700,7 +700,9 @@ public:
   /**
    * Evaluates a discrete maximum principle (DMP) and
    * the physical admissibility detection (PAD) criterion for
-   * the solution values stored for a solver patch.
+   * the solution values stored for any solver patch
+   * that is of type Cell independent of the mesh level
+   * it is located at.
    *
    * This method then invokes
    * ::determinLimiterStatusAfterSolutionUpdate(SolverPatch&,const bool)

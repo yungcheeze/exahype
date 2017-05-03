@@ -265,8 +265,7 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
           fineGridCellDescriptionsIndex,fineGridSolverElement);
 
   if (
-      (fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested ||
-       fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
+      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
        &&
        (fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled4)
        ||
@@ -281,8 +280,7 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
     SolverPatch& coarseGridSolverPatch = _solver->getCellDescription(
         coarseGridCellDescriptionsIndex,coarseGridSolverElement);
     if (
-        (coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested ||
-            coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
+        coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
          &&
         (fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
         ||
@@ -558,29 +556,28 @@ bool exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfte
     const int solverElement) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
-  if (
-      solverPatch.getLevel()==getMaximumAdaptiveMeshLevel() &&
-      solverPatch.getType()==SolverPatch::Type::Cell
-  ) {
+  if (solverPatch.getType()==SolverPatch::Type::Cell) {
     bool solutionIsValid =
         evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(solverPatch)
         && evaluatePhysicalAdmissibilityCriterion(solverPatch); // after min and max was found
 
-    switch (solverPatch.getLimiterStatus()) {
-    case SolverPatch::LimiterStatus::Troubled:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled2: {
-      const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
-      assertion2(limiterElement!=exahype::solvers::Solver::NotFound,limiterElement,cellDescriptionsIndex);
-      LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
-      determineLimiterMinAndMax(solverPatch,limiterPatch);
-    }
-    break;
-    case SolverPatch::LimiterStatus::Ok:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-    case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-      // Keep the previously computed min and max values
+    if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()) {
+      switch (solverPatch.getLimiterStatus()) {
+      case SolverPatch::LimiterStatus::Troubled:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled2: {
+        const int limiterElement = _limiter->tryGetElement(cellDescriptionsIndex,solverPatch.getSolverNumber());
+        assertion2(limiterElement!=exahype::solvers::Solver::NotFound,limiterElement,cellDescriptionsIndex);
+        LimiterPatch& limiterPatch = _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+        determineLimiterMinAndMax(solverPatch,limiterPatch);
+      }
       break;
+      case SolverPatch::LimiterStatus::Ok:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
+        // Keep the previously computed min and max values
+        break;
+      }
     }
 
     bool irregularLimiterDomanChange =
@@ -647,7 +644,7 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
   bool irregularLimiterDomainChange=false;
 
   if (isTroubled) {
-    solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell);
+    solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell+1);
     switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
       // do nothing
