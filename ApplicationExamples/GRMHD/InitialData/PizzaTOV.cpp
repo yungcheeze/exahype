@@ -66,7 +66,7 @@ pizzatov::pizzatov() {
 }
 
 void pizzatov::Interpolate(const double* x, double t, double* Q) {	
-	double V[nVar];
+	double V[nVar] = {0.0}; // IMPORTANT: Zero V before data go to PizzaTOV.
 	tov->initial_data(x, V);
 	
 	// treatment of the atmostphere not done by PizzaTOV

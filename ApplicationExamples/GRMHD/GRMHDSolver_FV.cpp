@@ -13,7 +13,13 @@
 
 const double excision_radius = 1.0;
 
+// enable nan tracker
+#include <fenv.h>
+
 void GRMHD::GRMHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
+  // try NaN catcher
+  feenableexcept(FE_INVALID | FE_OVERFLOW);  // Enable all floating point exceptions but FE_INEXACT
+	
   prepare_id();
 }
 
