@@ -318,6 +318,23 @@ public:
       const int faceIndex,
       const int normalNonZero) = 0;
 
+  /**
+   * Compute the Riemann problem.
+   * 
+   * This function shall implement a pointwise riemann Solver, in contrast to the ADERDGSolver::riemannSolver
+   * function which implements a patch-wise riemann solver.
+   * 
+   * In a fully conservative scheme, it is fL = fR and the Riemann solver really computes the fluxes
+   * in normalNonzero direction steming from the contribution of qL and qR.
+   * 
+   * \param[out]   fL      the fluxes on the left side of the point cell (already allocated)
+   * \param[out]   fR      the fluxes on the right side of the point cell (already allocated).
+   * \param[in]    qL      the state vector in the left neighbour cell
+   * \param[in]    qR      the state vector in the right neighbour cell
+   * \param[in]    normalNonZero  Index of the nonzero normal vector component.
+   **/
+  virtual double riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) = 0;
+
   virtual void solutionUpdate(
       double* luhNew,const double* luh,
       double** tempStateSizedArrays,double** tempUnknowns,
@@ -363,24 +380,22 @@ public:
       const double t,
       const double dt) const = 0;
 
-  virtual bool useNonConservativeProduct() const = 0;
-  virtual bool useSource()                 const = 0;
-
-  virtual void fusedSource(const double* const Q, const double* const gradQ, double* S) = 0;
-  virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
-  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
+  /**
+   * Pointwise solution adjustment.
+   * 
+   * In the FV solver, we currently don't support both patchwise
+   * and pointwise adjustment @TODO.
+   * 
+   * \param[in]   x   The position (array with DIMENSIONS entries)
+   * \param[in]   w   (deprecated) the quadrature weight.
+   * \param[in]   t   the start of the time interval
+   * \param[in]   dt  the width of the time interval.
+   * \param[inout] Q  the conserved variables and parameters as C array (already allocated).
+   * 
+   **/
   virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
 
-
-  /**
-   * Compute the source.
-   *
-   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
-   *                 as C array (already allocated).
-   * \param[inout] S the source point as C array (already allocated).
-   */
-  virtual void algebraicSource(const double* const Q,double* S) = 0;
-
+  
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
    */
