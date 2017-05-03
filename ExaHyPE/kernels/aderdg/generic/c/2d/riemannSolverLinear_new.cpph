@@ -22,12 +22,13 @@ namespace c {
 
 template <bool useNCP, typename SolverType>
 void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
-                         const double* const QL, const double* const QR,
+                         const double* const QL,
+			 const double* const QR,
                          double*  tempFaceUnknowns,
                          double** tempStateSizedVectors,
                          double** tempStateSizedSquareMatrices,
                          const double dt,
-                         const int normalNonZero) {
+                         const int direction) {
   /*
    * For the linear kernels, we need the material parameters in the
    * extrapolated predictor.
@@ -64,8 +65,9 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
 
   double LL[numberOfVariables]; // size: numberOfVariables
   double LR[numberOfVariables]; // size: numberOfVariables
-  solver.eigenvalues(QavL, normalNonZero, LL);
-  solver.eigenvalues(QavR, normalNonZero, LR);
+
+  solver.eigenvalues(QavL, direction, LL);
+  solver.eigenvalues(QavR, direction, LR);
 
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
@@ -83,16 +85,14 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
   // this will be converted into the left and right fluctuations.
 
   // evaluate the system matrix just once in the averaged state
-  double Qav[numberOfData]; // size: numberOfVariables+numberOfParameters
-  // Qav = 0.5 * (QavL + QavR) (includes parameters)
-  std::transform(QavL, QavL + (numberOfVariables+numberOfParameters), QavR, Qav,
-                 [](double a, double b) { return 0.5 * (a + b); });
+  double Qavg[numberOfData]; // size: numberOfVariables+numberOfParameters
 
-  double Bn[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
-  solver.coefficientMatrix(Qav, normalNonZero, Bn[0]);        // Bn is nVarxnVar matrix
+  std::transform(QavL, QavL + (numberOfVariables+numberOfParameters), QavR, Qavg,
+               [](double a, double b) { return 0.5 * (a + b); });
+
 
   double BnMinusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
-  double BnPlusIdSmax[numberOfVariables][numberOfVariables]  = {0.0}; // size: numberOfVariables * numberOfVariables
+  double BnPlusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
   {
     // skip parameters
     std::copy_n (Bn[0], numberOfVariables2, BnMinusIdSmax[0]);
@@ -103,31 +103,74 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
     }
   }
 
-  double Q[basisSize*numberOfData] = {0.0}; // size : basisSize * (numberOfVariables+numberOfParameters)
-  std::transform(QR, QR + basisSize * numberOfData, QL, Q,
-                 [](double a, double b) { return 0.5 * (a - b); });
+  idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[DIMENSIONS][numberOfData] = {0.0};
+  double ncp[numberOfVariables]               = {0.0};
 
   std::fill_n (FL, basisSize * numberOfVariables, 0.0);
   std::fill_n (FR, basisSize * numberOfVariables, 0.0);
+
   {
     idx2 idx_FLR(basisSize, numberOfVariables);
-    idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
-    
-    for (int i = 0; i < basisSize; i++) {
-      // FL(:,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,i) - QL(:,i))
-      // FR(:,i) = 0.5 * (Bn + Id*smax)(:,:) * (QR(:,i) - QL(:,i))
-      // skip parameters
-      for (int j = 0; j < numberOfVariables; j++) {
-        for (int k = 0; k < numberOfVariables; k++) {
-          FL[idx_FLR(i, j)] +=
-              BnMinusIdSmax[k][j] * Q[idx_QLR(i, k)];
-          FR[idx_FLR(i, j)] +=
-              BnPlusIdSmax[k][j]  * Q[idx_QLR(i, k)];
+    idx2 idx_QLR(basisSize, numberOfData);
+
+    for (int j = 0; j < basisSize; j++) {
+      if(useNCP) { // we don't use matrixB but the NCP call here.
+
+        for(int l=0; l < numberOfData; l++) {
+          gradQ[direction][l] = QR[idx_QLR(j, l)] - QL[idx_QLR(j, l)];
+	  //          Qavg[l] = 0.5 * (QavL[idx_QLR(j, l)] + QavR[idx_QLR(j, l)]);
         }
+
+        for(int l= numberOfVariables; l < numberOfData; l++) {
+	  //          Qavg[l] = 0.5 * (QavL[idx_QLR(j, l)] + QavR[idx_QLR(j, l)]);
+        }
+
+        solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
+
+	for (int k = 0; k < numberOfVariables ; k++) {
+          FL[idx_FLR(j, k)] = 0.5 * (ncp[k] - smax * gradQ[direction][k]);
+          FR[idx_FLR(j, k)] = 0.5 * (ncp[k] + smax * gradQ[direction][k]);
+	}
       }
     }
   }
-}
+}    
+        // {
+
+    // skip parameters
+    // std::copy_n (Bn[0], numberOfVariables2, BnMinusIdSmax[0]);
+    // std::copy_n (Bn[0], numberOfVariables2, BnPlusIdSmax[0]);
+//    for (int i = 0; i < numberOfVariables; i++) {
+       //BnMinusIdSmax[i][i] -= smax;
+       //BnPlusIdSmax [i][i] += smax;
+//    }
+
+
+//  double Q[basisSize*numberOfData] = {0.0}; // size : basisSize * (numberOfVariables+numberOfParameters)
+//  std::transform(QR, QR + basisSize * numberOfData, QL, Q,
+//                 [](double a, double b) { return 0.5 * (a - b); });
+
+//  std::fill_n (FL, basisSize * numberOfVariables, 0.0);
+//  std::fill_n (FR, basisSize * numberOfVariables, 0.0);
+    
+//    for (int i = 0; i < basisSize; i++) {
+      // FL(:,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,i) - QL(:,i))
+      // FR(:,i) = 0.5 * (Bn + Id*smax)(:,:) * (QR(:,i) - QL(:,i))
+      // skip parameters
+
+//      for (int j = 0; j < numberOfVariables; j++) {
+//         for (int k = 0; k < numberOfVariables; k++) {
+//           FL[idx_FLR(i, k)] +=
+// //              s_max * Q[idx_QLR(i, k)];
+//                * Q[idx_QLR(i, k)];
+//           FR[idx_FLR(i, j)] +=
+//               BnPlusIdSmax[k][j]  * Q[idx_QLR(i, k)];
+//         }
+// //      }
+//     }
+//   }
+// }
 
 }  // namespace c
 }  // namespace generic
