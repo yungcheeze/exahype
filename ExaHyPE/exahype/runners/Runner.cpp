@@ -13,6 +13,8 @@
 
 #include "exahype/runners/Runner.h"
 
+#include <cmath>
+
 #include "../../../Peano/mpibalancing/HotspotBalancing.h"
 
 #include "exahype/repositories/Repository.h"
@@ -134,15 +136,15 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
         peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
           new mpibalancing::GreedyBalancing(
-            getCoarsestGridLevelOfAllSolvers(),
-            getCoarsestGridLevelOfAllSolvers()+1
+            getCoarsestGridLevelOfAllSolvers(_boundingBoxSize),
+            getCoarsestGridLevelOfAllSolvers(_boundingBoxSize)+1
           )
         );
         break;
       case exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Hotspot:
         logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
         peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-            new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
+            new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers(_boundingBoxSize)+1)
         );
         break;
     }
@@ -315,14 +317,14 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 }
 
 
-int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
-  double boundingBox = _parser.getBoundingBoxSize()(0);
+int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers(
+    tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
   double hMax        = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>hMax) {
-    currenthMax = boundingBox / threePowI(result);
+    currenthMax = boundingBoxSize[0] / threePowI(result);
     result++;
   }
 
@@ -331,14 +333,14 @@ int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
 }
 
 
-int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
-  double boundingBox = _parser.getBoundingBoxSize()(0);
+int exahype::runners::Runner::getFinestGridLevelOfAllSolvers(
+    tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
   double hMax        = exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>hMax) {
-    currenthMax = boundingBox / threePowI(result);
+    currenthMax = boundingBoxSize[0] / threePowI(result);
     result++;
   }
 
@@ -347,43 +349,70 @@ int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
 }
 
 
+tarch::la::Vector<DIMENSIONS, double>
+exahype::runners::Runner::determineDomainSize() const {
+  double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  double maxDomainExtent = tarch::la::max(_parser.getDomainSize());
+
+  const int coarsestMeshLevel =
+      exahype::solvers::Solver::computeMeshLevel(coarsestUserMeshSize,maxDomainExtent);
+  const double coarsestMeshSize = maxDomainExtent / threePowI(coarsestMeshLevel);
+
+  tarch::la::Vector<DIMENSIONS, double> domainSize = _parser.getDomainSize() / coarsestMeshSize;
+  for(int i=0; i<DIMENSIONS; i++) {
+    domainSize[i] = std::ceil(domainSize[i]) * coarsestMeshSize;
+  }
+  return domainSize;
+}
+
+/**
+ * @return Bounding box size. If we have a non-cubical domain,
+ *         then the bounding box still is cubical and all of its entries are
+ *         the biggest dimension along one coordinate axis.
+ */
+tarch::la::Vector<DIMENSIONS, double> exahype::runners::Runner::determineBoundingBoxSize(
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize) const {
+    double longestH = tarch::la::max(domainSize);
+    return tarch::la::Vector<DIMENSIONS, double>(longestH);
+}
+
 exahype::repositories::Repository* exahype::runners::Runner::createRepository() {
   // Geometry is static as we need it survive the whole simulation time.
+  _domainSize = determineDomainSize();
   static peano::geometry::Hexahedron geometry(
-      _parser.getDomainSize(),
+      _domainSize,
       _parser.getOffset());
+  _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
+
+  const int coarsestMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
 
   logInfo(
       "createRepository(...)",
       "create computational domain at " << _parser.getOffset() <<
-      " of width/size " << _parser.getDomainSize() <<
-      ". bounding box has size " << _parser.getBoundingBoxSize() <<
-      ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
+      " of width/size " << _domainSize <<
+      ". bounding box has size " << _boundingBoxSize <<
+      ". grid regular up to level " << coarsestMeshLevel << " (level 1 is coarsest available cell in tree)" );
 
-
-  tarch::la::Vector<DIMENSIONS, double> boundingBoxSize   = _parser.getBoundingBoxSize();
-  tarch::la::Vector<DIMENSIONS, double> boundingBoxOffset = _parser.getOffset();
+  tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _parser.getOffset();
   #ifdef Parallel
   if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
-    const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
-    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
+    const double boundingBoxScaling = static_cast<double>(coarsestMeshLevel) / (static_cast<double>(coarsestMeshLevel)-2);
+    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _parser.getDomainSize(), _parser.getBoundingBoxSize() );
     const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
 
     logInfo(
         "createRepository(...)",
-        "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
+        "increase bounding box artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
 
-    boundingBoxSize   *= boundingBoxScaling;
-    boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
+    _boundingBoxSize  *= boundingBoxScaling;
+    boundingBoxOffset += boundingBoxShift*_boundingBoxSize;
   }
   #endif
 
-  _boundingBoxSize = boundingBoxSize;
-
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      boundingBoxSize,
+      _boundingBoxSize,
       boundingBoxOffset
   );
 }
@@ -446,7 +475,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     repository.iterate();
     gridSetupIterations++;
 
-    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
+    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("createGrid()",
@@ -514,7 +543,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     extraIterations--;
     gridSetupIterations++;
 
-    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
+    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
@@ -540,7 +569,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface::writeHeader();
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
-    initSolvers(_boundingBoxSize);
+    initSolvers(_domainOffset,_domainSize);
 //    repository.getState().switchToPreAMRContext();
 //    createGrid(repository);
 
@@ -671,9 +700,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   return 0;
 }
 
-void exahype::runners::Runner::initSolvers(const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
+void exahype::runners::Runner::initSolvers(
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) const {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initSolver(0.0,boundingBox);
+    p->initSolver(0.0,domainOffset,domainSize);
   }
 }
 

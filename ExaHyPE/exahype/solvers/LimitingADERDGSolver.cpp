@@ -82,10 +82,16 @@ void exahype::solvers::LimitingADERDGSolver::updateMinNextTimeStepSize(double va
   _solver->updateMinNextTimeStepSize(value);
 }
 
-void exahype::solvers::LimitingADERDGSolver::initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
+void exahype::solvers::LimitingADERDGSolver::initSolver(
+    const double timeStamp,
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
+  _domainOffset=domainOffset;
+  _domainSize=domainSize;
+  _coarsestMeshLevel =
+      exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,domainSize[0]);
 
-  _solver->initSolver(timeStamp, boundingBox);
+  _solver->initSolver(timeStamp, domainOffset, domainSize);
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
@@ -1030,7 +1036,7 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
 
   // 3. Reset the iterationsToCure on all troubled cells to maximum value if cell is troubled
   if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled) {
-    solverPatch.setIterationsToCureTroubledCell(_iterationsToCureTroubledCell);
+    solverPatch.setIterationsToCureTroubledCell(1+_iterationsToCureTroubledCell);
   }
 }
 

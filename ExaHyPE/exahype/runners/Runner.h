@@ -38,6 +38,32 @@ class exahype::runners::Runner {
 
   exahype::Parser& _parser;
 
+  /**
+   * The computational domain offset as used by the
+   * repository.
+   *
+   * \note Is initialised in ::createRepository.
+   */
+  tarch::la::Vector<DIMENSIONS,double> _domainOffset;
+
+  /**
+   * The computational domain size as used by the
+   * repository.
+   *
+   * \note Is initialised in ::createRepository.
+   */
+  tarch::la::Vector<DIMENSIONS,double> _domainSize;
+
+  /**
+   * The bounding box size used by the repository.
+   *
+   * The bounding box embeds the computational
+   * domain into a cube with extent identical
+   * to the largest extent of the computational
+   * domain (see ::_domainSize).
+   *
+   * \note Is initialised in ::createRepository.
+   */
   tarch::la::Vector<DIMENSIONS,double> _boundingBoxSize;
 
   /**
@@ -83,10 +109,16 @@ class exahype::runners::Runner {
 #endif
 
   /**
-   * Reset all time stamps to zero. Runs through the solver registry only,
+   * Initialise the solver time stamps as well as metainformation
+   * such as the coarsest mesh level, the maximum
+   * adaptive mesh level etc.
+   *
+   * Runs through the solver registry only,
    * i.e. no grid traversal is required.
    */
-  void initSolvers(const tarch::la::Vector<DIMENSIONS,double>& boundingBox);
+  void initSolvers(
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) const;
 
   void validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const;
 
@@ -181,6 +213,20 @@ class exahype::runners::Runner {
   void validateSolverTimeStepDataForThreeAlgorithmicPhases(const bool fuseADERDGPhases) const;
 
   /**
+   * Per dimenison, computes the smallest multiplicity of the coarsest solver mesh size
+   * which is larger than the domain size.
+   */
+  tarch::la::Vector<DIMENSIONS, double> determineDomainSize() const;
+
+  /**
+   * @return Bounding box size. If we have a non-cubical domain,
+   *         then the bounding box still is cubical and all of its entries are
+   *         the biggest dimension along one coordinate axis.
+   */
+  tarch::la::Vector<DIMENSIONS, double> determineBoundingBoxSize(
+      const tarch::la::Vector<DIMENSIONS, double>& domainSize) const;
+
+  /**
    * Sets up the geometry, hands it over to a new instance of the repository
    * and returns the repository.
    *
@@ -217,8 +263,11 @@ class exahype::runners::Runner {
    * Run through all the solvers and identify the coarsest grid level in the tree
    * that will be populated by a solver.
    */
-  int getCoarsestGridLevelOfAllSolvers() const;
-  int getFinestGridLevelOfAllSolvers() const;
+  int getCoarsestGridLevelOfAllSolvers(
+      tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const;
+
+  int getFinestGridLevelOfAllSolvers(
+      tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const;
  public:
   explicit Runner(Parser& parser);
   virtual ~Runner();

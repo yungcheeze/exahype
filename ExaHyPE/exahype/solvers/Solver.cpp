@@ -99,7 +99,10 @@ exahype::solvers::Solver::Solver(
       _numberOfVariables(numberOfVariables),
       _numberOfParameters(numberOfParameters),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
+      _domainOffset(std::numeric_limits<double>::max()),
+      _domainSize(std::numeric_limits<double>::max()),
       _maximumMeshSize(maximumMeshSize),
+      _coarsestMeshLevel(3),
       _maximumAdaptiveMeshDepth(maximumAdaptiveMeshDepth),
       _minCellSize(std::numeric_limits<double>::max()),
       _nextMinCellSize(std::numeric_limits<double>::max()),
@@ -132,11 +135,11 @@ std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::T
   return "undefined";
 }
 
-int exahype::solvers::Solver::computeMeshLevel(double meshSize, double boundingBoxSize) {
+int exahype::solvers::Solver::computeMeshLevel(double meshSize, double domainSize) {
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>meshSize) {
-    currenthMax = boundingBoxSize / threePowI(result);
+    currenthMax = domainSize / threePowI(result);
     result++;
   }
 

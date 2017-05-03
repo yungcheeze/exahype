@@ -353,8 +353,6 @@ void exahype::mappings::MeshRefinement::enterCell(
       solver->prepareNextNeighbourMerging(
           fineGridCell.getCellDescriptionsIndex(),element,
           fineGridVertices,fineGridVerticesEnumerator);
-//      // TODO(Dominic):
-//      solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
     }
   }
 

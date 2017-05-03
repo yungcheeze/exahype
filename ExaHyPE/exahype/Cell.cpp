@@ -46,13 +46,22 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
 
 bool exahype::Cell::isFaceInside(
     const int faceIndex,
-    exahype::Vertex* const verticesAroundCell,
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize,
     const peano::grid::VertexEnumerator& verticesEnumerator) {
-  const int f = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
-  const int d = (faceIndex-f)/2; // The normal direction: 0: x, 1: y, 1: z.
+  const int orientation = faceIndex % 2;             // orientation of normal
+  const int direction   = (faceIndex-orientation)/2; // normal direction: 0: x, 1: y, 1: z.
+
+  double xMin = domainOffset(direction);
+  double xMax = domainOffset(direction)+domainSize(direction);
 
   dfor2(v) // Loop over vertices.
-    if (v(d) == f && verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
+    if (v(direction) == orientation
+        &&
+        tarch::la::smaller(verticesEnumerator.getVertexPosition(vScalar)(direction),xMax)
+        &&
+        tarch::la::greater(verticesEnumerator.getVertexPosition(vScalar)(direction),xMin)
+    ) {
       return true;
     }
   enddforx // v

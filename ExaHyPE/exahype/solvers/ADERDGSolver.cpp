@@ -119,8 +119,7 @@ void exahype::solvers::ADERDGSolver::addNewCellDescription(
   newCellDescription.setLevel(level);
   newCellDescription.setRefinementEvent(refinementEvent);
 
-  std::bitset<DIMENSIONS_TIMES_TWO>
-      riemannSolvePerformed;  // default construction: no bit set
+  std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;  // default construction: no bit set
   newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
   // Pass geometry information to the cellDescription description
@@ -788,8 +787,14 @@ void exahype::solvers::ADERDGSolver::updateMinNextTimeStepSize( double value ) {
   updateMinNextPredictorTimeStepSize(value);
 }
 
-void exahype::solvers::ADERDGSolver::initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
+void exahype::solvers::ADERDGSolver::initSolver(
+    const double timeStamp,
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
+  _domainOffset=domainOffset;
+  _domainSize=domainSize;
+  _coarsestMeshLevel =
+      exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,domainSize[0]);
 
   setPreviousMinCorrectorTimeStepSize(0.0);
   setMinCorrectorTimeStepSize(0.0);
@@ -1272,7 +1277,7 @@ void exahype::solvers::ADERDGSolver::addNewCell(
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
   exahype::Cell::determineInsideAndOutsideFaces(
             fineGridCellDescription,
-            fineGridVertices,
+            _domainOffset,_domainSize,
             fineGridVerticesEnumerator);
 }
 
@@ -1309,7 +1314,7 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
           getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
       exahype::Cell::determineInsideAndOutsideFaces(
           fineGridCellDescription,
-          fineGridVertices,
+          _domainOffset,_domainSize,
           fineGridVerticesEnumerator);
 
       coarseGridCellDescription.setRefinementEvent(CellDescription::Augmenting);
@@ -2090,6 +2095,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
+  assertion1(cellDescription.getRiemannSolvePerformed().all(),cellDescription.toString());
+
   exahype::Cell::resetNeighbourMergeHelperVariables(
         cellDescription,fineGridVertices,fineGridVerticesEnumerator);
 

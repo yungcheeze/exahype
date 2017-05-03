@@ -332,6 +332,19 @@ class exahype::solvers::Solver {
   const int _nodesPerCoordinateAxis;
 
   /**
+   * The offset of the computational domain.
+   *
+   * Is initialised by the initSolver method.
+   */
+  tarch::la::Vector<DIMENSIONS,double> _domainOffset;
+
+  /**
+   * The size of the computational domain.
+   * * Is initialised by the initSolver method.
+   */
+  tarch::la::Vector<DIMENSIONS,double> _domainSize;
+
+  /**
    * The maximum extent a cell is allowed to have in each coordinate direction.
    *
    * \note This is an upper bound specified in the specification file.
@@ -436,9 +449,9 @@ class exahype::solvers::Solver {
 
   /**
    * Return the grid level corresponding to the given mesh size with
-   * respect to the given bounding box.
+   * respect to the given domainSize.
    */
-  static int computeMeshLevel(double meshSize, double boundingBoxSize);
+  static int computeMeshLevel(double meshSize, double domainSize);
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
@@ -584,10 +597,17 @@ class exahype::solvers::Solver {
    * maximum mesh size to compute the coarsest grid level
    * this solver is placed on.
    *
+   * \note It is very important that the domainSize
+   * is chosen as an multiple of the coarsest mesh size
+   * of all solvers within the grid.
+   *
    * The maximum adaptive refinement level is defined
    * with respect to this level.
    */
-  virtual void initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) = 0;
+  virtual void initSolver(
+      const double timeStamp,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

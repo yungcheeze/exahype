@@ -313,13 +313,6 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   return result;
 }
 
-tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getBoundingBoxSize()
-    const {
-  tarch::la::Vector<DIMENSIONS, double> domainSize = getDomainSize();
-  double longestH = tarch::la::max(domainSize);
-  return tarch::la::Vector<DIMENSIONS, double>(longestH);
-}
-
 tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   assertion(isValid());
   std::string token;

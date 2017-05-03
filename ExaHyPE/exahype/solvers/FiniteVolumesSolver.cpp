@@ -94,8 +94,14 @@ void exahype::solvers::FiniteVolumesSolver::updateMinNextTimeStepSize(
   _minNextTimeStepSize = std::min(_minNextTimeStepSize, value);
 }
 
-void exahype::solvers::FiniteVolumesSolver::initSolver(const double timeStamp, const tarch::la::Vector<DIMENSIONS,double>& boundingBox) {
-  _coarsestMeshLevel = exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,boundingBox[0]);
+void exahype::solvers::FiniteVolumesSolver::initSolver(
+    const double timeStamp,
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
+  _domainOffset=domainOffset;
+  _domainSize=domainSize;
+  _coarsestMeshLevel =
+      exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,domainSize[0]);
 
   _previousMinTimeStepSize = 0.0;
   _minTimeStepSize = 0.0;
@@ -283,9 +289,9 @@ void exahype::solvers::FiniteVolumesSolver::addNewCell(
       getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
   exahype::Cell::determineInsideAndOutsideFaces(
-            fineGridCellDescription,
-            fineGridVertices,
-            fineGridVerticesEnumerator);
+      fineGridCellDescription,
+                  _domainOffset,_domainSize,
+                  fineGridVerticesEnumerator);
 }
 
 void exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
@@ -561,8 +567,8 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     double** tempUnknowns,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-  // reset helper variables
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+  assertion1(cellDescription.getRiemannSolvePerformed().all(),cellDescription.toString());
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
