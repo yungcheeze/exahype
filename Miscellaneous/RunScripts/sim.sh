@@ -77,12 +77,15 @@ case $CMD in
 		BUILDNAME="$2"
 		[ -z "$BUILDNAME" ] && fail "Usage: sim setup <NameOfSimulation> <NameOfBuild>"
 		
-		buildloc=$(subreq root)/$(subreq build-find $BUILDNAME) || fail "Could determine build location of '$BUILDNAME'"
+		buildloc=$(exareq root)/$(exareq build-find $BUILDNAME) || fail "Could determine build location of '$BUILDNAME'"
 		[[ -e $buildloc/oot.env ]] || abort "Cannot find build instance '$BUILDNAME'. Maybe execute 'exa build-compile $BUILDNAME' before?"
 		source $buildloc/oot.env
 		
 		export ExaBinary="$buildloc/$oot_binary"
 		export ExaSpecfile="$buildloc/$oot_base_specfile"
+		
+		[ -d $ExaBinary ] && fail "OOT Binary path consistency is falsy."
+		[ -d $ExaSpecfile ] && fail "OOT Base specfile consistency is bad."
 		
 		exec $SETUPTOOL
 		;;

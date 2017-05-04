@@ -66,11 +66,11 @@ export BASE_ExaBinary=$(basename "$ExaBinary")
 export BASE_ExaSpecfile=$(basename "$ExaSpecfile")
 
 # populate simulation directory with absolute symlinks
-ln -s "$ExaBinary" "$SIMDIR/"
-cp "$ExaSpecfile" "$SIMDIR/"
+verbose ln -s "$ExaBinary" "$SIMDIR/"
+verbose cp "$ExaSpecfile" "$SIMDIR/"
 
 # copy the run scripts
-cp $runscripts/RunScriptTemplates/*.sh $SIMDIR
+verbose cp $runscripts/RunScriptTemplates/*.sh $SIMDIR
 chmod 755 $SIMDIR/*.sh
 
 cd "$SIMDIR"
