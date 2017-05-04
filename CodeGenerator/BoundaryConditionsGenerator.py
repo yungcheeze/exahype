@@ -25,7 +25,7 @@ class BoundaryConditionsGenerator:
     m_context = {}
 
     # name of generated output file
-    m_filename = "boundaryConditions.cpph"
+    m_filename = "boundaryConditions.cpp"
 
     
     def __init__(self, i_config):
@@ -36,5 +36,5 @@ class BoundaryConditionsGenerator:
         self.m_context['blockSize'] = self.m_context['nDofPad'] if self.m_context['nDim'] == 2 else Backend.getSizeWithPadding(self.m_context['nDof'] * self.m_context['nDof'])
         self.m_context['iVar_range_0_nVar'] = range(0, self.m_context['nVar'])
 
-        TemplatingUtils.renderAsFile('boundaryConditions_cpph.template', self.m_filename, self.m_context)
+        TemplatingUtils.renderAsFile('boundaryConditions_cpp.template', self.m_filename, self.m_context)
 

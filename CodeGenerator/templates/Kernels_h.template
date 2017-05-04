@@ -25,13 +25,18 @@
 #include <mm_malloc.h>
 #endif
 
+//forward declaration of the user solver
+namespace {{solverNamespace}} {
+  class {{solverClass}};
+}
+
 #define NDEBUG
 namespace kernels {
   namespace aderdg {
     namespace optimised {
       
-      template <bool useSource, bool useNCP, void PDEflux(const double* const Q, double** F), void PDEsource(const double* const Q, double* S), void PDEncp(const double* const Q, const double* const gradQ, double* BgradQ)>
       void picardLoopNonlinear(
+        {{solverName}}& solver,
         const double* restrict const luh, 
         const double dt,
         const tarch::la::Vector<DIMENSIONS, double>& inverseDx,
@@ -43,7 +48,6 @@ namespace kernels {
 {% endif %}
       );
       
-      template <bool useSourceOrNCP>
       void predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
@@ -66,7 +70,6 @@ namespace kernels {
         const double dt
       );
       
-      template <bool useSourceOrNCP>
       void volumeIntegral( 
         double* restrict lduh, 
         const double* restrict const lFhi,
@@ -87,17 +90,17 @@ namespace kernels {
         const tarch::la::Vector<DIMENSIONS,double>& dx
       );
 */
-      template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)> 
-      void adjustSolution(
-      double* luh,
-      const tarch::la::Vector<DIMENSIONS,double>& center,
-      const tarch::la::Vector<DIMENSIONS,double>& dx,
-      const double t,
-      const double dt
+      void adjustPointSolution(
+        {{solverName}}& solver,
+        double* luh,
+        const tarch::la::Vector<DIMENSIONS,double>& center,
+        const tarch::la::Vector<DIMENSIONS,double>& dx,
+        const double t,
+        const double dt
       );
 
-      template <bool useCoefficientMatrix, void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda), void PDEmatrixb(const double* const Q, const int normalNonZero, double* Bn)>
       void riemannSolver( 
+        {{solverName}}& solver,
         double* restrict lFbndL,
         double* restrict lFbndR,
         const double* restrict const lQbndL,
@@ -109,14 +112,14 @@ namespace kernels {
 {% endif %}
       );
 
-      template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>
       double stableTimeStepSize(
+        {{solverName}}& solver,
         const double* restrict const luh,
         const tarch::la::Vector<DIMENSIONS,double>& inverseDx
       );
 
-      template <void PDEboundaryValues(const double* const x, const double t, const double dt, const int faceIndex, const int normalNonZero, const double* const fluxIn, const double* const stateIn, double* fluxOut, double* stateOut)>
       void boundaryConditions(
+        {{solverName}}& solver,
         double* fluxOut, 
         double* stateOut, 
         const double* const fluxIn, 
@@ -132,24 +135,12 @@ namespace kernels {
   }
 }
 
-#include "kernels/aderdg/optimised/adjustSolution.cpph"
-
-#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"
-
+{# //TODO JMG implement/remove
 {% if isLinear %}
 #include "kernels/aderdg/optimised/cauchyKovalewski.cpph"
-{% else%}
-#include "kernels/aderdg/optimised/picard.cpph"
 {% endif %}
-
-#include "kernels/aderdg/optimised/predictor.cpph"
-
-#include "kernels/aderdg/optimised/volumeIntegral.cpph"
-
-#include "kernels/aderdg/optimised/riemannSolver.cpph"
+#}
 
 #include "kernels/aderdg/optimised/ConfigurationParameters.cpph"
-
-#include "kernels/aderdg/optimised/boundaryConditions.cpph"
 
 #endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_

@@ -14,8 +14,10 @@
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 
-template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)> 
-  void kernels::aderdg::optimised::adjustSolution(
+#include "{{solverHeader}}"
+
+void kernels::aderdg::optimised::adjustPointSolution(
+  {{solverName}}& solver,
   double* luh,
   const tarch::la::Vector<DIMENSIONS,double>& center,
   const tarch::la::Vector<DIMENSIONS,double>& dx,
@@ -31,7 +33,7 @@ template <void PDESolutionAdjustment(const double* const x,const double J_w,cons
     for(int i=0;i<{{nDof}};i++) {
       x[0] = center[0] + dx[0] * (gaussLegendreNodes[{{order}}][i] - 0.5);
 
-      PDESolutionAdjustment(x, weights3[pos], t, dt, &luh[pos*{{nVar}}]);
+      solver.{{solverName}}::adjustPointSolution(x, weights3[pos], t, dt, &luh[pos*{{nVar}}]);
       pos++;
     }
   }
@@ -44,7 +46,7 @@ template <void PDESolutionAdjustment(const double* const x,const double J_w,cons
       for(int i=0;i<{{nDof}};i++) {
         x[0] = center[0] + dx[0] * (gaussLegendreNodes[{{order}}][i] - 0.5);
 
-        PDESolutionAdjustment(x, weights3[pos], t, dt, &luh[pos*{{nVar}}]);
+        solver.{{solverName}}::adjustPointSolution(x, weights3[pos], t, dt, &luh[pos*{{nVar}}]);
         pos++;
       }
     }

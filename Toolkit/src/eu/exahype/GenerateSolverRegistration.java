@@ -74,8 +74,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if(psolver instanceof AAderdgSolver) {
         AAderdgSolver asolver = (AAderdgSolver) psolver;
         _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().equals("C") 
-                                  && (asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
-                                      ||  asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
+                                  && (asolver.getKernel().getText().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
       }
     }
 

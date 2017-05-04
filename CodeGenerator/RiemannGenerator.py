@@ -31,7 +31,7 @@ class RiemannGenerator:
     m_context = {}
     
     # name of generated output file
-    m_filename = "riemannSolver.cpph"
+    m_filename = "riemannSolver.cpp"
 
 
     def __init__(self, i_context):
@@ -47,4 +47,4 @@ class RiemannGenerator:
             self.m_context['i_seq'] = range(0,self.m_context['nVar'])
             
             # render template
-            TemplatingUtils.renderAsFile('riemannSolverNonLinear_cpph.template', self.m_filename, self.m_context)
+            TemplatingUtils.renderAsFile('riemannSolverNonLinear_cpp.template', self.m_filename, self.m_context)

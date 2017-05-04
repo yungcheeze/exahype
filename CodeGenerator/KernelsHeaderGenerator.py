@@ -32,5 +32,7 @@ class KernelsHeaderGenerator:
 
 
     def generateCode(self):
+        self.m_context['solverNamespace'] = self.m_context['solverName'].split('::')[0]
+        self.m_context['solverClass'] = self.m_context['solverName'].split('::')[1]
         TemplatingUtils.renderAsFile('Kernels_h.template', self.m_filename, self.m_context)
 
