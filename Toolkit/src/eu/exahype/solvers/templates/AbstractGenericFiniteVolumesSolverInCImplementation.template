@@ -18,6 +18,8 @@
 #include <cstdlib> // abort()
 #include "kernels/KernelUtils.h" // idx
 
+#include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
+
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
   init(cmdlineargs);
