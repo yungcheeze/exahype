@@ -30,14 +30,14 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 45.0, 45.0, 45.0
-    offset                         = -22.5, -22.5, -22.5
+    width                          = 15.0, 15.0, 15.0
+    offset                         = -7.5, -7.5, -7.5
     end-time                       = 200.1
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -60,10 +60,10 @@ exahype-project GRMHD
 
   solver Finite-Volumes GRMHDSolver_FV
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
-    patch-size const               = 5
-    maximum-mesh-size              = 5.001
+    patch-size const               = 4
+    maximum-mesh-size              = 1.669
     time-stepping                  = global
-    kernel const                   = generic::godunov
+    kernel const                   = generic::musclhancock
     language const                 = C
 
     plot vtk::Cartesian::cells::ascii ConservedWriter
@@ -87,6 +87,14 @@ exahype-project GRMHD
       time = 0.0
       repeat = 0.000001
       output = ./output/global-integrals
+      select    = x:0.0,y:0.0
+    end plot
+
+    plot user::defined TimingStatistics
+      variables const = 0
+      time = 0.0
+      repeat = 0.0000000001
+      output = ./timing-benchmarks
       select    = x:0.0,y:0.0
     end plot
 
