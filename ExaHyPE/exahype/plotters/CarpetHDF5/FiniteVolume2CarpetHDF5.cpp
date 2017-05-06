@@ -1,4 +1,5 @@
 #include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include <cstdlib>
 #include <stdio.h>
@@ -24,7 +25,8 @@ typedef tarch::la::Vector<DIMENSIONS, double> dvec;
  *************************************************************************************************/
 
 exahype::plotters::FiniteVolume2CarpetHDF5::FiniteVolume2CarpetHDF5(
-  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) : Device(postProcessing) {
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int _ghostLayerWidth) : Device(postProcessing), ghostLayerWidth(_ghostLayerWidth) {
 	printf("ERROR: Compile with HDF5, otherwise you cannot use the HDF5 plotter.\n");
 	abort();
 }
@@ -51,22 +53,23 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::finishPlotting() {}
  * FiniteVolume2CarpetHDF5 non-dummy implementation
  *************************************************************************************************/
 
-exahype::plotters::FiniteVolume2CarpetHDF5::FiniteVolume2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing) :
-    Device(postProcessing) { writer = nullptr; }
+exahype::plotters::FiniteVolume2CarpetHDF5::FiniteVolume2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  const int _ghostLayerWidth) :  Device(postProcessing), ghostLayerWidth(_ghostLayerWidth) { writer = nullptr; }
 
 exahype::plotters::FiniteVolume2CarpetHDF5::~FiniteVolume2CarpetHDF5() {
 	if(writer) delete writer;
 }
 
-void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filename, int basisSize, int solverUnknowns, int writtenUnknowns, const std::string& select) {
+void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filename, int numberOfCellsPerAxis, int solverUnknowns, int writtenUnknowns, const std::string& select) {
 	bool oneFilePerTimestep = true;
-	bool allUnknownsInOneFile = false;
+	bool allUnknownsInOneFile = true;
 
 	// Determine names of output fields
 	char **writtenQuantitiesNames = new char*[writtenUnknowns];
 	std::fill_n(writtenQuantitiesNames, writtenUnknowns, nullptr);
 	_postProcessing->writtenQuantitiesNames(writtenQuantitiesNames);
-
+	
+	const int basisSize = numberOfCellsPerAxis; // apparently this *is* the patchSize
 	writer = new exahype::plotters::CarpetHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
 		writtenQuantitiesNames, oneFilePerTimestep, allUnknownsInOneFile);	
 
@@ -77,38 +80,63 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filenam
 void exahype::plotters::FiniteVolume2CarpetHDF5::plotPatch(
         const int cellDescriptionsIndex,
         const int element) {
-  auto& aderdgCellDescription = exahype::solvers::ADERDGSolver::getCellDescription(cellDescriptionsIndex,element);
+  auto& cellDescription =  exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,element);
 
-  if (aderdgCellDescription.getType()==exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
-    double* solverSolution = DataHeap::getInstance().getData(aderdgCellDescription.getSolution()).data();
+  if (cellDescription.getType()==exahype::solvers::FiniteVolumesSolver::CellDescription::Type::Cell) {
+    double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
 
     plotPatch(
-        aderdgCellDescription.getOffset(),
-        aderdgCellDescription.getSize(), solverSolution,
-        aderdgCellDescription.getCorrectorTimeStamp());
+        cellDescription.getOffset(),
+        cellDescription.getSize(), solution,
+        cellDescription.getTimeStamp());
   }
 }
 
 void exahype::plotters::FiniteVolume2CarpetHDF5::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
+    double* u, /* unknown */
     double timeStamp) {
-    const int basisSize = writer->basisSize;
-    const int order = basisSize - 1; // it's no more order here.
 
-    /**** TODO: Code for FiniteVolume plotter here  ********
+    double* mappedCell  = new double[writer->writtenCellIdx.size];
+    dvec dx = 1./(writer->basisSize) * sizeOfPatch;
 
-    // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
-    double* mappedCell  = new double[writer->writtenCellIdx->size];
-
-    dvec dx = 1./order * sizeOfPatch;
-
-    interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+    mapCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
     writer->plotPatch(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp);
 
     delete[] mappedCell;
-    */
+}
+
+
+void exahype::plotters::FiniteVolume2CarpetHDF5::mapCartesianPatch(
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    double* u, /* ingoing unknowns in cell, size numberOfCellsPerAxis^DIMENSIONS */
+    double *mappedCell, /* outgoing mapped cell, size writtenUnknowns^DIMENSIONS */
+    double timeStamp) {
+
+    const int basisSize = writer->basisSize; // == numberOfCellsPerAxis == nVar*patchSize^DIMENSIONS
+    const int writtenUnknowns = writer->writtenUnknowns;
+    const int solverUnknowns = writer->solverUnknowns;
+
+    dfor(i,basisSize) {
+        double *value = mappedCell;
+        #if DIMENSIONS==3
+        value += writer->writtenCellIdx(i(2),i(1),i(0),0);
+        #else
+        value += writer->writtenCellIdx(i(1),i(0),0);
+        #endif
+
+	_postProcessing->mapQuantities(
+          offsetOfPatch,
+          sizeOfPatch,
+          offsetOfPatch + i.convertScalar<double>()*(sizeOfPatch(0)/basisSize),
+          i,
+          u + peano::utils::dLinearisedWithoutLookup(i+ghostLayerWidth, basisSize+2*ghostLayerWidth) * solverUnknowns,
+          value,
+          timeStamp
+        );
+    }
 }
 
 
@@ -121,64 +149,5 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::finishPlotting() {
 	_postProcessing->finishPlotting();
 	writer->finishPlotting();
 }
-
-void exahype::plotters::FiniteVolume2CarpetHDF5::interpolateCartesianPatch(
-  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double *u,
-  double *mappedCell,
-  double timeStamp
-) {
-	
-	/*** TODO:  Code for FiniteVolume plotter here   *******
-  const int basisSize = writer->basisSize;
-  const int solverUnknowns = writer->solverUnknowns;
-  const int order = basisSize-1;
-
-  double* interpoland = new double[solverUnknowns];
-  //double* mappedCell  = new double[writtenCellIdx.size];
-  //double* value       = writtenUnknowns==0 ? nullptr : new double[writtenUnknowns];
-  
-  dfor(i,basisSize) {
-    for (int unknown=0; unknown < solverUnknowns; unknown++) {
-      interpoland[unknown] = 0.0;
-      dfor(ii,basisSize) { // Gauss-Legendre node indices
-        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
-        interpoland[unknown] +=
-		kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
-		kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
-		#if DIMENSIONS==3
-		kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
-		#endif
-		u[iGauss * solverUnknowns + unknown];
-        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-      }
-    }
-
-    double *value = mappedCell;
-    #if DIMENSIONS==3
-    value += writer->writtenCellIdx->get(i(2),i(1),i(0),0);
-    #else
-    value += writer->writtenCellIdx->get(i(1),i(0),0);
-    #endif
-    assertion(sizeOfPatch(0)==sizeOfPatch(1));
-    _postProcessing->mapQuantities(
-      offsetOfPatch,
-      sizeOfPatch,
-      offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(order)),
-      i,
-      interpoland,
-      value,
-      timeStamp
-    );
-  }
-
-  delete[] interpoland;
-  //if (value!=nullptr)        delete[] value;
-  */
-}
-
-
-
 
 #endif /* HDF5 */

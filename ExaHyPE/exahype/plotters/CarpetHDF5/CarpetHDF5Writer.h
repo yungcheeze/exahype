@@ -2,9 +2,7 @@
 #define _EXAHYPE_PLOTTERS_CARPET_HDF5_WRITER_
 
 #include "exahype/plotters/Plotter.h"
-
-// for the time being
-#include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
+#include "kernels/KernelUtils.h" // idx::kernels
 
 namespace exahype {
   namespace plotters {
@@ -22,26 +20,24 @@ class exahype::plotters::CarpetHDF5Writer {
   tarch::logging::Log _log;
 
 public:
-  exahype::plotters::ADERDG2CarpetHDF5* device; // backlink
-
   // information from the device::init() process
-  int           solverUnknowns;
-  int           writtenUnknowns;
-  std::string   filename;
-  int           basisSize;
-  std::string   select;
-  int           fileCounter;
-  int           component;
-  int           iteration;
-  char**        writtenQuantitiesNames;
-  kernels::index *writtenCellIdx, *singleFieldIdx;
+  const int           solverUnknowns;
+  const int           writtenUnknowns;
+  const std::string   basisFilename;
+  const int           basisSize; ///< this is _orderPlusOne in ADERDG context and _numberOfCellsPerAxis-2*ghostZones in FV context
+  const std::string   select;
 
+  // Things to be counted by this instance
+  int                 component;
+  int                 iteration;
+  char**              writtenQuantitiesNames; // not const as we check for good names in constructor
+  const kernels::index writtenCellIdx, singleFieldIdx;
 
   // HDF5 specific data types
   H5::H5File *single_file, **seperate_files;
   H5::DataSpace patch_space, dtuple;
 
-  bool oneFilePerTimestep, allUnknownsInOneFile;
+  const bool oneFilePerTimestep, allUnknownsInOneFile;
 
   /**
    * cf. also the documentation in the ADERDG2CarpetHDF5.h
@@ -57,8 +53,6 @@ public:
    **/
   CarpetHDF5Writer(const std::string& _filename, int _basisSize, int _solverUnknowns, int _writtenUnknowns, const std::string& _select,
 		   char** writtenQuantitiesNames, bool oneFilePerTimestep_=false, bool allUnknownsInOneFile_=false);
-  
-  void init();
 
   void writeBasicGroup(H5::H5File* file);
   

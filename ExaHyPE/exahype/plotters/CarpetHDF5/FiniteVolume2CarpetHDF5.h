@@ -38,14 +38,15 @@ class exahype::plotters::FiniteVolume2CarpetHDF5 : public exahype::plotters::Plo
    * class (instance).
    **/
   CarpetHDF5Writer* writer;
+  const int ghostLayerWidth;
 
   static std::string getIdentifier();
 
-  FiniteVolume2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+  FiniteVolume2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, const int ghostLayerWidth);
 
   virtual ~FiniteVolume2CarpetHDF5();
 
-  virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
+  virtual void init(const std::string& filename, int basisSize, int solverUnknowns, int writtenUnknowns, const std::string& select);
 
   virtual void plotPatch(
         const int cellDescriptionsIndex,
@@ -60,7 +61,7 @@ class exahype::plotters::FiniteVolume2CarpetHDF5 : public exahype::plotters::Plo
   virtual void finishPlotting();
 
   // TODO: These FV interpolating routines should be in some generic library
-  void interpolateCartesianPatch(
+  void mapCartesianPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double *u,

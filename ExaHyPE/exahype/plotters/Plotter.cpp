@@ -243,7 +243,10 @@ exahype::plotters::Plotter::Plotter(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
       if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
-        _device = new FiniteVolume2CarpetHDF5(postProcessing);
+        _device = new FiniteVolume2CarpetHDF5(
+	    postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth()
+	);
       }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:

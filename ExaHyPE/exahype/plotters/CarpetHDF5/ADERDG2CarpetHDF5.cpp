@@ -99,7 +99,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
 
 
     // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
-    double* mappedCell  = new double[writer->writtenCellIdx->size];
+    double* mappedCell  = new double[writer->writtenCellIdx.size];
 
     dvec dx = 1./order * sizeOfPatch;
 
@@ -153,9 +153,9 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
 
     double *value = mappedCell;
     #if DIMENSIONS==3
-    value += writer->writtenCellIdx->get(i(2),i(1),i(0),0);
+    value += writer->writtenCellIdx(i(2),i(1),i(0),0);
     #else
-    value += writer->writtenCellIdx->get(i(1),i(0),0);
+    value += writer->writtenCellIdx(i(1),i(0),0);
     #endif
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
     _postProcessing->mapQuantities(

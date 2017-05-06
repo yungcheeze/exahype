@@ -3,7 +3,6 @@
 #ifdef HDF5
 
 #include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
-#include "kernels/KernelUtils.h"
 #include "peano/utils/Loop.h" // dfor
 #include <sstream>
 
@@ -14,30 +13,41 @@ template <typename T> std::string toString( T Number ) {
 	std::ostringstream ss; ss << Number; return ss.str();
 }
 
-exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(const std::string& _filename, int _basisSize, int _solverUnknowns, int _writtenUnknowns, const std::string& _select,
-		   char** writtenQuantitiesNames, bool oneFilePerTimestep_, bool allUnknownsInOneFile_)
-	:	_log("ADERDG2CarpetHDF5Writer"),
-		single_file(nullptr),
-		seperate_files(nullptr) {
-	
-	oneFilePerTimestep = oneFilePerTimestep_;
-	allUnknownsInOneFile = allUnknownsInOneFile_;
-	
-	filename          = _filename;
-	basisSize         = _basisSize; // this is _orderPlusOne in ADERDG context and _numberOfCellsPerAxis in FV context
-	solverUnknowns    = _solverUnknowns;
-	select            = _select;
-	writtenUnknowns   = _writtenUnknowns;
-	iteration         = 0;
+exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
+	const std::string& _filename,
+	int _basisSize,
+	int _solverUnknowns,
+	int _writtenUnknowns,
+	const std::string& _select,
+	char** _writtenQuantitiesNames,
+	bool _oneFilePerTimestep,
+	bool _allUnknownsInOneFile)
+	:
+	_log("ADERDG2CarpetHDF5Writer"),
+	solverUnknowns(_solverUnknowns),
+	writtenUnknowns(_writtenUnknowns),
+	basisFilename(_filename),
+	basisSize(_basisSize),
+	select(_select),
+	component(-100),
+	iteration(0),
+	writtenQuantitiesNames(_writtenQuantitiesNames),
+	#if DIMENSIONS == 2
+	// we can also use pointers if you want to add logic here or cannot use
+	// preprocessor directives, ie.
+	// writtenCellIdx = new kernels::index(basisSize, basisSize, writtenUnknowns) ...etc...
+	writtenCellIdx(basisSize, basisSize, writtenUnknowns),
+	singleFieldIdx(basisSize, basisSize),
+	#else
+	writtenCellIdx(basisSize, basisSize, basisSize, writtenUnknowns),
+	singleFieldIdx(basisSize, basisSize, basisSize),
+	#endif
+	single_file(nullptr),
+	seperate_files(nullptr),
+	oneFilePerTimestep(_oneFilePerTimestep),
+	allUnknownsInOneFile(_allUnknownsInOneFile)
+	{
 
-	if(DIMENSIONS == 2) {
-	  writtenCellIdx       = new kernels::index(basisSize, basisSize, writtenUnknowns);
-	  singleFieldIdx       = new kernels::index(basisSize, basisSize);
-	} else {
-	  writtenCellIdx       = new kernels::index(basisSize, basisSize, basisSize, writtenUnknowns);
-	  singleFieldIdx       = new kernels::index(basisSize, basisSize, basisSize);
-	}
-	
 	// make sure there are reasonable names everywhere
 	for(int u=0; u<writtenUnknowns; u++) {
 		char* field_name = writtenQuantitiesNames[u];
@@ -103,17 +113,17 @@ void exahype::plotters::CarpetHDF5Writer::openH5File(H5::H5File** file, std::str
  * 
  **/
 void exahype::plotters::CarpetHDF5Writer::openH5(int iteration) {
-	std::string filename, suffix, prefix, sep("-");
-	prefix = filename;
+	std::string local_filename, suffix, prefix, sep("-");
+	prefix = basisFilename;
 	suffix = (oneFilePerTimestep?(sep + "it" + toString(iteration)):"") + ".h5";
 	if(allUnknownsInOneFile) {
-		filename = prefix + suffix;
-		openH5File(&single_file, filename);
+		local_filename = prefix + suffix;
+		openH5File(&single_file, local_filename);
 	} else {
 		for(int u=0; u < writtenUnknowns; u++) {
 			char* writtenQuantityName = writtenQuantitiesNames[u];
-			filename = prefix + sep + writtenQuantityName + suffix;
-			openH5File(&seperate_files[u], filename);
+			local_filename = prefix + sep + writtenQuantityName + suffix;
+			openH5File(&seperate_files[u], local_filename);
 		}
 	}
 }
@@ -171,12 +181,12 @@ void exahype::plotters::CarpetHDF5Writer::plotPatchForSingleUnknown(
 	// 1) Compose a continous storage which is suitable.
 	// 2) (Probably) Transpose the data.
 	// TODO: I'm sure HDF5 provides a more performant way to interpret the different data layout.
-	double *componentPatch = new double[singleFieldIdx->size];
+	double *componentPatch = new double[singleFieldIdx.size];
 	dfor(i,basisSize) {
 		#if DIMENSIONS==2
-		componentPatch[singleFieldIdx->get(i(1),i(0))] = mappedCell[writtenCellIdx->get(i(0),i(1),writtenUnknown)];
+		componentPatch[singleFieldIdx(i(1),i(0))] = mappedCell[writtenCellIdx(i(0),i(1),writtenUnknown)];
 		#else
-		componentPatch[singleFieldIdx->get(i(2),i(1),i(0))] = mappedCell[writtenCellIdx->get(i(0),i(1),i(2),writtenUnknown)];
+		componentPatch[singleFieldIdx(i(2),i(1),i(0))] = mappedCell[writtenCellIdx(i(0),i(1),i(2),writtenUnknown)];
 		#endif
 	}
 	
