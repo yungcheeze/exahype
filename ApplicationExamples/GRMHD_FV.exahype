@@ -98,6 +98,13 @@ exahype-project GRMHD
       select    = x:0.0,y:0.0
     end plot
 
+    plot experimental::CarpetHDF5 H5Writer
+      variables const = 25
+      time            = 0.0
+      repeat          = 0.000000001
+      output          = ./hdf5-output/conserved
+      select          = xy:True,xyz:-1,hallo:welt
+    end plot
   end solver
 
 
