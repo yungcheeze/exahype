@@ -24,11 +24,17 @@ namespace exahype {
   namespace plotters {
     class FiniteVolumes2VTK;
 
-    class FiniteVolumes2VTKAscii;
-    class FiniteVolumes2VTKBinary;
+    class FiniteVolumesCells2VTKAscii;
+    class FiniteVolumesCells2VTKBinary;
 
-    class FiniteVolumes2VTUAscii;
-    class FiniteVolumes2VTUBinary;
+    class FiniteVolumesCells2VTUAscii;
+    class FiniteVolumesCells2VTUBinary;
+    
+    class FiniteVolumesVertices2VTKAscii;
+    class FiniteVolumesVertices2VTKBinary;
+
+    class FiniteVolumesVertices2VTUAscii;
+    class FiniteVolumesVertices2VTUBinary;
   }
 }
 
@@ -42,6 +48,7 @@ class exahype::plotters::FiniteVolumes2VTK: public exahype::plotters::Plotter::D
    };
  private:
   const PlotterType _plotterType;
+  const bool    _plotCells;  
   int           _fileCounter;
   std::string   _filename;
   int           _numberOfCellsPerAxis;
@@ -68,20 +75,29 @@ class exahype::plotters::FiniteVolumes2VTK: public exahype::plotters::Plotter::D
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*
       _gridWriter;
 
-  tarch::plotter::griddata::Writer::CellDataWriter*  _timeStampDataWriter;
-  tarch::plotter::griddata::Writer::CellDataWriter*  _cellDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexTimeStampDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
 
   static tarch::logging::Log _log;
 
  public:
-  FiniteVolumes2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, const int ghostLayerWidth, PlotterType plotterType);
+  FiniteVolumes2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, const int ghostLayerWidth, PlotterType plotterType, bool plotCells);
   virtual ~FiniteVolumes2VTK();
 
   virtual void init(const std::string& filename, int numberOfCellsPerAxis, int unknowns, int writtenUnknowns, const std::string& select);
 
   void plotPatch(const int cellDescriptionsIndex, const int element) override;
 
-  void plotPatch(
+  void plotCellData(
+      int firstCellIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+      const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+      double timeStamp);
+
+  void plotVertexData(
+      int firstCellIndex,
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);
@@ -91,36 +107,69 @@ class exahype::plotters::FiniteVolumes2VTK: public exahype::plotters::Plotter::D
 };
 
 
-class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::FiniteVolumes2VTK {
+class exahype::plotters::FiniteVolumesCells2VTKAscii: public exahype::plotters::FiniteVolumes2VTK {
   public:
-    FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+    FiniteVolumesCells2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
 
     static std::string getIdentifier();
 };
 
 
-class exahype::plotters::FiniteVolumes2VTKBinary: public exahype::plotters::FiniteVolumes2VTK {
+class exahype::plotters::FiniteVolumesCells2VTKBinary: public exahype::plotters::FiniteVolumes2VTK {
   public:
-    FiniteVolumes2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+    FiniteVolumesCells2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
 
     static std::string getIdentifier();
 };
 
 
-class exahype::plotters::FiniteVolumes2VTUAscii: public exahype::plotters::FiniteVolumes2VTK {
+class exahype::plotters::FiniteVolumesCells2VTUAscii: public exahype::plotters::FiniteVolumes2VTK {
   public:
-    FiniteVolumes2VTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+    FiniteVolumesCells2VTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
 
     static std::string getIdentifier();
 };
 
 
-class exahype::plotters::FiniteVolumes2VTUBinary: public exahype::plotters::FiniteVolumes2VTK {
+class exahype::plotters::FiniteVolumesCells2VTUBinary: public exahype::plotters::FiniteVolumes2VTK {
   public:
-    FiniteVolumes2VTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+    FiniteVolumesCells2VTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
 
     static std::string getIdentifier();
 };
+
+
+class exahype::plotters::FiniteVolumesVertices2VTKAscii: public exahype::plotters::FiniteVolumes2VTK {
+  public:
+    FiniteVolumesVertices2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+
+    static std::string getIdentifier();
+};
+
+
+class exahype::plotters::FiniteVolumesVertices2VTKBinary: public exahype::plotters::FiniteVolumes2VTK {
+  public:
+    FiniteVolumesVertices2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+
+    static std::string getIdentifier();
+};
+
+
+class exahype::plotters::FiniteVolumesVertices2VTUAscii: public exahype::plotters::FiniteVolumes2VTK {
+  public:
+    FiniteVolumesVertices2VTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+
+    static std::string getIdentifier();
+};
+
+
+class exahype::plotters::FiniteVolumesVertices2VTUBinary: public exahype::plotters::FiniteVolumes2VTK {
+  public:
+    FiniteVolumesVertices2VTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,const int ghostLayerWidth);
+
+    static std::string getIdentifier();
+};
+
 
 
 #endif

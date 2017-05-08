@@ -222,23 +222,43 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( FiniteVolumes2VTKAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKAscii(
+      if (_identifier.compare( FiniteVolumesCells2VTKAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTKAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTKBinary::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKBinary(
+      if (_identifier.compare( FiniteVolumesCells2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTKBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTUAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTUAscii(
+      if (_identifier.compare( FiniteVolumesCells2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTUAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTUBinary::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTUBinary(
+      if (_identifier.compare( FiniteVolumesCells2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTUBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTKAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTKAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTKBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTUAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTUBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
