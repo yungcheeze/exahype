@@ -29,6 +29,7 @@
 // should provide a function that computes solution values
 // at equidistant grid points
 #include "kernels/DGMatrices.h"
+#include "kernels/KernelUtils.h" // index functions
 #include "peano/utils/Loop.h"
 
 tarch::logging::Log exahype::plotters::FiniteVolumes2VTK::_log("exahype::plotters::FiniteVolumes2VTK");
@@ -387,17 +388,100 @@ void exahype::plotters::FiniteVolumes2VTK::plotCellData(
   }
 }
 
-// TODO: Implement vertex plotter
-#include <stdio.h>
-#include <stdlib.h>
-
 void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
-  int firstVertexIndex,
+  int vertexIndex,
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp) {
+  if (
+    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
+    &&
+    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
+  ) {
+    typedef tarch::la::Vector<DIMENSIONS,int> ivec;
+    assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _vertexDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
 
-  printf("Not implemented yet\n");
-  abort();
+    double* vertexValue = new double[_solverUnknowns];
+    double* outputValue = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+    // the following assumes quadratic cells.
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    kernels::dindex patchPos(_numberOfCellsPerAxis + 2*_ghostLayerWidth); // including ghost zones
+
+    // Initial idea:
+    // the following algorithm goes over the vertices and sums up the surrounding cell
+    // values in order to determine an interpolation value for the vertex. It thus
+    // touches one ghost layer:
+    assertion(_ghostLayerWidth >= 1);
+    
+    /** Lession learned: Do not rely on ghost zones. In the initial data, they are not
+     *  filled; in each timestep with all our schemes, the edges are never set.
+     *  Of course we could include this when interpolating here but its very ugly
+     *  and scheme dependent. So this should go into the kernels then.
+     *  Like all of the interpolation code probably.
+     **/
+
+    const int numberOfVerticesPerAxis = _numberOfCellsPerAxis + 1;
+    dfor(ivertex, numberOfVerticesPerAxis) {
+        if (_writtenUnknowns>0) {
+          _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+        }
+
+        // We do no smearing, so we only take into account the 2 nearest neighbours.
+        constexpr int neighbourCellsPerAxis = 2;
+	constexpr int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
+        std::fill_n(vertexValue, _solverUnknowns, 0.0);
+	int neighbourCells = 0; // actual neighbour cells taken into account
+	dfor(icells, neighbourCellsPerAxis) {
+		ivec icell = _ghostLayerWidth + ivertex + (icells - neighbourCellsPerAxis / 2);
+		
+		// if the target cell position in the patch is *not* in the ghost layers:
+		if (tarch::la::allSmaller(icell,_numberOfCellsPerAxis+_ghostLayerWidth)
+		 && tarch::la::allGreater(icell,_ghostLayerWidth-1)) {
+			double *cell = u + patchPos.rowMajor(icell)*_solverUnknowns;
+			for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+				vertexValue[unknown] += cell[unknown];
+			}
+			neighbourCells++;
+		}
+	}
+
+	// normalize value
+	for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+		vertexValue[unknown] = vertexValue[unknown] / neighbourCells;
+	}
+	
+	// The following code could be used instead of the neighbour contributions as
+	// above and was used for the start. Just one  cell.
+	// This works and shows how badly it is if we rely on ghost zones.
+	/*
+	double *cell = u + patchPos.rowMajor(_ghostLayerWidth + ivertex)*_solverUnknowns;
+	for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+		vertexValue[unknown] = cell[unknown];
+	}
+	*/
+
+        _postProcessing->mapQuantities(
+          offsetOfPatch,
+          sizeOfPatch,
+          offsetOfPatch + ivertex.convertScalar<double>()* (sizeOfPatch(0)/(numberOfVerticesPerAxis)), // coordinate of vertex
+          ivertex,
+          vertexValue,
+          outputValue,
+          timeStamp
+        );
+
+        if (_writtenUnknowns>0) {
+          _vertexDataWriter->plotVertex(vertexIndex, outputValue, _writtenUnknowns);
+        }
+        vertexIndex++;
+    }
+
+    delete[] vertexValue;
+    delete[] outputValue;
+  }
 }
 
