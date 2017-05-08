@@ -58,6 +58,26 @@ struct index {
 	}
 	
 	/**
+	 * A nice feature for the Peano likers.
+	 * Usage for instance:
+	 * <pre>
+	 *    tarch::la::Vector<DIMENSIONS,int> foo(1,2,3);
+	 *    idxinstance.get(foo);
+	 * </pre>
+	 * 
+	 * Note the ordering of the vectors which is similar to as dfor in Peano/utils/Loop.h
+	 * works. Using these getters here you save a lood of headarche in dimension agnostic
+	 * codes.
+	 * 
+	 * Note that dfor does rowMajor while colMajor is something probably interesting for
+	 * you if you deal with Fortran arrays or different ordering of your loops.
+	 **/
+	int rowMajor(const tarch::la::Vector<2,int>& j) const { return get(j(1), j(0)); }
+	int colMajor(const tarch::la::Vector<2,int>& j) const { return get(j(0), j(1)); }
+	int rowMajor(const tarch::la::Vector<3,int>& j) const { return get(j(2), j(1), j(0)); }
+	int colMajor(const tarch::la::Vector<3,int>& j) const { return get(j(0), j(1), j(2)); }
+	
+	/**
 	 * Inverse index: Get the index tuple for a given index. This is the inverse
 	 * function of get(), so such a call will not do anything:
 	 *    myidx.rev(myidx.get(a,b,c...), a, b, c, ...)
@@ -99,13 +119,6 @@ struct index {
 	 * not enabled. Can be handy to check access to variables.
 	 **/
 	bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
-		// assertion way
-		assertion2(j0 < i0, j1, i1);
-		assertion2(j1 < i1, j2, i2);
-		assertion2(j2 < i2, j3, i3);
-		assertion2(j3 < i3, j4, i4);
-		assertion2(j4 < i4, j5, i5);
-		// non-assertion way:
 		return (j0 < i0) && (j1 < i1) && (j2 < i2) && (j3 < i3) && (j4 < i4) && (j5 < i5);
 	}
 	
@@ -139,6 +152,15 @@ struct index {
 	std::string toString() const {
 		return strIndex(/*min*/ +1, i0,i1,i2,i3,i4,i5);
 	}
+};
+
+/**
+ * Returns conveniently an index with DIMENSIONS entries, each the argument `max`.
+ * 
+ * For convenience of the author, this works only for DIMENSIONS == 2 and 3. Such as ExaHyPE.
+ **/
+struct dindex : public index {
+	dindex(int max) : kernels::index(max, max, DIMENSIONS==3 ? max : 1) {}
 };
 
 /**
