@@ -16,6 +16,7 @@
 
 #include "../../Peano/tarch/Assertions.h"
 #include "../../Peano/tarch/la/Vector.h"
+#include "../../Peano/peano/utils/Dimensions.h"
 
 #include <sstream>
 
