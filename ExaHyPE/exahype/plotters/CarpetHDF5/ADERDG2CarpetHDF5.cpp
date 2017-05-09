@@ -96,7 +96,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
     double* u,
     double timeStamp) {
 
-    if(writer->slicer && !writer->slicer->shallIPlotPatch(offsetOfPatch, sizeOfPatch)) {
+    if(writer->slicer && !writer->slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
 	return;
     }
 

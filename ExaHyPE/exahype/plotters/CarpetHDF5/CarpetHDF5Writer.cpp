@@ -74,7 +74,7 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	}
 	
 	if(targetDimension != dim) {
-		slicer = new CarpetHDF5Slicer(r, ron);
+		slicer = new exahype::plotters::CartesianSlicer(r, ron);
 		dim = targetDimension;
 	}
 
@@ -198,13 +198,6 @@ void exahype::plotters::CarpetHDF5Writer::finishPlotting() {
 void exahype::plotters::CarpetHDF5Writer::plotPatch(
       const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx,
       double* mappedCell, double timeStamp) {
-	// The slicer should be implemented in the user plotPatch function like this:
-	/*
-	if(slicer && !slicer->shallIPlotPatch(offsetOfPatch, sizeOfPatch)) {
-		return;
-	}
-	*/
-	
 	for(int writtenUnknown=0; writtenUnknown < writtenUnknowns; writtenUnknown++) {
 		H5::H5File* target = allUnknownsInOneFile ? single_file : seperate_files[writtenUnknown];
 		plotPatchForSingleUnknown(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp, writtenUnknown, target);

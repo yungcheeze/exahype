@@ -17,12 +17,12 @@
 #define _EXAHYPE_PLOTTERS_CARPET_HDF5_WRITER_
 
 #include "exahype/plotters/Plotter.h"
+#include "exahype/plotters/slicing/CartesianSlicer.h"
 #include "kernels/KernelUtils.h" // idx::kernels
 
 namespace exahype {
   namespace plotters {
     class CarpetHDF5Writer;
-    class CarpetHDF5Slicer;
   }
 }
 
@@ -119,7 +119,7 @@ public:
 
   // set up during construction: Dimensional reduction
   int                 dim; ///< Dimension of the output generated. Do not change this. Setup by constructor.
-  CarpetHDF5Slicer   *slicer; ///< Subslice, if present. Otherwise nullptr.
+  exahype::plotters::CartesianSlicer   *slicer; ///< Subslice, if present. Otherwise nullptr.
   kernels::index     *writtenCellIdx; ///< Index of a whole cell as in ExaHyPE
   kernels::index     *singleFieldIdx; ///< index of a whole component as in Carpet: Only one value per point
   int                 allFieldsSize; ///< as a service: basisSize^DIM * writtenUnkowns
@@ -192,125 +192,7 @@ public:
 
 }; // class ADERDG2CarpetHDF5Impl
 
-#include <algorithm>
-/**
- * A small auxilliary class to simplify cartesian plotting, ie.
- *  a) slicing on planes parallel to the xy, xz or yz plane
- *  b) slicing on lines parallel to the x, y or z axis.
- * Used only in the CarpetHDF5Writer so far, thus the name.
- * 
- * TODO: Move the implementation of this class to CarpetHDF5Writer.cpp
- **/
-struct exahype::plotters::CarpetHDF5Slicer {
-	static constexpr int disabled = -1;
-	typedef tarch::la::Vector<DIMENSIONS, double> dvec;
-	typedef tarch::la::Vector<DIMENSIONS, int> ivec;
-	
-	const int targetDim; ///< The computed lower dimension. Typically 1 or 2.
-	const int baseDim; ///< Actually DIMENSIONS. Typically 2 or 3.
-	const dvec req; ///< The requested abscissa in each axis, for instance [NaN,NaN,42] for z=42 and [0,0,NaN] for x=x0, y=y0
-	const ivec active; ///< (effective) boolean determining wether this axis is not NaN, for instance [0,0,1] for z=z0 and [1,1,0] for x=x0, y=y0
-	ivec activeAxes; ///< A vector (starting from 0) indicating the active axis, for instance [2,-1,-1] for z=z0 and [0,1,-1] for x=x0, y=y0
-	ivec runningAxes; ///< A vector indicating the free axis indices, for instance [0,1,-1] for z=z0 and [2,-1,-1] for x=x0, y=y0
-	
-	CarpetHDF5Slicer(const dvec& _req, const ivec& _active, int _baseDim=DIMENSIONS) : 
-		targetDim(_baseDim - tarch::la::sum(_active)),
-		baseDim(_baseDim),
-		req(_req),
-		active(_active),
-		activeAxes(-1),
-		runningAxes(-1) {
-		
-		for(int i=0; i<DIMENSIONS; i++) {
-			activeAxes(i) = disabled;
-			runningAxes(i) = disabled;
-			
-			// This algorithm is crazy. Needed a lot of debugging with standalone
-			// examples, but now its tested for DIM<=3.
-			
-			for(int j=i; j<DIMENSIONS; j++) { // forward check for actives
-				if(active(j)) {
-					activeAxes(i)=j;
-					for(int k=0; k<i; k++) { // backward check if not already included
-						if(activeAxes(k)==j)
-							activeAxes(i)=disabled;
-					}
-					if(activeAxes(i)!=disabled)
-						break;
-				}
-			}
-			
-			for(int j=i; j<DIMENSIONS; j++) { // forward check for actives
-				if(!active(j)) {
-					runningAxes(i)=j;
-					for(int k=0; k<i; k++) { // backward check if not already included
-						if(runningAxes(k)==j)
-							runningAxes(i)=disabled;
-					}
-					if(runningAxes(i)!=disabled)
-						break;
-				}
-			}
-		}
-	}
-	
-	/// The inverse of active
-	int running(int d) const { return active(d) ? 0 : 1; }
 
-	/**
-	 * Coarse patch selection criterion, as in all VTK plotters.
-	 **/
-	bool shallIPlotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch) {
-		for(int axis=0; axis<baseDim; axis++) {
-			if(active(axis) && (
-			  (offsetOfPatch(axis)+sizeOfPatch(axis) < req(axis)) || // upper right bound smaller than requested coordinate
-			  (offsetOfPatch(axis) <= req(axis))                     // lowe left bound smaller than requested coordinate
-			)) {
-				return false; // patch does not touch req(axis)
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Project point onto the slice, ie onto the 2D plane or onto a 1d line.
-	 *
-	 * The projection is not the shorted distance to the plane/line but a projection
-	 * in terms of the coordinate axis, ie. replacing the coordinates. I didn't find
-	 * a better name for this...
-	 **/
-	dvec project(dvec point) {
-		for(int i=0; i<DIMENSIONS; i++) {
-			if(active(i)) {
-				point(i) = req(i);
-			}
-		}
-		return point;
-	}
-	
-	/**
-	 * Project index onto 2D plane or 1D line in a way that it lives afterwards on
-	 * the object.
-	 **/
-	ivec project(ivec index) {
-		ivec ret(0);
-		for(int i=0; i<DIMENSIONS; i++) {
-			if(running(i)) {
-				ret(i) = index(i);
-			}
-		}
-		return ret;
-	}
-}; // class CarpetHDF5Slicer
-
-inline std::ostream& operator<<(std::ostream &s,const exahype::plotters::CarpetHDF5Slicer& c) {
-  s << "Slicer, Reducing Dimension " << c.baseDim << " to " << c.targetDim << ":\n";
-  s << "   req = " << c.req << "\n";
-  s << "   active = " << c.active << "\n";
-  s << "   activeAxes = " << c.activeAxes << "\n";
-  s << "   runningAxes = " << c.runningAxes << "\n";
-  return s;
-}
 
 
 #endif /* H5 */
