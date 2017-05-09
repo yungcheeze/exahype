@@ -1056,6 +1056,12 @@ class exahype::solvers::Solver {
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const = 0;
 
+  /**
+   * TODO(Dominic): Move out again. These
+   * functions are only important for ADERDGSolver and
+   * FiniteVolumesSolver implementations which utilise
+   * generic and optimised-generic kernels.
+   */
  /**
   * @defgroup User PDE virtual functions: The ExaHyPE user frontend
   */

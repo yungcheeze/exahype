@@ -15,8 +15,6 @@
 
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/plotters/Plotter.h"
-
 #include "exahype/profilers/simple/NoOpProfiler.h"
 
 #include "exahype/solvers/TemporaryVariables.h"
@@ -1278,6 +1276,19 @@ public:
   getSolver () const {
     return _solver;
   }
+
+public:
+  /** These functions do not have any meaning for the limiting ADER-DG solver. */
+  bool useConservativeFlux()       const override { return false; }
+  bool useNonConservativeProduct() const override { return false; }
+  bool useAlgebraicSource()                 const override { return false; }
+  bool usePointSource()            const override { return false; }
+  void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override {}
+  void algebraicSource(const double* const Q,double* S) override {}
+  void fusedSource(const double* const Q, const double* const gradQ, double* S) override {}
+  void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override {}
+  void coefficientMatrix(const double* const Q,const int d,double* Bn) override {}
+  void flux(const double* const Q,double** F) override {}
 };
 
 
