@@ -132,7 +132,7 @@ RECURSIVE SUBROUTINE MatrixInverse3x3(M,iM,det)
     det = M(1,1)*M(2,2)*M(3,3)-M(1,1)*M(2,3)*M(3,2)-M(2,1)*M(1,2)*M(3,3)+M(2,1)*M(1,3)*M(3,2)+M(3,1)*M(1,2)*M(2,3)-M(3,1)*M(1,3)*M(2,2)
     IF(det*det.LT.1e-20) THEN
         print *, 'FATAL ERROR: det = 0'
-        STOP
+        CALL ABORT
     ENDIF
     !
     iM(1,1) =M(2,2)*M(3,3)-M(2,3)*M(3,2)
@@ -152,12 +152,12 @@ RECURSIVE SUBROUTINE MatrixInverse3x3(M,iM,det)
             IF(i.eq.j) THEN
                 IF((Id(i,j)-1.)**2..GT.1e-18) THEN
                     print *, 'FATAL ERROR 2: det = 0'
-                    STOP
+                    CALL ABORT
                 ENDIF
             ELSE
                 IF((Id(i,j)**2).GT.1e-18) THEN
                     print *, 'FATAL ERROR 3: det = 0'
-                    STOP
+                    CALL ABORT
                 ENDIF
             ENDIF
         ENDDO

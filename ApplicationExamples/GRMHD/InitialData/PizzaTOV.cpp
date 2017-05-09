@@ -65,9 +65,18 @@ pizzatov::pizzatov() {
 	tov->compute_star();
 }
 
-void pizzatov::Interpolate(const double* x, double t, double* Q) {	
+void pizzatov::Interpolate(const double* x, double t, double* Q) {
 	double V[nVar] = {0.0}; // IMPORTANT: Zero V before data go to PizzaTOV.
+	#if DIMENSIONS == 2
+	// this is only useful for lower dimensional debugging of the
+	// ExaHyPE infrastructure and not suitable Initial Data for simulation.
+	// If you want to do 2D, Pizza can use polar coordinates but it hasn't
+	// been implemented in the pizza_tovfront.
+	double x3d[3] = { x[0], x[1], 0.0 };
+	tov->initial_data(x3d, V);
+	#else
 	tov->initial_data(x, V);
+	#endif
 	
 	// treatment of the atmostphere not done by PizzaTOV
 	const double atmo_rho = 1e-13;
