@@ -7,7 +7,7 @@
 // ========================
 #include "SphereIntegrals.h"
 
-#include "AbstractGRMHDSolver.h"
+#include "AbstractGRMHDSolver_ADERDG.h"
 #include "kernels/DGBasisFunctions.h" // kernels::interpolate
 #include <cmath> // std::sin, std::cos, std::sqrt
 #include "peano/utils/Loop.h" // dfor; not yet used
@@ -20,7 +20,7 @@ typedef Vector<DIMENSIONS, double> dvec;
 
 GRMHD::SphereIntegrals::SphereIntegrals( ) :
 	exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(),
-	spherewriter("output/sphere-stuff.asc")
+	spherewriter("output/sphere-stuff")
 {
   // @TODO Please insert your code here.
 }
@@ -29,8 +29,8 @@ GRMHD::SphereIntegrals::SphereIntegrals( ) :
 void GRMHD::SphereIntegrals::plotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, double* u, double timeStamp) {
 	// First comment: This is for 3D. This will not work in 2D as the GRMHD AccretionDisk2D itself
 	// uses spherical coordinates. We assume cartesian coordinates here in the simulation domain.
-	const int nVar  = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
-	const int order = GRMHD::AbstractGRMHDSolver::Order;
+	const int nVar  = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
+	const int order = GRMHD::AbstractGRMHDSolver_ADERDG::Order;
 
 	// Compute on a sphere:
 	const double rSphere = 2.1;

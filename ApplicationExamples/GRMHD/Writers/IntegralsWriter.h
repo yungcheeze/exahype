@@ -6,28 +6,36 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 namespace GRMHD{
   class IntegralsWriter;
 
   /**
    * Forward declaration
    */
-  class GRMHDSolver;
+  class GRMHDSolver_ADERDG;
+  class GRMHDSolver_FV;
 }
 
-#include "Writers/TimeSeriesReductions.h"
-#include "GRMHDSolver.h"
+#include "exahype/plotters/ascii/MultipleReductionsWriter.h"
+#include "GRMHDSolver_ADERDG.h"
+#include "GRMHDSolver_FV.h"
 
 class GRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   public:
-  static const int nVar = GRMHD::AbstractGRMHDSolver::NumberOfVariables;
-  reductions::MultipleReductionsWriter conserved;
-  reductions::MultipleReductionsWriter primitives;
-  reductions::MultipleReductionsWriter errors;
-  reductions::ReductionsWriter statistics;
-  reductions::ReductionsWriter masschange;
+  bool plotForADERSolver;
+  static const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
+  exahype::plotters::ascii::MultipleReductionsWriter conserved;
+  exahype::plotters::ascii::MultipleReductionsWriter primitives;
+  exahype::plotters::ascii::MultipleReductionsWriter errors;
+  exahype::plotters::ascii::ReductionsWriter statistics;
+  exahype::plotters::ascii::ReductionsWriter masschange;
   
-  IntegralsWriter(GRMHDSolver&  solver);
+  IntegralsWriter();
+  IntegralsWriter(GRMHDSolver_ADERDG&  solver);
+  IntegralsWriter(GRMHDSolver_FV&      solver);
+  IntegralsWriter(exahype::solvers::LimitingADERDGSolver&  solver);
+
   virtual ~IntegralsWriter();
   void startPlotting(double time) override;
   void finishPlotting() override;

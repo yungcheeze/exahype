@@ -28,19 +28,19 @@ exahype-project GRMHD
   computational-domain
     dimension const                = 3
     width                          = 1.0, 1.0, 1.0
-    offset                         = 1.0, 1.0, 1.0
-    end-time                       = 10.1
+    offset                         = 0.0, 0.0, 0.0
+    end-time                       = 2.1
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 10
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory  
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:10}
+    configure                = {hotspot,fair,ranks_per_node:1}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -52,22 +52,26 @@ exahype-project GRMHD
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
-    spawn-double-compression-as-background-thread = on
+    spawn-double-compression-as-background-thread = off
   end optimisation
 
-  solver ADER-DG GRMHDSolver
-    /* gamma is actually parts of a matrix... */
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
+  solver Limiting-ADER-DG GRMHDSolver
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     order const                    = 3
     maximum-mesh-size              = 0.9
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    limiter-kernel const           = generic::godunov 
+    limiter-language const         = C
+    dmp-relaxation-parameter       = 0.0001
+    dmp-difference-scaling         = 0.001
+
+    plot vtk::Legendre::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.666667
+      repeat    = 0.00166667
       output    = ./vtk-output/conserved
       select    = x:0.0,y:0.0
     end plot
@@ -75,18 +79,10 @@ exahype-project GRMHD
     plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.66667
+      repeat = 0.00166667
       output = ./global-integrals
       select    = x:0.0,y:0.0
     end plot
-    plot user::defined SphereIntegrals
-      variables const = 0
-      time = 0.0
-      repeat = 0.666667  /*0.129329*/
-      output = ./global-sphere-integrals
-      select    = x:0.0,y:0.0
-    end plot
   end solver
-
 
 end exahype-project

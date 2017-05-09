@@ -24,20 +24,20 @@ exahype-project GRMHD
 
   peano-kernel-path const          = ./Peano
   exahype-path const               = ./ExaHyPE
-  output-directory const           = ./ApplicationExamples/GRMHD_FV
+  output-directory const           = ./ApplicationExamples/GRMHD
   architecture const               = noarch
   log-file                         = whatever.log
 
   computational-domain
     dimension const                = 3
-    width                          = 2.0, 2.0, 2.0
-    offset                         = 1.0, 1.0, 1.0
-    end-time                       = 2.1
+    width                          = 1.0, 1.0, 1.0
+    offset                         = 0.0, 0.0, 1.0
+    end-time                       = 200.1
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -58,20 +58,33 @@ exahype-project GRMHD
     spawn-double-compression-as-background-thread = off
   end optimisation
 
-  solver Finite-Volumes GRMHDSolver
-    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gamma:6
+  solver Finite-Volumes GRMHDSolver_FV
+    variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     patch-size const               = 4
-    maximum-mesh-size              = 0.5
+    maximum-mesh-size              = 0.1115
     time-stepping                  = global
-    kernel const                   = generic::godunov
+    kernel const                   = generic::musclhancock
     language const                 = C
 
-    plot vtk::Cartesian::cells::ascii ConservedWriter
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
       repeat    = 0.00590278
       output    = ./vtk-output/conserved
-      select    = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii NewDummyWriter
+      variables const = 19
+      time      = 0.0
+      repeat    = 0.00590278
+      output    = ./vtk-output/vertices
+    end plot
+
+    plot vtk::Cartesian::cells::ascii PrimitiveWriter
+      variables const = 19
+      time      = 0.0
+      repeat    = 0.00590278
+      output    = ./vtk-output/primitive
     end plot
 
     plot vtk::Cartesian::cells::ascii IntegralsWriter
@@ -79,9 +92,21 @@ exahype-project GRMHD
       time = 0.0
       repeat = 0.000001
       output = ./output/global-integrals
-      select    = x:0.0,y:0.0
     end plot
 
+    plot user::defined TimingStatistics
+      variables const = 0
+      time = 0.0
+      repeat = 0.0000000001
+      output = ./timing-benchmarks
+    end plot
+
+    plot experimental::CarpetHDF5 H5Writer
+      variables const = 25
+      time            = 0.0
+      repeat          = 0.000000001
+      output          = ./hdf5-output/conserved
+    end plot
   end solver
 
 

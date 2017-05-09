@@ -5,19 +5,31 @@
  **/
 
 #include "Writers/IntegralsWriter.h"
-#include "Writers/TimeSeriesReductions.h"
 #include "Fortran/C2P-GRMHD.h"
-#include "Fortran/InitialData.h"
+#include "InitialData/InitialData.h"
 #include "Fortran/MassAccretionRate.h"
 #include "kernels/GaussLegendreQuadrature.h"
 #include <cmath>
 
-GRMHD::IntegralsWriter::IntegralsWriter(GRMHDSolver&  solver) :
+#include "kernels/aderdg/generic/c/sizes.cpph"
+
+
+
+GRMHD::IntegralsWriter::IntegralsWriter(exahype::solvers::LimitingADERDGSolver&  solver)
+	: IntegralsWriter() { plotForADERSolver = true; }
+
+GRMHD::IntegralsWriter::IntegralsWriter(GRMHD::GRMHDSolver_ADERDG&  solver)
+	: IntegralsWriter() { plotForADERSolver = true; }
+
+GRMHD::IntegralsWriter::IntegralsWriter(GRMHD::GRMHDSolver_FV&  solver)
+	: IntegralsWriter() { plotForADERSolver = false; }
+
+GRMHD::IntegralsWriter::IntegralsWriter() :
 	conserved("output/cons-"),
 	primitives("output/prim-"),
 	errors("output/error-"),
-	statistics("output/volform.asc"),
-	masschange("output/massdt.asc")
+	statistics("output/volform"),
+	masschange("output/massdt")
 {
 	conserved.add(0, "dens");
 	conserved.add(1, "sconx");
@@ -87,22 +99,17 @@ void GRMHD::IntegralsWriter::mapQuantities(
 	// make sure this plotter has no output associated
 	assertion( outputQuantities == nullptr );
 
-	// volume form for integration
-	double scaling = tarch::la::volume(sizeOfPatch);
-	statistics.addValue(scaling, 1);
 
-	// ALERT: Use this only when using the plotter as Legendre plotter for ADERDG
-	//        ie. not for the GRMHD_FV application.
+	double dV;
+	if(plotForADERSolver) {
+		const int order = GRMHD::AbstractGRMHDSolver_ADERDG::Order;
+		dV = kernels::ADERDGVolume(order, sizeOfPatch, pos);
+	} else {
+		const int patchSize = GRMHD::AbstractGRMHDSolver_FV::PatchSize;
+		dV = tarch::la::volume(sizeOfPatch)/patchSize; // correct is probably (patchSize+1)
+	}
 
-	// Gauss-Legendre weights from pos argument
-	double wx = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[0]];
-	double wy = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[1]];
-	double wz = 1;
-	#ifdef Dim3
-	wz = kernels::gaussLegendreWeights[GRMHD::AbstractGRMHDSolver::Order][pos[2]];
-	#endif
-	
-	scaling *= wx*wy*wz;
+	statistics.addValue(dV, 1);
 
 	// Mass Accretion Rate
 
@@ -120,26 +127,26 @@ void GRMHD::IntegralsWriter::mapQuantities(
 			  
 
 	  massaccretionrate_(Q, &mdot, &vx, &vy, &vz);
-	  masschange.addValue(mdot, scaling);
+	  masschange.addValue(mdot, dV);
 	}
 
 
 	
 	// reduce the conserved quantities
-	conserved.addValue(Q, scaling);
+	conserved.addValue(Q, dV);
 
 	// reduce the primitive quantities
 	double V[nVar];
 	int err;
 	pdecons2prim_(V, Q, &err);
-	primitives.addValue(V, scaling);
+	primitives.addValue(V, dV);
 
 	// now do the convergence test, as we have exact initial data
 	double ExactCons[nVar];
 	double ExactPrim[nVar];
 	const double *xpos = x.data();
 	
-	initialdata_(xpos, &timeStamp, ExactCons);
+	id->Interpolate(xpos, timeStamp, ExactCons);
 	pdecons2prim_(ExactPrim, ExactCons, &err);
 	
 	double localError[nVar];
@@ -147,7 +154,7 @@ void GRMHD::IntegralsWriter::mapQuantities(
 		localError[i] = std::abs(V[i] - ExactPrim[i]);
 	}
 	
-	errors.addValue(localError, scaling);
+	errors.addValue(localError, dV);
 }
 
 

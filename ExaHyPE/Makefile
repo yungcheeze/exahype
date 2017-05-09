@@ -106,7 +106,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpiifort
 	  else
@@ -177,7 +177,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpifort
 	  else
@@ -187,7 +187,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp -Wall -Wno-tabs -Wno-unused-variable
 	# REMOVING "-O3"  as it creates compiler bugs!
 	LINK_FORTRAN      += -lgfortran
 
@@ -195,15 +195,18 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	COMPILER_LFLAGS   += 
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS   += -O0 -ggdb
+	  COMPILER_CFLAGS  += -O0 -ggdb
+          FCOMPILER_CFLAGS += -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-      COMPILER_CFLAGS += -g3
-      COMPILER_LFLAGS += -g3
+          COMPILER_CFLAGS += -g3
+          COMPILER_LFLAGS += -g3
+          FCOMPILER_CFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3 -O3
-      COMPILER_LFLAGS += -p -pg
+          COMPILER_CFLAGS += -p -pg -g3 -O3
+          COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -O3
+          FCOMPILER_CFLAGS  += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
@@ -357,6 +360,9 @@ buildinfo:
 		"PROJECT_PATH = $(PROJECT_PATH)" \
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
 		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)" \
+		"------" \
+		"PROJECT_CFLAGS = $(PROJECT_CFLAGS)" \
+		"PROJECT_LFLAGS = $(PROJECT_LFLAGS)" \
 		> $(PROJECT_PATH)/buildinfo.h
 
 		

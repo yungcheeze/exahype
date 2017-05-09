@@ -80,17 +80,217 @@ void Elastodynamics::MyElastodynamicsSolver::boundaryValues(const double* const 
   // Number of variables    = 5 + #parameters
 
   // @todo Please implement/augment if required
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
+
+  double cp = 6.0;
+  double cs = 3.343;
+  
+  double rho = 2.7;
+
+  double n[2] = {0,0};
+  n[normalNonZero] = 1.;
+
+  // extract local s-wave and p-wave impedances
+  double zp=rho*cp;
+  double zs=rho*cs;
+  
+  stateOut[0] = 0*stateIn[0];
+  stateOut[1] = 0*stateIn[1];
   stateOut[2] = 0*stateIn[2];
   stateOut[3] = 0*stateIn[3];
   stateOut[4] = 0*stateIn[4];
 
   fluxOut[0] = 0*fluxIn[0];
   fluxOut[1] = 0*fluxIn[1];
-  fluxOut[2] = fluxIn[2];
-  fluxOut[3] = fluxIn[3];
-  fluxOut[4] = fluxIn[4];
+  fluxOut[2] = 0*fluxIn[2];
+  fluxOut[3] = 0*fluxIn[3];
+  fluxOut[4] = 0*fluxIn[4];
+
+  if (faceIndex == 0) {
+    
+    stateOut[0] = stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    stateOut[3] = stateIn[3];
+    stateOut[4] = stateIn[4];
+    
+    fluxOut[0] = fluxIn[0];
+    fluxOut[1] = fluxIn[1];
+    fluxOut[2] = fluxIn[2];
+    fluxOut[3] = fluxIn[3];
+    fluxOut[4] = fluxIn[4];
+    
+    double v_x =  stateIn[0];
+    double v_y =  stateIn[1];
+    
+    double sigma_xx =  stateIn[2];
+    double sigma_yy =  stateIn[3];
+    
+    double sigma_xy =  stateIn[4];
+    
+    // extract traction: Tx, Ty, Tz
+    // double Tx =  0.;
+    // double Ty =  0.;
+    // double Tz =  0.;
+    
+    double vx_hat =  0.;
+    double vy_hat =  0.;
+    
+    double sigma_xx_hat =  0.;
+    double sigma_xy_hat =  0.;
+    
+    double r = -1.;
+    
+    riemannSolver_BC0(v_x, sigma_xx, zp, r, vx_hat, sigma_xx_hat);
+    riemannSolver_BC0(v_y, sigma_xy, zs, r, vy_hat, sigma_xy_hat);
+    
+    stateOut[0] = vx_hat;
+    stateOut[1] = vy_hat;
+    
+    stateOut[2] = sigma_xx_hat;
+    stateOut[4] = sigma_xy_hat;
+    
+  }
+  
+  
+  if (faceIndex == 1) {
+    
+    stateOut[0] = stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    stateOut[3] = stateIn[3];
+    stateOut[4] = stateIn[4];
+    
+    fluxOut[0] = fluxIn[0];
+    fluxOut[1] = fluxIn[1];
+    fluxOut[2] = fluxIn[2];
+    fluxOut[3] = fluxIn[3];
+    fluxOut[4] = fluxIn[4];
+    
+    double v_x =  stateIn[0];
+    double v_y =  stateIn[1];
+    
+    double sigma_xx =  stateIn[2];
+    double sigma_yy =  stateIn[3];
+    
+    double sigma_xy =  stateIn[4];
+    
+    // extract traction: Tx, Ty, Tz
+    // double Tx =  0.;
+    // double Ty =  0.;
+    // double Tz =  0.;
+    
+    double vx_hat =  0.;
+    double vy_hat =  0.;
+    
+    double sigma_xx_hat =  0.;
+    double sigma_xy_hat =  0.;
+    
+    double r = 0.;
+    
+    riemannSolver_BCn(v_x, sigma_xx, zp, r, vx_hat, sigma_xx_hat);
+    riemannSolver_BCn(v_y, sigma_xy, zs, r, vy_hat, sigma_xy_hat);
+    
+    stateOut[0] = vx_hat;
+    stateOut[1] = vy_hat;
+    
+    stateOut[2] = sigma_xx_hat;
+    stateOut[4] = sigma_xy_hat;
+    
+      
+  }
+
+
+  if (faceIndex == 2) {
+    
+    stateOut[0] = stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    stateOut[3] = stateIn[3];
+    stateOut[4] = stateIn[4];
+    
+    fluxOut[0] = fluxIn[0];
+    fluxOut[1] = fluxIn[1];
+    fluxOut[2] = fluxIn[2];
+    fluxOut[3] = fluxIn[3];
+    fluxOut[4] = fluxIn[4];
+    
+    double v_x =  stateIn[0];
+    double v_y =  stateIn[1];
+    
+    double sigma_xx =  stateIn[2];
+    double sigma_yy =  stateIn[3];
+    
+    double sigma_xy =  stateIn[4];
+    
+    // extract traction: Tx, Ty, Tz
+    // double Tx =  0.;
+    // double Ty =  0.;
+    // double Tz =  0.;
+    
+    double vx_hat =  0.;
+    double vy_hat =  0.;
+    
+    double sigma_yy_hat =  0.;
+    double sigma_xy_hat =  0.;
+    
+    double r = 0.;
+    
+    riemannSolver_BC0(v_x, sigma_xy, zs, r, vx_hat, sigma_xy_hat);
+    riemannSolver_BC0(v_y, sigma_yy, zp, r, vy_hat, sigma_yy_hat);
+    
+    stateOut[0] = vx_hat;
+    stateOut[1] = vy_hat;
+    
+    stateOut[3] = sigma_yy_hat;
+    stateOut[4] = sigma_xy_hat;
+    
+  }
+
+  if (faceIndex == 3) {
+    
+    stateOut[0] = stateIn[0];
+    stateOut[1] = stateIn[1];
+    stateOut[2] = stateIn[2];
+    stateOut[3] = stateIn[3];
+    stateOut[4] = stateIn[4];
+    
+    fluxOut[0] = fluxIn[0];
+    fluxOut[1] = fluxIn[1];
+    fluxOut[2] = fluxIn[2];
+    fluxOut[3] = fluxIn[3];
+    fluxOut[4] = fluxIn[4];
+    
+    double v_x =  stateIn[0];
+    double v_y =  stateIn[1];
+    
+    double sigma_xx =  stateIn[2];
+    double sigma_yy =  stateIn[3];
+    
+    double sigma_xy =  stateIn[4];
+    
+    // extract traction: Tx, Ty, Tz
+    // double Tx =  0.;
+    // double Ty =  0.;
+    // double Tz =  0.;
+    
+    double vx_hat =  0.;
+    double vy_hat =  0.;
+    
+    double sigma_yy_hat =  0.;
+    double sigma_xy_hat =  0.;
+    
+    double r = 0.;
+    
+    riemannSolver_BCn(v_x, sigma_xy, zs, r, vx_hat, sigma_xy_hat);
+    riemannSolver_BCn(v_y, sigma_yy, zp, r, vy_hat, sigma_yy_hat);
+    
+    stateOut[0] = vx_hat;
+    stateOut[1] = vy_hat;
+    
+    stateOut[3] = sigma_yy_hat;
+    stateOut[4] = sigma_xy_hat;
+    
+  }
 }
 
 
@@ -435,3 +635,23 @@ void Elastodynamics::MyElastodynamicsSolver::localBasis(double* n, double * m, d
     }
   
 }
+
+
+void Elastodynamics::MyElastodynamicsSolver::riemannSolver_BC0(double v, double sigma, double z,  double r, double& v_hat, double& sigma_hat){
+  
+   double p = 0.5*(z*v + sigma);
+
+   v_hat = (1+r)/z*p;
+   sigma_hat = (1-r)*p;
+
+ }
+
+
+void Elastodynamics::MyElastodynamicsSolver::riemannSolver_BCn(double v,double sigma, double z, double r, double& v_hat, double& sigma_hat){
+  
+   double q = 0.5*(z*v - sigma);
+
+   v_hat = (1+r)/z*q;
+   sigma_hat = -(1-r)*q;
+
+ }

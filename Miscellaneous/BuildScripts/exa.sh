@@ -70,6 +70,14 @@ case $CMD in
 	"find") # Locate apps, spec files, compiled files, etc.
 		exec $BuildScripts/find-app.sh $@
 		;;
+	"clusterconfig"|"config")  # Load cluster specific settings. Usage: "eval $(exa config)"
+		cdroot
+		# of course there is not much purpose in sourcing this as exa.sh is currently
+		# not be intended to be sourced. What we could do here is to echo the ENV
+		# so it can be used like "source <(exa config)" or similar.
+		echo source $BuildScripts/load-clusterconfig.sh
+		# Currently, users can at least "eval $(exa config)"
+		;;
 	"toolkit") # Run the toolkit for an application, without compiling
 		cdroot; getappname
 		SPECFILE="$(subreq find specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"

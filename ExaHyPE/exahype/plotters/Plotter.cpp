@@ -13,15 +13,19 @@
  
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/plotters/ADERDG2CartesianVTK.h"
+#include "exahype/plotters/VTK/ADERDG2CartesianVTK.h"
 #include "exahype/plotters/ADERDG2CartesianPeanoPatchFileFormat.h"
-#include "exahype/plotters/ADERDG2LegendreVTK.h"
-#include "exahype/plotters/ADERDG2LegendreCSV.h"
-#include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
+#include "exahype/plotters/VTK/ADERDG2LegendreVTK.h"
+#include "exahype/plotters/CSV/ADERDG2LegendreCSV.h"
+#include "exahype/plotters/VTK/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
-#include "exahype/plotters/ADERDG2CarpetHDF5.h"
+
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
+#include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
+#include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
+#include "exahype/plotters/VTK/FiniteVolumes2VTK.h"
+#include "exahype/plotters/VTK/LimitingADERDG2CartesianVTK.h"
 #include "exahype/plotters/LimitingADERDGSubcells2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
@@ -129,7 +133,8 @@ exahype::plotters::Plotter::Plotter(
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
 
-  switch (solvers::RegisteredSolvers[_solver]->getType()) {
+  exahype::solvers::Solver::Type solvertype = solvers::RegisteredSolvers[_solver]->getType();
+  switch (solvertype) {
     case exahype::solvers::Solver::Type::ADERDG:
       /**
        * This is actually some kind of switch expression though switches do
@@ -221,25 +226,51 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( FiniteVolumes2VTKAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKAscii(
+      if (_identifier.compare( FiniteVolumesCells2VTKAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTKAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTKBinary::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKBinary(
+      if (_identifier.compare( FiniteVolumesCells2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTKBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTUAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTUAscii(
+      if (_identifier.compare( FiniteVolumesCells2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTUAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumes2VTUBinary::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTUBinary(
+      if (_identifier.compare( FiniteVolumesCells2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesCells2VTUBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTKAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTKAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTKBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTUAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( FiniteVolumesVertices2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumesVertices2VTUBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new FiniteVolume2CarpetHDF5(
+	    postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth()
+	);
       }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
@@ -278,6 +309,9 @@ exahype::plotters::Plotter::Plotter(
       }
       if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCSV(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+        _device = new ADERDG2CarpetHDF5(postProcessing); // untested
       }
 
       /**
