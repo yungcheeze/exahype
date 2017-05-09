@@ -5,7 +5,6 @@
  **/
 
 #include "Writers/IntegralsWriter.h"
-#include "Writers/TimeSeriesReductions.h"
 #include "Fortran/C2P-GRMHD.h"
 #include "InitialData/InitialData.h"
 #include "Fortran/MassAccretionRate.h"
@@ -29,8 +28,8 @@ GRMHD::IntegralsWriter::IntegralsWriter() :
 	conserved("output/cons-"),
 	primitives("output/prim-"),
 	errors("output/error-"),
-	statistics("output/volform.asc"),
-	masschange("output/massdt.asc")
+	statistics("output/volform"),
+	masschange("output/massdt")
 {
 	conserved.add(0, "dens");
 	conserved.add(1, "sconx");

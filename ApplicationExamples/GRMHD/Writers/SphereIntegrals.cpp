@@ -20,7 +20,7 @@ typedef Vector<DIMENSIONS, double> dvec;
 
 GRMHD::SphereIntegrals::SphereIntegrals( ) :
 	exahype::plotters::ADERDG2UserDefined::ADERDG2UserDefined(),
-	spherewriter("output/sphere-stuff.asc")
+	spherewriter("output/sphere-stuff")
 {
   // @TODO Please insert your code here.
 }

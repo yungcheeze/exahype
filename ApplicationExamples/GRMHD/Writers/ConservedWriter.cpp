@@ -40,6 +40,19 @@ void GRMHD::ConservedWriter::mapQuantities(
   for (int i=0; i<19; i++){ 
     outputQuantities[i] = Q[i];
   }
+
+  // as always, for debugging: 
+
+  const int start=0;
+  outputQuantities[start+1] = x(0);
+  outputQuantities[start+2] = x(1);
+  outputQuantities[start+3] = DIMENSIONS==3 ? x(2) : -1;
+  outputQuantities[start+4] = pos(0);
+  outputQuantities[start+5] = pos(1);
+  outputQuantities[start+6] = DIMENSIONS==3 ? pos(2) : -1;
+  outputQuantities[start+7] = offsetOfPatch(0);
+  outputQuantities[start+8] = offsetOfPatch(1);
+  outputQuantities[start+9] = DIMENSIONS==3 ? offsetOfPatch(2) : -1;
 }
 
 

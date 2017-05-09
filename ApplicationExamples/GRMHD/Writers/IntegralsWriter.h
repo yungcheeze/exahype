@@ -17,7 +17,7 @@ namespace GRMHD{
   class GRMHDSolver_FV;
 }
 
-#include "Writers/TimeSeriesReductions.h"
+#include "exahype/plotters/ascii/MultipleReductionsWriter.h"
 #include "GRMHDSolver_ADERDG.h"
 #include "GRMHDSolver_FV.h"
 
@@ -25,11 +25,11 @@ class GRMHD::IntegralsWriter: public exahype::plotters::Plotter::UserOnTheFlyPos
   public:
   bool plotForADERSolver;
   static const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
-  reductions::MultipleReductionsWriter conserved;
-  reductions::MultipleReductionsWriter primitives;
-  reductions::MultipleReductionsWriter errors;
-  reductions::ReductionsWriter statistics;
-  reductions::ReductionsWriter masschange;
+  exahype::plotters::ascii::MultipleReductionsWriter conserved;
+  exahype::plotters::ascii::MultipleReductionsWriter primitives;
+  exahype::plotters::ascii::MultipleReductionsWriter errors;
+  exahype::plotters::ascii::ReductionsWriter statistics;
+  exahype::plotters::ascii::ReductionsWriter masschange;
   
   IntegralsWriter();
   IntegralsWriter(GRMHDSolver_ADERDG&  solver);
