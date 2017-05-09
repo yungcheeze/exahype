@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ * 
+ * @authors: Sven Koeppel
  **/
  
 #ifndef _EXAHYPE_PLOTTERS_FV_2_CARPETHDF5_H_
@@ -28,7 +30,11 @@ namespace kernels {
 }
 
 /**
- * Writing CarpetHDF5 files from FiniteVolume solvers.
+ * <h2>Writing CarpetHDF5 files from FiniteVolume solvers</h2>
+ * 
+ * This plotter is a hack. It tries to map the finite volume solutions onto the CarpetHDF5
+ * finite differencing data representation. Currently, the mapping is very poor but at least
+ * there are data.
  * 
  **/
 class exahype::plotters::FiniteVolume2CarpetHDF5 : public exahype::plotters::Plotter::Device {
@@ -39,6 +45,11 @@ class exahype::plotters::FiniteVolume2CarpetHDF5 : public exahype::plotters::Plo
    **/
   CarpetHDF5Writer* writer;
   const int ghostLayerWidth;
+  
+  // set at init(...) time
+  int numberOfCellsPerAxis;
+  int numberOfVerticesPerAxis;
+  int solverUnknowns;
 
   static std::string getIdentifier();
 
@@ -61,7 +72,7 @@ class exahype::plotters::FiniteVolume2CarpetHDF5 : public exahype::plotters::Plo
   virtual void finishPlotting();
 
   // TODO: These FV interpolating routines should be in some generic library
-  void mapCartesianPatch(
+  void interpolateVertexPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double *u,

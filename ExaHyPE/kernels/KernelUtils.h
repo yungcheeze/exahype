@@ -15,6 +15,7 @@
 #define _EXAHYPE_KERNELS_KERNEL_UTILS_H_
 
 #include "../../Peano/tarch/Assertions.h"
+#include "../../Peano/tarch/la/Vector.h"
 
 #include <sstream>
 
@@ -44,6 +45,8 @@ struct index {
 		b5(1),
 		size(j0*j1*j2*j3*j4*j5) {}
 	
+	index(const index&) = default; // implicit trivial copy constructor
+	
 	/**
 	 * Compute a single index ("superindex", global index, ...) from the tuples.
 	 **/
@@ -72,10 +75,18 @@ struct index {
 	 * Note that dfor does rowMajor while colMajor is something probably interesting for
 	 * you if you deal with Fortran arrays or different ordering of your loops.
 	 **/
-	int rowMajor(const tarch::la::Vector<2,int>& j) const { return get(j(1), j(0)); }
-	int colMajor(const tarch::la::Vector<2,int>& j) const { return get(j(0), j(1)); }
-	int rowMajor(const tarch::la::Vector<3,int>& j) const { return get(j(2), j(1), j(0)); }
-	int colMajor(const tarch::la::Vector<3,int>& j) const { return get(j(0), j(1), j(2)); }
+	int rowMajor(const tarch::la::Vector<2,int>& j, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return get(j(1), j(0), j2, j3, j4, j5);
+	}
+	int colMajor(const tarch::la::Vector<2,int>& j, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return get(j(0), j(1), j2, j3, j4, j5);
+	}
+	int rowMajor(const tarch::la::Vector<3,int>& j, int j3=0, int j4=0, int j5=0) const {
+		return get(j(2), j(1), j(0), j3, j4, j5);
+	}
+	int colMajor(const tarch::la::Vector<3,int>& j, int j3=0, int j4=0, int j5=0) const {
+		return get(j(0), j(1), j(2), j3, j4, j5);
+	}
 	
 	/**
 	 * Inverse index: Get the index tuple for a given index. This is the inverse
@@ -160,7 +171,15 @@ struct index {
  * For convenience of the author, this works only for DIMENSIONS == 2 and 3. Such as ExaHyPE.
  **/
 struct dindex : public index {
-	dindex(int max) : kernels::index(max, max, DIMENSIONS==3 ? max : 1) {}
+	dindex(int max, int jN1=1, int jN2=1, int jN3=1	) :
+	#if DIMENSIONS == 2
+	kernels::index(max, max, jN1, jN2, jN3)
+	#elif DIMENSIONS == 3
+	kernels::index(max, max, max, jN1, jN2, jN3)
+	#else
+	#error "ExaHyPE doesnt support this"
+	#endif
+	{}
 };
 
 /**

@@ -1,3 +1,18 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ *
+ * @authors: Sven Koeppel
+ **/
+
 #include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
@@ -5,6 +20,8 @@
 #include <stdio.h>
 #include <sstream>
 #include <memory>
+
+typedef tarch::la::Vector<DIMENSIONS,int> ivec;
 
 
 std::string exahype::plotters::FiniteVolume2CarpetHDF5::getIdentifier() {
@@ -60,16 +77,20 @@ exahype::plotters::FiniteVolume2CarpetHDF5::~FiniteVolume2CarpetHDF5() {
 	if(writer) delete writer;
 }
 
-void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filename, int numberOfCellsPerAxis, int solverUnknowns, int writtenUnknowns, const std::string& select) {
-	bool oneFilePerTimestep = true;
-	bool allUnknownsInOneFile = true;
+void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filename, int _numberOfCellsPerAxis, int _solverUnknowns, int writtenUnknowns, const std::string& select) {
+	bool oneFilePerTimestep = false;
+	bool allUnknownsInOneFile = false;
 
 	// Determine names of output fields
 	char **writtenQuantitiesNames = new char*[writtenUnknowns];
 	std::fill_n(writtenQuantitiesNames, writtenUnknowns, nullptr);
 	_postProcessing->writtenQuantitiesNames(writtenQuantitiesNames);
 	
-	const int basisSize = numberOfCellsPerAxis; // apparently this *is* the patchSize
+	numberOfCellsPerAxis = _numberOfCellsPerAxis;
+	numberOfVerticesPerAxis = _numberOfCellsPerAxis + 1;
+	solverUnknowns = _solverUnknowns;
+
+	const int basisSize = numberOfVerticesPerAxis;
 	writer = new exahype::plotters::CarpetHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
 		writtenQuantitiesNames, oneFilePerTimestep, allUnknownsInOneFile);	
 
@@ -98,45 +119,80 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::plotPatch(
     double* u, /* unknown */
     double timeStamp) {
 
-    double* mappedCell  = new double[writer->writtenCellIdx.size];
-    dvec dx = 1./(writer->basisSize) * sizeOfPatch;
+    double* mappedCell  = new double[writer->allFieldsSize];
+    dvec dx = 1./numberOfCellsPerAxis * sizeOfPatch;
 
-    mapCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+    interpolateVertexPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
     writer->plotPatch(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp);
 
     delete[] mappedCell;
 }
 
 
-void exahype::plotters::FiniteVolume2CarpetHDF5::mapCartesianPatch(
+void exahype::plotters::FiniteVolume2CarpetHDF5::interpolateVertexPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double* u, /* ingoing unknowns in cell, size numberOfCellsPerAxis^DIMENSIONS */
     double *mappedCell, /* outgoing mapped cell, size writtenUnknowns^DIMENSIONS */
     double timeStamp) {
 
-    const int basisSize = writer->basisSize; // == numberOfCellsPerAxis == nVar*patchSize^DIMENSIONS
-    const int writtenUnknowns = writer->writtenUnknowns;
-    const int solverUnknowns = writer->solverUnknowns;
+    double* vertexValue = new double[solverUnknowns];
 
-    dfor(i,basisSize) {
-        double *value = mappedCell;
-        #if DIMENSIONS==3
-        value += writer->writtenCellIdx(i(2),i(1),i(0),0);
-        #else
-        value += writer->writtenCellIdx(i(1),i(0),0);
-        #endif
+    // the following assumes quadratic cells.
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    kernels::dindex patchPos(numberOfCellsPerAxis + 2*ghostLayerWidth); // including ghost zones
 
-	_postProcessing->mapQuantities(
+    dfor(ivertex, numberOfVerticesPerAxis) {
+        // We do no smearing, so we only take into account the 2 nearest neighbours.
+        constexpr int neighbourCellsPerAxis = 2;
+	//constexpr int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
+        std::fill_n(vertexValue, solverUnknowns, 0.0);
+	int neighbourCells = 0; // actual neighbour cells taken into account
+	dfor(icells, neighbourCellsPerAxis) {
+		ivec icell = ghostLayerWidth + ivertex + (icells - neighbourCellsPerAxis / 2);
+		
+		// if the target cell position in the patch is *not* in the ghost layers:
+		if (tarch::la::allSmaller(icell,numberOfCellsPerAxis+ghostLayerWidth)
+		 && tarch::la::allGreater(icell,ghostLayerWidth-1)) {
+			double *cell = u + patchPos.rowMajor(icell)*solverUnknowns;
+			for (int unknown=0; unknown < solverUnknowns; unknown++) {
+				vertexValue[unknown] += cell[unknown];
+			}
+			neighbourCells++;
+		}
+	}
+
+	// normalize value
+	for (int unknown=0; unknown < solverUnknowns; unknown++) {
+		vertexValue[unknown] = vertexValue[unknown] / neighbourCells;
+	}
+	
+	/*
+	// The following code could be used instead of the neighbour contributions as
+	// above and was used for the start. Just one  cell.
+	// This works and shows how badly it is if we rely on ghost zones.
+	double *cell = u + patchPos.rowMajor(ghostLayerWidth + ivertex)*solverUnknowns;
+	for (int unknown=0; unknown < solverUnknowns; unknown++) {
+		vertexValue[unknown] = 42; // cell[unknown];
+	}
+	*/
+	
+
+	double *outputValue = mappedCell + (DIMENSIONS == 3 ?
+		writer->writtenCellIdx->get(ivertex(2),ivertex(1),ivertex(0),0) :
+		writer->writtenCellIdx->get(ivertex(1),ivertex(0),0));
+        _postProcessing->mapQuantities(
           offsetOfPatch,
           sizeOfPatch,
-          offsetOfPatch + i.convertScalar<double>()*(sizeOfPatch(0)/basisSize),
-          i,
-          u + peano::utils::dLinearisedWithoutLookup(i+ghostLayerWidth, basisSize+2*ghostLayerWidth) * solverUnknowns,
-          value,
+          offsetOfPatch + ivertex.convertScalar<double>()* (sizeOfPatch(0)/(numberOfVerticesPerAxis)), // coordinate of vertex
+          ivertex,
+          vertexValue,
+          outputValue,
           timeStamp
         );
     }
+
+    delete[] vertexValue;
 }
 
 

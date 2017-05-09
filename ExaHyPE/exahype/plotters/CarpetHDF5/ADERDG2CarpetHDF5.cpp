@@ -17,6 +17,7 @@ template <typename T> std::string toString( T Number ) {
 }
 
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
+typedef tarch::la::Vector<DIMENSIONS, int> ivec;
 
 #ifndef HDF5
 /*************************************************************************************************
@@ -60,7 +61,7 @@ exahype::plotters::ADERDG2CarpetHDF5::~ADERDG2CarpetHDF5() {
 
 void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int basisSize, int solverUnknowns, int writtenUnknowns, const std::string& select) {
 	bool oneFilePerTimestep = true;
-	bool allUnknownsInOneFile = false;
+	bool allUnknownsInOneFile = true;
 
 	// Determine names of output fields
 	char **writtenQuantitiesNames = new char*[writtenUnknowns];
@@ -94,16 +95,24 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double* u,
     double timeStamp) {
-    const int basisSize = writer->basisSize;
-    const int order = basisSize - 1;
 
+    if(writer->slicer && !writer->slicer->shallIPlotPatch(offsetOfPatch, sizeOfPatch)) {
+	return;
+    }
+
+    const int basisSize = writer->basisSize;
+    const int order     = basisSize - 1;
+    const dvec dx       = 1./order * sizeOfPatch;
 
     // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
-    double* mappedCell  = new double[writer->writtenCellIdx.size];
+    double* mappedCell  = new double[writer->allFieldsSize];
 
-    dvec dx = 1./order * sizeOfPatch;
+    if(writer->slicer) {    
+	interpolateSlicedPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+    } else {
+	interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+    }
 
-    interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
     writer->plotPatch(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp);
 
     delete[] mappedCell;
@@ -135,6 +144,8 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
   //double* mappedCell  = new double[writtenCellIdx.size];
   //double* value       = writtenUnknowns==0 ? nullptr : new double[writtenUnknowns];
   
+  assertion(sizeOfPatch(0)==sizeOfPatch(1)); // expressing this is all for squared cells.
+  
   dfor(i,basisSize) {
     for (int unknown=0; unknown < solverUnknowns; unknown++) {
       interpoland[unknown] = 0.0;
@@ -151,13 +162,9 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
       }
     }
 
-    double *value = mappedCell;
-    #if DIMENSIONS==3
-    value += writer->writtenCellIdx(i(2),i(1),i(0),0);
-    #else
-    value += writer->writtenCellIdx(i(1),i(0),0);
-    #endif
-    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    double *value = mappedCell + (DIMENSIONS == 3 ? writer->writtenCellIdx->get(i(2),i(1),i(0),0) : writer->writtenCellIdx->get(i(1),i(0),0));
+    //value += writer->writtenCellIdx(i(1),i(0),0); // Transposed position. Correct.
+
     _postProcessing->mapQuantities(
       offsetOfPatch,
       sizeOfPatch,
@@ -173,6 +180,91 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
   //if (value!=nullptr)        delete[] value;
 }
 
+
+void exahype::plotters::ADERDG2CarpetHDF5::interpolateSlicedPatch(
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double *u,
+  double *mappedCell,
+  double timeStamp
+) {
+  const int basisSize = writer->basisSize;
+  const int solverUnknowns = writer->solverUnknowns;
+  const int order = basisSize-1;
+
+  double* interpoland = new double[solverUnknowns];  
+  assertion(sizeOfPatch(0)==sizeOfPatch(1)); // expressing this is all for squared cells.
+  assertion(writer->slicer!=nullptr); // this is only relevant when the slicer has information
+  
+  if(writer->slicer->targetDim == 2) {
+	// Determine a position ontop the 2d plane
+	dvec plane = writer->slicer->project(offsetOfPatch);
+	ivec i;
+	for(i(1)=0; i(1)<basisSize; i(1)++)
+	for(i(0)=0; i(0)<basisSize; i(0)++) {
+		dvec pos = plane + writer->slicer->project(i).convertScalar<double>() * (sizeOfPatch(0)/(order));
+		
+		for (int unknown=0; unknown < solverUnknowns; unknown++) {
+			interpoland[unknown] = kernels::interpolate(
+				offsetOfPatch.data(),
+				sizeOfPatch.data(),
+				pos.data(),
+				solverUnknowns,
+				unknown,
+				order,
+				u
+			);
+		}
+		
+		double *value = mappedCell + writer->writtenCellIdx->get(i(1),i(0),0);
+		
+		_postProcessing->mapQuantities(
+			offsetOfPatch,
+			sizeOfPatch,
+			pos,
+			i,
+			interpoland,
+			value,
+			timeStamp
+		);
+	}
+  } else if(writer->slicer->targetDim == 1) {
+	// Determine a position ontop the 1d line
+	dvec line = writer->slicer->project(offsetOfPatch);
+	ivec i;
+	for(i(0)=0; i(0)<basisSize; i(0)++) {
+		dvec pos = line + (i.convertScalar<double>())* (sizeOfPatch(0)/(order));
+		
+		for (int unknown=0; unknown < solverUnknowns; unknown++) {
+			interpoland[unknown] = kernels::interpolate(
+				offsetOfPatch.data(),
+				sizeOfPatch.data(),
+				pos.data(),
+				solverUnknowns,
+				unknown,
+				order,
+				u
+			);
+		}
+		
+		double *value = mappedCell + writer->writtenCellIdx->get(i(0));
+		
+		_postProcessing->mapQuantities(
+			offsetOfPatch,
+			sizeOfPatch,
+			pos,
+			i,
+			interpoland,
+			value,
+			timeStamp
+		);
+	} 
+  } else {
+	  throw std::invalid_argument("Unupported target dimension.");
+  }
+  
+  delete[] interpoland;
+}
 
 
 

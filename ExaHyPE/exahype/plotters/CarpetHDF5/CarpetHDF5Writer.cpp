@@ -5,6 +5,11 @@
 #include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
 #include "peano/utils/Loop.h" // dfor
 #include <sstream>
+#include <stdexcept> // why not
+
+typedef tarch::la::Vector<DIMENSIONS, double> dvec;
+typedef tarch::la::Vector<DIMENSIONS, bool> boolvec;
+typedef tarch::la::Vector<DIMENSIONS, int> ivec;
 
 using namespace H5;
 
@@ -29,25 +34,56 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	basisFilename(_filename),
 	basisSize(_basisSize),
 	select(_select),
+	
+	// default values for init(...)-level runtime parameters:
+	dim(DIMENSIONS),
+	slicer(nullptr),
 	component(-100),
 	iteration(0),
 	writtenQuantitiesNames(_writtenQuantitiesNames),
-	#if DIMENSIONS == 2
-	// we can also use pointers if you want to add logic here or cannot use
-	// preprocessor directives, ie.
-	// writtenCellIdx = new kernels::index(basisSize, basisSize, writtenUnknowns) ...etc...
-	writtenCellIdx(basisSize, basisSize, writtenUnknowns),
-	singleFieldIdx(basisSize, basisSize),
-	#else
-	writtenCellIdx(basisSize, basisSize, basisSize, writtenUnknowns),
-	singleFieldIdx(basisSize, basisSize, basisSize),
-	#endif
 	single_file(nullptr),
 	seperate_files(nullptr),
 	oneFilePerTimestep(_oneFilePerTimestep),
 	allUnknownsInOneFile(_allUnknownsInOneFile)
 	{
 
+	// while CarpetHDF5 files also can be 1D, this writer currently only understands 2D and 3D.
+	assert(dim == 2 || dim == 3);
+	
+	// parse the selection string
+	dvec r;
+	r(0) = Parser::getValueFromPropertyString(select, "x");
+	r(1) = Parser::getValueFromPropertyString(select, "y");
+	#if DIMENSIONS==3
+	r(2) = Parser::getValueFromPropertyString(select, "z");
+	#endif
+	ivec ron;
+	// NaN means the property was not present in the select string
+	for(int i=0; i<DIMENSIONS; i++) { ron(i) = (r(i)!=r(i)) ? 0 : 1; }
+	int numberOfRequestedDimensionalReductions = tarch::la::sum(ron);
+	int targetDimension = dim - numberOfRequestedDimensionalReductions;
+	
+	if(targetDimension == 0) {
+		logError("SlicingParser", "Running in " << dim << " dimensions, you requested 0-dimensional output slicing '" << select << "' which not supported by the CarpetHDF5Writer. Use Seismograms instead.");
+		throw std::invalid_argument("0-dimensional output not supported");
+	}
+	
+	if(targetDimension == 1) {
+		logError("SlicingParser", "Running in " << dim << " dimensions, you requested 1-dimensional output slicing '" << select << "', however the CarpetHDF5 plotter does not yet support 1D output.");
+		throw std::invalid_argument("1-dimensional output not YET supported");
+	}
+	
+	if(targetDimension != dim) {
+		slicer = new CarpetHDF5Slicer(r, ron);
+		dim = targetDimension;
+	}
+
+	// now where we now how many dimensions we have to deal with
+	writtenCellIdx = new kernels::index(basisSize, basisSize, dim==3 ? basisSize : writtenUnknowns, dim == 3 ? writtenUnknowns : 1);
+	singleFieldIdx = new kernels::index(basisSize, basisSize, dim==3 ? basisSize : 1);
+	allFieldsSize = writtenCellIdx->size;
+	singleFieldSize = singleFieldIdx->size;
+	
 	// make sure there are reasonable names everywhere
 	for(int u=0; u<writtenUnknowns; u++) {
 		char* field_name = writtenQuantitiesNames[u];
@@ -60,14 +96,14 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	
 	
 	// this is the dataspace describing how to write a patch/cell/component
-	const int dims_rank = DIMENSIONS;
-	hsize_t dims[dims_rank];
-	std::fill_n(dims, DIMENSIONS, basisSize);
-	patch_space = DataSpace(dims_rank, dims);
+	hsize_t *dims = new hsize_t[dim];
+	std::fill_n(dims, dim, basisSize);
+	patch_space = DataSpace(dim, dims);
 	
-	// this is just a vector of rank 1 with DIMENSIONS entries
+	// this is just a vector of rank 1 with dim entries
 	const int tupleDim_rank = 1;
-	hsize_t tupleDim_len[] = {DIMENSIONS};
+	hsize_t tupleDim_len[tupleDim_rank];
+	std::fill_n(tupleDim_len, tupleDim_rank, dim);
 	dtuple = DataSpace(tupleDim_rank, tupleDim_len);
 	
 	if(!allUnknownsInOneFile) {
@@ -90,6 +126,8 @@ void exahype::plotters::CarpetHDF5Writer::writeBasicGroup(H5::H5File* file) {
 	nioprocs.write(PredType::NATIVE_INT, &ranks);
 	
 	// Todo: add information how much files are printed (oneFilePerTimestep)
+	
+	// Important todo: List all fields which go into this file.
 }
   
 /**
@@ -106,6 +144,7 @@ void exahype::plotters::CarpetHDF5Writer::openH5File(H5::H5File** file, std::str
 	logInfo("openH5File", "Opening File '"<< filename << "'");
 	*file = new H5File( H5std_string(filename.c_str()), H5F_ACC_TRUNC  );
 	(*file)->setComment("Created by ExaHyPE");
+	writeBasicGroup(*file);
 }
   
 /**
@@ -159,6 +198,13 @@ void exahype::plotters::CarpetHDF5Writer::finishPlotting() {
 void exahype::plotters::CarpetHDF5Writer::plotPatch(
       const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx,
       double* mappedCell, double timeStamp) {
+	// The slicer should be implemented in the user plotPatch function like this:
+	/*
+	if(slicer && !slicer->shallIPlotPatch(offsetOfPatch, sizeOfPatch)) {
+		return;
+	}
+	*/
+	
 	for(int writtenUnknown=0; writtenUnknown < writtenUnknowns; writtenUnknown++) {
 		H5::H5File* target = allUnknownsInOneFile ? single_file : seperate_files[writtenUnknown];
 		plotPatchForSingleUnknown(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp, writtenUnknown, target);
@@ -179,15 +225,14 @@ void exahype::plotters::CarpetHDF5Writer::plotPatchForSingleUnknown(
 	sprintf(component_name, "%s it=%d tl=0 m=0 rl=0 c=%d", name.c_str(), iteration, component);
 	
 	// 1) Compose a continous storage which is suitable.
-	// 2) (Probably) Transpose the data.
 	// TODO: I'm sure HDF5 provides a more performant way to interpret the different data layout.
-	double *componentPatch = new double[singleFieldIdx.size];
+	double *componentPatch = new double[singleFieldIdx->size];
 	dfor(i,basisSize) {
-		#if DIMENSIONS==2
-		componentPatch[singleFieldIdx(i(1),i(0))] = mappedCell[writtenCellIdx(i(0),i(1),writtenUnknown)];
-		#else
-		componentPatch[singleFieldIdx(i(2),i(1),i(0))] = mappedCell[writtenCellIdx(i(0),i(1),i(2),writtenUnknown)];
-		#endif
+		if(dim==2) {
+			componentPatch[singleFieldIdx->get(i(1),i(0))] = mappedCell[writtenCellIdx->get(i(1),i(0),writtenUnknown)];
+		} else {
+			componentPatch[singleFieldIdx->get(i(2),i(1),i(0))] = mappedCell[writtenCellIdx->get(i(2),i(1),i(0),writtenUnknown)];
+		}
 	}
 	
 	DataSet table = target->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_space);
