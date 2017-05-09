@@ -423,31 +423,33 @@ void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
      *  and scheme dependent. So this should go into the kernels then.
      *  Like all of the interpolation code probably.
      **/
-
     const int numberOfVerticesPerAxis = _numberOfCellsPerAxis + 1;
     dfor(ivertex, numberOfVerticesPerAxis) {
-        if (_writtenUnknowns>0) {
-          _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
-        }
+      if (_writtenUnknowns>0) {
+        _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+      }
 
-        // We do no smearing, so we only take into account the 2 nearest neighbours.
-        constexpr int neighbourCellsPerAxis = 2;
-	constexpr int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
+      // We do no smearing, so we only take into account the 2 nearest neighbours.
+      const int neighbourCellsPerAxis = 2;
+      const int neighbourCellsMax = std::pow(neighbourCellsPerAxis, DIMENSIONS); // maximum possible cells (ie. 4 in 2D)
         std::fill_n(vertexValue, _solverUnknowns, 0.0);
-	int neighbourCells = 0; // actual neighbour cells taken into account
-	dfor(icells, neighbourCellsPerAxis) {
-		ivec icell = _ghostLayerWidth + ivertex + (icells - neighbourCellsPerAxis / 2);
+	    int neighbourCells = 0; // actual neighbour cells taken into account
+	      dfor(icells, neighbourCellsPerAxis) {
+		        ivec icell = _ghostLayerWidth + ivertex + (icells - neighbourCellsPerAxis / 2);
 		
-		// if the target cell position in the patch is *not* in the ghost layers:
-		if (tarch::la::allSmaller(icell,_numberOfCellsPerAxis+_ghostLayerWidth)
-		 && tarch::la::allGreater(icell,_ghostLayerWidth-1)) {
-			double *cell = u + patchPos.rowMajor(icell)*_solverUnknowns;
-			for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-				vertexValue[unknown] += cell[unknown];
-			}
-			neighbourCells++;
-		}
-	}
+	  	// if the target cell position in the patch is *not* in the ghost layers:
+		  if (
+		    tarch::la::allSmaller(icell,_numberOfCellsPerAxis+_ghostLayerWidth)
+		    &&
+		    tarch::la::allGreater(icell,_ghostLayerWidth-1)
+		  ) {
+			  double *cell = u + patchPos.rowMajor(icell)*_solverUnknowns;
+		  	for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+			  	vertexValue[unknown] += cell[unknown];
+		  	}
+		  	neighbourCells++;
+		  }
+	  }
 
 	// normalize value
 	for (int unknown=0; unknown < _solverUnknowns; unknown++) {

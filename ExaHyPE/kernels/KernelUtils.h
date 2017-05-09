@@ -14,9 +14,9 @@
 #ifndef _EXAHYPE_KERNELS_KERNEL_UTILS_H_
 #define _EXAHYPE_KERNELS_KERNEL_UTILS_H_
 
-#include "../../Peano/tarch/Assertions.h"
-#include "../../Peano/tarch/la/Vector.h"
-#include "../../Peano/peano/utils/Dimensions.h"
+#include "tarch/Assertions.h"
+#include "tarch/la/Vector.h"
+#include "peano/utils/Globals.h"
 
 #include <sstream>
 
@@ -178,7 +178,7 @@ struct dindex : public index {
 	#elif DIMENSIONS == 3
 	kernels::index(max, max, max, jN1, jN2, jN3)
 	#else
-	#error "ExaHyPE doesnt support this"
+	#error "ExaHyPE doesnt support chosen dimension. Only 2d and 3d are available"
 	#endif
 	{}
 };
