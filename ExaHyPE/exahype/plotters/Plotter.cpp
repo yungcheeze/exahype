@@ -13,16 +13,17 @@
  
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/plotters/ADERDG2CartesianVTK.h"
+#include "exahype/plotters/VTK/ADERDG2CartesianVTK.h"
 #include "exahype/plotters/ADERDG2CartesianPeanoPatchFileFormat.h"
-#include "exahype/plotters/ADERDG2LegendreVTK.h"
-#include "exahype/plotters/ADERDG2LegendreCSV.h"
-#include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
+#include "exahype/plotters/VTK/ADERDG2LegendreVTK.h"
+#include "exahype/plotters/CSV/ADERDG2LegendreCSV.h"
+#include "exahype/plotters/VTK/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
 #include "exahype/plotters/CarpetHDF5/ADERDG2CarpetHDF5.h"
 #include "exahype/plotters/CarpetHDF5/FiniteVolume2CarpetHDF5.h"
-#include "exahype/plotters/FiniteVolumes2VTK.h"
-#include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
+#include "exahype/plotters/VTK/FiniteVolumes2VTK.h"
+#include "exahype/plotters/VTK/LimitingADERDG2CartesianVTK.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 
