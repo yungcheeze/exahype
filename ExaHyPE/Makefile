@@ -195,15 +195,18 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	COMPILER_LFLAGS   += 
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS   += -O0 -ggdb
+	  COMPILER_CFLAGS  += -O0 -ggdb
+          FCOMPILER_CFLAGS += -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-      COMPILER_CFLAGS += -g3
-      COMPILER_LFLAGS += -g3
+          COMPILER_CFLAGS += -g3
+          COMPILER_LFLAGS += -g3
+          FCOMPILER_CFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3 -O3
-      COMPILER_LFLAGS += -p -pg
+          COMPILER_CFLAGS += -p -pg -g3 -O3
+          COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -O3
+          FCOMPILER_CFLAGS  += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
