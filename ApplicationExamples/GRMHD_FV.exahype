@@ -31,7 +31,7 @@ exahype-project GRMHD
   computational-domain
     dimension const                = 3
     width                          = 1.0, 1.0, 1.0
-    offset                         = 0.0, 0.0, 1.0
+    offset                         = 0.0, 0.0, 0.0
     end-time                       = 200.1
   end computational-domain
   
@@ -86,7 +86,7 @@ exahype-project GRMHD
       time      = 0.0
       repeat    = 0.00590278
       output    = ./vtk-output/cartesian-1d
-      select    = z:0,y:0
+      select    = x:0
     end plot
 
     plot vtk::Cartesian::cells::ascii PrimitiveWriter
