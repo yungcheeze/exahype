@@ -48,13 +48,6 @@ public class HandlebarsTemplate extends SourceTemplate {
   }
 
   public String toString() {
-    try {
-      return template.apply(values);
-    } catch(IOException e) {
-      System.out.println("ERROR: " + e.toString());
-      System.err.println("ExaHyPE script failed ");
-      e.printStackTrace();
-      return "";
-    }
+    return template.apply(values);
   }
 }
