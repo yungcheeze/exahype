@@ -29,7 +29,7 @@
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
-tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter" );
+tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::plotters::Plotter" );
 
 exahype::plotters::Plotter::Plotter(
         const int solverConfig,const int plotterConfig,
