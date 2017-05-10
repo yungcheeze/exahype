@@ -33,7 +33,7 @@ class Euler::LimitingADERDG_FV : public Euler::AbstractLimitingADERDG_FV {
      */
     static tarch::logging::Log _log;
   public:
-    LimitingADERDG_FV(double maximumMeshSize,int maximumMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    LimitingADERDG_FV(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
     
     /**
      * Initialise the solver.
@@ -92,6 +92,7 @@ class Euler::LimitingADERDG_FV : public Euler::AbstractLimitingADERDG_FV {
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+
 };
 
 
