@@ -126,6 +126,7 @@ void exahype::mappings::InitialCondition::enterCell(
             fineGridVerticesEnumerator);
 
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          // TODO(Dominic): Introduces race condition
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
               updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(fineGridCell.getCellDescriptionsIndex(),element);

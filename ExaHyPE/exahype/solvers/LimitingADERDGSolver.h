@@ -69,13 +69,13 @@ private:
    * The maximum relaxation parameter
    * used for the discrete maximum principle.
    */
-  double _DMPMaximumRelaxationParameter;
+  const double _DMPMaximumRelaxationParameter;
 
   /**
    * The difference scaling
    * used for the discrete maximum principle.
    */
-  double _DMPDifferenceScaling;
+  const double _DMPDifferenceScaling;
 
   /**
    * A counter holding the number of iterations to

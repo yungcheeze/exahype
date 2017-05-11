@@ -78,14 +78,27 @@ exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refine
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
-  if (QMin[0] < 0.0) return false;
-  if (QMin[4] < 0.0) return false;
+void Euler::LimitingADERDG_ADERDG::mapDiscreteMaximumPrincipleObservables(
+    double* observables,const int numberOfObservables,
+    const double* const Q) const {
+  assertion(numberOfObservables==2);
+  ReadOnlyVariables vars(Q);
 
-  for (int i=0; i<5; ++i) {
-    if (!std::isfinite(QMin[i])) return false;
-    if (!std::isfinite(QMax[i])) return false;
-  }
+  observables[0]=vars.rho(); //extract density
 
+  const double GAMMA = 1.4;
+  const double irho = 1./vars.rho();
+  const double p = (GAMMA-1) * (vars.E() - 0.5 * irho * vars.j()*vars.j() );
+  observables[1]=p; //extract pressure
+}
+
+
+bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(
+  const double* const solution,
+  const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+  const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+  const double t, const double dt) const {
+  if (observablesMin[0] <= 0.0) return false;
+  if (observablesMin[1] < 0.0) return false;
   return true;
 }

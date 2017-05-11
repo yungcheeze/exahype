@@ -294,8 +294,13 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
 
-        DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
-        DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
+        if (_DMPObservables>0) {
+          DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
+          DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
+
+          cellDescription.setSolutionMin(-1);
+          cellDescription.setSolutionMax(-1);
+        }
 
         cellDescription.setExtrapolatedPredictor(-1);
         cellDescription.setFluctuation(-1);
@@ -403,21 +408,23 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
         }
 
         //TODO JMG / Dominic adapt for padding with optimized kernels
-        int faceAverageCardinality = getNumberOfVariables() * 2 * DIMENSIONS;
+        int faceAverageCardinality = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
         cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
         cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
         // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
         // and array of max values of the neighbour at this face).
-        const int numberOfVariables = getNumberOfVariables();
-        cellDescription.setSolutionMin(DataHeap::getInstance().createData(
-            numberOfVariables * 2 * DIMENSIONS, numberOfVariables * 2 * DIMENSIONS, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-        cellDescription.setSolutionMax(DataHeap::getInstance().createData(
-            numberOfVariables * 2 * DIMENSIONS, numberOfVariables * 2 * DIMENSIONS, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+        const int numberOfObservables = getDMPObservables();
+        if (numberOfObservables>0) {
+          cellDescription.setSolutionMin(DataHeap::getInstance().createData(
+              numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+          cellDescription.setSolutionMax(DataHeap::getInstance().createData(
+              numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
-        for (int i=0; i<numberOfVariables * 2 * DIMENSIONS; i++) {
-          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] =  std::numeric_limits<double>::max();
-          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = -std::numeric_limits<double>::max();
+          for (int i=0; i<numberOfObservables * DIMENSIONS_TIMES_TWO; i++) {
+            DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::max();
+            DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = -std::numeric_limits<double>::max();
+          }
         }
       }
       break;
@@ -464,12 +471,13 @@ void exahype::solvers::ADERDGSolver::writeLimiterStatusOnBoundary(
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
-    int numberOfParameters, int nodesPerCoordinateAxis,
+    int numberOfParameters, int DOFPerCoordinateAxis,
     double maximumMeshSize, int maximumAdaptiveMeshDepth,
+    int DMPObservables,
     exahype::solvers::Solver::TimeStepping timeStepping,
     std::unique_ptr<profilers::Profiler> profiler)
     : Solver(identifier, Solver::Type::ADERDG, numberOfVariables,
-             numberOfParameters, nodesPerCoordinateAxis,
+             numberOfParameters, DOFPerCoordinateAxis,
              maximumMeshSize, maximumAdaptiveMeshDepth,
              timeStepping, std::move(profiler)),
      _previousMinCorrectorTimeStamp( std::numeric_limits<double>::max() ),
@@ -479,13 +487,15 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
      _minPredictorTimeStamp( std::numeric_limits<double>::max() ),
      _minPredictorTimeStepSize( std::numeric_limits<double>::max() ),
      _minNextPredictorTimeStepSize( std::numeric_limits<double>::max() ),
-     _dofPerFace( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1) ),
+     _dofPerFace( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS - 1) ),
      _dofPerCellBoundary( DIMENSIONS_TIMES_TWO * _dofPerFace ),
-     _dofPerCell( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0) ),
+     _dofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
      _fluxDofPerCell( _dofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
-     _spaceTimeDofPerCell( numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1) ),
+     _spaceTimeDofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 1) ),
      _spaceTimeFluxDofPerCell( _spaceTimeDofPerCell * (DIMENSIONS + 1) ),  // +1 for sources
-     _dataPointsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)) {
+     _dataPointsPerCell( (numberOfVariables+numberOfParameters) * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
+     _DMPObservables(DMPObservables)
+{
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
@@ -536,6 +546,10 @@ int exahype::solvers::ADERDGSolver::getDataPerCell() const {
 
 int exahype::solvers::ADERDGSolver::getSpaceTimeDataPerCell() const {
   return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
+}
+
+int exahype::solvers::ADERDGSolver::getDMPObservables() const {
+  return _DMPObservables;
 }
 
 void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
@@ -1696,13 +1710,14 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
       subcellIndex);
 
   // Reset the min and max
+  const int numberOfObservables = getDMPObservables();
   double* solutionMin = DataHeap::getInstance().getData(
         coarseGridCellDescription.getSolutionMin()).data();
-  std::fill_n(solutionMin,DIMENSIONS_TIMES_TWO*_numberOfVariables,
+  std::fill_n(solutionMin,DIMENSIONS_TIMES_TWO*numberOfObservables,
       std::numeric_limits<double>::max());
   double* solutionMax = DataHeap::getInstance().getData(
       coarseGridCellDescription.getSolutionMax()).data();
-  std::fill_n(solutionMax,DIMENSIONS_TIMES_TWO*_numberOfVariables,
+  std::fill_n(solutionMax,DIMENSIONS_TIMES_TWO*numberOfObservables,
       -std::numeric_limits<double>::max()); // Be aware of "-"
 
   // TODO(Dominic): What to do with the time step data for anarchic time stepping?

@@ -168,6 +168,14 @@ private:
    */
   const int _dataPointsPerCell;
 
+  /**
+   * !!! LimitingADERDGSolver functionality !!!
+   *
+   * The number of observables
+   * the discrete maximum principle
+   * is applied to.
+   */
+  const int _DMPObservables;
 
   void tearApart(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
   void glueTogether(int numberOfEntries, int normalHeapIndex, int compressedHeapIndex, int bytesForMantissa);
@@ -687,18 +695,23 @@ public:
   /**
    * Construct an ADERDGSolver.
    *
-   * \param identifier             An identifier for this solver.
-   * \param numberOfVariables      the number of variables.
-   * \param numberOfParameters     the number of material parameters.
-   * \param nodesPerCoordinateAxis The 1D basis size, i.e., the order + 1.
-   * \param maximumMeshSize        The maximum mesh size. From hereon, adaptive mesh refinement is used.
-   * \param timeStepping           the timestepping mode.
-   * \param profiler               a profiler.
+   * \param identifier               An identifier for this solver.
+   * \param numberOfVariables        the number of variables.
+   * \param numberOfParameters       the number of material parameters.
+   * \param DOFPerCoordinateAxis     The 1D basis size, i.e. the order + 1.
+   * \param maximumMeshSize          The maximum mesh size. From hereon, adaptive mesh refinement is used.
+   * \param maximumAdaptiveMeshDepth The maximum depth of the adaptive mesh.
+   * \param int DMPObservables       The number of discrete maximum principle observables. Has only
+   *                                 a meaning in the context of limiting. Should be set to a value<=0
+   *                                 if a pure ADER-DG solver is used.
+   * \param timeStepping             the timestepping mode.
+   * \param profiler                 a profiler.
    */
   ADERDGSolver(
       const std::string& identifier,
-      int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
+      int numberOfVariables, int numberOfParameters, int DOFPerCoordinateAxis,
       double maximumMeshSize, int maximumAdaptiveMeshDepth,
+      int DMPObservables,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
           std::unique_ptr<profilers::Profiler>(
@@ -783,6 +796,15 @@ public:
    * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
    */
   int getSpaceTimeDataPerCell() const;
+
+  /**
+   * !!! LimitingADERDGSolver functionality !!!
+   *
+   * The number of observables
+   * the discrete maximum principle
+   * is applied to.
+   */
+  int getDMPObservables() const;
 
   /**
    * Check if cell descriptions of type Ancestor or Descendant need to hold
@@ -1139,9 +1161,28 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax,
-                                      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
-                                      const double t, const double dt) const = 0;
+  virtual bool isPhysicallyAdmissible(
+      const double* const solution,
+      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+      const double t, const double dt) const = 0;
+
+  /**
+   * Maps the solution values Q to
+   * the discrete maximum principle observables.
+   *
+   * As we can observe all state variables,
+   * we interpret an 'observable' here as
+   * 'worthy to be observed'.
+   *
+   *\param[inout] observables The mapped observables.
+   *\param[in]                numberOfObservables The number of observables.
+   *\param[in]    Q           The state variables.
+   */
+  virtual void mapDiscreteMaximumPrincipleObservables(
+    double* observables,
+    const int numberOfObservables,
+    const double* const Q) const = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time
@@ -1724,9 +1765,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
 
-  /**
-   * Drop solver data from neighbour rank.
-   */
   void dropNeighbourData(
       const int                                    fromRank,
       const tarch::la::Vector<DIMENSIONS, int>&    src,

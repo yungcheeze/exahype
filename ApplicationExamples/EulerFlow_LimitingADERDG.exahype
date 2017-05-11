@@ -28,7 +28,7 @@ exahype-project  Euler
 
   computational-domain
     dimension const          = 2
-    width                    = 1.0, 1.0
+    width                    = 1.0, 0.33
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -60,29 +60,30 @@ exahype-project  Euler
   solver Limiting-ADER-DG LimitingADERDG
     variables const          = rho:1,j:3,E:1
     order const              = 3
-    maximum-mesh-size        = 0.05
-    maximum-mesh-depth       = 0
+    maximum-mesh-size        = 0.2
+    maximum-mesh-depth       = 2
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
-    limiter-kernel const     = generic::godunov
+    limiter-kernel const     = generic::musclhancock
     limiter-language const   = C
-    dmp-relaxation-parameter = 1e-4
+    dmp-observables          = 2
+    dmp-relaxation-parameter = 1e-7
     dmp-difference-scaling   = 1e-3
     steps-till-cured         = 20
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
-      time      = 0.0
-      repeat    = 0.1e-1
+      time      = 1.12
+      repeat    = 0.1e-4
       output    = ./limitingaderg-dg
       select    = x:0.0,y:0.0
     end plot
     
     plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
       variables const = 5
-      time      = 0.0
-      repeat    = 0.1e-1
+      time      = 1.12
+      repeat    = 0.1e-4
       output    = ./limitingaderg-fv
       select    = x:0.0,y:0.0
     end plot

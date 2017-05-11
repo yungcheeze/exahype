@@ -759,13 +759,30 @@ double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   result = atof(token.c_str());
 
   if (result < 0) {
-    logError("getParameters()",
+    logError("getDMPDifferenceScaling()",
              "'" << getIdentifier(solverNumber)
                  << "': 'dmp-difference-scaling': Value must not be negative.");
     _interpretationErrorOccured = true;
   }
 
   logInfo("getDMPDifferenceScaling()", "found dmp-difference-scaling " << result);
+  return result;
+}
+
+int exahype::Parser::getDMPObservables(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-observables", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getDMPObservables()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-observables': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getDMPObservables()", "found dmp-observables " << result);
   return result;
 }
 
@@ -782,7 +799,7 @@ int exahype::Parser::getStepsTillCured(int solverNumber) const {
     _interpretationErrorOccured = true;
   }
 
-  logInfo("getParameters()", "found steps-till-cured " << result);
+  logInfo("getStepsTillCured()", "found steps-till-cured " << result);
   return result;
 }
 
