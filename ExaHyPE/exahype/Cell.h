@@ -105,9 +105,10 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   static bool isFaceInside(
       const int faceIndex,
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize,
-      const peano::grid::VertexEnumerator& verticesEnumerator);
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
 
   /**
    * TODO(Dominic): Revise this docu.
@@ -161,15 +162,15 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   static void determineInsideAndOutsideFaces(
       CellDescription& cellDescription,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
       // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
       // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
       // where no vertices are given. [Solved] - We send out the cellDescriptions from
       // the ADERDG/FV cell descr. heaps.
-      cellDescription.setIsInside(faceIndex,isFaceInside(
-          faceIndex,domainOffset,domainSize,fineGridVerticesEnumerator));
+      cellDescription.setIsInside(
+          faceIndex,
+          isFaceInside(faceIndex,cellDescription.getOffset(),cellDescription.getSize(),domainOffset,domainSize));
     }
   }
 

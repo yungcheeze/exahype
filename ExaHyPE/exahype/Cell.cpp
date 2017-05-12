@@ -46,26 +46,25 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
 
 bool exahype::Cell::isFaceInside(
     const int faceIndex,
+    const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
     const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-    const tarch::la::Vector<DIMENSIONS,double>& domainSize,
-    const peano::grid::VertexEnumerator& verticesEnumerator) {
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
   const int orientation = faceIndex % 2;             // orientation of normal
   const int direction   = (faceIndex-orientation)/2; // normal direction: 0: x, 1: y, 1: z.
 
-  double xMin = domainOffset(direction);
-  double xMax = domainOffset(direction)+domainSize(direction);
+  double cellMin   = cellOffset(direction);
+  double cellMax   = cellOffset(direction)+cellSize(direction);
+  double tol       = cellSize(direction)*0.1; // smaller than cellSize(direction) is theoretically sufficient
 
-  dfor2(v) // Loop over vertices.
-    if (v(direction) == orientation
-        &&
-        tarch::la::smaller(verticesEnumerator.getVertexPosition(vScalar)(direction),xMax)
-        &&
-        tarch::la::greater(verticesEnumerator.getVertexPosition(vScalar)(direction),xMin)
-    ) {
-      return true;
-    }
-  enddforx // v
-  return false;
+  double domainMin = domainOffset(direction);
+  double domainMax = domainOffset(direction)+domainSize(direction);
+
+  if (cellMin-tol < domainMin ||
+      cellMax+tol > domainMax) {
+    return false;
+  }
+  return true;
 }
 
 #ifdef Parallel
