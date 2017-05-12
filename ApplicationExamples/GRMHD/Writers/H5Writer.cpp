@@ -33,7 +33,7 @@ void GRMHD::H5Writer::mapQuantities(
   for (int i=0; i<25; i++){ 
     outputQuantities[i] = (i<19 ? Q[i] : 0.0);
   }
-  
+  /*
   // abuse some output quantities:
   int start = 14;
   outputQuantities[start+1] = x(0);
@@ -45,6 +45,7 @@ void GRMHD::H5Writer::mapQuantities(
   outputQuantities[start+7] = offsetOfPatch(0);
   outputQuantities[start+8] = offsetOfPatch(1);
   outputQuantities[start+9] = DIMENSIONS==3 ? offsetOfPatch(2) : -1;
+  */
 }
 
 

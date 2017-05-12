@@ -77,7 +77,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      *                 as C array (already allocated).
      * \param[inout] F the fluxes at that point as C array (already allocated).
      */
-    void flux(const double* const Q,double** F);
+    void flux(const double* const Q,double** F) override;
     
     /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
@@ -87,7 +87,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \param[in] d  the column of the flux vector (d=0,1,...,DIMENSIONS).
      * \param[inout] lambda the eigenvalues as C array (already allocated).
      */
-    void eigenvalues(const double* const Q,const int d,double* lambda);
+    void eigenvalues(const double* const Q,const int d,double* lambda) /* override */;
     
     /**
      * Impose boundary conditions at a point on a boundary face
@@ -108,7 +108,7 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
      * \param[inout] FOut      the normal fluxes at point x from outside of the domain
      *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
      */
-    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
+    void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut) /* override */;
     
     /**
      * Evaluate the refinement criterion within a cell.
@@ -130,10 +130,10 @@ class GRMHD::GRMHDSolver_ADERDG: public GRMHD::AbstractGRMHDSolver_ADERDG {
     bool useAlgebraicSource()        const override {return true;}
     bool useNonConservativeProduct() const override {return true;}
     
-    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const;
+    bool isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const override;
     
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    void coefficientMatrix(const double* const Q,const int d,double* Bn);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
     
     void algebraicSource(const double* const Q,double* S) override;
 

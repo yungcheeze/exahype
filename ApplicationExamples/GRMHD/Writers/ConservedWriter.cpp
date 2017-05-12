@@ -42,6 +42,7 @@ void GRMHD::ConservedWriter::mapQuantities(
   }
 
   // as always, for debugging: 
+  /*
 
   const int start=0;
   outputQuantities[start+1] = x(0);
@@ -53,6 +54,7 @@ void GRMHD::ConservedWriter::mapQuantities(
   outputQuantities[start+7] = offsetOfPatch(0);
   outputQuantities[start+8] = offsetOfPatch(1);
   outputQuantities[start+9] = DIMENSIONS==3 ? offsetOfPatch(2) : -1;
+  */
 }
 
 

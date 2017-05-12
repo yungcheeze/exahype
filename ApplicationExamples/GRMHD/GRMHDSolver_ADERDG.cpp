@@ -8,6 +8,9 @@
 #include "kernels/KernelUtils.h" // matrix indexing
 #include "kernels/GaussLegendreQuadrature.h"
 
+#include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
+
+
 const double excision_radius = 1.0;
 const int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
 
@@ -16,18 +19,24 @@ void GRMHD::GRMHDSolver_ADERDG::init(std::vector<std::string>& cmdlineargs) {
   prepare_id();
 }
 
-exahype::solvers::ADERDGSolver::AdjustSolutionValue GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue  __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   bool insideExcisionBall = std::sqrt(center[0]*center[0] + center[1]*center[1] + center[2]*center[2]) < excision_radius;
   insideExcisionBall = false;
   bool hastoadjust = tarch::la::equals(t,0.0) || insideExcisionBall;
   return hastoadjust ? AdjustSolutionValue::PointWisely : AdjustSolutionValue::No;
 }
 
-void GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   id->Interpolate(x, t, Q);
+  //printf("Interpoalted at x=[%f,%f,%f], t=%f, Q0=%f\n", x[0],x[1],x[2], t, Q[0]);
+  for(int i=0; i<NumberOfVariables; i++) {
+	if(!std::isfinite(Q[i])) {
+		printf("NAN in i=%d at t=%f, x=[%f,%f,%f], Q[%d]=%f\n", i, t, x[0],x[1],x[2], i, Q[i]);
+	}
+  }
 }
 
-void GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::eigenvalues(const double* const Q,const int d,double* lambda) {
   double nv[3] = {0.};
   nv[d] = 1;
   pdeeigenvalues_(lambda, Q, nv);
@@ -39,7 +48,7 @@ void GRMHD::GRMHDSolver_ADERDG::flux(const double* const Q,double** F) {
 }
 
 
-void GRMHD::GRMHDSolver_ADERDG::algebraicSource(const double* const Q,double* S) {
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::algebraicSource(const double* const Q,double* S) {
   pdesource_(S, Q);
 }
 
@@ -79,7 +88,12 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
 }
 
 // only evaluated in Limiting context
-bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const {
+bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
+
+  // Static criterium for startup: When the density makes a large jump,
+  // ie. at the star crust
+  //if ( QMin[0] != 0.0 && QMax[0]/QMin[0] > 1e3 ) return false;
+
   if (QMin[0] < 0.0) return false;
   if (QMin[4] < 0.0) return false;
 
@@ -92,7 +106,7 @@ bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,
 }
 
 
-void GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
 }
 
