@@ -47,6 +47,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterGridErasing: return "UseAdapterGridErasing";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
       case UseAdapterPlotAndADERDGTimeStep: return "UseAdapterPlotAndADERDGTimeStep";
+      case UseAdapterLimiterStatusSpreading: return "UseAdapterLimiterStatusSpreading";
       case UseAdapterReinitialisation: return "UseAdapterReinitialisation";
       case UseAdapterSolutionRecomputationAndTimeStepSizeComputation: return "UseAdapterSolutionRecomputationAndTimeStepSizeComputation";
       case UseAdapterNeighbourDataMerging: return "UseAdapterNeighbourDataMerging";
@@ -65,7 +66,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterMeshRefinementAndPlotGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterInitialConditionAndTimeStepSizeComputation=7,UseAdapterPredictionAndFusedTimeSteppingInitialisation=8,UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot=9,UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d=10,UseAdapterGridErasing=11,UseAdapterADERDGTimeStep=12,UseAdapterPlotAndADERDGTimeStep=13,UseAdapterReinitialisation=14,UseAdapterSolutionRecomputationAndTimeStepSizeComputation=15,UseAdapterNeighbourDataMerging=16,UseAdapterSolutionUpdate=17,UseAdapterTimeStepSizeComputation=18,UseAdapterPrediction=19,UseAdapterPredictionAndPlot=20,UseAdapterPredictionAndPlot2d=21,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=22,UseAdapterMergeTimeStepData=23,UseAdapterMergeTimeStepDataDropFaceData=24,UseAdapterFinaliseMeshRefinementAndReinitialisation=25,NumberOfAdapters=26)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterMeshRefinementAndPlotGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterInitialConditionAndTimeStepSizeComputation=7,UseAdapterPredictionAndFusedTimeSteppingInitialisation=8,UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot=9,UseAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d=10,UseAdapterGridErasing=11,UseAdapterADERDGTimeStep=12,UseAdapterPlotAndADERDGTimeStep=13,UseAdapterLimiterStatusSpreading=14,UseAdapterReinitialisation=15,UseAdapterSolutionRecomputationAndTimeStepSizeComputation=16,UseAdapterNeighbourDataMerging=17,UseAdapterSolutionUpdate=18,UseAdapterTimeStepSizeComputation=19,UseAdapterPrediction=20,UseAdapterPredictionAndPlot=21,UseAdapterPredictionAndPlot2d=22,UseAdapterFinaliseMeshRefinementAndTimeStepSizeComputation=23,UseAdapterMergeTimeStepData=24,UseAdapterMergeTimeStepDataDropFaceData=25,UseAdapterFinaliseMeshRefinementAndReinitialisation=26,NumberOfAdapters=27)";
 }
 
 
