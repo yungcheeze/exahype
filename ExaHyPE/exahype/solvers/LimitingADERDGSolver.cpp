@@ -316,26 +316,10 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
-  const int fineGridSolverElement =
-      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-  if (fineGridSolverElement!=exahype::solvers::Solver::NotFound) {
-    const int coarseGridSolverElement =
-        _solver->tryGetElement(
-            coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (coarseGridSolverElement!=exahype::solvers::Solver::NotFound) {
-      restrictLimiterStatus(
-              fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
-              coarseGridCell.getCellDescriptionsIndex(),coarseGridSolverElement);
-    }
-  }
-
-  bool eraseFineGridCell =
-      _solver->updateStateInLeaveCell(
-          fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
-          coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
-          fineGridPositionOfCell,solverNumber);
-
-  return eraseFineGridCell;
+  return _solver->updateStateInLeaveCell(
+      fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
+      coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
+      fineGridPositionOfCell,solverNumber);
 }
 
 bool exahype::solvers::LimitingADERDGSolver::attainedStableState(

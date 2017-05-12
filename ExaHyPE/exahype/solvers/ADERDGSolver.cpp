@@ -894,20 +894,21 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
     CellDescription& fineGridCellDescription = Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())[fineGridCellElement];
 
-    if (fineGridCellDescription.getLevel()<getMaximumAdaptiveMeshLevel()) {
-       #ifdef Parallel
-       ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-       #endif
-       #if defined(Asserts) || defined(Debug)
-       int coarseGridCellElement =
-           tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-       #endif
-       assertion3(coarseGridCellElement==exahype::solvers::Solver::NotFound ||
-                  fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
-                  fineGridCellDescription.toString(),fineGridCell.toString(),
-                  coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+    #ifdef Parallel
+    ensureConsistencyOfParentIndex(fineGridCellDescription,coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
 
-       // marking for refinement
+    #if defined(Asserts) || defined(Debug)
+    int coarseGridCellElement =
+        tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+    #endif
+    assertion3(
+        coarseGridCellElement==exahype::solvers::Solver::NotFound ||
+        fineGridCellDescription.getParentIndex()==coarseGridCell.getCellDescriptionsIndex(),
+        fineGridCellDescription.toString(),fineGridCell.toString(),
+        coarseGridCell.toString()); // see mergeCellDescriptionsWithRemoteData.
+
+    if (fineGridCellDescription.getLevel()<getMaximumAdaptiveMeshLevel()) {
        return markForRefinement(fineGridCellDescription);
     }
   }
@@ -1633,7 +1634,7 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
     getCellDescriptions(cellDescriptionsIndex).erase(
         getCellDescriptions(cellDescriptionsIndex).begin()+fineGridCellElement);
 
-    return false;
+    return true;
   } else if (coarseGridCellDescription.getRefinementEvent()==CellDescription::ChangeChildrenToDescendants) {
     CellDescription& fineGridCellDescription = getCellDescription(
         cellDescriptionsIndex,fineGridCellElement);
