@@ -90,6 +90,8 @@ void exahype::solvers::LimitingADERDGSolver::initSolver(
   _coarsestMeshLevel =
       exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,domainSize[0]);
 
+  _limiterDomainChangedIrregularly=true;
+
   _solver->initSolver(timeStamp, domainOffset, domainSize);
 }
 
@@ -196,7 +198,8 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
     }
 
     if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Ok
-        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled4) {
+        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled4
+        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled3) {
       return _solver->markForRefinement(
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
               coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
@@ -266,41 +269,42 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
     const int fineGridCellDescriptionsIndex,
     const int fineGridSolverElement,
     const int coarseGridCellDescriptionsIndex) const {
-  //TODO(Dominic): Cell is erased correctly but no descendants are
-  // introduced
   SolverPatch& fineGridSolverPatch = _solver->getCellDescription(
           fineGridCellDescriptionsIndex,fineGridSolverElement);
+  assertion1(coarseGridCellDescriptionsIndex==fineGridSolverPatch.getParentIndex(),fineGridSolverPatch.toString());
 
   if (
-      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
+      (fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
+      ||
+      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
        &&
-       (fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-       ||
-       fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
+       (
+//       fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
+//       ||
+       fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled4))
   ) {
     fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
   }
 
-  const int coarseGridSolverElement =
-      _solver->tryGetElement(coarseGridCellDescriptionsIndex,fineGridSolverPatch.getSolverNumber());
-  if (coarseGridSolverElement!=exahype::solvers::Solver::NotFound) {
-    SolverPatch& coarseGridSolverPatch = _solver->getCellDescription(
-        coarseGridCellDescriptionsIndex,coarseGridSolverElement);
-    if (
-        coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
-         &&
-        (fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-        ||
-        fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
-    ) {
-      tarch::multicore::Lock lock(_heapSemaphore); // TODO(Dominic): Use different semaphore
-      coarseGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
-    }
-  }
-
-  if (fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested) {
-    std::cout << fineGridSolverPatch.toString() << std::endl;
-  }
+//  const int coarseGridSolverElement =
+//      _solver->tryGetElement(coarseGridCellDescriptionsIndex,fineGridSolverPatch.getSolverNumber());
+//  if (coarseGridSolverElement!=exahype::solvers::Solver::NotFound) {
+//    SolverPatch& coarseGridSolverPatch = _solver->getCellDescription(
+//        coarseGridCellDescriptionsIndex,coarseGridSolverElement);
+//    if (
+//        (coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
+//        ||
+//        coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
+//         &&
+//        (
+////        fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
+////        ||
+//        fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
+//    ) {
+//      tarch::multicore::Lock lock(_heapSemaphore); // TODO(Dominic): Use different semaphore
+//      coarseGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
+//    }
+//  }
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
@@ -330,13 +334,6 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
           fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
           coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
           fineGridPositionOfCell,solverNumber);
-
-  // TODO(Dominic): Veto a second time?
-  if (fineGridSolverElement!=exahype::solvers::Solver::NotFound) {
-    vetoErasingChildrenRequestBasedOnLimiterStatus(
-        fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
-        coarseGridCell.getCellDescriptionsIndex());
-  }
 
   return eraseFineGridCell;
 }
@@ -379,14 +376,13 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinemen
         solverPatch.getLevel() < getMaximumAdaptiveMeshLevel()
         &&
         (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None ||
-            solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
-            solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
+         solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
+         solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
       switch (solverPatch.getLimiterStatus()) {
       case SolverPatch::LimiterStatus::Troubled:
       case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
       case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
         return true;
       default:
         return false;
@@ -581,6 +577,7 @@ bool exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfte
     const int solverElement) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
+
   if (solverPatch.getType()==SolverPatch::Type::Cell) {
     bool solutionIsValid =
         evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(solverPatch)
@@ -610,6 +607,8 @@ bool exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfte
     irregularLimiterDomanChange |=
         allocateLimiterPatchAfterSolutionUpdate(cellDescriptionsIndex,solverElement);
     return irregularLimiterDomanChange;
+  } else {
+    updateLimiterStatus(cellDescriptionsIndex,solverElement);
   }
 
   return false;
@@ -721,9 +720,9 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
 bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(SolverPatch& solverPatch) {
   double* solution = DataHeap::getInstance().getData(
       solverPatch.getSolution()).data();
-  double* solutionMin = DataHeap::getInstance().getData(
+  double* observablesMin = DataHeap::getInstance().getData(
       solverPatch.getSolutionMin()).data();
-  double* solutionMax = DataHeap::getInstance().getData(
+  double* observablesMax = DataHeap::getInstance().getData(
       solverPatch.getSolutionMax()).data();
 
   const int numberOfObservables = _solver->getDMPObservables();
@@ -733,16 +732,16 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAnd
     bool dmpIsSatisfied = kernels::limiter::generic::c::discreteMaximumPrincipleAndMinAndMaxSearch(
           solution,_solver.get(),
           _DMPMaximumRelaxationParameter, _DMPDifferenceScaling,
-          solutionMin,solutionMax);
+          observablesMin,observablesMax);
 
     // 2. Copy the result on the other faces as well
     for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
       std::copy_n(
-          solutionMin,numberOfObservables, // past-the-end element
-          solutionMin+i*numberOfObservables);
+          observablesMin,numberOfObservables, // past-the-end element
+          observablesMin+i*numberOfObservables);
       std::copy_n(
-          solutionMax,numberOfObservables, // past-the-end element
-          solutionMax+i*numberOfObservables);
+          observablesMax,numberOfObservables, // past-the-end element
+          observablesMax+i*numberOfObservables);
     }
 
     return dmpIsSatisfied;
@@ -837,30 +836,30 @@ void exahype::solvers::LimitingADERDGSolver::determineLimiterMinAndMax(SolverPat
     double* limiterSolution = DataHeap::getInstance().getData(
         limiterPatch.getSolution()).data();
 
-    double* solutionMin = DataHeap::getInstance().getData(
+    double* observablesMin = DataHeap::getInstance().getData(
         solverPatch.getSolutionMin()).data();
-    double* solutionMax = DataHeap::getInstance().getData(
+    double* observablesMax = DataHeap::getInstance().getData(
         solverPatch.getSolutionMax()).data();
 
     // Write the result to the face with index "0"
     kernels::limiter::generic::c::findCellLocalLimiterMinAndMax(
         limiterSolution,_solver.get(),
-        _limiter->getGhostLayerWidth(),solutionMin,solutionMax);
+        _limiter->getGhostLayerWidth(),observablesMin,observablesMax);
 
     // Copy the result on the other faces as well
     const int numberOfObservables = _solver->getDMPObservables();
     for (int i=1; i<DIMENSIONS_TIMES_TWO; ++i) {
       std::copy_n(
-          solutionMin,numberOfObservables, // past-the-end element
-          solutionMin+i*numberOfObservables);
+          observablesMin,numberOfObservables, // past-the-end element
+          observablesMin+i*numberOfObservables);
       std::copy_n(
-          solutionMax,numberOfObservables, // past-the-end element
-          solutionMax+i*numberOfObservables);
+          observablesMax,numberOfObservables, // past-the-end element
+          observablesMax+i*numberOfObservables);
     }
 
     for (int i=0; i<DIMENSIONS_TIMES_TWO*numberOfObservables; ++i) {
-      assertion(*(solutionMin+i)<std::numeric_limits<double>::max());
-      assertion(*(solutionMax+i)>-std::numeric_limits<double>::max());
+      assertion(*(observablesMin+i)<std::numeric_limits<double>::max());
+      assertion(*(observablesMax+i)>-std::numeric_limits<double>::max());
     } // Dead code elimination will get rid of this loop
   }
 }

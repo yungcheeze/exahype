@@ -138,16 +138,18 @@ void exahype::mappings::SolutionUpdate::enterCell(
             fineGridVertices,
             fineGridVerticesEnumerator);
 
+        _solverFlags._gridUpdateRequested[i] |=
+            solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                fineGridCell.getCellDescriptionsIndex(),element);
+
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           bool limiterDomainHasChanged =
               static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
               updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(fineGridCell.getCellDescriptionsIndex(),element);
           _solverFlags._limiterDomainHasChanged[i] |= limiterDomainHasChanged;
-        }
 
-        _solverFlags._gridUpdateRequested[i] |=
-            solver->evaluateRefinementCriterionAfterSolutionUpdate(
-                fineGridCell.getCellDescriptionsIndex(),element);
+          _solverFlags._limiterDomainHasChanged[i] |= _solverFlags._gridUpdateRequested[i];
+        }
 
         solver->prepareNextNeighbourMerging(
             fineGridCell.getCellDescriptionsIndex(),element,
@@ -186,7 +188,7 @@ void exahype::mappings::SolutionUpdate::endIteration(
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->updateNextLimiterDomainChangedIrregularly(_solverFlags._limiterDomainHasChanged[solverNumber]);
 
-      logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainHasChanged());
+      logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainChangedIrregularly());
     }
   }
 

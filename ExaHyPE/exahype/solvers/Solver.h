@@ -1395,6 +1395,8 @@ class exahype::solvers::Solver {
    * merge the received time step size with
    * the next min predictor time step size since
    * the master has not yet set his new flag yet.
+   *
+   * TODO(Dominic): Restrict limiter status too
    */
   void sendGridUpdateFlagsToMaster(
       const int                                    masterRank,

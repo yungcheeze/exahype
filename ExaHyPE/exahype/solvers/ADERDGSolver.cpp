@@ -1254,7 +1254,7 @@ void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
           case CellDescription::DeaugmentingChildrenRequested:
             assertion1(coarseGridCellDescription.getType()==CellDescription::EmptyDescendant ||
                        coarseGridCellDescription.getType()==CellDescription::Descendant,coarseGridCellDescription.toString());
-            coarseGridCellDescriptionParent.setRefinementEvent(CellDescription::None); // TODO(DOminic): Source of bug.
+            coarseGridCellDescriptionParent.setRefinementEvent(CellDescription::None);
             break;
           case CellDescription::ErasingChildrenRequested:
             assertion1(coarseGridCellDescription.getType()==CellDescription::Cell,
@@ -1291,8 +1291,7 @@ void exahype::solvers::ADERDGSolver::addNewCell(
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
   exahype::Cell::determineInsideAndOutsideFaces(
             fineGridCellDescription,
-            _domainOffset,_domainSize,
-            fineGridVerticesEnumerator);
+            _domainOffset,_domainSize);
 }
 
 void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
@@ -1328,8 +1327,7 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
           getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
       exahype::Cell::determineInsideAndOutsideFaces(
           fineGridCellDescription,
-          _domainOffset,_domainSize,
-          fineGridVerticesEnumerator);
+          _domainOffset,_domainSize);
 
       coarseGridCellDescription.setRefinementEvent(CellDescription::Augmenting);
     } else if (fineGridElement!=exahype::solvers::Solver::NotFound &&

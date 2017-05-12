@@ -137,7 +137,7 @@ bool kernels::limiter::generic::c::discreteMaximumPrincipleAndMinAndMaxSearch(
     }
     double scaledDifference = (boundaryMax - boundaryMin) * differenceScaling;
 
-    assertion3(tarch::la::greaterEquals(scaledDifference,0.0),scaledDifference,boundaryMin,boundaryMax);
+    assertion5(tarch::la::greaterEquals(scaledDifference,0.0),scaledDifference,boundaryMin,boundaryMax,localMinPerObservable[v],localMaxPerObservable[v]);
     scaledDifference = std::max( scaledDifference, relaxationParameter );
 
     if((localMinPerObservable[v] < (boundaryMin - scaledDifference)) ||

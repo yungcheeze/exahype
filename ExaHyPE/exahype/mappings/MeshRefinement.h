@@ -135,21 +135,30 @@ public:
   static peano::MappingSpecification touchVertexLastTimeSpecification();
 
   /**
-   * Switched off
+   * We merge the limite status between neighbouring cells.
+   * We thus avoid fine grid races.
    */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
+
+  /**
+   * Traverse the cells in serial. Might
+   * be relaxed when all semaphores are in place.
+   */
   static peano::MappingSpecification enterCellSpecification();
+
+  /**
+   * Traverse the cells in serial. Might
+   * be relaxed when all semaphores are in place.
+   */
   static peano::MappingSpecification leaveCellSpecification();
+
+  /**
+   * Switched off
+   */
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
   static peano::CommunicationSpecification communicationSpecification();
-
-  /**
-   * Loop over all vertices and merge the limiter
-   * status between neighbours.
-   */
-  static void mergeNeighboursLimiterStatus(exahype::Vertex& fineGridVertex);
 
 #if defined(SharedMemoryParallelisation)
   /**

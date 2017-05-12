@@ -19,9 +19,9 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/mappings/MeshRefinement.h"
-
 #include "exahype/solvers/Solver.h"
+
+#include "exahype/mappings/LimiterStatusSpreading.h"
 
 peano::CommunicationSpecification
 exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
@@ -95,6 +95,7 @@ void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& s
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   #ifdef Parallel
+  exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
   exahype::mappings::MeshRefinement::FirstIteration = true;
   #endif
 
@@ -121,7 +122,14 @@ void exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  exahype::mappings::MeshRefinement::mergeNeighboursLimiterStatus(fineGridVertex);
+  logTraceInWith6Arguments("touchVertexFirstTime(...)", fineGridVertex,
+                           fineGridX, fineGridH,
+                           coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+
+  exahype::mappings::LimiterStatusSpreading::mergeNeighboursLimiterStatus(fineGridVertex);
+
+  logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
 
 void exahype::mappings::FinaliseMeshRefinement::enterCell(

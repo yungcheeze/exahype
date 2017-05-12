@@ -436,6 +436,15 @@ public:
 
   void updateMinNextTimeStepSize(double value) override;
 
+  /**
+   * \see ::exahype::solvers::Solver::initSolver
+   *
+   * Additionally, set the
+   * ::_limiterDomainChangedIrregularly flag to true
+   * since the limiter mappings all check this flag
+   * in order to distinguish between solvers in a multisolver
+   * run.
+   */
   void initSolver(
         const double timeStamp,
         const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
@@ -704,10 +713,14 @@ public:
    * the solution values stored for any solver patch
    * that is of type Cell independent of the mesh level
    * it is located at.
-   *
    * This method then invokes
    * ::determinLimiterStatusAfterSolutionUpdate(SolverPatch&,const bool)
    * with the result of these checks.
+   *
+   * For solver patches of a type other than Cell,
+   * we simply update the limiter status using
+   * the information taken from the neighbour
+   * merging.
    */
   bool updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
       const int cellDescriptionsIndex,
@@ -716,6 +729,8 @@ public:
   /**
    * Similar to ::determineLimiterStatusAfterSolutionUpdate(const int,const int)
    * but does not evaluate the discrete maximum principle.
+   *
+   * TODO(Dominic): Remove the return value.
    */
   bool updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,

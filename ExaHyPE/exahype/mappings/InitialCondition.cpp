@@ -24,23 +24,6 @@
 
 #include "exahype/mappings/TimeStepSizeComputation.h"
 
-void exahype::mappings::InitialCondition::prepareTemporaryVariables() {
-  assertion(_limiterDomainHasChanged ==nullptr);
-  int numberOfSolvers      = exahype::solvers::RegisteredSolvers.size();
-  _limiterDomainHasChanged = new bool    [numberOfSolvers];
-
-  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    _limiterDomainHasChanged[solverNumber] = false;
-  }
-}
-
-void exahype::mappings::InitialCondition::deleteTemporaryVariables() {
-  if (_limiterDomainHasChanged!=nullptr) {
-    delete[] _limiterDomainHasChanged;
-    _limiterDomainHasChanged = nullptr;
-  }
-}
-
 peano::CommunicationSpecification
 exahype::mappings::InitialCondition::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -126,11 +109,9 @@ void exahype::mappings::InitialCondition::enterCell(
             fineGridVerticesEnumerator);
 
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          // TODO(Dominic): Introduces race condition
-          bool limiterDomainHasChanged =
-              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(fineGridCell.getCellDescriptionsIndex(),element);
-          _limiterDomainHasChanged[i] |= limiterDomainHasChanged;
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+                  fineGridCell.getCellDescriptionsIndex(),element);
         }
       }
     endpfor
@@ -141,24 +122,18 @@ void exahype::mappings::InitialCondition::enterCell(
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::InitialCondition::InitialCondition(
-    const InitialCondition& masterThread)
-    :
-    _limiterDomainHasChanged(nullptr) {
-  prepareTemporaryVariables();
+    const InitialCondition& masterThread) {
+  // do nothing
 }
 void exahype::mappings::InitialCondition::mergeWithWorkerThread(
     const InitialCondition& workerThread) {
-  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
-    _limiterDomainHasChanged[i] |= workerThread._limiterDomainHasChanged[i];
-  }
+  // do nothing
 }
 #endif
 
 void exahype::mappings::InitialCondition::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  prepareTemporaryVariables();
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -167,20 +142,7 @@ void exahype::mappings::InitialCondition::endIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("endIteration(State)", solverState);
 
-  // 1. Merge limiter domain status
-  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto* limitingADERDGSolver =
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[solverNumber]);
-      limitingADERDGSolver->updateNextLimiterDomainChangedIrregularly(_limiterDomainHasChanged[solverNumber]);
-
-      logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainHasChanged());
-    }
-  }
-
-  // 2.
-  deleteTemporaryVariables();
-  // 3. Veto the fused time stepping time step size reinitialisation in TimeStepSizeComputation::enterCell
+  // Veto the fused time stepping time step size reinitialisation in TimeStepSizeComputation::enterCell
   exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = true;
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
@@ -299,9 +261,7 @@ void exahype::mappings::InitialCondition::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::InitialCondition::InitialCondition()
-    :
-    _limiterDomainHasChanged(nullptr){
+exahype::mappings::InitialCondition::InitialCondition() {
   // do nothing
 }
 
