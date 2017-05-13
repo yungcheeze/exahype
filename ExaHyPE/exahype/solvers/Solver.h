@@ -738,7 +738,8 @@ class exahype::solvers::Solver {
    * Returns true if the grid cell associated with
    * the cell description can be erased due to
    * an erasing/deaugmenting process that was finished
-   * for the cell description.
+   * for the cell description or if there is simply
+   * no cell description allocated for this solver.
    * Returns false otherwise.
    *
    * \note We use this at the moment only
