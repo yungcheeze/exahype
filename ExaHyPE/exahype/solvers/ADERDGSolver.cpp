@@ -1453,12 +1453,13 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   fineGridCellDescription.setPreviousLimiterStatus(CellDescription::LimiterStatus::Ok);
   fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
 
-  // TODO Dominic: During the inital mesh build where we only refine
+  // TODO Dominic:
+  // Add to docu. We disregarded the following since it can lead to inconsistencies.
+  // During the inital mesh build where we only refine
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
-  if (!initialGrid
-      &&
-      coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
+  //
+  if (coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
     fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
     // TODO(Dominic): Bug: Cell is regarded as troubled but limiter patch is not allocated. Should not happen
   }
@@ -1549,8 +1550,11 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
 
       return eraseOfFineGridCellRequested;
     }
+
+    return false;
   }
 
+//  return fineGridVerticesEnumerator.getLevel()>getCoarsestMeshLevel();
   return false;
 }
 
