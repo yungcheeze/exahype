@@ -725,7 +725,7 @@ bool exahype::solvers::LimitingADERDGSolver::evaluatePhysicalAdmissibilityCriter
   }
 
   const double* const solution = DataHeap::getInstance().getData(
-        solverPatch.getSolutionMin()).data();
+        solverPatch.getSolution()).data();
 
   return _solver->isPhysicallyAdmissible(
       solution,
