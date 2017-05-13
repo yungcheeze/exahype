@@ -198,20 +198,13 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
         auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
         limitingADERDG->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
+        limitingADERDG->deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),element);
+        limitingADERDG->ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),element);
+
         bool gridUpdateRequested = limitingADERDG->
               evaluateLimiterStatusBasedRefinementCriterion(fineGridCell.getCellDescriptionsIndex(),element);
         // TODO(Dominic): Enable multithreading for this; have value per solver; reduce in endIteration
         limitingADERDG->updateNextGridUpdateRequested(gridUpdateRequested);
-
-        // TODO(Dominic): Potentially not necessary since the new troubled
-        // status was already restricted during the time stepping
-//        const int parentElement =
-//                solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-//        if (parentElement!=exahype::solvers::Solver::NotFound) {
-//          limitingADERDG->restrictLimiterStatus(
-//                            fineGridCell.getCellDescriptionsIndex(),element,
-//                            coarseGridCell.getCellDescriptionsIndex(),parentElement);
-//        }
       }
 
       solver->prepareNextNeighbourMerging(
