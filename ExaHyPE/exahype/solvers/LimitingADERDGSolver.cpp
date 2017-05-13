@@ -198,8 +198,7 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
     }
 
     if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Ok
-        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled4
-        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled3) {
+        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled4) {
       return _solver->markForRefinement(
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
               coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
@@ -275,36 +274,13 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
 
   if (
       (fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
-      ||
-      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
-       &&
-       (
-//       fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-//       ||
-       fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled4))
-  ) {
+          ||
+          fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
+          &&
+          fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
+  {
     fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
   }
-
-//  const int coarseGridSolverElement =
-//      _solver->tryGetElement(coarseGridCellDescriptionsIndex,fineGridSolverPatch.getSolverNumber());
-//  if (coarseGridSolverElement!=exahype::solvers::Solver::NotFound) {
-//    SolverPatch& coarseGridSolverPatch = _solver->getCellDescription(
-//        coarseGridCellDescriptionsIndex,coarseGridSolverElement);
-//    if (
-//        (coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
-//        ||
-//        coarseGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
-//         &&
-//        (
-////        fineGridSolverPatch.getPreviousLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok)
-////        ||
-//        fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
-//    ) {
-//      tarch::multicore::Lock lock(_heapSemaphore); // TODO(Dominic): Use different semaphore
-//      coarseGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
-//    }
-//  }
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
@@ -367,6 +343,8 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinemen
       case SolverPatch::LimiterStatus::Troubled:
       case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
       case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
+      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
         return true;
       default:
         return false;

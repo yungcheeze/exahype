@@ -231,18 +231,6 @@ private:
           const int cellDescriptionsIndex,
           const int solverElement) const;
 
-
- /*
-  * Deallocate the limiter patch on all AMR related
-  * helper cells.
-  *
-  * It is safe to use this method during
-  * the mesh refinement iterations.
-  */
-  void deallocateLimiterPatchOnHelperCell(
-      const int cellDescriptionsIndex,
-      const int solverElement) const;
-
   /**
    * Deallocates the limiter patch for solver patches
    * that of type Cell and flagged with limiter status
@@ -257,19 +245,6 @@ private:
   void ensureNoUnrequiredLimiterPatchIsAllocatedOnComputeCell(
       const int cellDescriptionsIndex,
       const int solverElement) const;
-
-  /*
-   * Ensures that a limiter patch is allocated
-   * on all compute cells (Cell) on the finest mesh
-   * level that are flagged
-   * with a limiter status other than Ok.
-   *
-   * It is safe to use this method during
-   * the mesh refinement iterations.
-   */
-  bool ensureRequiredLimiterPatchIsAllocated(
-          const int cellDescriptionsIndex,
-          const int solverElement) const;
 
   /**
    * Allocates a limiter patch and performs a DG to FV projection
@@ -744,6 +719,30 @@ public:
    */
   void updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
+
+  /*
+   * Deallocate the limiter patch on all AMR related
+   * helper cells.
+   *
+   * It is safe to use this method during
+   * the mesh refinement iterations.
+   */
+   void deallocateLimiterPatchOnHelperCell(
+       const int cellDescriptionsIndex,
+       const int solverElement) const;
+
+   /*
+    * Ensures that a limiter patch is allocated
+    * on all compute cells (Cell) on the finest mesh
+    * level that are flagged
+    * with a limiter status other than Ok.
+    *
+    * It is safe to use this method during
+    * the mesh refinement iterations.
+    */
+   bool ensureRequiredLimiterPatchIsAllocated(
+           const int cellDescriptionsIndex,
+           const int solverElement) const;
 
   /**
    * Reinitialises cells that have been subject to a limiter status change.
