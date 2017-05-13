@@ -467,7 +467,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   bool gridUpdate = false;
 
   int gridSetupIterations = 0;
-  repository.switchToMeshRefinementAndPlotGrid();
+  repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
@@ -557,10 +557,10 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
 
-#ifdef Parallel
+  #ifdef Parallel
   // Might be too restrictive for later runs. Remove but keep warning from above
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
-#endif
+  #endif
 
   return gridUpdate;
 }
@@ -835,7 +835,7 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   repository.switchToNeighbourDataMerging();
   repository.iterate();
 
-  logInfo("updateMeshFusedTimeStepping(...)","spread limiter status");
+  logInfo("updateMeshFusedTimeStepping(...)","pre-spreading of limiter status");
   repository.switchToLimiterStatusSpreading();
   repository.iterate(5);
   // After the spreading, we might again need to refine.
