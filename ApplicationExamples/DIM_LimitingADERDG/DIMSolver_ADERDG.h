@@ -33,7 +33,7 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
      */
     static tarch::logging::Log _log;
   public:
-    DIMSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
+    DIMSolver_ADERDG(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs);
 
     /**
      * Initialise the solver.
@@ -139,7 +139,11 @@ class DIM::DIMSolver_ADERDG: public DIM::AbstractDIMSolver_ADERDG {
     void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
 
-bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const override;
+    bool isPhysicallyAdmissible(
+      const double* const solution,
+      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+      const double t, const double dt) const override;
 
 };
 

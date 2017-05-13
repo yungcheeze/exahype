@@ -16,9 +16,13 @@
 
 tarch::logging::Log DIM::DIMSolver_ADERDG::_log( "DIM::DIMSolver_ADERDG" );
 
-bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin,const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
+bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(
+  const double* const solution,
+  const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+  const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+  const double t, const double dt) const {
   // True == NoLimiter, False == Limiter
-  const ReadOnlyVariables qmin(QMin);
+  const ReadOnlyVariables qmin(observablesMin);
 
 // Limiter based on the center of the cell
 
