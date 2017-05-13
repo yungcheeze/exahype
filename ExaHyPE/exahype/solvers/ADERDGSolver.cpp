@@ -1461,6 +1461,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   //
   if (coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
     fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
+    fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
     // TODO(Dominic): Bug: Cell is regarded as troubled but limiter patch is not allocated. Should not happen
   }
   writeLimiterStatusOnBoundary(fineGridCellDescription);
