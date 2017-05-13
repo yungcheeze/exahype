@@ -682,13 +682,14 @@ bool exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolution
 bool exahype::solvers::LimitingADERDGSolver::evaluateDiscreteMaximumPrincipleAndDetermineMinAndMax(SolverPatch& solverPatch) {
   double* solution = DataHeap::getInstance().getData(
       solverPatch.getSolution()).data();
-  double* observablesMin = DataHeap::getInstance().getData(
-      solverPatch.getSolutionMin()).data();
-  double* observablesMax = DataHeap::getInstance().getData(
-      solverPatch.getSolutionMax()).data();
 
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables>0) {
+    double* observablesMin = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMin()).data();
+    double* observablesMax = DataHeap::getInstance().getData(
+        solverPatch.getSolutionMax()).data();
+
     // 1. Check if the DMP is satisfied and search for the min and max
     // Write the new min and max to the storage reserved for face 0
     bool dmpIsSatisfied = kernels::limiter::generic::c::discreteMaximumPrincipleAndMinAndMaxSearch(
@@ -1452,8 +1453,12 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
   const int faceIndex1,
   const int faceIndex2
 ) const {
-  if (solverPatch1.getType()==SolverPatch::Cell ||
-      solverPatch2.getType()==SolverPatch::Cell) {
+  if (
+      _solver->getDMPObservables() > 0
+      &&
+      (solverPatch1.getType()==SolverPatch::Cell ||
+      solverPatch2.getType()==SolverPatch::Cell)
+  ) {
     assertion( solverPatch1.getSolverNumber() == solverPatch2.getSolverNumber() );
     const int numberOfObservables = _solver->getDMPObservables();
     double* min1 = DataHeap::getInstance().getData( solverPatch1.getSolutionMin()  ).data() + faceIndex1 * numberOfObservables;

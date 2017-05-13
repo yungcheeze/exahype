@@ -266,8 +266,6 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         waitUntilAllBackgroundTasksHaveTerminated();
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
 
         tarch::multicore::Lock lock(_heapSemaphore);
 
@@ -294,7 +292,9 @@ void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahyp
         DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
 
-        if (_DMPObservables>0) {
+        if (getDMPObservables()>0) {
+          assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
+          assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
           DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
           DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
 
