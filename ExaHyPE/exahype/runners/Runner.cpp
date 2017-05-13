@@ -378,28 +378,29 @@ tarch::la::Vector<DIMENSIONS, double> exahype::runners::Runner::determineBoundin
 
 exahype::repositories::Repository* exahype::runners::Runner::createRepository() {
   // Geometry is static as we need it survive the whole simulation time.
-  _domainSize = determineDomainSize();
+  _domainOffset = _parser.getOffset();
+  _domainSize   = determineDomainSize();
   static peano::geometry::Hexahedron geometry(
       _domainSize,
-      _parser.getOffset());
+      _domainOffset);
   _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
 
   const int coarsestMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
 
   logInfo(
       "createRepository(...)",
-      "create computational domain at " << _parser.getOffset() <<
+      "create computational domain at " << _domainOffset <<
       " of width/size " << _domainSize <<
       ". bounding box has size " << _boundingBoxSize <<
       ". grid regular up to level " << coarsestMeshLevel << " (level 1 is coarsest available cell in tree)" );
 
-  tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _parser.getOffset();
+  tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _domainOffset;
   #ifdef Parallel
   if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
     const double boundingBoxScaling = static_cast<double>(coarsestMeshLevel) / (static_cast<double>(coarsestMeshLevel)-2);
-    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _parser.getDomainSize(), _boundingBoxSize );
+    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize );
     const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _parser.getDomainSize(), _boundingBoxSize, boundingBoxScaling );
+    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, coarsestMeshLevel, _domainSize, _boundingBoxSize, boundingBoxScaling );
 
     logInfo(
         "createRepository(...)",
