@@ -10,11 +10,15 @@ void MHD::MHDSolver_FV::init(std::vector<std::string>& cmdlineargs) {
   // All the work is done in MHDSolver_ADERDG::init.
 }
 
-bool MHD::MHDSolver_FV::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+bool MHD::MHDSolver_FV::useAdjustSolution(
+  const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+  const tarch::la::Vector<DIMENSIONS, double>& dx,
+  const double t,
+  const double dt) const {
   return (t < 1e-10);
 }
 
-void MHD::MHDSolver_FV::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void MHD::MHDSolver_FV::adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   if (tarch::la::equals(t, 0.0)) {
     idfunc(x, Q);
   }
@@ -67,14 +71,6 @@ const double* const stateIn,double* stateOut) {
 //  }
 }
 
-
-//void MHD::MHDSolver_FV::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-//  constexpr int nVar = 9;
-//  std::memset(BgradQ, 0, nVar * sizeof(double));
-//}
-//
-//
-//void MHD::MHDSolver_FV::coefficientMatrix(const double* const Q,const int normalNonZero,double* Bn) {
-//  constexpr int nVar = 9;
-//  std::memset(Bn, 0, nVar * nVar * sizeof(double));
-//}
+bool MHD::MHDSolver_FV::useAlgebraicSource() const {
+  return true;
+}

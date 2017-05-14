@@ -65,9 +65,10 @@ exahype-project MHD
 
     limiter-kernel const           = generic::godunov 
     limiter-language const         = C
-    dmp-relaxation-parameter       = 0.0001
-    dmp-difference-scaling         = 0.001
-    steps-till-cured         = 0
+    dmp-observables                = 2
+    dmp-relaxation-parameter       = 1e-4
+    dmp-difference-scaling         = 1e-3
+    steps-till-cured               = 2
 
     plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 9
