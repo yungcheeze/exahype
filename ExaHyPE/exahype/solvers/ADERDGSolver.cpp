@@ -1443,13 +1443,6 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
 
   // TODO Dominic: This is a little inconsistent since I orignially tried to hide
   // the limiting from the pure ADER-DG scheme
-//  fineGridCellDescription.setPreviousLimiterStatus(coarseGridCellDescription.getPreviousLimiterStatus());
-//  const CellDescription::LimiterStatus limiterStatus = determineLimiterStatus(fineGridCellDescription);
-//
-//  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-//    fineGridCellDescription.setLimiterStatus(i,limiterStatus);
-//  }
-
   fineGridCellDescription.setPreviousLimiterStatus(CellDescription::LimiterStatus::Ok);
   fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Ok);
 
@@ -1459,10 +1452,11 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
   // according to the PAD, we don't want to have a too broad refined area.
   // We thus do not flag children cells with troubled
   //
-  if (coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
+  if (!initialGrid
+      &&
+      coarseGridCellDescription.getLimiterStatus()==CellDescription::LimiterStatus::Troubled) {
     fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
-    // TODO(Dominic): Bug: Cell is regarded as troubled but limiter patch is not allocated. Should not happen
   }
   writeLimiterStatusOnBoundary(fineGridCellDescription);
 }
