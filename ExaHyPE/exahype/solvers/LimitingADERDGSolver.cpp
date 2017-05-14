@@ -273,13 +273,18 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
   assertion1(coarseGridCellDescriptionsIndex==fineGridSolverPatch.getParentIndex(),fineGridSolverPatch.toString());
 
   if (
-      (fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
-          ||
-          fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested)
-          &&
-          fineGridSolverPatch.getLimiterStatus()>static_cast<int>(SolverPatch::LimiterStatus::Ok))
-  {
-    fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
+      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
+      ||
+      fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested
+  ) {
+    const int levelDelta = getMaximumAdaptiveMeshLevel() - fineGridSolverPatch.getLevel();
+    const int minLimiterStatus =
+        std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
+                 static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
+
+    if (fineGridSolverPatch.getLimiterStatus()>=minLimiterStatus) {
+      fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
+    }
   }
 }
 
@@ -292,6 +297,19 @@ bool exahype::solvers::LimitingADERDGSolver::updateStateInLeaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber)  {
+  const int solverElement =
+      _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  const int parentSolverElement =
+      _solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+  if (solverElement!=exahype::solvers::Solver::NotFound
+      &&
+      parentSolverElement!=exahype::solvers::Solver::NotFound
+  ) {
+    restrictLimiterStatus(
+        fineGridCell.getCellDescriptionsIndex(),solverElement,
+        coarseGridCell.getCellDescriptionsIndex(),parentSolverElement);
+  }
+
   return _solver->updateStateInLeaveCell(
       fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
       coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
@@ -339,16 +357,12 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinemen
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
-      switch (solverPatch.getLimiterStatus()) {
-      case SolverPatch::LimiterStatus::Troubled:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled2:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
-      case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
-        return true;
-      default:
-        return false;
-      }
+      const int levelDelta = getMaximumAdaptiveMeshLevel() - solverPatch.getLevel();
+      const int minLimiterStatus =
+          std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
+                   static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
+
+      return solverPatch.getLimiterStatus() > minLimiterStatus;
     }
   }
   return false;

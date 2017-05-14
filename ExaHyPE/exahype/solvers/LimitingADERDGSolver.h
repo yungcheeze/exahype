@@ -866,11 +866,12 @@ public:
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
   /**
-   * Restrict the limiter status of a cell
+   * Restrict the Troubled limiter status of a cell
    * up to the parent if the parent exists.
    *
-   * \p This operation is always executed as
-   * a single-threaded operation.
+   * Any other limiter status is ignored.
+   *
+   * \note This operation is not thread-safe
    */
   void restrictLimiterStatus(
       const int cellDescriptionsIndex,
