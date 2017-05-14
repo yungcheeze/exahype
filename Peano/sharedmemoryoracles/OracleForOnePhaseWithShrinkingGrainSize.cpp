@@ -25,12 +25,14 @@ tarch::multicore::BooleanSemaphore   sharedmemoryoracles::OracleForOnePhaseWithS
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
   bool learn,
   bool restart,
-  SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy
+  SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy,
+  int persistentSubtrees
 ):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
   _learn(learn && tarch::multicore::Core::getInstance().getNumberOfThreads()>1),
   _restart(restart),
   _selectNextStudiedMeasureTraceStrategy(selectNextStudiedMeasureTraceStrategy),
+  _persistentSubtrees(persistentSubtrees),
   _measurements() {
   for (int i=0; i<static_cast<int>(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling); i++) {
     peano::datatraversal::autotuning::MethodTrace askingMethod = peano::datatraversal::autotuning::toMethodTrace(i);
@@ -126,7 +128,20 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry  sha
 
 
 peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
-  // tarch::multicore::Lock lock(_semaphore);
+  if (
+    askingMethod==peano::datatraversal::autotuning::MethodTrace::HoldPersistentRegularSubgrid
+    &&
+    problemSize > _persistentSubtrees
+  ) {
+    return peano::datatraversal::autotuning::GrainSize(
+      1,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+  }
+
+
   if ( problemSize==1 ) {
     return peano::datatraversal::autotuning::GrainSize(
       0,
@@ -138,7 +153,6 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
   else if (
     _activeMethodTrace==askingMethod
   ) {
-    // @todo Das eigentliche Oracle
     assertion( askingMethod != peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
     assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
@@ -248,7 +262,6 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
       _activeMethodTrace             = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
 
       while ( _measurements.count(_activeMethodTrace)==0 ) {
-//        xxx Kann das ne Endlosschleife geben?
         _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
         if (
           remainingTriesToFindSearchingTrace>0
@@ -775,7 +788,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle() const {
-  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart,_selectNextStudiedMeasureTraceStrategy);
+  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart,_selectNextStudiedMeasureTraceStrategy, _persistentSubtrees);
 }
 
 
