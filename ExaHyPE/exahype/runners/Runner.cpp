@@ -845,6 +845,11 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     logInfo("updateMeshFusedTimeStepping(...)","perform mesh refinement");
     repository.getState().switchToUpdateMeshContext(); // TODO(Dominic): Adjust context for MPI
     createMesh(repository);
+
+    // TODO(Dominic): Bug. Recompute the (previous) stable time step size
+    // This breaks codes  which initially do not limit but then turn on the limiter in the next
+    // iterationa and refine down to the finest level. Recomputation is then performed using the
+    // old time step size which was computed for a coarser mesh.
   }
 
   logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send subcell data to neighbours");
