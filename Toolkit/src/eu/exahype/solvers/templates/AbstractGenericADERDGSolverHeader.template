@@ -31,6 +31,13 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int NumberOfParameters = {{NumberOfParameters}};
     static constexpr int Order              = {{Order}};
     static constexpr double CFL             = 0.9;
+    
+    // virtual getters for the constexpr's
+    int constexpr_getNumberOfVariables()  const override { return NumberOfVariables; };
+    int constexpr_getNumberOfParameters() const override { return NumberOfParameters; };
+    int constexpr_getOrder()              const override { return Order; };
+    double constexpr_getCFLNumber()       const override { return CFL; };
+    
   
     class Variables;
     class ReadOnlyVariables;

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "exahype/solvers/Solver.h"
+#include "exahype/solvers/UserSolverInterface.h"
 
 #include "peano/heap/Heap.h"
 #include "peano/utils/Globals.h"
@@ -40,7 +41,7 @@ namespace exahype {
 /**
  * Describes one solver.
  */
-class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
+class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver, public exahype::solvers::UserADERDGSolverInterface {
 public:
   /**
    * Set to 0 if no floating point compression is used.
