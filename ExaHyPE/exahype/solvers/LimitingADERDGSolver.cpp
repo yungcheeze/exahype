@@ -391,12 +391,27 @@ void exahype::solvers::LimitingADERDGSolver::reconstructStandardTimeSteppingData
 
 void exahype::solvers::LimitingADERDGSolver::setInitialConditions(
     const int cellDescriptionsIndex,
-    const int element,
+    const int solverElement,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   _solver->setInitialConditions(
-      cellDescriptionsIndex,element,
+      cellDescriptionsIndex,solverElement,
       fineGridVertices,fineGridVerticesEnumerator);
+
+  const int limiterElement =
+      tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,solverElement);
+  if (limiterElement!=exahype::solvers::Solver::NotFound) {
+    SolverPatch& solverPatch =
+            _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+    LimiterPatch& limiterPatch =
+            _limiter->getCellDescription(cellDescriptionsIndex,limiterElement);
+    limiterPatch.setTimeStamp(solverPatch.getCorrectorTimeStamp());
+    limiterPatch.setTimeStepSize(solverPatch.getCorrectorTimeStepSize());
+
+    _limiter->setInitialConditions(
+        cellDescriptionsIndex,limiterElement,
+        fineGridVertices,fineGridVerticesEnumerator);
+  }
 }
 
 /**
