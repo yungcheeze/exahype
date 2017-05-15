@@ -176,6 +176,40 @@ class exahype::solvers::Solver {
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   /**
+   * The type of refinement requested by a solver.
+   */
+  enum class RefinementType {
+    /**
+     * No refinement is requested.
+     */
+    None,
+    /**
+     * Refinement was either requested by the user's refinement
+     * criterion or due to the limiter status flagging on
+     * coarser mesh levels (applies only to LimitingADERDGSolver).
+     * In case of the latter, no compute cell (Cell) on a coarser mesh level
+     * must be flagged as Troubled.
+     *
+     * The runner must then refine the mesh accordingly, and recompute
+     * the time step size and the space-time predictor.
+     * No rollback to a previous time step is required.
+     */
+    APrioriRefinement,
+
+    /**
+     * Refinement was requested since a compute cell (Cell) on a coarser
+     * mesh level was flagged with status Troubled.
+     *
+     * The runner must then refine the mesh accordingly, and perform a
+     * rollback in all cells to the previous solution. It computes
+     * a new time step size in all cells. Next, it recomputes the predictor in all
+     * cells, troubled or not. Finally, it reruns the whole ADERDG time step in
+     * all cells, troubled or not.
+     */
+    APosterioriRefinement
+  };
+
+  /**
    * This struct is used in the AMR context
    * to lookup a parent cell description and
    * for computing the subcell position of the child
