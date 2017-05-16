@@ -34,6 +34,12 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
     static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
     static constexpr double CFL             = 0.9;
+    
+    // virtual getters for the constexpr's
+    int constexpr_getNumberOfVariables()  const override { return NumberOfVariables; };
+    int constexpr_getNumberOfParameters() const override { return NumberOfParameters; };
+    int constexpr_getOrder()              const override { return Order; };
+    double constexpr_getCFLNumber()       const override { return CFL; };
   
     class Variables;
     class ReadOnlyVariables;
