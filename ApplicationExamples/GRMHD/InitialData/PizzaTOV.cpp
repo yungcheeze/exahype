@@ -9,7 +9,7 @@
 #ifndef PIZZATOV_AVAILABLE
 
 pizzatov::pizzatov() {
-	printf("Cannot call Pizza as not compiled with -DPIZZA_TOV_AVAILABLE");
+	printf("Cannot call Pizza as not compiled with -DPIZZATOV_AVAILABLE");
 	abort();
 }
 void pizzatov::Interpolate(const double* x, double t, double* Q) {}
