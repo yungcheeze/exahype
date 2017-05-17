@@ -182,6 +182,7 @@ void exahype::mappings::SolutionRecomputation::enterCell(
             && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
           auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
+          // TODO(Dominic): AMR+Limiter: Recompute in all cells if mesh update
           limitingADERSolver->recomputeSolution(
               fineGridCell.getCellDescriptionsIndex(),
               element,
@@ -189,6 +190,7 @@ void exahype::mappings::SolutionRecomputation::enterCell(
               fineGridVertices,
               fineGridVerticesEnumerator);
 
+          // TODO(Dominic): AMR+Limiter: AMR+Limiter: Recompute in all cells if mesh update
           if (exahype::State::fuseADERDGPhases()) {
             limitingADERSolver->recomputePredictor(
                 fineGridCell.getCellDescriptionsIndex(),
@@ -227,6 +229,7 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
             auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
+            // TODO(Dominic): AMR+Limiter: Merge all in case
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
                 && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
               const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];

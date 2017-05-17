@@ -143,9 +143,52 @@ namespace exahype {
     // TODO(Dominic): Externalise the solver flags.
 
     enum class LimiterDomainChange {
-      None,
-      IrregularChangeOnFinestMeshLevel,
-      IrregularChangeOnCoarserMeshLevel,
+      /**
+       * A regular change of the limiter domain
+       * has occurred. This might be either no change at
+       * all or a situation where a cell directly next to a
+       * troubled cell has been newly marked as troubled.
+       */
+      Regular,
+
+      /**
+       * A cell which is not directly next to a troubled cell
+       * has newly been marked as troubled.
+       * The cell and all its neighbours with Limiter-Status other than Ok,
+       * are on the finest mesh level.
+       *
+       * <h2>Consequences</h2>
+       * Usually, only a limiter status spreading, reinitialisation
+       * and recomputation is necessary.
+       *
+       * However, if we further detect a cell of type Descendant/EmptyDescendant
+       * marked with LimiterStatus other than Ok on the finest mesh level,
+       * this status will change to IrregularChangeOnCoarserMeshLevel.
+       */
+      Irregular,
+
+      /**
+       * Scenario 1:
+       * A cell which is not directly next to a troubled cell
+       * has newly been marked as troubled.
+       * The cell is not on the finest mesh level.
+       *
+       * Scenario 2:
+       * A cell of type Descendant/EmptyDescendant
+       * was marked with LimiterStatus other than Ok.
+       * The cell is on the finest mesh level.
+       *
+       * <h2>Consequences</h2>
+       * The runner must then refine the mesh accordingly, and perform a
+       * rollback in all cells to the previous solution. It computes
+       * a new time step size in all cells. Next, it recomputes the predictor in all
+       * cells, troubled or not. Finally, it reruns the whole ADERDG time step in
+       * all cells, troubled or not.
+       *
+       * This can potentially be relaxed for anarchic time stepping where
+       * each cell has its own time step size and stamp.
+       */
+      IrregularRequiringMeshUpdate,
     };
 
     /**

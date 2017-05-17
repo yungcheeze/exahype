@@ -157,8 +157,11 @@ void exahype::mappings::Reinitialisation::enterCell(
 
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          auto limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+           &&
+           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()
+        ) {
+          auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
           limitingADERDGSolver->rollbackToPreviousTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
           if (!exahype::State::fuseADERDGPhases()) {

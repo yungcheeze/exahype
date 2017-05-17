@@ -146,9 +146,39 @@ class exahype::dastgen::State {
      * the master-worker and
      * worker-master communication.
      */
-    ReduceAndMergeTimeStepDataAndSendFaceData
+    ReduceAndMergeTimeStepDataAndSendFaceData,
   };
   parallelise persistent SendMode sendMode;
+  
+  /**
+   * This flag influences the behaviour of the Predictor,
+   * TimeStepSizeComputation, SolutionUpdate, Merging and
+   * Sending mappings by selecting  
+   */
+  enum AlgorithmicSection {
+   	/*
+   	 * Indicates that the runner is currently 
+   	 * performing
+   	 * a normal ADER-DG time step.
+   	 */
+   	TimeStepping,
+   	
+   	/**
+   	 *
+   	 */
+   	LocalRecomputation,
+   	
+   	/**
+   	 *
+   	 */
+   	APosterioriRefinement,
+   	
+   	/**
+   	 *
+   	 */
+   	APrioriRefinement
+  };
+  parallelise persistent AlgorithmicSection _algorithmicSection;
   
   /**
    * If this flag is set, the solvers

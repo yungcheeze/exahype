@@ -249,7 +249,7 @@ private:
   /**
    * Allocates a limiter patch and performs a DG to FV projection
    */
-  bool allocateLimiterPatchAfterSolutionUpdate(
+  void allocateLimiterPatchAfterSolutionUpdate(
       const int cellDescriptionsIndex,const int solverElement) const;
 
   /**
@@ -273,7 +273,7 @@ private:
    * to Troubled or from Troubled to NeighbourOfTroubled3, NeighbourOfTroubled4, this
    * methods returns false.
    */
-  bool determineLimiterStatusAfterSolutionUpdate(
+  LimiterDomainChange determineLimiterStatusAfterSolutionUpdate(
       SolverPatch& solverPatch,const bool isTroubled) const;
 
   /**
@@ -720,17 +720,17 @@ public:
    * the information taken from the neighbour
    * merging.
    */
-  bool updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
+  exahype::solvers::LimiterDomainChange
+  updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
    * Similar to ::determineLimiterStatusAfterSolutionUpdate(const int,const int)
-   * but does not evaluate the discrete maximum principle.
-   *
-   * TODO(Dominic): Remove the return value.
+   * Does only evaluate the physical admissibility detection (PAD) but not the
+   * discrete maximum principle (DMP).
    */
-  bool updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+  exahype::solvers::LimiterDomainChange updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,
       const int element);
 
@@ -738,9 +738,13 @@ public:
    * Update the merged limiter status with a unified value based on
    * the merged limiter statuses per face of the cell.
    *
+   * \return LimiterDomainChange::Regular as along as the function does not
+   * detect a cell of type Descendant/EmptyDescendant on the finest mesh level
+   * with a limiter status other than Ok.
+   *
    * \see ::determineLimiterStatus
    */
-  void updateLimiterStatus(
+  exahype::solvers::LimiterDomainChange updateLimiterStatus(
       const int cellDescriptionsIndex,const int element) const;
 
   /*

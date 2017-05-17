@@ -435,7 +435,7 @@ bool exahype::mappings::Sending::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  bool workerHasToSendDataMaster = false;
+  bool workerHasToSendDataToMaster = false;
 
   if ((_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData)
@@ -446,7 +446,7 @@ bool exahype::mappings::Sending::prepareSendToWorker(
         int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound) {
-          workerHasToSendDataMaster |=
+          workerHasToSendDataToMaster |=
               solver->hasToSendDataToMaster(fineGridCell.getCellDescriptionsIndex(),element);
         }
 
@@ -457,7 +457,7 @@ bool exahype::mappings::Sending::prepareSendToWorker(
 
   if (!peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
       &&
-      workerHasToSendDataMaster
+      workerHasToSendDataToMaster
       &&
       SkipReductionInBatchedTimeSteps) {
     return false;
