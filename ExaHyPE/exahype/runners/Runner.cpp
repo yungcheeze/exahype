@@ -471,7 +471,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
-          || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+          || exahype::solvers::Solver::oneSolverRequestedMeshUpdate()
   ) {
     repository.iterate();
     gridSetupIterations++;
@@ -507,7 +507,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     #ifdef Asserts
     logInfo("createGrid()",
              "grid setup iteration #" << gridSetupIterations <<
-             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedMeshUpdate()
      );
     #endif
 
@@ -535,11 +535,11 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   while (
       extraIterations > 0
       || repository.getState().continueToConstructGrid()
-      || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+      || exahype::solvers::Solver::oneSolverRequestedMeshUpdate()
   ) {
     gridUpdate |=
         repository.getState().continueToConstructGrid()
-        || exahype::solvers::Solver::oneSolverRequestedGridUpdate();
+        || exahype::solvers::Solver::oneSolverRequestedMeshUpdate();
 
     repository.iterate();
     extraIterations--;
@@ -830,7 +830,7 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   // Remember the old grid update request.
   // We have to remember it. It will be overwritten during the limiter
   // status spreadng.
-  bool gridUpdate = exahype::solvers::Solver::oneSolverRequestedGridUpdate();
+  bool gridUpdate = exahype::solvers::Solver::oneSolverRequestedMeshUpdate();
 
   repository.getState().switchToNeighbourDataDroppingContext();
   repository.switchToNeighbourDataMerging();
@@ -840,7 +840,7 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   repository.switchToLimiterStatusSpreading();
   repository.iterate(5);
   // After the spreading, we might again need to refine.
-  gridUpdate |= exahype::solvers::Solver::oneSolverRequestedGridUpdate();
+  gridUpdate |= exahype::solvers::Solver::oneSolverRequestedMeshUpdate();
   if (gridUpdate) {
     logInfo("updateMeshFusedTimeStepping(...)","perform mesh refinement");
     repository.getState().switchToUpdateMeshContext(); // TODO(Dominic): Adjust context for MPI
@@ -850,6 +850,15 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     // This breaks codes  which initially do not limit but then turn on the limiter in the next
     // iterationa and refine down to the finest level. Recomputation is then performed using the
     // old time step size which was computed for a coarser mesh.
+    //
+    // !!! I have to distinguish between a-posteriori and a-priori refinement!!!
+    //
+    // A-priori uses the current solution and needs to recompute the current time step size after
+    // the grid update.
+    // A-posteriori used the previous solution and needs to recompute the previous time step size
+    // after the grid update.
+    // I have to keep a flag that checks if a cell got troubled on a coarser level.
+    // Then, I have to recompute all cells with a new time step size.
   }
 
   logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send subcell data to neighbours");
@@ -994,8 +1003,8 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    * 4. Compute the cell-local time step sizes
    */
 
-  std::cout << "[pre] irregularChangeOfLimiterDomain="<<exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() << std::endl;
-  std::cout << "[pre] oneSolverRequestedGridUpdate  ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGridUpdate() << std::endl;
+  std::cout << "[pre] irregularChangeOfLimiterDomain          ="<<exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() << std::endl;
+  std::cout << "[pre] oneSolverRequestedMeshUpdate            ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()<< std::endl;
 
   repository.getState().switchToADERDGTimeStepContext();
   if (numberOfStepsToRun==0) {
@@ -1006,11 +1015,11 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 
-  std::cout << "[post] irregularChangeOfLimiterDomain="<<exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() << std::endl;
-  std::cout << "[post] oneSolverRequestedGridUpdate  ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGridUpdate() << std::endl;
+  std::cout << "[post] irregularChangeOfLimiterDomain          ="<<exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() << std::endl;
+  std::cout << "[post] oneSolverRequestedMeshUpdate            ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()<< std::endl;
 
   bool gridUpdate = false;
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGridUpdate() ||
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate() ||
       exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver()) {
     gridUpdate = updateMeshFusedTimeStepping(repository);
     // TODO(Dominic): Better separate the refinement from the final limiter // status spreading
@@ -1082,7 +1091,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
   // refinement criterion. We enforce that the
   // limiter is only active on the finest mesh level
   // by mesh refinement.
-  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
+  while (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
     logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
 
     repository.getState().switchToUpdateMeshContext();

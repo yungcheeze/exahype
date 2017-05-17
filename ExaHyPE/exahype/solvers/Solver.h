@@ -95,6 +95,59 @@ namespace exahype {
      */
     extern std::vector<Solver*> RegisteredSolvers;
 
+    // TODO(Dominic): Remove later on
+//    /**
+//     * The type of refinement requested by a solver.
+//     */
+//    enum class MeshUpdateRequest {
+//      /**
+//       * No refinement is requested.
+//       */
+//      None,
+//      /**
+//       * Refinement was either requested by the user's refinement
+//       * criterion or due to the limiter status flagging on
+//       * coarser mesh levels (applies only to LimitingADERDGSolver).
+//       * In case of the latter, no compute cell (Cell) on a coarser mesh level
+//       * must be flagged as Troubled.
+//       *
+//       * The runner must then refine the mesh accordingly, and recompute
+//       * the time step size and the space-time predictor.
+//       * No rollback to a previous time step is required.
+//       */
+//      APrioriRefinement,
+//
+//      /**
+//       * Refinement was requested since a compute cell (Cell) on a coarser
+//       * mesh level was flagged with status Troubled.
+//       *
+//       * The runner must then refine the mesh accordingly, and perform a
+//       * rollback in all cells to the previous solution. It computes
+//       * a new time step size in all cells. Next, it recomputes the predictor in all
+//       * cells, troubled or not. Finally, it reruns the whole ADERDG time step in
+//       * all cells, troubled or not.
+//       */
+//      APosterioriRefinement,
+//
+//      /**
+//       * This callback is used by a solver to notify
+//       * the MeshRefinement mapping that
+//       * a mesh refinement operation has not completed
+//       * and the solver needs at least one extra iteration
+//       * to complete it.
+//       */
+//      RunExtraIterationSinceMeshIsNotStable
+//    };
+
+    // TODO(DOminic): Add the same stuff for the irregularLimiterDomainChange flags
+    // TODO(Dominic): Externalise the solver flags.
+
+    enum class LimiterDomainChange {
+      None,
+      IrregularChangeOnFinestMeshLevel,
+      IrregularChangeOnCoarserMeshLevel,
+    };
+
     /**
      * Temporary variables that
      * hold information if the grid has been updated
@@ -134,13 +187,13 @@ public:
    *
    * The flag has only a meaning for the LimitingADERDGSolver.
    */
-  bool* _limiterDomainHasChanged = nullptr;
+  bool* _irregularChangeOfLimiterDomain = nullptr;
 
   /**
    * Per solver, we hold a status flag indicating
-   * if the solver has requested a grid update.
+   * if the solver has requested a mesh update.
    */
-  bool* _gridUpdateRequested = nullptr;
+  bool* _meshUpdateRequest = nullptr;
 };
 
 /**
@@ -174,40 +227,6 @@ class exahype::solvers::Solver {
    * returned by the user functions.
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
-
-  /**
-   * The type of refinement requested by a solver.
-   */
-  enum class RefinementType {
-    /**
-     * No refinement is requested.
-     */
-    None,
-    /**
-     * Refinement was either requested by the user's refinement
-     * criterion or due to the limiter status flagging on
-     * coarser mesh levels (applies only to LimitingADERDGSolver).
-     * In case of the latter, no compute cell (Cell) on a coarser mesh level
-     * must be flagged as Troubled.
-     *
-     * The runner must then refine the mesh accordingly, and recompute
-     * the time step size and the space-time predictor.
-     * No rollback to a previous time step is required.
-     */
-    APrioriRefinement,
-
-    /**
-     * Refinement was requested since a compute cell (Cell) on a coarser
-     * mesh level was flagged with status Troubled.
-     *
-     * The runner must then refine the mesh accordingly, and perform a
-     * rollback in all cells to the previous solution. It computes
-     * a new time step size in all cells. Next, it recomputes the predictor in all
-     * cells, troubled or not. Finally, it reruns the whole ADERDG time step in
-     * all cells, troubled or not.
-     */
-    APosterioriRefinement
-  };
 
   /**
    * This struct is used in the AMR context
@@ -318,9 +337,9 @@ class exahype::solvers::Solver {
 
   /**
    * Loop over the solver registry and check if one
-   * of the solvers has requested a grid update.
+   * of the solvers has requested a mesh update.
    */
-  static bool oneSolverRequestedGridUpdate();
+  static bool oneSolverRequestedMeshUpdate();
 
  /**
   * Some solvers can deploy data conversion into the background. How this is
@@ -427,7 +446,7 @@ class exahype::solvers::Solver {
    */
   std::unique_ptr<profilers::Profiler> _profiler;
   /**
-   * Flag indicating if a grid update was
+   * Flag indicating if a mesh update was
    * requested by this solver.
    *
    * This is the state after the
@@ -438,10 +457,10 @@ class exahype::solvers::Solver {
    * solver has merged its state
    * with its workers' worker.
    */
-  bool _gridUpdateRequested;
+  bool _meshUpdateRequest;
 
   /**
-   * Flag indicating if a grid update was
+   * Flag indicating if a mesh update was
    * requested by this solver.
    *
    * This is the state before the
@@ -452,7 +471,7 @@ class exahype::solvers::Solver {
    * solver has merged its state
    * with its workers' solver.
    */
-  bool _nextGridUpdateRequested;
+  bool _nextMeshUpdateRequest;
 
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type,
@@ -580,37 +599,37 @@ class exahype::solvers::Solver {
   virtual void toString(std::ostream& out) const;
 
   /**
-   * Reset the grid update flags.
+   * Reset the mesh update flags.
    */
-  void resetGridUpdateRequestedFlags();
+  void resetMeshUpdateRequestFlags();
 
   /**
-   * Indicates if a grid update was requested
+   * Indicates if a mesh update was requested
    * by this solver.
    *
    * <h2>MPI</h2>
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getNextGridUpdateRequested() const;
+  bool getNextMeshUpdateRequest() const;
 
   /**
-   * Indicates if a grid update was requested
+   * Indicates if a mesh update was requested
    * by this solver.
    *
    * <h2>MPI</h2>
    *This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getGridUpdateRequested() const;
+  bool getMeshUpdateRequest() const;
 
   /**
-   * Overwrite the _gridUpdateRequested flag
-   * by the _nextGridUpdateRequested flag.
-   * Reset the _nextGridUpdateRequested flag
+   * Overwrite the _MeshUpdateRequest flag
+   * by the _nextMeshUpdateRequest flag.
+   * Reset the _nextMeshUpdateRequest flag
    * to false;
    */
-  void setNextGridUpdateRequested();
+  void setNextMeshUpdateRequest();
 
   /**
    * Run over all solvers and identify the minimal time stamp.
@@ -680,13 +699,13 @@ class exahype::solvers::Solver {
 
  public:
   /**
-   * Update if a grid update was requested by this solver.
+   * Update if a mesh update was requested by this solver.
    *
    * <h2>MPI</h2>
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  void updateNextGridUpdateRequested(bool gridUpdateRequested);
+  void updateNextMeshUpdateRequest(const bool& meshUpdateRequest);
 
   /**
    * Returns true if the index \p cellDescriptionsIndex
@@ -835,13 +854,15 @@ class exahype::solvers::Solver {
    * Evaluate the refinement criterion after
    * a solution update has performed.
    *
-   * We currently only return true
+   * We currently only return RefinementType::APrioriRefinement (or
+   * RefinementType::APosterrioriRefinement)
    * if a cell requested refinement.
    * ExaHyPE might then stop the
    * time stepping and update the mesh
-   * before continuing.
+   * before continuing. Erasing is here not considered.
    *
-   * \return true if a grid update is necessary.
+   * \return RefinementType::APrioriRefinement (or
+   * RefinementType::APosterrioriRefinement) if a mesh update is necessary.
    */
   virtual bool evaluateRefinementCriterionAfterSolutionUpdate(
       const int cellDescriptionsIndex,
@@ -1422,9 +1443,9 @@ class exahype::solvers::Solver {
   /*
    * At the time of sending data to the master,
    * we have already performed set the next
-   * grid update requested flag locally.
+   * mesh update requested flag locally.
    * We thus need to communicate the
-   * current grid update requested flag to the master.
+   * current mesh update requested flag to the master.
    *
    * However on the master's side, we need to
    * merge the received time step size with
@@ -1433,16 +1454,16 @@ class exahype::solvers::Solver {
    *
    * TODO(Dominic): Restrict limiter status too
    */
-  void sendGridUpdateFlagsToMaster(
+  void sendMeshUpdateFlagsToMaster(
       const int                                    masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
 
   /**
-   * Merge the _nextGridUpdateRequested with the flag
+   * Merge the _nextMeshUpdateRequest with the flag
    * received from the worker.
    */
-  void mergeWithWorkerGridUpdateFlags(
+  void mergeWithWorkerMeshUpdateFlags(
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);

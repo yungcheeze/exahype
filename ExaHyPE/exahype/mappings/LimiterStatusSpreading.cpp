@@ -92,7 +92,16 @@ exahype::mappings::LimiterStatusSpreading::LimiterStatusSpreading(const LimiterS
 void exahype::mappings::LimiterStatusSpreading::beginIteration(
   exahype::State& solverState
 ) {
-  // TODO(Dominic): Perform this similar to the SolutionUpdate stuff
+  // We memorise the previous request per solver
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+//      solver->zeroTimeStepSizes();
+      solver->updateNextMeshUpdateRequest(solver->getMeshUpdateRequest());
+  }
+
+  // TODO(Dominic): Prepare variables for multithreading
+
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -116,7 +125,7 @@ void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& sol
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
 //      solver->zeroTimeStepSizes();
-      solver->setNextGridUpdateRequested();
+      solver->setNextMeshUpdateRequest();
   }
 
   #ifdef Parallel
@@ -201,10 +210,12 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
         limitingADERDG->deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),element);
         limitingADERDG->ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),element);
 
-        bool gridUpdateRequested = limitingADERDG->
-              evaluateLimiterStatusBasedRefinementCriterion(fineGridCell.getCellDescriptionsIndex(),element);
+        bool meshUpdateRequest =
+            limitingADERDG->
+              evaluateLimiterStatusBasedRefinementCriterion(
+                  fineGridCell.getCellDescriptionsIndex(),element);
         // TODO(Dominic): Enable multithreading for this; have value per solver; reduce in endIteration
-        limitingADERDG->updateNextGridUpdateRequested(gridUpdateRequested);
+        limitingADERDG->updateNextMeshUpdateRequest(meshUpdateRequest);
       }
 
       solver->prepareNextNeighbourMerging(
@@ -387,7 +398,7 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToMaster(
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
       // TODO(Dominic): Restrict limiter status too
-      solver->sendGridUpdateFlagsToMaster(
+      solver->sendMeshUpdateFlagsToMaster(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           verticesEnumerator.getCellCenter(),
           verticesEnumerator.getLevel());
@@ -410,7 +421,7 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithMaster(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     // TODO(Dominic): Merge restricted limiter status
-    solver->mergeWithWorkerGridUpdateFlags(
+    solver->mergeWithWorkerMeshUpdateFlags(
         worker,
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getLevel());

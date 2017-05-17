@@ -151,7 +151,7 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  setNextGridUpdateRequested();
+  setNextMeshUpdateRequest();
 }
 
 /**
@@ -259,10 +259,9 @@ bool exahype::solvers::FiniteVolumesSolver::updateStateInEnterCell(
     addNewCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
                multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
                solverNumber);
-    // Fine grid cell based adaptive mesh refinement operations.
+    // Fine grid cell based adaptive mesh refinement operations are not implemented.
   } else if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
-    CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
+    // do nothing
   }
 
   return false;
@@ -1266,7 +1265,7 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                    level) {
   std::vector<double> timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minTimeStepSize);
-  timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0);
+  timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0);
   timeStepDataToReduce.push_back(_minCellSize);
   timeStepDataToReduce.push_back(_maxCellSize);
 
@@ -1322,7 +1321,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
 
   int index=0;
   _minNextTimeStepSize      = std::min( _minNextTimeStepSize, receivedTimeStepData[index++] );
-  _nextGridUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  _nextMeshUpdateRequest |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
   _nextMinCellSize          = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
   _nextMaxCellSize          = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
@@ -1336,7 +1335,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
              "_minNextTimeStepSize="     << _minNextTimeStepSize <<
-             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+             "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
              ",_nextMinCellSize="        << _nextMinCellSize <<
              ",_nextMaxCellSize="        << _nextMaxCellSize);
   }

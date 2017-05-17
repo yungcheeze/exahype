@@ -289,14 +289,21 @@ private:
   void projectDGSolutionOnFVSpace(SolverPatch& solverPatch,LimiterPatch& limiterPatch) const;
 
   /**
-   * Vetoes an erasing request by the parent if the limiter
-   * status or previous limiter status of a child is anything
-   * other than Ok.
+   * Vetoes an erasing request if the cell is within
+   * or right next to a region which is refined according to
+   * the limiter status.
    */
   void vetoErasingChildrenRequestBasedOnLimiterStatus(
       const int fineGridCellDescriptionsIndex,
       const int fineGridSolverElement,
       const int coarseGridCellDescriptionsIndex) const;
+
+  /**
+   * Depending on the finest adaptive mesh level and the given level,
+   * compute the minimum limiter status for which we need to refine
+   * a cell.
+   */
+  int computeMinimumLimiterStatusForRefinement(int level) const;
 
 #ifdef Parallel
   /**
@@ -518,7 +525,23 @@ public:
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
 
-  // TODO(Dominic): Add docu
+  /**
+   * \return true in case a cell on a coarser mesh level is marked as
+   * Troubled or in case a cell on a coarser
+   * mesh level was marked with a limiter status other than troubled
+   * and for the given refinement level, it is required to refine this cell.
+   * Otherwise return false.
+   *
+   * In order to ensure that all four helper cells around the actual troubled cell
+   * fit on the finest mesh level, we need to refine additional cells around a troubled
+   * cell. The number of additionally refined cells around a troubled cells depends
+   * here on the difference in levels to the finest mesh level.
+   *
+   * At a sufficent distance to the finest level, the minimum set of cells that needs to be refined around a troubled cell
+   * are their 3^d neighbours. However since our limiter status flagging
+   * only considers direct (face) neighbours, we need to refine all cells with
+   * a limiter status Troubled-1 and Troubled-2.
+   */
   bool evaluateLimiterStatusBasedRefinementCriterion(
       const int cellDescriptionsIndex,const int solverElement) const;
 

@@ -137,7 +137,7 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
 //      solver->zeroTimeStepSizes();
-      solver->setNextGridUpdateRequested();
+      solver->setNextMeshUpdateRequest();
   }
 
   #ifdef Parallel
@@ -274,7 +274,7 @@ void exahype::mappings::MeshRefinement::enterCell(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     refineFineGridCell |=
-        solver->markForRefinement( // TODO(Dominic): Consider the maximum refinement depth here
+        solver->markForRefinement(
             fineGridCell,
             fineGridVertices,
             fineGridVerticesEnumerator,
@@ -355,7 +355,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
           fineGridVertices,
           fineGridVerticesEnumerator,
           solverNumber);
-      solver->updateNextGridUpdateRequested(!isStable);
+      solver->updateNextMeshUpdateRequest(!isStable);
     }
   }
 

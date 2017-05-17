@@ -617,7 +617,7 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  setNextGridUpdateRequested();
+  setNextMeshUpdateRequest();
 }
 
 void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
@@ -1813,8 +1813,7 @@ bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpd
                       cellDescription.getLevel());
 
     // TODO(Dominic): Set cell description refinement events? Yes or no?
-
-    return (refinementControl==RefinementControl::Refine);
+    return refinementControl==RefinementControl::Refine;
   }
 
   return false;
@@ -3277,7 +3276,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    level){
   std::vector<double> timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
-  timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
+  timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0); // TODO(Dominic): ugly
   timeStepDataToReduce.push_back(_minCellSize);
   timeStepDataToReduce.push_back(_maxCellSize);
 
@@ -3333,7 +3332,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
   int index=0;
   _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextGridUpdateRequested      |= (receivedTimeStepData[index++]) > 0 ? true : false;
+  _nextMeshUpdateRequest        |= (receivedTimeStepData[index++]) > 0 ? true : false;
   _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
   _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
@@ -3347,7 +3346,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
              "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
-             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+             "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
              ",_nextMinCellSize=" << _nextMinCellSize <<
              ",_nextMaxCellSize=" << _nextMaxCellSize);
   }

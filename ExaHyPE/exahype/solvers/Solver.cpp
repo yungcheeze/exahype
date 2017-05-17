@@ -33,34 +33,32 @@ const int exahype::solvers::Solver::NotFound = -1;
 
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
-  assertion(solverFlags._limiterDomainHasChanged==nullptr);
-  assertion(solverFlags._gridUpdateRequested    ==nullptr);
+  assertion(solverFlags._irregularChangeOfLimiterDomain==nullptr);
+  assertion(solverFlags._meshUpdateRequest    ==nullptr);
 
   int numberOfSolvers    = exahype::solvers::RegisteredSolvers.size();
-  solverFlags._limiterDomainHasChanged = new bool[numberOfSolvers];
-  solverFlags._gridUpdateRequested     = new bool[numberOfSolvers];
+  solverFlags._irregularChangeOfLimiterDomain = new bool[numberOfSolvers];
+  solverFlags._meshUpdateRequest              = new bool[numberOfSolvers];
 }
 
 void exahype::solvers::prepareSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    solverFlags._limiterDomainHasChanged[solverNumber] = false;
-  }
-
-  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    assertion(!exahype::solvers::RegisteredSolvers[solverNumber]->getNextGridUpdateRequested());
-    solverFlags._gridUpdateRequested[solverNumber] = false;
+    solverFlags._irregularChangeOfLimiterDomain[solverNumber] = false;
+    assertion(exahype::solvers::RegisteredSolvers[solverNumber]->getNextMeshUpdateRequest()
+              ==false);
+    solverFlags._meshUpdateRequest[solverNumber] = false;
   }
 }
 
 void exahype::solvers::deleteSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
-  if (solverFlags._limiterDomainHasChanged!=nullptr) {
-    assertion(solverFlags._limiterDomainHasChanged!=nullptr);
-    assertion(solverFlags._gridUpdateRequested    !=nullptr);
+  if (solverFlags._irregularChangeOfLimiterDomain!=nullptr) {
+    assertion(solverFlags._irregularChangeOfLimiterDomain!=nullptr);
+    assertion(solverFlags._meshUpdateRequest    !=nullptr);
 
-    delete[] solverFlags._limiterDomainHasChanged;
-    delete[] solverFlags._gridUpdateRequested;
-    solverFlags._limiterDomainHasChanged = nullptr;
-    solverFlags._gridUpdateRequested     = nullptr;
+    delete[] solverFlags._irregularChangeOfLimiterDomain;
+    delete[] solverFlags._meshUpdateRequest;
+    solverFlags._irregularChangeOfLimiterDomain = nullptr;
+    solverFlags._meshUpdateRequest     = nullptr;
   }
 }
 
@@ -110,8 +108,8 @@ exahype::solvers::Solver::Solver(
       _nextMaxCellSize(-std::numeric_limits<double>::max()), // "-", min
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)),
-      _gridUpdateRequested(false),
-      _nextGridUpdateRequested(false) { }
+      _meshUpdateRequest(false),
+      _nextMeshUpdateRequest(false) { }
 
 
 std::string exahype::solvers::Solver::getIdentifier() const {
@@ -182,28 +180,29 @@ double exahype::solvers::Solver::getMaximumAdaptiveMeshLevel() const {
   return _coarsestMeshLevel+_maximumAdaptiveMeshDepth;
 }
 
-void exahype::solvers::Solver::resetGridUpdateRequestedFlags() {
-  _gridUpdateRequested     = false;
-  _nextGridUpdateRequested = false;
+void exahype::solvers::Solver::resetMeshUpdateRequestFlags() {
+  _meshUpdateRequest     = false;
+  _nextMeshUpdateRequest = false;
 }
 
-void exahype::solvers::Solver::updateNextGridUpdateRequested(bool nextGridUpdateRequested) {
-  _nextGridUpdateRequested |= nextGridUpdateRequested;
-}
-
-
-bool exahype::solvers::Solver::getNextGridUpdateRequested() const {
-  return _nextGridUpdateRequested;
+void exahype::solvers::Solver::updateNextMeshUpdateRequest(
+    const bool& meshUpdateRequest) {
+  _nextMeshUpdateRequest |= meshUpdateRequest;
 }
 
 
-bool exahype::solvers::Solver::getGridUpdateRequested() const {
-  return _gridUpdateRequested;
+bool exahype::solvers::Solver::getNextMeshUpdateRequest() const {
+  return _nextMeshUpdateRequest;
 }
 
-void exahype::solvers::Solver::setNextGridUpdateRequested() {
-  _gridUpdateRequested     = _nextGridUpdateRequested;
-  _nextGridUpdateRequested = false;
+
+bool exahype::solvers::Solver::getMeshUpdateRequest() const {
+  return _meshUpdateRequest;
+}
+
+void exahype::solvers::Solver::setNextMeshUpdateRequest() {
+  _meshUpdateRequest     = _nextMeshUpdateRequest;
+  _nextMeshUpdateRequest = false;
 }
 
 
@@ -300,9 +299,9 @@ int exahype::solvers::Solver::getMaxAdaptiveRefinementDepthOfAllSolvers() {
   return maxDepth;
 }
 
-bool exahype::solvers::Solver::oneSolverRequestedGridUpdate() {
+bool exahype::solvers::Solver::oneSolverRequestedMeshUpdate() {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->getGridUpdateRequested()) {
+    if (solver->getMeshUpdateRequest()) {
       return true;
     }
   }
@@ -334,12 +333,12 @@ void exahype::solvers::Solver::toString(std::ostream& out) const {
 }
 
 #ifdef Parallel
-void exahype::solvers::Solver::sendGridUpdateFlagsToMaster(
+void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
   std::vector<double> meshRefinementFlags(0,1);
-  meshRefinementFlags.push_back(_gridUpdateRequested ? 1.0 : -1.0); // TODO(Dominic): ugly
+  meshRefinementFlags.push_back(_meshUpdateRequest ? 1.0 : -1.0); // TODO(Dominic): ugly
 
   assertion1(meshRefinementFlags.size()==1,meshRefinementFlags.size());
 
@@ -355,7 +354,7 @@ void exahype::solvers::Solver::sendGridUpdateFlagsToMaster(
       peano::heap::MessageType::MasterWorkerCommunication);
 }
 
-void exahype::solvers::Solver::mergeWithWorkerGridUpdateFlags(
+void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
@@ -372,8 +371,9 @@ void exahype::solvers::Solver::mergeWithWorkerGridUpdateFlags(
 
   assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
 
-  int index=0;
-  _nextGridUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  // TODO(Dominic): Reactivate
+//  int index=0;
+//  _nextMeshUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -381,7 +381,7 @@ void exahype::solvers::Solver::mergeWithWorkerGridUpdateFlags(
 //             "data[0]=" << receivedTimeStepData[0]);
 //
 //    logDebug("mergeWithWorkerData(...)","Updated grid update flags: " <<
-//             "_nextGridUpdateRequested=" << _nextGridUpdateRequested); TODO(Dominic):
+//             "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest); TODO(Dominic):
   }
 }
 #endif

@@ -109,7 +109,7 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  setNextGridUpdateRequested();
+  setNextMeshUpdateRequest();
 
   logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChangedIrregularly<<",_nextLimiterDomainChangedIrregularly="<<_nextLimiterDomainChangedIrregularly);
 
@@ -190,15 +190,16 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
   if (solverElement!=exahype::solvers::Solver::NotFound) {
     SolverPatch& solverPatch =
         _solver->getCellDescription(fineGridCell.getCellDescriptionsIndex(),solverElement);
-    bool refineFineGridCell = evaluateLimiterStatusBasedRefinementCriterion(
-                                  fineGridCell.getCellDescriptionsIndex(),solverElement);
+    bool refineFineGridCell =
+        evaluateLimiterStatusBasedRefinementCriterion(
+            fineGridCell.getCellDescriptionsIndex(),solverElement);
     if (refineFineGridCell) {
       solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
       return true;
     }
 
-    if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Ok
-        || solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::NeighbourOfTroubled4) {
+    if (solverPatch.getLimiterStatus()<
+        computeMinimumLimiterStatusForRefinement(solverPatch.getLevel())) {
       return _solver->markForRefinement(
               fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
               coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
@@ -206,8 +207,6 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
               initialGrid,
               solverNumber);
     }
-
-
   }
   return false;
 }
@@ -277,12 +276,8 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
       ||
       fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested
   ) {
-    const int levelDelta = getMaximumAdaptiveMeshLevel() - fineGridSolverPatch.getLevel();
-    const int minLimiterStatus =
-        std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
-                 static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
-
-    if (fineGridSolverPatch.getLimiterStatus()>=minLimiterStatus) {
+    if (fineGridSolverPatch.getLimiterStatus()>=
+        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())-1) {
       fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
     }
   }
@@ -343,6 +338,13 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
 ///////////////////////////////////
 // CELL-LOCAL
 //////////////////////////////////
+int exahype::solvers::LimitingADERDGSolver::computeMinimumLimiterStatusForRefinement(
+    int level) const {
+  const int levelDelta = getMaximumAdaptiveMeshLevel() - level;
+  return std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled2),
+               static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
+}
+
 bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinementCriterion(
     const int cellDescriptionsIndex,const int solverElement) const {
   if (solverElement!=exahype::solvers::Solver::NotFound) {
@@ -357,24 +359,33 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinemen
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
-      const int levelDelta = getMaximumAdaptiveMeshLevel() - solverPatch.getLevel();
-      const int minLimiterStatus =
-          std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3),
-                   static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
-
-      return solverPatch.getLimiterStatus() > minLimiterStatus;
+      return solverPatch.getLimiterStatus() >
+                computeMinimumLimiterStatusForRefinement(solverPatch.getLevel());
     }
   }
   return false;
 }
 
-bool exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolutionUpdate(
+bool
+exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolutionUpdate(
       const int cellDescriptionsIndex,const int element) {
-  bool refineFineGridCell =
-      _solver->evaluateRefinementCriterionAfterSolutionUpdate(cellDescriptionsIndex,element);
-  refineFineGridCell |= evaluateLimiterStatusBasedRefinementCriterion(cellDescriptionsIndex,element);
+  // First evaluate the limiter status based refinement criterion
+  bool refinementRequested =
+      evaluateLimiterStatusBasedRefinementCriterion(cellDescriptionsIndex,element);
 
-  return refineFineGridCell;
+  // If no refinement was requested, evaluate the user's refinement criterion
+  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+  if (!refinementRequested
+      &&
+      solverPatch.getLimiterStatus()<
+      computeMinimumLimiterStatusForRefinement(solverPatch.getLevel())
+  ) {
+    refinementRequested =
+        _solver->evaluateRefinementCriterionAfterSolutionUpdate(
+            cellDescriptionsIndex,element);
+  }
+
+  return false;
 }
 
 

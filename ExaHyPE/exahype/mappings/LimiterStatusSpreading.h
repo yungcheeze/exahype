@@ -50,7 +50,7 @@ private:
    */
   static tarch::logging::Log _log;
 
-  bool _gridUpdateRequested; // TODO(Dominic): Change to array; per solver
+//  bool _gridUpdateRequested; // TODO(Dominic): Change to array; per solve
 
 public:
   #ifdef Parallel
