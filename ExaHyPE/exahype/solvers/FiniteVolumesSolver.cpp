@@ -522,10 +522,14 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 //  std::cout << "[pre] solution:" << std::endl;
 //  printFiniteVolumesSolution(cellDescription); // TODO(Dominic): remove
 
+  // TODO(Dominic): Hotfix on master branch. This will not
+  // be necessary in the future.
   double admissibleTimeStepSize=0;
-  solutionUpdate(
-      newSolution,solution,tempStateSizedVectors,tempUnknowns,
-      cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+  if (cellDescription.getTimeStepSize()>0) {
+      solutionUpdate(
+          newSolution,solution,tempStateSizedVectors,tempUnknowns,
+          cellDescription.getSize(),cellDescription.getTimeStepSize(),admissibleTimeStepSize);
+  }
 
   // cellDescription.getTimeStepSize() = 0 is an initial condition
   assertion( tarch::la::equals(cellDescription.getTimeStepSize(),0.0) || !std::isnan(admissibleTimeStepSize) );
