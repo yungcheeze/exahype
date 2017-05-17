@@ -843,7 +843,8 @@ public:
                              double**  tempStateSizedVectors,
                              double**  tempStateSizedSquareMatrices,
                              const double dt,
-                             const int normalNonZero) = 0;
+                             const int normalNonZero,
+			     bool isBoundaryFace) = 0;
 
   /**
    * Return the normal fluxes (or fluctuations) and state variables at the boundary.
