@@ -146,7 +146,7 @@ class exahype::dastgen::State {
      * the master-worker and
      * worker-master communication.
      */
-    ReduceAndMergeTimeStepDataAndSendFaceData,
+    ReduceAndMergeTimeStepDataAndSendFaceData
   };
   parallelise persistent SendMode sendMode;
   

@@ -473,6 +473,8 @@ public:
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
+  bool isActive(exahype::records::State::AlgorithmicSection& section) const override;
+
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,
           const int element) override;

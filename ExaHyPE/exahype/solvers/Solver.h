@@ -28,6 +28,8 @@
 #include "peano/grid/VertexEnumerator.h"
 #include "peano/heap/DoubleHeap.h"
 
+#include "exahype/State.h"
+
 #include "exahype/profilers/Profiler.h"
 #include "exahype/profilers/simple/NoOpProfiler.h"
 
@@ -79,7 +81,7 @@ namespace exahype {
    * First entry cell type
    * Second entry limiter status.
    */
-  static constexpr int MetadataPerSolver = 2;
+  static constexpr int MetadataPerSolver     = 2;
 
   static constexpr int MetadataCellType      = 0;
   static constexpr int MetadataLimiterStatus = 1;
@@ -581,6 +583,8 @@ class exahype::solvers::Solver {
    */
   double getMaximumAdaptiveMeshLevel() const;
 
+  // TODO(Dominic): Move into the
+
   virtual void updateNextMinCellSize(double minCellSize) {
     _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
   }
@@ -704,6 +708,14 @@ class exahype::solvers::Solver {
       const double timeStamp,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) = 0;
+
+  /**
+   * \return true if the solver is active in the current algorithmic section.
+   * This depends usually on internal flags of the solver such as ones indicating
+   * a mesh update request or a limiter domain change during a previous time stepping
+   * iteration.
+   */
+  virtual bool isActive(exahype::records::State::AlgorithmicSection& section) const = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

@@ -108,6 +108,11 @@ void exahype::solvers::FiniteVolumesSolver::initSolver(
   _minTimeStamp = timeStamp;
 }
 
+bool exahype::solvers::FiniteVolumesSolver::isActive(
+    exahype::records::State::AlgorithmicSection& section) const {
+  return section==exahype::records::State::AlgorithmicSection::TimeStepping;
+}
+
 void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
     CellDescription& cellDescription) {
   switch (_timeStepping) {

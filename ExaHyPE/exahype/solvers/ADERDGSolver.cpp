@@ -819,6 +819,15 @@ void exahype::solvers::ADERDGSolver::initSolver(
   setMinPredictorTimeStamp(timeStamp);
 }
 
+bool exahype::solvers::ADERDGSolver::isActive(
+    exahype::records::State::AlgorithmicSection& section) const {
+    return
+      section==exahype::records::State::AlgorithmicSection::TimeStepping
+      ||
+      (section==exahype::records::State::AlgorithmicSection::APrioriRefinement
+      && getMeshUpdateRequest());
+}
+
 void exahype::solvers::ADERDGSolver::initFusedSolverTimeStepSizes() {
   setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
   setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());

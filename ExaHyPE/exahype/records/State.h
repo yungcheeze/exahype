@@ -33,13 +33,17 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   12/05/2017 10:18
+    * @date   17/05/2017 21:24
     */
    class exahype::records::State { 
       
       public:
          
          typedef exahype::records::StatePacked Packed;
+         
+         enum AlgorithmicSection {
+            TimeStepping = 0, LocalRecomputation = 1, APosterioriRefinement = 2, APrioriRefinement = 3
+         };
          
          enum MergeMode {
             MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
@@ -53,6 +57,7 @@ namespace exahype {
             int _maxRefinementLevelAllowed;
             MergeMode _mergeMode;
             SendMode _sendMode;
+            AlgorithmicSection _algorithmicSection;
             bool _reinitTimeStepData;
             bool _stabilityConditionOfOneSolverWasViolated;
             double _timeStepSizeWeightForPredictionRerun;
@@ -71,7 +76,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline int getMaxRefinementLevelAllowed() const 
@@ -130,6 +135,26 @@ namespace exahype {
  #endif 
  {
                _sendMode = sendMode;
+            }
+            
+            
+            
+            inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _algorithmicSection;
+            }
+            
+            
+            
+            inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _algorithmicSection = algorithmicSection;
             }
             
             
@@ -352,7 +377,7 @@ namespace exahype {
             /**
              * Generated
              */
-            State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -416,6 +441,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._sendMode = sendMode;
+            }
+            
+            
+            
+            inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._algorithmicSection;
+            }
+            
+            
+            
+            inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._algorithmicSection = algorithmicSection;
             }
             
             
@@ -622,6 +667,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const AlgorithmicSection& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getAlgorithmicSectionMapping();
+            
+            /**
+             * Generated
+             */
             static std::string toString(const MergeMode& param);
             
             /**
@@ -715,7 +770,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   12/05/2017 10:18
+    * @date   17/05/2017 21:24
     */
    class exahype::records::StatePacked { 
       
@@ -725,10 +780,13 @@ namespace exahype {
          
          typedef exahype::records::State::SendMode SendMode;
          
+         typedef exahype::records::State::AlgorithmicSection AlgorithmicSection;
+         
          struct PersistentRecords {
             int _maxRefinementLevelAllowed;
             MergeMode _mergeMode;
             SendMode _sendMode;
+            AlgorithmicSection _algorithmicSection;
             bool _reinitTimeStepData;
             bool _stabilityConditionOfOneSolverWasViolated;
             double _timeStepSizeWeightForPredictionRerun;
@@ -753,7 +811,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline int getMaxRefinementLevelAllowed() const 
@@ -812,6 +870,26 @@ namespace exahype {
  #endif 
  {
                _sendMode = sendMode;
+            }
+            
+            
+            
+            inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _algorithmicSection;
+            }
+            
+            
+            
+            inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _algorithmicSection = algorithmicSection;
             }
             
             
@@ -1052,7 +1130,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -1116,6 +1194,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._sendMode = sendMode;
+            }
+            
+            
+            
+            inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._algorithmicSection;
+            }
+            
+            
+            
+            inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._algorithmicSection = algorithmicSection;
             }
             
             
@@ -1360,6 +1458,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const AlgorithmicSection& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getAlgorithmicSectionMapping();
+            
+            /**
+             * Generated
+             */
             std::string toString() const;
             
             /**
@@ -1429,13 +1537,17 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::State { 
          
          public:
             
             typedef exahype::records::StatePacked Packed;
+            
+            enum AlgorithmicSection {
+               TimeStepping = 0, LocalRecomputation = 1, APosterioriRefinement = 2, APrioriRefinement = 3
+            };
             
             enum MergeMode {
                MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
@@ -1449,6 +1561,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -1491,7 +1604,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -1550,6 +1663,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -2168,7 +2301,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2232,6 +2365,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -2886,6 +3039,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -2979,7 +3142,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::StatePacked { 
          
@@ -2989,10 +3152,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmicSection AlgorithmicSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -3033,7 +3199,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -3092,6 +3258,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -3737,7 +3923,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -3801,6 +3987,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -4498,6 +4704,16 @@ namespace exahype {
                 * Generated
                 */
                static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
                
                /**
                 * Generated
@@ -4572,13 +4788,17 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::State { 
          
          public:
             
             typedef exahype::records::StatePacked Packed;
+            
+            enum AlgorithmicSection {
+               TimeStepping = 0, LocalRecomputation = 1, APosterioriRefinement = 2, APrioriRefinement = 3
+            };
             
             enum MergeMode {
                MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
@@ -4592,6 +4812,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -4631,7 +4852,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -4690,6 +4911,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -5248,7 +5489,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                /**
                 * Generated
@@ -5312,6 +5553,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -5906,6 +6167,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -5999,7 +6270,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::StatePacked { 
          
@@ -6009,10 +6280,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmicSection AlgorithmicSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -6050,7 +6324,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -6109,6 +6383,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -6685,7 +6979,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                /**
                 * Generated
@@ -6749,6 +7043,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -7381,6 +7695,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
+               
+               /**
+                * Generated
+                */
                std::string toString() const;
                
                /**
@@ -7451,13 +7775,17 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::State { 
          
          public:
             
             typedef exahype::records::StatePacked Packed;
+            
+            enum AlgorithmicSection {
+               TimeStepping = 0, LocalRecomputation = 1, APosterioriRefinement = 2, APrioriRefinement = 3
+            };
             
             enum MergeMode {
                MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
@@ -7471,6 +7799,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -7492,7 +7821,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -7551,6 +7880,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -7833,7 +8182,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -7897,6 +8246,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -8163,6 +8532,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -8256,7 +8635,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   12/05/2017 10:18
+       * @date   17/05/2017 21:24
        */
       class exahype::records::StatePacked { 
          
@@ -8266,10 +8645,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmicSection AlgorithmicSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
+               AlgorithmicSection _algorithmicSection;
                bool _reinitTimeStepData;
                bool _stabilityConditionOfOneSolverWasViolated;
                double _timeStepSizeWeightForPredictionRerun;
@@ -8297,7 +8679,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -8356,6 +8738,26 @@ namespace exahype {
  #endif 
  {
                   _sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _algorithmicSection = algorithmicSection;
                }
                
                
@@ -8665,7 +9067,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmicSection& algorithmicSection, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -8729,6 +9131,26 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline AlgorithmicSection getAlgorithmicSection() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._algorithmicSection;
+               }
+               
+               
+               
+               inline void setAlgorithmicSection(const AlgorithmicSection& algorithmicSection) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._algorithmicSection = algorithmicSection;
                }
                
                
@@ -9038,6 +9460,16 @@ namespace exahype {
                 * Generated
                 */
                static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const AlgorithmicSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmicSectionMapping();
                
                /**
                 * Generated
