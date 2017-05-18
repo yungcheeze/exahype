@@ -20,7 +20,7 @@ do
 for tasksPerNode in 1 2 4 28
 do  
   queue=micro
-  if (( nodes > 31 )); then
+  if (( nodes > 20 )); then
     queue=general
   fi
   let tasks=$nodes*$tasksPerNode
@@ -33,6 +33,7 @@ do
  
   sed -i -r 's,@ class(\s*)=(\s*)(\w+),@ class\1=\2'$queue',' $newScript
   sed -i -r 's,@ tasks_per_node(\s*)=(\s*)(([0-9]|\.)*),@ tasks_per_node\1=\2'$tasksPerNode',' $newScript
+  sed -i -r 's,@ node(\s*)=(\s*)(([0-9]|\.)*),@ node\1=\2'$nodes',' $newScript
  
   sed -i 's,EulerFlow-no-output,EulerFlow-'$io',g' $newScript
   sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
