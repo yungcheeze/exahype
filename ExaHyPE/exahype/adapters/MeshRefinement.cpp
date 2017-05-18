@@ -1,92 +1,92 @@
 #include "exahype/adapters/MeshRefinement.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::MeshRefinement::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::MeshRefinement::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::MeshRefinement::communicationSpecification()
-   & exahype::mappings::InitialCondition::communicationSpecification()
-   & exahype::mappings::LoadBalancing::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2MeshRefinement.communicationSpecification()
+    &  _map2InitialCondition.communicationSpecification()
+    &  _map2LoadBalancing.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinement::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexLastTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::touchVertexLastTimeSpecification()
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2MeshRefinement.touchVertexLastTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexLastTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::MeshRefinement::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexFirstTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::touchVertexFirstTimeSpecification()
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2MeshRefinement.touchVertexFirstTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexFirstTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::MeshRefinement::enterCellSpecification()
-   & exahype::mappings::InitialCondition::enterCellSpecification()
-   & exahype::mappings::LoadBalancing::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCellSpecification()
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2MeshRefinement.enterCellSpecification(level)
+    &  _map2InitialCondition.enterCellSpecification(level)
+    &  _map2LoadBalancing.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinement::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::MeshRefinement::leaveCellSpecification()
-   & exahype::mappings::InitialCondition::leaveCellSpecification()
-   & exahype::mappings::LoadBalancing::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::leaveCellSpecification()
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2MeshRefinement.leaveCellSpecification(level)
+    &  _map2InitialCondition.leaveCellSpecification(level)
+    &  _map2LoadBalancing.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinement::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::MeshRefinement::ascendSpecification()
-   & exahype::mappings::InitialCondition::ascendSpecification()
-   & exahype::mappings::LoadBalancing::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::ascendSpecification()
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2MeshRefinement.ascendSpecification(level)
+    &  _map2InitialCondition.ascendSpecification(level)
+    &  _map2LoadBalancing.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinement::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinement::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::MeshRefinement::descendSpecification()
-   & exahype::mappings::InitialCondition::descendSpecification()
-   & exahype::mappings::LoadBalancing::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
-   & exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::descendSpecification()
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2MeshRefinement.descendSpecification(level)
+    &  _map2InitialCondition.descendSpecification(level)
+    &  _map2LoadBalancing.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
+    &  _map2MeshRefinement2MultiscaleLinkedCell_5.descendSpecification(level)
 
   ;
 }

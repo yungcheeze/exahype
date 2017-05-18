@@ -1,85 +1,85 @@
 #include "exahype/adapters/PredictionRerun.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::PredictionRerun::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::PredictionRerun::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::communicationSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::Prediction::communicationSpecification()
-   & exahype::mappings::Sending::communicationSpecification()
+    &  _map2DropIncomingMPIMessages.communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2Prediction.communicationSpecification()
+    &  _map2Sending.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::PredictionRerun::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::Prediction::touchVertexLastTimeSpecification()
-   & exahype::mappings::Sending::touchVertexLastTimeSpecification()
+    &  _map2DropIncomingMPIMessages.touchVertexLastTimeSpecification(level)
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2Prediction.touchVertexLastTimeSpecification(level)
+    &  _map2Sending.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::PredictionRerun::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Prediction::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Sending::touchVertexFirstTimeSpecification()
+    &  _map2DropIncomingMPIMessages.touchVertexFirstTimeSpecification(level)
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2Prediction.touchVertexFirstTimeSpecification(level)
+    &  _map2Sending.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PredictionRerun::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::enterCellSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::Prediction::enterCellSpecification()
-   & exahype::mappings::Sending::enterCellSpecification()
+    &  _map2DropIncomingMPIMessages.enterCellSpecification(level)
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2Prediction.enterCellSpecification(level)
+    &  _map2Sending.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PredictionRerun::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::Prediction::leaveCellSpecification()
-   & exahype::mappings::Sending::leaveCellSpecification()
+    &  _map2DropIncomingMPIMessages.leaveCellSpecification(level)
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2Prediction.leaveCellSpecification(level)
+    &  _map2Sending.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::PredictionRerun::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::ascendSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::Prediction::ascendSpecification()
-   & exahype::mappings::Sending::ascendSpecification()
+    &  _map2DropIncomingMPIMessages.ascendSpecification(level)
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2Prediction.ascendSpecification(level)
+    &  _map2Sending.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PredictionRerun::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::PredictionRerun::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::descendSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::Prediction::descendSpecification()
-   & exahype::mappings::Sending::descendSpecification()
+    &  _map2DropIncomingMPIMessages.descendSpecification(level)
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2Merging.descendSpecification(level)
+    &  _map2Prediction.descendSpecification(level)
+    &  _map2Sending.descendSpecification(level)
 
   ;
 }

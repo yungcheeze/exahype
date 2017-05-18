@@ -25,7 +25,7 @@
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 peano::CommunicationSpecification
-exahype::mappings::SolutionRecomputation::communicationSpecification() {
+exahype::mappings::SolutionRecomputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -33,14 +33,14 @@ exahype::mappings::SolutionRecomputation::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::touchVertexFirstTimeSpecification() {
+exahype::mappings::SolutionRecomputation::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::enterCellSpecification() {
+exahype::mappings::SolutionRecomputation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -49,14 +49,14 @@ exahype::mappings::SolutionRecomputation::enterCellSpecification() {
 // Below specs are all nop
 
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::touchVertexLastTimeSpecification() {
+exahype::mappings::SolutionRecomputation::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::leaveCellSpecification() {
+exahype::mappings::SolutionRecomputation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
@@ -66,7 +66,7 @@ exahype::mappings::SolutionRecomputation::leaveCellSpecification() {
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::ascendSpecification() {
+exahype::mappings::SolutionRecomputation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -74,7 +74,7 @@ exahype::mappings::SolutionRecomputation::ascendSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::SolutionRecomputation::descendSpecification() {
+exahype::mappings::SolutionRecomputation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

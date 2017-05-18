@@ -1,78 +1,78 @@
 #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::communicationSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2DropIncomingMPIMessages.communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2DropIncomingMPIMessages.touchVertexLastTimeSpecification(level)
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2DropIncomingMPIMessages.touchVertexFirstTimeSpecification(level)
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::enterCellSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2DropIncomingMPIMessages.enterCellSpecification(level)
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2DropIncomingMPIMessages.leaveCellSpecification(level)
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::ascendSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2DropIncomingMPIMessages.ascendSpecification(level)
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::TimeStepDataMergingAndDropIncomingMPIMessages::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::descendSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2DropIncomingMPIMessages.descendSpecification(level)
+    &  _map2Merging.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
 
   ;
 }

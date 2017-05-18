@@ -55,7 +55,7 @@ namespace exahype {
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
    */
-  typedef peano::heap::PlainDoubleHeap DataHeap;
+  typedef peano::heap::RLEDoubleHeap DataHeap;
 
   namespace solvers {
     class Solver;

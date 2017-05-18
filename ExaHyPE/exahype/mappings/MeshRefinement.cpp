@@ -34,7 +34,7 @@ tarch::logging::Log exahype::mappings::MeshRefinement::_log("exahype::mappings::
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::MeshRefinement::communicationSpecification() {
+exahype::mappings::MeshRefinement::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           SendDataAndStateBeforeFirstTouchVertexFirstTime,
@@ -44,7 +44,7 @@ exahype::mappings::MeshRefinement::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification() {
+exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       #ifdef Parallel
       peano::MappingSpecification::WholeTree,
@@ -55,32 +55,32 @@ exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification() {
+exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::enterCellSpecification() {
+exahype::mappings::MeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::Serial,true);
 }
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::leaveCellSpecification() {
+exahype::mappings::MeshRefinement::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::Serial,true);
 }
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::ascendSpecification() {
+exahype::mappings::MeshRefinement::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::MeshRefinement::descendSpecification() {
+exahype::mappings::MeshRefinement::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

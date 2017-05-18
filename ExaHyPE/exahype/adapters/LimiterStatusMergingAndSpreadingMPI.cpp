@@ -1,57 +1,57 @@
 #include "exahype/adapters/LimiterStatusMergingAndSpreadingMPI.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::communicationSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::touchVertexLastTimeSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::touchVertexFirstTimeSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::enterCellSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::leaveCellSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::ascendSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusMergingAndSpreadingMPI::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusMergingAndSpreadingMPI::descendSpecification()
+    &  _map2LimiterStatusMergingAndSpreadingMPI.descendSpecification(level)
 
   ;
 }

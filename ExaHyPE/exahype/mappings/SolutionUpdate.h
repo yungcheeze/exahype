@@ -76,33 +76,33 @@ private:
   /**
    * Run through the whole tree. Run concurrently on the fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * No data needs to be synchronised between masters and workers.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * If the fine grid cell functions as compute cell for a solver,

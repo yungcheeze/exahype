@@ -25,7 +25,7 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeDescendIntoLocalSubtree,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -33,7 +33,7 @@ exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification()
 }
 
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -42,31 +42,31 @@ exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::FusedTimeSteppingInitialisation::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::FusedTimeSteppingInitialisation::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::leaveCellSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::ascendSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::descendSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

@@ -1,64 +1,64 @@
 #include "exahype/adapters/PlotAugmentedAMRGrid.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::communicationSpecification()
+    &  _map2AugmentedAMRTreePlot2d.communicationSpecification()
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTimeSpecification()
+    &  _map2AugmentedAMRTreePlot2d.touchVertexLastTimeSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTimeSpecification()
+    &  _map2AugmentedAMRTreePlot2d.touchVertexFirstTimeSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCellSpecification()
+    &  _map2AugmentedAMRTreePlot2d.enterCellSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCellSpecification()
+    &  _map2AugmentedAMRTreePlot2d.leaveCellSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascendSpecification()
+    &  _map2AugmentedAMRTreePlot2d.ascendSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification()
-   & exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descendSpecification()
+    &  _map2AugmentedAMRTreePlot2d.descendSpecification(level)
+    &  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1.descendSpecification(level)
 
   ;
 }

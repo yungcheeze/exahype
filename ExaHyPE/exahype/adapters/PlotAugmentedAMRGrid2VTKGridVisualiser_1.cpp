@@ -14,37 +14,37 @@ int exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::_snapshotCounte
 
 
 
-peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::communicationSpecification() const {
   return peano::CommunicationSpecification::getPessimisticSpecification();
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial,true);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial,true);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
@@ -464,11 +464,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::endIteration(
   
   std::ostringstream snapshotFileName;
   snapshotFileName << "grid"
-                   #ifdef Parallel
-                   << "-rank-" << tarch::parallel::Node::getInstance().getRank()
-                   #endif
-                   << "-" << _snapshotCounter
-                   << ".vtk";
+                   << "-" << _snapshotCounter;
   _vtkWriter->writeToFile( snapshotFileName.str() );
   
   _snapshotCounter++;                  

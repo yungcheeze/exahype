@@ -128,16 +128,16 @@ class exahype::mappings::TimeStepSizeComputation {
   /**
    * Run through whole tree. Run concurrently on fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * The global time step computation does synchronise the individual cells
@@ -152,7 +152,7 @@ class exahype::mappings::TimeStepSizeComputation {
    * in the Riemann solver, i.e. before enterCell---we can send back data as
    * soon as the traversal operation leaves the local subtree.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * If the fine grid cell functions as compute cell for a solver,
