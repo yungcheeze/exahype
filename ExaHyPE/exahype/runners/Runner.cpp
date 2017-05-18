@@ -828,7 +828,8 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   repository.iterate();
 }
 
-bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories::Repository& repository) {
+  // Drop all messages
   assertion(repository.getState()==exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToNeighbourDataDroppingContext();
   repository.switchToNeighbourDataMerging();
@@ -852,24 +853,23 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
   if (gridUpdate ||
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
-    if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::Reinitialisation);
-      logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
-    }
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrReinitialisation);
+    logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
     repository.getState().switchToReinitialisationContext();
     repository.switchToFinaliseMeshRefinementAndReinitialisation();
     repository.iterate();
   }
-
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputation);
     logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally");
     repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-    repository.iterate();
+    repository.iterate(); // COMPUTED NEW PREDICTOR in affected cells (Irregular)
   }
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputation);
+  if (gridUpdate
+      ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation);
     logInfo("updateMeshFusedTimeStepping(...)","recompute time step size");
     repository.getState().switchToTimeStepSizeComputationContext();
     repository.switchToTimeStepSizeComputation();
@@ -879,15 +879,17 @@ bool exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
     repository.iterate();
 
-    logInfo("updateMeshFusedTimeStepping(...)","recompute solution globally");
-    repository.getState().switchToCorrectionContext()
-    repository.getState().switchToCorrection();
-    repository.iterate();
+    if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputation);
+      logInfo("updateMeshFusedTimeStepping(...)","recompute solution globally");
+      repository.getState().switchToADERDGTimeStepContext();
+      repository.switchToADERDGTimeStep();
+      repository.iterate(); // (Irregular)
+    }
   }
 
+  // Do send now
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
-
-  return gridUpdate;
 }
 
 void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {

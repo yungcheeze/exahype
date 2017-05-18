@@ -193,7 +193,7 @@ class exahype::runners::Runner {
    *
    * TODO(Dominic): What can I fuse here?
    */
-  bool updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
+  void updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
 
   /**
    * This is different from the default predictor rerun since we do not
