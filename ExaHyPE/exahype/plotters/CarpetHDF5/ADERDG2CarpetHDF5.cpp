@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <memory>
+#include <limits> // signaling_NaN
 
 
 std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
@@ -25,6 +26,8 @@ tarch::logging::Log exahype::plotters::ADERDG2CarpetHDF5::_log("exahype::plotter
 #ifndef HDF5
 /*************************************************************************************************
  * ADERDG2CarpetHDF5 Dummy implementation in case HDF5 support is skipped.
+ * Probably such a section is (except the constructor) not neccessary as the methods are never
+ * referenced/called.
  *************************************************************************************************/
 
 exahype::plotters::ADERDG2CarpetHDF5::ADERDG2CarpetHDF5(
@@ -40,6 +43,25 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const int cellDescriptionsI
 void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,double timeStamp) {}
 void exahype::plotters::ADERDG2CarpetHDF5::startPlotting(double time) {}
 void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
+
+void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    double *u,
+    double *mappedCell,
+    double timeStamp
+  ) {}
+
+void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    double *u,
+    double *mappedCell,
+    double timeStamp,
+    const exahype::plotters::CartesianSlicer& slicer
+  ) {}
 
 #else
 #include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
@@ -94,11 +116,7 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
   }
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
-    double timeStamp) {
+void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, double* u, double timeStamp) {
 
     if(writer->slicer && !writer->slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
 	return;
@@ -107,17 +125,17 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
     const int basisSize = writer->basisSize;
     const int order     = basisSize - 1;
     const dvec dx       = 1./order * sizeOfPatch;
+    double* mappedCell;
 
-    // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
-    double* mappedCell  = new double[writer->allFieldsSize];
-
-    if(writer->slicer) {    
-	interpolateSlicedPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+    if(writer->slicer && writer->slicer->getIdentifier() == "CartesianSlicer") {
+	mappedCell = new double[writer->writtenFieldsSize];
+	
+	interpolateCartesianSlicedPatch(offsetOfPatch, sizeOfPatch, dx, u, mappedCell, timeStamp,
+		static_cast<exahype::plotters::CartesianSlicer&>(*writer->slicer));
     } else {
-	interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
+	mappedCell = new double[writer->patchFieldsSize];
+	interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, dx, u, mappedCell, timeStamp);
     }
-
-    writer->plotPatch(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp);
 
     delete[] mappedCell;
 }
@@ -133,21 +151,12 @@ void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {
 	writer->finishPlotting();
 }
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
-  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double *u,
-  double *mappedCell,
-  double timeStamp
-) {
+void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp) {
   const int basisSize = writer->basisSize;
   const int solverUnknowns = writer->solverUnknowns;
   const int order = basisSize-1;
 
   double* interpoland = new double[solverUnknowns];
-  //double* mappedCell  = new double[writtenCellIdx.size];
-  //double* value       = writtenUnknowns==0 ? nullptr : new double[writtenUnknowns];
-  
   assertion(sizeOfPatch(0)==sizeOfPatch(1)); // expressing this is all for squared cells.
   
   dfor(i,basisSize) {
@@ -166,8 +175,8 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
       }
     }
 
-    double *value = mappedCell + (DIMENSIONS == 3 ? writer->writtenCellIdx->get(i(2),i(1),i(0),0) : writer->writtenCellIdx->get(i(1),i(0),0));
-    //value += writer->writtenCellIdx(i(1),i(0),0); // Transposed position. Correct.
+    double *value = mappedCell + (DIMENSIONS == 3 ? writer->patchCellIdx->get(i(2),i(1),i(0),0) : writer->patchCellIdx->get(i(1),i(0),0));
+    //value += writer->patchCellIdx(i(1),i(0),0); // Transposed position. Correct.
 
     _postProcessing->mapQuantities(
       offsetOfPatch,
@@ -179,34 +188,30 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
       timeStamp
     );
   }
-
   delete[] interpoland;
-  //if (value!=nullptr)        delete[] value;
+
+  writer->plotPatch(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp);
 }
 
 
-void exahype::plotters::ADERDG2CarpetHDF5::interpolateSlicedPatch(
-  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double *u,
-  double *mappedCell,
-  double timeStamp
-) {
+void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianSlicedPatch(const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx, double *u, double *mappedCell, double timeStamp, const exahype::plotters::CartesianSlicer& slicer) {
   const int basisSize = writer->basisSize;
   const int solverUnknowns = writer->solverUnknowns;
   const int order = basisSize-1;
 
   double* interpoland = new double[solverUnknowns];  
   assertion(sizeOfPatch(0)==sizeOfPatch(1)); // expressing this is all for squared cells.
-  assertion(writer->slicer!=nullptr); // this is only relevant when the slicer has information
-  
-  if(writer->slicer->targetDim == 2) {
+
+  // for the reduced offfsetOfPatch, sizeOfPatch to put into the invalid positions
+  double empty_slot = std::numeric_limits<double>::signaling_NaN();
+
+  if(slicer.targetDim == 2) {
 	// Determine a position ontop the 2d plane
-	dvec plane = writer->slicer->project(offsetOfPatch);
+	dvec plane = slicer.project(offsetOfPatch);
 	ivec i;
 	for(i(1)=0; i(1)<basisSize; i(1)++)
 	for(i(0)=0; i(0)<basisSize; i(0)++) {
-		dvec pos = plane + writer->slicer->project(i).convertScalar<double>() * (sizeOfPatch(0)/(order));
+		dvec pos = plane + slicer.project(i).convertScalar<double>() * (sizeOfPatch(0)/(order));
 		
 		for (int unknown=0; unknown < solverUnknowns; unknown++) {
 			interpoland[unknown] = kernels::interpolate(
@@ -232,9 +237,17 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateSlicedPatch(
 			timeStamp
 		);
 	}
-  } else if(writer->slicer->targetDim == 1) {
+	
+	// project offset and size of 2D patch onto the plane
+	// Todo: ifdef dimensions == 2 case adden
+	dvec offsetOfPatch_2D(offsetOfPatch(slicer.runningAxes(0)), offsetOfPatch(slicer.runningAxes(1)), empty_slot);
+	dvec sizeOfPatch_2D(sizeOfPatch(slicer.runningAxes(0)), sizeOfPatch(slicer.runningAxes(1)), empty_slot);
+	dvec dx_2D(dx(slicer.runningAxes(0)), dx(slicer.runningAxes(1)), empty_slot);
+	
+	writer->plotPatch(offsetOfPatch_2D, sizeOfPatch_2D, dx_2D, mappedCell, timeStamp);
+  } else if(slicer.targetDim == 1) {
 	// Determine a position ontop the 1d line
-	dvec line = writer->slicer->project(offsetOfPatch);
+	dvec line = slicer.project(offsetOfPatch);
 	ivec i;
 	for(i(0)=0; i(0)<basisSize; i(0)++) {
 		dvec pos = line + (i.convertScalar<double>())* (sizeOfPatch(0)/(order));
@@ -262,7 +275,15 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateSlicedPatch(
 			value,
 			timeStamp
 		);
-	} 
+	}
+	
+	// project offset and size of 1D patch onto the plane
+	// Todo: ifdef dimensions == 2 case adden
+	dvec offsetOfPatch_1D(offsetOfPatch(slicer.runningAxes(0)), empty_slot, empty_slot);
+	dvec sizeOfPatch_1D(sizeOfPatch(slicer.runningAxes(0)), empty_slot, empty_slot);
+	dvec dx_1D(dx(slicer.runningAxes(0)), empty_slot, empty_slot);
+	
+	writer->plotPatch(offsetOfPatch_1D, sizeOfPatch_1D, dx_1D, mappedCell, timeStamp);
   } else {
 	  throw std::invalid_argument("Unupported target dimension.");
   }

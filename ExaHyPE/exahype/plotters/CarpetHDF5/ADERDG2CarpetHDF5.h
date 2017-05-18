@@ -22,6 +22,8 @@ namespace exahype {
   namespace plotters {
     class ADERDG2CarpetHDF5;
     class CarpetHDF5Writer;
+    
+    class CartesianSlicer; // forward decl
   }
 }
 
@@ -38,6 +40,8 @@ namespace kernels {
  */
 class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::Device {
  public:
+  typedef tarch::la::Vector<DIMENSIONS, double> dvec;
+
   /**
    * Pimpl idiom: In order to avoid any HDF5 dependency all HDF5 logic is hidden inside this
    * class (instance).
@@ -69,17 +73,20 @@ class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::
   void interpolateCartesianPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
     double *u,
     double *mappedCell,
     double timeStamp
   );
-  
-  void interpolateSlicedPatch(
+
+  void interpolateCartesianSlicedPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
     double *u,
     double *mappedCell,
-    double timeStamp
+    double timeStamp,
+    const exahype::plotters::CartesianSlicer& slicer
   );
 };
 
