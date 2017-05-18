@@ -1,64 +1,64 @@
 #include "exahype/adapters/GridErasing.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::communicationSpecification()
-   & exahype::mappings::GridErasing::communicationSpecification()
+    &  _map2DropIncomingMPIMessages.communicationSpecification()
+    &  _map2GridErasing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexLastTimeSpecification()
+    &  _map2DropIncomingMPIMessages.touchVertexLastTimeSpecification(level)
+    &  _map2GridErasing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexFirstTimeSpecification()
+    &  _map2DropIncomingMPIMessages.touchVertexFirstTimeSpecification(level)
+    &  _map2GridErasing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::enterCellSpecification()
-   & exahype::mappings::GridErasing::enterCellSpecification()
+    &  _map2DropIncomingMPIMessages.enterCellSpecification(level)
+    &  _map2GridErasing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification()
-   & exahype::mappings::GridErasing::leaveCellSpecification()
+    &  _map2DropIncomingMPIMessages.leaveCellSpecification(level)
+    &  _map2GridErasing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::ascendSpecification()
-   & exahype::mappings::GridErasing::ascendSpecification()
+    &  _map2DropIncomingMPIMessages.ascendSpecification(level)
+    &  _map2GridErasing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::descendSpecification()
-   & exahype::mappings::GridErasing::descendSpecification()
+    &  _map2DropIncomingMPIMessages.descendSpecification(level)
+    &  _map2GridErasing.descendSpecification(level)
 
   ;
 }
