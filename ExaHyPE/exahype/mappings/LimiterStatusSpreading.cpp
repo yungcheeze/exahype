@@ -25,7 +25,7 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::LimiterStatusSpreading::communicationSpecification() {
+exahype::mappings::LimiterStatusSpreading::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
       MaskOutMasterWorkerDataAndStateExchange,
@@ -36,42 +36,42 @@ exahype::mappings::LimiterStatusSpreading::communicationSpecification() {
 
 // Everything below is nop.
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification() {
+exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::enterCellSpecification() {
+exahype::mappings::LimiterStatusSpreading::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::touchVertexLastTimeSpecification() {
+exahype::mappings::LimiterStatusSpreading::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::leaveCellSpecification() {
+exahype::mappings::LimiterStatusSpreading::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::ascendSpecification() {
+exahype::mappings::LimiterStatusSpreading::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::descendSpecification() {
+exahype::mappings::LimiterStatusSpreading::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

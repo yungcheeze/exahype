@@ -22,7 +22,7 @@
 #include "peano/utils/UserInterface.h"
 
 peano::CommunicationSpecification
-exahype::mappings::Merging::communicationSpecification() {
+exahype::mappings::Merging::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -30,7 +30,7 @@ exahype::mappings::Merging::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::Merging::touchVertexFirstTimeSpecification() {
+exahype::mappings::Merging::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
@@ -38,7 +38,7 @@ exahype::mappings::Merging::touchVertexFirstTimeSpecification() {
 
 // Specifications below are all nop.
 peano::MappingSpecification
-exahype::mappings::Merging::enterCellSpecification() {
+exahype::mappings::Merging::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -46,14 +46,14 @@ exahype::mappings::Merging::enterCellSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::Merging::touchVertexLastTimeSpecification() {
+exahype::mappings::Merging::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::Merging::leaveCellSpecification() {
+exahype::mappings::Merging::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
@@ -61,7 +61,7 @@ exahype::mappings::Merging::leaveCellSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::Merging::ascendSpecification() {
+exahype::mappings::Merging::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -69,7 +69,7 @@ exahype::mappings::Merging::ascendSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::Merging::descendSpecification() {
+exahype::mappings::Merging::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

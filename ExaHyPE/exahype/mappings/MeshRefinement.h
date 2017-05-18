@@ -100,18 +100,18 @@ public:
    * Switched off in serial mode where everything is done in the creational
    * routines. Switched on in parallel mode.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
 
   /**
    * Switched off
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification enterCellSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification enterCellSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
 #if defined(SharedMemoryParallelisation)
   /**

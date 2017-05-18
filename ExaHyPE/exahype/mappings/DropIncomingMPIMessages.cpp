@@ -18,7 +18,7 @@
 #include "exahype/solvers/Solver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::DropIncomingMPIMessages::communicationSpecification() {
+exahype::mappings::DropIncomingMPIMessages::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           MaskOutMasterWorkerDataAndStateExchange,
@@ -28,42 +28,41 @@ exahype::mappings::DropIncomingMPIMessages::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification() {
+exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
-peano::MappingSpecification exahype::mappings::DropIncomingMPIMessages::
-    touchVertexFirstTimeSpecification() {
+peano::MappingSpecification exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMessages::enterCellSpecification() {
+exahype::mappings::DropIncomingMPIMessages::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification() {
+exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMessages::ascendSpecification() {
+exahype::mappings::DropIncomingMPIMessages::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::DropIncomingMPIMessages::descendSpecification() {
+exahype::mappings::DropIncomingMPIMessages::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
