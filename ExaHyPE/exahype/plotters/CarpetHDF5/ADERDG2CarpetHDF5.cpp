@@ -7,7 +7,7 @@
 
 
 std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
-	return std::string("experimental::CarpetHDF5");
+	return std::string("hdf5::Cartesian::Vertices");
 }
 
 
@@ -18,6 +18,9 @@ template <typename T> std::string toString( T Number ) {
 
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
 typedef tarch::la::Vector<DIMENSIONS, int> ivec;
+
+tarch::logging::Log exahype::plotters::ADERDG2CarpetHDF5::_log("exahype::plotters::ADERDG2CarpetHDF5");
+
 
 #ifndef HDF5
 /*************************************************************************************************
@@ -67,12 +70,13 @@ void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& filename, int
 	char **writtenQuantitiesNames = new char*[writtenUnknowns];
 	std::fill_n(writtenQuantitiesNames, writtenUnknowns, nullptr);
 	_postProcessing->writtenQuantitiesNames(writtenQuantitiesNames);
-
+	
 	writer = new exahype::plotters::CarpetHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
 		writtenQuantitiesNames, oneFilePerTimestep, allUnknownsInOneFile);	
 
-	// todo at this place: Accept 3D slicing or so, cf. ADERDG2CartesianVTK
-	// another nice to have: allow oneFilePerTimestep as a specfile parameter...
+	if(writer->slicer) {
+		logInfo("init", "Plotting selection "<<writer->slicer->toString()<<" to Files "<<filename);
+	}
 }
 
 void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(

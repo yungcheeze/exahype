@@ -47,6 +47,8 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	allUnknownsInOneFile(_allUnknownsInOneFile)
 	{
 
+	// todo at this place:  allow _oneFilePerTimestep and _allUnknownsInOneFile to be read off _select.
+
 	// while CarpetHDF5 files also can be 1D, this writer currently only understands 2D and 3D.
 	assert(dim == 2 || dim == 3);
 	

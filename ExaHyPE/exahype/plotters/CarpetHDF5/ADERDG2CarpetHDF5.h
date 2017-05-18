@@ -43,6 +43,7 @@ class exahype::plotters::ADERDG2CarpetHDF5 : public exahype::plotters::Plotter::
    * class (instance).
    **/
   CarpetHDF5Writer* writer;
+  static tarch::logging::Log _log;
 
   static std::string getIdentifier();
 
