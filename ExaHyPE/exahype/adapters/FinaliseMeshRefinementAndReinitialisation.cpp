@@ -1,78 +1,78 @@
 #include "exahype/adapters/FinaliseMeshRefinementAndReinitialisation.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::communicationSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::Reinitialisation::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
+    &  _map2FinaliseMeshRefinement.communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2Reinitialisation.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::Reinitialisation::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
+    &  _map2FinaliseMeshRefinement.touchVertexLastTimeSpecification(level)
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2Reinitialisation.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Reinitialisation::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
+    &  _map2FinaliseMeshRefinement.touchVertexFirstTimeSpecification(level)
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2Reinitialisation.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::enterCellSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::Reinitialisation::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
+    &  _map2FinaliseMeshRefinement.enterCellSpecification(level)
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2Reinitialisation.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::Reinitialisation::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
+    &  _map2FinaliseMeshRefinement.leaveCellSpecification(level)
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2Reinitialisation.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::ascendSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::Reinitialisation::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
+    &  _map2FinaliseMeshRefinement.ascendSpecification(level)
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2Reinitialisation.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::FinaliseMeshRefinementAndReinitialisation::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::descendSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::Reinitialisation::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
+    &  _map2FinaliseMeshRefinement.descendSpecification(level)
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2Reinitialisation.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
 
   ;
 }

@@ -473,7 +473,9 @@ public:
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
-  bool isActive(exahype::records::State::AlgorithmicSection& section) const override;
+  bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const override;
+
+  bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,

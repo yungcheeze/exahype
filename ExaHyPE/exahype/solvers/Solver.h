@@ -97,53 +97,10 @@ namespace exahype {
      */
     extern std::vector<Solver*> RegisteredSolvers;
 
-    // TODO(Dominic): Remove later on
-//    /**
-//     * The type of refinement requested by a solver.
-//     */
-//    enum class MeshUpdateRequest {
-//      /**
-//       * No refinement is requested.
-//       */
-//      None,
-//      /**
-//       * Refinement was either requested by the user's refinement
-//       * criterion or due to the limiter status flagging on
-//       * coarser mesh levels (applies only to LimitingADERDGSolver).
-//       * In case of the latter, no compute cell (Cell) on a coarser mesh level
-//       * must be flagged as Troubled.
-//       *
-//       * The runner must then refine the mesh accordingly, and recompute
-//       * the time step size and the space-time predictor.
-//       * No rollback to a previous time step is required.
-//       */
-//      APrioriRefinement,
-//
-//      /**
-//       * Refinement was requested since a compute cell (Cell) on a coarser
-//       * mesh level was flagged with status Troubled.
-//       *
-//       * The runner must then refine the mesh accordingly, and perform a
-//       * rollback in all cells to the previous solution. It computes
-//       * a new time step size in all cells. Next, it recomputes the predictor in all
-//       * cells, troubled or not. Finally, it reruns the whole ADERDG time step in
-//       * all cells, troubled or not.
-//       */
-//      APosterioriRefinement,
-//
-//      /**
-//       * This callback is used by a solver to notify
-//       * the MeshRefinement mapping that
-//       * a mesh refinement operation has not completed
-//       * and the solver needs at least one extra iteration
-//       * to complete it.
-//       */
-//      RunExtraIterationSinceMeshIsNotStable
-//    };
-
-    // TODO(DOminic): Add the same stuff for the irregularLimiterDomainChange flags
-    // TODO(Dominic): Externalise the solver flags.
-
+    /**
+     * The limiter domain change that was detected after a solution
+     * update or during the limiter status spreading.
+     */
     enum class LimiterDomainChange {
       /**
        * A regular change of the limiter domain
@@ -232,7 +189,7 @@ public:
    *
    * The flag has only a meaning for the LimitingADERDGSolver.
    */
-  bool* _irregularChangeOfLimiterDomain = nullptr;
+  LimiterDomainChange* _limiterDomainChange = nullptr;
 
   /**
    * Per solver, we hold a status flag indicating
@@ -710,12 +667,20 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) = 0;
 
   /**
-   * \return true if the solver is active in the current algorithmic section.
+   * \return true if the solver is communicating in the current algorithmic section.
    * This depends usually on internal flags of the solver such as ones indicating
    * a mesh update request or a limiter domain change during a previous time stepping
    * iteration.
    */
-  virtual bool isActive(exahype::records::State::AlgorithmicSection& section) const = 0;
+  virtual bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const = 0;
+
+  /**
+   * \return true if the solver is computing in the current algorithmic section.
+   * This depends usually on internal flags of the solver such as ones indicating
+   * a mesh update request or a limiter domain change during a previous time stepping
+   * iteration.
+   */
+  virtual bool isComputing(const exahype::records::State::AlgorithmSection& section) const = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

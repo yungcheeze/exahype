@@ -132,33 +132,33 @@ public:
    * Switched off in serial mode where everything is done in the creational
    * routines. Switched on in parallel mode.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
 
   /**
    * We merge the limite status between neighbouring cells.
    * We thus avoid fine grid races.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
 
   /**
    * Traverse the cells in serial. Might
    * be relaxed when all semaphores are in place.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Traverse the cells in serial. Might
    * be relaxed when all semaphores are in place.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
 
   /**
    * Switched off
    */
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
 #if defined(SharedMemoryParallelisation)
   /**

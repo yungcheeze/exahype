@@ -43,7 +43,7 @@ bool exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
 #endif
 
 peano::CommunicationSpecification
-exahype::mappings::Sending::communicationSpecification() {
+exahype::mappings::Sending::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -54,37 +54,37 @@ exahype::mappings::Sending::communicationSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::Sending::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::Sending::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Sending::enterCellSpecification() {
+exahype::mappings::Sending::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Sending::leaveCellSpecification() {
+exahype::mappings::Sending::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Sending::ascendSpecification() {
+exahype::mappings::Sending::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::Sending::descendSpecification() {
+exahype::mappings::Sending::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -133,11 +133,12 @@ void exahype::mappings::Sending::enterCell(
     auto grainSize = peano::datatraversal::autotuning::Oracle::
         getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined12);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prolongateDataAndPrepareDataRestriction(fineGridCell.getCellDescriptionsIndex(),element);
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          solver->prolongateDataAndPrepareDataRestriction(fineGridCell.getCellDescriptionsIndex(),element);
+        }
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -162,37 +163,38 @@ void exahype::mappings::Sending::leaveCell(
     auto grainSize = peano::datatraversal::autotuning::Oracle::
         getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined13);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+        if (fineGridElement!=exahype::solvers::Solver::NotFound) {
+          auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (fineGridElement!=exahype::solvers::Solver::NotFound) {
-        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+          const int coarseGridElement =
+              solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
+          if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
+            tarch::multicore::Lock lock(_semaphoreForRestriction);
+            solver->restrictToNextParent(
+                fineGridCell.getCellDescriptionsIndex(),fineGridElement,
+                coarseGridCell.getCellDescriptionsIndex(),coarseGridElement);
+            lock.free();
+          }
 
-        const int coarseGridElement =
-            solver->tryGetElement(coarseGridCell.getCellDescriptionsIndex(),solverNumber);
-        if (coarseGridElement!=exahype::solvers::Solver::NotFound) {
-          tarch::multicore::Lock lock(_semaphoreForRestriction);
-          solver->restrictToNextParent(
-              fineGridCell.getCellDescriptionsIndex(),fineGridElement,
-              coarseGridCell.getCellDescriptionsIndex(),coarseGridElement);
-          lock.free();
+          exahype::solvers::Solver::SubcellPosition subcellPosition =
+              solver->computeSubcellPositionOfCellOrAncestor(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
+          if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound &&
+              exahype::amr::onBoundaryOfParent(
+                  subcellPosition.subcellIndex,subcellPosition.levelDifference)) {
+            tarch::multicore::Lock lock(_semaphoreForRestriction);
+            solver->restrictToTopMostParent(fineGridCell.getCellDescriptionsIndex(),
+                fineGridElement,
+                subcellPosition.parentCellDescriptionsIndex,
+                subcellPosition.parentElement,
+                subcellPosition.subcellIndex);
+            lock.free();
+          }
+
+          solver->postProcess(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
         }
-
-        exahype::solvers::Solver::SubcellPosition subcellPosition =
-            solver->computeSubcellPositionOfCellOrAncestor(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
-        if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound &&
-            exahype::amr::onBoundaryOfParent(
-                subcellPosition.subcellIndex,subcellPosition.levelDifference)) {
-          tarch::multicore::Lock lock(_semaphoreForRestriction);
-          solver->restrictToTopMostParent(fineGridCell.getCellDescriptionsIndex(),
-                               fineGridElement,
-                               subcellPosition.parentCellDescriptionsIndex,
-                               subcellPosition.parentElement,
-                               subcellPosition.subcellIndex);
-          lock.free();
-        }
-
-        solver->postProcess(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -242,7 +244,9 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+    if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+    }
   }
 
   auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
@@ -262,15 +266,16 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 
-  int solverNumber=0;
-  for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
-      solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
-    } else {
-      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      const int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
+      } else {
+        solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+      }
     }
-    ++solverNumber;
   }
 
   auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
@@ -291,11 +296,13 @@ void exahype::mappings::Sending::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      solver->sendDataToMaster(
-          tarch::parallel::NodePool::getInstance().getMasterRank(),
-          verticesEnumerator.getCellCenter(),
-          verticesEnumerator.getLevel());
+    for (auto* solver : exahype::solvers::RegisteredSolvers) {
+      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        solver->sendDataToMaster(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            verticesEnumerator.getCellCenter(),
+            verticesEnumerator.getLevel());
+      }
     }
   }
 
@@ -309,23 +316,24 @@ void exahype::mappings::Sending::prepareSendToMaster(
           verticesEnumerator.getCellCenter(),
           verticesEnumerator.getLevel());
 
-      int solverNumber=0;
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
-        if (element!=exahype::solvers::Solver::NotFound) {
-          solver->sendDataToMaster(
-              tarch::parallel::NodePool::getInstance().getMasterRank(),
-              localCell.getCellDescriptionsIndex(),
-              element,
-              verticesEnumerator.getCellCenter(),
-              verticesEnumerator.getLevel());
-        } else {
-          solver->sendEmptyDataToMaster(
-              tarch::parallel::NodePool::getInstance().getMasterRank(),
-              verticesEnumerator.getCellCenter(),
-              verticesEnumerator.getLevel());
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+          const int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
+          if (element!=exahype::solvers::Solver::NotFound) {
+            solver->sendDataToMaster(
+                tarch::parallel::NodePool::getInstance().getMasterRank(),
+                localCell.getCellDescriptionsIndex(),
+                element,
+                verticesEnumerator.getCellCenter(),
+                verticesEnumerator.getLevel());
+          } else {
+            solver->sendEmptyDataToMaster(
+                tarch::parallel::NodePool::getInstance().getMasterRank(),
+                verticesEnumerator.getCellCenter(),
+                verticesEnumerator.getLevel());
+          }
         }
-        ++solverNumber;
       }
     } else if (localCell.isInside() && !localCell.isInitialised()) {
       exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
@@ -335,10 +343,12 @@ void exahype::mappings::Sending::prepareSendToMaster(
           verticesEnumerator.getLevel());
 
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        solver->sendEmptyDataToMaster(
-            tarch::parallel::NodePool::getInstance().getMasterRank(),
-            verticesEnumerator.getCellCenter(),
-            verticesEnumerator.getLevel());
+        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+          solver->sendEmptyDataToMaster(
+              tarch::parallel::NodePool::getInstance().getMasterRank(),
+              verticesEnumerator.getCellCenter(),
+              verticesEnumerator.getLevel());
+        }
       }
     } // else  do nothing
   }
@@ -358,11 +368,13 @@ void exahype::mappings::Sending::mergeWithMaster(
     exahype::State& masterState) {
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
-    for (auto& p : exahype::solvers::RegisteredSolvers) {
-      p->mergeWithWorkerData(
-          worker,
-          fineGridVerticesEnumerator.getCellCenter(),
-          fineGridVerticesEnumerator.getLevel());
+    for (auto* solver : exahype::solvers::RegisteredSolvers) {
+      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        solver->mergeWithWorkerData(
+                  worker,
+                  fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getLevel());
+      }
     }
   }
 
@@ -384,29 +396,28 @@ void exahype::mappings::Sending::mergeWithMaster(
 
       for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+          const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+          const int offset  = exahype::MetadataPerSolver*solverNumber;
+          if (element!=exahype::solvers::Solver::NotFound &&
+              receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+            exahype::MetadataHeap::HeapEntries metadataPortion(
+                receivedMetadata.begin()+offset,
+                receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
 
-        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-        const int offset  = exahype::MetadataPerSolver*solverNumber;
-        if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
-          exahype::MetadataHeap::HeapEntries metadataPortion(
-              receivedMetadata.begin()+offset,
-              receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
-
-          solver->mergeWithWorkerData(
-              worker,
-              metadataPortion,
-              fineGridCell.getCellDescriptionsIndex(),element,
-              fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getLevel());
-        } else {
-          solver->dropWorkerData(
-              worker,
-              fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getLevel());
+            solver->mergeWithWorkerData(
+                worker,
+                metadataPortion,
+                fineGridCell.getCellDescriptionsIndex(),element,
+                fineGridVerticesEnumerator.getCellCenter(),
+                fineGridVerticesEnumerator.getLevel());
+          } else {
+            solver->dropWorkerData(
+                worker,
+                fineGridVerticesEnumerator.getCellCenter(),
+                fineGridVerticesEnumerator.getLevel());
+          }
         }
-
-        ++solverNumber;
       }
       exahype::MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
     } else if (workerGridCell.isInside() && !fineGridCell.isInitialised()) {
@@ -417,10 +428,12 @@ void exahype::mappings::Sending::mergeWithMaster(
           fineGridVerticesEnumerator.getLevel());
 
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        solver->dropWorkerData(
-            worker,
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getLevel());
+        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+          solver->dropWorkerData(
+              worker,
+              fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getLevel());
+        }
       }
     } // else do nothing
   }
@@ -441,16 +454,16 @@ bool exahype::mappings::Sending::prepareSendToWorker(
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData)
       && fineGridCell.isInside()) {
     if (fineGridCell.isInitialised()) {
-      int solverNumber=0;
-      for (auto solver : exahype::solvers::RegisteredSolvers) {
-        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+          const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-        if (element!=exahype::solvers::Solver::NotFound) {
-          workerHasToSendDataToMaster |=
-              solver->hasToSendDataToMaster(fineGridCell.getCellDescriptionsIndex(),element);
+          if (element!=exahype::solvers::Solver::NotFound) {
+            workerHasToSendDataToMaster |=
+                solver->hasToSendDataToMaster(fineGridCell.getCellDescriptionsIndex(),element);
+          }
         }
-
-        ++solverNumber;
       }
     }
   }

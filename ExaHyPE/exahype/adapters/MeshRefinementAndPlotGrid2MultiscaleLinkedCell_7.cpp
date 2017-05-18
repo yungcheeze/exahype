@@ -10,37 +10,37 @@
 #include "exahype/VertexOperations.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification();
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::enterCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::ascendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::descendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces,false);
 }
 

@@ -819,19 +819,37 @@ void exahype::solvers::ADERDGSolver::initSolver(
   setMinPredictorTimeStamp(timeStamp);
 }
 
-bool exahype::solvers::ADERDGSolver::isActive(
-    exahype::records::State::AlgorithmicSection& section) const {
+bool exahype::solvers::ADERDGSolver::isCommunicating(
+    const exahype::records::State::AlgorithmSection& section) const {
     return
-      section==exahype::records::State::AlgorithmicSection::TimeStepping
+      section==exahype::records::State::AlgorithmSection::TimeStepping
       ||
-      (section==exahype::records::State::AlgorithmicSection::APrioriRefinement
+      (section==exahype::records::State::AlgorithmSection::APrioriRefinement
       && getMeshUpdateRequest());
 }
+
+bool exahype::solvers::ADERDGSolver::isComputing(
+    const exahype::records::State::AlgorithmSection& section) const {
+    return
+      section==exahype::records::State::AlgorithmSection::TimeStepping
+      ||
+      (section==exahype::records::State::AlgorithmSection::APrioriRefinement
+      && getMeshUpdateRequest());
+}
+
 
 void exahype::solvers::ADERDGSolver::initFusedSolverTimeStepSizes() {
   setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
   setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
   setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
+}
+
+void setStabilityConditionWasViolated(bool state) {
+  _stabilityConditionWasViolated = state;
+}
+
+bool setStabilityConditionWasViolated() const {
+  return _stabilityConditionWasViolated;
 }
 
 bool exahype::solvers::ADERDGSolver::isValidCellDescriptionIndex(

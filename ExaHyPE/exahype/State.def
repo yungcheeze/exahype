@@ -156,7 +156,7 @@ class exahype::dastgen::State {
    * Sending mappings by selecting only the solvers that
    * are active in the given algorithmic section.
    */
-  enum AlgorithmicSection {
+  enum AlgorithmSection {
    	/*
    	 * The runner is currently 
    	 * performing a normal ADER-DG time step.
@@ -164,6 +164,21 @@ class exahype::dastgen::State {
    	TimeStepping,
    	
    	/**
+   	 * The runner triggers limiter status spreading
+   	 * in all solvers where a irregular limiter
+   	 * domain change has occured.
+   	 */
+   	LimiterStatusSpreading,
+   	
+    /**
+   	 * The runner triggers a reinitialisation of
+   	 * certain or all cells
+   	 * in all solvers where a irregular limiter
+   	 * domain change has occured.
+   	 */
+   	Reinitialisation,
+   	
+   	   	/**
    	 * The runner is recomputing the solution of 
    	 * troubled cells on the finest mesh level.
    	 * No mesh refinement is necessary.
@@ -206,66 +221,20 @@ class exahype::dastgen::State {
    	 * Scenario 2: A cell of type Descendant/EmptyDescendant
    	 * was marked with a LimiterStatus other than Ok.
    	 */
-   	APosterioriRefinement,
+   	GlobalRecomputation,
    	
    	/**
    	 * The runner performs mesh refinement according to the
    	 * user's refinement criterion or the regular limiter status
    	 * flagging, i.e. the LimiterStatus updates caused by a 
-   	 * regularly moving limiter domain.
+   	 * regularly moving limiter domain or since
+   	 * a global recomputation is necessary.
    	 * 
    	 * In this case, the runner will trigger mesh refinement, and
    	 * the recomputation of the time step size. Lastly, it will 
    	 * trigger a recomputation of the predictor.
    	 */
-   	APrioriRefinement
+   	MeshRefinement
   };
-  parallelise persistent AlgorithmicSection _algorithmicSection;
-  
-  /**
-   * If this flag is set, the solvers
-   * are notified that they might need
-   * to reinitialise their time step sizes 
-   * and time stamps before a new time step
-   * is started.
-   * 
-   * This is usually the case if the
-   * mesh has been updated after the computation
-   * of the last solution. 
-   * 
-   * The ADER-DG solver, e.g., needs then to 
-   * overwrite the predictor time step size 
-   * of as well as the predictor time stamp
-   * before startNewTimeStep() is called for the solver
-   * since both will be used as corrector quantities in the next iteration.
-   */
-  persistent bool reinitTimeStepData;
-  
-  /**
-   * This flag indicates if at least one solver
-   * has performed a time step with an 
-   * instable (too large) time step size and
-   * thus needs to be recomputed.
-   * This can happen when we run the fused ADER-DG
-   * variant. 
-   * 
-   * Needs to be reset after the affected
-   * solvers have been rerun with a
-   * stable time step size.
-   * 
-   * <h2>MPI</h2>
-   * This flag does not need to be parallelised since
-   * we use it only for the global master rank.
-   */
-  persistent bool stabilityConditionOfOneSolverWasViolated;
-  
-  /**
-   * A factor in the range (0,1] that
-   * is used for reseting the time step sizes
-   * of an ADER-DG solver.
-   * 
-   * The reset corrector and predictor time step sizes
-   * are reset to a stable time step size times this factor. 
-   */
-  persistent double timeStepSizeWeightForPredictionRerun;
+  parallelise persistent AlgorithmSection _algorithmSection;
 };

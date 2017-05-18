@@ -117,6 +117,12 @@ private:
   double _minNextPredictorTimeStepSize;
 
   /**
+   * A flag that is sued to track if the
+   * CFL condition of a solver was violated.
+   */
+  bool _stabilityConditionWasViolated;
+
+  /**
    * The number of unknowns/basis functions associated with each face of an
    * element.
    * This number includes the unknowns of all state variables.
@@ -1346,15 +1352,28 @@ public:
 
   void updateMinNextTimeStepSize( double value ) override;
 
+  void initFusedSolverTimeStepSizes();
+
+  /**
+   * Set if the CFL condition was violated
+   * (by the last fused time step).
+   */
+  void setStabilityConditionWasViolated(bool state);
+
+  /**
+   * \return true if the CFL condition was violated
+   * (by the last fused time step).
+   */
+  bool setStabilityConditionWasViolated() const;
+
   void initSolver(
       const double timeStamp,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
-  bool isActive(
-      exahype::records::State::AlgorithmicSection& section) const override;
+  bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const override;
 
-  void initFusedSolverTimeStepSizes();
+  bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
 
   bool isValidCellDescriptionIndex(const int cellDescriptionsIndex) const override;
 

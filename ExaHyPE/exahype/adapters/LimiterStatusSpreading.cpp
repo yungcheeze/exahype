@@ -1,57 +1,57 @@
 #include "exahype/adapters/LimiterStatusSpreading.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::LimiterStatusSpreading::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::LimiterStatusSpreading::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::communicationSpecification()
+    &  _map2LimiterStatusSpreading.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::touchVertexLastTimeSpecification()
+    &  _map2LimiterStatusSpreading.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification()
+    &  _map2LimiterStatusSpreading.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::enterCellSpecification()
+    &  _map2LimiterStatusSpreading.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::leaveCellSpecification()
+    &  _map2LimiterStatusSpreading.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::ascendSpecification()
+    &  _map2LimiterStatusSpreading.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::LimiterStatusSpreading::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::LimiterStatusSpreading::descendSpecification()
+    &  _map2LimiterStatusSpreading.descendSpecification(level)
 
   ;
 }

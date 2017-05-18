@@ -25,7 +25,7 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::Reinitialisation::communicationSpecification() {
+exahype::mappings::Reinitialisation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
       MaskOutMasterWorkerDataAndStateExchange,
@@ -35,7 +35,7 @@ exahype::mappings::Reinitialisation::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::enterCellSpecification() {
+exahype::mappings::Reinitialisation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -43,35 +43,35 @@ exahype::mappings::Reinitialisation::enterCellSpecification() {
 
 // Everything below is nop.
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::touchVertexFirstTimeSpecification() {
+exahype::mappings::Reinitialisation::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::touchVertexLastTimeSpecification() {
+exahype::mappings::Reinitialisation::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::leaveCellSpecification() {
+exahype::mappings::Reinitialisation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::ascendSpecification() {
+exahype::mappings::Reinitialisation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::Reinitialisation::descendSpecification() {
+exahype::mappings::Reinitialisation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -159,7 +159,8 @@ void exahype::mappings::Reinitialisation::enterCell(
       if (element!=exahype::solvers::Solver::NotFound) {
         if(solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
            &&
-           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()
+           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+           !=exahype::solvers::LimiterDomainChange::Regular
         ) {
           auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
@@ -188,13 +189,11 @@ void exahype::mappings::Reinitialisation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // TODO(Dominic): Do not send data
-
   dfor2(dest)
     dfor2(src)
       if (vertex.hasToSendMetadata(src,dest,toRank)) {
         vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
-        if (vertex.hasToSendDataToNeighbour(src,dest)) { // Only comm. data once per face
+        if (vertex.hasToSendDataToNeighbour(src,dest)) {
           sendDataToNeighbour(
               toRank,src,dest,
               vertex.getCellDescriptionsIndex()[srcScalar],
@@ -212,12 +211,6 @@ void exahype::mappings::Reinitialisation::prepareSendToNeighbour(
   enddforx
 }
 
-/*
- * We only send empty data for LimitingADERDGSolvers
- * where we have detected a change of the limiter domain.
- * This information should be available on all ranks.
- * We ignore other solver types.
- */
 void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
     const int                                    toRank,
     const tarch::la::Vector<DIMENSIONS, int>&    src,
@@ -230,12 +223,13 @@ void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
-
+        &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::Irregular
+    ) {
       logDebug("sendEmptyDataToNeighbour(...)", "send empty data for solver " << solverNumber << " to rank " <<
               toRank << " at vertex x=" << x << ", level=" << level <<
-              ", src=" << src << ", dest=" << dest);
-
+              ", source=" << src << ", destination=" << dest);
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(toRank,src,dest,x,level);
     }
@@ -247,12 +241,6 @@ void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
       peano::heap::MessageType::NeighbourCommunication);
 }
 
-/*
- * We only send empty data for LimitingADERDGSolvers
- * where we have detected a change of the limiter domain.
- * This information should be available on all ranks.
- * We ignore other solver types.
- */
 void exahype::mappings::Reinitialisation::sendDataToNeighbour(
     const int                                    toRank,
     const tarch::la::Vector<DIMENSIONS,int>&     src,
@@ -268,25 +256,26 @@ void exahype::mappings::Reinitialisation::sendDataToNeighbour(
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainHasChanged()) {
+        &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::Irregular
+    ) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       const int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound) { // Check if a patch exists on the cell
-
         logDebug("sendDataToNeighbour(...)", "send data for solver " << solverNumber << " to rank " <<
                 toRank << " at vertex x=" << x << ", level=" << level <<
-                ", src=" << src << ", dest=" << dest);
+                ", source=" << src << ", destination=" << dest);
 
         limitingADERDGSolver->sendDataToNeighbourBasedOnLimiterStatus(
             toRank,srcCellDescriptionIndex,element,src,dest,
             true, /* isRecomputation */
             x,level);
       } else {
-
         logDebug("sendDataToNeighbour(...)", "send empty data for solver " << solverNumber << " to rank " <<
                  toRank << " at vertex x=" << x << ", level=" << level <<
-                 ", src=" << src << ", dest=" << dest);
+                 ", source=" << src << ", destination=" << dest);
 
         limitingADERDGSolver->sendEmptySolverAndLimiterDataToNeighbour(
             toRank,src,dest,x,level);

@@ -52,34 +52,34 @@ class exahype::mappings::InitialCondition {
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * Mask out data exchange between master and worker.
    * Further let Peano handle heap data exchange internally.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Prepares the temporary variables.

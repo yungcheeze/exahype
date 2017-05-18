@@ -134,6 +134,14 @@ bool exahype::State::continueToConstructGrid() const {
   #endif
 }
 
+void exahype::State::setAlgorithmSection(const records::State::AlgorithmSection& algorithmSection) {
+  _stateData.setAlgorithmSection(algorithmSection);
+}
+
+exahype::records::State::AlgorithmSection exahype::State::getAlgorithmSection() const {
+  return _stateData.getAlgorithmSection();
+}
+
  exahype::records::State::MergeMode exahype::State::getMergeMode() const {
    return _stateData.getMergeMode();
  }
@@ -239,15 +247,6 @@ bool exahype::State::continueToConstructGrid() const {
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
- //
- void exahype::State::setStabilityConditionOfOneSolverWasViolated(bool state) {
-   _stateData.setStabilityConditionOfOneSolverWasViolated(state);
- }
-
- bool exahype::State::stabilityConditionOfOneSolverWasViolated() const {
-   return _stateData.getStabilityConditionOfOneSolverWasViolated();
- }
-
  void exahype::State::setReinitTimeStepData(bool state) {
    _stateData.setReinitTimeStepData(state);
  }
@@ -261,7 +260,7 @@ bool exahype::State::continueToConstructGrid() const {
  }
 
  void exahype::State::setTimeStepSizeWeightForPredictionRerun(double value) {
-   _stateData.setTimeStepSizeWeightForPredictionRerun(value);
+
  }
 
  double exahype::State::getTimeStepSizeWeightForPredictionRerun() const {

@@ -1,64 +1,64 @@
 #include "exahype/adapters/NeighbourDataMerging.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::NeighbourDataMerging::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::NeighbourDataMerging::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::NeighbourDataMerging::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
+    &  _map2Merging.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
 
   ;
 }

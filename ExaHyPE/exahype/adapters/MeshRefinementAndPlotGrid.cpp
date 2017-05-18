@@ -1,106 +1,106 @@
 #include "exahype/adapters/MeshRefinementAndPlotGrid.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::MeshRefinementAndPlotGrid::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::MeshRefinementAndPlotGrid::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::MeshRefinement::communicationSpecification()
-   & exahype::mappings::InitialCondition::communicationSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification()
-   & exahype::mappings::LoadBalancing::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2MeshRefinement.communicationSpecification()
+    &  _map2InitialCondition.communicationSpecification()
+    &  _map2AugmentedAMRTreePlot2d.communicationSpecification()
+    &  _map2LoadBalancing.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexLastTimeSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexLastTimeSpecification()
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2MeshRefinement.touchVertexLastTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexLastTimeSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.touchVertexLastTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexFirstTimeSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::touchVertexFirstTimeSpecification()
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2MeshRefinement.touchVertexFirstTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexFirstTimeSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.touchVertexFirstTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::MeshRefinement::enterCellSpecification()
-   & exahype::mappings::InitialCondition::enterCellSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification()
-   & exahype::mappings::LoadBalancing::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::enterCellSpecification()
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2MeshRefinement.enterCellSpecification(level)
+    &  _map2InitialCondition.enterCellSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.enterCellSpecification(level)
+    &  _map2LoadBalancing.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::MeshRefinement::leaveCellSpecification()
-   & exahype::mappings::InitialCondition::leaveCellSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification()
-   & exahype::mappings::LoadBalancing::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::leaveCellSpecification()
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2MeshRefinement.leaveCellSpecification(level)
+    &  _map2InitialCondition.leaveCellSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.leaveCellSpecification(level)
+    &  _map2LoadBalancing.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::MeshRefinement::ascendSpecification()
-   & exahype::mappings::InitialCondition::ascendSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification()
-   & exahype::mappings::LoadBalancing::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::ascendSpecification()
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2MeshRefinement.ascendSpecification(level)
+    &  _map2InitialCondition.ascendSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.ascendSpecification(level)
+    &  _map2LoadBalancing.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::MeshRefinementAndPlotGrid::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::MeshRefinement::descendSpecification()
-   & exahype::mappings::InitialCondition::descendSpecification()
-   & exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification()
-   & exahype::mappings::LoadBalancing::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
-   & exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7::descendSpecification()
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2Merging.descendSpecification(level)
+    &  _map2MeshRefinement.descendSpecification(level)
+    &  _map2InitialCondition.descendSpecification(level)
+    &  _map2AugmentedAMRTreePlot2d.descendSpecification(level)
+    &  _map2LoadBalancing.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
+    &  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.descendSpecification(level)
 
   ;
 }

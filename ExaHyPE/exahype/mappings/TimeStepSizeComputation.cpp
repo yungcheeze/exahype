@@ -27,7 +27,7 @@
 bool exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
 peano::CommunicationSpecification
-exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
+exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -35,7 +35,7 @@ exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -44,31 +44,31 @@ exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::leaveCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::ascendSpecification() {
+exahype::mappings::TimeStepSizeComputation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::descendSpecification() {
+exahype::mappings::TimeStepSizeComputation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -96,7 +96,7 @@ exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeStepSizeComputation& masterThread)
-{
+  : _localState(masterThread._localState) {
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
@@ -124,6 +124,8 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
 void exahype::mappings::TimeStepSizeComputation::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  _localState = solverState;
 
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
@@ -169,10 +171,10 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
       usedTimeStepSize = stableTimeStepSize;
     }
 
-    bool useTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
+    bool usedTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
 
-    if (useTimeStepSizeWasInstable) {
-      state.setStabilityConditionOfOneSolverWasViolated(true);
+    if (usedTimeStepSizeWasInstable) {
+      aderdgSolver->setStabilityConditionWasViolated(true);
 
       const double timeStepSizeWeight = state.getTimeStepSizeWeightForPredictionRerun();
       aderdgSolver->updateMinNextPredictorTimeStepSize(
@@ -215,7 +217,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         #endif
         && !VetoFusedTimeSteppingTimeStepSizeReinitialisation
     ) {
-      state.setStabilityConditionOfOneSolverWasViolated(false);
       reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
     }
 
@@ -273,27 +274,28 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[solverNumber];
-      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+            fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-      if (element!=exahype::solvers::Solver::NotFound) {
-        double admissibleTimeStepSize =
-            solver->startNewTimeStep(
-                fineGridCell.getCellDescriptionsIndex(),element,
-                _temporaryVariables._tempEigenValues[solverNumber]);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          double admissibleTimeStepSize =
+              solver->startNewTimeStep(
+                  fineGridCell.getCellDescriptionsIndex(),element,
+                  _temporaryVariables._tempEigenValues[solverNumber]);
 
-        if (!exahype::State::fuseADERDGPhases()) {
-          reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+          if (!exahype::State::fuseADERDGPhases()) {
+            reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+          }
+
+          _minTimeStepSizes[solverNumber] = std::min(
+              admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
+          _minCellSizes[solverNumber] = std::min(
+              fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
+          _maxCellSizes[solverNumber] = std::max(
+              fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
         }
-
-        _minTimeStepSizes[solverNumber] = std::min(
-            admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
-        _minCellSizes[solverNumber] = std::min(
-            fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
-        _maxCellSizes[solverNumber] = std::max(
-            fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();

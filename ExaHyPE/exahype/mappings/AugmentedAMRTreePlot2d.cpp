@@ -34,45 +34,45 @@ double exahype::mappings::AugmentedAMRTreePlot2d::SqueezeZAxis         = 4.0;
 double exahype::mappings::AugmentedAMRTreePlot2d::TreeConnectionsValue = -100.0;
 
 peano::CommunicationSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification() const {
   return peano::CommunicationSpecification::getPessimisticSpecification(true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
                                      peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
                                      peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);

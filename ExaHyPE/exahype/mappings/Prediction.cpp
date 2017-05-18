@@ -29,7 +29,7 @@
 #include "peano/utils/UserInterface.h"
 
 peano::CommunicationSpecification
-exahype::mappings::Prediction::communicationSpecification() {
+exahype::mappings::Prediction::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -37,13 +37,13 @@ exahype::mappings::Prediction::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::Prediction::enterCellSpecification() {
+exahype::mappings::Prediction::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::leaveCellSpecification() {
+exahype::mappings::Prediction::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -51,25 +51,25 @@ exahype::mappings::Prediction::leaveCellSpecification() {
 
 // The remainder specs all are nop
 peano::MappingSpecification
-exahype::mappings::Prediction::touchVertexLastTimeSpecification() {
+exahype::mappings::Prediction::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::touchVertexFirstTimeSpecification() {
+exahype::mappings::Prediction::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::ascendSpecification() {
+exahype::mappings::Prediction::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::descendSpecification() {
+exahype::mappings::Prediction::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -85,7 +85,8 @@ exahype::mappings::Prediction::~Prediction() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
+exahype::mappings::Prediction::Prediction(const Prediction& masterThread)
+  : _localState(masterThread._localState) {
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
@@ -96,6 +97,8 @@ void exahype::mappings::Prediction::mergeWithWorkerThread(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
+  _localState = solverState;
+
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 

@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_SolutionRecomputation_H_
-#define EXAHYPE_MAPPINGS_SolutionRecomputation_H_
+#ifndef EXAHYPE_MAPPINGS_LocalRecomputation_H_
+#define EXAHYPE_MAPPINGS_LocalRecomputation_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -33,13 +33,13 @@
 
 namespace exahype {
 namespace mappings {
-class SolutionRecomputation;
+class LocalRecomputation;
 }
 }
 
 /**
  * This mapping is one of three mappings (+adapters) which together perform the limiter
- * status spreading and the recomputation of troubled cells (and their direct) neighbours.
+ * status spreading and the local recomputation of troubled cells (and their direct) neighbours.
  *
  * |Mapping                 | Event                  | Action                                            |
  * -------------------------------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ class SolutionRecomputation;
  * |                        |                        | Rollback the solution in troubled cells and their next two neighbours.
  * |                        | prepareSendToNeighbour | Based on the unified face-wise limiter status send interface values to the neighbours. |
  * ------------------------------------------------------------------------------------------------------
- * |SolutionRecomputation   | mergeWithNeighbour     | Based on the unified face-wise limiter status receive or drop the interface values send by the neighbours.
+ * |LocalRecomputation      | mergeWithNeighbour     | Based on the unified face-wise limiter status receive or drop the interface values send by the neighbours.
  * |                        | touchVertexFirstTIme   | Based on the unified face-wise limiter status merge local direct neighbours.
  * |                        | enterCell              | Recompute the solution in the troubled cells (and their direct neighbours).
  * |                        |                        | Set the cell-wise limiter status to the unified face-wise limiter status.
@@ -63,9 +63,12 @@ class SolutionRecomputation;
  * |                        |                        | evaluating the discrete maximum principle (DMP) and the physical admissibility detection (PAD).)
  * ------------------------------------------------------------------------
  *
+ * This mapping is only used in the algorithmic section LocalRecomputation.
+ * It is not used for in the algorithmic section APosterioriRefinement.
+ *
  * @author Dominic Charrier
  */
-class exahype::mappings::SolutionRecomputation {
+class exahype::mappings::LocalRecomputation {
  private:
   /**
    * Logging device for the trace macros.
@@ -189,33 +192,33 @@ class exahype::mappings::SolutionRecomputation {
   /**
    * \see exahype::mappings::Merging::touchVertexLastTimeSpecification()
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Run through the whole tree. Run concurrently on the fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * No data needs to be synchronised between masters and workers.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * TODO(Dominic): Add docu.
@@ -251,13 +254,13 @@ class exahype::mappings::SolutionRecomputation {
   /**
    * Copy the local state object over to the worker thread.
    */
-  SolutionRecomputation(const SolutionRecomputation& masterThread);
+  LocalRecomputation(const LocalRecomputation& masterThread);
   #endif
 
   /**
    * Free previously allocated temporary variables.
    */
-  virtual ~SolutionRecomputation();
+  virtual ~LocalRecomputation();
 
 #ifdef Parallel
   /**
@@ -384,12 +387,12 @@ class exahype::mappings::SolutionRecomputation {
   /**
    * Nop.
    */
-  void mergeWithWorkerThread(const SolutionRecomputation& workerThread);
+  void mergeWithWorkerThread(const LocalRecomputation& workerThread);
 #endif
   /**
    * Nop
    */
-  SolutionRecomputation();
+  LocalRecomputation();
 
   /**
    * Nop.

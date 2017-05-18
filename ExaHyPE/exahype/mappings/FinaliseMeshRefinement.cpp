@@ -24,7 +24,7 @@
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
 peano::CommunicationSpecification
-exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
+exahype::mappings::FinaliseMeshRefinement::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           MaskOutMasterWorkerDataAndStateExchange,
@@ -34,42 +34,42 @@ exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification() {
+exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::enterCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::ascendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::descendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -143,9 +143,8 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined19);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[solverNumber];
-      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
           fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound) {

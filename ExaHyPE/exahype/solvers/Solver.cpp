@@ -33,32 +33,31 @@ const int exahype::solvers::Solver::NotFound = -1;
 
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
-  assertion(solverFlags._irregularChangeOfLimiterDomain==nullptr);
+  assertion(solverFlags._limiterDomainChange==nullptr);
   assertion(solverFlags._meshUpdateRequest    ==nullptr);
 
   int numberOfSolvers    = exahype::solvers::RegisteredSolvers.size();
-  solverFlags._irregularChangeOfLimiterDomain = new bool[numberOfSolvers];
-  solverFlags._meshUpdateRequest              = new bool[numberOfSolvers];
+  solverFlags._limiterDomainChange = new LimiterDomainChange[numberOfSolvers];
+  solverFlags._meshUpdateRequest   = new bool               [numberOfSolvers];
 }
 
 void exahype::solvers::prepareSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    solverFlags._irregularChangeOfLimiterDomain[solverNumber] = false;
-    assertion(exahype::solvers::RegisteredSolvers[solverNumber]->getNextMeshUpdateRequest()
-              ==false);
+    solverFlags._limiterDomainChange[solverNumber] = LimiterDomainChange::Regular;
+    assertion(exahype::solvers::RegisteredSolvers[solverNumber]->getNextMeshUpdateRequest()==false);
     solverFlags._meshUpdateRequest[solverNumber] = false;
   }
 }
 
 void exahype::solvers::deleteSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
-  if (solverFlags._irregularChangeOfLimiterDomain!=nullptr) {
-    assertion(solverFlags._irregularChangeOfLimiterDomain!=nullptr);
-    assertion(solverFlags._meshUpdateRequest    !=nullptr);
+  if (solverFlags._limiterDomainChange!=nullptr) {
+    assertion(solverFlags._limiterDomainChange!=nullptr);
+    assertion(solverFlags._meshUpdateRequest  !=nullptr);
 
-    delete[] solverFlags._irregularChangeOfLimiterDomain;
+    delete[] solverFlags._limiterDomainChange;
     delete[] solverFlags._meshUpdateRequest;
-    solverFlags._irregularChangeOfLimiterDomain = nullptr;
-    solverFlags._meshUpdateRequest     = nullptr;
+    solverFlags._limiterDomainChange = nullptr;
+    solverFlags._meshUpdateRequest   = nullptr;
   }
 }
 

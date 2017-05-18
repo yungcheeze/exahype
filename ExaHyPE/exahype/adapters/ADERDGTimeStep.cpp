@@ -1,92 +1,92 @@
 #include "exahype/adapters/ADERDGTimeStep.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::ADERDGTimeStep::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::ADERDGTimeStep::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::SolutionUpdate::communicationSpecification()
-   & exahype::mappings::Prediction::communicationSpecification()
-   & exahype::mappings::TimeStepSizeComputation::communicationSpecification()
-   & exahype::mappings::LoadBalancing::communicationSpecification()
-   & exahype::mappings::Sending::communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2SolutionUpdate.communicationSpecification()
+    &  _map2Prediction.communicationSpecification()
+    &  _map2TimeStepSizeComputation.communicationSpecification()
+    &  _map2LoadBalancing.communicationSpecification()
+    &  _map2Sending.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification()
-   & exahype::mappings::Prediction::touchVertexLastTimeSpecification()
-   & exahype::mappings::TimeStepSizeComputation::touchVertexLastTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification()
-   & exahype::mappings::Sending::touchVertexLastTimeSpecification()
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2SolutionUpdate.touchVertexLastTimeSpecification(level)
+    &  _map2Prediction.touchVertexLastTimeSpecification(level)
+    &  _map2TimeStepSizeComputation.touchVertexLastTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexLastTimeSpecification(level)
+    &  _map2Sending.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Prediction::touchVertexFirstTimeSpecification()
-   & exahype::mappings::TimeStepSizeComputation::touchVertexFirstTimeSpecification()
-   & exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Sending::touchVertexFirstTimeSpecification()
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2SolutionUpdate.touchVertexFirstTimeSpecification(level)
+    &  _map2Prediction.touchVertexFirstTimeSpecification(level)
+    &  _map2TimeStepSizeComputation.touchVertexFirstTimeSpecification(level)
+    &  _map2LoadBalancing.touchVertexFirstTimeSpecification(level)
+    &  _map2Sending.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::SolutionUpdate::enterCellSpecification()
-   & exahype::mappings::Prediction::enterCellSpecification()
-   & exahype::mappings::TimeStepSizeComputation::enterCellSpecification()
-   & exahype::mappings::LoadBalancing::enterCellSpecification()
-   & exahype::mappings::Sending::enterCellSpecification()
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2SolutionUpdate.enterCellSpecification(level)
+    &  _map2Prediction.enterCellSpecification(level)
+    &  _map2TimeStepSizeComputation.enterCellSpecification(level)
+    &  _map2LoadBalancing.enterCellSpecification(level)
+    &  _map2Sending.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::SolutionUpdate::leaveCellSpecification()
-   & exahype::mappings::Prediction::leaveCellSpecification()
-   & exahype::mappings::TimeStepSizeComputation::leaveCellSpecification()
-   & exahype::mappings::LoadBalancing::leaveCellSpecification()
-   & exahype::mappings::Sending::leaveCellSpecification()
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2SolutionUpdate.leaveCellSpecification(level)
+    &  _map2Prediction.leaveCellSpecification(level)
+    &  _map2TimeStepSizeComputation.leaveCellSpecification(level)
+    &  _map2LoadBalancing.leaveCellSpecification(level)
+    &  _map2Sending.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::SolutionUpdate::ascendSpecification()
-   & exahype::mappings::Prediction::ascendSpecification()
-   & exahype::mappings::TimeStepSizeComputation::ascendSpecification()
-   & exahype::mappings::LoadBalancing::ascendSpecification()
-   & exahype::mappings::Sending::ascendSpecification()
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2SolutionUpdate.ascendSpecification(level)
+    &  _map2Prediction.ascendSpecification(level)
+    &  _map2TimeStepSizeComputation.ascendSpecification(level)
+    &  _map2LoadBalancing.ascendSpecification(level)
+    &  _map2Sending.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::ADERDGTimeStep::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::SolutionUpdate::descendSpecification()
-   & exahype::mappings::Prediction::descendSpecification()
-   & exahype::mappings::TimeStepSizeComputation::descendSpecification()
-   & exahype::mappings::LoadBalancing::descendSpecification()
-   & exahype::mappings::Sending::descendSpecification()
+    &  _map2Merging.descendSpecification(level)
+    &  _map2SolutionUpdate.descendSpecification(level)
+    &  _map2Prediction.descendSpecification(level)
+    &  _map2TimeStepSizeComputation.descendSpecification(level)
+    &  _map2LoadBalancing.descendSpecification(level)
+    &  _map2Sending.descendSpecification(level)
 
   ;
 }

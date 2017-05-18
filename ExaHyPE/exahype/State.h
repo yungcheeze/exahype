@@ -68,7 +68,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
  public:
-  static bool FuseADERDGPhases;
+  static bool FuseADERDGPhases = false;
+
+  static double WeightForPredictionRerun = 0.9;
 
   /**
    * Default Constructor
@@ -97,6 +99,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    */
   void merge(const State& anotherState);
   ///@}
+
+  void setAlgorithmSection(const records::State::AlgorithmSection& section);
+
+  /**
+   * Return the algorithm section the runner is currently in.
+   */
+  records::State::AlgorithmSection getAlgorithmSection() const;
 
   /**
    * Return the merge mode that is currently active.
@@ -179,9 +188,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    */
   static bool fuseADERDGPhases();
 
-  void setTimeStepSizeWeightForPredictionRerun(double value);
-
-  double getTimeStepSizeWeightForPredictionRerun() const;
+  static double getTimeStepSizeWeightForPredictionRerun();
 
   /**
    * Has to be called after the iteration!

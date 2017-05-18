@@ -36,7 +36,7 @@ tarch::logging::Log exahype::mappings::LimiterStatusSpreading::_log("exahype::ma
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::LimiterStatusSpreading::communicationSpecification() {
+exahype::mappings::LimiterStatusSpreading::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           SendDataAndStateBeforeFirstTouchVertexFirstTime,
@@ -46,39 +46,39 @@ exahype::mappings::LimiterStatusSpreading::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::touchVertexLastTimeSpecification() {
+exahype::mappings::LimiterStatusSpreading::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification() {
+exahype::mappings::LimiterStatusSpreading::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::enterCellSpecification() {
+exahype::mappings::LimiterStatusSpreading::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::leaveCellSpecification() {
+exahype::mappings::LimiterStatusSpreading::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::Serial,true);
 }
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::ascendSpecification() {
+exahype::mappings::LimiterStatusSpreading::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::LimiterStatusSpreading::descendSpecification() {
+exahype::mappings::LimiterStatusSpreading::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -201,8 +201,9 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
     if (element!=exahype::solvers::Solver::NotFound) {
       if (
           solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-          && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-                getLimiterDomainChangedIrregularly()
+          &&
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+          !=exahype::solvers::LimiterDomainChange::Regular
       ) {
         auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 

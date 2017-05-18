@@ -57,13 +57,13 @@ private:
    * This might be the case if either a cell has been
    * newly marked as troubled or healed.
    */
-  bool _limiterDomainChangedIrregularly;
+  exahype::solvers::LimiterDomainChange _limiterDomainChange;
 
   /**
    * The limiterDomainHasChanged for the next
    * iteration.
    */
-  bool _nextLimiterDomainChangedIrregularly;
+  exahype::solvers::LimiterDomainChange _nextLimiterDomainChange;
 
   /**
    * The maximum relaxation parameter
@@ -373,7 +373,23 @@ private:
 #endif
 
 public:
-  static bool irregularChangeOfLimiterDomainOfOneSolver();
+  /*
+   * Check if a solver requested either local or global
+   * recomputation.
+   */
+  static bool oneSolverRequestedLocalOrGlobalRecomputation();
+
+  /*
+   * Check if a solver requested local recomputation
+   * recomputation.
+   */
+  static bool oneSolverRequestedLocalRecomputation();
+
+  /*
+   * Check if a solver requested either global
+   * recomputation.
+   */
+  static bool oneSolverRequestedGlobalRecomputation();
 
   /**
    * Create a limiting ADER-DG solver.
@@ -432,6 +448,10 @@ public:
         const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
         const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
+  bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const override;
+
+  bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
+
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,
           const int element) override;
@@ -450,11 +470,11 @@ public:
 
   void zeroTimeStepSizes() override;
 
-  bool getLimiterDomainChangedIrregularly() const;
+  LimiterDomainChange getLimiterDomainChange() const;
 
-  bool getNextLimiterDomainChangedIrregularly() const;
+  LimiterDomainChange getNextLimiterDomainChange() const;
 
-  void updateNextLimiterDomainChangedIrregularly(bool state);
+  void updateNextLimiterDomainChange(LimiterDomainChange limiterDomainChange);
 
   /**
    * Roll back the time step data to the
@@ -795,6 +815,12 @@ public:
    * We do not overwrite the old limiter status set in this method.
    * We compute the new limiter status based on the merged limiter statuses associated
    * with the faces.
+   *
+   * <h2>A-posteriori refinement</h2>
+   * In case of a-posteriori refinement, we also perform a rollback
+   * in the Ok cells. Then, the global time step size used by the predictor
+   * is not valid anymore (assumption: global time stepping)
+   *  and the last solution update has to be redone.
    *
    * <h2>Compute cell limiter patch deallocation</h2>
    * It is only safe to deallocate unrequired compute cell limiter patches after

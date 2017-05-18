@@ -1,64 +1,64 @@
 #include "exahype/adapters/GridErasing.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::GridErasing::communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2GridErasing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexLastTimeSpecification()
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2GridErasing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexFirstTimeSpecification()
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2GridErasing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::GridErasing::enterCellSpecification()
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2GridErasing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::GridErasing::leaveCellSpecification()
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2GridErasing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::GridErasing::ascendSpecification()
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2GridErasing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::GridErasing::descendSpecification()
+    &  _map2Merging.descendSpecification(level)
+    &  _map2GridErasing.descendSpecification(level)
 
   ;
 }

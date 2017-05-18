@@ -20,10 +20,36 @@ namespace solvers {
 
 tarch::logging::Log exahype::solvers::LimitingADERDGSolver::_log("exahype::solvers::LimitingADERDGSolver");
 
-bool exahype::solvers::LimitingADERDGSolver::irregularChangeOfLimiterDomainOfOneSolver() {
+bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
-        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChangedIrregularly()) {
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        !=exahype::solvers::LimiterDomainChange::Regular
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation(){
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::Irregular
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation(){
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate
+    ) {
       return true;
     }
   }
@@ -55,8 +81,8 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
           solver->getTimeStepping()),
           _solver(std::move(solver)),
           _limiter(std::move(limiter)),
-          _limiterDomainChangedIrregularly(false),
-          _nextLimiterDomainChangedIrregularly(false),
+          _limiterDomainChange(LimiterDomainChange::Regular),
+          _nextLimiterDomainChange(LimiterDomainChange::Regular),
           _DMPMaximumRelaxationParameter(DMPRelaxationParameter),
           _DMPDifferenceScaling(DMPDifferenceScaling),
           _iterationsToCureTroubledCell(iterationsToCureTroubledCell)
@@ -90,9 +116,39 @@ void exahype::solvers::LimitingADERDGSolver::initSolver(
   _coarsestMeshLevel =
       exahype::solvers::Solver::computeMeshLevel(_maximumMeshSize,domainSize[0]);
 
-  _limiterDomainChangedIrregularly=true;
+  _limiterDomainChange=LimiterDomainChange::Regular;
 
   _solver->initSolver(timeStamp, domainOffset, domainSize);
+}
+
+bool exahype::solvers::LimitingADERDGSolver::isCommunicating(exahype::records::State::AlgorithmSection& section) const {
+  return
+      section==exahype::records::State::AlgorithmSection::TimeStepping
+      ||
+      (section==exahype::records::State::AlgorithmSection::APosterioriRefinement && // assert: getMeshUpdateRequest())
+      getLimiterDomainChange()==LimiterDomainChange::IrregularRequiringMeshUpdate)
+      ||
+      (section==exahype::records::State::AlgorithmSection::APrioriRefinement &&
+       getMeshUpdateRequest() &&
+       getLimiterDomainChange()==LimiterDomainChange::Regular)
+      ||
+      (section==exahype::records::State::AlgorithmSection::LocalRecomputation && // assert: !getMeshUpdateRequest()
+      getLimiterDomainChange()==LimiterDomainChange::Regular);
+}
+
+bool exahype::solvers::LimitingADERDGSolver::isComputing(exahype::records::State::AlgorithmSection& section) const {
+  return
+      section==exahype::records::State::AlgorithmSection::TimeStepping
+      ||
+      (section==exahype::records::State::AlgorithmSection::APosterioriRefinement && // assert: getMeshUpdateRequest())
+      getLimiterDomainChange()==LimiterDomainChange::IrregularRequiringMeshUpdate)
+      ||
+      (section==exahype::records::State::AlgorithmSection::APrioriRefinement &&
+       getMeshUpdateRequest() &&
+       getLimiterDomainChange()==LimiterDomainChange::Regular)
+      ||
+      (section==exahype::records::State::AlgorithmSection::LocalRecomputation && // assert: !getMeshUpdateRequest()
+      getLimiterDomainChange()==LimiterDomainChange::Regular);
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
@@ -111,26 +167,28 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
 
   setNextMeshUpdateRequest();
 
-  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChangedIrregularly<<",_nextLimiterDomainChangedIrregularly="<<_nextLimiterDomainChangedIrregularly);
+  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChange<<",nextLimiterDomainChange="<<_nextLimiterDomainChange);
 
-  _limiterDomainChangedIrregularly     = _nextLimiterDomainChangedIrregularly;
-  _nextLimiterDomainChangedIrregularly = false;
+  _limiterDomainChange     = _nextLimiterDomainChange;
+  _nextLimiterDomainChange = false;
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
   _solver->zeroTimeStepSizes();
 }
 
-bool exahype::solvers::LimitingADERDGSolver::getLimiterDomainChangedIrregularly() const {
-  return _limiterDomainChangedIrregularly;
+exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::getLimiterDomainChange() const {
+  return _limiterDomainChange;
 }
 
-bool exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChangedIrregularly() const {
-  return _nextLimiterDomainChangedIrregularly;
+exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChange() const {
+  return _nextLimiterDomainChange;
 }
 
-void exahype::solvers::LimitingADERDGSolver::updateNextLimiterDomainChangedIrregularly(bool state) {
-  _nextLimiterDomainChangedIrregularly |= state;
+void exahype::solvers::LimitingADERDGSolver::updateNextLimiterDomainChange(
+    exahype::solvers::LimiterDomainChange limiterDomainChange) {
+  _nextLimiterDomainChange =
+      std::max( _nextLimiterDomainChange, limiterDomainChange );
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
@@ -1063,11 +1121,11 @@ void exahype::solvers::LimitingADERDGSolver::reinitialiseSolvers(
       }
     } break;
     case SolverPatch::LimiterStatus::Ok: {
-      // TODO(Dominic): AMR+Limiter
-      //         _solver->rollbackSolution(
-      //    fineGridCell.getCellDescriptionsIndex(),solverElement,
-      //    fineGridVertices,fineGridVerticesEnumerator);
-
+      if (getLimiterDomainChange()==LimiterDomainChange::IrregularRequiringMeshUpdate) {
+        _solver->rollbackSolution(
+            fineGridCell.getCellDescriptionsIndex(),solverElement,
+            fineGridVertices,fineGridVerticesEnumerator);
+      }
       #if defined(Asserts)
       const int limiterElement =
           tryGetLimiterElementFromSolverElement(fineGridCell.getCellDescriptionsIndex(),solverElement);
@@ -1242,7 +1300,7 @@ exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::up
     return LimiterDomainChange::IrregularRequiringMeshUpdate;
   }
 
-  return LimiterDomainChange::RegularChange;
+  return LimiterDomainChange::Regular;
 }
 
 void exahype::solvers::LimitingADERDGSolver::preProcess(
@@ -1996,7 +2054,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
 
   // Send the information to master if limiter status has changed or not
   std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainChangedIrregularly ? 1.0 : -1.0); // TODO(Dominic): ugly
+  dataToSend.push_back(_limiterDomainChange ? 1.0 : -1.0); // TODO(Dominic): ugly
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -2024,14 +2082,14 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
   assertion(tarch::la::equals(receivedData[0],1.0) ||
             tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
-  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  updateNextLimiterDomainChangedIrregularly(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
+  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false; // TODO(Dominic): Fix this
+  updateNextLimiterDomainChange(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logDebug("mergeWithWorkerData(...)","_nextLimiterDomainChangedIrregularly=" << _nextLimiterDomainChangedIrregularly);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
   }
 }
 
@@ -2115,7 +2173,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   // changed for this solver.
   // Send the information to master if limiter status has changed or not
   std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainChangedIrregularly ? 1.0 : -1.0);
+  dataToSend.push_back(_limiterDomainChange ? 1.0 : -1.0);
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -2144,13 +2202,13 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
             tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
   bool masterLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  _limiterDomainChangedIrregularly = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
+  _limiterDomainChange = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithMasterData(...)","Received data from worker:" <<
             " data[0]=" << receivedData[0]);
-    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainChangedIrregularly);
+    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainChange);
   }
 }
 

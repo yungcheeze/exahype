@@ -108,9 +108,14 @@ void exahype::solvers::FiniteVolumesSolver::initSolver(
   _minTimeStamp = timeStamp;
 }
 
-bool exahype::solvers::FiniteVolumesSolver::isActive(
-    exahype::records::State::AlgorithmicSection& section) const {
-  return section==exahype::records::State::AlgorithmicSection::TimeStepping;
+bool exahype::solvers::FiniteVolumesSolver::isCommunicating(
+    const exahype::records::State::AlgorithmSection& section) const {
+  return section==exahype::records::State::AlgorithmSection::TimeStepping;
+}
+
+bool exahype::solvers::FiniteVolumesSolver::isComputing(
+    const exahype::records::State::AlgorithmSection& section) const {
+  return section==exahype::records::State::AlgorithmSection::TimeStepping;
 }
 
 void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
