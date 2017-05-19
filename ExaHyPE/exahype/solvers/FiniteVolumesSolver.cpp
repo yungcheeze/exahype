@@ -108,9 +108,13 @@ void exahype::solvers::FiniteVolumesSolver::initSolver(
   _minTimeStamp = timeStamp;
 }
 
-bool exahype::solvers::FiniteVolumesSolver::isCommunicating(
+bool exahype::solvers::FiniteVolumesSolver::isSending(
     const exahype::records::State::AlgorithmSection& section) const {
-  return section==exahype::records::State::AlgorithmSection::TimeStepping;
+  return
+      section==exahype::records::State::AlgorithmSection::TimeStepping ||
+      section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
+      section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
+      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
 }
 
 bool exahype::solvers::FiniteVolumesSolver::isComputing(
@@ -162,6 +166,7 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
   setNextMeshUpdateRequest();
+  setNextAttainedStableState();
 }
 
 /**

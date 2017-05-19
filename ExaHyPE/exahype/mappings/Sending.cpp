@@ -134,7 +134,7 @@ void exahype::mappings::Sending::enterCell(
         getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined12);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      if (solver->isSending(_localState.getAlgorithmSection())) {
         const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
         if (element!=exahype::solvers::Solver::NotFound) {
           solver->prolongateDataAndPrepareDataRestriction(fineGridCell.getCellDescriptionsIndex(),element);
@@ -164,7 +164,7 @@ void exahype::mappings::Sending::leaveCell(
         getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined13);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      if (solver->isSending(_localState.getAlgorithmSection())) {
         const int fineGridElement = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
         if (fineGridElement!=exahype::solvers::Solver::NotFound) {
           auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -244,7 +244,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+    if (solver->isSending(_localState.getAlgorithmSection())) {
       solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
     }
   }
@@ -268,7 +268,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
 
   for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-    if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+    if (solver->isSending(_localState.getAlgorithmSection())) {
       const int element = solver->tryGetElement(srcCellDescriptionIndex,solverNumber);
       if (element!=exahype::solvers::Solver::NotFound) {
         solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
@@ -297,7 +297,7 @@ void exahype::mappings::Sending::prepareSendToMaster(
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
     for (auto* solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      if (solver->isSending(_localState.getAlgorithmSection())) {
         solver->sendDataToMaster(
             tarch::parallel::NodePool::getInstance().getMasterRank(),
             verticesEnumerator.getCellCenter(),
@@ -318,7 +318,7 @@ void exahype::mappings::Sending::prepareSendToMaster(
 
       for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        if (solver->isSending(_localState.getAlgorithmSection())) {
           const int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
           if (element!=exahype::solvers::Solver::NotFound) {
             solver->sendDataToMaster(
@@ -343,7 +343,7 @@ void exahype::mappings::Sending::prepareSendToMaster(
           verticesEnumerator.getLevel());
 
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        if (solver->isSending(_localState.getAlgorithmSection())) {
           solver->sendEmptyDataToMaster(
               tarch::parallel::NodePool::getInstance().getMasterRank(),
               verticesEnumerator.getCellCenter(),
@@ -369,7 +369,7 @@ void exahype::mappings::Sending::mergeWithMaster(
   if (_localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
     for (auto* solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+      if (solver->isSending(_localState.getAlgorithmSection())) {
         solver->mergeWithWorkerData(
                   worker,
                   fineGridVerticesEnumerator.getCellCenter(),
@@ -396,7 +396,7 @@ void exahype::mappings::Sending::mergeWithMaster(
 
       for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        if (solver->isSending(_localState.getAlgorithmSection())) {
           const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
           const int offset  = exahype::MetadataPerSolver*solverNumber;
           if (element!=exahype::solvers::Solver::NotFound &&
@@ -428,7 +428,7 @@ void exahype::mappings::Sending::mergeWithMaster(
           fineGridVerticesEnumerator.getLevel());
 
       for (auto solver : exahype::solvers::RegisteredSolvers) {
-        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        if (solver->isSending(_localState.getAlgorithmSection())) {
           solver->dropWorkerData(
               worker,
               fineGridVerticesEnumerator.getCellCenter(),
@@ -456,7 +456,7 @@ bool exahype::mappings::Sending::prepareSendToWorker(
     if (fineGridCell.isInitialised()) {
       for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-        if (solver->isCommunicating(_localState.getAlgorithmSection())) {
+        if (solver->isSending(_localState.getAlgorithmSection())) {
           const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
           if (element!=exahype::solvers::Solver::NotFound) {

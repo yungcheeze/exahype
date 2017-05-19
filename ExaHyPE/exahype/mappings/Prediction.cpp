@@ -158,28 +158,28 @@ void exahype::mappings::Prediction::enterCell(
             auto* solver = static_cast<exahype::solvers::ADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
 
-            performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
+              performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            }
           } break;
           case exahype::solvers::Solver::Type::LimitingADERDG: {
             auto* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
 
-            if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled1
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled2
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled3
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourOfTroubled4) {
-              performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
+              if (cellDescription.getLimiterStatus()!=exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled) {
+                performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+              }
             }
           } break;
           default:

@@ -117,7 +117,7 @@ private:
   double _minNextPredictorTimeStepSize;
 
   /**
-   * A flag that is sued to track if the
+   * A flag that is used to track if the
    * CFL condition of a solver was violated.
    */
   bool _stabilityConditionWasViolated;
@@ -1364,14 +1364,14 @@ public:
    * \return true if the CFL condition was violated
    * (by the last fused time step).
    */
-  bool setStabilityConditionWasViolated() const;
+  bool getStabilityConditionWasViolated() const;
 
   void initSolver(
       const double timeStamp,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
-  bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const override;
+  bool isSending(const exahype::records::State::AlgorithmSection& section) const override;
 
   bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
 

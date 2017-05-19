@@ -108,7 +108,9 @@ exahype::solvers::Solver::Solver(
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)),
       _meshUpdateRequest(false),
-      _nextMeshUpdateRequest(false) { }
+      _nextMeshUpdateRequest(false),
+      _attainedStableState(false),
+      _nextAttainedStableState(false){ }
 
 
 std::string exahype::solvers::Solver::getIdentifier() const {
@@ -179,10 +181,35 @@ double exahype::solvers::Solver::getMaximumAdaptiveMeshLevel() const {
   return _coarsestMeshLevel+_maximumAdaptiveMeshDepth;
 }
 
+ void exahype::solvers::Solver::updateNextMinCellSize(double minCellSize) {
+  _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
+}
+
+ void exahype::solvers::Solver::updateNextMaxCellSize(double maxCellSize) {
+  _nextMaxCellSize = std::max( _nextMaxCellSize, maxCellSize );
+}
+
+ double exahype::solvers::Solver::getNextMinCellSize() const {
+  return _nextMinCellSize;
+}
+
+ double exahype::solvers::Solver::getNextMaxCellSize() const {
+  return _nextMaxCellSize;
+}
+
+ double exahype::solvers::Solver::getMinCellSize() const {
+  return _minCellSize;
+}
+
+ double exahype::solvers::Solver::getMaxCellSize() const {
+  return _maxCellSize;
+}
+
 void exahype::solvers::Solver::resetMeshUpdateRequestFlags() {
   _meshUpdateRequest     = false;
   _nextMeshUpdateRequest = false;
 }
+
 
 void exahype::solvers::Solver::updateNextMeshUpdateRequest(
     const bool& meshUpdateRequest) {
@@ -202,6 +229,26 @@ bool exahype::solvers::Solver::getMeshUpdateRequest() const {
 void exahype::solvers::Solver::setNextMeshUpdateRequest() {
   _meshUpdateRequest     = _nextMeshUpdateRequest;
   _nextMeshUpdateRequest = false;
+}
+
+void exahype::solvers::Solver::updateNextAttainedStableState(
+    const bool& attainedStableState) {
+  _nextAttainedStableState |= attainedStableState;
+}
+
+
+bool exahype::solvers::Solver::getNextAttainedStableState() const {
+  return _nextAttainedStableState;
+}
+
+
+bool exahype::solvers::Solver::getAttainedStableState() const {
+  return _attainedStableState;
+}
+
+void exahype::solvers::Solver::setNextAttainedStableState() {
+  _attainedStableState     = _nextAttainedStableState;
+  _nextAttainedStableState = false;
 }
 
 
@@ -307,6 +354,34 @@ bool exahype::solvers::Solver::oneSolverRequestedMeshUpdate() {
   return false;
 }
 
+bool exahype::solvers::Solver::oneSolverHasNotAttainedStableState() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (!solver->getAttainedStableState()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    switch (solver->getType()) {
+      case Type::ADERDG:
+        if (static_cast<ADERDGSolver*>(solver)->getStabilityConditionWasViolated())
+          return true;
+        break;
+      case Type::LimitingADERDG:
+        if (static_cast<LimitingADERDGSolver*>(solver)->getSolver().get()->
+            getStabilityConditionWasViolated())
+          return true;
+        break;
+      default:
+        break;
+    }
+  }
+  return false;
+}
+
 std::string exahype::solvers::Solver::toString() const {
   std::ostringstream stringstr;
   toString(stringstr);
@@ -336,15 +411,16 @@ void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
-  std::vector<double> meshRefinementFlags(0,1);
-  meshRefinementFlags.push_back(_meshUpdateRequest ? 1.0 : -1.0); // TODO(Dominic): ugly
+  std::vector<double> meshRefinementFlags(0,2);
+  meshRefinementFlags.push_back(_meshUpdateRequest   ? 1.0 : -1.0);
+  meshRefinementFlags.push_back(_attainedStableState ? 1.0 : -1.0);
 
-  assertion1(meshRefinementFlags.size()==1,meshRefinementFlags.size());
+  assertion1(meshRefinementFlags.size()==2,meshRefinementFlags.size());
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//    logDebug("sendDataToMaster(...)","Sending time step data: " <<
-//             "data[0]=" << meshRefinementFlags[0]); TODO(Dominic):
+    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+             "data[0]=" << meshRefinementFlags[0]);
   }
 
   DataHeap::getInstance().sendData(
@@ -361,7 +437,7 @@ void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//    logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank); TODO(Dominic):
+      // logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank);
   }
 
   DataHeap::getInstance().receiveData(
@@ -370,17 +446,15 @@ void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
 
   assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
 
-  // TODO(Dominic): Reactivate
-//  int index=0;
-//  _nextMeshUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  int index=0;
+  _nextMeshUpdateRequest   |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  _nextAttainedStableState |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-//    logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
-//             "data[0]=" << receivedTimeStepData[0]);
-//
-//    logDebug("mergeWithWorkerData(...)","Updated grid update flags: " <<
-//             "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest); TODO(Dominic):
+    logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
+             "data[0]=" << receivedTimeStepData[0] <<
+             "data[1]=" << receivedTimeStepData[1]);
   }
 }
 #endif

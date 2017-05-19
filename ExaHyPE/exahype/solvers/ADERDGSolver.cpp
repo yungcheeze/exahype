@@ -487,6 +487,7 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
      _minPredictorTimeStamp( std::numeric_limits<double>::max() ),
      _minPredictorTimeStepSize( std::numeric_limits<double>::max() ),
      _minNextPredictorTimeStepSize( std::numeric_limits<double>::max() ),
+     _stabilityConditionWasViolated( false ),
      _dofPerFace( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS - 1) ),
      _dofPerCellBoundary( DIMENSIONS_TIMES_TWO * _dofPerFace ),
      _dofPerCell( numberOfVariables * power(DOFPerCoordinateAxis, DIMENSIONS + 0) ),
@@ -618,6 +619,7 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
   setNextMeshUpdateRequest();
+  setNextAttainedStableState();
 }
 
 void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
@@ -819,22 +821,41 @@ void exahype::solvers::ADERDGSolver::initSolver(
   setMinPredictorTimeStamp(timeStamp);
 }
 
-bool exahype::solvers::ADERDGSolver::isCommunicating(
+bool exahype::solvers::ADERDGSolver::isSending(
     const exahype::records::State::AlgorithmSection& section) const {
+  if (getMeshUpdateRequest()) {
     return
-      section==exahype::records::State::AlgorithmSection::TimeStepping
-      ||
-      (section==exahype::records::State::AlgorithmSection::APrioriRefinement
-      && getMeshUpdateRequest());
+        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  }
+  if (getStabilityConditionWasViolated()) {
+    return
+        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
+  }
+
+  return
+      section==exahype::records::State::AlgorithmSection::TimeStepping ||
+      section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
+      section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
+      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
 }
 
 bool exahype::solvers::ADERDGSolver::isComputing(
     const exahype::records::State::AlgorithmSection& section) const {
+  if (getMeshUpdateRequest()) {
     return
-      section==exahype::records::State::AlgorithmSection::TimeStepping
-      ||
-      (section==exahype::records::State::AlgorithmSection::APrioriRefinement
-      && getMeshUpdateRequest());
+        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  }
+  if (getStabilityConditionWasViolated()) {
+    return
+        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
+  }
+
+  return
+      section==exahype::records::State::AlgorithmSection::TimeStepping;
 }
 
 
@@ -844,11 +865,11 @@ void exahype::solvers::ADERDGSolver::initFusedSolverTimeStepSizes() {
   setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
 }
 
-void setStabilityConditionWasViolated(bool state) {
+void exahype::solvers::ADERDGSolver::setStabilityConditionWasViolated(bool state) {
   _stabilityConditionWasViolated = state;
 }
 
-bool setStabilityConditionWasViolated() const {
+bool exahype::solvers::ADERDGSolver::getStabilityConditionWasViolated() const {
   return _stabilityConditionWasViolated;
 }
 
@@ -3301,13 +3322,17 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
-  std::vector<double> timeStepDataToReduce(0,4);
+  //  TODO(Dominic): AMR+Limiter
+  // Changes:: attainedStableState + LimiterStatus restriction to master (if Troubled)
+
+  std::vector<double> timeStepDataToReduce(0,5);
   timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
-  timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0); // TODO(Dominic): ugly
   timeStepDataToReduce.push_back(_minCellSize);
   timeStepDataToReduce.push_back(_maxCellSize);
+  timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0);
+  timeStepDataToReduce.push_back(_attainedStableState ? 1.0 : -1.0);
 
-  assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
+  assertion1(timeStepDataToReduce.size()==5,timeStepDataToReduce.size());
   assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
@@ -3320,7 +3345,8 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
              "data[0]=" << timeStepDataToReduce[0] <<
              ",data[1]=" << timeStepDataToReduce[1] <<
              ",data[2]=" << timeStepDataToReduce[2] <<
-             ",data[3]=" << timeStepDataToReduce[3]);
+             ",data[3]=" << timeStepDataToReduce[3] <<
+             ",data[4]=" << timeStepDataToReduce[4]);
   }
 
   DataHeap::getInstance().sendData(
@@ -3340,9 +3366,9 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(4);
+  std::vector<double> receivedTimeStepData(5);
 
-  if (true || tarch::parallel::Node::getInstance().getRank()==
+  if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Receiving time step data [pre] from rank " << workerRank);
   }
@@ -3351,7 +3377,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==5,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
@@ -3359,9 +3385,10 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
   int index=0;
   _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextMeshUpdateRequest        |= (receivedTimeStepData[index++]) > 0 ? true : false;
   _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
   _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
+  _nextMeshUpdateRequest        |= (receivedTimeStepData[index++]) > 0 ? true : false;
+  _nextAttainedStableState      |= (receivedTimeStepData[index++]) > 0 ? true : false;
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {

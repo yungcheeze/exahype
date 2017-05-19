@@ -490,7 +490,7 @@ public:
         const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
         const tarch::la::Vector<DIMENSIONS,double>& domainSize) override;
 
-  bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const override;
+  bool isSending(const exahype::records::State::AlgorithmSection& section) const override;
 
   bool isComputing(const exahype::records::State::AlgorithmSection& section) const override;
 

@@ -94,24 +94,25 @@ void exahype::mappings::InitialCondition::enterCell(
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined1);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto solver = exahype::solvers::RegisteredSolvers[i];
+      auto* solver = exahype::solvers::RegisteredSolvers[i];
+      if (solver->isComputing(_localState.getAlgorithmSection())) {
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          solver->prepareNextNeighbourMerging(
+              fineGridCell.getCellDescriptionsIndex(),element,
+              fineGridVertices,fineGridVerticesEnumerator);
 
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator);
+          solver->setInitialConditions(
+              fineGridCell.getCellDescriptionsIndex(),
+              element,
+              fineGridVertices,
+              fineGridVerticesEnumerator);
 
-        solver->setInitialConditions(
-            fineGridCell.getCellDescriptionsIndex(),
-            element,
-            fineGridVertices,
-            fineGridVerticesEnumerator);
-
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
-              updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
-                  fineGridCell.getCellDescriptionsIndex(),element);
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+                updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+          }
         }
       }
     endpfor
@@ -134,6 +135,8 @@ void exahype::mappings::InitialCondition::mergeWithWorkerThread(
 void exahype::mappings::InitialCondition::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  _localState = solverState;
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }

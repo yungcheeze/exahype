@@ -127,46 +127,47 @@ void exahype::mappings::SolutionUpdate::enterCell(
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined17);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto solver = exahype::solvers::RegisteredSolvers[i];
+      auto* solver = exahype::solvers::RegisteredSolvers[i];
+      if (solver->isComputing(_localState.getAlgorithmSection())) {
+        const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          solver->updateSolution(
+              fineGridCell.getCellDescriptionsIndex(),
+              element,
+              _temporaryVariables._tempStateSizedVectors[i],
+              _temporaryVariables._tempUnknowns[i],
+              fineGridVertices,
+              fineGridVerticesEnumerator);
 
-      const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        solver->updateSolution(
-            fineGridCell.getCellDescriptionsIndex(),
-            element,
-            _temporaryVariables._tempStateSizedVectors[i],
-            _temporaryVariables._tempUnknowns[i],
-            fineGridVertices,
-            fineGridVerticesEnumerator);
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+            auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-          auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+            _solverFlags._meshUpdateRequest[i] |=
+                limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
+                   fineGridCell.getCellDescriptionsIndex(),element);
 
-          _solverFlags._meshUpdateRequest[i] |=
-              limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
-                 fineGridCell.getCellDescriptionsIndex(),element);
+            // TODO(Dominic): Update the return type here.
+            exahype::solvers::LimiterDomainChange limiterDomainChamge
+              = limitingADERDGSolver->
+                  updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+            _solverFlags._limiterDomainChange[i]  =
+                std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
 
-          // TODO(Dominic): Update the return type here.
-          exahype::solvers::LimiterDomainChange limiterDomainChamge
-            = limitingADERDGSolver->
-                updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
-                  fineGridCell.getCellDescriptionsIndex(),element);
-          _solverFlags._limiterDomainChange[i]  =
-              std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
+            // TODO(Dominic):
+  //          _solverFlags._irregularChangeOfLimiterDomain[i] |=
+  //              (_solverFlags._meshUpdateRequest[i] != exahype::solvers::MeshUpdateRequest::None);
+          } else {
+            _solverFlags._meshUpdateRequest[i] =
+                std::max(_solverFlags._meshUpdateRequest[i],
+                         solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                             fineGridCell.getCellDescriptionsIndex(),element));
+          }
 
-          // TODO(Dominic):
-//          _solverFlags._irregularChangeOfLimiterDomain[i] |=
-//              (_solverFlags._meshUpdateRequest[i] != exahype::solvers::MeshUpdateRequest::None);
-        } else {
-          _solverFlags._meshUpdateRequest[i] =
-              std::max(_solverFlags._meshUpdateRequest[i],
-                       solver->evaluateRefinementCriterionAfterSolutionUpdate(
-                           fineGridCell.getCellDescriptionsIndex(),element));
+          solver->prepareNextNeighbourMerging(
+              fineGridCell.getCellDescriptionsIndex(),element,
+              fineGridVertices,fineGridVerticesEnumerator);
         }
-
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -195,15 +196,17 @@ void exahype::mappings::SolutionUpdate::endIteration(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
+      solver->updateNextAttainedStableState(solver->getNextMeshUpdateRequest());
+      logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
 
-    logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
+      if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+        limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
 
-    if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-      auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-      limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
-
-      logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainChangedIrregularly());
+        logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainChangedIrregularly());
+      }
     }
   }
 

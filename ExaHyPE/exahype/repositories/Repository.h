@@ -81,7 +81,7 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAndADERDGTimeStep() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
     virtual void switchToReinitialisation() = 0;    
-    virtual void switchToSolutionRecomputationAndTimeStepSizeComputation() = 0;    
+    virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToSolutionUpdate() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
@@ -105,7 +105,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
-    virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterSolutionUpdate() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;

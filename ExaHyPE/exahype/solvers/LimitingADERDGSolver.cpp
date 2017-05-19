@@ -121,34 +121,72 @@ void exahype::solvers::LimitingADERDGSolver::initSolver(
   _solver->initSolver(timeStamp, domainOffset, domainSize);
 }
 
-bool exahype::solvers::LimitingADERDGSolver::isCommunicating(exahype::records::State::AlgorithmSection& section) const {
+bool exahype::solvers::LimitingADERDGSolver::isSending(
+    const exahype::records::State::AlgorithmSection& section) const {
+  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
+    assertion(getMeshUpdateRequest());
+    assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
+    return
+        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+        section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+  }
+
+  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
+    assertion(!getMeshUpdateRequest());
+    return
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  }
+
+  if (getMeshUpdateRequest()) {
+    assertion(getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Regular);
+    return
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  }
+
+  assertion(getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Regular);
   return
-      section==exahype::records::State::AlgorithmSection::TimeStepping
-      ||
-      (section==exahype::records::State::AlgorithmSection::APosterioriRefinement && // assert: getMeshUpdateRequest())
-      getLimiterDomainChange()==LimiterDomainChange::IrregularRequiringMeshUpdate)
-      ||
-      (section==exahype::records::State::AlgorithmSection::APrioriRefinement &&
-       getMeshUpdateRequest() &&
-       getLimiterDomainChange()==LimiterDomainChange::Regular)
-      ||
-      (section==exahype::records::State::AlgorithmSection::LocalRecomputation && // assert: !getMeshUpdateRequest()
-      getLimiterDomainChange()==LimiterDomainChange::Regular);
+      section==exahype::records::State::AlgorithmSection::TimeStepping ||
+      section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
+      section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
+      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
 }
 
-bool exahype::solvers::LimitingADERDGSolver::isComputing(exahype::records::State::AlgorithmSection& section) const {
-  return
-      section==exahype::records::State::AlgorithmSection::TimeStepping
-      ||
-      (section==exahype::records::State::AlgorithmSection::APosterioriRefinement && // assert: getMeshUpdateRequest())
-      getLimiterDomainChange()==LimiterDomainChange::IrregularRequiringMeshUpdate)
-      ||
-      (section==exahype::records::State::AlgorithmSection::APrioriRefinement &&
-       getMeshUpdateRequest() &&
-       getLimiterDomainChange()==LimiterDomainChange::Regular)
-      ||
-      (section==exahype::records::State::AlgorithmSection::LocalRecomputation && // assert: !getMeshUpdateRequest()
-      getLimiterDomainChange()==LimiterDomainChange::Regular);
+bool exahype::solvers::LimitingADERDGSolver::isComputing(
+    const exahype::records::State::AlgorithmSection& section) const {
+  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
+      assertion(getMeshUpdateRequest());
+      assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
+      return
+          section==exahype::records::State::AlgorithmSection::MeshRefinement ||
+          section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+          section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+    }
+
+    if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
+      assertion(!getMeshUpdateRequest());
+      return
+          section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+          section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+    }
+
+    if (getMeshUpdateRequest()) {
+      assertion(getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Regular);
+      return
+          section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+          section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+    }
+
+    if (_solver->getStabilityConditionWasViolated()) {
+      return
+          section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
+    }
+
+    assertion(getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Regular);
+    return
+        section==exahype::records::State::AlgorithmSection::TimeStepping;
 }
 
 void exahype::solvers::LimitingADERDGSolver::synchroniseTimeStepping(
@@ -166,11 +204,12 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
   setNextMeshUpdateRequest();
+  setNextAttainedStableState();
 
   logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChange<<",nextLimiterDomainChange="<<_nextLimiterDomainChange);
 
   _limiterDomainChange     = _nextLimiterDomainChange;
-  _nextLimiterDomainChange = false;
+  _nextLimiterDomainChange = LimiterDomainChange::Regular;
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
@@ -697,7 +736,7 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfterSetI
             !evaluatePhysicalAdmissibilityCriterion(solverPatch)); // only evaluate PAD here
   }
 
-  return false;
+  return LimiterDomainChange::Regular;
 }
 
 exahype::solvers::LimiterDomainChange

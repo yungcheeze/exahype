@@ -285,7 +285,7 @@ class exahype::solvers::Solver {
      * A cell of type exahype::records::ADERDGCellDescription::Cell does then not need
      * to request augmenting.
      */
-        Default = 3
+     Default = 3
   };
 
   /**
@@ -342,6 +342,22 @@ class exahype::solvers::Solver {
    * of the solvers has requested a mesh update.
    */
   static bool oneSolverRequestedMeshUpdate();
+
+  /**
+   * Loop over the solver registry and check if one
+   * of the solver's mesh refinement has not
+   * attained a stable state yet.
+   */
+  static bool oneSolverHasNotAttainedStableState();
+
+  /**
+   * Returns true if one of the solvers used a time step size
+   * that violated the CFL condition.
+   *
+   * TODO(Dominic): Rename. Name can be confused with
+   * oneSolverHasNotAttainedStableState.
+   */
+  static bool stabilityConditionOfOneSolverWasViolated();
 
  /**
   * Some solvers can deploy data conversion into the background. How this is
@@ -447,6 +463,7 @@ class exahype::solvers::Solver {
    * A profiler for this solver.
    */
   std::unique_ptr<profilers::Profiler> _profiler;
+
   /**
    * Flag indicating if a mesh update was
    * requested by this solver.
@@ -474,6 +491,31 @@ class exahype::solvers::Solver {
    * with its workers' solver.
    */
   bool _nextMeshUpdateRequest;
+
+  /**
+   * Flag indicating if the mesh refinement
+   * performed by this solver attained a stable state.
+   *
+   * <h2>MPI</h2>
+   * This is the state after this rank's
+   * solver has merged its state
+   * with its workers' worker.
+   */
+  bool _attainedStableState;
+
+  /**
+   * Flag indicating if the mesh refinement
+   * performed by this solver attained a stable state.
+   *
+   * This is the state before the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state before this rank's
+   * solver has merged its state
+   * with its workers' solver.
+   */
+  bool _nextAttainedStableState;
 
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type,
@@ -540,31 +582,17 @@ class exahype::solvers::Solver {
    */
   double getMaximumAdaptiveMeshLevel() const;
 
-  // TODO(Dominic): Move into the
+  virtual void updateNextMinCellSize(double minCellSize);
 
-  virtual void updateNextMinCellSize(double minCellSize) {
-    _nextMinCellSize = std::min( _nextMinCellSize, minCellSize );
-  }
+  virtual void updateNextMaxCellSize(double maxCellSize);
 
-  virtual void updateNextMaxCellSize(double maxCellSize) {
-    _nextMaxCellSize = std::max( _nextMaxCellSize, maxCellSize );
-  }
+  virtual double getNextMinCellSize() const;
 
-  virtual double getNextMinCellSize() const {
-    return _nextMinCellSize;
-  }
+  virtual double getNextMaxCellSize() const;
 
-  virtual double getNextMaxCellSize() const {
-    return _nextMaxCellSize;
-  }
+  virtual double getMinCellSize() const;
 
-  virtual double getMinCellSize() const {
-    return _minCellSize;
-  }
-
-  virtual double getMaxCellSize() const {
-    return _maxCellSize;
-  }
+  virtual double getMaxCellSize() const;
 
   /**
    * Returns the identifier of this solver.
@@ -604,8 +632,19 @@ class exahype::solvers::Solver {
 
   /**
    * Reset the mesh update flags.
+   *
+   * \deprecated
    */
   void resetMeshUpdateRequestFlags();
+
+  /**
+   * Update if a mesh update was requested by this solver.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  void updateNextMeshUpdateRequest(const bool& meshUpdateRequest);
 
   /**
    * Indicates if a mesh update was requested
@@ -634,6 +673,44 @@ class exahype::solvers::Solver {
    * to false;
    */
   void setNextMeshUpdateRequest();
+
+  /**
+   * Update if the mesh refinement of this solver attained
+   * a stable state.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  void updateNextAttainedStableState(const bool& attainedStableState);
+
+  /**
+   * Indicates if the mesh refinement of this solver
+   * attained a stable state.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getNextAttainedStableState() const;
+
+  /**
+   * Indicates if the mesh refinement of this solver
+   * attained a stable state.
+   *
+   * <h2>MPI</h2>
+   *This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getAttainedStableState() const;
+
+  /**
+   * Overwrite the _attainedStableState flag
+   * by the _nextAttainedStableState flag.
+   * Reset the _nextAttainedStableState flag
+   * to false;
+   */
+  void setNextAttainedStableState();
 
   /**
    * Run over all solvers and identify the minimal time stamp.
@@ -667,12 +744,15 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS,double>& domainSize) = 0;
 
   /**
-   * \return true if the solver is communicating in the current algorithmic section.
+   * \return true if the solver is sending time step or neighbour data
+   * in the current algorithmic section.
    * This depends usually on internal flags of the solver such as ones indicating
    * a mesh update request or a limiter domain change during a previous time stepping
    * iteration.
+   *
+   * \note Merging has not to be treated separately from computing.
    */
-  virtual bool isCommunicating(const exahype::records::State::AlgorithmSection& section) const = 0;
+  virtual bool isSending(const exahype::records::State::AlgorithmSection& section) const = 0;
 
   /**
    * \return true if the solver is computing in the current algorithmic section.
@@ -716,16 +796,6 @@ class exahype::solvers::Solver {
   virtual void reinitialiseTimeStepData() = 0;
 
   virtual double getMinNextTimeStepSize() const=0;
-
- public:
-  /**
-   * Update if a mesh update was requested by this solver.
-   *
-   * <h2>MPI</h2>
-   * This is the state before we have send data to the master rank
-   * and have merged the state with this rank's workers.
-   */
-  void updateNextMeshUpdateRequest(const bool& meshUpdateRequest);
 
   /**
    * Returns true if the index \p cellDescriptionsIndex
