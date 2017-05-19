@@ -10,6 +10,9 @@ t=${times[i]}
 order=3
 sharedMem=None
 
+bufferSize=64
+timeout=120
+
 skipReductionInBatchedTimeSteps=on
 batchFactor=0.8
 
@@ -52,6 +55,8 @@ do
   sed -i -r 's,end-time(\s*)=(\s*)(([0-9]|\.)*),end-time\1=\2'$t',' $newSpec
   sed -i -r 's,ranks_per_node:([0-9]+),ranks_per_node:'$tasksPerNode',g' $newSpec 
   sed -i -r 's,cores(\s+)=(\s+)([0-9]+),cores\1=\2'$coresPerTask',g' $newSpec
+  sed -i -r 's,buffer-size(\s+)=(\s+)([0-9]+),buffer-size\1=\2'$bufferSize',g' $newSpec
+  sed -i -r 's,timeout(\s+)=(\s+)([0-9]+),timeout\1=\2'$timeout',g' $newSpec
   
   sed -i -r 's,skip-reduction-in-batched-time-steps(\s*)=(\s*)(\w+),skip-reduction-in-batched-time-steps\1=\2'$skipReductionInBatchedTimeSteps',g' $newSpec
   sed -i -r 's,timestep-batch-factor(\s*)=(\s*)(([0-9]|\.)+),timestep-batch-factor\1=\2'$batchFactor',g' $newSpec
