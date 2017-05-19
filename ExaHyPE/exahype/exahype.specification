@@ -58,7 +58,7 @@ event-mapping:
   name: Reinitialisation
   
 event-mapping:
-  name: SolutionRecomputation
+  name: LocalRecomputation
 
 // GridUpdate   
 event-mapping:
@@ -190,9 +190,9 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing 
 
 adapter: 
-  name: SolutionRecomputationAndTimeStepSizeComputation
+  name: LocalRecomputationAndTimeStepSizeComputation
   merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: SolutionRecomputation
+  merge-with-user-defined-mapping: LocalRecomputation
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending // Send time step data (and face data for fused)
   merge-with-user-defined-mapping: PostProcessing 
