@@ -164,21 +164,6 @@ class exahype::dastgen::State {
    	TimeStepping,
    	
    	/**
-   	 * The runner triggers limiter status spreading
-   	 * in all solvers where a irregular limiter
-   	 * domain change has occured.
-   	 */
-   	LimiterStatusSpreading,
-   	
-    /**
-   	 * The runner triggers a reinitialisation of
-   	 * certain or all cells
-   	 * in all solvers where a irregular limiter
-   	 * domain change has occured.
-   	 */
-   	Reinitialisation,
-   	
-   	/**
    	 * The runner performs mesh refinement according to the
    	 * user's refinement criterion or the regular limiter status
    	 * flagging, i.e. the LimiterStatus updates caused by a 
@@ -201,8 +186,10 @@ class exahype::dastgen::State {
    	 * but triggers a send for all registered solvers.
    	 *
    	 * This marks an end point of the side branch.
+   	 * It is sure here that no solver performs
+   	 * a global recomputation.
    	 */
-   	MeshRefinementOrLocalOrGlobalRecomputationAllSend,
+   	MeshRefinementOrLocalRecomputationAllSend,
    	
    	/**
    	 * In this section, solvers finalise their 
@@ -212,7 +199,18 @@ class exahype::dastgen::State {
    	 * in the side branch, all solvers are ask
    	 * to send out data.
    	 */
-   	GlobalRecomputationAllSend
+   	GlobalRecomputationAllSend,
+   	
+   	/**
+   	 * In this section, all solver have to drop
+   	 * their messages. Then, the ADER-DG solvers which
+   	 * have violated the CFL condition with their
+   	 * estimated time step size are required
+   	 * to reurn the prediction.
+   	 * Finally, all solvers send out again their
+   	 * face data.
+   	 */
+   	PredictionRerunAllSend
   };
   parallelise persistent AlgorithmSection _algorithmSection;
 };

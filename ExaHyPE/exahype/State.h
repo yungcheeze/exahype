@@ -68,9 +68,9 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
  public:
-  static bool FuseADERDGPhases = false;
+  static bool FuseADERDGPhases;
 
-  static double WeightForPredictionRerun = 0.9;
+  static double WeightForPredictionRerun;
 
   /**
    * Default Constructor
@@ -172,10 +172,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
 
   void switchToNeighbourDataDroppingContext();
-
-  void setStabilityConditionOfOneSolverWasViolated(bool state) ;
-
-  bool stabilityConditionOfOneSolverWasViolated() const;
 
   void setReinitTimeStepData(bool state);
 

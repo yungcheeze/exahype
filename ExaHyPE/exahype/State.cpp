@@ -23,7 +23,8 @@
 
 #include <limits>
 
-bool exahype::State::FuseADERDGPhases = false;
+bool exahype::State::FuseADERDGPhases           = false;
+double exahype::State::WeightForPredictionRerun = 0.9;
 
 exahype::State::State() : Base() {
   // @todo Guidebook
@@ -151,118 +152,90 @@ exahype::records::State::AlgorithmSection exahype::State::getAlgorithmSection() 
  }
 
  void exahype::State::switchToInitialConditionAndTimeStepSizeComputationContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
  }
 
  void exahype::State::switchToPredictionAndFusedTimeSteppingInitialisationContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::SendFaceData);
  }
 
  void exahype::State::switchToADERDGTimeStepContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
  }
 
  void exahype::State::switchToPredictionRerunContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData);
    _stateData.setSendMode (records::State::SendMode::SendFaceData);
  }
 
  void exahype::State::switchToNeighbourDataMergingContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToPredictionContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::SendFaceData);
  }
 
  void exahype::State::switchToSolutionUpdateContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToTimeStepSizeComputationContext() {
-   _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
  }
 
  void exahype::State::switchToUpdateMeshContext() {
-   _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToPostAMRContext() {
-   _stateData.setReinitTimeStepData(true);
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
  }
 
  void exahype::State::switchToLimiterStatusSpreadingContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToReinitialisationContext() {
-   _stateData.setReinitTimeStepData(false);
    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
  void exahype::State::switchToRecomputeSolutionAndTimeStepSizeComputationContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
  }
 
  void exahype::State::switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
  }
 
  void exahype::State::switchToNeighbourDataDroppingContext() {
-   _stateData.setReinitTimeStepData(false);
    _stateData.setMergeMode(records::State::MergeMode::DropFaceData);
    _stateData.setSendMode (records::State::SendMode::SendNothing);
  }
 
- void exahype::State::setReinitTimeStepData(bool state) {
-   _stateData.setReinitTimeStepData(state);
- }
-
- bool exahype::State::reinitTimeStepData() const  {
-   return _stateData.getReinitTimeStepData();
- }
-
- bool exahype::State::fuseADERDGPhases()  {
+ bool exahype::State::fuseADERDGPhases() {
    return FuseADERDGPhases;
  }
 
- void exahype::State::setTimeStepSizeWeightForPredictionRerun(double value) {
-
- }
-
- double exahype::State::getTimeStepSizeWeightForPredictionRerun() const {
-   return _stateData.getTimeStepSizeWeightForPredictionRerun();
+ double exahype::State::getTimeStepSizeWeightForPredictionRerun() {
+   return WeightForPredictionRerun;
  }
