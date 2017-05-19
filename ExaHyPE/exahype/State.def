@@ -178,63 +178,41 @@ class exahype::dastgen::State {
    	 */
    	Reinitialisation,
    	
-   	   	/**
-   	 * The runner is recomputing the solution of 
-   	 * troubled cells on the finest mesh level.
-   	 * No mesh refinement is necessary.
-   	 * 
-   	 * The following scenario causes the runner
-   	 * to switch to this algorithmic section:
-   	 * 
-   	 * A compute cell (Cell) was marked as troubled on
-     * the finest mesh level. No 
-     * cell of type Descendant/EmptyDescendant
-     * was marked with a LimiterStatus other than Ok. 
-   	 */
-   	LocalRecomputation,
-   	
-   	/**
-   	 * The runner is redoing the last ADER-DG time
-   	 * step completely but performs some mesh
-   	 * refinement beforehand.
-   	 * 
-   	 * More precisely, the runner will fist trigger a rollback to
-   	 * the previous time step> It will then trigger mesh refinement
-   	 * until a troubled compute cell and all its compute cell
-   	 * neighours are placed on the finest mesh level.
-   	 * Next it will trigger the computation of a new
-   	 * time step size and then, the computation of 
-   	 * a new space-time predictor.
-   	 * Afterwards a solution update in all cells is performed.
-   	 * Now, the solution of the cells has evolved
-   	 * to the anticipated time step.
-   	 * Lastly, the runner will 
-     * trigger a recomputation of the predictor.
-   	 * 
-   	 * The following scenario causes the runner
-     * to switch to this algorithmic section:
-   	 * 
-   	 * Scenario 1:
-   	 * A compute cell was marked as troubled on a
-   	 * mesh level coarser than the finest one.
-   	 *   
-   	 * Scenario 2: A cell of type Descendant/EmptyDescendant
-   	 * was marked with a LimiterStatus other than Ok.
-   	 */
-   	GlobalRecomputation,
-   	
    	/**
    	 * The runner performs mesh refinement according to the
    	 * user's refinement criterion or the regular limiter status
    	 * flagging, i.e. the LimiterStatus updates caused by a 
    	 * regularly moving limiter domain or since
    	 * a global recomputation is necessary.
-   	 * 
-   	 * In this case, the runner will trigger mesh refinement, and
-   	 * the recomputation of the time step size. Lastly, it will 
-   	 * trigger a recomputation of the predictor.
    	 */
-   	MeshRefinement
+   	MeshRefinement,
+   	
+   	/**
+   	 * In this section, the runner overlaps the 
+   	 * operations that must be performed after the
+   	 * mesh refinement with operations that
+   	 * must be performed for a local or global
+   	 * recomputation. 
+   	 */
+   	MeshRefinementOrLocalOrGlobalRecomputation,
+   	
+   	/**
+   	 * Similar to MeshRefinementOrLocalOrGlobalRecomputation
+   	 * but triggers a send for all registered solvers.
+   	 *
+   	 * This marks an end point of the side branch.
+   	 */
+   	MeshRefinementOrLocalOrGlobalRecomputationAllSend,
+   	
+   	/**
+   	 * In this section, solvers finalise their 
+   	 * global recomputation by doing a complete
+   	 * ADERDGTimeStep. Furthermore
+   	 * since this is the last adapter call
+   	 * in the side branch, all solvers are ask
+   	 * to send out data.
+   	 */
+   	GlobalRecomputationAllSend
   };
   parallelise persistent AlgorithmSection _algorithmSection;
 };

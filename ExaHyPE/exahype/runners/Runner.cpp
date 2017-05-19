@@ -859,7 +859,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   if (gridUpdate
       ||
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrReinitialisation);
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
     logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
     repository.getState().switchToReinitialisationContext();
     repository.switchToFinaliseMeshRefinementAndReinitialisation();
@@ -867,22 +867,24 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
     // 4. Perform a local recomputation of the solution of the solvers that requested one.
     // Perform a time
-    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally");
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationOrMeshRefinementOrGlobalRecomputation);
+    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally. compute new time step size");
     repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
     repository.iterate();
 
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationOrMeshRefinementOrGlobalRecomputation);
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
+    if (!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputationAllSend);
+    }
     logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
     repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
     repository.iterate(); // At this stage all solvers that required a mesh update or local recomputation, have
                           // recomputed the predictor
 
-    // 5. Perform a full ADER-DG time step
+    // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
     if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputation);
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
       logInfo("updateMeshFusedTimeStepping(...)","recompute solution globally");
       repository.getState().switchToADERDGTimeStepContext();
       repository.switchToADERDGTimeStep();
@@ -890,8 +892,6 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
                             // recomputed the predictor
     }
   }
-
-  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
 }
 
 void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {
@@ -1023,10 +1023,10 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
-
   std::cout << "[pre] irregularChangeOfLimiterDomain          ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() << std::endl;
   std::cout << "[pre] oneSolverRequestedMeshUpdate            ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()<< std::endl;
 
+  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToADERDGTimeStepContext();
   if (numberOfStepsToRun==0) {
     repository.switchToPlotAndADERDGTimeStep();

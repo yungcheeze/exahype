@@ -22,6 +22,48 @@
 namespace exahype {
 namespace solvers {
 
+/**
+ * A solver that combines high-order ADER-DG
+ * with a more robust Finite Volumes solver in areas
+ * where shocks are present.
+ *
+ * <h1>Algorithm sections</h1>
+ * The solver might be active in one of the
+ * following algorithm sections.
+ *
+ * <h2>Mesh refinement</h2>
+ * TODO
+ *
+ * <h2>Local recomputation</h2>
+ * TODO
+ *
+ * <h2>Global recomputation</h2>
+ * The solver is redoing the last ADER-DG time
+ * step completely but performs some mesh
+ * refinement beforehand.
+ *
+ * More precisely, the solver will fist perform a rollback to
+ * the previous time step> It will then perform mesh refinement
+ * until a troubled compute cell and all its compute cell
+ * neighours are placed on the finest mesh level.
+ * Next it will perform the computation of a new
+ * time step size and then, the computation of
+ * a new space-time predictor.
+ * Afterwards a solution update in all cells is performed.
+ * Now, the solution of the cells has evolved
+ * to the anticipated time step.
+ * Lastly, a recomputation of the predictor is performed.
+ *
+ * The following scenario causes the solver
+ * to switch to this algorithmic section:
+ *
+ * Scenario 1:
+ * A compute cell was marked as troubled on a
+ * mesh level coarser than the finest one.
+ *
+ * Scenario 2: A cell of type Descendant/EmptyDescendant
+ * was marked with a LimiterStatus other than Ok.
+ */
 class LimitingADERDGSolver;
 
 } /* namespace solvers */
