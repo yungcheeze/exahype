@@ -100,6 +100,8 @@ exahype::mappings::MeshRefinement::MeshRefinement(const MeshRefinement& masterTh
 void exahype::mappings::MeshRefinement::beginIteration(
   exahype::State& solverState
 ) {
+  _localState = solverState;
+
   exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
@@ -128,8 +130,6 @@ void exahype::mappings::MeshRefinement::beginIteration(
   DataHeap::getInstance().startToSendSynchronousData();
   MetadataHeap::getInstance().startToSendSynchronousData();
   #endif
-
-  _localState = solverState;
 }
 
 void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState) {

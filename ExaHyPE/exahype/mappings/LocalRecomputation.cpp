@@ -174,41 +174,44 @@ void exahype::mappings::LocalRecomputation::enterCell(
     const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined14);
     pfor(i, 0, numberOfSolvers, grainSize.getGrainSize())
-      auto solver = exahype::solvers::RegisteredSolvers[i];
-
+      auto* solver = exahype::solvers::RegisteredSolvers[i];
       const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),i);
       if (element!=exahype::solvers::Solver::NotFound) {
-        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-            &&
-            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-            ==exahype::solvers::LimiterDomainChange::Irregular
-            ) {
-          auto* limitingADERSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
-          // TODO(Dominic): AMR+Limiter: Recompute in all cells if mesh update
-          limitingADERSolver->recomputeSolution(
-              fineGridCell.getCellDescriptionsIndex(),
-              element,
-              _solutionUpdateTemporaryVariables,
-              fineGridVertices,
-              fineGridVerticesEnumerator);
-
-          // TODO(Dominic): AMR+Limiter: AMR+Limiter: Recompute in all cells if mesh update
-          if (exahype::State::fuseADERDGPhases()) {
-            limitingADERSolver->recomputePredictor(
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+          switch(limitingADERDG->getLimiterDomainChange()) {
+          case exahype::solvers::LimiterDomainChange::Irregular: {
+            limitingADERDG->recomputeSolution(
                 fineGridCell.getCellDescriptionsIndex(),
                 element,
-                _predictionTemporaryVariables,
+                _solutionUpdateTemporaryVariables,
                 fineGridVertices,
                 fineGridVerticesEnumerator);
+
+            if (exahype::State::fuseADERDGPhases()) {
+              limitingADERDG->recomputePredictor(
+                  fineGridCell.getCellDescriptionsIndex(),
+                  element,
+                  _predictionTemporaryVariables,
+                  fineGridVertices,
+                  fineGridVerticesEnumerator);
+            }
+
+            limitingADERDG->determineSolverMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          } break;
+          case exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate: {
+            // TODO(Dominic): Here, we update the solver min and max to
+            // give the LimitingADERDG
+            limitingADERDG->determineSolverMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+          } break;
+          case exahype::solvers::LimiterDomainChange::Regular: {
+            // do nothing
+          } break;
           }
-
-          limitingADERSolver->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
         }
-
         solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
+          fineGridCell.getCellDescriptionsIndex(),element,
+          fineGridVertices,fineGridVerticesEnumerator); // !!! Has to be done for all solvers (cf. touchVertexFirstTime etc.)
       }
     endpfor
     grainSize.parallelSectionHasTerminated();
@@ -231,8 +234,6 @@ void exahype::mappings::LocalRecomputation::touchVertexFirstTime(
               parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
           pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
             auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-            // TODO(Dominic): AMR+Limiter: Merge all in case
             if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
                 &&
                 static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()

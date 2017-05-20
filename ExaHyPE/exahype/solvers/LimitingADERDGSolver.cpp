@@ -203,31 +203,30 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  setNextMeshUpdateRequest();
-  setNextAttainedStableState();
-
   logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChange<<",nextLimiterDomainChange="<<_nextLimiterDomainChange);
-
-  _limiterDomainChange     = _nextLimiterDomainChange;
-  _nextLimiterDomainChange = LimiterDomainChange::Regular;
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
   _solver->zeroTimeStepSizes();
 }
 
-exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::getLimiterDomainChange() const {
-  return _limiterDomainChange;
-}
-
-exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChange() const {
+exahype::solvers::LimiterDomainChange
+exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChange() const {
   return _nextLimiterDomainChange;
 }
 
+void exahype::solvers::LimitingADERDGSolver::setNextLimiterDomainChange() {
+  _limiterDomainChange = _nextLimiterDomainChange;
+  _nextLimiterDomainChange = LimiterDomainChange::Regular;
+}
 void exahype::solvers::LimitingADERDGSolver::updateNextLimiterDomainChange(
     exahype::solvers::LimiterDomainChange limiterDomainChange) {
   _nextLimiterDomainChange =
       std::max( _nextLimiterDomainChange, limiterDomainChange );
+}
+exahype::solvers::LimiterDomainChange
+exahype::solvers::LimitingADERDGSolver::getLimiterDomainChange() const {
+  return _limiterDomainChange;
 }
 
 void exahype::solvers::LimitingADERDGSolver::rollbackToPreviousTimeStep() {
@@ -873,6 +872,16 @@ void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(
       determineLimiterMinAndMax(solverPatch,limiterPatch);
       break;
     }
+  }
+}
+
+void exahype::solvers::LimitingADERDGSolver::determineSolverMinAndMax(
+    const int cellDescriptionsIndex,
+    const int element) {
+  SolverPatch& solverPatch =
+      _solver->getCellDescription(cellDescriptionsIndex,element);
+  if (solverPatch.getType()==SolverPatch::Type::Cell) {
+    determineSolverMinAndMax(solverPatch);
   }
 }
 

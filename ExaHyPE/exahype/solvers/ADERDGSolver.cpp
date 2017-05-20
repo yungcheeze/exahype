@@ -617,9 +617,6 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   _maxCellSize     = _nextMaxCellSize;
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
-
-  setNextMeshUpdateRequest();
-  setNextAttainedStableState();
 }
 
 void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
@@ -650,21 +647,6 @@ void exahype::solvers::ADERDGSolver::reinitialiseTimeStepData() {
 }
 
 void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
-
-  //  logInfo("rollbackToPreviousTimeStep(...)", // for  debugging purposes
-
-//  logInfo("rollbackToPreviousTimeStep(...)",
-//          "\n[pre]"
-//          << "\n,previousPreviousMinCorrectorTimeStepSize="<<_previousPreviousMinCorrectorTimeStepSize
-//          << "\n,previousMinCorrectorTimeStepSize="<<_previousMinCorrectorTimeStepSize
-//          << "\n,previousMinCorrectorTimeStamp="<<_previousMinCorrectorTimeStamp
-//          << "\n,minCorrectorTimeStamp="<<_minCorrectorTimeStamp
-//          << "\n,minCorrectorTimeStepSize="<<_minCorrectorTimeStepSize
-//          <<" \n,minPredictorTimeStamp="<<_minPredictorTimeStamp
-//          << "\n,minPredictorTimeStepSize="<<_minPredictorTimeStepSize
-//    );
-
-
   switch (_timeStepping) {
     case TimeStepping::Global:
       _minNextPredictorTimeStepSize             = std::numeric_limits<double>::max();
@@ -690,20 +672,6 @@ void exahype::solvers::ADERDGSolver::rollbackToPreviousTimeStep() {
       break;
   }
 
-//  logInfo("rollbackToPreviousTimeStep(...)", // for  debugging purposes
-//          "\n[post]"
-//          << "\n,previousPreviousMinCorrectorTimeStepSize="<<_previousPreviousMinCorrectorTimeStepSize
-//          << "\n,previousMinCorrectorTimeStepSize="<<_previousMinCorrectorTimeStepSize
-//          << "\n,previousMinCorrectorTimeStamp="<<_previousMinCorrectorTimeStamp
-//          << "\n,minCorrectorTimeStamp="<<_minCorrectorTimeStamp
-//          << "\n,minCorrectorTimeStepSize="<<_minCorrectorTimeStepSize
-//          <<" \n,minPredictorTimeStamp="<<_minPredictorTimeStamp
-//          << "\n,minPredictorTimeStepSize="<<_minPredictorTimeStepSize
-//  );
-
-
-//  _minCellSize     = _nextMinCellSize;
-//  _maxCellSize     = _nextMaxCellSize; // TODO(Dominic): What to do with these fields?
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 }

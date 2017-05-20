@@ -94,10 +94,15 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
 ) {
   // We memorise the previous request per solver
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-//      solver->zeroTimeStepSizes();
-      solver->updateNextMeshUpdateRequest(solver->getMeshUpdateRequest());
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+        getLimiterDomainChange()!=exahype::solvers::LimiterDomainChange::Regular
+    ) {
+      auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDG->updateNextMeshUpdateRequest(solver->getMeshUpdateRequest());
+      limitingADERDG->updateNextLimiterDomainChange(limitingADERDG->getLimiterDomainChange());
+    }
   }
 
   // TODO(Dominic): Prepare variables for multithreading
@@ -122,10 +127,15 @@ void exahype::mappings::LimiterStatusSpreading::beginIteration(
 
 void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& solverState) {
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-//      solver->zeroTimeStepSizes();
-      solver->setNextMeshUpdateRequest();
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+        getLimiterDomainChange()!=exahype::solvers::LimiterDomainChange::Regular
+    ) {
+      auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+      limitingADERDG->setNextMeshUpdateRequest();
+      limitingADERDG->setNextLimiterDomainChange();
+    }
   }
 
   #ifdef Parallel
@@ -199,24 +209,26 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
     const int element =
         solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
-      if (
-          solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+      if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
           &&
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-          !=exahype::solvers::LimiterDomainChange::Regular
-      ) {
+          !=exahype::solvers::LimiterDomainChange::Regular) {
         auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
         limitingADERDG->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
         limitingADERDG->deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),element);
         limitingADERDG->ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),element);
 
+        // TODO(Dominic): Enable multithreading for this; have value per solver; reduce in endIteration
         bool meshUpdateRequest =
             limitingADERDG->
               evaluateLimiterStatusBasedRefinementCriterion(
                   fineGridCell.getCellDescriptionsIndex(),element);
-        // TODO(Dominic): Enable multithreading for this; have value per solver; reduce in endIteration
         limitingADERDG->updateNextMeshUpdateRequest(meshUpdateRequest);
+
+        if (meshUpdateRequest) {
+          limitingADERDG->updateNextLimiterDomainChange(exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
+        }
       }
 
       solver->prepareNextNeighbourMerging(

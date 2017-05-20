@@ -145,18 +145,12 @@ void exahype::mappings::SolutionUpdate::enterCell(
             _solverFlags._meshUpdateRequest[i] |=
                 limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
                    fineGridCell.getCellDescriptionsIndex(),element);
-
-            // TODO(Dominic): Update the return type here.
             exahype::solvers::LimiterDomainChange limiterDomainChamge
               = limitingADERDGSolver->
                   updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
                     fineGridCell.getCellDescriptionsIndex(),element);
             _solverFlags._limiterDomainChange[i]  =
                 std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
-
-            // TODO(Dominic):
-  //          _solverFlags._irregularChangeOfLimiterDomain[i] |=
-  //              (_solverFlags._meshUpdateRequest[i] != exahype::solvers::MeshUpdateRequest::None);
           } else {
             _solverFlags._meshUpdateRequest[i] =
                 std::max(_solverFlags._meshUpdateRequest[i],
@@ -181,6 +175,16 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 
   _localState = solverState;
 
+  if (_localState.getAlgorithmSection()==exahype::records::State::TimeStepping) {
+    for (auto* solver : exahype::solvers::RegisteredSolvers) {
+      solver->setNextMeshUpdateRequest();
+
+      if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->setNextLimiterDomainChange();
+      }
+    }
+  }
+
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
   exahype::solvers::initialiseSolverFlags(_solverFlags);
@@ -198,13 +202,11 @@ void exahype::mappings::SolutionUpdate::endIteration(
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
-      solver->updateNextAttainedStableState(solver->getNextMeshUpdateRequest());
       logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
 
       if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->updateNextLimiterDomainChange(_solverFlags._limiterDomainChange[solverNumber]);
-
         logDebug("endIteration(State)", "solver "<<solverNumber<<": next limiter domain has changed: "<<limitingADERDGSolver->getNextLimiterDomainChangedIrregularly());
       }
     }

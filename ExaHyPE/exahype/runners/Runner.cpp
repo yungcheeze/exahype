@@ -857,7 +857,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
     // 4. Perform a local recomputation of the solution of the solvers that requested one.
     // Perform a time
-    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally. compute new time step size");
+    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation();
     repository.iterate();
@@ -1006,9 +1006,6 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
-  std::cout << "[pre] irregularChangeOfLimiterDomain          ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() << std::endl;
-  std::cout << "[pre] oneSolverRequestedMeshUpdate            ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()<< std::endl;
-
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToADERDGTimeStepContext();
   if (numberOfStepsToRun==0) {
@@ -1018,9 +1015,15 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.switchToADERDGTimeStep();
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
-
-  std::cout << "[post] irregularChangeOfLimiterDomain          ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() << std::endl;
-  std::cout << "[post] oneSolverRequestedMeshUpdate            ="<<exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()<< std::endl;
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested");
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested");
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","mesh update requested");
+  }
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate() ||
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {

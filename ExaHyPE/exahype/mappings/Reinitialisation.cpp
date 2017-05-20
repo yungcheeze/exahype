@@ -117,12 +117,14 @@ void exahype::mappings::Reinitialisation::beginIteration(
 
 void exahype::mappings::Reinitialisation::endIteration(
     exahype::State& solverState) {
-
-  // TODO(Dominic): Rollback
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        !=exahype::solvers::LimiterDomainChange::Regular
+    ) {
+      logInfo("endIteration(...)","meshUpdateRequest="<< solver->getMeshUpdateRequest());
 
-    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->rollbackToPreviousTimeStep();
 
       if (!exahype::State::fuseADERDGPhases()) {

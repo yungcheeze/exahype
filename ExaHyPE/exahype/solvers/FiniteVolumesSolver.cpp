@@ -164,9 +164,6 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   _maxCellSize     = _nextMaxCellSize;
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
-
-  setNextMeshUpdateRequest();
-  setNextAttainedStableState();
 }
 
 /**

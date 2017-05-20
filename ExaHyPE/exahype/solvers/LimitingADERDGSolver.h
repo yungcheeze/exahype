@@ -512,11 +512,24 @@ public:
 
   void zeroTimeStepSizes() override;
 
-  LimiterDomainChange getLimiterDomainChange() const;
-
+  /**
+   * TODO(Dominic): Add docu.
+   */
   LimiterDomainChange getNextLimiterDomainChange() const;
-
+  /**
+   * TODO(Dominic): Add docu.
+   */
   void updateNextLimiterDomainChange(LimiterDomainChange limiterDomainChange);
+  /**
+   * TODO(Dominic): Add docu.
+   * Can also be used to reset the _nextLimiterDomainChange
+   * state to Regular.
+   */
+  void setNextLimiterDomainChange();
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  LimiterDomainChange getLimiterDomainChange() const;
 
   /**
    * Roll back the time step data to the
@@ -766,6 +779,16 @@ public:
   void determineMinAndMax(
       const int cellDescriptionsIndex,
       const int element);
+
+  /**
+   * Determine the new cell-local min max values.
+   * This routine does only consider the (ADER-DG)
+   * solver patch but not the (Finite Volumes)
+   * limiter patch.
+   */
+  void determineSolverMinAndMax(
+        const int cellDescriptionsIndex,
+        const int element);
 
   /**
    * Evaluates a discrete maximum principle (DMP) and

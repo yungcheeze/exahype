@@ -209,6 +209,9 @@ class exahype::mappings::TimeStepSizeComputation {
   void beginIteration(exahype::State& solverState);
 
   /**
+   * TODO(Dominic): Update with docu on the meshUpdateRequest
+   * and limiterDomainChange flags.
+   *
    * Runs over all the registered solvers and sets the
    * reduced minimum time step sizes. Then updates the minimum time stamp
    * of the solvers.
