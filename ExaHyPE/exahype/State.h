@@ -169,7 +169,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   void switchToRecomputeSolutionAndTimeStepSizeComputationContext();
 
-  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
+  void switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
 
   void switchToNeighbourDataDroppingContext();
 

@@ -215,40 +215,31 @@ void exahype::solvers::Solver::updateNextMeshUpdateRequest(
     const bool& meshUpdateRequest) {
   _nextMeshUpdateRequest |= meshUpdateRequest;
 }
-
-
 bool exahype::solvers::Solver::getNextMeshUpdateRequest() const {
   return _nextMeshUpdateRequest;
 }
-
-
-bool exahype::solvers::Solver::getMeshUpdateRequest() const {
-  return _meshUpdateRequest;
-}
-
 void exahype::solvers::Solver::setNextMeshUpdateRequest() {
   _meshUpdateRequest     = _nextMeshUpdateRequest;
   _nextMeshUpdateRequest = false;
 }
+bool exahype::solvers::Solver::getMeshUpdateRequest() const {
+  return _meshUpdateRequest;
+}
+
 
 void exahype::solvers::Solver::updateNextAttainedStableState(
     const bool& attainedStableState) {
-  _nextAttainedStableState |= attainedStableState;
+  _nextAttainedStableState &= attainedStableState;
 }
-
-
 bool exahype::solvers::Solver::getNextAttainedStableState() const {
   return _nextAttainedStableState;
 }
-
-
-bool exahype::solvers::Solver::getAttainedStableState() const {
-  return _attainedStableState;
-}
-
 void exahype::solvers::Solver::setNextAttainedStableState() {
   _attainedStableState     = _nextAttainedStableState;
-  _nextAttainedStableState = false;
+  _nextAttainedStableState = true;
+}
+bool exahype::solvers::Solver::getAttainedStableState() const {
+  return _attainedStableState;
 }
 
 

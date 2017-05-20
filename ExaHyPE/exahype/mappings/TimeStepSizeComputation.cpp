@@ -205,8 +205,10 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
 
     if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-      assertion2(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),solver->getNextMinCellSize(),_minCellSizes[solverNumber]);
-      assertion3(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber]);
+      assertion3(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),solver->getNextMinCellSize(),_minCellSizes[solverNumber],
+          exahype::records::State::toString(_localState.getAlgorithmSection()));
+      assertion4(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber],
+          exahype::records::State::toString(_localState.getAlgorithmSection()));
     }
 
     solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
@@ -268,7 +270,11 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      std::cout << "hallo1 " << exahype::records::State::toString(_localState.getAlgorithmSection()); // TODO remove
+      std::cout << " "<<solver->isComputing(_localState.getAlgorithmSection()) << std::endl;
+
       if (solver->isComputing(_localState.getAlgorithmSection())) {
+        std::cout << "hallo2" << std::endl;
         const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
             fineGridCell.getCellDescriptionsIndex(),solverNumber);
 

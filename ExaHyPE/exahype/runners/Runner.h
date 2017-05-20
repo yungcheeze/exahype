@@ -162,17 +162,6 @@ class exahype::runners::Runner {
   void runOneTimeStepWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
 
   /**
-   * If the repository state indicates that a time update did
-   * harm an ADER-DG solver's stability condition, we rerun the
-   * prediction phase (for all ADER-DG solvers for now).
-   *
-   * \note Currently this function only makes sense for single
-   * ADER-DG solvers and global time stepping.
-   */
-  void recomputePredictorIfNecessary(
-      exahype::repositories::Repository& repository);
-
-  /**
    * Run the three adapters necessary for updating the
    * limiter domain.
    *
@@ -194,12 +183,6 @@ class exahype::runners::Runner {
    * TODO(Dominic): What can I fuse here?
    */
   void updateMeshFusedTimeStepping(exahype::repositories::Repository& repository);
-
-  /**
-   * This is different from the default predictor rerun since we do not
-   * drop incoming MPI face data here.
-   */
-  void recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.

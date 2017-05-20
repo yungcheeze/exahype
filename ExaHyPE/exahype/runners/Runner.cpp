@@ -509,7 +509,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     #ifdef Asserts
     logInfo("createGrid()",
              "grid setup iteration #" << gridSetupIterations <<
-             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedMeshUpdate()
+             ", run one more iteration=" << exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
      );
     #endif
 
@@ -814,13 +814,11 @@ void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Reposi
 
 void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository& repository) {
   // We refine here using the previous solution (which is valid)
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","perform a-posteriori refinement");
+  logInfo("initialiseMesh(...)","create initial grid");
+  repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
   repository.getState().switchToUpdateMeshContext();
   createMesh(repository);
-
-  logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","finalise mesh refinement and compute first time step size");
+  logInfo("initialiseMesh(...)","finalise mesh refinement and compute first time step size");
   repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
   repository.iterate();
 }
@@ -860,8 +858,8 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     // 4. Perform a local recomputation of the solution of the solvers that requested one.
     // Perform a time
     logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally. compute new time step size");
-    repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
-    repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+    repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
+    repository.switchToLocalRecomputationAndTimeStepSizeComputation();
     repository.iterate();
 
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
@@ -884,13 +882,6 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
                             // recomputed the predictor
     }
   }
-}
-
-void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {
-  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-  repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d(); // TODO(Dominic): Do not plot
-  repository.iterate();
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository) {

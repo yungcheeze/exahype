@@ -356,7 +356,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
           fineGridVertices,
           fineGridVerticesEnumerator,
           solverNumber);
-      solver->updateNextMeshUpdateRequest(!isStable); //
+      solver->updateNextAttainedStableState(isStable);
     }
   }
 
