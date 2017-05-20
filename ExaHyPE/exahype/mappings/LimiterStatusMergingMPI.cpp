@@ -27,7 +27,7 @@
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
 peano::CommunicationSpecification
-exahype::mappings::LimiterStatusMergingMPI::communicationSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
       MaskOutMasterWorkerDataAndStateExchange,
@@ -38,42 +38,42 @@ exahype::mappings::LimiterStatusMergingMPI::communicationSpecification() {
 
 // Everything below is nop.
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::touchVertexFirstTimeSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::enterCellSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::touchVertexLastTimeSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::leaveCellSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::ascendSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::LimiterStatusMergingMPI::descendSpecification() {
+exahype::mappings::LimiterStatusMergingMPI::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

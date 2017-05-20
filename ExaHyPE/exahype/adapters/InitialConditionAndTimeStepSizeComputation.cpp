@@ -1,99 +1,99 @@
 #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::communicationSpecification()
-   & exahype::mappings::Merging::communicationSpecification()
-   & exahype::mappings::InitialCondition::communicationSpecification()
-   & exahype::mappings::TimeStepSizeComputation::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
-   & exahype::mappings::Sending::communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2FinaliseMeshRefinement.communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2InitialCondition.communicationSpecification()
+    &  _map2TimeStepSizeComputation.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
+    &  _map2Sending.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification()
-   & exahype::mappings::Merging::touchVertexLastTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexLastTimeSpecification()
-   & exahype::mappings::TimeStepSizeComputation::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::Sending::touchVertexLastTimeSpecification()
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2FinaliseMeshRefinement.touchVertexLastTimeSpecification(level)
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexLastTimeSpecification(level)
+    &  _map2TimeStepSizeComputation.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2Sending.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Merging::touchVertexFirstTimeSpecification()
-   & exahype::mappings::InitialCondition::touchVertexFirstTimeSpecification()
-   & exahype::mappings::TimeStepSizeComputation::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::Sending::touchVertexFirstTimeSpecification()
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2FinaliseMeshRefinement.touchVertexFirstTimeSpecification(level)
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2InitialCondition.touchVertexFirstTimeSpecification(level)
+    &  _map2TimeStepSizeComputation.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2Sending.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::enterCellSpecification()
-   & exahype::mappings::Merging::enterCellSpecification()
-   & exahype::mappings::InitialCondition::enterCellSpecification()
-   & exahype::mappings::TimeStepSizeComputation::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
-   & exahype::mappings::Sending::enterCellSpecification()
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2FinaliseMeshRefinement.enterCellSpecification(level)
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2InitialCondition.enterCellSpecification(level)
+    &  _map2TimeStepSizeComputation.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
+    &  _map2Sending.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification()
-   & exahype::mappings::Merging::leaveCellSpecification()
-   & exahype::mappings::InitialCondition::leaveCellSpecification()
-   & exahype::mappings::TimeStepSizeComputation::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
-   & exahype::mappings::Sending::leaveCellSpecification()
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2FinaliseMeshRefinement.leaveCellSpecification(level)
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2InitialCondition.leaveCellSpecification(level)
+    &  _map2TimeStepSizeComputation.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
+    &  _map2Sending.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::ascendSpecification()
-   & exahype::mappings::Merging::ascendSpecification()
-   & exahype::mappings::InitialCondition::ascendSpecification()
-   & exahype::mappings::TimeStepSizeComputation::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
-   & exahype::mappings::Sending::ascendSpecification()
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2FinaliseMeshRefinement.ascendSpecification(level)
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2InitialCondition.ascendSpecification(level)
+    &  _map2TimeStepSizeComputation.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
+    &  _map2Sending.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::InitialConditionAndTimeStepSizeComputation::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::FinaliseMeshRefinement::descendSpecification()
-   & exahype::mappings::Merging::descendSpecification()
-   & exahype::mappings::InitialCondition::descendSpecification()
-   & exahype::mappings::TimeStepSizeComputation::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
-   & exahype::mappings::Sending::descendSpecification()
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2FinaliseMeshRefinement.descendSpecification(level)
+    &  _map2Merging.descendSpecification(level)
+    &  _map2InitialCondition.descendSpecification(level)
+    &  _map2TimeStepSizeComputation.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
+    &  _map2Sending.descendSpecification(level)
 
   ;
 }

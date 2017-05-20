@@ -27,9 +27,9 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 27.0, 27.0, 3.0
-    offset                         = -13.5, -13.5, -1.5
-    end-time                       = 2.1
+    width                          = 18.0, 18.0, 18.0
+    offset                         = 0.0, 0.0, 0.0
+    end-time                       = 2000.1
   end computational-domain
   
   shared-memory
@@ -57,8 +57,8 @@ exahype-project GRMHD
 
   solver Limiting-ADER-DG GRMHDSolver
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
-    order const                    = 3
-    maximum-mesh-size              = 3.0009
+    order const                    = 4
+    maximum-mesh-size              = 2.0009
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
@@ -68,14 +68,30 @@ exahype-project GRMHD
     dmp-relaxation-parameter       = 0.0001
     dmp-difference-scaling         = 0.001
 
-    plot vtk::Cartesian::vertices::ascii ConservedWriter
+    plot vtk::Cartesian::vertices::limited::binary ConservedWriter
       variables const = 19
       time      = 0.0
       repeat    = 0.00166667
       output    = ./vtk-output/conserved
     end plot
 
-    plot vtk::Cartesian::vertices::ascii IntegralsWriter
+    plot hdf5::Cartesian::vertices ConservedWriter
+      variables const = 19
+      time = 0.0
+      repeat = 0.00001
+      output = ./hdf5-output/all2d
+      select = z:0.0
+    end plot
+
+    plot hdf5::Cartesian::vertices ConservedWriter
+      variables const = 19
+      time = 0.0
+      repeat = 0.000001
+      output = ./hdf5-output/all1d
+      select = z:0.0,y:0.0
+    end plot
+
+    plot vtk::Legendre::vertices::ascii IntegralsWriter
       variables const = 0
       time = 0.0
       repeat = 0.00166667

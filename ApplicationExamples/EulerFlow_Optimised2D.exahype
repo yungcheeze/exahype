@@ -1,58 +1,115 @@
 /**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon 
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+ 
+/**
 
- 2D Euler Flow
+ Euler Flow
 
- A simple project
+ A simple project. (well, it was simple, in the beginning).
 
  */
-exahype-project  Euler2d
+exahype-project  Euler
 
-  peano-kernel-path const          = ./Peano
-  exahype-path const               = ./ExaHyPE
-  libxsmm-path               = ../libxsmm
-  output-directory const           = ./Applications/optimised_eulerflow2d
-  architecture const               = hsw
+  peano-kernel-path const = ./Peano
+  exahype-path const      = ./ExaHyPE
+  libxsmm-path     const  = ./Libxsmm
+  output-directory const  = ./ApplicationExamples/EulerFlow
+  architecture const      = hsw
+  log-file                = mylogfile.log
 
   computational-domain
-    dimension const                = 2
+    dimension const          = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 1.2
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 2
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory
 
+/*
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {greedy,FCFS}
+    configure                = {hotspot,fair,ranks_per_node:4}
     buffer-size              = 64
-    timeout                  = 120
+    timeout                  = 60
   end distributed-memory
+*/
 
   optimisation
-    fuse-algorithmic-steps        = on
-    fuse-algorithmic-steps-factor = 0.99
+    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps-factor   = 0.99
+    timestep-batch-factor           = 0.0
+    skip-reduction-in-batched-time-steps = on
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
+    double-compression = 0.0
+    spawn-double-compression-as-background-thread = off
   end optimisation
+  
+/*
+  profiling
+    profiler const = ChronoElapsedTimeProfiler
+	metrics const  = ChronoElapsedTimeProfiler
+	deep-profiling const = on
+    profiling-output = results_chrono_deep.json
+  end profiling
+*/
 
   solver ADER-DG MyEulerSolver
-    variables const          = 5
-    order const              = 3
-    maximum-mesh-size  = 0.05
-    time-stepping      = global
-    kernel const             = optimised::fluxes::nonlinear
-    language const           = C
+    variables const   = rho:1,j:3,E:1
+    order const       = 5
+    /* 27 points: 0.05, 9 points: 0.15 */
+    maximum-mesh-size = 0.05
+    time-stepping     = globalfixed
+    kernel const      = generic::fluxes::nonlinear
+    language const    = C
+	
+	/* plotter are out-commented to improve performances */
 
-    plot vtk::Cartesian::ascii
-      variables const= 5
-      time     = 0.0
-      repeat   = 0.05
-      output   = ./solution
-      select    = x:0.0,y:0.0
+    plot vtk::Cartesian::cells::ascii ConservedQuantitiesWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.01
+      output          = ./conserved
+      select          = x:0.0,y:0.0
     end plot
-  end solver
+	
+	plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
+      variables const = 0
+      time            = 0.0
+      repeat          = 0.05
+      output          = ./output/these-files-should-not-be-there
+      select          = x:0.0,y:0.0
+    end plot
 
+    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.05
+      output          = ./primitive
+      select          = x:0.0,y:0.0
+    end plot
+
+    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
+      variables const = 5
+      time            = 0.0
+      repeat          = 0.05
+      output          = ./exact-primitive
+      select          = x:0.0,y:0.0
+    end plot
+
+  end solver
 end exahype-project

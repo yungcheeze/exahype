@@ -25,10 +25,12 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTUTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
 
+#include "exahype/plotters/slicing/Slicer.h"
 #include "exahype/solvers/ADERDGSolver.h"
 
 #include "kernels/aderdg/generic/c/computeGradients.cpph" // derivatives
 
+tarch::logging::Log exahype::plotters::ADERDG2LegendreVTK::_log("exahype::plotters::ADERDG2LegendreVTK");
 
 std::string exahype::plotters::ADERDG2LegendreVerticesVTKAscii::getIdentifier() {
   return "vtk::Legendre::vertices::ascii";
@@ -142,25 +144,11 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _select            = select;
   _writtenUnknowns   = writtenUnknowns;
 
-  double x;
-  x = Parser::getValueFromPropertyString( select, "left" );
-  _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-  x = Parser::getValueFromPropertyString( select, "bottom" );
-  _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "front" );
-  _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#endif
+  slicer = Slicer::bestFromSelectionQuery(select);
 
-
-  x = Parser::getValueFromPropertyString( select, "right" );
-  _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
-  x = Parser::getValueFromPropertyString( select, "top" );
-  _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "back" );
-  _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
-#endif
+  if(slicer) {
+	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
+  }
 }
 
 
@@ -513,11 +501,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double* u,
     double timeStamp) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
+  if (!slicer || slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
     assertion( _writtenUnknowns==0 || ( _vertexWriter && _cellWriter && _gridWriter ));
     assertion( _writtenUnknowns==0 || (_plotCells && _cellTimeStampDataWriter!=nullptr) || (!_plotCells && _vertexTimeStampDataWriter!=nullptr ));
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
@@ -545,6 +529,6 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     }
 
     if(gradU!=nullptr) delete[] gradU;
-  }
+  } // if slicer
 }
 

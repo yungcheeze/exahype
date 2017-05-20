@@ -24,7 +24,7 @@
 #include "exahype/solvers/Solver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
+exahype::mappings::FinaliseMeshRefinement::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
           MaskOutMasterWorkerDataAndStateExchange,
@@ -34,42 +34,42 @@ exahype::mappings::FinaliseMeshRefinement::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
-}
-
-peano::MappingSpecification exahype::mappings::FinaliseMeshRefinement::
-    touchVertexFirstTimeSpecification() {
+exahype::mappings::FinaliseMeshRefinement::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::enterCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTimeSpecification(int level) const {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
+}
+
+peano::MappingSpecification
+exahype::mappings::FinaliseMeshRefinement::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification() {
+exahype::mappings::FinaliseMeshRefinement::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::ascendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::FinaliseMeshRefinement::descendSpecification() {
+exahype::mappings::FinaliseMeshRefinement::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

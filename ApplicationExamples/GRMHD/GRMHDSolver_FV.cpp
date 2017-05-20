@@ -15,6 +15,10 @@
 
 const double excision_radius = 1.0;
 
+tarch::logging::Log GRMHD::GRMHDSolver_FV::_log("GRMHDSolver_FV");
+constexpr int nVar = GRMHD::AbstractGRMHDSolver_FV::NumberOfVariables;
+
+
 // enable nan tracker
 #include <fenv.h>
 
@@ -64,10 +68,49 @@ void GRMHD::GRMHDSolver_FV::boundaryValues(
     const int faceIndex,
     const int d,
     const double* const stateIn,
-    double* stateOutside) {
+    double* stateOut) {
 
-  // Question: do we need time integration here?
-  id->Interpolate(x, t, stateOutside);
+	// Reflection BC at lower faces
+	// face indices: 0 x=xmin 1 x=xmax, 2 y=ymin 3 y=ymax 4 z=zmin 5 z=zmax
+	// corresponding 0-left, 1-right, 2-front, 3-back, 4-bottom, 5-top
+	constexpr int EXAHYPE_FACE_LEFT = 0;
+	constexpr int EXAHYPE_FACE_RIGHT = 1;
+	constexpr int EXAHYPE_FACE_FRONT = 2;
+	constexpr int EXAHYPE_FACE_BACK = 3;
+	constexpr int EXAHYPE_FACE_BOTTOM = 4;
+	constexpr int EXAHYPE_FACE_TOP = 5;
+	
+	switch(faceIndex) {
+		case EXAHYPE_FACE_LEFT:
+		case EXAHYPE_FACE_FRONT:
+		case EXAHYPE_FACE_BOTTOM:
+
+		// Reflection BC
+		for(int m=0; m<nVar; m++) {
+			stateOut[m] = stateIn[m];
+			//fluxOut[m] = -fluxIn[m];
+		}
+		
+		break;
+		
+		case EXAHYPE_FACE_RIGHT:
+		case EXAHYPE_FACE_BACK:
+		case EXAHYPE_FACE_TOP:
+
+		// Should probably use:
+		//    stateOut = vacuum
+		//    fluxOut = fluxIn
+		// Use for the time being: Exact BC
+		id->Interpolate(x, t, stateOut);
+		break;
+		
+		default:
+			logError("boundaryValues", "faceIndex not supported");
+			std::abort();
+	}
+	
+	
+  
 }
 
 

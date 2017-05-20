@@ -27,7 +27,7 @@
 bool exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
 peano::CommunicationSpecification
-exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
+exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -35,7 +35,7 @@ exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -44,31 +44,31 @@ exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::leaveCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::ascendSpecification() {
+exahype::mappings::TimeStepSizeComputation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::descendSpecification() {
+exahype::mappings::TimeStepSizeComputation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

@@ -28,6 +28,7 @@
 
 #include "kernels/DGBasisFunctions.h"
 
+#include "exahype/plotters/slicing/Slicer.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 
@@ -119,25 +120,11 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::init(
   _patchWriter       = nullptr;
   _writtenUnknowns   = writtenUnknowns;
 
-  double x;
-  x = Parser::getValueFromPropertyString( select, "left" );
-  _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-  x = Parser::getValueFromPropertyString( select, "bottom" );
-  _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "front" );
-  _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#endif
+  slicer = Slicer::bestFromSelectionQuery(select);
 
-
-  x = Parser::getValueFromPropertyString( select, "right" );
-  _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
-  x = Parser::getValueFromPropertyString( select, "top" );
-  _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "back" );
-  _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
-#endif
+  if(slicer) {
+	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
+  }
 }
 
 
@@ -397,11 +384,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotADERDGPatch(
     double* u,
     double timeStamp,
     const int limiterStatusAsInt) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
+  if (!slicer || slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampVertexDataWriter!=nullptr );
@@ -426,11 +409,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotFiniteVolumesPatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
+  if (!slicer || slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
     logDebug("plotPatch(...)","offset of patch: "<<offsetOfPatch
     <<", size of patch: "<<sizeOfPatch
     <<", time stamp: "<<timeStamp);

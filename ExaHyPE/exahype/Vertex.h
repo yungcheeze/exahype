@@ -26,9 +26,14 @@ namespace exahype {
   /**
    * We abuse this heap to send and receive metadata from one MPI rank to the other.
    * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
    */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Migrate to Vertex.
+  typedef peano::heap::Heap<
+    peano::heap::records::IntegerHeapData,
+    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
+    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
+    peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false >
+  >     MetadataHeap;
+
 
   class Vertex;
 

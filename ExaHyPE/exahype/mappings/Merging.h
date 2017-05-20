@@ -162,30 +162,30 @@ public:
    * finds the riemannSolvePerfomed flags set and does nothing in
    * our current implementation.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**.
    * The mapping does synchronise through synchroniseTimeStepping() invoked
@@ -198,7 +198,7 @@ public:
    *
    * Further let Peano handle heap data exchange internally.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Solve Riemann problems on all interior faces that are adjacent

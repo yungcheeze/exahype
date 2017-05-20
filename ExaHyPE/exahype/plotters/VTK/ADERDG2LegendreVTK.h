@@ -33,6 +33,8 @@ namespace exahype {
     class ADERDG2LegendreVerticesVTUBinary;
     class ADERDG2LegendreCellsVTUAscii;
     class ADERDG2LegendreCellsVTUBinary;
+
+    class Slicer; // external forward decl, #include exahype/plotters/slicing/Slicer.h
   }
 }
 
@@ -68,9 +70,9 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
    */
   double _time;
 
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
-
+  exahype::plotters::Slicer *slicer;
+  static tarch::logging::Log _log;
+  
   tarch::plotter::griddata::unstructured::UnstructuredGridWriter*                    _gridWriter;
 
   tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*              _vertexWriter;

@@ -12,11 +12,11 @@
  **/ #}
 
 #include <algorithm>
+#include <cstring>
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
 //#include "kernels/aderdg/optimised/asm_predictor.c"
 
-template <bool useSourceOrNCP>
 void kernels::aderdg::optimised::predictorNonlinear(
         const double* restrict const lQi, 
         const double* restrict const lFi,
@@ -33,18 +33,17 @@ void kernels::aderdg::optimised::predictorNonlinear(
   __assume_aligned(lQhi, ALIGNMENT);
   __assume_aligned(lFhi, ALIGNMENT);
   __assume_aligned(weights1, ALIGNMENT);
-  if(useSourceOrNCP) {
-    __assume_aligned(lSi, ALIGNMENT);
-    __assume_aligned(lShi, ALIGNMENT);
-  }
+{% if useSourceOrNCP %}
+  __assume_aligned(lSi, ALIGNMENT);
+  __assume_aligned(lShi, ALIGNMENT);
+{% endif %}
 #endif  
 
   std::memset(lQhi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
   std::memset(lFhi, 0, {{nDim*(nDof**nDim)*nVarPad}} * sizeof(double));
-  
-  if(useSourceOrNCP) {
-    std::memset(lShi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
-  } 
+{% if useSourceOrNCP %}
+  std::memset(lShi, 0, {{(nDof**nDim)*nVarPad}} * sizeof(double));
+{% endif %}
 
   for (int i = 0; i < {{nDof3D}}; i++) {
     for (int j = 0; j < {{nDof}}; j++) {
@@ -70,23 +69,23 @@ void kernels::aderdg::optimised::predictorNonlinear(
             lFhi[n+{{nVarPad}}*(j+{{nDof}}*(k+{{nDof}}*i))+{{1*nVarPad*(nDof**nDim)}}] += weights1[m] *
                 lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))+{{1*(nDof**nDim)*nDof*nVarPad}}];
           }  
-          {% if nDim == 3%}
+{% if nDim == 3%}
           #pragma simd
           for (int n = 0; n < {{nVarPad}}; n++) {
             // Fortran: lFhi_z(:,i,k,j) = lFh(:,3,k,j,i,:) * wGPN(:)
             lFhi[n+{{nVarPad}}*(i+{{nDof}}*(k+{{nDof}}*j))+{{2*nVarPad*(nDof**nDim)}}] += weights1[m] *
                 lFi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))+{{2*(nDof**nDim)*nDof*nVarPad}}];
           }
-          {% endif %}
+{% endif %}
             
-          if(useSourceOrNCP) { //branch optimised away at compile time
+{% if useSourceOrNCP %}
+          #pragma simd
+          for (int n = 0; n < {{nVarPad}}; n++) {
             // Fortran: lFhi_S(:,k,j,i) = lSh(:,k,j,i,:) * wGPN(:)
-            #pragma simd
-            for (int n = 0; n < {{nVarPad}}; n++) {
-              lShi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] += weights1[m] *
-                lSi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))];
-            }
+            lShi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*i))] += weights1[m] *
+              lSi[n+{{nVarPad}}*(k+{{nDof}}*(j+{{nDof}}*(i+{{nDof3D}}*m)))];
           }
+{% endif %}
         }
       
       }

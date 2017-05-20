@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "exahype/solvers/Solver.h"
+#include "exahype/solvers/UserSolverInterface.h"
 
 #include "peano/heap/Heap.h"
 #include "peano/utils/Globals.h"
@@ -40,7 +41,7 @@ namespace exahype {
 /**
  * Describes one solver.
  */
-class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
+class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver, public exahype::solvers::UserADERDGSolverInterface {
 public:
   /**
    * Set to 0 if no floating point compression is used.
@@ -64,7 +65,7 @@ public:
    * @see solvers::Solver::RegisteredSolvers.
    */
   typedef exahype::records::ADERDGCellDescription CellDescription;
-  typedef peano::heap::PlainHeap<CellDescription> Heap;
+  typedef peano::heap::RLEHeap<CellDescription> Heap;
 
 private:
 
@@ -842,7 +843,8 @@ public:
                              double**  tempStateSizedVectors,
                              double**  tempStateSizedSquareMatrices,
                              const double dt,
-                             const int normalNonZero) = 0;
+                             const int normalNonZero,
+			     bool isBoundaryFace) = 0;
 
   /**
    * Return the normal fluxes (or fluctuations) and state variables at the boundary.

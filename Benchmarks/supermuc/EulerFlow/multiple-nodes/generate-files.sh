@@ -2,7 +2,7 @@
 hMax=(0.05 0.01 0.005 0.001)
 times=(0.01 0.002 0.0005 0.0001)
 
-i=0
+i=1
 mesh=regular-$i
 h=${hMax[i]}
 t=${times[i]}
@@ -20,7 +20,7 @@ do
 for tasksPerNode in 1 2 4 28
 do  
   queue=micro
-  if (( nodes > 20 )); then
+  if (( nodes > 31 )); then
     queue=general
   fi
   let tasks=$nodes*$tasksPerNode

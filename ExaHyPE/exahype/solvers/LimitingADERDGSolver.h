@@ -27,8 +27,6 @@
 
 #include "exahype/solvers/TemporaryVariables.h"
 
-#include <cstdlib> // std::abort
-
 namespace exahype {
 namespace solvers {
 
@@ -41,10 +39,10 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
 
 private:
   typedef exahype::records::ADERDGCellDescription SolverPatch;
-  typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
+  typedef peano::heap::RLEHeap<SolverPatch> SolverHeap;
 
   typedef exahype::records::FiniteVolumesCellDescription LimiterPatch;
-  typedef peano::heap::PlainHeap<LimiterPatch> LimiterHeap;
+  typedef peano::heap::RLEHeap<LimiterPatch> LimiterHeap;
 
 
   /**
@@ -958,21 +956,6 @@ public:
       const int cellDescriptionsIndex,const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
-
-  // the pointless implementations of virtual functions. As they are only
-  // needed from the glue code, these methods here are actually *never* called.
-  // For the time being, to ensure that, I added abort() calls.
-  bool useConservativeFlux()       const override { std::abort(); }
-  bool useNonConservativeProduct() const override { std::abort(); }
-  bool useAlgebraicSource()                 const override { std::abort(); }
-  bool usePointSource()            const override { std::abort(); }
-  void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override { std::abort(); }
-  void algebraicSource(const double* const Q,double* S) override { std::abort(); }
-  void fusedSource(const double* const Q, const double* const gradQ, double* S) override { std::abort(); }
-  void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override { std::abort(); }
-  void coefficientMatrix(const double* const Q,const int d,double* Bn) override { std::abort(); }
-  void flux(const double* const Q,double** F) override { std::abort(); }
-
 
 #ifdef Parallel
   ///////////////////////////////////

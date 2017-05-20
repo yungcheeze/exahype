@@ -26,6 +26,21 @@
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
+/* BEGIN Case intensitive string comparison: http://stackoverflow.com/a/23944175 */
+bool icompare_pred(unsigned char a, unsigned char b) {
+	return std::tolower(a) == std::tolower(b);
+}
+
+bool icompare(std::string const& a, std::string const& b) {
+    if (a.length()==b.length()) {
+        return std::equal(b.begin(), b.end(),
+                           a.begin(), icompare_pred);
+    }
+    else {
+        return false;
+    }
+}
+/* END Case intensitive string comparison: http://stackoverflow.com/a/23944175 */
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
@@ -137,84 +152,84 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( ADERDG2CartesianCellsPeanoFileFormatAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsPeanoFileFormatAscii::getIdentifier())) {
         _device = new ADERDG2CartesianCellsPeanoFileFormatAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesPeanoFileFormatAscii(postProcessing);
       }
 
-      if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTKBinary::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
       }
 
-      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
 
-      if (_identifier.compare( ADERDG2CartesianVerticesVTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTUAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianVerticesVTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTUBinary::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTUBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTUAscii::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTUAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTUBinary::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTUBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreVerticesVTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTUAscii::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTUAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreVerticesVTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTUBinary::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTUBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTUAscii::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTUAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTUBinary::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
       }
 
-      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreDivergenceVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreDivergenceVerticesVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreDivergenceVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier())) {
         _device = new ADERDG2LegendreDivergenceVerticesVTUAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier())) {
         _device = new ADERDG2LegendreDivergenceVerticesVTUBinary(postProcessing);
       }
 
-      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2ProbeAscii::getIdentifier())) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCSV::getIdentifier())) {
         _device = new ADERDG2LegendreCSV(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new ADERDG2CarpetHDF5(postProcessing);
       }
     break;
@@ -223,47 +238,47 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( FiniteVolumesCells2VTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesCells2VTKAscii::getIdentifier())) {
         _device = new FiniteVolumesCells2VTKAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesCells2VTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesCells2VTKBinary::getIdentifier())) {
         _device = new FiniteVolumesCells2VTKBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesCells2VTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesCells2VTUAscii::getIdentifier())) {
         _device = new FiniteVolumesCells2VTUAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesCells2VTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesCells2VTUBinary::getIdentifier())) {
         _device = new FiniteVolumesCells2VTUBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesVertices2VTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesVertices2VTKAscii::getIdentifier())) {
         _device = new FiniteVolumesVertices2VTKAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesVertices2VTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesVertices2VTKBinary::getIdentifier())) {
         _device = new FiniteVolumesVertices2VTKBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesVertices2VTUAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesVertices2VTUAscii::getIdentifier())) {
         _device = new FiniteVolumesVertices2VTUAscii(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( FiniteVolumesVertices2VTUBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, FiniteVolumesVertices2VTUBinary::getIdentifier())) {
         _device = new FiniteVolumesVertices2VTUBinary(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new FiniteVolume2CarpetHDF5(
 	    postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth()
@@ -277,37 +292,37 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianVerticesVTKBinary::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CartesianCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreVerticesVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTKAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
-      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2ProbeAscii::getIdentifier())) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
-      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2LegendreCSV::getIdentifier())) {
         _device = new ADERDG2LegendreCSV(postProcessing);
       }
-      if (_identifier.compare( ADERDG2CarpetHDF5::getIdentifier() ) == 0) {
+      if (icompare(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
         _device = new ADERDG2CarpetHDF5(postProcessing); // untested
       }
 
@@ -317,51 +332,51 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, LimitingADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
         _device = new LimitingADERDG2CartesianVerticesVTKAscii(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
-      if (_identifier.compare( LimitingADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, LimitingADERDG2CartesianVerticesVTKBinary::getIdentifier())) {
         _device = new LimitingADERDG2CartesianVerticesVTKBinary(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
             solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
-      if (_identifier.compare( LimitingADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+      if (icompare(_identifier, LimitingADERDG2CartesianCellsVTKAscii::getIdentifier())) {
         _device = new LimitingADERDG2CartesianCellsVTKAscii(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
-      if (_identifier.compare( LimitingADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+      if (icompare(_identifier, LimitingADERDG2CartesianCellsVTKBinary::getIdentifier())) {
         _device = new LimitingADERDG2CartesianCellsVTKBinary(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
-//      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2LegendreVerticesVTKAscii::getIdentifier())) {
 //        _device = new LimitingADERDG2LegendreVerticesVTKAscii(
 //            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
 //      }
-//      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2LegendreVerticesVTKBinary::getIdentifier())) {
 //        _device = new LimitingADERDG2LegendreVerticesVTKBinary(
 //            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
 //      }
-//      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2LegendreCellsVTKAscii::getIdentifier())) {
 //        _device = new LimitingADERDG2LegendreCellsVTKAscii(
 //            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
 //      }
-//      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2LegendreCellsVTKBinary::getIdentifier())) {
 //        _device = new LimitingADERDG2LegendreCellsVTKBinary(
 //            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2ProbeAscii::getIdentifier())) {
 //        _device = new LimitingADERDG2ProbeAscii(
 //            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
 //            solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
 //      }
-//      if (_identifier.compare( ADERDG2LegendreCSV::getIdentifier() ) == 0) {
+//      if (icompare(_identifier, ADERDG2LegendreCSV::getIdentifier())) {
 //        _device = new LimitingADERDG2LegendreCSV(postProcessing);
 //      }
     break;

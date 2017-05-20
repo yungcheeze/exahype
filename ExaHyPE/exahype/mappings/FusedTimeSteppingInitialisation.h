@@ -76,16 +76,16 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
   /**
    * Run through whole tree. Run concurrently on fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * TODO(Dominic): Currently, we need to broadcast the state in order
@@ -95,7 +95,7 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
    * we can set a on each rank's State a static flag
    * in Runner::run();
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * \see ::initialiseFusedTimestepping(exahype::solvers::Solver*,const int,const int).
