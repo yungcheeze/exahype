@@ -98,7 +98,10 @@ bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(
   const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
   const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
   const double t, const double dt) const {
-  if (observablesMin[0] <= 0.0) return false;
-  if (observablesMin[1] < 0.0) return false;
+  
+  if ((center[0]-0.5)*(center[0]-0.5)+(center[1]-0.5)*(center[1]-0.5)<0.25*dx[0]*dx[0]) return false;
+
+  // if (observablesMin[0] <= 0.0) return false;
+  // if (observablesMin[1] < 0.0) return false;
   return true;
 }
