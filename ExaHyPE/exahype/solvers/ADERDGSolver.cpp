@@ -3330,6 +3330,34 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
       peano::heap::MessageType::MasterWorkerCommunication);
 }
 
+void exahype::solvers::ADERDGSolver::readWorkerMessage(const DataHeap::HeapEntries& message) {
+  assertion1(message.size()==4,message.size());
+  assertion1(message[0]>=0,message[0]);
+  assertion1(std::isfinite(message[0]),message[0]);
+  // The master solver has not yet updated its minNextPredictorTimeStepSize.
+  // Thus it does not equal MAX_DOUBLE.
+
+  int index=0;
+  _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, message[index++] );
+  _nextMinCellSize               = std::min( _nextMinCellSize, message[index++] );
+  _nextMaxCellSize               = std::max( _nextMaxCellSize, message[index++] );
+  _nextMeshUpdateRequest        |= (message[index++]) > 0 ? true : false;
+
+  if (tarch::parallel::Node::getInstance().getRank()==
+      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+    logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
+        "data[0]=" << message[0] <<
+        ",data[1]=" << message[1] <<
+        ",data[2]=" << message[2] <<
+        ",data[3]=" << message[3] );
+    logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
+        "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
+        "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
+        ",_nextMinCellSize=" << _nextMinCellSize <<
+        ",_nextMaxCellSize=" << _nextMaxCellSize);
+  }
+}
+
 /**
  * At the time of the merging,
  * the workers and the master have already performed
@@ -3341,7 +3369,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(4);
+  DataHeap::HeapEntries receivedTimeStepData(4);
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -3352,32 +3380,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
-  assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
-  assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
-  // The master solver has not yet updated its minNextPredictorTimeStepSize.
-  // Thus it does not equal MAX_DOUBLE.
-
-  int index=0;
-  _minNextPredictorTimeStepSize  = std::min( _minNextPredictorTimeStepSize, receivedTimeStepData[index++] );
-  _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
-  _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
-  _nextMeshUpdateRequest        |= (receivedTimeStepData[index++]) > 0 ? true : false;
-
-  if (tarch::parallel::Node::getInstance().getRank()==
-      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
-             "data[0]=" << receivedTimeStepData[0] <<
-             ",data[1]=" << receivedTimeStepData[1] <<
-             ",data[2]=" << receivedTimeStepData[2] <<
-             ",data[3]=" << receivedTimeStepData[3] );
-
-    logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
-             "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
-             "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
-             ",_nextMinCellSize=" << _nextMinCellSize <<
-             ",_nextMaxCellSize=" << _nextMaxCellSize);
-  }
+  readWorkerMessage(receivedTimeStepData);
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(

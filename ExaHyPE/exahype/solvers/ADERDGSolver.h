@@ -1833,9 +1833,9 @@ public:
   /**
    * Compiles a message for the master.
    *
-   * Capacity of the message vector defaults to 4.
-   * It can be modified if calling
-   * function wants to add additional entries.
+   * Capacity of the message vector can be modified
+   * in case the calling function wants to push additional
+   * entries to the back of the vector.
    */
   DataHeap::HeapEntries
   compileMessageForMaster(const int capacity=4) const;
@@ -1844,6 +1844,13 @@ public:
       const int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
+
+  /**
+   * Read a message from the worker
+   * and adjust solver fields.
+   */
+  void readWorkerMessage(
+      const DataHeap::HeapEntries& message);
 
   void mergeWithWorkerData(
       const int workerRank,

@@ -2119,15 +2119,16 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  _solver->mergeWithWorkerData(workerRank,x,level); // !!! Receive order must be the same in master<->worker comm.
-
   // Receive the information if limiter status has changed
-  std::vector<double> receivedData(1); // !!! Creates and fills the vector
+  DataHeap::HeapEntries receivedData(5); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
       receivedData.data(),receivedData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
-  assertion(tarch::la::equals(receivedData[0],1.0) ||
-            tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
+
+
+  _solver->readWorkerMessage(receivedData);
+  assertion(tarch::la::equals(receivedData[4],1.0) ||
+            tarch::la::equals(receivedData[4],-1.0)); // TODO(Dominic): LimiterDomainChage TODO
 
   bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false; // TODO(Dominic): Fix this
   updateNextLimiterDomainChange(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
