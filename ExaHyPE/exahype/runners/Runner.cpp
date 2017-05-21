@@ -1019,6 +1019,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested");
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested");
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()) {
