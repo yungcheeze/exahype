@@ -393,8 +393,9 @@ void exahype::mappings::LocalRecomputation::dropNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::Irregular) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
       logDebug("dropNeighbourData(...)", "drop data for solver " << solverNumber << " from rank " <<
@@ -421,8 +422,9 @@ void exahype::mappings::LocalRecomputation::mergeNeighourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
-        && static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
+        static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        ==exahype::solvers::LimiterDomainChange::Irregular) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
       const int offset  = exahype::MetadataPerSolver*solverNumber;
 

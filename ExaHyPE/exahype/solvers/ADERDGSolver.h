@@ -1836,6 +1836,8 @@ public:
    * Capacity of the message vector can be modified
    * in case the calling function wants to push additional
    * entries to the back of the vector.
+   *
+   * \see LimitingADERDGSolver::sendDataToMaster
    */
   DataHeap::HeapEntries
   compileMessageForMaster(const int capacity=4) const;
@@ -1846,10 +1848,12 @@ public:
       const int                                    level) override;
 
   /**
-   * Read a message from the worker
+   * Read a message from a worker
    * and adjust solver fields.
+   *
+   * \see LimitingADERDGSolver::mergeWithWorkerData
    */
-  void readWorkerMessage(
+  void mergeWithWorkerData(
       const DataHeap::HeapEntries& message);
 
   void mergeWithWorkerData(
@@ -1885,11 +1889,30 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  /**
+   * Compiles a message for a worker.
+   *
+   * Capacity of the message vector can be modified
+   * in case the calling function wants to push additional
+   * entries to the back of the vector.
+   *
+   * \see LimitingADERDGSolver::sendDataToWorker
+   */
+  exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+  compileMessageForWorker(const int capacity=6) const;
 
   void sendDataToWorker(
       const                                        int workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) override;
+
+  /**
+   * Read a message from the master
+   * and adjust solver fields.
+   *
+   * \see LimitingADERDGSolver::mergeWithMasterData
+   */
+  void mergeWithMasterData(const DataHeap::HeapEntries& message);
 
   void mergeWithMasterData(
       const                                        int masterRank,

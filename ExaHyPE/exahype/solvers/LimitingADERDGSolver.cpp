@@ -1727,36 +1727,15 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
   } // There is no drop method for metadata necessary
   _solver->mergeWithNeighbourMetadata(neighbourMetadata,src,dest,cellDescriptionsIndex,element);
 
-  // Refine according to the merged limiter status
+  // Merge the limiter status
   const SolverPatch::LimiterStatus neighbourLimiterStatus =
-      neighbourMetadata[exahype::MetadataLimiterStatus].getU();
+      static_cast<SolverPatch::LimiterStatus>(neighbourMetadata[exahype::MetadataLimiterStatus].getU());
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  // TODO(Dominic): Update
-  if (
-      neighbourLimiterStatus==SolverPatch::LimiterStatus::Troubled
-      &&
-      solverPatch.getLevel()<_coarsestMeshLevel+_maximumAdaptiveMeshDepth
-      &&
-      solverPatch.getType()==SolverPatch::Type::Cell
-      &&
-      (solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::None ||
-      solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
-      solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
-  ) {
-    solverPatch.setRefinementEvent(SolverPatch::RefinementEvent::RefiningRequested);
-  }
-
-  // TODO(Dominic)
   if (tarch::la::equals(src,dest)==DIMENSIONS-1) {
-    const int direction = peano::utils::dLinearised(src-dest+1,3);
-    mergeWithLimiterStatus(solverPatch,direction,neighbourLimiterStatus);
+    const int direction   = tarch::la::equalsReturnIndex(src,dest);
+    const int orientation = (1 + src(direction) - dest(direction))/2;
 
-    // old code keep for reference in case we go back to face index
-    // const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-    // assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-    // const int faceIndex = 2 * normalOfExchangedFace +
-    //        (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-    //                                                                            // |src|dest| : 1; |dest|src| : 0
+    mergeWithLimiterStatus(solverPatch,2*direction+orientation,neighbourLimiterStatus);                                                                            // |src|dest| : 1; |dest|src| : 0
   }
 }
 
@@ -1822,13 +1801,12 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToNeighbourBasedOnLimiterSt
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int                                    level) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
 
   logDebug("sendDataToNeighbourBasedOnLimiterStatus(...)", "send data for solver " << _identifier << " from rank " <<
                toRank << " at vertex x=" << x << ", level=" << level <<
-               ", src=" << src << ", dest=" << dest <<", limiterStatus="<<limiterStatus);
+               ", source=" << src << ", destination=" << dest <<", limiterStatus="<<solverPatch.getLimiterStatus());
 
-  switch (limiterStatus) {
+  switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Ok: {
       _solver->sendDataToNeighbour(toRank,cellDescriptionsIndex,element,src,dest,x,level);
       _limiter->sendEmptyDataToNeighbour(toRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
@@ -1906,13 +1884,12 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  SolverPatch::LimiterStatus limiterStatus = solverPatch.getLimiterStatus();
 
   logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
           fromRank << " at vertex x=" << x << ", level=" << level <<
-          ", src=" << src << ", dest=" << dest << ",limiterStatus=" << SolverPatch::toString(limiterStatus));
+          ", source=" << src << ", destination=" << dest << ",limiterStatus=" << solverPatch.getLimiterStatus());
 
-  switch (limiterStatus) {
+  switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Ok:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4: {
@@ -2103,11 +2080,11 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("sendDataToMaster(...)","Sending time step data: " <<
-        "data[0]=" << timeStepDataToReduce[0] <<
-        ",data[1]=" << timeStepDataToReduce[1] <<
-        ",data[2]=" << timeStepDataToReduce[2] <<
-        ",data[3]=" << timeStepDataToReduce[3] <<
-        ",data[4]=" << timeStepDataToReduce[4]);
+        "data[0]=" << messageForMaster[0] <<
+        ",data[1]=" << messageForMaster[1] <<
+        ",data[2]=" << messageForMaster[2] <<
+        ",data[3]=" << messageForMaster[3] <<
+        ",data[4]=" << messageForMaster[4]);
   }
   DataHeap::getInstance().sendData(
       messageForMaster.data(), messageForMaster.size(),
@@ -2119,26 +2096,30 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  // Receive the information if limiter status has changed
-  DataHeap::HeapEntries receivedData(5); // !!! Creates and fills the vector
+  DataHeap::HeapEntries messageFromWorker(5); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
-      receivedData.data(),receivedData.size(),workerRank, x, level,
+      messageFromWorker.data(),messageFromWorker.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
   // pass message to the ADER-DG solver
-  _solver->readWorkerMessage(receivedData);
+  _solver->mergeWithWorkerData(messageFromWorker);
 
   // merge own flags
-  assertion(tarch::la::greaterEquals(receivedData[4],static_cast<int>(LimiterDomainChange::Regular)));
-  assertion(tarch::la::smallerEquals(receivedData[4],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
+  const int firstEntry=4;
+  assertion(tarch::la::greaterEquals(messageFromWorker[firstEntry],static_cast<int>(LimiterDomainChange::Regular)));
+  assertion(tarch::la::smallerEquals(messageFromWorker[firstEntry],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
   LimiterDomainChange workerLimiterDomainChange =
-      static_cast<LimiterDomainChange>(static_cast<int>(receivedData[4]));
+      static_cast<LimiterDomainChange>(static_cast<int>(messageFromWorker[firstEntry]));
   updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
-            " data[0]=" << receivedData[0]);
+             " messageFromWorker[0]=" << messageFromWorker[0] <<
+             " messageFromWorker[1]=" << messageFromWorker[1] <<
+             " messageFromWorker[2]=" << messageFromWorker[2] <<
+             " messageFromWorker[3]=" << messageFromWorker[3] <<
+             " messageFromWorker[4]=" << messageFromWorker[4]);
     logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
   }
 }
@@ -2216,22 +2197,25 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  _solver->sendDataToWorker(workerRank,x,level);
-//  _limiter->sendDataToWorker(workerRank,x,level); // TODO(Dominic): Revision
+  DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(7);
 
-  // TODO(Dominic): Add information that limiter status has been
-  // changed for this solver.
-  // Send the information to master if limiter status has changed or not
-  std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainChange ? 1.0 : -1.0);
-  assertion1(dataToSend.size()==1,dataToSend.size());
-  if (tarch::parallel::Node::getInstance().getRank()==
+  // append additional data
+  messageForWorker.push_back(static_cast<double>(_limiterDomainChange));
+
+  assertion1(messageForWorker.size()==7,messageForWorker.size());
+  if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToWorker(...)","Sending data to worker:" <<
-            " data[0]=" << dataToSend[0]);
+    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+             "data[0]=" << messageForWorker[0] <<
+             ",data[1]=" << messageForWorker[1] <<
+             ",data[2]=" << messageForWorker[2] <<
+             ",data[3]=" << messageForWorker[3] <<
+             ",data[4]=" << messageForWorker[4] <<
+             ",data[5]=" << messageForWorker[5] <<
+             ",data[6]=" << messageForWorker[6]);
   }
   DataHeap::getInstance().sendData(
-      dataToSend.data(), dataToSend.size(),
+      messageForWorker.data(), messageForWorker.size(),
       workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 }
@@ -2240,25 +2224,33 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  _solver->mergeWithMasterData(masterRank,x,level); // !!! Receive order must be the same in master<->worker comm.
-//  _limiter->mergeWithMasterData(masterRank,x,level); // TODO(Dominic): Revision
-
-  // Receive the information if limiter status has changed
-  std::vector<double> receivedData(1); // !!! Creates and fills the vector
+  DataHeap::HeapEntries messageFromMaster(7); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
-      receivedData.data(),receivedData.size(),masterRank, x, level,
+      messageFromMaster.data(),messageFromMaster.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
-  assertion(tarch::la::equals(receivedData[0],1.0) ||
-            tarch::la::equals(receivedData[0],-1.0)); // TODO(Dominic): ugly
 
-  bool masterLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false;
-  _limiterDomainChange = masterLimiterDomainHasChanged; // !!! It is important that we merge with the "next" field here
+  // pass message to the ADER-DG solver
+  _solver->mergeWithMasterData(messageFromMaster);
 
-  if (tarch::parallel::Node::getInstance().getRank()!=
+  // merge own data
+  const int firstEntry=6;
+  assertion(tarch::la::greaterEquals(messageFromMaster[firstEntry],static_cast<int>(LimiterDomainChange::Regular)));
+  assertion(tarch::la::smallerEquals(messageFromMaster[firstEntry],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
+  LimiterDomainChange workerLimiterDomainChange =
+      static_cast<LimiterDomainChange>(static_cast<int>(messageFromMaster[firstEntry]));
+  updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
+
+  if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithMasterData(...)","Received data from worker:" <<
-            " data[0]=" << receivedData[0]);
-    logDebug("mergeWithMasterData(...)","_limiterDomainHasChanged=" << _limiterDomainChange);
+    logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
+             " messageFromMaster[0]=" << messageFromMaster[0] <<
+             " messageFromMaster[1]=" << messageFromMaster[1] <<
+             " messageFromMaster[2]=" << messageFromMaster[2] <<
+             " messageFromMaster[3]=" << messageFromMaster[3] <<
+             " messageFromMaster[4]=" << messageFromMaster[4] <<
+             " messageFromMaster[5]=" << messageFromMaster[5] <<
+             " messageFromMaster[6]=" << messageFromMaster[6]);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
   }
 }
 

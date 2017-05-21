@@ -242,7 +242,7 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
+    const int                                     level) const {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->isSending(_localState.getAlgorithmSection())) {
       solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
@@ -262,7 +262,7 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
     const int                                    srcCellDescriptionIndex,
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level) {
+    const int                                    level) const {
   assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
   assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 

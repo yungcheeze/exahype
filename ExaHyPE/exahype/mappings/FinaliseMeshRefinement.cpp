@@ -21,6 +21,7 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/mappings/MeshRefinement.h"
 #include "exahype/mappings/LimiterStatusSpreading.h"
 
 peano::CommunicationSpecification

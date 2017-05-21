@@ -116,7 +116,7 @@ private:
    *
    * \note Not thread-safe.
    */
-  static void dropNeighbourData(
+  void dropNeighbourData(
       const int fromRank,
       const int srcCellDescriptionIndex,
       const int destCellDescriptionIndex,
@@ -124,7 +124,7 @@ private:
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int level,
-      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata) const;
   #endif
 
 public:

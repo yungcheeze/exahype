@@ -381,7 +381,7 @@ void exahype::mappings::Merging::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int level,
-    const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata)  const {
   assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {

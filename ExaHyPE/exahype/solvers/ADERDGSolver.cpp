@@ -3279,8 +3279,8 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 // WORKER->MASTER
 ///////////////////////////////////
 exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
-exahype::solvers::ADERDGSolver::compileMessageForMaster(const int length) const {
-  DataHeap::HeapEntries dataForMaster(0,std::min(4,length));
+exahype::solvers::ADERDGSolver::compileMessageForMaster(const int capacity) const {
+  DataHeap::HeapEntries dataForMaster(0,std::max(4,capacity));
   dataForMaster.push_back(_minPredictorTimeStepSize);
   dataForMaster.push_back(_minCellSize);
   dataForMaster.push_back(_maxCellSize);
@@ -3308,8 +3308,8 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    level){
   DataHeap::HeapEntries messageForMaster = compileMessageForMaster();
 
-  assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
-  assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
+  assertion1(messageForMaster.size()==4,messageForMaster.size());
+  assertion1(std::isfinite(messageForMaster[0]),messageForMaster[0]);
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
                                 tarch::parallel::Node::getInstance().getRank());
@@ -3318,10 +3318,10 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("sendDataToMaster(...)","Sending time step data: " <<
-             "data[0]=" << timeStepDataToReduce[0] <<
-             ",data[1]=" << timeStepDataToReduce[1] <<
-             ",data[2]=" << timeStepDataToReduce[2] <<
-             ",data[3]=" << timeStepDataToReduce[3]);
+             "data[0]=" << messageForMaster[0] <<
+             ",data[1]=" << messageForMaster[1] <<
+             ",data[2]=" << messageForMaster[2] <<
+             ",data[3]=" << messageForMaster[3]);
   }
 
   DataHeap::getInstance().sendData(
@@ -3330,7 +3330,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
       peano::heap::MessageType::MasterWorkerCommunication);
 }
 
-void exahype::solvers::ADERDGSolver::readWorkerMessage(const DataHeap::HeapEntries& message) {
+void exahype::solvers::ADERDGSolver::mergeWithWorkerData(const DataHeap::HeapEntries& message) {
   assertion1(message.size()==4,message.size());
   assertion1(message[0]>=0,message[0]);
   assertion1(std::isfinite(message[0]),message[0]);
@@ -3380,7 +3380,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  readWorkerMessage(receivedTimeStepData);
+  mergeWithWorkerData(receivedTimeStepData);
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
@@ -3526,57 +3526,76 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
+exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+exahype::solvers::ADERDGSolver::compileMessageForWorker(const int capacity) const {
+  DataHeap::HeapEntries messageForWorker(0,std::max(6,capacity));
+  messageForWorker.push_back(_minPredictorTimeStepSize);
+  messageForWorker.push_back(_minCellSize);
+  messageForWorker.push_back(_maxCellSize);
+  messageForWorker.push_back(_meshUpdateRequest ? 1.0 : -1.0);
+
+  messageForWorker.push_back(_minCellSize);
+  messageForWorker.push_back(_maxCellSize);
+
+  assertion1(messageForWorker.size()==6,messageForWorker.size());
+  assertion1(std::isfinite(messageForWorker[0]),messageForWorker[0]);
+  assertion1(std::isfinite(messageForWorker[1]),messageForWorker[1]);
+  assertion1(std::isfinite(messageForWorker[2]),messageForWorker[2]);
+  assertion1(std::isfinite(messageForWorker[3]),messageForWorker[3]);
+
+  if (_timeStepping==TimeStepping::Global) {
+    assertionEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
+                     tarch::parallel::Node::getInstance().getRank());
+  }
+
+  return messageForWorker;
+}
+
 void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> timeStepDataToSend(0,6);
-  timeStepDataToSend.push_back(_minCorrectorTimeStamp);  // TODO(Dominic): Append previous time step size
-  timeStepDataToSend.push_back(_minCorrectorTimeStepSize);
-  timeStepDataToSend.push_back(_minPredictorTimeStamp);
-  timeStepDataToSend.push_back(_minPredictorTimeStepSize);
-
-  timeStepDataToSend.push_back(_minCellSize);
-  timeStepDataToSend.push_back(_maxCellSize);
-
-  assertion1(timeStepDataToSend.size()==6,timeStepDataToSend.size());
-  assertion1(std::isfinite(timeStepDataToSend[0]),timeStepDataToSend[0]);
-  assertion1(std::isfinite(timeStepDataToSend[1]),timeStepDataToSend[1]);
-  assertion1(std::isfinite(timeStepDataToSend[2]),timeStepDataToSend[2]);
-  assertion1(std::isfinite(timeStepDataToSend[3]),timeStepDataToSend[3]);
-
-  if (_timeStepping==TimeStepping::Global) {
-    assertionEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
-                                   tarch::parallel::Node::getInstance().getRank());
-  }
+  DataHeap::HeapEntries messageForWorker = compileMessageForWorker();
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("sendDataToWorker(...)","Broadcasting time step data: " <<
-            " data[0]=" << timeStepDataToSend[0] <<
-            ",data[1]=" << timeStepDataToSend[1] <<
-            ",data[2]=" << timeStepDataToSend[2] <<
-            ",data[3]=" << timeStepDataToSend[3] <<
-            ",data[4]=" << timeStepDataToSend[4] <<
-            ",data[5]=" << timeStepDataToSend[5]);
+            " data[0]=" << messageForWorker[0] <<
+            ",data[1]=" << messageForWorker[1] <<
+            ",data[2]=" << messageForWorker[2] <<
+            ",data[3]=" << messageForWorker[3] <<
+            ",data[4]=" << messageForWorker[4] <<
+            ",data[5]=" << messageForWorker[5]);
     logDebug("sendDataWorker(...)","_minNextPredictorTimeStepSize="<<_minNextPredictorTimeStepSize);
   }
 
   DataHeap::getInstance().sendData(
-      timeStepDataToSend.data(), timeStepDataToSend.size(),
+      messageForWorker.data(), messageForWorker.size(),
       workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithMasterData(const DataHeap::HeapEntries& message) {
+  _minCorrectorTimeStamp    = message[0];
+  _minCorrectorTimeStepSize = message[1];
+  _minPredictorTimeStamp    = message[2];
+  _minPredictorTimeStepSize = message[3];
+
+  _minCellSize              = message[4];
+  _maxCellSize              = message[5];
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(6);
+  DataHeap::HeapEntries messageFromMaster(6);
   DataHeap::getInstance().receiveData(
-      receivedTimeStepData.data(),receivedTimeStepData.size(),masterRank, x, level,
+      messageFromMaster.data(),messageFromMaster.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
-  assertion1(receivedTimeStepData.size()==6,receivedTimeStepData.size());
+
+  assertion1(messageFromMaster.size()==6,messageFromMaster.size());
+  mergeWithMasterData(messageFromMaster);
 
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
@@ -3586,21 +3605,13 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithMasterData(...)","Received time step data: " <<
-            "data[0]="  << receivedTimeStepData[0] <<
-            ",data[1]=" << receivedTimeStepData[1] <<
-            ",data[2]=" << receivedTimeStepData[2] <<
-            ",data[3]=" << receivedTimeStepData[3] <<
-            ",data[4]=" << receivedTimeStepData[4] <<
-            ",data[5]=" << receivedTimeStepData[5]);
+            "data[0]="  << messageFromMaster[0] <<
+            ",data[1]=" << messageFromMaster[1] <<
+            ",data[2]=" << messageFromMaster[2] <<
+            ",data[3]=" << messageFromMaster[3] <<
+            ",data[4]=" << messageFromMaster[4] <<
+            ",data[5]=" << messageFromMaster[5]);
   }
-
-  _minCorrectorTimeStamp    = receivedTimeStepData[0];
-  _minCorrectorTimeStepSize = receivedTimeStepData[1];
-  _minPredictorTimeStamp    = receivedTimeStepData[2];
-  _minPredictorTimeStepSize = receivedTimeStepData[3];
-
-  _minCellSize              = receivedTimeStepData[4];
-  _maxCellSize              = receivedTimeStepData[5];
 }
 
 bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(

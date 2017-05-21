@@ -245,7 +245,7 @@ exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescr
   // ADER-DG
   for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
     encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
-    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getLimiterStatus(0));
+    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getLimiterStatus());
     // assertion: p.getMergedLimiterStatus(0) = p.getMergedLimiterStatus(i) TODO
   }
   // FV
