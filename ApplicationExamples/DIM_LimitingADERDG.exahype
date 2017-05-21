@@ -65,9 +65,10 @@ exahype-project DIM
     language const                 = C
     limiter-kernel const           = generic::musclhancock 
     limiter-language const         = C 
+    dmp-observables                = 0
     dmp-relaxation-parameter       = 1e-2 
     dmp-difference-scaling         = 1e-3 
-    steps-till-cured         = 0
+    steps-till-cured               = 0
 
     plot vtk::Cartesian::vertices::limited::binary PrimitiveWriter
       variables const = 14
