@@ -197,12 +197,12 @@ void exahype::mappings::LocalRecomputation::enterCell(
                   fineGridVerticesEnumerator);
             }
 
-            limitingADERDG->determineSolverMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+            limitingADERDG->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
           } break;
           case exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate: {
             // TODO(Dominic): Here, we update the solver min and max to
             // give the LimitingADERDG
-            limitingADERDG->determineSolverMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+            limitingADERDG->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
           } break;
           case exahype::solvers::LimiterDomainChange::Regular: {
             // do nothing

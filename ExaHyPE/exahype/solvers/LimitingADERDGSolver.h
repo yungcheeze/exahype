@@ -775,20 +775,13 @@ public:
    * Determine the new cell-local min max values.
    *
    * Must be invoked after ::determineLimiterStatusAfterSolutionUpdate.
+   *
+   * TODO(Dominic): Tobias's integer
+   * flagging idea might reduce complexity here
    */
   void determineMinAndMax(
       const int cellDescriptionsIndex,
       const int element);
-
-  /**
-   * Determine the new cell-local min max values.
-   * This routine does only consider the (ADER-DG)
-   * solver patch but not the (Finite Volumes)
-   * limiter patch.
-   */
-  void determineSolverMinAndMax(
-        const int cellDescriptionsIndex,
-        const int element);
 
   /**
    * Evaluates a discrete maximum principle (DMP) and
