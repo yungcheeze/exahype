@@ -2125,13 +2125,15 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
       receivedData.data(),receivedData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-
+  // pass message to the ADER-DG solver
   _solver->readWorkerMessage(receivedData);
-  assertion(tarch::la::equals(receivedData[4],1.0) ||
-            tarch::la::equals(receivedData[4],-1.0)); // TODO(Dominic): LimiterDomainChage TODO
 
-  bool workerLimiterDomainHasChanged = tarch::la::equals(receivedData[0],1.0) ? true : false; // TODO(Dominic): Fix this
-  updateNextLimiterDomainChange(workerLimiterDomainHasChanged); // !!! It is important that we merge with the "next" field here
+  // merge own flags
+  assertion(tarch::la::greaterEquals(receivedData[4],static_cast<int>(LimiterDomainChange::Regular)));
+  assertion(tarch::la::smallerEquals(receivedData[4],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
+  LimiterDomainChange workerLimiterDomainChange =
+      static_cast<LimiterDomainChange>(static_cast<int>(receivedData[4]));
+  updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
