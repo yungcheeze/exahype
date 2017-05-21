@@ -114,7 +114,7 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
       _cellDataWriter(masterThread._cellDataWriter),
       _limiterStatusWriter(masterThread._limiterStatusWriter),
-      _previousLimiterStatusWriter(0),
+      _previousLimiterStatusWriter(masterThread._previousLimiterStatusWriter),
       _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
