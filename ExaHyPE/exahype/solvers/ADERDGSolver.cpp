@@ -791,39 +791,46 @@ void exahype::solvers::ADERDGSolver::initSolver(
 
 bool exahype::solvers::ADERDGSolver::isSending(
     const exahype::records::State::AlgorithmSection& section) const {
+  bool isSending = false;
+
   if (getMeshUpdateRequest()) {
-    return
+    isSending |=
         section==exahype::records::State::AlgorithmSection::MeshRefinement ||
         section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
         section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
   }
   if (getStabilityConditionWasViolated()) {
-    return
+    isSending |=
         section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
   }
 
-  return
+  isSending |=
       section==exahype::records::State::AlgorithmSection::TimeStepping ||
       section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
       section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
       section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+
+  return isSending;
 }
 
 bool exahype::solvers::ADERDGSolver::isComputing(
     const exahype::records::State::AlgorithmSection& section) const {
+  bool isComputing = false;
+
   if (getMeshUpdateRequest()) {
-    return
+    isComputing |=
         section==exahype::records::State::AlgorithmSection::MeshRefinement ||
         section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
         section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
   }
   if (getStabilityConditionWasViolated()) {
-    return
+    isComputing |=
         section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
   }
-
-  return
+  isComputing |=
       section==exahype::records::State::AlgorithmSection::TimeStepping;
+
+  return isComputing;
 }
 
 
