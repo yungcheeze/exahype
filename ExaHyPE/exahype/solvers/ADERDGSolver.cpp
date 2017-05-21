@@ -3278,6 +3278,15 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 ///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
+exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+exahype::solvers::ADERDGSolver::compileMessageForMaster(const int length) const {
+  DataHeap::HeapEntries dataForMaster(0,std::min(4,length));
+  dataForMaster.push_back(_minPredictorTimeStepSize);
+  dataForMaster.push_back(_minCellSize);
+  dataForMaster.push_back(_maxCellSize);
+  dataForMaster.push_back(_meshUpdateRequest ? 1.0 : -1.0);
+  return dataForMaster;
+}
 
 /*
  * At the time of sending data to the master,
@@ -3297,17 +3306,9 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
-  //  TODO(Dominic): AMR+Limiter
-  // Changes:: attainedStableState + LimiterStatus restriction to master (if Troubled)
+  DataHeap::HeapEntries messageForMaster = compileMessageForMaster();
 
-  std::vector<double> timeStepDataToReduce(0,5);
-  timeStepDataToReduce.push_back(_minPredictorTimeStepSize);
-  timeStepDataToReduce.push_back(_minCellSize);
-  timeStepDataToReduce.push_back(_maxCellSize);
-  timeStepDataToReduce.push_back(_meshUpdateRequest ? 1.0 : -1.0);
-  timeStepDataToReduce.push_back(_attainedStableState ? 1.0 : -1.0);
-
-  assertion1(timeStepDataToReduce.size()==5,timeStepDataToReduce.size());
+  assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
   assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextPredictorTimeStepSize,std::numeric_limits<double>::max(),
@@ -3320,12 +3321,11 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
              "data[0]=" << timeStepDataToReduce[0] <<
              ",data[1]=" << timeStepDataToReduce[1] <<
              ",data[2]=" << timeStepDataToReduce[2] <<
-             ",data[3]=" << timeStepDataToReduce[3] <<
-             ",data[4]=" << timeStepDataToReduce[4]);
+             ",data[3]=" << timeStepDataToReduce[3]);
   }
 
   DataHeap::getInstance().sendData(
-      timeStepDataToReduce.data(), timeStepDataToReduce.size(),
+      messageForMaster.data(), messageForMaster.size(),
       masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 }
@@ -3341,7 +3341,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(5);
+  std::vector<double> receivedTimeStepData(4);
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -3352,7 +3352,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==5,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
@@ -3363,7 +3363,6 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   _nextMinCellSize               = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
   _nextMaxCellSize               = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
   _nextMeshUpdateRequest        |= (receivedTimeStepData[index++]) > 0 ? true : false;
-  _nextAttainedStableState      |= (receivedTimeStepData[index++]) > 0 ? true : false;
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {

@@ -1830,6 +1830,16 @@ public:
       const int cellDescriptionsIndex,
       const int element) override;
 
+  /**
+   * Compiles a message for the master.
+   *
+   * Capacity of the message vector defaults to 4.
+   * It can be modified if calling
+   * function wants to add additional entries.
+   */
+  DataHeap::HeapEntries
+  compileMessageForMaster(const int capacity=4) const;
+
   void sendDataToMaster(
       const int masterRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,

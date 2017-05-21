@@ -2093,20 +2093,24 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  _solver->sendDataToMaster(masterRank,x,level);
-//  _limiter->sendDataToMaster(masterRank,x,level);
+  DataHeap::HeapEntries messageForMaster =
+      _solver->compileMessageForMaster(5);
 
-  // Send the information to master if limiter status has changed or not
-  std::vector<double> dataToSend(0,1);
-  dataToSend.push_back(_limiterDomainChange ? 1.0 : -1.0); // TODO(Dominic): ugly
-  assertion1(dataToSend.size()==1,dataToSend.size());
+  // Send additional data to master
+  messageForMaster.push_back(static_cast<double>(_limiterDomainChange));
+
+  assertion1(messageForMaster.size()==5,messageForMaster.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending data to master:" <<
-             " data[0]=" << dataToSend[0]);
+    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+        "data[0]=" << timeStepDataToReduce[0] <<
+        ",data[1]=" << timeStepDataToReduce[1] <<
+        ",data[2]=" << timeStepDataToReduce[2] <<
+        ",data[3]=" << timeStepDataToReduce[3] <<
+        ",data[4]=" << timeStepDataToReduce[4]);
   }
   DataHeap::getInstance().sendData(
-      dataToSend.data(), dataToSend.size(),
+      messageForMaster.data(), messageForMaster.size(),
       masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 }
@@ -2116,7 +2120,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
   _solver->mergeWithWorkerData(workerRank,x,level); // !!! Receive order must be the same in master<->worker comm.
-//  _limiter->mergeWithWorkerData(workerRank,x,level); // TODO(Dominic): Revision
 
   // Receive the information if limiter status has changed
   std::vector<double> receivedData(1); // !!! Creates and fills the vector
