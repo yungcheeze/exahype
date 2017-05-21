@@ -107,7 +107,10 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
     const SolutionUpdate& workerThread) {
   for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
-    _solverFlags._limiterDomainChange[i] |= workerThread._solverFlags._limiterDomainChange[i];
+    _solverFlags._meshUpdateRequest[i]  |= workerThread._solverFlags._meshUpdateRequest[i];
+    _solverFlags._limiterDomainChange[i] =
+        std::max ( _solverFlags._limiterDomainChange[i],
+            workerThread._solverFlags._limiterDomainChange[i] );
   }
 }
 #endif
