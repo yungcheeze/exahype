@@ -41,6 +41,7 @@ class UserFiniteVolumesSolverInterface;
  **/
 class exahype::solvers::UserSolverInterface {
 public:
+  virtual ~UserSolverInterface() {};
 
  /**
   * @defgroup Theoretically-Constexpr-Getters
@@ -178,10 +179,16 @@ public:
  // UserSolverInterface
 
 class exahype::solvers::UserADERDGSolverInterface : public exahype::solvers::UserSolverInterface {
+public:
+  virtual ~UserADERDGSolverInterface() {};
+
   virtual int constexpr_getOrder()  const  = 0;
 };
 
 class exahype::solvers::UserFiniteVolumesSolverInterface : public exahype::solvers::UserSolverInterface {
+public:
+  virtual ~UserFiniteVolumesSolverInterface() {};
+
   virtual int constexpr_getPatchSize()  const  = 0;
   virtual int constexpr_getGhostLayerWidth() const  = 0;
 };
