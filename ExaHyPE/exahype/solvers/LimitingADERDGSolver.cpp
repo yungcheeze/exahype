@@ -358,7 +358,6 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
     const int coarseGridCellDescriptionsIndex) const {
   SolverPatch& fineGridSolverPatch = _solver->getCellDescription(
           fineGridCellDescriptionsIndex,fineGridSolverElement);
-  assertion1(coarseGridCellDescriptionsIndex==fineGridSolverPatch.getParentIndex(),fineGridSolverPatch.toString());
 
   if (
       fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ErasingChildrenRequested
