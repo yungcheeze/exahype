@@ -27,6 +27,9 @@ namespace solvers {
  * with a more robust Finite Volumes solver in areas
  * where shocks are present.
  *
+ * The ADER-DG solver is regarded as the main solver
+ * that deals with time step sizes, mesh update requests etc.
+ *
  * <h1>Algorithm sections</h1>
  * The solver might be active in one of the
  * following algorithm sections.
@@ -460,6 +463,22 @@ public:
   // Disallow copy and assignment
   LimitingADERDGSolver(const ADERDGSolver& other) = delete;
   LimitingADERDGSolver& operator=(const ADERDGSolver& other) = delete;
+
+  /**
+   * Wire through to the ADER-DG solver.
+   */
+  void updateNextMeshUpdateRequest(const bool& meshUpdateRequest) override;
+  bool getNextMeshUpdateRequest() const override;
+  bool getMeshUpdateRequest() const override;
+  void setNextMeshUpdateRequest() override;
+
+  /**
+   * Wire through to the ADER-DG solver.
+   */
+  void updateNextAttainedStableState(const bool& attainedStableState) override;
+  bool getNextAttainedStableState() const override;
+  bool getAttainedStableState() const override;
+  void setNextAttainedStableState() override;
 
   /*
    * A time stamp minimised over all the ADERDG and FV solver

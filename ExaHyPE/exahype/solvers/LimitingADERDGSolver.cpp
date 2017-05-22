@@ -91,6 +91,32 @@ exahype::solvers::LimitingADERDGSolver::LimitingADERDGSolver(
   assertion(_solver->getTimeStepping()==_limiter->getTimeStepping());
 }
 
+void exahype::solvers::LimitingADERDGSolver::updateNextMeshUpdateRequest(const bool& meshUpdateRequest)  {
+  _solver->updateNextMeshUpdateRequest(meshUpdateRequest);
+}
+bool exahype::solvers::LimitingADERDGSolver::getNextMeshUpdateRequest() const  {
+  return _solver->getNextMeshUpdateRequest();
+}
+bool exahype::solvers::LimitingADERDGSolver::getMeshUpdateRequest() const  {
+  return _solver->getMeshUpdateRequest();
+}
+void exahype::solvers::LimitingADERDGSolver::setNextMeshUpdateRequest()  {
+  _solver->setNextMeshUpdateRequest();
+}
+
+void exahype::solvers::LimitingADERDGSolver::updateNextAttainedStableState(const bool& attainedStableState)  {
+  _solver->updateNextAttainedStableState(attainedStableState);
+}
+bool exahype::solvers::LimitingADERDGSolver::getNextAttainedStableState() const  {
+  return _solver->getNextAttainedStableState();
+}
+bool exahype::solvers::LimitingADERDGSolver::getAttainedStableState() const  {
+  return _solver->getAttainedStableState();
+}
+void exahype::solvers::LimitingADERDGSolver::setNextAttainedStableState()  {
+  _solver->setNextAttainedStableState();
+}
+
 double exahype::solvers::LimitingADERDGSolver::getMinTimeStamp() const {
   return _solver->getMinTimeStamp();
 }
@@ -2105,7 +2131,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
+    logInfo("mergeWithWorkerData(...)","Received data from worker:" <<
              " messageFromWorker[0]=" << messageFromWorker[0] <<
              " messageFromWorker[1]=" << messageFromWorker[1] <<
              " messageFromWorker[2]=" << messageFromWorker[2] <<

@@ -674,7 +674,7 @@ class exahype::solvers::Solver {
    *
    * \deprecated
    */
-  void resetMeshUpdateRequestFlags();
+  virtual void resetMeshUpdateRequestFlags();
 
   /**
    * Update if a mesh update was requested by this solver.
@@ -683,7 +683,7 @@ class exahype::solvers::Solver {
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  void updateNextMeshUpdateRequest(const bool& meshUpdateRequest);
+  virtual void updateNextMeshUpdateRequest(const bool& meshUpdateRequest);
 
   /**
    * Indicates if a mesh update was requested
@@ -693,7 +693,7 @@ class exahype::solvers::Solver {
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getNextMeshUpdateRequest() const;
+  virtual bool getNextMeshUpdateRequest() const;
 
   /**
    * Indicates if a mesh update was requested
@@ -703,7 +703,7 @@ class exahype::solvers::Solver {
    *This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getMeshUpdateRequest() const;
+  virtual bool getMeshUpdateRequest() const;
 
   /**
    * Overwrite the _MeshUpdateRequest flag
@@ -711,7 +711,7 @@ class exahype::solvers::Solver {
    * Reset the _nextMeshUpdateRequest flag
    * to false;
    */
-  void setNextMeshUpdateRequest();
+  virtual void setNextMeshUpdateRequest();
 
   /**
    * Update if the mesh refinement of this solver attained
@@ -721,7 +721,7 @@ class exahype::solvers::Solver {
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  void updateNextAttainedStableState(const bool& attainedStableState);
+  virtual void updateNextAttainedStableState(const bool& attainedStableState);
 
   /**
    * Indicates if the mesh refinement of this solver
@@ -731,7 +731,7 @@ class exahype::solvers::Solver {
    * This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getNextAttainedStableState() const;
+  virtual bool getNextAttainedStableState() const;
 
   /**
    * Indicates if the mesh refinement of this solver
@@ -741,7 +741,7 @@ class exahype::solvers::Solver {
    *This is the state before we have send data to the master rank
    * and have merged the state with this rank's workers.
    */
-  bool getAttainedStableState() const;
+  virtual bool getAttainedStableState() const;
 
   /**
    * Overwrite the _attainedStableState flag
@@ -749,7 +749,7 @@ class exahype::solvers::Solver {
    * Reset the _nextAttainedStableState flag
    * to false;
    */
-  void setNextAttainedStableState();
+  virtual void setNextAttainedStableState();
 
   /**
    * Run over all solvers and identify the minimal time stamp.
