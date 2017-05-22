@@ -583,6 +583,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (exahype::State::fuseADERDGPhases()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
       repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
       if (plot) {
         repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
@@ -591,6 +592,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       }
       repository.iterate();
     } else {
+      repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
       repository.getState().switchToPredictionContext();
       if (plot) {
         repository.switchToPredictionAndPlot();
@@ -960,7 +962,7 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    *
    * 1. Exchange the fluctuations using the predictor computed in the previous
    *sweep
-   *    and the corrector time stemp size.
+   *    and the corrector time step size.
    * 2. Perform the corrector step using the corrector update and the corrector
    *time step size.
    *    This is a cell-local operation. Thus we immediately obtain the
@@ -1064,11 +1066,7 @@ void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
    */
   repository.getState().switchToPredictionContext();
   if (plot) {
-//    #if DIMENSIONS==2
-//    repository.switchToPredictionAndPlot2d();
-//    #else
     repository.switchToPredictionAndPlot();
-//    #endif
   } else {
     repository.switchToPrediction();   // Cell onto faces
   }
