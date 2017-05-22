@@ -301,6 +301,8 @@ class exahype::Parser {
   exahype::solvers::Solver::TimeStepping getTimeStepping(
       int solverNumber) const;
 
+  bool hasOptimisationSegment() const;
+
   /**
    * \return The relaxation parameter used for the discrete maximum principle (DMP).
    *
