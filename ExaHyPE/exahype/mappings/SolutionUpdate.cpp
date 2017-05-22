@@ -145,20 +145,23 @@ void exahype::mappings::SolutionUpdate::enterCell(
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
             auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
+            // TODO(Dominic): Clean up a little bit
             _solverFlags._meshUpdateRequest[i] |=
                 limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
                    fineGridCell.getCellDescriptionsIndex(),element);
-            exahype::solvers::LimiterDomainChange limiterDomainChamge
-              = limitingADERDGSolver->
+
+            exahype::solvers::LimiterDomainChange limiterDomainChamge =
+                limitingADERDGSolver->
                   updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
                     fineGridCell.getCellDescriptionsIndex(),element);
-            _solverFlags._limiterDomainChange[i]  =
+            _solverFlags._limiterDomainChange[i] =
                 std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
+            _solverFlags._meshUpdateRequest[i] |=
+                _solverFlags._limiterDomainChange[i]==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
           } else {
-            _solverFlags._meshUpdateRequest[i] =
-                std::max(_solverFlags._meshUpdateRequest[i],
-                         solver->evaluateRefinementCriterionAfterSolutionUpdate(
-                             fineGridCell.getCellDescriptionsIndex(),element));
+            _solverFlags._meshUpdateRequest[i] |=
+                solver->evaluateRefinementCriterionAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
           }
 
           solver->prepareNextNeighbourMerging(
