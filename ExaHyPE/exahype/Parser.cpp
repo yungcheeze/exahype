@@ -502,20 +502,30 @@ double exahype::Parser::getTimestepBatchFactor() const {
   return result;
 }
 
+
+bool exahype::Parser::hasOptimisationSegment() const {
+  std::string token = getTokenAfter("optimisation");
+  return token.compare(_noTokenFound)==0;
+}
+
+
 bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
-  std::string token =
+  if (hasOptimisationSegment) {
+    std::string token =
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
-  logDebug("getSkipReductionInBatchedTimeSteps()",
+    logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
-  if (token.compare("on") != 0 && token.compare("off") != 0) {
-    logError("getSkipReductionInBatchedTimeSteps()",
+    if (token.compare("on") != 0 && token.compare("off") != 0) {
+      logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
              "optimisation segment and has to be either on or off: "
                  << token);
-    _interpretationErrorOccured = true;
-  }
+      _interpretationErrorOccured = true;
+    }
 
-  return token.compare("on") == 0;
+    return token.compare("on") == 0;
+  }
+  else return false;
 }
 
 
