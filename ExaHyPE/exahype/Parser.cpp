@@ -505,7 +505,7 @@ double exahype::Parser::getTimestepBatchFactor() const {
 
 bool exahype::Parser::hasOptimisationSegment() const {
   std::string token = getTokenAfter("optimisation");
-  return token.compare(_noTokenFound)==0;
+  return token.compare(_noTokenFound)!=0;
 }
 
 
