@@ -201,14 +201,15 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 
       solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
       solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+      solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
       if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-        assertion3(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),solver->getNextMinCellSize(),_minCellSizes[solverNumber],
+        assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
+            solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
             exahype::records::State::toString(_localState.getAlgorithmSection()));
-        assertion4(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber],
+        assertion4(solver->getNextMaxCellSize()>0,
+            solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],solver->toString(),
             exahype::records::State::toString(_localState.getAlgorithmSection()));
       }
-
-      solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
 
       if (exahype::State::fuseADERDGPhases()
       #ifdef Parallel

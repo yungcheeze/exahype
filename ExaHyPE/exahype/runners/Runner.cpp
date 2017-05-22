@@ -574,26 +574,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
     initSolvers(_domainOffset,_domainSize);
-//    repository.getState().switchToPreAMRContext();
-//    createGrid(repository);
 
     initialiseMesh(repository);
-
-    /*
-     * Set ADER-DG corrector time stamp and finite volumes time stamp.
-     * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
-     * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
-     * the corrector time step size is set as this predictor time step size.)
-     *
-     * Note that it is important that we run SolutionAdjustmentAnd
-     * GlobalTimeStepComputation directly after the grid setup
-     * since we receive here the metadata
-     * that was sent in the last iteration of the grid setup.
-     */
-//    initSolvers(_boundingBoxSize);
-//
-//    repository.switchToInitialConditionAndTimeStepSizeComputation();
-//    repository.iterate();
 
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
@@ -603,51 +585,30 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     if (exahype::State::fuseADERDGPhases()) {
       repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
       if (plot) {
-        //      #if DIMENSIONS==2
-        //      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
-        //      #else
         repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-        //      #endif
       } else {
         repository.switchToPredictionAndFusedTimeSteppingInitialisation();
       }
       repository.iterate();
     } else {
-      /*
-       * Compute current first predictor based on current time step size.
-       * Set current time step size as old time step size of next iteration.
-       * Compute the current time step size of the next iteration.
-       */
       repository.getState().switchToPredictionContext();
       if (plot) {
-        //    #if DIMENSIONS==2
-        //    repository.switchToPredictionAndPlot2d();
-        //    #else
         repository.switchToPredictionAndPlot();
-        //    #endif
       } else {
-        repository.switchToPrediction();   // Cell onto faces
+        repository.switchToPrediction();
       }
       repository.iterate();
     }
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
-    /*
-     * Finally print the initial time step info.
-     */
     printTimeStepInfo(-1,repository);
-
     validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
 
     const double simulationEndTime = _parser.getSimulationEndTime();
-
     logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
     logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-
     while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
-      // see issue #103
       bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
           solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
@@ -819,6 +780,7 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   repository.getState().switchToUpdateMeshContext();
   createMesh(repository);
   logInfo("initialiseMesh(...)","finalise mesh refinement and compute first time step size");
+  repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
   repository.iterate();
 }

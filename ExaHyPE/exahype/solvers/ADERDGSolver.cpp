@@ -3280,12 +3280,12 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 ///////////////////////////////////
 exahype::DataHeap::HeapEntries
 exahype::solvers::ADERDGSolver::compileMessageForMaster(const int capacity) const {
-  DataHeap::HeapEntries dataForMaster(0,std::max(4,capacity));
-  dataForMaster.push_back(_minPredictorTimeStepSize);
-  dataForMaster.push_back(_minCellSize);
-  dataForMaster.push_back(_maxCellSize);
-  dataForMaster.push_back(_meshUpdateRequest ? 1.0 : -1.0);
-  return dataForMaster;
+  DataHeap::HeapEntries messageForMaster(0,std::max(4,capacity));
+  messageForMaster.push_back(_minPredictorTimeStepSize);
+  messageForMaster.push_back(_minCellSize);
+  messageForMaster.push_back(_maxCellSize);
+  messageForMaster.push_back(_meshUpdateRequest ? 1.0 : -1.0);
+  return messageForMaster;
 }
 
 /*
@@ -3331,7 +3331,6 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithWorkerData(const DataHeap::HeapEntries& message) {
-  assertion1(message.size()==4,message.size());
   assertion1(message[0]>=0,message[0]);
   assertion1(std::isfinite(message[0]),message[0]);
   // The master solver has not yet updated its minNextPredictorTimeStepSize.
@@ -3369,7 +3368,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  DataHeap::HeapEntries receivedTimeStepData(4);
+  DataHeap::HeapEntries messageFromWorker(4);
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -3377,10 +3376,11 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   }
 
   DataHeap::getInstance().receiveData(
-      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      messageFromWorker.data(),messageFromWorker.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  mergeWithWorkerData(receivedTimeStepData);
+  assertion1(messageFromWorker.size()==4,messageFromWorker.size());
+  mergeWithWorkerData(messageFromWorker);
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
@@ -3528,16 +3528,18 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 exahype::DataHeap::HeapEntries
 exahype::solvers::ADERDGSolver::compileMessageForWorker(const int capacity) const {
-  DataHeap::HeapEntries messageForWorker(0,std::max(6,capacity));
+  DataHeap::HeapEntries messageForWorker(0,std::max(7,capacity));
+  messageForWorker.push_back(_minCorrectorTimeStamp);
+  messageForWorker.push_back(_minCorrectorTimeStepSize);
+  messageForWorker.push_back(_minPredictorTimeStamp);
   messageForWorker.push_back(_minPredictorTimeStepSize);
+
   messageForWorker.push_back(_minCellSize);
   messageForWorker.push_back(_maxCellSize);
+
   messageForWorker.push_back(_meshUpdateRequest ? 1.0 : -1.0);
 
-  messageForWorker.push_back(_minCellSize);
-  messageForWorker.push_back(_maxCellSize);
-
-  assertion1(messageForWorker.size()==6,messageForWorker.size());
+  assertion1(messageForWorker.size()==7,messageForWorker.size());
   assertion1(std::isfinite(messageForWorker[0]),messageForWorker[0]);
   assertion1(std::isfinite(messageForWorker[1]),messageForWorker[1]);
   assertion1(std::isfinite(messageForWorker[2]),messageForWorker[2]);
@@ -3576,13 +3578,16 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(const DataHeap::HeapEntries& message) {
-  _minCorrectorTimeStamp    = message[0];
-  _minCorrectorTimeStepSize = message[1];
-  _minPredictorTimeStamp    = message[2];
-  _minPredictorTimeStepSize = message[3];
+  int index=0;
+  _minCorrectorTimeStamp    = message[index++];
+  _minCorrectorTimeStepSize = message[index++];
+  _minPredictorTimeStamp    = message[index++];
+  _minPredictorTimeStepSize = message[index++];
 
-  _minCellSize              = message[4];
-  _maxCellSize              = message[5];
+  _minCellSize              = message[index++];
+  _maxCellSize              = message[index++];
+
+  _meshUpdateRequest        = (message[index++] > 0.0) ? true : false;
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(

@@ -1899,7 +1899,7 @@ public:
    * \see LimitingADERDGSolver::sendDataToWorker
    */
   DataHeap::HeapEntries
-  compileMessageForWorker(const int capacity=6) const;
+  compileMessageForWorker(const int capacity=7) const;
 
   void sendDataToWorker(
       const                                        int workerRank,
