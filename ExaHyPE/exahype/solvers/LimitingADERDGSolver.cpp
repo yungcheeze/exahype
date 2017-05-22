@@ -473,7 +473,7 @@ bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinemen
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::DeaugmentingChildrenRequested ||
          solverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::AugmentingRequested)
     ) {
-      return solverPatch.getLimiterStatus() >
+      return solverPatch.getLimiterStatus() >=
                 computeMinimumLimiterStatusForRefinement(solverPatch.getLevel());
     }
   }
