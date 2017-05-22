@@ -413,12 +413,10 @@ bool exahype::mappings::Merging::prepareSendToWorker(
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     // Send global solver data
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->isComputing(_localState.getAlgorithmSection())) {
-        solver->sendDataToWorker(
-            worker,
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getLevel());
-      }
+      solver->sendDataToWorker(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
     }
 
     // Send global plotter data
@@ -488,11 +486,10 @@ void exahype::mappings::Merging::receiveDataFromMaster(
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
     // Receive global solver data from master
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
-      if (solver->isComputing(_localState.getAlgorithmSection())) {
-        solver->mergeWithMasterData(
-            tarch::parallel::NodePool::getInstance().getMasterRank(),
-            receivedVerticesEnumerator.getCellCenter(),
-            receivedVerticesEnumerator.getLevel());
+      solver->mergeWithMasterData(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          receivedVerticesEnumerator.getCellCenter(),
+          receivedVerticesEnumerator.getLevel());
       }
     }
 
