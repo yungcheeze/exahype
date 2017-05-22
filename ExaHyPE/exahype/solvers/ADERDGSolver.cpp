@@ -2536,7 +2536,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
         tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         std::min(pLeft.getCorrectorTimeStepSize(),
             pRight.getCorrectorTimeStepSize()),
-	normalDirection, false);
+        normalDirection, false);
 
     for(int i=0; i<dofPerFace; ++i) {
       assertion8(tarch::la::equals(pLeft.getCorrectorTimeStepSize(),0.0) || (std::isfinite(FL[i]) && std::isfinite(FR[i])),
@@ -2642,12 +2642,12 @@ void exahype::solvers::ADERDGSolver::applyBoundaryConditions(
     riemannSolver(FOut, FIn, QOut, QIn,
         tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
-		  normalDirection,true);
+        normalDirection,true);
   } else {
     riemannSolver(FIn, FOut, QIn, QOut,
         tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
         p.getCorrectorTimeStepSize(),
-		  normalDirection,true);
+        normalDirection,true);
   }
 
   for(int i=0; i<dofPerFace; ++i) {
@@ -3242,7 +3242,7 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
   riemannSolver(FL, FR, QL, QR,
       tempFaceUnknowns[0],tempStateSizedVectors,tempStateSizedSquareMatrices,
       cellDescription.getCorrectorTimeStepSize(),
-		normalDirection,false);
+      normalDirection,false);
 
   for (int ii = 0; ii<dataPerFace; ii++) {
     assertion10(std::isfinite(QR[ii]), cellDescription.toString(),
