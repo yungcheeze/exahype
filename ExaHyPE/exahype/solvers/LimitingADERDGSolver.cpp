@@ -125,32 +125,28 @@ bool exahype::solvers::LimitingADERDGSolver::isSending(
     const exahype::records::State::AlgorithmSection& section) const {
   bool isSending = false;
 
-  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
-    assertion1(getMeshUpdateRequest(),exahype::records::State::toString(section));
-    assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
-    isSending |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+  switch (section) {
+    case exahype::records::State::AlgorithmSection::TimeStepping:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinement:
+      isSending |= getMeshUpdateRequest();
+      isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+      isSending |= getMeshUpdateRequest();
+      isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+      isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
+      isSending = true;
   }
-  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
-    assertion(!getMeshUpdateRequest());
-    isSending |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-  }
-  if (getMeshUpdateRequest()) {
-    assertion(getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Regular ||
-              getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
-    isSending |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-  }
-  isSending |=
-      section==exahype::records::State::AlgorithmSection::TimeStepping ||
-      section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
-      section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
-      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
 
   return isSending;
 }
@@ -160,49 +156,28 @@ bool exahype::solvers::LimitingADERDGSolver::isComputing(
   bool isComputing = false;
 
   switch (section) {
-  case exahype::records::State::AlgorithmSection::TimeStepping
+  case exahype::records::State::AlgorithmSection::TimeStepping:
     isComputing = true;
+    break;
+  case exahype::records::State::AlgorithmSection::MeshRefinement:
+    isComputing |= getMeshUpdateRequest();
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
     break;
   case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
     isComputing |= getMeshUpdateRequest();
     isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
-    break;
-  case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
     break;
   case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
     isComputing |= getMeshUpdateRequest();
     isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
     isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
     break;
+  case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+    break;
+  case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
+    isComputing |= _solver->getStabilityConditionWasViolated();
   }
-
-//  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
-//    assertion(getMeshUpdateRequest());
-//    assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
-//    isComputing |=
-//        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
-//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-//        section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
-//  }
-//
-//  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
-//    assertion(!getMeshUpdateRequest());
-//    isComputing |=
-//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-//  }
-//  if (getMeshUpdateRequest()) {
-//    isComputing |=
-//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-//  }
-//  if (_solver->getStabilityConditionWasViolated()) {
-//    isComputing |=
-//        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
-//  }
-//  isComputing |=
-//      section==exahype::records::State::AlgorithmSection::TimeStepping;
 
   return isComputing;
 }

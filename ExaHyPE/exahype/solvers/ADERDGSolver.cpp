@@ -793,22 +793,25 @@ bool exahype::solvers::ADERDGSolver::isSending(
     const exahype::records::State::AlgorithmSection& section) const {
   bool isSending = false;
 
-  if (getMeshUpdateRequest()) {
-    isSending |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  switch (section) {
+    case exahype::records::State::AlgorithmSection::TimeStepping:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinement:
+      isSending = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+      isSending = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+      isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
+      isSending = true;
   }
-  if (getStabilityConditionWasViolated()) {
-    isSending |=
-        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
-  }
-
-  isSending |=
-      section==exahype::records::State::AlgorithmSection::TimeStepping ||
-      section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend ||
-      section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend ||
-      section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
 
   return isSending;
 }
@@ -817,18 +820,25 @@ bool exahype::solvers::ADERDGSolver::isComputing(
     const exahype::records::State::AlgorithmSection& section) const {
   bool isComputing = false;
 
-  if (getMeshUpdateRequest()) {
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+  switch (section) {
+    case exahype::records::State::AlgorithmSection::TimeStepping:
+      isComputing = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinement:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+      isComputing = false;
+      break;
+    case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
+      isComputing = getStabilityConditionWasViolated();
   }
-  if (getStabilityConditionWasViolated()) {
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
-  }
-  isComputing |=
-      section==exahype::records::State::AlgorithmSection::TimeStepping;
 
   return isComputing;
 }
