@@ -23,6 +23,11 @@
 namespace exahype {
   namespace plotters {
     class CarpetHDF5Writer;
+
+    // internal classes for CarpetHDF5Writer.cpp
+    class CarpetHDF5FileSet;
+    class CarpetHDF5File;
+    class CarpetHDF5MultipleFiles;
   }
 }
 
@@ -117,12 +122,17 @@ public:
   const int           basisSize; ///< this is _orderPlusOne in ADERDG context and _numberOfCellsPerAxis-2*ghostZones in FV context
   const std::string   select; ///< A selection string for passing further parameters throught the ExaHyPE specification file.
 
+  const bool          oneFilePerTimestep; ///< Constant deciding whether to write one file (or series of files) per timestep
+  const bool          allUnknownsInOneFile; ///< Constant deciding whether all unknowns should go into a single file or split files instead.
+
   // set up during construction: Dimensional reduction
   int                 dim; ///< Dimension of the output generated. Do not change this. Setup by constructor.
-  exahype::plotters::CartesianSlicer   *slicer; ///< Subslice, if present. Otherwise nullptr.
+  exahype::plotters::Slicer   *slicer; ///< Subslice, if present. Otherwise nullptr.
+  kernels::index     *patchCellIdx; ///< Regular patch indexer as in ExaHyPE
   kernels::index     *writtenCellIdx; ///< Index of a whole cell as in ExaHyPE
   kernels::index     *singleFieldIdx; ///< index of a whole component as in Carpet: Only one value per point
-  int                 allFieldsSize; ///< as a service: basisSize^DIM * writtenUnkowns
+  int                 patchFieldsSize;  ///< as a service: basisSize^DIMENSIONS * writtenUnkowns, ie. the written without dimensional reduction
+  int                 writtenFieldsSize; ///< basisSize^dim * writtenUnknowns, ie the really written incl. dimensional reduction
   int                 singleFieldSize; ///< just basisSize^DIM
 
   // Things to be counted by this instance
@@ -131,13 +141,9 @@ public:
   char**              writtenQuantitiesNames; // not const as we check for good names in constructor
 
   // HDF5 specific data types
-  H5::H5File         *single_file; ///< Pointer to a single H5File. nullptr if not allUnknownsInOneFile
-  H5::H5File        **seperate_files; ///< List of pointers to H5Files, a single nullptrs if allUnknownsInOneFile.
+  std::vector<H5::H5File*> files; ///< List of pointers to H5Files. Has length 1 if allUnknownsInOneFile.
   H5::DataSpace       patch_space; ///< DataSpaces describing a component/patch: basisSize^D elements.
   H5::DataSpace       dtuple; ///< DataSpace describing a dim-dimensional tuple, ie dim numbers.
-
-  const bool          oneFilePerTimestep; ///< Constant deciding whether to write one file (or series of files) per timestep
-  const bool          allUnknownsInOneFile; ///< Constant deciding whether all unknowns should go into a single file or split files instead.
 
   /**
    * cf. also the documentation in the ADERDG2CarpetHDF5.h
@@ -156,20 +162,10 @@ public:
 
   void writeBasicGroup(H5::H5File* file);
   
-  /**
-   * We use a H5File** here in order to modify a passed pointer H5File* to a single
-   * H5File.
-   **/
-  void openH5File(H5::H5File** file, std::string& filename);
+  void openH5(); ///< Opens or switchs the currently active H5 file or the list of H5 files. Closes if neccessary.
+  void flushH5(); ///< Flushs all HDF5 file output buffers. Always flushs before.
+  void closeH5(); ///< Closes all HDF5 files. Closes, deletes and nulls the H5 objects.
 
-  /**
-   * Opens or switchs the currently active H5 file or the list of H5 files.
-   * 
-   **/
-  void openH5(int iteration);
-  
-  void flushH5File(H5::H5File* file);
-  
   void startPlotting(double time);
   void finishPlotting();
 

@@ -5,7 +5,7 @@
 #include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
 #include "peano/utils/Loop.h" // dfor
 #include <sstream>
-#include <stdexcept> // why not
+#include <stdexcept>
 
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
 typedef tarch::la::Vector<DIMENSIONS, bool> boolvec;
@@ -34,6 +34,8 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	basisFilename(_filename),
 	basisSize(_basisSize),
 	select(_select),
+	oneFilePerTimestep(_oneFilePerTimestep),
+	allUnknownsInOneFile(_allUnknownsInOneFile),
 	
 	// default values for init(...)-level runtime parameters:
 	dim(DIMENSIONS),
@@ -41,53 +43,68 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	component(-100),
 	iteration(0),
 	writtenQuantitiesNames(_writtenQuantitiesNames),
-	single_file(nullptr),
-	seperate_files(nullptr),
-	oneFilePerTimestep(_oneFilePerTimestep),
-	allUnknownsInOneFile(_allUnknownsInOneFile)
+	
+	// hdf5 specific data types
+	files(allUnknownsInOneFile ? 1 : writtenUnknowns)
 	{
 
-	// while CarpetHDF5 files also can be 1D, this writer currently only understands 2D and 3D.
-	assert(dim == 2 || dim == 3);
-	
-	// parse the selection string
-	dvec r;
-	r(0) = Parser::getValueFromPropertyString(select, "x");
-	r(1) = Parser::getValueFromPropertyString(select, "y");
-	#if DIMENSIONS==3
-	r(2) = Parser::getValueFromPropertyString(select, "z");
-	#endif
-	ivec ron;
-	// NaN means the property was not present in the select string
-	for(int i=0; i<DIMENSIONS; i++) { ron(i) = (r(i)!=r(i)) ? 0 : 1; }
-	int numberOfRequestedDimensionalReductions = tarch::la::sum(ron);
-	int targetDimension = dim - numberOfRequestedDimensionalReductions;
-	
-	if(targetDimension == 0) {
-		logError("SlicingParser", "Running in " << dim << " dimensions, you requested 0-dimensional output slicing '" << select << "' which not supported by the CarpetHDF5Writer. Use Seismograms instead.");
-		throw std::invalid_argument("0-dimensional output not supported");
+	// todo at this place:  allow _oneFilePerTimestep and _allUnknownsInOneFile to be read off _select.
+
+	// just for convenience/a service, store an indexer for the actual ExaHyPE cells.
+	switch(DIMENSIONS) { // simulation dimensions
+		case 3:
+		patchCellIdx = new kernels::index(basisSize, basisSize, basisSize, writtenUnknowns);
+		break;
+		
+		case 2:
+		patchCellIdx = new kernels::index(basisSize, basisSize, writtenUnknowns);
+		break;
+		
+		default:
+			throw std::domain_error("CarpetHDF5Writer: I think ExaHyPE only supports 2D and 3D");
 	}
-	
-	if(targetDimension == 1) {
-		logError("SlicingParser", "Running in " << dim << " dimensions, you requested 1-dimensional output slicing '" << select << "', however the CarpetHDF5 plotter does not yet support 1D output.");
-		throw std::invalid_argument("1-dimensional output not YET supported");
-	}
-	
-	if(targetDimension != dim) {
-		slicer = new exahype::plotters::CartesianSlicer(r, ron);
-		dim = targetDimension;
+	writtenCellIdx = patchCellIdx; // without slicing, this is true.
+
+	slicer = Slicer::bestFromSelectionQuery(select);
+	if(slicer) {
+		logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<basisFilename);
+		if(slicer->getIdentifier() == "CartesianSlicer") {
+			dim = static_cast<CartesianSlicer*>(slicer)->targetDim;
+		}
 	}
 
-	// now where we now how many dimensions we have to deal with
-	writtenCellIdx = new kernels::index(basisSize, basisSize, dim==3 ? basisSize : writtenUnknowns, dim == 3 ? writtenUnknowns : 1);
-	singleFieldIdx = new kernels::index(basisSize, basisSize, dim==3 ? basisSize : 1);
-	allFieldsSize = writtenCellIdx->size;
+	// Important: The CarpetHDF5Writer assumes that dimensional reduction really happens in the
+	//            mapped patches. This is not the case in the VTK plotters which don't make a
+	//            difference between CartesianSlicer and RegionSlicer.
+	switch(dim) { // written dimensions
+		case 3:
+		writtenCellIdx = new kernels::index(basisSize, basisSize, basisSize, writtenUnknowns);
+		singleFieldIdx = new kernels::index(basisSize, basisSize, basisSize);
+		break;
+		
+		case 2:
+		writtenCellIdx = new kernels::index(basisSize, basisSize, writtenUnknowns);
+		singleFieldIdx = new kernels::index(basisSize, basisSize);
+		break;
+		
+		case 1:
+		writtenCellIdx = new kernels::index(basisSize, writtenUnknowns);
+		singleFieldIdx = new kernels::index(basisSize);
+		break;
+		
+		default:
+			logError("CarpetHDF5Writer", "Error, only dimensions 1, 2, 3 supported. Slicing requested: " << slicer->toString());
+			throw std::domain_error("CarpetHDF5Writer does not like your domain"); // har har
+	}
+	
+	// just as shorthands
+	patchFieldsSize = patchCellIdx->size;
+	writtenFieldsSize = writtenCellIdx->size;
 	singleFieldSize = singleFieldIdx->size;
 	
 	// make sure there are reasonable names everywhere
 	for(int u=0; u<writtenUnknowns; u++) {
-		char* field_name = writtenQuantitiesNames[u];
-		if(!field_name) {
+		if(!writtenQuantitiesNames[u]) {
 			std::string* replacement_name = new std::string("Q_");
 			*replacement_name += toString(u);
 			writtenQuantitiesNames[u] = const_cast<char*>(replacement_name->c_str());
@@ -106,15 +123,13 @@ exahype::plotters::CarpetHDF5Writer::CarpetHDF5Writer(
 	std::fill_n(tupleDim_len, tupleDim_rank, dim);
 	dtuple = DataSpace(tupleDim_rank, tupleDim_len);
 	
-	if(!allUnknownsInOneFile) {
-		seperate_files = new H5::H5File*[writtenUnknowns];
-		std::fill_n(seperate_files, writtenUnknowns, nullptr);
-	}
-
 	// open file(s) initially, if neccessary
-	if(!oneFilePerTimestep) {
-		openH5(0);
-	}
+	if(!oneFilePerTimestep) openH5();
+	
+	// for Debugging:
+	logInfo("CarpetHDF5DebugInfo", "dim=" << dim);
+	logInfo("CarpetHDF5DebugInfo", "writtenCellIdx=" << writtenCellIdx->toString());
+	logInfo("CarpetHDF5DebugInfo", "singleFieldIdx=" << singleFieldIdx->toString());
 }
 
 void exahype::plotters::CarpetHDF5Writer::writeBasicGroup(H5::H5File* file) {
@@ -129,66 +144,58 @@ void exahype::plotters::CarpetHDF5Writer::writeBasicGroup(H5::H5File* file) {
 	
 	// Important todo: List all fields which go into this file.
 }
-  
-/**
- * We use a H5File** here in order to modify a passed pointer H5File* to a single
- * H5File.
- **/
-void exahype::plotters::CarpetHDF5Writer::openH5File(H5::H5File** file, std::string& filename) {
-	if(*file) {
-		(*file)->close();
-		delete *file;
-		*file = nullptr;
-	}
-	
-	logInfo("openH5File", "Opening File '"<< filename << "'");
-	*file = new H5File( H5std_string(filename.c_str()), H5F_ACC_TRUNC  );
-	(*file)->setComment("Created by ExaHyPE");
-	writeBasicGroup(*file);
-}
-  
+
 /**
  * Opens or switchs the currently active H5 file or the list of H5 files.
- * 
  **/
-void exahype::plotters::CarpetHDF5Writer::openH5(int iteration) {
+void exahype::plotters::CarpetHDF5Writer::openH5() {
 	std::string local_filename, suffix, prefix, sep("-");
 	prefix = basisFilename;
 	suffix = (oneFilePerTimestep?(sep + "it" + toString(iteration)):"") + ".h5";
-	if(allUnknownsInOneFile) {
-		local_filename = prefix + suffix;
-		openH5File(&single_file, local_filename);
-	} else {
-		for(int u=0; u < writtenUnknowns; u++) {
-			char* writtenQuantityName = writtenQuantitiesNames[u];
-			local_filename = prefix + sep + writtenQuantityName + suffix;
-			openH5File(&seperate_files[u], local_filename);
+	
+	closeH5(); // just to be sure
+	int writtenUnknown=0;
+	for(auto& file : files) {
+		local_filename = prefix + (allUnknownsInOneFile ? "" : (sep + writtenQuantitiesNames[writtenUnknown])) + suffix;
+
+		logInfo("open", "Opening File '"<< local_filename << "'");
+		file = new H5File(local_filename, H5F_ACC_TRUNC);
+		file->setComment("Created by ExaHyPE");
+		writeBasicGroup(file);
+		writtenUnknown++;
+	}
+}
+
+void exahype::plotters::CarpetHDF5Writer::closeH5() {
+	// flush in any case, even when closing the file. Cf. http://stackoverflow.com/a/31301117
+	flushH5();
+	for(auto& file : files) {
+		if(file) {
+			file->close();
+			delete file;
+			file = nullptr;
 		}
 	}
 }
-  
-void exahype::plotters::CarpetHDF5Writer::flushH5File(H5::H5File* file) {
-	if(file) {
-		file->flush(H5F_SCOPE_GLOBAL);
+
+void exahype::plotters::CarpetHDF5Writer::flushH5() {
+	for(auto& file : files) {
+		if(file) {
+			file->flush(H5F_SCOPE_GLOBAL);
+		}
 	}
 }
 
 void exahype::plotters::CarpetHDF5Writer::startPlotting(double time) {
 	component = 0; // CarpetHDF5 wants the components start with 0.
-	if(oneFilePerTimestep) {
-		openH5(iteration);
-	}
+
+	if(oneFilePerTimestep) openH5();
 }
   
 void exahype::plotters::CarpetHDF5Writer::finishPlotting() {
-	// flush in any case, even when closing the file. Cf. http://stackoverflow.com/a/31301117
-	if(allUnknownsInOneFile) {
-		flushH5File(single_file);
-	} else {
-		for(int u=0; u < writtenUnknowns; u++) {
-			flushH5File(seperate_files[u]);
-		}
-	}
+	if(oneFilePerTimestep) closeH5();
+	else flushH5();
+
 	iteration++;
 }
 
@@ -199,7 +206,7 @@ void exahype::plotters::CarpetHDF5Writer::plotPatch(
       const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx,
       double* mappedCell, double timeStamp) {
 	for(int writtenUnknown=0; writtenUnknown < writtenUnknowns; writtenUnknown++) {
-		H5::H5File* target = allUnknownsInOneFile ? single_file : seperate_files[writtenUnknown];
+		H5::H5File* target = files[allUnknownsInOneFile ? 0 : writtenUnknown];
 		plotPatchForSingleUnknown(offsetOfPatch, sizeOfPatch, dx, mappedCell, timeStamp, writtenUnknown, target);
 	} // for writtenUnknown
 	component++;
@@ -209,26 +216,36 @@ void exahype::plotters::CarpetHDF5Writer::plotPatchForSingleUnknown(
       const dvec& offsetOfPatch, const dvec& sizeOfPatch, const dvec& dx,
       double* mappedCell, double timeStamp,
       int writtenUnknown, H5::H5File* target) {
+	assertion(target != nullptr);
+	
 	// in CarpetHDF5, the field name *must* contain a "::"
 	std::string name("ExaHyPE::");
 	char* field_name = writtenQuantitiesNames[writtenUnknown];
 	name += field_name ? field_name : "miserable-failure";
 	
-	char component_name[100];
-	sprintf(component_name, "%s it=%d tl=0 m=0 rl=0 c=%d", name.c_str(), iteration, component);
+	std::stringstream component_name;
+	component_name << name << " it=" << iteration << "tl=0 m=0 rl=0 c=" << component;
 	
 	// 1) Compose a continous storage which is suitable.
 	// TODO: I'm sure HDF5 provides a more performant way to interpret the different data layout.
 	double *componentPatch = new double[singleFieldIdx->size];
 	dfor(i,basisSize) {
-		if(dim==2) {
-			componentPatch[singleFieldIdx->get(i(1),i(0))] = mappedCell[writtenCellIdx->get(i(1),i(0),writtenUnknown)];
-		} else {
+		switch(dim) {
+			case 3:
 			componentPatch[singleFieldIdx->get(i(2),i(1),i(0))] = mappedCell[writtenCellIdx->get(i(2),i(1),i(0),writtenUnknown)];
+			break;
+
+			case 2:
+			componentPatch[singleFieldIdx->get(i(1),i(0))] = mappedCell[writtenCellIdx->get(i(1),i(0),writtenUnknown)];
+			break;
+			
+			case 1:
+			componentPatch[singleFieldIdx->get(i(0))] = mappedCell[writtenCellIdx->get(i(0),writtenUnknown)];
+			break;
 		}
 	}
 	
-	DataSet table = target->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_space);
+	DataSet table = target->createDataSet(component_name.str(), PredType::NATIVE_FLOAT, patch_space);
 	table.write(componentPatch, PredType::NATIVE_DOUBLE);
 	
 	delete[] componentPatch;

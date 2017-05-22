@@ -26,6 +26,8 @@ namespace exahype {
     class LimitingADERDG2CartesianVerticesVTKBinary;
     class LimitingADERDG2CartesianCellsVTKAscii;
     class LimitingADERDG2CartesianCellsVTKBinary;
+
+    class Slicer; // external forward decl, #include exahype/plotters/slicing/Slicer.h
   }
 }
 
@@ -49,8 +51,7 @@ private:
 
   static tarch::logging::Log _log;
 
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
+  exahype::plotters::Slicer *slicer;
 
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter* _gridWriter;
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;

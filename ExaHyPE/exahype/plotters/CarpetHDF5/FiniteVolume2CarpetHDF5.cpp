@@ -25,7 +25,7 @@ typedef tarch::la::Vector<DIMENSIONS,int> ivec;
 
 
 std::string exahype::plotters::FiniteVolume2CarpetHDF5::getIdentifier() {
-	return std::string("experimental::CarpetHDF5");
+	return std::string("hdf5::Cartesian::Vertices");
 }
 
 
@@ -94,7 +94,9 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::init(const std::string& filenam
 	writer = new exahype::plotters::CarpetHDF5Writer(filename, basisSize, solverUnknowns, writtenUnknowns, select,
 		writtenQuantitiesNames, oneFilePerTimestep, allUnknownsInOneFile);	
 
-	// todo at this place: Accept 3D slicing or so, cf. ADERDG2CartesianVTK
+	if(writer->slicer && writer->slicer->getIdentifier() == "CartesianSlicer") {
+		throw std::domain_error("FiniteVolume2CarpetHDF5 currently does not support the CartesianSlicer.");
+	}
 	// another nice to have: allow oneFilePerTimestep as a specfile parameter...
 }
 
@@ -119,7 +121,7 @@ void exahype::plotters::FiniteVolume2CarpetHDF5::plotPatch(
     double* u, /* unknown */
     double timeStamp) {
 
-    double* mappedCell  = new double[writer->allFieldsSize];
+    double* mappedCell  = new double[writer->patchFieldsSize];
     dvec dx = 1./numberOfCellsPerAxis * sizeOfPatch;
 
     interpolateVertexPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);

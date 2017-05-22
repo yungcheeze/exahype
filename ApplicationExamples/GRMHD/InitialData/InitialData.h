@@ -14,6 +14,7 @@ void prepare_id();
 
 // C ID:
 #include "InitialData/PizzaTOV.h"
+#include "InitialData/RNSID.h"
 
 // FORTRAN ID:
 extern "C" {

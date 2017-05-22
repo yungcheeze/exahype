@@ -16,6 +16,9 @@
  GRMHD, ie. MHD on static curved background spacetime,
  with Limiting ADER-DG Solver.
 
+ Here: GRMHD_FV testcase for testing NCP in Godunov.
+ Using AccretionDisk2D.
+
  */
 exahype-project GRMHD
 
@@ -27,14 +30,14 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 27.0, 27.0, 9.0
-    offset                         = -13.5, -13.5, -4.5
-    end-time                       = 2.1
+    width                          = 1.0, 1.0, 1.0
+    offset                         = 0.0, 0.0, 1.0
+    end-time                       = 200.1
   end computational-domain
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -52,43 +55,71 @@ exahype-project GRMHD
     skip-reduction-in-batched-time-steps = on
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
-    spawn-double-compression-as-background-thread = on
+    spawn-double-compression-as-background-thread = off
   end optimisation
 
-  solver ADER-DG GRMHDSolver_ADERDG
-    /* gamma is actually parts of a matrix... */
+  solver Finite-Volumes GRMHDSolver_FV
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
-    order const                    = 3
-    maximum-mesh-size              = 3.0009
+    patch-size const               = 4
+    maximum-mesh-size              = 0.1115
     time-stepping                  = global
-    kernel const                   = generic::fluxes::nonlinear
+    kernel const                   = generic::musclhancock
     language const                 = C
 
-    plot vtk::Legendre::vertices::ascii ConservedWriter
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19
       time      = 0.0
-      repeat    = 0.000666667
+      repeat    = 0.00590278
       output    = ./vtk-output/conserved
-      select    = z:0.0
     end plot
 
-    plot hdf5::Cartesian::vertices ConservedWriter
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
       variables const = 19
-      time = 0.0
-      repeat = 0.00001
-      output = ./hdf5-output/conserved
-      select = z:0.0,y:0.0
+      time      = 0.0
+      repeat    = 0.00590278
+      output    = ./vtk-output/cartesian-2d
+      select    = {z:0}
     end plot
 
-    plot user::defined SphereIntegrals
+    plot vtk::Cartesian::vertices::ascii ConservedWriter
+      variables const = 19
+      time      = 0.0
+      repeat    = 0.00590278
+      output    = ./vtk-output/cartesian-1d
+      select    = {z:0,y:0}
+    end plot
+
+    plot vtk::Cartesian::cells::ascii PrimitiveWriter
+      variables const = 19
+      time      = 0.0
+      repeat    = 0.00590278
+      output    = ./vtk-output/primitive
+      select = dummy
+    end plot
+
+    plot vtk::Cartesian::cells::ascii IntegralsWriter
       variables const = 0
       time = 0.0
-      repeat = 0.000666667  /*0.129329*/
-      output = ./global-sphere-integrals
-      select    = x:0.0,y:0.0
+      repeat = 0.000001
+      output = ./output/global-integrals
+      select = dummy
     end plot
 
+    plot user::defined TimingStatistics
+      variables const = 0
+      time = 0.0
+      repeat = 0.0000000001
+      output = ./timing-benchmarks
+      select = dummy
+    end plot
 
+    plot experimental::CarpetHDF5 H5Writer
+      variables const = 25
+      time            = 0.0
+      repeat          = 0.000000001
+      output          = ./hdf5-output/conserved
+      select          = {dummy}
+    end plot
   end solver
 
 

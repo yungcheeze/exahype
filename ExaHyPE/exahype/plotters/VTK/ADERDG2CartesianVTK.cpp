@@ -21,6 +21,7 @@
 #include "kernels/DGMatrices.h"
 #include "peano/utils/Loop.h"
 
+#include "exahype/plotters/slicing/Slicer.h"
 #include "exahype/solvers/ADERDGSolver.h"
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
@@ -30,6 +31,8 @@
 
 
 #include "kernels/DGBasisFunctions.h"
+
+tarch::logging::Log exahype::plotters::ADERDG2CartesianVTK::_log("exahype::plotters::ADERDG2CartesianVTK");
 
 
 std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier() {
@@ -146,25 +149,11 @@ void exahype::plotters::ADERDG2CartesianVTK::init(
   _patchWriter       = nullptr;
   _writtenUnknowns   = writtenUnknowns;
 
-  double x;
-  x = Parser::getValueFromPropertyString( select, "left" );
-  _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-  x = Parser::getValueFromPropertyString( select, "bottom" );
-  _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "front" );
-  _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#endif
+  slicer = Slicer::bestFromSelectionQuery(select);
 
-
-  x = Parser::getValueFromPropertyString( select, "right" );
-  _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
-  x = Parser::getValueFromPropertyString( select, "top" );
-  _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "back" );
-  _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
-#endif
+  if(slicer) {
+	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
+  }
 }
 
 
@@ -411,11 +400,7 @@ void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     double* u,
     double timeStamp) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
+  if (!slicer || slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
 
@@ -432,5 +417,5 @@ void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
     else {
       plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
     }
-  }
+  } // slicer
 }

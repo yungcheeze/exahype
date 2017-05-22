@@ -30,9 +30,9 @@ exahype-project GRMHD
 
   computational-domain
     dimension const                = 3
-    width                          = 27.0, 27.0, 3.0
-    offset                         = -13.5, -13.5, -1.5
-    end-time                       = 200.1
+    width                          = 18.0, 18.0, 18.0
+    offset                         = 0.0, 0.0, 0.0
+    end-time                       = 2000.1
   end computational-domain
   
   shared-memory
@@ -60,8 +60,8 @@ exahype-project GRMHD
 
   solver Finite-Volumes GRMHDSolver_FV
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
-    patch-size const               = 7
-    maximum-mesh-size              = 3.0009
+    patch-size const               = 8
+    maximum-mesh-size              = 6.0009
     time-stepping                  = global
     kernel const                   = generic::musclhancock
     language const                 = C
@@ -85,8 +85,8 @@ exahype-project GRMHD
       variables const = 19
       time      = 0.0
       repeat    = 0.00590278
-      output    = ./vtk-output/cartesian-1d
-      select    = x:0,y:0
+      output    = ./vtk-output/cartesian-2d
+      select    = z:0.0
     end plot
 
     plot vtk::Cartesian::cells::ascii PrimitiveWriter
