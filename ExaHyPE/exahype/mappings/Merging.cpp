@@ -490,7 +490,6 @@ void exahype::mappings::Merging::receiveDataFromMaster(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           receivedVerticesEnumerator.getCellCenter(),
           receivedVerticesEnumerator.getLevel());
-      }
     }
 
     // Receive global plotter data from master
