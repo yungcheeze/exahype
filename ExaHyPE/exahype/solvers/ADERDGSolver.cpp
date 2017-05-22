@@ -3278,7 +3278,7 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 ///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
-exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+exahype::DataHeap::HeapEntries
 exahype::solvers::ADERDGSolver::compileMessageForMaster(const int capacity) const {
   DataHeap::HeapEntries dataForMaster(0,std::max(4,capacity));
   dataForMaster.push_back(_minPredictorTimeStepSize);
@@ -3526,7 +3526,7 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
-exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+exahype::DataHeap::HeapEntries
 exahype::solvers::ADERDGSolver::compileMessageForWorker(const int capacity) const {
   DataHeap::HeapEntries messageForWorker(0,std::max(6,capacity));
   messageForWorker.push_back(_minPredictorTimeStepSize);

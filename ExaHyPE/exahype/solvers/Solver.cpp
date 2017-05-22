@@ -61,6 +61,16 @@ void exahype::solvers::deleteSolverFlags(exahype::solvers::SolverFlags& solverFl
   }
 }
 
+double exahype::solvers::convertToDouble(const LimiterDomainChange& limiterDomainChange) {
+  return static_cast<double>(static_cast<int>(limiterDomainChange));
+}
+
+exahype::solvers::LimiterDomainChange exahype::solvers::convertToLimiterDomainChange(const double value) {
+  assertion((int) std::round(value)>=static_cast<int>(LimiterDomainChange::Regular));
+  assertion((int) std::round(value)<=static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate));
+  return static_cast<LimiterDomainChange>((int) std::round(value));
+}
+
 
 tarch::multicore::BooleanSemaphore exahype::solvers::Solver::_heapSemaphore;
 int                                exahype::solvers::Solver::_NumberOfTriggeredTasks(0);
@@ -398,20 +408,27 @@ void exahype::solvers::Solver::toString(std::ostream& out) const {
 }
 
 #ifdef Parallel
+exahype::DataHeap::HeapEntries
+exahype::solvers::Solver::compileMeshUpdateFlagsForMaster(const int capacity) const {
+  DataHeap::HeapEntries meshUpdateFlags(0,std::max(2,capacity)); // !!! does not fill the vector
+
+  meshUpdateFlags.push_back(_meshUpdateRequest   ? 1.0 : -1.0);
+  meshUpdateFlags.push_back(_attainedStableState ? 1.0 : -1.0);
+  return meshUpdateFlags;
+}
+
 void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level){
-  std::vector<double> meshRefinementFlags(0,2);
-  meshRefinementFlags.push_back(_meshUpdateRequest   ? 1.0 : -1.0);
-  meshRefinementFlags.push_back(_attainedStableState ? 1.0 : -1.0);
+  DataHeap::HeapEntries meshRefinementFlags = compileMeshUpdateFlagsForMaster();
 
   assertion1(meshRefinementFlags.size()==2,meshRefinementFlags.size());
-
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending time step data: " <<
-             "data[0]=" << meshRefinementFlags[0]);
+    logDebug("sendDataToMaster(...)","Sending mesh update flags: " <<
+             "data[0]=" << meshRefinementFlags[0]
+             "data[1]=" << meshRefinementFlags[1]);
   }
 
   DataHeap::getInstance().sendData(
@@ -420,32 +437,34 @@ void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
       peano::heap::MessageType::MasterWorkerCommunication);
 }
 
+void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(const DataHeap::HeapEntries& message) {
+  int index=0;
+  _nextMeshUpdateRequest   |= ( message[index++] > 0 ) ? true : false;
+  _nextAttainedStableState |= ( message[index++] > 0 ) ? true : false;
+}
+
 void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(1);
-
-  if (true || tarch::parallel::Node::getInstance().getRank()==
+  if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-      // logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank);
+      logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank);
   }
+  DataHeap::HeapEntries messageFromWorker(2); // !!! fills the vector
 
   DataHeap::getInstance().receiveData(
-      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      messageFromWorker.data(),messageFromWorker.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==1,receivedTimeStepData.size());
-
-  int index=0;
-  _nextMeshUpdateRequest   |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
-  _nextAttainedStableState |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  mergeWithWorkerMeshUpdateFlags(messageFromWorker);
+  assertion1(messageFromWorker.size()==2,messageFromWorker.size());
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
-             "data[0]=" << receivedTimeStepData[0] <<
-             "data[1]=" << receivedTimeStepData[1]);
+             "data[0]=" << messageFromWorker[0] <<
+             "data[1]=" << messageFromWorker[1]);
   }
 }
 #endif

@@ -410,7 +410,6 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToMaster(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      // TODO(Dominic): Restrict limiter status too
       solver->sendMeshUpdateFlagsToMaster(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           verticesEnumerator.getCellCenter(),
@@ -433,7 +432,6 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithMaster(
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-    // TODO(Dominic): Merge restricted limiter status
     solver->mergeWithWorkerMeshUpdateFlags(
         worker,
         fineGridVerticesEnumerator.getCellCenter(),

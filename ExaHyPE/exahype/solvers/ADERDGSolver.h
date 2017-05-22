@@ -55,8 +55,6 @@ public:
   static double PipedCompressedBytes;
   #endif
 
-  typedef exahype::DataHeap DataHeap;
-
   /**
    * Rank-local heap that stores ADERDGCellDescription instances.
    *
@@ -65,7 +63,7 @@ public:
    * @see solvers::Solver::RegisteredSolvers.
    */
   typedef exahype::records::ADERDGCellDescription CellDescription;
-  typedef peano::heap::PlainHeap<CellDescription> Heap;
+  typedef peano::heap::RLEHeap<CellDescription> Heap;
 
 private:
 
@@ -1900,7 +1898,7 @@ public:
    *
    * \see LimitingADERDGSolver::sendDataToWorker
    */
-  exahype::solvers::ADERDGSolver::DataHeap::HeapEntries
+  DataHeap::HeapEntries
   compileMessageForWorker(const int capacity=6) const;
 
   void sendDataToWorker(

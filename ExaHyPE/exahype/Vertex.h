@@ -81,31 +81,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    */
   tarch::la::Vector<TWO_POWER_D, int> getCellDescriptionsIndex() const;
 
-//  struct Face {
-//    int normalDirection;
-//    int faceIndex1;
-//    int faceIndex2
-//  } typedef Face;
-//
-//  static Face computeFaceIndices(
-//      const tarch::la::Vector<DIMENSIONS,int>& pos1,
-//      const tarch::la::Vector<DIMENSIONS,int>& pos2) {
-//    assertion(tarch::la::countEqualEntries(pos1,pos2)==DIMENSIONS-1);
-//    assertion(tarch::la::equalsReturnIndex(pos1, pos2)<DIMENSIONS);
-//    Face face;
-//
-//    face.normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
-//    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-//    face.faceIndex1 = 2 * face.normalDirection +
-//        (pos2(face.normalDirection) > pos1(face.normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-//    face.faceIndex2      = 2 * face.normalDirection +
-//        (pos1(face.normalDirection) > pos2(face.normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-//
-//    assertion(face.normalDirection<DIMENSIONS);
-//    assertion(std::abs(face.faceIndex1-face.faceIndex2)==1);
-//    return face;
-//  }
-
   /**
    * Checks if the cell descriptions at the indices corresponding
    * to \p pos1 and \p pos2 need to be merged with each other.

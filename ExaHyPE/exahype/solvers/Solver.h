@@ -59,15 +59,36 @@ namespace exahype {
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
    */
-  typedef peano::heap::PlainDoubleHeap DataHeap;
+  typedef peano::heap::DoubleHeap<
+    peano::heap::SynchronousDataExchanger< double, true >,
+    peano::heap::SynchronousDataExchanger< double, true >,
+    peano::heap::RLEBoundaryDataExchanger< double, false >
+  >     DataHeap;
+
+/*
+ *
+ *
+ * @todo Da gibt es noch die Meta Info
+ *
+ *   typedef DoubleHeap<
+ *       SynchronousDataExchanger< double, true >,
+ *           SynchronousDataExchanger< double, true >,
+ *               RLEBoundaryDataExchanger< double, false >,
+ *                   std::vector< double, HeapAllocator<double, 32 > >
+ *                     >     DataHeap;
+ *                     */
 
   #ifdef Parallel
   /**
    * We abuse this heap to send and receive metadata from one MPI rank to the other.
    * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
    */
-  typedef peano::heap::PlainIntegerHeap MetadataHeap; // TODO(Dominic): Use RLE heap.
+  typedef peano::heap::Heap<
+    peano::heap::records::IntegerHeapData,
+    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
+    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
+    peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false >
+  >     MetadataHeap;
 
   /**
    * Defines an invalid metadata entry.
@@ -149,6 +170,16 @@ namespace exahype {
        */
       IrregularRequiringMeshUpdate,
     };
+
+    /**
+     * Converts LimiterDomainChange to its double equivalent.
+     */
+    double convertToDouble(const LimiterDomainChange& limiterDomainChange);
+
+    /**
+     * Converts a double to a LimiterDomainChange.
+     */
+    LimiterDomainChange convertToLimiterDomainChange(const double value);
 
     /**
      * Temporary variables that
@@ -1405,20 +1436,28 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
 
+  /**
+   * Compile a message containing mesh update flags
+   * for the master.
+   *
+   * The initial capacity defaults to 2 but can be modified
+   * to attend more data to the message.
+   *
+   * \see exahype::solvers::Solver::sendMeshUpdateFlagsToMaster,
+   * exahype::solvers::LimitingADERDGSolver::sendMeshUpdateFlagsToMaster
+   */
+  exahype::DataHeap::HeapEntries
+  compileMeshUpdateFlagsForMaster(const int capacity=2) const;
 
   /*
+   * Send the rank-local mesh update request and
+   * limiter domain change to the master.
+   *
    * At the time of sending data to the master,
-   * we have already performed set the next
-   * mesh update requested flag locally.
+   * we have already set the next
+   * mesh update request locally.
    * We thus need to communicate the
-   * current mesh update requested flag to the master.
-   *
-   * However on the master's side, we need to
-   * merge the received time step size with
-   * the next min predictor time step size since
-   * the master has not yet set his new flag yet.
-   *
-   * TODO(Dominic): Restrict limiter status too
+   * current mesh update request to the master.
    */
   void sendMeshUpdateFlagsToMaster(
       const int                                    masterRank,
@@ -1426,8 +1465,19 @@ class exahype::solvers::Solver {
       const int                                    level);
 
   /**
-   * Merge the _nextMeshUpdateRequest with the flag
-   * received from the worker.
+   * Merge with the workers mesh update flags.
+   *
+   * \see exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags,
+   * exahype::solvers::LimitingADERDGSolver::mergeWithWorkerMeshUpdateFlags
+   */
+  void mergeWithWorkerMeshUpdateFlags(const DataHeap::HeapEntries& message);
+
+  /**
+   * Merge with the workers mesh update flags.
+   *
+   * The master has not yet performed swapped
+   * the current values with the "next" values.
+   * This will happen after the merge.
    */
   void mergeWithWorkerMeshUpdateFlags(
       const int                                    workerRank,

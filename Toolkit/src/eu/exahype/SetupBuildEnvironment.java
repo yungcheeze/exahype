@@ -144,7 +144,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
       } else {
         // noarch or unsupported architecture or undefined
-        _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+        // _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
       }
 
       _writer.write("\n");

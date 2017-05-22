@@ -73,10 +73,10 @@ class exahype::solvers::LimitingADERDGSolver : public exahype::solvers::Solver {
 
 private:
   typedef exahype::records::ADERDGCellDescription SolverPatch;
-  typedef peano::heap::PlainHeap<SolverPatch> SolverHeap;
+  typedef peano::heap::RLEHeap<SolverPatch> SolverHeap;
 
   typedef exahype::records::FiniteVolumesCellDescription LimiterPatch;
-  typedef peano::heap::PlainHeap<LimiterPatch> LimiterHeap;
+  typedef peano::heap::RLEHeap<LimiterPatch> LimiterHeap;
 
 
   /**

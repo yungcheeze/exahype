@@ -1779,7 +1779,7 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
   // We append all the max values to the min values.
   // And then append the limiter status as double
   const int numberOfObservables = _solver->getDMPObservables();
-  std::vector<double> minAndMaxToSend(2*numberOfObservables);
+  DataHeap::HeapEntries minAndMaxToSend(2*numberOfObservables);
   for (int i=0; i<numberOfObservables; i++) {
     minAndMaxToSend[i]                     = DataHeap::getInstance().getData( solverPatch.getSolutionMin() )[faceIndex*numberOfObservables+i];
     minAndMaxToSend[i+numberOfObservables] = DataHeap::getInstance().getData( solverPatch.getSolutionMax() )[faceIndex*numberOfObservables+i];
@@ -1840,7 +1840,7 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
@@ -2074,7 +2074,8 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
       _solver->compileMessageForMaster(5);
 
   // Send additional data to master
-  messageForMaster.push_back(static_cast<double>(_limiterDomainChange));
+  messageForMaster.push_back(
+      exahype::solvers::convertToDouble(_limiterDomainChange));
 
   assertion1(messageForMaster.size()==5,messageForMaster.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
@@ -2106,10 +2107,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 
   // merge own flags
   const int firstEntry=4;
-  assertion(tarch::la::greaterEquals(messageFromWorker[firstEntry],static_cast<int>(LimiterDomainChange::Regular)));
-  assertion(tarch::la::smallerEquals(messageFromWorker[firstEntry],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
   LimiterDomainChange workerLimiterDomainChange =
-      static_cast<LimiterDomainChange>(static_cast<int>(messageFromWorker[firstEntry]));
+      exahype::solvers::convertToLimiterDomainChange(messageFromWorker[firstEntry]);
   updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==
@@ -2200,7 +2199,8 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(7);
 
   // append additional data
-  messageForWorker.push_back(static_cast<double>(_limiterDomainChange));
+  messageForWorker.push_back(
+      exahype::solvers::convertToDouble(_limiterDomainChange));
 
   assertion1(messageForWorker.size()==7,messageForWorker.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
@@ -2234,10 +2234,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 
   // merge own data
   const int firstEntry=6;
-  assertion(tarch::la::greaterEquals(messageFromMaster[firstEntry],static_cast<int>(LimiterDomainChange::Regular)));
-  assertion(tarch::la::smallerEquals(messageFromMaster[firstEntry],static_cast<int>(LimiterDomainChange::IrregularRequiringMeshUpdate)));
   LimiterDomainChange workerLimiterDomainChange =
-      static_cast<LimiterDomainChange>(static_cast<int>(messageFromMaster[firstEntry]));
+      exahype::solvers::convertToLimiterDomainChange(messageFromMaster[firstEntry]);
   updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
 
   if (tarch::parallel::Node::getInstance().getRank()==

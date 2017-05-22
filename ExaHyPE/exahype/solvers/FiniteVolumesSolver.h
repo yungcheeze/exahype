@@ -51,7 +51,7 @@ public:
    * @see solvers::Solver::RegisteredSolvers.
    */
   typedef exahype::records::FiniteVolumesCellDescription CellDescription;
-  typedef peano::heap::PlainHeap<CellDescription> Heap;
+  typedef peano::heap::RLEHeap<CellDescription> Heap;
 
 private:
   /**
