@@ -11,8 +11,11 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
+#include <cstring>
+ 
 #include "kernels/aderdg/optimised/Kernels.h"
 #include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"
+#include "kernels/aderdg/optimised/DGMatrices.h"
 //#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"
  
 void kernels::aderdg::optimised::extrapolatorNonlinear(

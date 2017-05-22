@@ -37,6 +37,9 @@ for cmd in "$@"; do
 			subreq peano &
 			subreq clean-toolkit & 
 			wait
+			# make sure the Peano update succeeded. Sometimes when connections fail, the repo
+			# remains in a bad situation and uses have to call "svn cleanup".
+			{ cd Peano && svn info; } || fail "Peano is assumably locked. You have to manually clean it up."
 			# We don't do libxsmm as it's not needed for most applications
 			info "Finished updating ExahyPE (+peano, +toolkit) in $GITROOT"
 			;;

@@ -29,11 +29,13 @@ import Backend
 import TemplatingUtils
 
 
-class SolutionAdjustmentGenerator:
+#TODO JMG patchwise adjust
+
+class AdjustSolutionGenerator:
     m_context = {}
 
     # name of generated output file
-    m_filename = 'adjustSolution.cpph'
+    m_filename_point = 'adjustPointSolution.cpp'
 
 
     def __init__(self, i_context):
@@ -44,4 +46,4 @@ class SolutionAdjustmentGenerator:
         self.m_context['order'] = self.m_context['nDof']-1
         self.m_context['nDimPad'] = Backend.getSizeWithPadding(self.m_context['nDim'])
         
-        TemplatingUtils.renderAsFile('solutionAdjustment_cpph.template', self.m_filename, self.m_context)
+        TemplatingUtils.renderAsFile('adjustPointSolution_cpp.template', self.m_filename_point, self.m_context)

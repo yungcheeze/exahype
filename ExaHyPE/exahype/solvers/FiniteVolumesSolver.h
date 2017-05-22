@@ -18,6 +18,7 @@
 
 
 #include "exahype/solvers/Solver.h"
+#include "exahype/solvers/UserSolverInterface.h"
 
 #include "exahype/records/FiniteVolumesCellDescription.h"
 
@@ -38,7 +39,7 @@ class FiniteVolumesSolver;
  * require additional data structures (and for ncp, e.g., also the
  * non-conservative product).
  */
-class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
+class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver, public exahype::solvers::UserFiniteVolumesSolverInterface {
 public:
   typedef exahype::DataHeap DataHeap;
 

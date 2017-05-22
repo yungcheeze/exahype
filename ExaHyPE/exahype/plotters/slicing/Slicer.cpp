@@ -5,10 +5,19 @@
 #include "RegionSlicer.h"
 #include "CartesianSlicer.h"
 
+#include "tarch/logging/Log.h"
 #include "exahype/Parser.h"
 
-using namespace exahype::plotters;
+#include <sstream>
 
+using namespace exahype::plotters;
+using namespace std;
+
+// storage for the RegionSlicer limits
+const double RegionSlicer::defaultLeftBottomFront = -std::numeric_limits<double>::max();
+const double RegionSlicer::defaultRightTopBack    = +std::numeric_limits<double>::max();
+
+static tarch::logging::Log _log("exahype::plotters::Slicer");
 
 CartesianSlicer::CartesianSlicer(const dvec& _req, const ivec& _active, int _baseDim) : 
 		targetDim(_baseDim - tarch::la::sum(_active)),
@@ -66,13 +75,28 @@ CartesianSlicer* CartesianSlicer::fromSelectionQuery(const std::string& select) 
 }
 
 
-std::ostream& operator<<(std::ostream &s,const CartesianSlicer& c) {
-  s << "CartesianSlicer, Reducing Dimension " << c.baseDim << " to " << c.targetDim << ":\n";
-  s << "   req = " << c.req << "\n";
-  s << "   active = " << c.active << "\n";
-  s << "   activeAxes = " << c.activeAxes << "\n";
-  s << "   runningAxes = " << c.runningAxes << "\n";
-  return s;
+std::string RegionSlicer::toString() const {
+	stringstream s;
+	s << "RegionSlicer(" << _regionOfInterestLeftBottomFront << ", " << _regionOfInterestRightTopBack << ")";
+	return s.str();
+}
+
+std::string CartesianSlicer::toString() const {
+	stringstream s;
+	s << "CartesianSlicer(Dim["<<baseDim<<"] to Dim["<<targetDim<<"], req="<<req<<")";
+	return s.str();
+}
+
+// debugging stuff, should not be operator<< but be named like "debugString" or so.
+//std::ostream& operator<<(std::ostream &s,const CartesianSlicer& c) {
+std::string CartesianSlicer::debugVerbose() {
+	stringstream s;
+	s << "CartesianSlicer, Reducing Dimension " << baseDim << " to " << targetDim << ":\n";
+	s << "   req = " << req << "\n";
+	s << "   active = " << active << "\n";
+	s << "   activeAxes = " << activeAxes << "\n";
+	s << "   runningAxes = " << runningAxes << "\n";
+	return s.str();
 }
 
 
@@ -80,29 +104,43 @@ RegionSlicer* RegionSlicer::fromSelectionQuery(const std::string& select) {
 	dvec regionOfInterestLeftBottomFront, regionOfInterestRightTopBack;
 	double x;
 	x = Parser::getValueFromPropertyString( select, "left" );
-	regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
+	regionOfInterestLeftBottomFront(0) = x!=x ? defaultLeftBottomFront : x; // "-", min
 	x = Parser::getValueFromPropertyString( select, "bottom" );
-	regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
+	regionOfInterestLeftBottomFront(1) = x!=x ? defaultLeftBottomFront : x; // "-", min
 	#if DIMENSIONS==3
 	x = Parser::getValueFromPropertyString( select, "front" );
-	regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
+	regionOfInterestLeftBottomFront(2) = x!=x ? defaultLeftBottomFront : x; // "-", min
 	#endif
 	
 	x = Parser::getValueFromPropertyString( select, "right" );
-	regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
+	regionOfInterestRightTopBack(0) = x!=x ? defaultRightTopBack : x;
 	x = Parser::getValueFromPropertyString( select, "top" );
-	regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
+	regionOfInterestRightTopBack(1) = x!=x ? defaultRightTopBack : x;
 	#if DIMENSIONS==3
 	x = Parser::getValueFromPropertyString( select, "back" );
-	regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
+	regionOfInterestRightTopBack(2) = x!=x ? defaultRightTopBack : x;
 	#endif
 	
 	return new RegionSlicer(regionOfInterestLeftBottomFront, regionOfInterestRightTopBack);
 }
 
 Slicer* Slicer::bestFromSelectionQuery(const std::string& select) {
-	// TODO: Implement by looking at which property strings are there.
-	return RegionSlicer::fromSelectionQuery(select);
+	logInfo("bestFromSelectionQuery", "Scanning plotting selection query '"<<select<<"'");
+	
+	// Build up the registry:
+	Slicer *a = CartesianSlicer::fromSelectionQuery(select);
+	Slicer *b = RegionSlicer::fromSelectionQuery(select);
+
+	if(a->clips() && b->clips()) {
+		logError("bestFromSelectionQuery", "Warning: Several slicing strategies apply to the given arguments '"<<select<<"'. I choose " << a->getIdentifier());
+	}
+
+	if(a->clips()) { delete b; return a;}
+	if(b->clips()) { delete a; return b; }
+	
+	// nothing clips
+	delete a; delete b;
+	return new NonSlicer;
 }
 
 	

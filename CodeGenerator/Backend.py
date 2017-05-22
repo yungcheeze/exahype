@@ -39,7 +39,7 @@ import VolumeIntegralGenerator
 import SurfaceIntegralGenerator
 import RiemannGenerator
 import SolutionUpdateGenerator
-import SolutionAdjustmentGenerator
+import AdjustSolutionGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
@@ -140,6 +140,7 @@ def generateContext(i_config):
     context['nVarPad'] = getSizeWithPadding(i_config['nVar'])
     context['nDofPad'] = getSizeWithPadding(i_config['nDof'])
     context['isLinear'] = m_numerics == "linear"
+    context['solverHeader'] = context['solverName'].split('::')[1] + '.h'
     #context['FloatingPointFormat'] = 'float' if 'm_precision' == 'SP' else 'double'
     return context
 
@@ -157,8 +158,8 @@ def generateComputeKernels():
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(generateContext(m_config))
     solutionUpdateGenerator.generateCode()
-    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(generateContext(m_config))
-    solutionAdjustmentGenerator.generateCode()
+    adjustSolutionGenerator = AdjustSolutionGenerator.AdjustSolutionGenerator(generateContext(m_config))
+    adjustSolutionGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(generateContext(m_config))
     stableTimeStepSizeGenerator.generateCode()
     weightsGenerator = WeightsGenerator.WeightsGenerator(m_config)

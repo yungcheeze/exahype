@@ -16,6 +16,7 @@
 #include "tarch/parallel/Node.h"
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
+#include "exahype/plotters/slicing/Slicer.h"
 #include "FiniteVolumes2VTK.h"
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
@@ -176,25 +177,11 @@ void exahype::plotters::FiniteVolumes2VTK::init(
   _patchWriter          = nullptr;
   _writtenUnknowns      = writtenUnknowns;
 
-  double x;
-  x = Parser::getValueFromPropertyString( select, "left" );
-  _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-  x = Parser::getValueFromPropertyString( select, "bottom" );
-  _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "front" );
-  _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#endif
+  slicer = Slicer::bestFromSelectionQuery(select);
 
-
-  x = Parser::getValueFromPropertyString( select, "right" );
-  _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
-  x = Parser::getValueFromPropertyString( select, "top" );
-  _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#if DIMENSIONS==3
-  x = Parser::getValueFromPropertyString( select, "back" );
-  _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
-#endif
+  if(slicer) {
+	logInfo("init", "Plotting selection "<<slicer->toString()<<" to Files "<<filename);
+  }
 }
 
 
@@ -306,27 +293,35 @@ void exahype::plotters::FiniteVolumes2VTK::finishPlotting() {
 exahype::plotters::FiniteVolumes2VTK::~FiniteVolumes2VTK() {
 }
 
+#include "exahype/plotters/slicing/CartesianSlicer.h"
 
 void exahype::plotters::FiniteVolumes2VTK::plotPatch(const int cellDescriptionsIndex, const int element) {
-  auto& cellDescription =
-      exahype::solvers::FiniteVolumesSolver::getCellDescription(
-          cellDescriptionsIndex,element);
+  auto& cellDescription = exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,element);
 
   if (cellDescription.getType()==exahype::solvers::FiniteVolumesSolver::CellDescription::Type::Cell) {
-    double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+    const tarch::la::Vector<DIMENSIONS, double> &offsetOfPatch = cellDescription.getOffset(), &sizeOfPatch = cellDescription.getSize();
 
-    std::pair<int,int> vertexAndCellIndex(0,0);
-    if (_writtenUnknowns>0) {
-      vertexAndCellIndex = _gridWriter->plotPatch(cellDescription.getOffset(), cellDescription.getSize(), _numberOfCellsPerAxis);
+    // Slicing debugging:
+    /*
+    if(slicer && slicer->getIdentifier() == "CartesianSlicer" && offsetOfPatch(0) == 0.0) {
+	    logInfo("slicing", "Having " << slicer->toString() << ", isPatchActive("<<offsetOfPatch<<","<<sizeOfPatch<<") = "<< slicer->isPatchActive(offsetOfPatch, sizeOfPatch) );
+	    logInfo("debug", ((exahype::plotters::CartesianSlicer*)slicer)->debugVerbose());
     }
+    */
 
-    if (_plotCells) {
-      plotCellData(vertexAndCellIndex.second, cellDescription.getOffset(), cellDescription.getSize(), solution, cellDescription.getTimeStamp());
-    }
-    else {
-      plotVertexData(vertexAndCellIndex.first, cellDescription.getOffset(), cellDescription.getSize(), solution, cellDescription.getTimeStamp());
-    }
-  }
+    if (!slicer || slicer->isPatchActive(offsetOfPatch, sizeOfPatch)) {
+      double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+      std::pair<int,int> vertexAndCellIndex(0,0);
+      if (_writtenUnknowns>0) {
+        vertexAndCellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _numberOfCellsPerAxis);
+      }
+      if (_plotCells) {
+        plotCellData(vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, solution, cellDescription.getTimeStamp());
+      } else {
+        plotVertexData(vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, solution, cellDescription.getTimeStamp());
+      }
+    } // if slicer
+  } // if is cell
 }
 
 void exahype::plotters::FiniteVolumes2VTK::plotCellData(
@@ -334,11 +329,6 @@ void exahype::plotters::FiniteVolumes2VTK::plotCellData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
     logDebug("plotPatch(...)","offset of patch: "<<offsetOfPatch
     <<", size of patch: "<<sizeOfPatch
     <<", time stamp: "<<timeStamp);
@@ -385,7 +375,6 @@ void exahype::plotters::FiniteVolumes2VTK::plotCellData(
 
     delete[] sourceValue;
     delete[] value;
-  }
 }
 
 void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
@@ -393,11 +382,6 @@ void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp) {
-  if (
-    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
-    &&
-    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
-  ) {
     typedef tarch::la::Vector<DIMENSIONS,int> ivec;
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
@@ -484,6 +468,5 @@ void exahype::plotters::FiniteVolumes2VTK::plotVertexData(
 
     delete[] vertexValue;
     delete[] outputValue;
-  }
 }
 

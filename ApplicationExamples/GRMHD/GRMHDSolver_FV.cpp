@@ -11,6 +11,8 @@
 #include "kernels/KernelUtils.h" // matrix indexing
 #include "kernels/GaussLegendreQuadrature.h"
 
+#include "exahype/disableOptimization.h" // bugs when limiting is on. whatevers
+
 const double excision_radius = 1.0;
 
 // enable nan tracker
@@ -27,7 +29,7 @@ bool GRMHD::GRMHDSolver_FV::useAdjustSolution(const tarch::la::Vector<DIMENSIONS
   using namespace tarch::la;
   // Do excision only in 3D.
   bool insideExcisionBall = norm2(center) < excision_radius;
-  //bool insideExcisionBall = false;
+  insideExcisionBall = false;
   return tarch::la::equals(t,0.0) || insideExcisionBall;
 }
 

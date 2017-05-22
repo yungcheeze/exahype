@@ -35,6 +35,8 @@ namespace exahype {
 
     class FiniteVolumesVertices2VTUAscii;
     class FiniteVolumesVertices2VTUBinary;
+
+    class Slicer; // external forward decl, #include exahype/plotters/slicing/Slicer.h
   }
 }
 
@@ -67,8 +69,7 @@ class exahype::plotters::FiniteVolumes2VTK: public exahype::plotters::Plotter::D
    */
   double _time;
 
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
-  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
+  exahype::plotters::Slicer *slicer;
 
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;

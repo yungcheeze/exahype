@@ -174,8 +174,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     
     _useOptimisedKernels = _useOptimisedKernels 
                             || (node.getLanguage().getText().trim().equals("C") 
-                                && (node.getKernel().toString().trim().equals(eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier)
-                                    ||  node.getKernel().toString().trim().equals(eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier)));
+                                && (node.getKernel().toString().trim().startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )));
     
   }
 

@@ -82,7 +82,7 @@ case $CMD in
 		cdroot; getappname
 		SPECFILE="$(subreq find specfile "$APPNAME")" || abort "Could not find specfile: $SPECFILE"
 		info "Running ExaHyPE.jar on $SPECFILE"
-		java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $SPECFILE
+		exec java -jar Toolkit/dist/ExaHyPE.jar --not-interactive $SPECFILE
 		;;
 	"compile") # Invokes the toolkit and compilation of an application
 		cdapp; $SCRIPTDIR/compile.sh
@@ -178,6 +178,10 @@ case $CMD in
 		err "SHAREDMEM: ${SHAREDMEM:=-not set-}"
 		err "DISTRIBUTEDMEM: ${DISTRIBUTEDMEM:=-not set -}"
 		err
+		err "Exa Project Makefile specific:"
+		err "PROJECT_CFLAGS: ${PROJECT_CFLAGS:=-not set-}"
+		err "PROJECT_LFLAGS: ${PROJECT_LFLAGS:=-not set-}"
+		err
 		err "Exa Build tool specific:"
 		err "CLEAN:     ${CLEAN:=-not-set-}"
 		err "SKIP_TOOLKIT: ${SKIP_TOOLKIT:=-not set-}"
@@ -186,7 +190,7 @@ case $CMD in
 		err "Machine readable:"
 		
 		quoteenv() { perl -e 'foreach $k (sort(keys(%ENV))) { print "export $k=\"$ENV{$k}\"\n"; }'; }
-		quoteenv | grep -iE '^export (COMPILER|CC|MODE|SHAREDMEM|DISTRIBUTEDMEM|CLEAN|SKIP_TOOLKIT)'
+		quoteenv | grep -iE '^export (COMPILER|CC|MODE|SHAREDMEM|DISTRIBUTEDMEM|CLEAN|SKIP_TOOLKIT|EXAHYPE_|PROJECT_)'
 		;;
 	"git") # passes commands to git
 		cdroot; info "ExaHyPE Git Repository at $GITROOT"

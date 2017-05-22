@@ -1,4 +1,4 @@
-
+#include "tarch/logging/Log.h"
 #include "AbstractGRMHDSolver_ADERDG.h"
 #include "GRMHDSolver_ADERDG_Variables.h"
 #include "InitialData/InitialData.h"
@@ -9,7 +9,7 @@
 #ifndef PIZZATOV_AVAILABLE
 
 pizzatov::pizzatov() {
-	printf("Cannot call Pizza as not compiled with -DPIZZA_TOV_AVAILABLE");
+	printf("Cannot call Pizza as not compiled with -DPIZZATOV_AVAILABLE");
 	abort();
 }
 void pizzatov::Interpolate(const double* x, double t, double* Q) {}
@@ -23,8 +23,17 @@ using namespace Pizza::TOV;
 
 constexpr int nVar = GRMHD::AbstractGRMHDSolver_ADERDG::NumberOfVariables;
 
+
+struct ExaHyPE_Pizza_Logger : public Pizza::TOV::logger {
+	tarch::logging::Log _log;
+	ExaHyPE_Pizza_Logger() : _log("GRMHD::PizzaTOV") {}
+	void info(const std::string& msg, const std::string& codepos="") override { logInfo("", msg); }
+	void warn(const std::string& msg, const std::string& codepos="") override { logWarning("", msg); }
+};
+
 pizzatov::pizzatov() {
 	tov = new pointwise_tov();
+	tov->log = new ExaHyPE_Pizza_Logger();
 	
 	// here is the place to set some TOV parameters,
 	// if needed. Such as the EOS.

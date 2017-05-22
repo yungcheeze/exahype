@@ -25,7 +25,7 @@ class StableTimeStepSizeGenerator:
     m_context = {}
     
     # name of generated output file
-    m_filename = "stableTimeStepSize.cpph"
+    m_filename = "stableTimeStepSize.cpp"
 
 
     def __init__(self, i_context):
@@ -33,4 +33,4 @@ class StableTimeStepSizeGenerator:
 
 
     def generateCode(self):
-        TemplatingUtils.renderAsFile('stableTimeStepSize_cpph.template', self.m_filename, self.m_context)
+        TemplatingUtils.renderAsFile('stableTimeStepSize_cpp.template', self.m_filename, self.m_context)

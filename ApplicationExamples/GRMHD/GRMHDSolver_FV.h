@@ -59,7 +59,7 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
      *                 as C array (already allocated).
      * \param[inout] F the fluxes at that point as C array (already allocated).
      */
-    void flux(const double* const Q,double** F);
+    void flux(const double* const Q,double** F) override;
     
     /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
@@ -94,9 +94,9 @@ class GRMHD::GRMHDSolver_FV : public GRMHD::AbstractGRMHDSolver_FV {
     bool useAlgebraicSource()                 const override { return true; }
     bool useNonConservativeProduct() const override { return true; }
     
-    void algebraicSource(const double* const Q, double* S);
+    void algebraicSource(const double* const Q, double* S) override;
     void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
-    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
 
 };
 

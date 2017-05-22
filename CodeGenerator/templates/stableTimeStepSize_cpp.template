@@ -11,13 +11,15 @@
  * For the full license text, see LICENSE.txt
  **/ #}
 
-#include "kernels/aderdg/optimised/Kernels.h"
 #include <limits>
 
+#include "kernels/aderdg/optimised/Kernels.h"
 #include "tarch/la/Vector.h" 
 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero, double* lambda)>
+#include "{{solverHeader}}"
+
 double kernels::aderdg::optimised::stableTimeStepSize(
+    {{solverName}}& solver,
     const double* restrict const luh,
     const tarch::la::Vector<DIMENSIONS,double>& inverseDx
 ) {
@@ -31,7 +33,7 @@ double kernels::aderdg::optimised::stableTimeStepSize(
   for (int ijk = 0; ijk < {{nDof**nDim}}; ijk++) { //xyz
     double denominator = 0.0;
     for (int d = 0; d < {{nDim}}; d++) {
-      PDEEigenvalues(&luh[{{nVar}}*ijk], d, lambda);
+      solver.{{solverName}}::eigenvalues(&luh[{{nVar}}*ijk], d, lambda);
       
       double maxEigenvalue = 0.0;
       for (int ivar = 0; ivar < {{nVar}}; ivar++) {
