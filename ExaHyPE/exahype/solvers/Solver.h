@@ -25,6 +25,7 @@
 #include "peano/utils/Globals.h"
 #include "peano/grid/VertexEnumerator.h"
 #include "peano/heap/DoubleHeap.h"
+#include "peano/heap/HeapAllocator.h"
 
 #include "exahype/profilers/Profiler.h"
 #include "exahype/profilers/simple/NoOpProfiler.h"
@@ -55,23 +56,23 @@ namespace exahype {
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
    */
- // typedef peano::heap::RLEDoubleHeap DataHeap;
+  #undef ALIGNMENT // TODO(Dominic): Some sendData calls are not implemented by the aligned heaps
   #if ALIGNMENT==32
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true >,
     peano::heap::SynchronousDataExchanger< double, true >,
     peano::heap::RLEBoundaryDataExchanger< double, false >,
-    std::vector< double, HeapAllocator<double, 32 > >
+    std::vector< double, peano::heap::HeapAllocator<double, 32 > >
   >     DataHeap;
-  #elif ALIGNMENT=64
+  #elif ALIGNMENT==64
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true >,
     peano::heap::SynchronousDataExchanger< double, true >,
     peano::heap::RLEBoundaryDataExchanger< double, false >,
-    std::vector< double, HeapAllocator<double, 64 > >
+    std::vector< double, peano::heap::HeapAllocator<double, 64 > >
   >     DataHeap;
   #elif defined(ALIGNMENT)
-   #error ALIGNMENT choice not supported
+  #error ALIGNMENT choice not supported
   #else
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true >,
