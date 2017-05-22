@@ -126,7 +126,7 @@ bool exahype::solvers::LimitingADERDGSolver::isSending(
   bool isSending = false;
 
   if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
-    assertion(getMeshUpdateRequest());
+    assertion1(getMeshUpdateRequest(),exahype::records::State::toString(section));
     assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
     isSending |=
         section==exahype::records::State::AlgorithmSection::MeshRefinement ||
@@ -159,32 +159,50 @@ bool exahype::solvers::LimitingADERDGSolver::isComputing(
     const exahype::records::State::AlgorithmSection& section) const {
   bool isComputing = false;
 
-  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
-    assertion(getMeshUpdateRequest());
-    assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+  switch (section) {
+  case exahype::records::State::AlgorithmSection::TimeStepping
+    isComputing = true;
+    break;
+  case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+    isComputing |= getMeshUpdateRequest();
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+    break;
+  case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+    break;
+  case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+    isComputing |= getMeshUpdateRequest();
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+    break;
   }
 
-  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
-    assertion(!getMeshUpdateRequest());
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-  }
-  if (getMeshUpdateRequest()) {
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
-        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
-  }
-  if (_solver->getStabilityConditionWasViolated()) {
-    isComputing |=
-        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
-  }
-  isComputing |=
-      section==exahype::records::State::AlgorithmSection::TimeStepping;
+//  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate) {
+//    assertion(getMeshUpdateRequest());
+//    assertion(section!=exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
+//    isComputing |=
+//        section==exahype::records::State::AlgorithmSection::MeshRefinement ||
+//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+//        section==exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend;
+//  }
+//
+//  if (getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular) {
+//    assertion(!getMeshUpdateRequest());
+//    isComputing |=
+//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+//  }
+//  if (getMeshUpdateRequest()) {
+//    isComputing |=
+//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation ||
+//        section==exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend;
+//  }
+//  if (_solver->getStabilityConditionWasViolated()) {
+//    isComputing |=
+//        section==exahype::records::State::AlgorithmSection::PredictionRerunAllSend;
+//  }
+//  isComputing |=
+//      section==exahype::records::State::AlgorithmSection::TimeStepping;
 
   return isComputing;
 }
@@ -216,7 +234,7 @@ exahype::solvers::LimitingADERDGSolver::getNextLimiterDomainChange() const {
 }
 
 void exahype::solvers::LimitingADERDGSolver::setNextLimiterDomainChange() {
-  _limiterDomainChange = _nextLimiterDomainChange;
+  _limiterDomainChange     = _nextLimiterDomainChange;
   _nextLimiterDomainChange = LimiterDomainChange::Regular;
 }
 void exahype::solvers::LimitingADERDGSolver::updateNextLimiterDomainChange(
@@ -2196,7 +2214,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(7);
+  DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(8);
 
   // append additional data
   messageForWorker.push_back(
@@ -2205,7 +2223,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   assertion1(messageForWorker.size()==8,messageForWorker.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+    logInfo("sendDataToMaster(...)","Sending data to worker: " <<
              "data[0]=" << messageForWorker[0] <<
              ",data[1]=" << messageForWorker[1] <<
              ",data[2]=" << messageForWorker[2] <<
@@ -2241,7 +2259,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
+    logInfo("mergeWithWorkerData(...)","Received data from master:" <<
              " messageFromMaster[0]=" << messageFromMaster[0] <<
              " messageFromMaster[1]=" << messageFromMaster[1] <<
              " messageFromMaster[2]=" << messageFromMaster[2] <<

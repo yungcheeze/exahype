@@ -954,6 +954,7 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 
 void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
+  logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","run "<<numberOfStepsToRun<< " iterations with fused algorithmic steps");
   /*
    * The adapter below performs the following steps:
    *
