@@ -510,7 +510,7 @@ bool exahype::Parser::hasOptimisationSegment() const {
 
 
 bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
-  if (hasOptimisationSegment) {
+  if (hasOptimisationSegment()) {
     std::string token =
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
     logDebug("getSkipReductionInBatchedTimeSteps()",
