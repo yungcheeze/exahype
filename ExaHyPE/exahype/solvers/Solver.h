@@ -61,7 +61,6 @@ namespace exahype {
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
    */
-  #undef ALIGNMENT // TODO(DOminic): Some send data calls are not implemented by the aligned heaps
   #if ALIGNMENT==32
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true >,
