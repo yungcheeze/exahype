@@ -518,8 +518,8 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
   if (localCell.isInside() && localCell.isInitialised()) {
     exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
         peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
-//    exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
-//        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
+    exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
+        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
 
     for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
@@ -563,10 +563,10 @@ void exahype::mappings::MeshRefinement::mergeWithRemoteDataDueToForkOrJoin(
         fromRank,localCell,
         peano::heap::MessageType::ForkOrJoinCommunication,
         cellCentre,level);
-//    exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
-//        fromRank,localCell,
-//        peano::heap::MessageType::ForkOrJoinCommunication,
-//        cellCentre,level);
+    exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
+        fromRank,localCell,
+        peano::heap::MessageType::ForkOrJoinCommunication,
+        cellCentre,level);
 
     for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
