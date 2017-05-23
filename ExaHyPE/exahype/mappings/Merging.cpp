@@ -282,7 +282,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
               fromRank, fineGridX, level,
               peano::heap::MessageType::NeighbourCommunication);
           exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-          assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+          assertion(receivedMetadata.size()==exahype::MetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
             // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
@@ -382,8 +382,6 @@ void exahype::mappings::Merging::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int level,
     const exahype::MetadataHeap::HeapEntries& receivedMetadata)  const {
-  assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
-
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     logDebug("dropNeighbourData(...)", "drop data from " <<
              fromRank << " at vertex x=" << x << ", level=" << level <<
