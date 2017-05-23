@@ -1714,7 +1714,7 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
 
   // We append all the max values to the min values.
   // And then append the limiter status as double
-  std::vector<double> minAndMaxToSend(2*_numberOfVariables);
+  DataHeap::HeapEntries minAndMaxToSend(2*_numberOfVariables);
   for (int i=0; i<_numberOfVariables; i++) {
     minAndMaxToSend[i]                    = DataHeap::getInstance().getData( solverPatch.getSolutionMin() )[faceIndex*_numberOfVariables+i];
     minAndMaxToSend[i+_numberOfVariables] = DataHeap::getInstance().getData( solverPatch.getSolutionMax() )[faceIndex*_numberOfVariables+i];
@@ -1781,7 +1781,7 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
@@ -1951,7 +1951,7 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataInsteadOfMergedLimiter
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
-  std::vector<double> emptyMessage(0);
+  DataHeap::HeapEntries emptyMessage(0);
   DataHeap::getInstance().sendData(
       emptyMessage, toRank, x, level,
       peano::heap::MessageType::NeighbourCommunication);
@@ -2097,7 +2097,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
 //  _limiter->sendDataToMaster(masterRank,x,level);
 
   // Send the information to master if limiter status has changed or not
-  std::vector<double> dataToSend(0,1);
+  DataHeap::HeapEntries dataToSend(0,1);
   dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0); // TODO(Dominic): ugly
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
@@ -2119,7 +2119,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 //  _limiter->mergeWithWorkerData(workerRank,x,level); // TODO(Dominic): Revision
 
   // Receive the information if limiter status has changed
-  std::vector<double> receivedData(1); // !!! Creates and fills the vector
+  DataHeap::HeapEntries receivedData(1); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
       receivedData.data(),receivedData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
@@ -2216,7 +2216,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   // TODO(Dominic): Add information that limiter status has been
   // changed for this solver.
   // Send the information to master if limiter status has changed or not
-  std::vector<double> dataToSend(0,1);
+  DataHeap::HeapEntries dataToSend(0,1);
   dataToSend.push_back(_limiterDomainHasChanged ? 1.0 : -1.0);
   assertion1(dataToSend.size()==1,dataToSend.size());
   if (tarch::parallel::Node::getInstance().getRank()==
@@ -2238,7 +2238,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 //  _limiter->mergeWithMasterData(masterRank,x,level); // TODO(Dominic): Revision
 
   // Receive the information if limiter status has changed
-  std::vector<double> receivedData(1); // !!! Creates and fills the vector
+  DataHeap::HeapEntries receivedData(1); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
       receivedData.data(),receivedData.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);

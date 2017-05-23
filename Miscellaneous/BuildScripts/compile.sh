@@ -183,6 +183,12 @@ done
 #	fi
 #done
 
+# Force GCC to colour output even in the redirected output.
+if [[ $COMPILER == "GNU" ]]; then
+	gcc_force_color_output="-fdiagnostics-color=always"
+	export PROJECT_CFLAGS="${PROJECT_CFLAGS} $gcc_force_color_output"
+fi
+
 set -o pipefail # fail if make fails
 
 verbose make -j $MAKE_NPROC || {
