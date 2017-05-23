@@ -168,10 +168,10 @@ void kernels::limiter::generic::c::findCellLocalLimiterMinAndMax(
   std::fill_n(localMinPerVariables,numberOfObservables,std::numeric_limits<double>::max());
   std::fill_n(localMaxPerVariables,numberOfObservables,-std::numeric_limits<double>::max());
 
-  const int basisSize         = solver->getNodesPerCoordinateAxis();
-  const int basisSizeLim      = getBasisSizeLim(basisSize);
-  const int basisSizeLim3D    = 1;
-  const int ghostLayerWidth3D = 0;
+  const int basisSize    = solver->getNodesPerCoordinateAxis();
+  const int basisSizeLim = getBasisSizeLim(basisSize);
+  int basisSizeLim3D    = 1;
+  int ghostLayerWidth3D = 0;
   #if DIMENSIONS == 3
   basisSizeLim3D    = basisSizeLim;
   ghostLayerWidth3D = ghostLayerWidth;
@@ -252,9 +252,9 @@ void kernels::limiter::generic::c::compareWithADERDGSolutionAtGaussLobattoNodes(
   const int basisSize   = solver->getNodesPerCoordinateAxis();
   const int order       = basisSize-1;
 
-  const int basisSize3D = 1;
+  int basisSize3D = 1;
   #if DIMENSIONS == 3
-  const int basisSize3D = basisSize;
+  basisSize3D = basisSize;
   #endif
 
   const int numberOfVariables = solver->getNumberOfVariables();
@@ -309,8 +309,8 @@ void kernels::limiter::generic::c::compareWithADERDGSolutionAtFVSubcellCenters(
   const int basisSize    = solver->getNodesPerCoordinateAxis();
   const int basisSizeLim = getBasisSizeLim(basisSize);
 
-  const int basisSize3D    = 1;
-  const int basisSizeLim3D = 1;
+  int basisSize3D    = 1;
+  int basisSizeLim3D = 1;
   #if DIMENSIONS == 3
   basisSize3D    = basisSize;
   basisSizeLim3D = basisSizeLim;
