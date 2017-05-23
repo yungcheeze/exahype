@@ -455,8 +455,11 @@ void exahype::solvers::LimitingADERDGSolver::finaliseStateUpdates(
 int exahype::solvers::LimitingADERDGSolver::computeMinimumLimiterStatusForRefinement(
     int level) const {
   const int levelDelta = getMaximumAdaptiveMeshLevel() - level;
-  return std::min(static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled2),
-               static_cast<int>(SolverPatch::LimiterStatus::Ok) + levelDelta);
+
+  if (levelDelta==1) {
+    return static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled3);
+  }
+  return static_cast<int>(SolverPatch::LimiterStatus::NeighbourOfTroubled2);
 }
 
 bool exahype::solvers::LimitingADERDGSolver::evaluateLimiterStatusBasedRefinementCriterion(
