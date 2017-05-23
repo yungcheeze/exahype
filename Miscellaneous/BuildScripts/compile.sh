@@ -86,9 +86,9 @@ export DISTRIBUTEDMEM=${DISTRIBUTEDMEM:=$DEFAULT_DISTRIBUTEDMEM}
 export MODE=${MODE:=$DEFAULT_MODE}
 
 # you can amend on this
-export TBB_INC=/usr/include/tbb
-MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
-export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
+#  export TBB_INC=/usr/include/tbb
+#  MPI_LDFLAGS="$(mpicc -showme:link)" # eigentlich: mpiicpc -showme:link ...
+#  export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
 
 #echo -e " COMPILER=$COMPILER"
 #echo -e " SHAREDMEM=$SHAREDMEM"
