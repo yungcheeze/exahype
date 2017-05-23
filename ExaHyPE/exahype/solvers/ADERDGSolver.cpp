@@ -2695,6 +2695,8 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
       cellDescriptionsIndex);
 
+  logInfo("sendCellDescriptionsDueToForkOrJoin(...)","...");
+
   for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
     if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
         || cellDescription.getType()==CellDescription::Type::Ancestor) {
@@ -3604,12 +3606,12 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  DataHeap::HeapEntries messageFromMaster(6);
+  DataHeap::HeapEntries messageFromMaster(7);
   DataHeap::getInstance().receiveData(
       messageFromMaster.data(),messageFromMaster.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(messageFromMaster.size()==6,messageFromMaster.size());
+  assertion1(messageFromMaster.size()==7,messageFromMaster.size());
   mergeWithMasterData(messageFromMaster);
 
   if (_timeStepping==TimeStepping::Global) {
@@ -3625,7 +3627,8 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
             ",data[2]=" << messageFromMaster[2] <<
             ",data[3]=" << messageFromMaster[3] <<
             ",data[4]=" << messageFromMaster[4] <<
-            ",data[5]=" << messageFromMaster[5]);
+            ",data[5]=" << messageFromMaster[5]<<
+            ",data[6]=" << messageFromMaster[6]);
   }
 }
 
