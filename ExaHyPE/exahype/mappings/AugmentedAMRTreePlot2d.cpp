@@ -492,7 +492,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
 #ifdef Parallel
                    << "-rank-" << tarch::parallel::Node::getInstance().getRank()
 #endif
-                   << "-" << _snapshotCounter << ".vtk";
+                   << "-" << _snapshotCounter;
   _vtkWriter->writeToFile(snapshotFileName.str());
 
   _snapshotCounter++;
