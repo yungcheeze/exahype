@@ -35,7 +35,7 @@ exahype-project  Euler
 
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -47,7 +47,7 @@ exahype-project  Euler
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
@@ -61,7 +61,8 @@ exahype-project  Euler
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.15
+    maximum-mesh-size = 0.05
+    maximum-mesh-depth = 0
     time-stepping     = globalfixed
     kernel const      = generic::fluxes::nonlinear
     language const    = C
@@ -71,7 +72,6 @@ exahype-project  Euler
       time            = 0.0
       repeat          = 0.05
       output          = ./conserved
-      select          = x:0.0,y:0.0
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -81,7 +81,6 @@ exahype-project  Euler
       time            = 0.0
       repeat          = 0.05
       output          = ./output/these-files-should-not-be-there
-      select          = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii PrimitivesWriter
@@ -89,7 +88,6 @@ exahype-project  Euler
       time            = 0.0
       repeat          = 0.05
       output          = ./primitive
-      select          = x:0.0,y:0.0
     end plot
 
     plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
@@ -97,7 +95,6 @@ exahype-project  Euler
       time            = 0.0
       repeat          = 0.05
       output          = ./exact-primitive
-      select          = x:0.0,y:0.0
     end plot
 
     /* Do not need the time series for a point in the moment
