@@ -78,6 +78,8 @@ tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
     "exahype::mappings::TimeStepSizeComputation");
 
 void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables(){
+  logInfo("prepareLocalTimeStepVariables()","prepare");
+
   const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
   _minTimeStepSizes.resize(numberOfSolvers);
   _minCellSizes.resize(numberOfSolvers);
@@ -99,6 +101,8 @@ exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeSt
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
+  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation& masterThread)","constructor call.");
+
   // TODO(Dominic): Keep for later.
 //  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
 }
@@ -106,6 +110,14 @@ exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeSt
 // Merge over threads
 void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
     const TimeStepSizeComputation& workerThread) {
+  logInfo("mergeWithWorkerThread(...)","[pre] _minTimeStepSizes[0] =" << _minTimeStepSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","[pre] _minCellSizes[0] =" << _minCellSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","[pre] _maxCellSizes[0] =" << _maxCellSizes[0]);
+
+  logInfo("mergeWithWorkerThread(...)","workerThread._minTimeStepSizes[0] =" << workerThread._minTimeStepSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","workerThread._minCellSizes[0] =" << workerThread._minCellSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","workerThread._maxCellSizes[0] =" << workerThread._maxCellSizes[0]);
+
   for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
     _minTimeStepSizes[i] =
         std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
@@ -114,6 +126,10 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
     _maxCellSizes[i] =
         std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
+
+  logInfo("mergeWithWorkerThread(...)","[post] _minTimeStepSizes[0] =" << _minTimeStepSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","[post] _minCellSizes[0] =" << _minCellSizes[0]);
+  logInfo("mergeWithWorkerThread(...)","[post] _maxCellSizes[0] =" << _maxCellSizes[0]);
 
   // TODO(Dominic): Keep for later.
 //  logInfo("mergeWithWorkerThread(const TimeStepSizeComputation&)","Merge with worker thread");
@@ -125,6 +141,8 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   _localState = solverState;
+
+  logInfo("beginIteration()","beginIteration");
 
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
@@ -199,9 +217,16 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
       assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
+      // TODO(Dominic): Remove
+      logInfo("endIteration(...)","_minTimeStepSizes[0] =" << _minTimeStepSizes[0]);
+      logInfo("endIteration(...)","_minCellSizes[0] =" << _minCellSizes[0]);
+      logInfo("endIteration(...)","_maxCellSizes[0] =" << _maxCellSizes[0]);
+      logInfo("endIteration(...)","solver->getMinNextTimeStepSize() =" << solver->getMinNextTimeStepSize());
+
       solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
       solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
       solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+
       if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
         assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
             solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
@@ -220,6 +245,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       }
 
       solver->startNewTimeStep();
+
       if (_localState.getAlgorithmSection()==exahype::records::State::TimeStepping) {
         solver->setNextMeshUpdateRequest();
         solver->setNextAttainedStableState();
@@ -295,6 +321,10 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
               fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
           _maxCellSizes[solverNumber] = std::max(
               fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
+
+          logInfo("enterCell(...)","_minTimeStepSizes[0] =" << _minTimeStepSizes[0]);
+          logInfo("enterCell(...)","_minCellSizes[0] =" << _minCellSizes[0]);
+          logInfo("enterCell(...)","_maxCellSizes[0] =" << _maxCellSizes[0]);
         }
       }
     endpfor
