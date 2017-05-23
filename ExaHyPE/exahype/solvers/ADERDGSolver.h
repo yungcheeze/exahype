@@ -1311,6 +1311,13 @@ public:
    * and the argument handed in. The routine is used in
    * TimeStepComputation to determine the subsequent time step size.
    *
+   * <h1>Globalfixed timestepping</h1>
+   * In case of global fixed timestepping,
+   * we rely on the initial condition
+   * _predictorTimeStamp==_correctorTimeStamp
+   * to detect the first time step size
+   * computation.
+   *
    * <h1>Thread-safety</h1>
    *
    * This operation is not thread safe.

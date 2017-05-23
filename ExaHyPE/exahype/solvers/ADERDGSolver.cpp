@@ -689,9 +689,9 @@ void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(
       _minNextPredictorTimeStepSize =
           std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize);
       break;
-    case TimeStepping::GlobalFixed:
+    case TimeStepping::GlobalFixed: // TODO(Dominic): Problematic in MPI where we merge with the worker first
       _minNextPredictorTimeStepSize =
-          _minNextPredictorTimeStepSize == std::numeric_limits<double>::max()
+          _minPredictorTimeStamp == _minCorrectorTimeStamp
               ? std::min(_minNextPredictorTimeStepSize,
                          minNextPredictorTimeStepSize)
               : _minNextPredictorTimeStepSize;
@@ -3329,7 +3329,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
 
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending time step data: " <<
+    logInfo("sendDataToMaster(...)","Sending time step data: " <<
              "data[0]=" << messageForMaster[0] <<
              ",data[1]=" << messageForMaster[1] <<
              ",data[2]=" << messageForMaster[2] <<
@@ -3354,16 +3354,16 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(const DataHeap::HeapEnt
   _nextMaxCellSize               = std::max( _nextMaxCellSize, message[index++] );
   _nextMeshUpdateRequest        |= (message[index++]) > 0 ? true : false;
 
-  if (tarch::parallel::Node::getInstance().getRank()==
+  if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
+    logInfo("mergeWithWorkerData(...)","[post] Receiving time step data: " <<
         "data[0]=" << message[0] <<
         ",data[1]=" << message[1] <<
         ",data[2]=" << message[2] <<
         ",data[3]=" << message[3] );
-    logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
-        "_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
-        "_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
+    logInfo("mergeWithWorkerData(...)","[post] Updated time step fields: " <<
+        ",_minNextPredictorTimeStepSize=" << _minNextPredictorTimeStepSize <<
+        ",_nextMeshUpdateRequest=" << _nextMeshUpdateRequest <<
         ",_nextMinCellSize=" << _nextMinCellSize <<
         ",_nextMaxCellSize=" << _nextMaxCellSize);
   }
