@@ -150,6 +150,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
                 limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
                    fineGridCell.getCellDescriptionsIndex(),element);
 
+            // TODO(Dominic): That's a little weird. Maybe a change of the ordering
+            // makes it clearer.
+
             exahype::solvers::LimiterDomainChange limiterDomainChamge =
                 limitingADERDGSolver->
                   updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
