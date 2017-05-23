@@ -470,7 +470,7 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   bool gridUpdate = false;
 
   int gridSetupIterations = 0;
-  repository.switchToMeshRefinement();
+  repository.switchToMeshRefinementAndPlotGrid();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
@@ -509,7 +509,8 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
     #ifdef Asserts
     logInfo("createGrid()",
              "grid setup iteration #" << gridSetupIterations <<
-             ", run one more iteration=" << exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+             ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
+                                              exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
      );
     #endif
 
@@ -582,8 +583,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
+    repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
     if (exahype::State::fuseADERDGPhases()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
       repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
       if (plot) {
         repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
@@ -592,7 +593,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       }
       repository.iterate();
     } else {
-      repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
       repository.getState().switchToPredictionContext();
       if (plot) {
         repository.switchToPredictionAndPlot();
@@ -779,6 +779,7 @@ void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository&
   // We refine here using the previous solution (which is valid)
   logInfo("initialiseMesh(...)","create initial grid");
   repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
+
   repository.getState().switchToUpdateMeshContext();
   createMesh(repository);
   logInfo("initialiseMesh(...)","finalise mesh refinement and compute first time step size");
