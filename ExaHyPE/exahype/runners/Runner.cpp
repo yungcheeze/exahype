@@ -425,16 +425,15 @@ void exahype::runners::Runner::initHPCEnvironment() {
 
 
 int exahype::runners::Runner::run() {
-  exahype::repositories::Repository* repository = createRepository();
-
-  initDistributedMemoryConfiguration();
-  initSharedMemoryConfiguration();
-  initDataCompression();
-  initHPCEnvironment();
-
   int result = 0;
   if ( _parser.isValid() ) {
-    // We have to do this for all ranks.
+    initDistributedMemoryConfiguration();
+    initSharedMemoryConfiguration();
+    initDataCompression();
+    initHPCEnvironment();
+
+    exahype::repositories::Repository* repository = createRepository();
+    initSolvers(_domainOffset,_domainSize);
     exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
     exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
 
@@ -452,18 +451,26 @@ int exahype::runners::Runner::run() {
       result = runAsWorker(*repository);
     }
     #endif
+
+    shutdownSharedMemoryConfiguration();
+    shutdownDistributedMemoryConfiguration();
+
+    delete repository;
   }
   else {
     logError( "run(...)", "do not run code as parser reported errors" );
     result = 1;
   }
 
-  shutdownSharedMemoryConfiguration();
-  shutdownDistributedMemoryConfiguration();
-
-  delete repository;
-
   return result;
+}
+
+void exahype::runners::Runner::initSolvers(
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) const {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    p->initSolver(0.0,domainOffset,domainSize);
+  }
 }
 
 bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
@@ -574,8 +581,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface::writeHeader();
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
-    initSolvers(_domainOffset,_domainSize);
-
     initialiseMesh(repository);
 
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
@@ -662,14 +667,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.terminate();
 
   return 0;
-}
-
-void exahype::runners::Runner::initSolvers(
-    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-    const tarch::la::Vector<DIMENSIONS,double>& domainSize) const {
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initSolver(0.0,domainOffset,domainSize);
-  }
 }
 
 void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const {
