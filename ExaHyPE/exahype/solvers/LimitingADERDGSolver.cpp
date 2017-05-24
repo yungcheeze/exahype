@@ -344,16 +344,24 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
           initialGrid,
           solverNumber);
 
+  // update limiter status if neighbours are in a consistent state
   const int fineGridSolverElement =
       _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   if (fineGridSolverElement!=exahype::solvers::Solver::NotFound) {
-    updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
-    deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
-    ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
+    const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+    indicesAdjacentToFineGridVertices =
+        VertexOperations::readCellDescriptionsIndex(
+            fineGridVerticesEnumerator,fineGridVertices);
+    if (multiscalelinkedcell::adjacencyInformationIsConsistent(
+        indicesAdjacentToFineGridVertices)) {
+      updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
+      deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
+      ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
 
-    vetoErasingChildrenRequestBasedOnLimiterStatus(
-        fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
-        coarseGridCell.getCellDescriptionsIndex());
+      vetoErasingChildrenRequestBasedOnLimiterStatus(
+          fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
+          coarseGridCell.getCellDescriptionsIndex());
+    }
   }
 
   return refineFineGridCell;
