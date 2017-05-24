@@ -818,8 +818,16 @@ exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolutionUpdat
       break;
     }
   }
+
   solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
   ADERDGSolver::writeLimiterStatusOnBoundary(solverPatch);
+  assertion3(
+      !isTroubled ||
+      solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled ||
+      ADERDGSolver::determineLimiterStatus(solverPatch)==SolverPatch::LimiterStatus::Troubled,
+      isTroubled,
+      solverPatch.getLimiterStatus(),
+      ADERDGSolver::determineLimiterStatus(solverPatch));
 
   return limiterDomainChange;
 }
