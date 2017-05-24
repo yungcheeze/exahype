@@ -1742,14 +1742,16 @@ void exahype::solvers::ADERDGSolver::restrictVolumeData(
 
   // Reset the min and max
   const int numberOfObservables = getDMPObservables();
-  double* solutionMin = DataHeap::getInstance().getData(
+  if (numberOfObservables>0) {
+    double* solutionMin = DataHeap::getInstance().getData(
         coarseGridCellDescription.getSolutionMin()).data();
-  std::fill_n(solutionMin,DIMENSIONS_TIMES_TWO*numberOfObservables,
-      std::numeric_limits<double>::max());
-  double* solutionMax = DataHeap::getInstance().getData(
-      coarseGridCellDescription.getSolutionMax()).data();
-  std::fill_n(solutionMax,DIMENSIONS_TIMES_TWO*numberOfObservables,
-      -std::numeric_limits<double>::max()); // Be aware of "-"
+    std::fill_n(solutionMin,DIMENSIONS_TIMES_TWO*numberOfObservables,
+        std::numeric_limits<double>::max());
+    double* solutionMax = DataHeap::getInstance().getData(
+        coarseGridCellDescription.getSolutionMax()).data();
+    std::fill_n(solutionMax,DIMENSIONS_TIMES_TWO*numberOfObservables,
+        -std::numeric_limits<double>::max()); // Be aware of "-"
+  }
 
   // TODO(Dominic): What to do with the time step data for anarchic time stepping?
   // Tobias proposed some waiting procedure. Until they all have reached
@@ -2140,7 +2142,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  assertion1(cellDescription.getRiemannSolvePerformed().all(),cellDescription.toString());
+  assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
+      cellDescription.getRiemannSolvePerformed().all(),cellDescription.toString());
 
   exahype::Cell::resetNeighbourMergeHelperVariables(
         cellDescription,fineGridVertices,fineGridVerticesEnumerator);
