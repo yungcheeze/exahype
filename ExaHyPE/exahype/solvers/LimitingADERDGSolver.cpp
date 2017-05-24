@@ -1806,28 +1806,27 @@ void exahype::solvers::LimitingADERDGSolver::sendMinAndMaxToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) const {
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-                                                                          // |src|dest| : 1; |dest|src| : 0
-
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMin()));
-  assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMax()));
-
-  // We append all the max values to the min values.
-  // And then append the limiter status as double
   const int numberOfObservables = _solver->getDMPObservables();
-  DataHeap::HeapEntries minAndMaxToSend(2*numberOfObservables);
-  for (int i=0; i<numberOfObservables; i++) {
-    minAndMaxToSend[i]                     = DataHeap::getInstance().getData( solverPatch.getSolutionMin() )[faceIndex*numberOfObservables+i];
-    minAndMaxToSend[i+numberOfObservables] = DataHeap::getInstance().getData( solverPatch.getSolutionMax() )[faceIndex*numberOfObservables+i];
-  }
+  if (numberOfObservables) {
+    const int direction   = tarch::la::equalsReturnIndex(src, dest);
+    const int orientation = (1 + dest(direction) - src(direction))/2;
+    const int faceIndex   = 2*direction+orientation;
 
-  DataHeap::getInstance().sendData(
-      minAndMaxToSend, toRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
+    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+    assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMin()));
+    assertion(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMax()));
+
+    // We append all the max values to the min values.
+    DataHeap::HeapEntries minAndMaxToSend(2*numberOfObservables);
+    for (int i=0; i<numberOfObservables; i++) {
+      minAndMaxToSend[i]                     = DataHeap::getInstance().getData( solverPatch.getSolutionMin() )[faceIndex*numberOfObservables+i];
+      minAndMaxToSend[i+numberOfObservables] = DataHeap::getInstance().getData( solverPatch.getSolutionMax() )[faceIndex*numberOfObservables+i];
+    }
+
+    DataHeap::getInstance().sendData(
+        minAndMaxToSend, toRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+  }
 }
 
 
@@ -1884,11 +1883,14 @@ void exahype::solvers::LimitingADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   // send an empty minAndMax message
-  DataHeap::HeapEntries emptyMessage(0);
-  for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
-    DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
-        peano::heap::MessageType::NeighbourCommunication);
+  const int numberOfObservables = _solver->getDMPObservables();
+  if (numberOfObservables) {
+    DataHeap::HeapEntries emptyMessage(0);
+    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
+      DataHeap::getInstance().sendData(
+          emptyMessage, toRank, x, level,
+          peano::heap::MessageType::NeighbourCommunication);
+  }
 
   _solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
   if (level==getMaximumAdaptiveMeshLevel()) {
@@ -1984,22 +1986,23 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMinAndMax(
     const tarch::la::Vector<DIMENSIONS, int>&    dest,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) const {
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
-
   const int numberOfObservables = _solver->getDMPObservables();
-  const int receivedMinMaxIndex = DataHeap::getInstance().createData(2*numberOfObservables, 2*numberOfObservables);
-  assertion(DataHeap::getInstance().getData(receivedMinMaxIndex).size()==static_cast<unsigned int>(2*numberOfObservables));
-  double* receivedMinAndMax = DataHeap::getInstance().getData(receivedMinMaxIndex).data();
+  if (numberOfObservables>0) {
+    SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
+    const int direction   = tarch::la::equalsReturnIndex(src, dest);
+    const int orientation = (1 + src(direction) - dest(direction))/2;
+    const int faceIndex   = 2*direction+orientation;
 
-  DataHeap::getInstance().receiveData(receivedMinAndMax, 2*numberOfObservables, fromRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-  mergeSolutionMinMaxOnFace(solverPatch,faceIndex,receivedMinAndMax,receivedMinAndMax+numberOfObservables);
+    const int receivedMinMaxIndex = DataHeap::getInstance().createData(2*numberOfObservables, 2*numberOfObservables);
+    assertion(DataHeap::getInstance().getData(receivedMinMaxIndex).size()==static_cast<unsigned int>(2*numberOfObservables));
+    double* receivedMinAndMax = DataHeap::getInstance().getData(receivedMinMaxIndex).data();
 
-  DataHeap::getInstance().deleteData(receivedMinMaxIndex,true);
+    DataHeap::getInstance().receiveData(receivedMinAndMax, 2*numberOfObservables, fromRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+    mergeSolutionMinMaxOnFace(solverPatch,faceIndex,receivedMinAndMax,receivedMinAndMax+numberOfObservables);
+
+    DataHeap::getInstance().deleteData(receivedMinMaxIndex,true);
+  }
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
@@ -2036,10 +2039,13 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
   }
   _solver->dropNeighbourData(fromRank,src,dest,x,level);
 
-  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
+  const int numberOfObservables = _solver->getDMPObservables();
+  if (numberOfObservables>0) {
+    for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
       DataHeap::getInstance().receiveData(
           fromRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
+  }
 
   // send order:   minAndMax,solver,limiter
   // receive order limiter,solver,minAndMax
