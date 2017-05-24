@@ -54,7 +54,8 @@ bool exahype::Vertex::hasToMergeNeighbours(
     const int cellDescriptionsIndex2 =
         _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
-    if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) &&
+    if (cellDescriptionsIndex1!=cellDescriptionsIndex2 && // This scenario occured during one run
+        exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) &&
         exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
       assertion1(pos1Scalar!=pos2Scalar,pos1Scalar);
       assertion1(cellDescriptionsIndex1!=cellDescriptionsIndex2,cellDescriptionsIndex1);
