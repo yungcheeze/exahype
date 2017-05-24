@@ -2698,8 +2698,6 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
       cellDescriptionsIndex);
 
-  logInfo("sendCellDescriptionsDueToForkOrJoin(...)","...");
-
   for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
     if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
         || cellDescription.getType()==CellDescription::Type::Ancestor) {
