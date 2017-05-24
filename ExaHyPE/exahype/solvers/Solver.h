@@ -56,7 +56,14 @@ namespace exahype {
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
    */
-  #if ALIGNMENT==32
+  #if ALIGNMENT==16
+  typedef peano::heap::DoubleHeap<
+    peano::heap::SynchronousDataExchanger< double, true >,
+    peano::heap::SynchronousDataExchanger< double, true >,
+    peano::heap::RLEBoundaryDataExchanger< double, false >,
+    std::vector< double, peano::heap::HeapAllocator<double, 16 > >
+  >     DataHeap;
+  #elif ALIGNMENT==32
   typedef peano::heap::DoubleHeap<
     peano::heap::SynchronousDataExchanger< double, true >,
     peano::heap::SynchronousDataExchanger< double, true >,
