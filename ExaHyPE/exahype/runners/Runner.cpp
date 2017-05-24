@@ -427,15 +427,16 @@ void exahype::runners::Runner::initHPCEnvironment() {
 int exahype::runners::Runner::run() {
   int result = 0;
   if ( _parser.isValid() ) {
-    initDistributedMemoryConfiguration();
-    initSharedMemoryConfiguration();
-    initDataCompression();
-    initHPCEnvironment();
-
     exahype::repositories::Repository* repository = createRepository();
     initSolvers(_domainOffset,_domainSize);
     exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
     exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
+
+    // must be after repository creation
+    initDistributedMemoryConfiguration();
+    initSharedMemoryConfiguration();
+    initDataCompression();
+    initHPCEnvironment();
 
     exahype::mappings::MeshRefinement::Mode=
          exahype::mappings::MeshRefinement::RefinementMode::Initial;
