@@ -145,22 +145,20 @@ void exahype::mappings::SolutionUpdate::enterCell(
           if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
             auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
-            // TODO(Dominic): Clean up a little bit
-            _solverFlags._meshUpdateRequest[i] |=
-                limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
-                   fineGridCell.getCellDescriptionsIndex(),element);
-
-            // TODO(Dominic): That's a little weird. Maybe a change of the ordering
-            // makes it clearer.
-
+            // !!! limiter status must be updated before refinement crit.
             exahype::solvers::LimiterDomainChange limiterDomainChamge =
                 limitingADERDGSolver->
-                  updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
+                updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
                     fineGridCell.getCellDescriptionsIndex(),element);
+            _solverFlags._meshUpdateRequest[i] |=
+                limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+
             _solverFlags._limiterDomainChange[i] =
                 std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
-            _solverFlags._meshUpdateRequest[i] |=
-                _solverFlags._limiterDomainChange[i]==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+            assertion(!_solverFlags._meshUpdateRequest[i] ||
+                _solverFlags._limiterDomainChange[i]!=
+                    exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
           } else {
             _solverFlags._meshUpdateRequest[i] |=
                 solver->evaluateRefinementCriterionAfterSolutionUpdate(

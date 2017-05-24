@@ -288,11 +288,18 @@ exahype::plotters::Plotter::Plotter(
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
       /**
-       * Plotters for amy ADER-DG scheme.
+       * Plotters for any ADER-DG scheme.
        *
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianCellsPeanoFileFormatAscii::getIdentifier())) {
+        _device = new ADERDG2CartesianCellsPeanoFileFormatAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier())) {
+        _device = new ADERDG2CartesianVerticesPeanoFileFormatAscii(postProcessing);
+      }
+
       if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
@@ -305,6 +312,7 @@ exahype::plotters::Plotter::Plotter(
       if (equalsIgnoreCase(_identifier, ADERDG2CartesianCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
       }
+
       if (equalsIgnoreCase(_identifier, ADERDG2LegendreVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
       }
@@ -317,6 +325,45 @@ exahype::plotters::Plotter::Plotter(
       if (equalsIgnoreCase(_identifier, ADERDG2LegendreCellsVTKBinary::getIdentifier())) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesVTUAscii::getIdentifier())) {
+        _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianVerticesVTUBinary::getIdentifier())) {
+        _device = new ADERDG2CartesianVerticesVTUBinary(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianCellsVTUAscii::getIdentifier())) {
+        _device = new ADERDG2CartesianCellsVTUAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2CartesianCellsVTUBinary::getIdentifier())) {
+        _device = new ADERDG2CartesianCellsVTUBinary(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreVerticesVTUAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreVerticesVTUAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreVerticesVTUBinary::getIdentifier())) {
+        _device = new ADERDG2LegendreVerticesVTUBinary(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreCellsVTUAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreCellsVTUAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreCellsVTUBinary::getIdentifier())) {
+        _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
+      }
+
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreDivergenceVerticesVTKAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier())) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKBinary(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier())) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUAscii(postProcessing);
+      }
+      if (equalsIgnoreCase(_identifier, ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier())) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUBinary(postProcessing);
+      }
+
       if (equalsIgnoreCase(_identifier, ADERDG2ProbeAscii::getIdentifier())) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
@@ -324,7 +371,7 @@ exahype::plotters::Plotter::Plotter(
         _device = new ADERDG2LegendreCSV(postProcessing);
       }
       if (equalsIgnoreCase(_identifier, ADERDG2CarpetHDF5::getIdentifier())) {
-        _device = new ADERDG2CarpetHDF5(postProcessing); // untested
+        _device = new ADERDG2CarpetHDF5(postProcessing);
       }
 
       /**
@@ -364,33 +411,6 @@ exahype::plotters::Plotter::Plotter(
             postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 solvers::RegisteredSolvers[_solver])->getLimiter()->getGhostLayerWidth());
       }
-//      if (icompare(_identifier, ADERDG2LegendreVerticesVTKAscii::getIdentifier())) {
-//        _device = new LimitingADERDG2LegendreVerticesVTKAscii(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      }
-//      if (icompare(_identifier, ADERDG2LegendreVerticesVTKBinary::getIdentifier())) {
-//        _device = new LimitingADERDG2LegendreVerticesVTKBinary(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      }
-//      if (icompare(_identifier, ADERDG2LegendreCellsVTKAscii::getIdentifier())) {
-//        _device = new LimitingADERDG2LegendreCellsVTKAscii(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      }
-//      if (icompare(_identifier, ADERDG2LegendreCellsVTKBinary::getIdentifier())) {
-//        _device = new LimitingADERDG2LegendreCellsVTKBinary(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//                solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      if (icompare(_identifier, ADERDG2ProbeAscii::getIdentifier())) {
-//        _device = new LimitingADERDG2ProbeAscii(
-//            postProcessing,static_cast<exahype::solvers::LimitingADERDGSolver*>(
-//            solvers::RegisteredSolvers[_solver])->_limiter->getGhostLayerWidth());
-//      }
-//      if (icompare(_identifier, ADERDG2LegendreCSV::getIdentifier())) {
-//        _device = new LimitingADERDG2LegendreCSV(postProcessing);
-//      }
     break;
   }
 
