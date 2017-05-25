@@ -1839,7 +1839,8 @@ bool exahype::solvers::ADERDGSolver::evaluateRefinementCriterionAfterSolutionUpd
       const int element) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
 
-  if (cellDescription.getType()==CellDescription::Type::Cell) {
+  if (cellDescription.getType()==CellDescription::Type::Cell &&
+      cellDescription.getLevel()<getMaximumAdaptiveMeshLevel()) {
     const double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
     RefinementControl refinementControl = refinementCriterion(
                       solution,cellDescription.getOffset()+0.5*cellDescription.getSize(),
@@ -3402,7 +3403,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     double* extrapolatedPredictor = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
     double* fluctuations          = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
 
-    logInfo("sendDataToMaster(...)","Face data of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
+    logInfo("sendDataToMaster(...)","face data of solver " << cellDescription.getSolverNumber() << " sent to rank "<<masterRank<<
              ", cell: "<< x << ", level: " << level);
 
     // No inverted message order since we do synchronous data exchange.
