@@ -31,6 +31,7 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
 const int exahype::solvers::Solver::NotFound = -1;
 
+tarch::logging::Log exahype::solvers::Solver::_log( "exahype::solvers::Solver");
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   assertion(solverFlags._limiterDomainChange==nullptr);
@@ -412,8 +413,8 @@ exahype::DataHeap::HeapEntries
 exahype::solvers::Solver::compileMeshUpdateFlagsForMaster(const int capacity) const {
   DataHeap::HeapEntries meshUpdateFlags(0,std::max(2,capacity)); // !!! does not fill the vector
 
-  meshUpdateFlags.push_back(_meshUpdateRequest   ? 1.0 : -1.0);
-  meshUpdateFlags.push_back(_attainedStableState ? 1.0 : -1.0);
+  meshUpdateFlags.push_back(getMeshUpdateRequest()   ? 1.0 : -1.0);
+  meshUpdateFlags.push_back(getAttainedStableState() ? 1.0 : -1.0);
   return meshUpdateFlags;
 }
 
@@ -426,9 +427,9 @@ void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
   assertion1(meshRefinementFlags.size()==2,meshRefinementFlags.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("sendDataToMaster(...)","Sending mesh update flags: " <<
-             "data[0]=" << meshRefinementFlags[0]
-             "data[1]=" << meshRefinementFlags[1]);
+    logInfo("sendDataToMaster(...)","sending mesh update flags: " <<
+             "data[0]=" << meshRefinementFlags[0] <<
+             ",data[1]=" << meshRefinementFlags[1]);
   }
 
   DataHeap::getInstance().sendData(
@@ -439,18 +440,14 @@ void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
 
 void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(const DataHeap::HeapEntries& message) {
   int index=0;
-  _nextMeshUpdateRequest   |= ( message[index++] > 0 ) ? true : false;
-  _nextAttainedStableState |= ( message[index++] > 0 ) ? true : false;
+  updateNextMeshUpdateRequest  ( ( message[index++] > 0 ) ? true : false );
+  updateNextAttainedStableState( ( message[index++] > 0 ) ? true : false );
 }
 
 void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  if (tarch::parallel::Node::getInstance().getRank()==
-      tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-      logDebug("mergeWithWorkerData(...)","Receiving grid update flags [pre] from rank " << workerRank);
-  }
   DataHeap::HeapEntries messageFromWorker(2); // !!! fills the vector
 
   DataHeap::getInstance().receiveData(
@@ -462,9 +459,9 @@ void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logDebug("mergeWithWorkerData(...)","Received grid update flags: " <<
+    logInfo("mergeWithWorkerData(...)","received mesh update flags: " <<
              "data[0]=" << messageFromWorker[0] <<
-             "data[1]=" << messageFromWorker[1]);
+             ",data[1]=" << messageFromWorker[1]);
   }
 }
 #endif

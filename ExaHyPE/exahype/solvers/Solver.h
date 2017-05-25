@@ -240,6 +240,12 @@ public:
  * Describes one solver.
  */
 class exahype::solvers::Solver {
+ private:
+  /**
+   * Log device.
+   */
+  static tarch::logging::Log _log;
+
  public:
   /**
    * The type of a solver.
