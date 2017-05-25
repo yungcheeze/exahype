@@ -2256,7 +2256,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
     const                                        int workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(8);
+  DataHeap::HeapEntries messageForWorker = _solver->compileMessageForWorker(9);
 
   // append additional data
   messageForWorker.push_back(
@@ -2273,7 +2273,8 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
              ",data[4]=" << messageForWorker[4] <<
              ",data[5]=" << messageForWorker[5] <<
              ",data[6]=" << messageForWorker[6] <<
-             ",data[7]=" << messageForWorker[7]);
+             ",data[7]=" << messageForWorker[7] <<
+             ",data[8]=" << messageForWorker[8]);
   }
   DataHeap::getInstance().sendData(
       messageForWorker.data(), messageForWorker.size(),
@@ -2285,7 +2286,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  DataHeap::HeapEntries messageFromMaster(8); // !!! Creates and fills the vector
+  DataHeap::HeapEntries messageFromMaster(9); // !!! Creates and fills the vector
   DataHeap::getInstance().receiveData(
       messageFromMaster.data(),messageFromMaster.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
@@ -2294,7 +2295,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
   _solver->mergeWithMasterData(messageFromMaster);
 
   // merge own data
-  const int firstEntry=7;
+  const int firstEntry=8;
   LimiterDomainChange workerLimiterDomainChange =
       exahype::solvers::convertToLimiterDomainChange(messageFromMaster[firstEntry]);
   updateNextLimiterDomainChange(workerLimiterDomainChange); // !!! It is important that we merge with the "next" field here
@@ -2309,7 +2310,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
              " messageFromMaster[4]=" << messageFromMaster[4] <<
              " messageFromMaster[5]=" << messageFromMaster[5] <<
              " messageFromMaster[6]=" << messageFromMaster[6] <<
-             " messageFromMaster[7]=" << messageFromMaster[7]);
+             " messageFromMaster[7]=" << messageFromMaster[7] <<
+             " messageFromMaster[8]=" << messageFromMaster[8]);
     logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
   }
 }

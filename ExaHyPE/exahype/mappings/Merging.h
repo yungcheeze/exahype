@@ -91,6 +91,11 @@ private:
   int _boundaryFaceMerges;
   #endif
 
+  /*
+   *  Counter for the boundary face solves for debugging purposes.
+   */
+  int _remoteBoundaryFaceMerges;
+
   #ifdef Parallel
   /**
    * Iterates over the received metadata and every time
@@ -124,7 +129,7 @@ private:
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int level,
-      const exahype::MetadataHeap::HeapEntries& receivedMetadata) const;
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
   #endif
 
 public:

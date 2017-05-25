@@ -79,11 +79,13 @@ tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
 
 exahype::mappings::Merging::Merging()
-  #ifdef Debug
   :
-  _interiorFaceMerges(0),
-  _boundaryFaceMerges(0)
+  _remoteBoundaryFaceMerges(0)
+  #ifdef Debug
+  ,_interiorFaceMerges(0)
+  ,_boundaryFaceMerges(0)
   #endif
+
 {
   // do nothing
 }
@@ -95,6 +97,8 @@ exahype::mappings::Merging::~Merging() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState)
+  :
+  _remoteBoundaryFaceMerges(0)
   #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
@@ -112,7 +116,10 @@ void exahype::mappings::Merging::beginIteration(
 
   _localState = solverState;
 
-  logDebug("beginIteration(State)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
+  logInfo("beginIteration(State)",
+      "MergeMode="<<exahype::records::State::toString(_localState.getMergeMode())<<
+      ", SendMode="<<exahype::records::State::toString(_localState.getSendMode())<<
+      ", AlgorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
 
   #ifdef Parallel
   if (_localState.getMergeMode()!=exahype::records::State::MergeMode::MergeNothing) {
@@ -132,6 +139,7 @@ void exahype::mappings::Merging::beginIteration(
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;
   #endif
+  _remoteBoundaryFaceMerges = 0;
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -146,6 +154,8 @@ void exahype::mappings::Merging::endIteration(
   logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
   logInfo("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
   #endif
+
+  logInfo("endIteration(state)","remoteBoundaryFaceMerges: " << _remoteBoundaryFaceMerges);
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
 }
@@ -369,6 +379,7 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
         solver->dropNeighbourData(
             fromRank,src,dest,x,level);
       }
+      _remoteBoundaryFaceMerges++;
     }
   }
 }
@@ -381,15 +392,19 @@ void exahype::mappings::Merging::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int level,
-    const exahype::MetadataHeap::HeapEntries& receivedMetadata)  const {
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
-    logDebug("dropNeighbourData(...)", "drop data from " <<
-             fromRank << " at vertex x=" << x << ", level=" << level <<
-             ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber);
-
     auto* solver = solvers::RegisteredSolvers[solverNumber];
+
+    logInfo("dropNeighbourData(...)", "drop data from rank" <<
+             fromRank << " at vertex x=" << x << ", level=" << level <<
+             ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber <<
+             ", algorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
+
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       solver->dropNeighbourData(fromRank,src,dest,x,level);
+
+      _remoteBoundaryFaceMerges++;
     }
   }
 }
@@ -408,7 +423,8 @@ bool exahype::mappings::Merging::prepareSendToWorker(
   logDebug("prepareSendToWorker(...)","MergeMode="<<_localState.getMergeMode()<<", SendMode="<<_localState.getSendMode());
 
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData) {
     // Send global solver data
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
       solver->sendDataToWorker(
@@ -481,7 +497,8 @@ void exahype::mappings::Merging::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (_localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndDropFaceData) {
     // Receive global solver data from master
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
       solver->mergeWithMasterData(
