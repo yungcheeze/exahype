@@ -106,13 +106,14 @@ void exahype::mappings::MeshRefinement::beginIteration(
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().setName("FiniteVolumesCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
 
-  // TODO(Dominic):
-//  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-//    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-//
-//    solver->zeroTimeStepSizes();
-//    assertion1(!solver->getNextMeshUpdateRequested(),solver->toString());
-//  } // Dead code elimination will get rid of this loop in Asserts and Debug mode.
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+    if (solver->getMeshUpdateRequest()) {
+      solver->zeroTimeStepSizes();
+    }
+    assertion1(!solver->getNextMeshUpdateRequest(),solver->toString());
+  }
 
   #ifdef Parallel
   exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
@@ -136,8 +137,9 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
   for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-//      solver->zeroTimeStepSizes();
-      solver->setNextAttainedStableState();
+      if (solver->getMeshUpdateRequest()) {
+        solver->setNextAttainedStableState();
+      }
   }
 
   #ifdef Parallel
@@ -271,7 +273,7 @@ void exahype::mappings::MeshRefinement::enterCell(
   bool refineFineGridCell = false;
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-    if (solver->isComputing(_localState.getAlgorithmSection())) {
+    if (solver->getMeshUpdateRequest()) {
       refineFineGridCell |=
           solver->markForRefinement(
               fineGridCell,
@@ -299,6 +301,11 @@ void exahype::mappings::MeshRefinement::enterCell(
 
     const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
+      if (solver->getMeshUpdateRequest()) {
+        solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
+        solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+      }
+
       solver->prepareNextNeighbourMerging(
           fineGridCell.getCellDescriptionsIndex(),element,
           fineGridVertices,fineGridVerticesEnumerator);
@@ -336,7 +343,7 @@ void exahype::mappings::MeshRefinement::leaveCell(
 
   for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
     auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-    if (solver->isComputing(_localState.getAlgorithmSection())) {
+    if (solver->getMeshUpdateRequest()) {
       erasedCellDescriptionOfAllSolvers &=
           solver->updateStateInLeaveCell(
               fineGridCell,

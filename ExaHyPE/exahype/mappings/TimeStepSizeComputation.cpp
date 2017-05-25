@@ -195,7 +195,6 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
           ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
-      logDebug("endIteration(state)","_minTimeStepSizes[0]="<<_minTimeStepSizes[0]);
       assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
       assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
@@ -232,6 +231,8 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
       if (!exahype::State::fuseADERDGPhases()) {
         reconstructStandardTimeSteppingData(solver);
       }
+
+      logInfo("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
   }
 

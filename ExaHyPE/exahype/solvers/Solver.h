@@ -1015,6 +1015,12 @@ class exahype::solvers::Solver {
    * This method is used by the adaptive mesh refinement mapping.
    * After the mesh refinement, we need to recompute
    * the time step sizes.
+   *
+   * <h1>ADER-DG</h1>
+   * Further resets the predictor time stamp to take
+   * the value of the corrector time stamp.
+   * The fused must be initialised again after
+   * each mesh refinement.
    */
   virtual void zeroTimeStepSizes() = 0;
 
@@ -1058,6 +1064,12 @@ class exahype::solvers::Solver {
    * This method is used by the adaptive mesh refinement mapping.
    * After the mesh refinement, we need to recompute
    * the time step sizes.
+   *
+   * <h1>ADER-DG</h1>
+   * Further resets the predictor time stamp to take
+   * the value of the corrector time stamp.
+   * The fused must be initialised again after
+   * each mesh refinement.
    *
    * \note We do not overwrite _minNextTimeStepSize or an
    * equivalent value since this would erase the time

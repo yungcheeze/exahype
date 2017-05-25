@@ -106,6 +106,8 @@ void exahype::solvers::FiniteVolumesSolver::initSolver(
   _previousMinTimeStepSize = 0.0;
   _minTimeStepSize = 0.0;
   _minTimeStamp = timeStamp;
+
+  _meshUpdateRequest = true;
 }
 
 bool exahype::solvers::FiniteVolumesSolver::isSending(

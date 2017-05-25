@@ -622,6 +622,8 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
 void exahype::solvers::ADERDGSolver::zeroTimeStepSizes() {
   _minCorrectorTimeStepSize = 0;
   _minPredictorTimeStepSize = 0;
+
+  _minPredictorTimeStamp = _minCorrectorTimeStamp;
 }
 
 void exahype::solvers::ADERDGSolver::reconstructStandardTimeSteppingData() {
@@ -787,6 +789,8 @@ void exahype::solvers::ADERDGSolver::initSolver(
   setPreviousMinCorrectorTimeStamp(timeStamp);
   setMinCorrectorTimeStamp(timeStamp);
   setMinPredictorTimeStamp(timeStamp);
+
+  _meshUpdateRequest = true;
 }
 
 bool exahype::solvers::ADERDGSolver::isSending(

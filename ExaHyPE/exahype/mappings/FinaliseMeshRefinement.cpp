@@ -147,17 +147,18 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
       const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
           fineGridCell.getCellDescriptionsIndex(),solverNumber);
-
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->finaliseStateUpdates(
-            fineGridCell,
-            fineGridVertices,
-            fineGridVerticesEnumerator,
-            coarseGridCell,
-            coarseGridVertices,
-            coarseGridVerticesEnumerator,
-            fineGridPositionOfCell,
-            solverNumber);
+        if (solver->getMeshUpdateRequest()) {
+          solver->finaliseStateUpdates(
+                      fineGridCell,
+                      fineGridVertices,
+                      fineGridVerticesEnumerator,
+                      coarseGridCell,
+                      coarseGridVertices,
+                      coarseGridVerticesEnumerator,
+                      fineGridPositionOfCell,
+                      solverNumber);
+        }
 
         solver->prepareNextNeighbourMerging(
             fineGridCell.getCellDescriptionsIndex(),element,

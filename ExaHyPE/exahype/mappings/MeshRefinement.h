@@ -209,6 +209,11 @@ public:
    * Further update the gridUpdateRequested flag
    * of each solver.
    *
+   * Further synchronise the time stepping of the patches
+   * with the solver and zero the time step sizes.
+   *
+   * TODO(Dominic): Update the docu
+   *
    * We distinguish among three different refinement modes:
    *
    * RefinementMode | Action
@@ -273,6 +278,8 @@ public:
    *
    * For each solver, reset the grid update requested flag
    * to false.
+   *
+   * Further zero the time step sizes of the solver.
    *
    * <h2>MPI</h2>
    * Finish the previous synchronous sends and
