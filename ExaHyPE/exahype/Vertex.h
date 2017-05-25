@@ -23,16 +23,17 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
-  /**
-   * We abuse this heap to send and receive metadata from one MPI rank to the other.
-   * We never actually store data on this heap.
-   */
-  typedef peano::heap::Heap<
-    peano::heap::records::IntegerHeapData,
-    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
-    peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true >,
-    peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false >
-  >     MetadataHeap;
+/**
+ * We abuse this heap to send and receive metadata from one MPI rank to the other.
+ * We never actually store data on this heap.
+ */
+typedef peano::heap::Heap<
+  peano::heap::records::IntegerHeapData,
+  peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
+  peano::heap::SynchronousDataExchanger< peano::heap::records::IntegerHeapData, true, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >,
+  peano::heap::RLEBoundaryDataExchanger< peano::heap::records::IntegerHeapData, false, peano::heap::SendReceiveTask<peano::heap::records::IntegerHeapData> >
+>     MetadataHeap;
+
 
 
   class Vertex;
