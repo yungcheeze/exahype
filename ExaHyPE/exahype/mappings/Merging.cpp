@@ -116,7 +116,7 @@ void exahype::mappings::Merging::beginIteration(
 
   _localState = solverState;
 
-  logInfo("beginIteration(State)",
+  logDebug("beginIteration(State)",
       "MergeMode="<<exahype::records::State::toString(_localState.getMergeMode())<<
       ", SendMode="<<exahype::records::State::toString(_localState.getSendMode())<<
       ", AlgorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
@@ -151,11 +151,11 @@ void exahype::mappings::Merging::endIteration(
   exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 
   #if defined(Debug) // TODO(Dominic): Use logDebug if it works with filters
-  logInfo("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
-  logInfo("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
+  logDebug("endIteration(state)","interiorFaceSolves: " << _interiorFaceMerges);
+  logDebug("endIteration(state)","boundaryFaceSolves: " << _boundaryFaceMerges);
   #endif
 
-  logInfo("endIteration(state)","remoteBoundaryFaceMerges: " << _remoteBoundaryFaceMerges);
+  logDebug("endIteration(state)","remoteBoundaryFaceMerges: " << _remoteBoundaryFaceMerges);
 
   logTraceOutWith1Argument("endIteration(State)", solverState);
 }
@@ -272,7 +272,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
       _localState.getMergeMode()==exahype::records::State::DropFaceData ||
       _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndDropFaceData
   ) {
-    // logInfo("mergeWithNeighbour(...)","hasToMerge");
+    // logDebug("mergeWithNeighbour(...)","hasToMerge");
 
     dfor2(myDest)
       dfor2(mySrc)
@@ -283,7 +283,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-          // logInfo("mergeWithNeighbour(...)","hasToReceiveMetadata");
+          // logDebug("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
           const int receivedMetadataIndex = MetadataHeap::getInstance().
               createData(0,exahype::solvers::RegisteredSolvers.size());
@@ -295,7 +295,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
           assertion(receivedMetadata.size()==exahype::MetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
-            // logInfo("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
+            // logDebug("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
 
             if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
                 _localState.getMergeMode()==exahype::records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData) {
@@ -396,7 +396,7 @@ void exahype::mappings::Merging::dropNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-    logInfo("dropNeighbourData(...)", "drop data from rank" <<
+    logDebug("dropNeighbourData(...)", "drop data from rank" <<
              fromRank << " at vertex x=" << x << ", level=" << level <<
              ", src=" << src << ", dest=" << dest << ", solverNumber=" << solverNumber <<
              ", algorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
