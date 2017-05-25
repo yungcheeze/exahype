@@ -112,7 +112,7 @@ void exahype::mappings::MeshRefinement::beginIteration(
     if (solver->getMeshUpdateRequest()) {
       solver->zeroTimeStepSizes();
     }
-    assertion1(!solver->getNextMeshUpdateRequest(),solver->toString());
+    //assertion2(!solver->getNextMeshUpdateRequest(),solver->toString(),tarch::parallel::Node::getInstance().getRank());
   }
 
   #ifdef Parallel

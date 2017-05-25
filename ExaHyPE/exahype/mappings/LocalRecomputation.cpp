@@ -352,7 +352,7 @@ void exahype::mappings::LocalRecomputation::mergeWithNeighbour(
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
         exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+        assertion(receivedMetadata.size()==exahype::MetadataPerSolver*solvers::RegisteredSolvers.size());
 
         if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
           mergeNeighourData(
