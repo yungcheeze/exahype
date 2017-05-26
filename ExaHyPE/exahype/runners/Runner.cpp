@@ -813,6 +813,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
       exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
     repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
+
     logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
     repository.getState().switchToReinitialisationContext();
     repository.switchToFinaliseMeshRefinementAndReinitialisation();
@@ -820,29 +821,36 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
     // 4. Perform a local recomputation of the solution of the solvers that requested one.
     // Perform a time
+    if (!exahype::solvers::Solver::oneSolverRequestedMeshUpdate() &&
+        !exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
+    }
     logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
     repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
     repository.switchToLocalRecomputationAndTimeStepSizeComputation();
-    repository.iterate();
+    repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
+  } // LocalRecomputation is done here
 
-    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation);
     if (!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend);
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementAllSend);
     }
     logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
     repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
     repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-    repository.iterate(); // At this stage all solvers that required a mesh update or local recomputation, have
+    repository.iterate(); // At this stage all solvers that required a mesh update, have
                           // recomputed the predictor
+  }  // MeshUpdate is done here
 
-    // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
-    if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+  // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
       repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
       logInfo("updateMeshFusedTimeStepping(...)","recompute solution and predictor globally");
       repository.getState().switchToADERDGTimeStepContext();
       repository.switchToADERDGTimeStep();
-      repository.iterate(); // At this stage all solvers that required a mesh update or local recomputation, have
-                            // recomputed the predictor
+      repository.iterate();
     }
   }
 }

@@ -181,16 +181,32 @@ class exahype::dastgen::State {
    	 */
    	MeshRefinementOrLocalOrGlobalRecomputation,
    	
-   	/**
-   	 * Similar to MeshRefinementOrLocalOrGlobalRecomputation
-   	 * but triggers a send for all registered solvers.
-   	 *
-   	 * This marks an end point of the side branch.
-   	 * It is sure here that no solver performs
-   	 * a global recomputation.
-   	 */
-   	MeshRefinementOrLocalRecomputationAllSend,
+    /**
+     * This marks an end point of the side branch.
+     * It is sure here that no solver performs
+     * a global recomputation or has performed mesh refinement
+     * 
+     * Triggers a send for all registered solvers.
+     */
+    LocalRecomputationAllSend,
+    
+    /**
+     * In this section, the  runner
+     * triggers operations for solvers that
+     * have performed mesh refinement or
+     * which perform a global recomputation.
+     */
+    MeshRefinementOrGlobalRecomputation,
    	
+    /**
+     * This marks an end point of the side branch.
+     * It is sure here that no solver performs
+     * a global recomputation.
+     * 
+     * Triggers a send for all registered solvers.
+     */
+    MeshRefinementAllSend,
+    
    	/**
    	 * In this section, solvers finalise their 
    	 * global recomputation by doing a complete

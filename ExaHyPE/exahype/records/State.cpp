@@ -45,7 +45,9 @@
          case TimeStepping: return "TimeStepping";
          case MeshRefinement: return "MeshRefinement";
          case MeshRefinementOrLocalOrGlobalRecomputation: return "MeshRefinementOrLocalOrGlobalRecomputation";
-         case MeshRefinementOrLocalRecomputationAllSend: return "MeshRefinementOrLocalRecomputationAllSend";
+         case LocalRecomputationAllSend: return "LocalRecomputationAllSend";
+         case MeshRefinementOrGlobalRecomputation: return "MeshRefinementOrGlobalRecomputation";
+         case MeshRefinementAllSend: return "MeshRefinementAllSend";
          case GlobalRecomputationAllSend: return "GlobalRecomputationAllSend";
          case PredictionRerunAllSend: return "PredictionRerunAllSend";
       }
@@ -53,7 +55,7 @@
    }
    
    std::string exahype::records::State::getAlgorithmSectionMapping() {
-      return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,MeshRefinementOrLocalRecomputationAllSend=3,GlobalRecomputationAllSend=4,PredictionRerunAllSend=5)";
+      return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,LocalRecomputationAllSend=3,MeshRefinementOrGlobalRecomputation=4,MeshRefinementAllSend=5,GlobalRecomputationAllSend=6,PredictionRerunAllSend=7)";
    }
    std::string exahype::records::State::toString(const MergeMode& param) {
       switch (param) {
@@ -1325,7 +1327,9 @@
             case TimeStepping: return "TimeStepping";
             case MeshRefinement: return "MeshRefinement";
             case MeshRefinementOrLocalOrGlobalRecomputation: return "MeshRefinementOrLocalOrGlobalRecomputation";
-            case MeshRefinementOrLocalRecomputationAllSend: return "MeshRefinementOrLocalRecomputationAllSend";
+            case LocalRecomputationAllSend: return "LocalRecomputationAllSend";
+            case MeshRefinementOrGlobalRecomputation: return "MeshRefinementOrGlobalRecomputation";
+            case MeshRefinementAllSend: return "MeshRefinementAllSend";
             case GlobalRecomputationAllSend: return "GlobalRecomputationAllSend";
             case PredictionRerunAllSend: return "PredictionRerunAllSend";
          }
@@ -1333,7 +1337,7 @@
       }
       
       std::string exahype::records::State::getAlgorithmSectionMapping() {
-         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,MeshRefinementOrLocalRecomputationAllSend=3,GlobalRecomputationAllSend=4,PredictionRerunAllSend=5)";
+         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,LocalRecomputationAllSend=3,MeshRefinementOrGlobalRecomputation=4,MeshRefinementAllSend=5,GlobalRecomputationAllSend=6,PredictionRerunAllSend=7)";
       }
       std::string exahype::records::State::toString(const MergeMode& param) {
          switch (param) {
@@ -3137,7 +3141,9 @@
             case TimeStepping: return "TimeStepping";
             case MeshRefinement: return "MeshRefinement";
             case MeshRefinementOrLocalOrGlobalRecomputation: return "MeshRefinementOrLocalOrGlobalRecomputation";
-            case MeshRefinementOrLocalRecomputationAllSend: return "MeshRefinementOrLocalRecomputationAllSend";
+            case LocalRecomputationAllSend: return "LocalRecomputationAllSend";
+            case MeshRefinementOrGlobalRecomputation: return "MeshRefinementOrGlobalRecomputation";
+            case MeshRefinementAllSend: return "MeshRefinementAllSend";
             case GlobalRecomputationAllSend: return "GlobalRecomputationAllSend";
             case PredictionRerunAllSend: return "PredictionRerunAllSend";
          }
@@ -3145,7 +3151,7 @@
       }
       
       std::string exahype::records::State::getAlgorithmSectionMapping() {
-         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,MeshRefinementOrLocalRecomputationAllSend=3,GlobalRecomputationAllSend=4,PredictionRerunAllSend=5)";
+         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,LocalRecomputationAllSend=3,MeshRefinementOrGlobalRecomputation=4,MeshRefinementAllSend=5,GlobalRecomputationAllSend=6,PredictionRerunAllSend=7)";
       }
       std::string exahype::records::State::toString(const MergeMode& param) {
          switch (param) {
@@ -4876,7 +4882,9 @@
             case TimeStepping: return "TimeStepping";
             case MeshRefinement: return "MeshRefinement";
             case MeshRefinementOrLocalOrGlobalRecomputation: return "MeshRefinementOrLocalOrGlobalRecomputation";
-            case MeshRefinementOrLocalRecomputationAllSend: return "MeshRefinementOrLocalRecomputationAllSend";
+            case LocalRecomputationAllSend: return "LocalRecomputationAllSend";
+            case MeshRefinementOrGlobalRecomputation: return "MeshRefinementOrGlobalRecomputation";
+            case MeshRefinementAllSend: return "MeshRefinementAllSend";
             case GlobalRecomputationAllSend: return "GlobalRecomputationAllSend";
             case PredictionRerunAllSend: return "PredictionRerunAllSend";
          }
@@ -4884,7 +4892,7 @@
       }
       
       std::string exahype::records::State::getAlgorithmSectionMapping() {
-         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,MeshRefinementOrLocalRecomputationAllSend=3,GlobalRecomputationAllSend=4,PredictionRerunAllSend=5)";
+         return "AlgorithmSection(TimeStepping=0,MeshRefinement=1,MeshRefinementOrLocalOrGlobalRecomputation=2,LocalRecomputationAllSend=3,MeshRefinementOrGlobalRecomputation=4,MeshRefinementAllSend=5,GlobalRecomputationAllSend=6,PredictionRerunAllSend=7)";
       }
       std::string exahype::records::State::toString(const MergeMode& param) {
          switch (param) {
