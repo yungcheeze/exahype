@@ -804,11 +804,17 @@ bool exahype::solvers::ADERDGSolver::isSending(
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending = getMeshUpdateRequest();
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
       isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
+      isSending = getMeshUpdateRequest();
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
       isSending = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
+      isSending = true;
       break;
     case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
       isSending = true;
@@ -831,11 +837,17 @@ bool exahype::solvers::ADERDGSolver::isComputing(
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isComputing = getMeshUpdateRequest();
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
       isComputing = getMeshUpdateRequest();
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
       isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
+      isComputing = false;
       break;
     case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
       isComputing = false;
