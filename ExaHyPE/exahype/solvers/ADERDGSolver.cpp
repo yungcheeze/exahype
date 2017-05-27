@@ -2715,15 +2715,35 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
       cellDescriptionsIndex);
 
-  for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
-    if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
-        || cellDescription.getType()==CellDescription::Type::Ancestor) {
-      Solver::SubcellPosition subcellPosition =
-          exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
-          <CellDescription,Heap>(cellDescription);
+  if (Heap::getInstance().getInstance().getData(cellDescriptionsIndex).size()>0) {
+    for (CellDescription& cellDescription : Heap::getInstance().getData(cellDescriptionsIndex)) {
+      if (cellDescription.getType()==CellDescription::Type::EmptyAncestor
+          || cellDescription.getType()==CellDescription::Type::Ancestor) {
+        Solver::SubcellPosition subcellPosition =
+            exahype::amr::computeSubcellPositionOfCellOrAncestorOrEmptyAncestor
+            <CellDescription,Heap>(cellDescription);
 
-      if (subcellPosition.parentElement!=NotFound) {
-        cellDescription.setType(CellDescription::Type::Ancestor);
+        if (subcellPosition.parentElement!=NotFound) {
+          cellDescription.setType(CellDescription::Type::Ancestor);
+          cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
+
+          auto* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+
+          switch (solver->getType()) {
+            case exahype::solvers::Solver::Type::ADERDG:
+              static_cast<exahype::solvers::ADERDGSolver*>(solver)->ensureNecessaryMemoryIsAllocated(cellDescription);
+              break;
+            case exahype::solvers::Solver::Type::LimitingADERDG:
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->ensureNecessaryMemoryIsAllocated(cellDescription);
+              break;
+            case exahype::solvers::Solver::Type::FiniteVolumes:
+              assertionMsg(false,"Solver type not supported!");
+              break;
+          }
+        }
+      } else if (cellDescription.getType()==CellDescription::Type::EmptyDescendant
+          || cellDescription.getType()==CellDescription::Type::Descendant) {
+        cellDescription.setType(CellDescription::Type::Descendant);
         cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
 
         auto* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
@@ -2740,29 +2760,13 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
             break;
         }
       }
-    } else if (cellDescription.getType()==CellDescription::Type::EmptyDescendant
-        || cellDescription.getType()==CellDescription::Type::Descendant) {
-      cellDescription.setType(CellDescription::Type::Descendant);
-      cellDescription.setHasToHoldDataForMasterWorkerCommunication(true);
-
-      auto* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
-
-      switch (solver->getType()) {
-        case exahype::solvers::Solver::Type::ADERDG:
-          static_cast<exahype::solvers::ADERDGSolver*>(solver)->ensureNecessaryMemoryIsAllocated(cellDescription);
-          break;
-        case exahype::solvers::Solver::Type::LimitingADERDG:
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->ensureNecessaryMemoryIsAllocated(cellDescription);
-          break;
-        case exahype::solvers::Solver::Type::FiniteVolumes:
-          assertionMsg(false,"Solver type not supported!");
-          break;
-      }
     }
-  }
 
-  Heap::getInstance().sendData(cellDescriptionsIndex,
-                               toRank,x,level,messageType);
+    Heap::getInstance().sendData(cellDescriptionsIndex,
+                                 toRank,x,level,messageType);
+  } else {
+    sendEmptyCellDescriptions(toRank,messageType,x,level);
+  }
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(
@@ -2784,12 +2788,18 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
   waitUntilAllBackgroundTasksHaveTerminated();
   tarch::multicore::Lock lock(_heapSemaphore);
 
-  int receivedCellDescriptionsIndex =
+  const int receivedCellDescriptionsIndex =
       Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
   Heap::getInstance().receiveData(
       receivedCellDescriptionsIndex,fromRank,x,level,messageType);
 
-  if (!Heap::getInstance().getData(receivedCellDescriptionsIndex).empty()) {
+  logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
+          Heap::getInstance().getData(receivedCellDescriptionsIndex).size() <<
+          " cell descriptions for cell ("
+          "offset="<< x.toString() <<
+          "level="<< level << ")");
+
+  if (Heap::getInstance().getData(receivedCellDescriptionsIndex).size()>0) {
     // TODO(Dominic): We reset the parent and heap indices of a received cell
     // to -1 and RemoteAdjacencyIndex, respectively.
     // If we receive parent and children cells during a fork event,
@@ -2800,21 +2810,17 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     resetDataHeapIndices(receivedCellDescriptionsIndex,
                          multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
 
-    localCell.setupMetaData();
+    if (!localCell.isInitialised()) {
+      localCell.setupMetaData();
+    }
     assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
                localCell.getCellDescriptionsIndex());
     Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).reserve(
         std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
                  Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
 
-    logDebug("mergeCellDescriptionsWithRemoteData(...)","Received " <<
-            Heap::getInstance().getData(receivedCellDescriptionsIndex).size() <<
-            " cell descriptions for cell ("
-            "offset="<< x.toString() <<
-            "level="<< level << ")");
-
     for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
-      logDebug("mergeCellDescriptionsWithRemoteData(...)","Received " <<
+      logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
               " cell description for cell ("
               "offset="<< x.toString() <<
               ",level="<< level <<
@@ -2860,12 +2866,14 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
             break;
         }
 
-
         Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).
             push_back(pReceived);
       }
     }
   }
+
+  Heap::getInstance().deleteData(receivedCellDescriptionsIndex);
+  assertion(!Heap::getInstance().isValidIndex(receivedCellDescriptionsIndex));
 }
 
 void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
@@ -3160,7 +3168,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         "mergeWithNeighbourData(...)", "[pre] solve Riemann problem with received data." <<
         " cellDescription=" << cellDescription.toString() <<
         ",faceIndexForCell=" << faceIndex <<
-        ",normalOfExchangedFac=" << normalOfExchangedFace <<
+        ",normalOfExchangedFac=" << direction <<
         ",x=" << x.toString() << ", level=" << level <<
         ", counter=" << cellDescription.getFaceDataExchangeCounter(faceIndex)
     );
@@ -3490,7 +3498,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
 
     // TODO(Dominic): Add to docu. I can be the top most Ancestor too.
     if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
-      #if 1 || defined(Debug)
+      #if defined(Debug)
       CellDescription& parentCellDescription =
           getCellDescription(subcellPosition.parentCellDescriptionsIndex,subcellPosition.parentElement);
       #endif
