@@ -2273,7 +2273,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   messageForWorker.push_back(
       exahype::solvers::convertToDouble(_limiterDomainChange));
 
-  assertion1(messageForWorker.size()==8,messageForWorker.size());
+  assertion1(messageForWorker.size()==9,messageForWorker.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logInfo("sendDataToWorker(...)","sending data to worker: " <<
