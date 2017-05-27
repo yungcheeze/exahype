@@ -846,12 +846,11 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
 
   // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
-      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
-      logInfo("updateMeshFusedTimeStepping(...)","recompute solution and predictor globally");
-      repository.getState().switchToADERDGTimeStepContext();
-      repository.switchToADERDGTimeStep();
-      repository.iterate();
-    }
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
+    logInfo("updateMeshFusedTimeStepping(...)","recompute solution and predictor globally");
+    repository.getState().switchToADERDGTimeStepContext();
+    repository.switchToADERDGTimeStep();
+    repository.iterate();
   }
 }
 
