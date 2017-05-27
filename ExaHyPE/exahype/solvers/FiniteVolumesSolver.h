@@ -34,10 +34,7 @@ class FiniteVolumesSolver;
 
 
 /**
- * Abstract base class for any 1st order finite volume solver. It does not make
- * sense to use this operation for higher order finite volume solvers as those
- * require additional data structures (and for ncp, e.g., also the
- * non-conservative product).
+ * Abstract base class for one-step Finite Volumes solvers.
  */
 class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver, public exahype::solvers::UserFiniteVolumesSolverInterface {
 public:
