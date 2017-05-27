@@ -157,15 +157,21 @@ bool exahype::solvers::LimitingADERDGSolver::isSending(
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending |= getMeshUpdateRequest();
-      isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
       break;
-    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
+    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
       isSending = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
+      isSending |= getMeshUpdateRequest();
+      isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
       isSending |= getMeshUpdateRequest();
       isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
       isSending |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
+      isSending = true;
       break;
     case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
       isSending = true;
@@ -182,27 +188,32 @@ bool exahype::solvers::LimitingADERDGSolver::isComputing(
   bool isComputing = false;
 
   switch (section) {
-  case exahype::records::State::AlgorithmSection::TimeStepping:
-    isComputing = true;
-    break;
-  case exahype::records::State::AlgorithmSection::MeshRefinement:
-    isComputing |= getMeshUpdateRequest();
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
-    break;
-  case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalRecomputationAllSend:
-    isComputing |= getMeshUpdateRequest();
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
-    break;
-  case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
-    isComputing |= getMeshUpdateRequest();
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
-    break;
-  case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
-    isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
-    break;
-  case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
-    isComputing |= _solver->getStabilityConditionWasViolated();
+    case exahype::records::State::AlgorithmSection::TimeStepping:
+      isComputing = true;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinement:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
+      isComputing = getMeshUpdateRequest();
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
+      isComputing |= getMeshUpdateRequest();
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+      isComputing |= getMeshUpdateRequest();
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
+      isComputing = getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+      break;
+    case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend:
+      isComputing = getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
+      break;
+    case exahype::records::State::AlgorithmSection::PredictionRerunAllSend:
+      isComputing = _solver->getStabilityConditionWasViolated();
   }
 
   return isComputing;
