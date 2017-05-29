@@ -594,35 +594,34 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
     const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS,double>& cellSize,
     const int level) {
-  int solverNumber=0;
-  for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    const int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
-      if (solver->getType()==exahype::solvers::Solver::Type::ADERDG) {
-        exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
-            exahype::solvers::ADERDGSolver::getCellDescription(
-                cellDescriptionsIndex,element);
+      switch (solver->getType()) {
+        case exahype::solvers::Solver::Type::ADERDG:
+        case exahype::solvers::Solver::Type::LimitingADERDG: {
+          auto& cellDescription = exahype::solvers::ADERDGSolver::getCellDescription(
+              cellDescriptionsIndex,element);
+          if (!tarch::la::equals(
+              cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
+              cellDescription.getLevel()!=level) {
+            return false;
+          }
+        } break;
+        case exahype::solvers::Solver::Type::FiniteVolumes: {
+          auto& cellDescription = exahype::solvers::FiniteVolumesSolver::getCellDescription(
+              cellDescriptionsIndex,element);
 
-        if (!tarch::la::equals(
-            cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
-            cellDescription.getLevel()!=level) {
-          return false;
-        }
-      } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-        exahype::solvers::FiniteVolumesSolver::CellDescription& cellDescription =
-            exahype::solvers::FiniteVolumesSolver::getCellDescription(
-                cellDescriptionsIndex,element);
-
-        if (!tarch::la::equals(
-            cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
-            cellDescription.getLevel()!=level) {
-          return false;
-        }
+          if (!tarch::la::equals(
+              cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
+              cellDescription.getLevel()!=level) {
+            return false;
+          }
+        } break;
       }
     }
-    ++solverNumber;
   }
-
   return true;
 }
 
