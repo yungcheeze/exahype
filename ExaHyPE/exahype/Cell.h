@@ -143,7 +143,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      cellDescription.setRiemannSolvePerformed(faceIndex,false);
+      cellDescription.setNeighbourMergePerformed(faceIndex,false);
 
       #ifdef Parallel
       int listingsOfRemoteRank =

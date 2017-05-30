@@ -1005,18 +1005,18 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithLimiterStatus(
     SolverPatch& solverPatch,
     const int direction,
     const int otherLimiterStatusAsInt) const {
-  int limiterStatusAsInt = solverPatch.getLimiterStatus();
-  limiterStatusAsInt =
-      ( limiterStatusAsInt>=static_cast<int>(SolverPatch::LimiterStatus::Troubled) )
+  int limiterStatus = solverPatch.getLimiterStatus();
+  limiterStatus =
+      ( limiterStatus>=static_cast<int>(SolverPatch::LimiterStatus::Troubled) )
       ?
-      limiterStatusAsInt
+      limiterStatus
       :
       std::max (
           0,
-          std::max( limiterStatusAsInt, otherLimiterStatusAsInt ) - 1
+          std::max( limiterStatus, otherLimiterStatusAsInt ) - 1
       );
 
-  solverPatch.setFacewiseLimiterStatus( direction, limiterStatusAsInt );
+  solverPatch.setFacewiseLimiterStatus( direction, limiterStatus );
 }
 
 void exahype::solvers::LimitingADERDGSolver::deallocateLimiterPatch(

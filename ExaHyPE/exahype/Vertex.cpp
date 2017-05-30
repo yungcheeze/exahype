@@ -75,13 +75,13 @@ bool exahype::Vertex::hasToMergeNeighbours(
       // ADERDG
       for (auto& p1 : exahype::solvers::
           ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-        if (p1.getRiemannSolvePerformed(faceIndex1)) {
+        if (p1.getNeighbourMergePerformed(faceIndex1)) {
           return false;
         }
       }
       for (auto& p2 : exahype::solvers::
           ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-        if (p2.getRiemannSolvePerformed(faceIndex2)) {
+        if (p2.getNeighbourMergePerformed(faceIndex2)) {
           return false;
         }
       }
@@ -89,13 +89,13 @@ bool exahype::Vertex::hasToMergeNeighbours(
       // Finite Volumes // TODO(Dominic): Make template
       for (auto& p1 : exahype::solvers::
           FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-        if (p1.getRiemannSolvePerformed(faceIndex1)) {
+        if (p1.getNeighbourMergePerformed(faceIndex1)) {
           return false;
         }
       }
       for (auto& p2 : exahype::solvers::
           FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-        if (p2.getRiemannSolvePerformed(faceIndex2)) {
+        if (p2.getNeighbourMergePerformed(faceIndex2)) {
           return false;
         }
       }
@@ -147,7 +147,7 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
         for (auto& p1 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
           if (!p1.getIsInside(faceIndex1)
-              && !p1.getRiemannSolvePerformed(faceIndex1)) {
+              && !p1.getNeighbourMergePerformed(faceIndex1)) {
             return true;
           }
         }
@@ -155,7 +155,7 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
         for (auto& p2 : exahype::solvers::
             ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
           if (!p2.getIsInside(faceIndex2)
-              && !p2.getRiemannSolvePerformed(faceIndex2)) {
+              && !p2.getNeighbourMergePerformed(faceIndex2)) {
             return true;
           }
         }
@@ -166,7 +166,7 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
         for (auto& p1 : exahype::solvers::
             FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
           if (!p1.getIsInside(faceIndex1)
-              && !p1.getRiemannSolvePerformed(faceIndex1)) {
+              && !p1.getNeighbourMergePerformed(faceIndex1)) {
             return true;
           }
         }
@@ -174,7 +174,7 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
         for (auto& p2 : exahype::solvers::
             FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
           if (!p2.getIsInside(faceIndex2)
-              && !p2.getRiemannSolvePerformed(faceIndex2)) {
+              && !p2.getNeighbourMergePerformed(faceIndex2)) {
             return true;
           }
         }
@@ -212,24 +212,24 @@ void exahype::Vertex::setMergePerformed(
   // ADER-DG
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
     for (auto& p1 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-      p1.setRiemannSolvePerformed(faceIndex1,state);
+      p1.setNeighbourMergePerformed(faceIndex1,state);
     }
   }
   if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
     for (auto& p2 : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-      p2.setRiemannSolvePerformed(faceIndex2,state);
+      p2.setNeighbourMergePerformed(faceIndex2,state);
     }
   }
 
   // Finite Volumes: // TODO(Dominic): Make template
   if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)) {
     for (auto& p1 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex1)) {
-      p1.setRiemannSolvePerformed(faceIndex1,state);
+      p1.setNeighbourMergePerformed(faceIndex1,state);
     }
   }
   if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
     for (auto& p2 : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex2)) {
-      p2.setRiemannSolvePerformed(faceIndex2,state);
+      p2.setNeighbourMergePerformed(faceIndex2,state);
     }
   }
 }

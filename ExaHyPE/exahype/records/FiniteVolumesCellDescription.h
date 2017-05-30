@@ -372,7 +372,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -401,7 +401,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -960,7 +960,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -989,7 +989,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -999,7 +999,7 @@ namespace exahype {
             
             
             
-            inline bool getRiemannSolvePerformed(int elementIndex) const 
+            inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1012,7 +1012,7 @@ namespace exahype {
             
             
             
-            inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(int elementIndex, const bool& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1025,7 +1025,7 @@ namespace exahype {
             
             
             
-            inline void flipRiemannSolvePerformed(int elementIndex) 
+            inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1702,7 +1702,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1731,7 +1731,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2290,7 +2290,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2319,7 +2319,7 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2329,7 +2329,7 @@ namespace exahype {
             
             
             
-            inline bool getRiemannSolvePerformed(int elementIndex) const 
+            inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2342,7 +2342,7 @@ namespace exahype {
             
             
             
-            inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(int elementIndex, const bool& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2355,7 +2355,7 @@ namespace exahype {
             
             
             
-            inline void flipRiemannSolvePerformed(int elementIndex) 
+            inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3048,7 +3048,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3077,7 +3077,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3558,7 +3558,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3587,7 +3587,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3597,7 +3597,7 @@ namespace exahype {
                
                
                
-               inline bool getRiemannSolvePerformed(int elementIndex) const 
+               inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3610,7 +3610,7 @@ namespace exahype {
                
                
                
-               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(int elementIndex, const bool& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3623,7 +3623,7 @@ namespace exahype {
                
                
                
-               inline void flipRiemannSolvePerformed(int elementIndex) 
+               inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4194,7 +4194,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4223,7 +4223,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4704,7 +4704,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4733,7 +4733,7 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4743,7 +4743,7 @@ namespace exahype {
                
                
                
-               inline bool getRiemannSolvePerformed(int elementIndex) const 
+               inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4756,7 +4756,7 @@ namespace exahype {
                
                
                
-               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(int elementIndex, const bool& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -4769,7 +4769,7 @@ namespace exahype {
                
                
                
-               inline void flipRiemannSolvePerformed(int elementIndex) 
+               inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 

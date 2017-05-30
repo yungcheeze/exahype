@@ -524,7 +524,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
-  assertion1(cellDescription.getRiemannSolvePerformed().all(),cellDescription.toString());
+  assertion1(cellDescription.getNeighbourMergePerformed().all(),cellDescription.toString());
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
@@ -1130,7 +1130,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithNeighbourData(
     assertion1(holdsFaceData(neighbourType),neighbourType);
     assertion1(holdsFaceData(cellDescription.getType()),cellDescription.toString());
 
-    assertion4(!cellDescription.getRiemannSolvePerformed(faceIndex),
+    assertion4(!cellDescription.getNeighbourMergePerformed(faceIndex),
         faceIndex,cellDescriptionsIndex,cellDescription.getOffset().toString(),cellDescription.getLevel());
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));

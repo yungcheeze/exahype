@@ -541,8 +541,11 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   }
 
   // a few extra iterations for the limiter status spreading
-  logInfo("createGrid()", "more spreading.");
-  int extraIterations = 5;
+  logInfo("createGrid()", "more status spreading.");
+  int extraIterations = 4;
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    extraIterations = 5;
+  }
   while (
       extraIterations > 0
       || repository.getState().continueToConstructGrid()

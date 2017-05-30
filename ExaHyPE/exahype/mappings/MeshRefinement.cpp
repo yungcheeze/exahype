@@ -257,7 +257,7 @@ void exahype::mappings::MeshRefinement::touchVertexFirstTime(
 
   dfor2(pos1)
     dfor2(pos2)
-      if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
+      if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have two valid indices
         auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
             parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
         pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())

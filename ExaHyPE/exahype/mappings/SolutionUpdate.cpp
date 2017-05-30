@@ -185,6 +185,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
   if (_localState.getAlgorithmSection()==exahype::records::State::TimeStepping) {
     for (auto* solver : exahype::solvers::RegisteredSolvers) {
       solver->setNextMeshUpdateRequest();
+      solver->setNextAttainedStableState();
 
       if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
         static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->setNextLimiterDomainChange();
@@ -209,6 +210,7 @@ void exahype::mappings::SolutionUpdate::endIteration(
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       solver->updateNextMeshUpdateRequest(_solverFlags._meshUpdateRequest[solverNumber]);
+      solver->updateNextAttainedStableState(!_solverFlags._meshUpdateRequest[solverNumber]);
       logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextMeshUpdateRequest());
 
       if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {

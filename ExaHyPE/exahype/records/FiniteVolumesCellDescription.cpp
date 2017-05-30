@@ -117,9 +117,9 @@
       out << ",";
       out << "riemannSolvePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
-      out << getRiemannSolvePerformed(i) << ",";
+      out << getNeighbourMergePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getNeighbourMergePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
       out << "isInside:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -159,7 +159,7 @@
          getLevel(),
          getOffset(),
          getSize(),
-         getRiemannSolvePerformed(),
+         getNeighbourMergePerformed(),
          getIsInside(),
          getOneRemoteBoundaryNeighbourIsOfTypeCell(),
          getFaceDataExchangeCounter(),
@@ -853,9 +853,9 @@
       out << ",";
       out << "riemannSolvePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
-      out << getRiemannSolvePerformed(i) << ",";
+      out << getNeighbourMergePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getNeighbourMergePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
       out << "isInside:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -895,7 +895,7 @@
          getLevel(),
          getOffset(),
          getSize(),
-         getRiemannSolvePerformed(),
+         getNeighbourMergePerformed(),
          getIsInside(),
          getOneRemoteBoundaryNeighbourIsOfTypeCell(),
          getFaceDataExchangeCounter(),
@@ -1606,9 +1606,9 @@
          out << ",";
          out << "riemannSolvePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
-      out << getRiemannSolvePerformed(i) << ",";
+      out << getNeighbourMergePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getNeighbourMergePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
          out << ",";
          out << "isInside:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -1640,7 +1640,7 @@
             getLevel(),
             getOffset(),
             getSize(),
-            getRiemannSolvePerformed(),
+            getNeighbourMergePerformed(),
             getIsInside(),
             getType(),
             getParentIndex(),
@@ -2302,9 +2302,9 @@
          out << ",";
          out << "riemannSolvePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
-      out << getRiemannSolvePerformed(i) << ",";
+      out << getNeighbourMergePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getNeighbourMergePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
          out << ",";
          out << "isInside:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -2336,7 +2336,7 @@
             getLevel(),
             getOffset(),
             getSize(),
-            getRiemannSolvePerformed(),
+            getNeighbourMergePerformed(),
             getIsInside(),
             getType(),
             getParentIndex(),
