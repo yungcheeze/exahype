@@ -978,7 +978,6 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
    * 4. Compute the cell-local time step sizes
    */
   repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
-
   repository.getState().switchToADERDGTimeStepContext();
   if (numberOfStepsToRun==0) {
     repository.switchToPlotAndADERDGTimeStep();
