@@ -352,7 +352,7 @@ void exahype::mappings::LocalRecomputation::mergeWithNeighbour(
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
         exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-        assertion(receivedMetadata.size()==exahype::MetadataPerSolver*solvers::RegisteredSolvers.size());
+        assertion(receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
         if(vertex.hasToMergeWithNeighbourData(src,dest)) { // Only comm. data once per face
           mergeNeighourData(
@@ -426,7 +426,7 @@ void exahype::mappings::LocalRecomputation::mergeNeighourData(
         static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
         ==exahype::solvers::LimiterDomainChange::Irregular) {
       const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
-      const int offset  = exahype::MetadataPerSolver*solverNumber;
+      const int offset  = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
 
       if (element!=exahype::solvers::Solver::NotFound
           && receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
@@ -438,7 +438,7 @@ void exahype::mappings::LocalRecomputation::mergeNeighourData(
 
         exahype::MetadataHeap::HeapEntries metadataPortion(
                   receivedMetadata.begin()+offset,
-                  receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+                  receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
         limitingADERDGSolver->mergeWithNeighbourDataBasedOnLimiterStatus(
             fromRank,

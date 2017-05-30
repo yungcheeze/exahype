@@ -235,30 +235,6 @@ void exahype::Vertex::setMergePerformed(
 }
 
 #ifdef Parallel
-exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescriptionsIndex) {
-  assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-  exahype::MetadataHeap::HeapEntries encodedMetaData(
-      exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver,
-      exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
-  std::fill_n(encodedMetaData.begin(),encodedMetaData.size(),InvalidMetadataEntry); // Implicit conversion.
-
-  // ADER-DG
-  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+0] = static_cast<int>(p.getType()); // Implicit conversion.
-    encodedMetaData[exahype::MetadataPerSolver*p.getSolverNumber()+1] = static_cast<int>(p.getLimiterStatus());
-    // assertion: p.getMergedLimiterStatus(0) = p.getMergedLimiterStatus(i) TODO
-  }
-  // FV
-  const unsigned int numberOfADERDGPatches =
-      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).size();
-  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    encodedMetaData[numberOfADERDGPatches + exahype::MetadataPerSolver*p.getSolverNumber() + 0]
-                    = static_cast<int>(p.getType()); // Implicit conversion.
-  }
-  return encodedMetaData;
-}
-
 bool exahype::Vertex::hasToSendMetadataDuringMeshRefinement(
   const tarch::la::Vector<DIMENSIONS,int>& src,
   const tarch::la::Vector<DIMENSIONS,int>& dest,
@@ -500,70 +476,4 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
     p.setFaceDataExchangeCounter(faceIndex,value);
   }
 }
-
 #endif
-
-
-#ifdef Parallel
-exahype::MetadataHeap::HeapEntries exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries() {
-    exahype::MetadataHeap::HeapEntries encodedMetaData(
-        exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver,
-        exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver);
-    std::fill_n(encodedMetaData.begin(),encodedMetaData.size(),InvalidMetadataEntry); // Implicit conversion.
-    return encodedMetaData;
-}
-
-
-bool exahype::Vertex::isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
-   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*exahype::MetadataPerSolver);
-
-   for (auto& m : sequence)
-     if (m.getU()==exahype::InvalidMetadataEntry)
-       return false;
-
-   return true;
-}
-
-/**
- * Send metadata to rank \p toRank.
- */
-void exahype::Vertex::sendEncodedMetadata(
-    const int                                   toRank,
-    const int                                   cellDescriptionsIndex,
-    const peano::heap::MessageType&             messageType,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  MetadataHeap::HeapEntries encodedMetadata =
-      encodeMetadata(cellDescriptionsIndex);
-  MetadataHeap::getInstance().sendData(
-      encodedMetadata,toRank,x,level,messageType);
-}
-
-/**
- * Send a metadata sequence filled with InvalidMetadataEntry
- * to rank \p toRank.
- */
-void exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
-    const int                                   toRank,
-    const peano::heap::MessageType&             messageType,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  MetadataHeap::HeapEntries encodedMetadata =
-      createEncodedMetadataSequenceWithInvalidEntries();
-  MetadataHeap::getInstance().sendData(
-      encodedMetadata,toRank,x,level,messageType);
-}
-
-/**
- * Drop metadata sent by rank \p fromRank.
- */
-void exahype::Vertex::dropMetadata(
-    const int                                   fromRank,
-    const peano::heap::MessageType&             messageType,
-    const tarch::la::Vector<DIMENSIONS,double>& x,
-    const int                                   level) {
-  MetadataHeap::getInstance().receiveData(
-      fromRank,x,level,messageType);
-}
-#endif
-

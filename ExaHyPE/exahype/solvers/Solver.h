@@ -112,15 +112,141 @@ namespace exahype {
 
   /**
    * Defines the length of the metadata
-   * we send out per sovler.
+   * we send out per solver.
    *
-   * First entry cell type
-   * Second entry limiter status.
+   * First entry is the cell (description) type.
+   * Second entry is the augmentation status,
+   * third the helper status and the fourth the
+   * limiter status.
    */
-  static constexpr int MetadataPerSolver     = 2;
+  static constexpr int NeighbourCommunicationMetadataPerSolver    = 4;
 
-  static constexpr int MetadataCellType      = 0;
-  static constexpr int MetadataLimiterStatus = 1;
+  // TODO(Dominic): We can still encode the information below
+  // into a single status int
+  static constexpr int NeighbourCommunicationMetadataCellType           = 0;
+  static constexpr int NeighbourCommunicationMetadataAugmentationStatus = 1;
+  static constexpr int NeighbourCommunicationMetadataHelperStatus       = 2;
+  static constexpr int NeighbourCommunicationMetadataLimiterStatus      = 3;
+
+  static constexpr int MasterWorkerCommunicationMetadataPerSolver = 1;
+
+  static constexpr int MasterWorkerCommunicationMetadataSendReceiveData = 0;
+
+  /**
+   * TODO(Dominic): Docu is outdated
+   *
+   * Encodes the metadata as integer sequence.
+   *
+   * The first element refers to the number of
+   * ADERDGCellDescriptions associated with this cell (nADERG).
+   * The next 2*nADERG elements store a pair of
+   * solver number, and cell description type (encoded as int)
+   * for each ADERDGCellDescription associated with this cell (description).
+   *
+   * The element 1+2*nADERDG refers to the number of
+   * FiniteVolumesCellDescriptions associated with this cell (nFV).
+   * The remaining 2*nFV elements store a pair of
+   * solver number, and cell description type (encoded as int)
+   * for each FiniteVolumesCellDescription associated with this cell
+   * (description).
+   */
+  exahype::MetadataHeap::HeapEntries encodeNeighbourCommunicationMetadata(const int cellDescriptionsIndex);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  exahype::MetadataHeap::HeapEntries encodeMasterWorkerCommunicationMetadata(const int cellDescriptionsIndex);
+
+  /**
+   * Creates a sequence of \p InvalidMetadataEntry with length
+   * exahype::solvers::RegisteredSolvers.size()*NeighbourCommunicationMetadataPerSolver.
+   */
+  exahype::MetadataHeap::HeapEntries createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
+
+  /**
+   * Creates a sequence of \p InvalidMetadataEntry with length
+   * exahype::solvers::RegisteredSolvers.size()*MasterWorkerCommunicationMetadataPerSolver.
+   */
+  exahype::MetadataHeap::HeapEntries createMasterWorkerCommunicationMetadataSequenceWithInvalidEntries();
+
+  /**
+   * Checks if all the entries of \p sequence are set to
+   * \p InvalidMetadataEntry.
+   */
+  bool isNeighbourCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
+
+  /**
+   * Checks if all the entries of \p sequence are set to
+   * \p InvalidMetadataEntry.
+   */
+  bool isMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
+
+  /**
+   * Send metadata to rank \p toRank.
+   */
+  void sendNeighbourCommunicationMetadata(
+      const int                                   toRank,
+      const int                                   cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Receive metadata to rank \p toRank.
+   *
+   * \return The index of the received metadata message
+   * on the exahype::MetadataHeap.
+   */
+  int receiveNeighbourCommunicationMetadata(
+      const int                                   fromRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Send metadata to rank \p toRank.
+   */
+  void sendMasterWorkerCommunicationMetadata(
+      const int                                   toRank,
+      const int                                   cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Receive metadata to rank \p toRank.
+   *
+   * \return The index of the received metadata message
+   * on the exahype::MetadataHeap.
+   */
+  int receiveMasterWorkerCommunicationMetadata(
+      const int                                   fromRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Send a metadata sequence filled with InvalidMetadataEntry
+   * to rank \p toRank.
+   */
+  void sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+      const int                                   toRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Send a metadata sequence filled with InvalidMetadataEntry
+   * to rank \p toRank.
+   */
+  void sendMasterWorkerCommunicationMetadataSequenceWithInvalidEntries(
+      const int                                   toRank,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
+
+  /**
+   * Drop metadata sent by rank \p fromRank.
+   */
+  void dropMetadata(
+      const int                                   fromRank,
+      const peano::heap::MessageType&             messageType,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level);
   #endif
 
   namespace solvers {
@@ -1192,6 +1318,24 @@ class exahype::solvers::Solver {
         const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) = 0;
 
   /**
+   * Merge the metadata of two cell descriptions.
+   *
+   * \param[in] element Index of the cell description
+   *            holding the data to send out in
+   *            the array at address \p cellDescriptionsIndex.
+   *            This is not the solver number.
+   *
+   * \see tryGetElement
+   */
+  virtual void mergeNeighboursMetadata(
+        const int                                 cellDescriptionsIndex1,
+        const int                                 element1,
+        const int                                 cellDescriptionsIndex2,
+        const int                                 element2,
+        const tarch::la::Vector<DIMENSIONS, int>& pos1,
+        const tarch::la::Vector<DIMENSIONS, int>& pos2) = 0;
+
+  /**
    * Receive solver data from neighbour rank and write
    * it on the cell description \p element in
    * the cell descriptions vector stored at \p
@@ -1267,6 +1411,21 @@ class exahype::solvers::Solver {
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const = 0;
 
   #ifdef Parallel
+
+
+  /**
+   * If a cell description was allocated at heap address \p cellDescriptionsIndex
+   * for solver \p solverNumber, encode metadata of the cell description
+   * and push it to the back of the metadata vector \p metadata.
+   *
+   * Otherwise, push exahype::NeighbourCommunicationMetadataPerSolver
+   * times exahype::InvalidMetadataEntry to the back of the vector.
+   */
+  virtual void appendNeighbourCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) = 0;
+
   /**
    * Send solver data to neighbour rank. Read the data from
    * the cell description \p element in
@@ -1573,6 +1732,27 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+
+  /**
+   * If a cell description was allocated at heap address \p cellDescriptionsIndex
+   * for solver \p solverNumber, encode metadata of the cell description
+   * and push it to the back of the metadata vector \p metadata.
+   *
+   * Otherwise, push exahype::MasterWorkerCommunicationMetadataPerSolver
+   * times exahype::InvalidMetadataEntry to the back of the vector.
+   */
+  virtual void appendMasterWorkerCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) = 0;
+
+  /**
+   * TODO(Dominic): docu
+   */
+  virtual void mergeWithMasterWorkerMetadata(
+        const MetadataHeap::HeapEntries& receivedMetadata,
+        const int                        cellDescriptionsIndex,
+        const int                        element) = 0;
 
   /**
    * Send data to the worker that is not

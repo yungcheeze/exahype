@@ -237,10 +237,8 @@ void exahype::mappings::Reinitialisation::sendEmptyDataToNeighbour(
     }
   }
 
-  auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
-  MetadataHeap::getInstance().sendData(
-      encodedMetadata, toRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
+  exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+      toRank, x, level);
 }
 
 void exahype::mappings::Reinitialisation::sendDataToNeighbour(
@@ -285,10 +283,8 @@ void exahype::mappings::Reinitialisation::sendDataToNeighbour(
     }
   }
 
-  auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
-  MetadataHeap::getInstance().sendData(
-      encodedMetadata, toRank, x, level,
-      peano::heap::MessageType::NeighbourCommunication);
+  exahype::sendNeighbourCommunicationMetadata(
+      toRank, srcCellDescriptionIndex, x, level);
 }
 
 

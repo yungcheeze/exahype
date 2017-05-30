@@ -293,7 +293,7 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
                  << vertex.getAdjacentRanks());
 
         const int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::MetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
+            createData(0,exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
@@ -306,7 +306,7 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
 
-          const int offset  = exahype::MetadataPerSolver*solverNumber;
+          const int offset  = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
           if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
             const int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
@@ -314,7 +314,7 @@ void exahype::mappings::LimiterStatusSpreading::mergeWithNeighbour(
 
               exahype::MetadataHeap::HeapEntries metadataPortion(
                         receivedMetadata.begin()+offset,
-                        receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+                        receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
               // TODO(Dominic): Refinement event is set directly according to
               // solver metadata. This should not happen.
@@ -367,15 +367,15 @@ void exahype::mappings::LimiterStatusSpreading::prepareSendToNeighbour(
                    x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
                    << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-          exahype::Vertex::sendEncodedMetadata(
-              toRank,srcCellDescriptionIndex,peano::heap::MessageType::NeighbourCommunication,x,level);
+          exahype::sendNeighbourCommunicationMetadata(
+              toRank,srcCellDescriptionIndex,x,level);
         } else {
           logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
                    x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
                    << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-          exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
-              toRank,peano::heap::MessageType::NeighbourCommunication,x,level);
+          exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+              toRank,x,level);
         }
       }
     enddforx

@@ -255,6 +255,32 @@ void exahype::mappings::MeshRefinement::touchVertexFirstTime(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
+  dfor2(pos1)
+    dfor2(pos2)
+      if (fineGridVertex.hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have to valid indices
+        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
+        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+          auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+          if (solver->getMeshUpdateRequest()) {
+            const int cellDescriptionsIndex1 = fineGridVertex.getCellDescriptionsIndex()[pos1Scalar];
+            const int cellDescriptionsIndex2 = fineGridVertex.getCellDescriptionsIndex()[pos2Scalar];
+            const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+            const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+            if (element2>=0 && element1>=0) {
+              solver->mergeNeighboursMetadata(
+                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+            }
+          }
+        endpfor
+        grainSize.parallelSectionHasTerminated();
+
+        fineGridVertex.setMergePerformed(pos1,pos2,true);
+      }
+    enddforx
+  enddforx
+
   exahype::mappings::LimiterStatusSpreading::mergeNeighboursLimiterStatus(fineGridVertex);
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
@@ -388,17 +414,6 @@ void exahype::mappings::MeshRefinement::leaveCell(
 }
 
 #ifdef Parallel
-bool exahype::mappings::MeshRefinement::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  return true;
-}
-
 void exahype::mappings::MeshRefinement::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -429,20 +444,16 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
                  fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                  << vertex.getAdjacentRanks());
 
-        const int receivedMetadataIndex = MetadataHeap::getInstance().
-            createData(0,exahype::MetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
-        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
-        MetadataHeap::getInstance().receiveData(
-            receivedMetadataIndex,
-            fromRank, fineGridX, level,
-            peano::heap::MessageType::NeighbourCommunication);
+        const int receivedMetadataIndex =
+            exahype::receiveNeighbourCommunicationMetadata(
+                fromRank, fineGridX, level);
         MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().
             getData(receivedMetadataIndex);
 
         // Work with the neighbour cell type
         for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
           auto* solver = solvers::RegisteredSolvers[solverNumber];
-          const int offset  = exahype::MetadataPerSolver*solverNumber;
+          const int offset  = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
           if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
             const int element = solver->tryGetElement(
                 vertex.getCellDescriptionsIndex()[destScalar],solverNumber);
@@ -450,7 +461,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
 
               exahype::MetadataHeap::HeapEntries metadataPortion(
                   receivedMetadata.begin()+offset,
-                  receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+                  receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
               solver->mergeWithNeighbourMetadata(
                   metadataPortion,
@@ -501,15 +512,15 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
                    x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
                    << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-          exahype::Vertex::sendEncodedMetadata(
-              toRank,srcCellDescriptionIndex,peano::heap::MessageType::NeighbourCommunication,x,level);
+          exahype::sendNeighbourCommunicationMetadata(
+              toRank,srcCellDescriptionIndex,x,level);
         } else {
           logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
                    x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
                    << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-          exahype::Vertex::sendEncodedMetadataSequenceWithInvalidEntries(
-              toRank,peano::heap::MessageType::NeighbourCommunication,x,level);
+          exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+              toRank,x,level);
         }
       }
     enddforx
@@ -551,6 +562,81 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
       solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
     }
   }
+}
+
+bool exahype::mappings::MeshRefinement::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  const int metadataIndex = MetadataHeap::getInstance().createData(
+      0,exahype::MasterWorkerCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
+  MetadataHeap::HeapEntries& metadata =
+      MetadataHeap::getInstance().getData(metadataIndex);
+
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    solver->appendMasterWorkerCommunicationMetadata(
+        metadata,fineGridCell.getCellDescriptionsIndex(),solverNumber);
+  }
+
+  MetadataHeap::getInstance().sendData(
+      metadataIndex,
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      fineGridVerticesEnumerator.getCellCenter(),
+      fineGridVerticesEnumerator.getLevel(),
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  MetadataHeap::getInstance().deleteData(metadataIndex); //  TODO: Recycle?
+
+  return true;
+}
+
+
+void exahype::mappings::MeshRefinement::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  if (receivedCell.isInitialised()) {
+    const int receivedMetadataIndex =
+        exahype::receiveMasterWorkerCommunicationMetadata(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            receivedVerticesEnumerator.getCellCenter(),
+            receivedVerticesEnumerator.getLevel());
+    MetadataHeap::HeapEntries& receivedMetadata =
+        MetadataHeap::getInstance().getData(receivedMetadataIndex);
+
+    for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->getMeshUpdateRequest()) {
+        const int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
+        const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
+        if (element!=exahype::solvers::Solver::NotFound) {
+          exahype::MetadataHeap::HeapEntries metadataPortion(
+              receivedMetadata.begin()+offset,
+              receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
+
+          solver->mergeWithMasterWorkerMetadata(metadataPortion,receivedCell.getCellDescriptionsIndex(),element);
+        }
+      }
+    }
+    MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+  } else {
+    exahype::dropMetadata(
+        tarch::parallel::NodePool::getInstance().getMasterRank(),
+        peano::heap::MessageType::MasterWorkerCommunication,
+        receivedVerticesEnumerator.getCellCenter(),
+        receivedVerticesEnumerator.getLevel());
+  } // else do nothing
 }
 
 // TODO(Dominic): How to deal with cell descriptions index that
@@ -625,7 +711,6 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
   return true;
 }
 
-
 void exahype::mappings::MeshRefinement::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -685,19 +770,6 @@ void exahype::mappings::MeshRefinement::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::MeshRefinement::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
 

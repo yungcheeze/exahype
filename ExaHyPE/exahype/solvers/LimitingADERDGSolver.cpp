@@ -1464,6 +1464,17 @@ void exahype::solvers::LimitingADERDGSolver::restrictToTopMostParent(
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::mergeNeighboursMetadata(
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+  _solver->mergeNeighboursMetadata(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+  mergeNeighboursLimiterStatus    (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+}
+
 void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
     const int                                 cellDescriptionsIndex1,
     const int                                 element1,
@@ -1758,21 +1769,24 @@ const int exahype::solvers::LimitingADERDGSolver::DataMessagesPerMasterWorkerCom
 ///////////////////////////////////
 // NEIGHBOUR - Mesh refinement
 ///////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::appendNeighbourCommunicationMetadata(
+    exahype::MetadataHeap::HeapEntries metadata,
+    const int cellDescriptionsIndex,
+    const int solverNumber) {
+  _solver->appendNeighbourCommunicationMetadata(metadata,cellDescriptionsIndex,solverNumber);
+}
+
 void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
       const exahype::MetadataHeap::HeapEntries& neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
       const tarch::la::Vector<DIMENSIONS, int>& dest,
       const int cellDescriptionsIndex,
       const int element) {
-  const int limiterElement = tryGetLimiterElementFromSolverElement(cellDescriptionsIndex,element);
-  if (limiterElement!=exahype::solvers::Solver::NotFound) {
-    _limiter->mergeWithNeighbourMetadata(neighbourMetadata,src,dest,cellDescriptionsIndex,limiterElement);
-  } // There is no drop method for metadata necessary
   _solver->mergeWithNeighbourMetadata(neighbourMetadata,src,dest,cellDescriptionsIndex,element);
 
   // Merge the limiter status
   const SolverPatch::LimiterStatus neighbourLimiterStatus =
-      static_cast<SolverPatch::LimiterStatus>(neighbourMetadata[exahype::MetadataLimiterStatus].getU());
+      static_cast<SolverPatch::LimiterStatus>(neighbourMetadata[exahype::NeighbourCommunicationMetadataLimiterStatus].getU());
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
   if (tarch::la::equals(src,dest)==DIMENSIONS-1) {
     const int direction   = tarch::la::equalsReturnIndex(src,dest);
@@ -2082,6 +2096,25 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourSolverAndLimiterData(
 
   _limiter->dropNeighbourData(fromRank,src,dest,x,level); // !!! Receive order must be inverted in neighbour comm.
   _solver->dropNeighbourData(fromRank,src,dest,x,level);
+}
+
+/////////////////////////////////////
+// MASTER<=>WORKER
+/////////////////////////////////////
+void exahype::solvers::LimitingADERDGSolver::appendMasterWorkerCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) {
+  _solver->appendMasterWorkerCommunicationMetadata(
+      metadata,cellDescriptionsIndex,solverNumber);
+}
+
+void exahype::solvers::LimitingADERDGSolver::mergeWithMasterWorkerMetadata(
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata,
+    const int                                 cellDescriptionsIndex,
+    const int                                 element) {
+  _solver->appendMasterWorkerCommunicationMetadata(
+      receivedMetadata,cellDescriptionsIndex,element);
 }
 
 ///////////////////////////////////////

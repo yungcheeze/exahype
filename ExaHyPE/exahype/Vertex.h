@@ -124,74 +124,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
 
 #ifdef Parallel
-  /**
-   * Encodes the metadata as integer sequence.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The next 2*nADERG elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each ADERDGCellDescription associated with this cell (description).
-   *
-   * The element 1+2*nADERDG refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   * The remaining 2*nFV elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each FiniteVolumesCellDescription associated with this cell
-   * (description).
-   *
-   * @developers:
-   * TODO(Dominic): Does it make sense to also encode the
-   *                refinement event?
-   * TODO(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static exahype::MetadataHeap::HeapEntries encodeMetadata(const int cellDescriptionsIndex);
 
-  /**
-   * Creates a sequence of \p InvalidMetadataEntry with length
-   * exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver.
-   *
-   * TODO(Dominic): Reduce length to 1.
-   */
-  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceWithInvalidEntries();
-
-  /**
-   * Checks if all the entries of \p sequence are set to
-   * \p InvalidMetadataEntry.
-   *
-   * TODO(Dominic): Reduce length to 1.
-   */
-  static bool isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
-
-  /**
-   * Send metadata to rank \p toRank.
-   */
-  static void sendEncodedMetadata(
-      const int                                   toRank,
-      const int                                   cellDescriptionsIndex,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level);
-
-  /**
-   * Send a metadata sequence filled with InvalidMetadataEntry
-   * to rank \p toRank.
-   */
-  static void sendEncodedMetadataSequenceWithInvalidEntries(
-      const int                                   toRank,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level);
-
-  /**
-   * Drop metadata sent by rank \p fromRank.
-   */
-  static void dropMetadata(
-      const int                                   fromRank,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level);
 
   /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
@@ -417,4 +350,4 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 #endif
 };
 
-#endif
+#endif // _EXAHYPE_VERTEX_H

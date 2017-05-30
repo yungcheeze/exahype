@@ -1012,6 +1012,14 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeNeighboursMetadata(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -1161,6 +1169,11 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void appendNeighbourCommunicationMetadata(
+        exahype::MetadataHeap::HeapEntries metadata,
+        const int cellDescriptionsIndex,
+        const int solverNumber) override;
+
   void mergeWithNeighbourMetadata(
       const exahype::MetadataHeap::HeapEntries& neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
@@ -1299,6 +1312,19 @@ public:
         const tarch::la::Vector<DIMENSIONS, int>&     dest,
         const tarch::la::Vector<DIMENSIONS, double>&  x,
         const int                                     level) const;
+
+  /////////////////////////////////////
+  // MASTER<=>WORKER
+  /////////////////////////////////////
+  void appendMasterWorkerCommunicationMetadata(
+        exahype::MetadataHeap::HeapEntries metadata,
+        const int cellDescriptionsIndex,
+        const int solverNumber) override;
+
+  void mergeWithMasterWorkerMetadata(
+      const exahype::MetadataHeap::HeapEntries& neighbourMetadata,
+      const int                                 cellDescriptionsIndex,
+      const int                                 element) override;
 
   /////////////////////////////////////
   // FORK OR JOIN

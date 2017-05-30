@@ -97,8 +97,7 @@ exahype::mappings::Merging::~Merging() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState)
-  :
-  _remoteBoundaryFaceMerges(0)
+  ,_remoteBoundaryFaceMerges(0)
   #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
@@ -285,14 +284,12 @@ void exahype::mappings::Merging::mergeWithNeighbour(
         if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
           // logDebug("mergeWithNeighbour(...)","hasToReceiveMetadata");
 
-          const int receivedMetadataIndex = MetadataHeap::getInstance().
-              createData(0,exahype::solvers::RegisteredSolvers.size());
-          MetadataHeap::getInstance().receiveData(
-              receivedMetadataIndex,
-              fromRank, fineGridX, level,
-              peano::heap::MessageType::NeighbourCommunication);
-          exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
-          assertion(receivedMetadata.size()==exahype::MetadataPerSolver*solvers::RegisteredSolvers.size());
+          const int receivedMetadataIndex =
+          exahype::receiveNeighbourCommunicationMetadata(
+              fromRank, fineGridX, level);
+          exahype::MetadataHeap::HeapEntries& receivedMetadata =
+              MetadataHeap::getInstance().getData(receivedMetadataIndex);
+          assertion(receivedMetadata.size()==exahype::NeighbourCommunicationMetadataPerSolver*solvers::RegisteredSolvers.size());
 
           if(vertex.hasToMergeWithNeighbourData(src,dest)) {
             // logDebug("mergeWithNeighbour(...)","hasToMergeWithNeighbourData");
@@ -348,14 +345,14 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
   for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
     auto* solver = solvers::RegisteredSolvers[solverNumber];
     if (solver->isComputing(_localState.getAlgorithmSection())) {
-      const int offset = exahype::MetadataPerSolver*solverNumber;
+      const int offset = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
       if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
         const int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
         assertion1(element>=0,element);
 
         exahype::MetadataHeap::HeapEntries metadataPortion(
             receivedMetadata.begin()+offset,
-            receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+            receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
         logInfo(
             "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
@@ -445,9 +442,8 @@ bool exahype::mappings::Merging::prepareSendToWorker(
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
       && fineGridCell.isInside()) { // TODO(Dominic): Geometry
-    exahype::Vertex::sendEncodedMetadata( // TODO(Dominic): Always send. Check again
+    exahype::sendMasterWorkerCommunicationMetadata( // TODO(Dominic): Always send. Check again
         worker,fineGridCell.getCellDescriptionsIndex(),
-        peano::heap::MessageType::MasterWorkerCommunication,
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getLevel());
 
@@ -517,31 +513,29 @@ void exahype::mappings::Merging::receiveDataFromMaster(
   }
 
   if ((_localState.getMergeMode()==exahype::records::State::MergeMode::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
-      && receivedCell.isInside()) {  // TODO(Dominic): Geometry
+       _localState.getMergeMode()==exahype::records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData)
+      &&
+      receivedCell.isInside()) {  // TODO(Dominic): Geometry
     if (receivedCell.isInitialised()) {
-      int receivedMetadataIndex = MetadataHeap::getInstance().createData(
-          0,exahype::solvers::RegisteredSolvers.size());
-      MetadataHeap::getInstance().receiveData(
-          receivedMetadataIndex,
+      const int receivedMetadataIndex =
+          exahype::receiveMasterWorkerCommunicationMetadata(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           receivedVerticesEnumerator.getCellCenter(),
-          receivedVerticesEnumerator.getLevel(),
-          peano::heap::MessageType::MasterWorkerCommunication);
+          receivedVerticesEnumerator.getLevel());
       MetadataHeap::HeapEntries& receivedMetadata =
-                MetadataHeap::getInstance().getData(receivedMetadataIndex);
+          MetadataHeap::getInstance().getData(receivedMetadataIndex);
 
       for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
         auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
         if (solver->isComputing(_localState.getAlgorithmSection())) {
           const int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
-          const int offset  = exahype::MetadataPerSolver*solverNumber;
+          const int offset  = exahype::MasterWorkerCommunicationMetadataPerSolver*solverNumber;
           if (element!=exahype::solvers::Solver::NotFound &&
               receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
 
             exahype::MetadataHeap::HeapEntries metadataPortion(
                 receivedMetadata.begin()+offset,
-                receivedMetadata.begin()+offset+exahype::MetadataPerSolver);
+                receivedMetadata.begin()+offset+exahype::MasterWorkerCommunicationMetadataPerSolver);
 
             solver->mergeWithMasterData(
                 tarch::parallel::NodePool::getInstance().getMasterRank(),
@@ -560,7 +554,7 @@ void exahype::mappings::Merging::receiveDataFromMaster(
       MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
 
     } else {
-      exahype::Vertex::dropMetadata(
+      exahype::dropMetadata(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
           peano::heap::MessageType::MasterWorkerCommunication,
           receivedVerticesEnumerator.getCellCenter(),

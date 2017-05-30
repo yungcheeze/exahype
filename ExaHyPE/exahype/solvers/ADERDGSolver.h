@@ -52,7 +52,7 @@ public:
 
   /**
    * The maximum helper status.
-   * This value is assigned to a cell descriptions
+   * This value is assigned to cell descriptions
    * of type Cell.
    */
   static int MaximumHelperStatus;
@@ -61,6 +61,20 @@ public:
    * must have for it allocating boundary data.
    */
   static int MinimumHelperStatusForAllocatingBoundaryData;
+
+  /**
+   * The maximum augmentation status.
+   * This value is assigned to cell descriptions
+   * of type Ancestor.
+   */
+  static int MaximumAugmentationStatus;
+  /**
+   * The minimum helper status a cell description
+   * of type Cell must have for it to refine
+   * and add child cells of type Descendant to
+   * the grid.
+   */
+  static int MinimumAugmentationStatusForAugmentation;
 
   #ifdef Asserts
   static double PipedUncompressedBytes;
@@ -680,6 +694,8 @@ public:
    */
   static bool holdsFaceData(const int helperStatus);
 
+  void updateHelperStatus(
+        exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
   /**
    * TODO(Dominic): Add docu.
    */
@@ -690,6 +706,24 @@ public:
    * TODO(Dominic): Add docu.
    */
   void writeHelperStatusOnBoundary(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void updateAugmentationStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  int determineAugmentationStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void writeAugmentationStatusOnBoundary(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
@@ -1639,10 +1673,6 @@ public:
    * we should use the adjusted FVM solution as reference solution.
    * A similar issue occurs if we impose initial conditions that
    * include a discontinuity.
-   *
-   * TODO(Dominic): A rollback is of course not possible if we have adjusted the solution
-   * values. In this case, we should use the adjusted FVM solution as reference.
-   * A similar issue occurs if we impose the initial conditions.
    */
   void rollbackSolution(
       const int cellDescriptionsIndex,
@@ -1680,13 +1710,9 @@ public:
       const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
   ///////////////////////////////////
-  // PARENT<->CHILD
-  ///////////////////////////////////
-  // TODO(Dominic): Extract prolongation and restriction operations.
-
-  ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  // helper status
   void mergeWithHelperStatus(
       CellDescription& cellDescription,
       const int direction,
@@ -1699,6 +1725,28 @@ public:
       const int                                 element2,
       const tarch::la::Vector<DIMENSIONS, int>& pos1,
       const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
+  // augmentation status
+  void mergeWithAugmentationStatus(
+      CellDescription& cellDescription,
+      const int direction,
+      const int otherAugmentationStatus) const;
+
+  void mergeNeighboursAugmentationStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
+  void mergeNeighboursMetadata(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
 
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
@@ -1800,6 +1848,11 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void appendNeighbourCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
   void mergeWithNeighbourMetadata(
       const MetadataHeap::HeapEntries&          neighbourMetadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
@@ -1938,6 +1991,16 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void appendMasterWorkerCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
+  void mergeWithMasterWorkerMetadata(
+      const MetadataHeap::HeapEntries& receivedMetadata,
+      const int                        cellDescriptionsIndex,
+      const int                        element) override;
+
   /**
    * Compiles a message for a worker.
    *

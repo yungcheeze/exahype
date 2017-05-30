@@ -672,6 +672,14 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeNeighboursMetadata(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
@@ -697,6 +705,22 @@ public:
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const override;
 #ifdef Parallel
+  ///////////////////////////////////
+  // MASTER<=>WORKER
+  ///////////////////////////////////
+  void appendMasterWorkerCommunicationMetadata(
+        exahype::MetadataHeap::HeapEntries metadata,
+        const int cellDescriptionsIndex,
+        const int solverNumber) override;
+
+  void mergeWithMasterWorkerMetadata(
+        const MetadataHeap::HeapEntries& receivedMetadata,
+        const int                        cellDescriptionsIndex,
+        const int                        element) override;
+
+  ///////////////////////////////////
+  // FORK OR JOIN
+  ///////////////////////////////////
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -751,6 +775,11 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void appendNeighbourCommunicationMetadata(
+      exahype::MetadataHeap::HeapEntries metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
+
   void mergeWithNeighbourMetadata(
       const exahype::MetadataHeap::HeapEntries& metadata,
       const tarch::la::Vector<DIMENSIONS, int>& src,
