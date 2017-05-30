@@ -125,10 +125,8 @@ class exahype::records::ADERDGCellDescription {
   enum Type {
     Erased,
     Ancestor,
-    EmptyAncestor,
     Cell,
-    Descendant,
-    EmptyDescendant
+    Descendant
   };
   
   /**
@@ -401,6 +399,43 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solutionMin;
   parallelise persistent int solutionMax;
   
+  /**
+   * \see augmentationStatus
+   */
+  parallelise persistent int facewiseAugmentationStatus[DIMENSIONS_TIMES_TWO];
+
+  /**
+   * Another diffused status flag that controls how many
+   * cell descriptions of type Cell in vicinity of
+   * a helper cell description of type Ancestor are
+   * augmented with Descendant cells.
+   */
+  parallelise persistent int augmentationStatus;
+  
+  
+  /**
+   * \see helperStatus
+   */
+  parallelise persistent int facewiseHelperStatus[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * Status of a helper cell description (Descendant,Ancestor)
+   * which is diffused similarly to the limiter status.
+   * 
+   * Cell description of type Cell write the maximum value 
+   * on the boundary. Descendant and Ancestor cell descriptions
+   * will merge and diffuse the value and allocate 
+   * or deallocate memory according the converged value.
+   * 
+   * Usually, the cell descriptions which are direct
+   * neighbours to a cell description of type Cell
+   * allocate memory and the others don't.
+   * 
+   * We write the maximum value of the facewiseHelperStatus flags
+   * to this field in each limiter status merging iteration.
+   */
+  parallelise persistent int helperStatus;
+  
   enum LimiterStatus {
     /**
      * A cell holds a physically admissible ADER-DG solution
@@ -434,10 +469,7 @@ class exahype::records::ADERDGCellDescription {
   };
   
   /**
-   * Here we store the results of the limiter status merging
-   * between neighbouring cells (per face).
-   *
-   * This value
+   * \see limiterStatus
    */
   parallelise persistent int facewiseLimiterStatus[DIMENSIONS_TIMES_TWO];
   
