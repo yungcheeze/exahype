@@ -23,10 +23,10 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solverNumber;
 
   /**
-   * These flags indicate on which face a Riemann solve has already been
+   * These flags indicate on which face a neighbour merge, e.g. a Riemann solve or metadata merge, has already been
    * performed during the current traversal.
    */
-  parallelise persistent packed bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed bool neighbourMergePerformed[DIMENSIONS_TIMES_TWO];
   
   /**
    * These flags indicate which face of a cell is inside the domain.
