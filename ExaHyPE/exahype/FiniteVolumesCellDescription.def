@@ -140,10 +140,8 @@ class exahype::records::FiniteVolumesCellDescription {
   enum Type {
     Erased,
     Ancestor,
-    EmptyAncestor,
     Cell,
-    Descendant,
-    EmptyDescendant
+    Descendant
   };
 
   /**

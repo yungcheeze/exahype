@@ -54,24 +54,6 @@ class exahype::records::ADERDGCellDescription {
    parallelise persistent packed bool adjacentToRemoteRank;
   
   /**
-   * If a neighbouring cell belonging to another rank
-   * functions as a compute cell for the same solver (Type::Cell)
-   * that this cell description is associated with and this
-   * cell description is further a helper cell description (Type::Ancestor/EmptyAncestor/
-   * Descendant/EmptyDescendany), this helper cell description needs to store data.
-   * This flag is used to indicate these scenarios.
-   *
-   * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
-   * It should be read and be reset afterwards in MarkingForAugmentation::enterCell(...).
-   * 
-   * In contrast to hasToHoldDataForMasterWorkerCommunication,
-   * it is updated in every grid setup iteration.
-   * Flag hasToHoldDataForMasterWorkerCommunication is only
-   * updated after a fork or join event.
-   */
-  parallelise persistent packed bool hasToHoldDataForNeighbourCommunication;
-  
-  /**
    * This flag is set just before a cell description is sent to a new
    * worker. 
    * 

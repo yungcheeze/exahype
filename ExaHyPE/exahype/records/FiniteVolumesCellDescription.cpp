@@ -70,16 +70,14 @@
       switch (param) {
          case Erased: return "Erased";
          case Ancestor: return "Ancestor";
-         case EmptyAncestor: return "EmptyAncestor";
          case Cell: return "Cell";
          case Descendant: return "Descendant";
-         case EmptyDescendant: return "EmptyDescendant";
       }
       return "undefined";
    }
    
    std::string exahype::records::FiniteVolumesCellDescription::getTypeMapping() {
-      return "Type(Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,Descendant=4,EmptyDescendant=5)";
+      return "Type(Erased=0,Ancestor=1,Cell=2,Descendant=3)";
    }
    
    
@@ -1561,16 +1559,14 @@
          switch (param) {
             case Erased: return "Erased";
             case Ancestor: return "Ancestor";
-            case EmptyAncestor: return "EmptyAncestor";
             case Cell: return "Cell";
             case Descendant: return "Descendant";
-            case EmptyDescendant: return "EmptyDescendant";
          }
          return "undefined";
       }
       
       std::string exahype::records::FiniteVolumesCellDescription::getTypeMapping() {
-         return "Type(Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,Descendant=4,EmptyDescendant=5)";
+         return "Type(Erased=0,Ancestor=1,Cell=2,Descendant=3)";
       }
       
       

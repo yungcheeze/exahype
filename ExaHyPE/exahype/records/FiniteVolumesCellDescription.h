@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   30/05/2017 09:55
+    * @date   30/05/2017 14:51
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum Type {
-            Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
+            Erased = 0, Ancestor = 1, Cell = 2, Descendant = 3
          };
          
          struct PersistentRecords {
@@ -1389,7 +1389,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   30/05/2017 09:55
+    * @date   30/05/2017 14:51
     */
    class exahype::records::FiniteVolumesCellDescriptionPacked { 
       
@@ -2715,7 +2715,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   30/05/2017 09:55
+       * @date   30/05/2017 14:51
        */
       class exahype::records::FiniteVolumesCellDescription { 
          
@@ -2728,7 +2728,7 @@ namespace exahype {
             };
             
             enum Type {
-               Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
+               Erased = 0, Ancestor = 1, Cell = 2, Descendant = 3
             };
             
             struct PersistentRecords {
@@ -3883,7 +3883,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   30/05/2017 09:55
+       * @date   30/05/2017 14:51
        */
       class exahype::records::FiniteVolumesCellDescriptionPacked { 
          
