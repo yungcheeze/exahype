@@ -119,6 +119,14 @@ void exahype::solvers::ADERDGSolver::addNewCellDescription(
   newCellDescription.setLevel(level);
   newCellDescription.setRefinementEvent(refinementEvent);
 
+  newCellDescription.setHelperStatus(0);
+  newCellDescription.setFacewiseHelperStatus(0); // implicit conversion
+  if (cellType==CellDescription::Type::Cell) {
+    newCellDescription.setHelperStatus(MaximumHelperStatus);
+    newCellDescription.setFacewiseHelperStatus(MaximumHelperStatus); // implicit conversion
+    // TODO(Dominic): Make sure prolongation and restriction considers this.
+  }
+
   std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;  // default construction: no bit set
   newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
@@ -144,7 +152,7 @@ void exahype::solvers::ADERDGSolver::addNewCellDescription(
   // Limiter meta data (oscillations identificator)
   newCellDescription.setLimiterStatus(0); // 0 is CellDescription::LimiterStatus::Ok
   newCellDescription.setPreviousLimiterStatus(0);
-  newCellDescription.setFacewiseLimiterStatus(0);
+  newCellDescription.setFacewiseLimiterStatus(0);  // implicit conversion
   newCellDescription.setSolutionMin(-1);
   newCellDescription.setSolutionMax(-1);
 
@@ -199,237 +207,222 @@ bool exahype::solvers::ADERDGSolver::holdsFaceData(const exahype::solvers::ADERD
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
 
-  if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-    switch (cellDescription.getType()) {
-      case exahype::records::ADERDGCellDescription::Erased:
-      case exahype::records::ADERDGCellDescription::EmptyAncestor:
-      case exahype::records::ADERDGCellDescription::Ancestor:
-      case exahype::records::ADERDGCellDescription::EmptyDescendant:
-      case exahype::records::ADERDGCellDescription::Descendant:
-        {
-        waitUntilAllBackgroundTasksHaveTerminated();
+  if ((cellDescription.getType()==exahype::records::ADERDGCellDescription::Erased ||
+      cellDescription.getType()==exahype::records::ADERDGCellDescription::Descendant ||
+      cellDescription.getType()==exahype::records::ADERDGCellDescription::Ancestor)
+      &&
+      DataHeap::getInstance().isValidIndex(cellDescription.getSolution())
+  ) {
+    waitUntilAllBackgroundTasksHaveTerminated();
 
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPreviousSolution()));
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
-        tarch::multicore::Lock lock(_heapSemaphore);
+    tarch::multicore::Lock lock(_heapSemaphore);
 
-        if (cellDescription.getUpdate()>=0) {
-          DataHeap::getInstance().deleteData(cellDescription.getUpdate());
-          assertion(cellDescription.getUpdateCompressed()==-1);
-        }
-        else {
-          assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getUpdate()==-1);
-          CompressedDataHeap::getInstance().deleteData(cellDescription.getUpdateCompressed());
-        }
-
-        if (cellDescription.getSolution()>=0) {
-          DataHeap::getInstance().deleteData(cellDescription.getSolution());
-          assertion(cellDescription.getSolutionCompressed()==-1);
-        }
-        else {
-          assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getSolution()==-1);
-          CompressedDataHeap::getInstance().deleteData(cellDescription.getSolutionCompressed());
-        }
-
-        DataHeap::getInstance().deleteData(cellDescription.getUpdateAverages());
-        DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
-        DataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionAverages());
-
-        cellDescription.setPreviousSolution(-1);
-        cellDescription.setSolution(-1);
-        cellDescription.setUpdate(-1);
-
-        cellDescription.setPreviousSolutionAverages(-1);
-        cellDescription.setSolutionAverages(-1);
-        cellDescription.setUpdateAverages(-1);
-
-        cellDescription.setPreviousSolutionCompressed(-1);
-        cellDescription.setSolutionCompressed(-1);
-        cellDescription.setUpdateCompressed(-1);
-        }
-        break;
-      default:
-        break;
+    if (cellDescription.getUpdate()>=0) {
+      DataHeap::getInstance().deleteData(cellDescription.getUpdate());
+      assertion(cellDescription.getUpdateCompressed()==-1);
     }
+    else {
+      assertion(CompressionAccuracy>0.0);
+      assertion(cellDescription.getUpdate()==-1);
+      CompressedDataHeap::getInstance().deleteData(cellDescription.getUpdateCompressed());
+    }
+
+    if (cellDescription.getSolution()>=0) {
+      DataHeap::getInstance().deleteData(cellDescription.getSolution());
+      assertion(cellDescription.getSolutionCompressed()==-1);
+    }
+    else {
+      assertion(CompressionAccuracy>0.0);
+      assertion(cellDescription.getSolution()==-1);
+      CompressedDataHeap::getInstance().deleteData(cellDescription.getSolutionCompressed());
+    }
+
+    DataHeap::getInstance().deleteData(cellDescription.getUpdateAverages());
+    DataHeap::getInstance().deleteData(cellDescription.getSolutionAverages());
+    DataHeap::getInstance().deleteData(cellDescription.getPreviousSolutionAverages());
+
+    cellDescription.setPreviousSolution(-1);
+    cellDescription.setSolution(-1);
+    cellDescription.setUpdate(-1);
+
+    cellDescription.setPreviousSolutionAverages(-1);
+    cellDescription.setSolutionAverages(-1);
+    cellDescription.setUpdateAverages(-1);
+
+    cellDescription.setPreviousSolutionCompressed(-1);
+    cellDescription.setSolutionCompressed(-1);
+    cellDescription.setUpdateCompressed(-1);
   }
 
-  if (DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
-    switch (cellDescription.getType()) {
-      case exahype::records::ADERDGCellDescription::Erased:
-      case exahype::records::ADERDGCellDescription::EmptyAncestor:
-      case exahype::records::ADERDGCellDescription::EmptyDescendant:
-        {
-        waitUntilAllBackgroundTasksHaveTerminated();
+  if (
+      (cellDescription.getType()==exahype::records::ADERDGCellDescription::Erased ||
+       cellDescription.getHelperStatus()<MinimumHelperStatusForAllocatingBoundaryData)
+       &&
+      DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())
+  ) {
+    assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
+               cellDescription.getHelperStatus()==MaximumHelperStatus,
+               cellDescription.toString());
+    assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
-        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+    waitUntilAllBackgroundTasksHaveTerminated();
+    tarch::multicore::Lock lock(_heapSemaphore);
 
-        tarch::multicore::Lock lock(_heapSemaphore);
-
-        if (cellDescription.getExtrapolatedPredictor()>=0) {
-          DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
-          assertion(cellDescription.getExtrapolatedPredictorCompressed()==-1);
-        }
-        else {
-          assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getExtrapolatedPredictor()==-1);
-          CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorCompressed());
-        }
-
-        if (cellDescription.getFluctuation()>=0) {
-          DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
-          assertion(cellDescription.getFluctuationCompressed()==-1);
-        }
-        else {
-          assertion(CompressionAccuracy>0.0);
-          assertion(cellDescription.getFluctuation()==-1);
-          CompressedDataHeap::getInstance().deleteData(cellDescription.getFluctuationCompressed());
-        }
-
-        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
-        DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
-
-        if (getDMPObservables()>0) {
-          assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
-          assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
-          DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
-          DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
-
-          cellDescription.setSolutionMin(-1);
-          cellDescription.setSolutionMax(-1);
-        }
-
-        cellDescription.setExtrapolatedPredictor(-1);
-        cellDescription.setFluctuation(-1);
-
-        cellDescription.setExtrapolatedPredictorCompressed(-1);
-        cellDescription.setFluctuationCompressed(-1);
-        }
-        break;
-      default:
-        break;
+    if (cellDescription.getExtrapolatedPredictor()>=0) {
+      DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
+      assertion(cellDescription.getExtrapolatedPredictorCompressed()==-1);
     }
+    else {
+      assertion(CompressionAccuracy>0.0);
+      assertion(cellDescription.getExtrapolatedPredictor()==-1);
+      CompressedDataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorCompressed());
+    }
+
+    if (cellDescription.getFluctuation()>=0) {
+      DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+      assertion(cellDescription.getFluctuationCompressed()==-1);
+    }
+    else {
+      assertion(CompressionAccuracy>0.0);
+      assertion(cellDescription.getFluctuation()==-1);
+      CompressedDataHeap::getInstance().deleteData(cellDescription.getFluctuationCompressed());
+    }
+
+    DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictorAverages());
+    DataHeap::getInstance().deleteData(cellDescription.getFluctuationAverages());
+
+    if (getDMPObservables()>0) {
+      assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
+      assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
+      DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
+      DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
+
+      cellDescription.setSolutionMin(-1);
+      cellDescription.setSolutionMax(-1);
+    }
+
+    cellDescription.setExtrapolatedPredictor(-1);
+    cellDescription.setFluctuation(-1);
+
+    cellDescription.setExtrapolatedPredictorCompressed(-1);
+    cellDescription.setFluctuationCompressed(-1);
   }
 }
 
 void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
-  switch (cellDescription.getType()) {
-    case CellDescription::Cell:
-      if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-        waitUntilAllBackgroundTasksHaveTerminated();
+  if (
+      cellDescription.getType()==CellDescription::Cell
+      &&
+      !DataHeap::getInstance().isValidIndex(cellDescription.getSolution())
+  ) {
+    waitUntilAllBackgroundTasksHaveTerminated();
 
-        tarch::multicore::Lock lock(_heapSemaphore);
-        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
-        // Allocate volume DoF for limiter
-        const int dofPerCell        = getUnknownsPerCell();
-        const int dataPointsPerCell = getDataPerCell(); // Only the solution and previousSolution store material parameters
-        cellDescription.setPreviousSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-        cellDescription.setSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-        cellDescription.setUpdate(DataHeap::getInstance().createData(dofPerCell, dofPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    tarch::multicore::Lock lock(_heapSemaphore);
+    assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+    // Allocate volume DoF for limiter
+    const int dofPerCell        = getUnknownsPerCell();
+    const int dataPointsPerCell = getDataPerCell(); // Only the solution and previousSolution store material parameters
+    cellDescription.setPreviousSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setSolution(DataHeap::getInstance().createData(dataPointsPerCell, dataPointsPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setUpdate(DataHeap::getInstance().createData(dofPerCell, dofPerCell, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).size(),static_cast<unsigned int>(dataPointsPerCell));
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).capacity(),static_cast<unsigned int>(dofPerCell));
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).size(),static_cast<unsigned int>(dofPerCell));
-        assertionEquals(DataHeap::getInstance().getData(cellDescription.getSolution()).capacity(),static_cast<unsigned int>(dataPointsPerCell));
+    assertionEquals(DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).size(),static_cast<unsigned int>(dataPointsPerCell));
+    assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).capacity(),static_cast<unsigned int>(dofPerCell));
+    assertionEquals(DataHeap::getInstance().getData(cellDescription.getUpdate()).size(),static_cast<unsigned int>(dofPerCell));
+    assertionEquals(DataHeap::getInstance().getData(cellDescription.getSolution()).capacity(),static_cast<unsigned int>(dataPointsPerCell));
 
-        cellDescription.setUpdateCompressed(-1);
-        cellDescription.setSolutionCompressed(-1);
-        cellDescription.setPreviousSolutionCompressed(-1);
+    cellDescription.setUpdateCompressed(-1);
+    cellDescription.setSolutionCompressed(-1);
+    cellDescription.setPreviousSolutionCompressed(-1);
 
-        if (CompressionAccuracy>0.0) {
-          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
-        }
+    if (CompressionAccuracy>0.0) {
+      CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+    }
 
-        cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-        cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-        cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    cellDescription.setPreviousSolutionAverages( DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    cellDescription.setUpdateAverages(           DataHeap::getInstance().createData( getNumberOfVariables(), getNumberOfVariables(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    cellDescription.setSolutionAverages(         DataHeap::getInstance().createData( getNumberOfVariables()+getNumberOfParameters(), getNumberOfVariables()+getNumberOfParameters(), DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
-        assertionEquals3(
-            DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
-            DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
-            getNumberOfVariables()
-        );
-        assertionEquals3(
-          DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
-          DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
-          getNumberOfVariables()
-        );
-        assertionEquals3(
-          DataHeap::getInstance().getData(cellDescription.getSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
-          DataHeap::getInstance().getData(cellDescription.getSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
-          getNumberOfVariables()
-        );
+    assertionEquals3(
+        DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
+        DataHeap::getInstance().getData(cellDescription.getPreviousSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
+        getNumberOfVariables()
+    );
+    assertionEquals3(
+        DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
+        DataHeap::getInstance().getData(cellDescription.getUpdateAverages()).size(),static_cast<unsigned int>(getNumberOfVariables()),
+        getNumberOfVariables()
+    );
+    assertionEquals3(
+        DataHeap::getInstance().getData(cellDescription.getSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
+        DataHeap::getInstance().getData(cellDescription.getSolutionAverages()).size(),static_cast<unsigned int>(getNumberOfVariables() + getNumberOfParameters()),
+        getNumberOfVariables()
+    );
 
-        cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
-      }
-      break;
-    default:
-      break;
+    cellDescription.setCompressionState(exahype::records::ADERDGCellDescription::Uncompressed);
+  }
   }
 
-  switch (cellDescription.getType()) {
-    case CellDescription::Cell:
-    case CellDescription::Ancestor:
-    case CellDescription::Descendant:
-      if (!DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
-        waitUntilAllBackgroundTasksHaveTerminated();
+  if(
+      cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData
+      &&
+      !DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())
+  ) {
+    waitUntilAllBackgroundTasksHaveTerminated();
 
-        tarch::multicore::Lock lock(_heapSemaphore);
-        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+    tarch::multicore::Lock lock(_heapSemaphore);
+    assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
-        // Allocate face DoF
-        const int dataPerBnd = getBndTotalSize();
-        const int dofPerBnd  = getBndFluxTotalSize();
+    // Allocate face DoF
+    const int dataPerBnd = getBndTotalSize();
+    const int dofPerBnd  = getBndFluxTotalSize();
 
-        cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(dataPerBnd, dataPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-        cellDescription.setFluctuation(          DataHeap::getInstance().createData(dofPerBnd, dofPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(dataPerBnd, dataPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    cellDescription.setFluctuation(          DataHeap::getInstance().createData(dofPerBnd, dofPerBnd, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
-        assertionEquals3(
-          DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(dataPerBnd),
-          cellDescription.getExtrapolatedPredictor(),
-          cellDescription.toString(),
-          toString()
-        );
-        assertionEquals3(
-          DataHeap::getInstance().getData(cellDescription.getFluctuation()).size(),static_cast<unsigned int>(dofPerBnd),
-          cellDescription.getExtrapolatedPredictor(),
-          cellDescription.toString(),
-          toString()
-        );
+    assertionEquals3(
+        DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).size(),static_cast<unsigned int>(dataPerBnd),
+        cellDescription.getExtrapolatedPredictor(),
+        cellDescription.toString(),
+        toString()
+    );
+    assertionEquals3(
+        DataHeap::getInstance().getData(cellDescription.getFluctuation()).size(),static_cast<unsigned int>(dofPerBnd),
+        cellDescription.getExtrapolatedPredictor(),
+        cellDescription.toString(),
+        toString()
+    );
 
-        cellDescription.setExtrapolatedPredictorCompressed(-1);
-        cellDescription.setFluctuationCompressed(-1);
+    cellDescription.setExtrapolatedPredictorCompressed(-1);
+    cellDescription.setFluctuationCompressed(-1);
 
-        if (CompressionAccuracy>0.0) {
-          CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
-        }
+    if (CompressionAccuracy>0.0) {
+      CompressedDataHeap::getInstance().reserveHeapEntriesForRecycling(2);
+    }
 
-        //TODO JMG / Dominic adapt for padding with optimized kernels
-        int faceAverageCardinality = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
-        cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
-        cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    //TODO JMG / Dominic adapt for padding with optimized kernels
+    int faceAverageCardinality = getNumberOfVariables() * DIMENSIONS_TIMES_TWO;
+    cellDescription.setExtrapolatedPredictorAverages( DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
+    cellDescription.setFluctuationAverages(           DataHeap::getInstance().createData( faceAverageCardinality, faceAverageCardinality, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired ) );
 
-        // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
-        // and array of max values of the neighbour at this face).
-        const int numberOfObservables = getDMPObservables();
-        if (numberOfObservables>0) {
-          cellDescription.setSolutionMin(DataHeap::getInstance().createData(
-              numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
-          cellDescription.setSolutionMax(DataHeap::getInstance().createData(
-              numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+    // Allocate volume DoF for limiter (we need for every of the 2*DIMENSIONS faces an array of min values
+    // and array of max values of the neighbour at this face).
+    const int numberOfObservables = getDMPObservables();
+    if (numberOfObservables>0) {
+      cellDescription.setSolutionMin(DataHeap::getInstance().createData(
+          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
+      cellDescription.setSolutionMax(DataHeap::getInstance().createData(
+          numberOfObservables * DIMENSIONS_TIMES_TWO, numberOfObservables * DIMENSIONS_TIMES_TWO, DataHeap::Allocation::UseRecycledEntriesIfPossibleCreateNewEntriesIfRequired));
 
-          for (int i=0; i<numberOfObservables * DIMENSIONS_TIMES_TWO; i++) {
-            DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::max();
-            DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = -std::numeric_limits<double>::max();
-          }
-        }
+      for (int i=0; i<numberOfObservables * DIMENSIONS_TIMES_TWO; i++) {
+        DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::max();
+        DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = -std::numeric_limits<double>::max();
       }
-      break;
-    default:
-      break;
+    }
   }
 }
 
@@ -986,6 +979,9 @@ bool exahype::solvers::ADERDGSolver::updateStateInEnterCell(
   if (fineGridCellElement==exahype::solvers::Solver::NotFound &&
       tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),getMaximumMeshSize()) &&
       tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),getMaximumMeshSize())) {
+    logDebug("updateStateInEnterCell(...)","Add new uniform grid cell with offset "<<fineGridVerticesEnumerator.getVertexPosition() <<
+            " at level "<<fineGridVerticesEnumerator.getLevel());
+
     addNewCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
                multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
                solverNumber); // TODO(Dominic): Can directly refine if we directly evaluate initial conditions here.
@@ -1099,7 +1095,6 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
       }
       break;
     case CellDescription::Ancestor:
-    case CellDescription::EmptyAncestor:
       if (
           fineGridCellDescription.getRefinementEvent()==CellDescription::None
           && !fineGridCellDescription.getNewlyCreated() // we do not erase newly created Ancestors
@@ -1133,8 +1128,7 @@ bool exahype::solvers::ADERDGSolver::markForRefinement(
           coarseGridCellDescription.getRefinementEvent()==CellDescription::ChangeChildrenToDescendantsRequested) {
         coarseGridCellDescription.setRefinementEvent(CellDescription::None);
 
-        assertion1(coarseGridCellDescription.getType()==CellDescription::EmptyAncestor ||
-                   coarseGridCellDescription.getType()==CellDescription::Ancestor,
+        assertion1(coarseGridCellDescription.getType()==CellDescription::Ancestor,
                    coarseGridCellDescription.toString());
       }
     }
@@ -1147,7 +1141,7 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
     CellDescription& fineGridCellDescription,
     const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionIndices,
     const bool assignedToRemoteRank) {
-  int coarseGridElement = tryGetElement(
+  const int coarseGridElement = tryGetElement(
       fineGridCellDescription.getParentIndex(),
       fineGridCellDescription.getSolverNumber());
   // First check if we can set the deaugmenting children requested triggered event of the coarse grid cell
@@ -1163,6 +1157,8 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
   // Then do fine grid cell stuff
   bool refineFineGridCell = false;
   bool vetoDeaugmenting   = true;
+
+  writeHe
 
   const exahype::solvers::Solver::AugmentationControl augmentationControl =
       exahype::amr::augmentationCriterion<CellDescription,Heap>(
@@ -1195,7 +1191,6 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
           }
           break;
         case CellDescription::Descendant:
-        case CellDescription::EmptyDescendant:
           fineGridCellDescription.setRefinementEvent(CellDescription::DeaugmentingChildrenRequestedTriggered);
           switch (augmentationControl) {
             case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
@@ -1229,7 +1224,6 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
         coarseGridCellDescription.setRefinementEvent(CellDescription::None);
 
         assertion1(coarseGridCellDescription.getType()==CellDescription::Cell ||
-                   coarseGridCellDescription.getType()==CellDescription::EmptyDescendant ||
                    coarseGridCellDescription.getType()==CellDescription::Descendant,
                    coarseGridCellDescription.toString());
       }
@@ -1239,54 +1233,54 @@ bool exahype::solvers::ADERDGSolver::markForAugmentation(
   return refineFineGridCell;
 }
 
-void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
-    CellDescription& fineGridCellDescription,
-    const exahype::solvers::Solver::AugmentationControl& augmentationControl,
-    const bool assignedToRemoteRank) {
-  switch (fineGridCellDescription.getType()) {
-    case CellDescription::Ancestor:
-    case CellDescription::EmptyAncestor:
-      fineGridCellDescription.setType(CellDescription::EmptyAncestor);
-      #ifdef Parallel
-      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
-          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
-        fineGridCellDescription.setType(CellDescription::Ancestor);
-      }
-      #endif
-
-      if (augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCell ||
-          augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor) {
-        fineGridCellDescription.setType(CellDescription::Ancestor);
-      }
-      ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
-      ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
-      break;
-    case CellDescription::Descendant:
-    case CellDescription::EmptyDescendant:
-      fineGridCellDescription.setType(CellDescription::EmptyDescendant);
-
-      #ifdef Parallel
-      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
-          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
-        fineGridCellDescription.setType(CellDescription::Descendant);
-      }
-      #endif
-
-      if (augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCell ||
-          augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor) {
-        fineGridCellDescription.setType(CellDescription::Descendant);
-      }
-      ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
-      ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
-      break;
-    default:
-      break;
-  }
-
-  #ifdef Parallel
-  fineGridCellDescription.setHasToHoldDataForNeighbourCommunication(false);
-  #endif
-}
+//void exahype::solvers::ADERDGSolver::ensureOnlyNecessaryMemoryIsAllocated(
+//    CellDescription& fineGridCellDescription,
+//    const exahype::solvers::Solver::AugmentationControl& augmentationControl,
+//    const bool assignedToRemoteRank) {
+//  switch (fineGridCellDescription.getType()) {
+//    case CellDescription::Ancestor:
+//    case CellDescription::EmptyAncestor:
+//      fineGridCellDescription.setType(CellDescription::EmptyAncestor);
+//      #ifdef Parallel
+//      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
+//          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
+//        fineGridCellDescription.setType(CellDescription::Ancestor);
+//      }
+//      #endif
+//
+//      if (augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCell ||
+//          augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor) {
+//        fineGridCellDescription.setType(CellDescription::Ancestor);
+//      }
+//      ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
+//      ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
+//      break;
+//    case CellDescription::Descendant:
+//    case CellDescription::EmptyDescendant:
+//      fineGridCellDescription.setType(CellDescription::EmptyDescendant);
+//
+//      #ifdef Parallel
+//      if (fineGridCellDescription.getHasToHoldDataForNeighbourCommunication()
+//          || fineGridCellDescription.getHasToHoldDataForMasterWorkerCommunication()) { // TODO(Dominic): Add to docu.
+//        fineGridCellDescription.setType(CellDescription::Descendant);
+//      }
+//      #endif
+//
+//      if (augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCell ||
+//          augmentationControl==exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor) {
+//        fineGridCellDescription.setType(CellDescription::Descendant);
+//      }
+//      ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
+//      ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
+//      break;
+//    default:
+//      break;
+//  }
+//
+//  #ifdef Parallel
+//  fineGridCellDescription.setHasToHoldDataForNeighbourCommunication(false);
+//  #endif
+//}
 
 void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
     CellDescription& coarseGridCellDescription,
@@ -1302,8 +1296,7 @@ void exahype::solvers::ADERDGSolver::vetoErasingOrDeaugmentingChildrenRequest(
 
         switch (coarseGridCellDescriptionParent.getRefinementEvent()) {
           case CellDescription::DeaugmentingChildrenRequested:
-            assertion1(coarseGridCellDescription.getType()==CellDescription::EmptyDescendant ||
-                       coarseGridCellDescription.getType()==CellDescription::Descendant,coarseGridCellDescription.toString());
+            assertion1(coarseGridCellDescription.getType()==CellDescription::Descendant,coarseGridCellDescription.toString());
             coarseGridCellDescriptionParent.setRefinementEvent(CellDescription::None);
             break;
           case CellDescription::ErasingChildrenRequested:
@@ -1325,6 +1318,9 @@ void exahype::solvers::ADERDGSolver::addNewCell(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const int coarseGridCellDescriptionsIndex,
     const int solverNumber) {
+  logInfo("addNewCell(...)","Add new grid cell with center "<<fineGridVerticesEnumerator.getCellCenter() <<
+              " at level "<<fineGridVerticesEnumerator.getLevel());
+
   fineGridCell.addNewCellDescription(
               solverNumber,
               CellDescription::Cell,
@@ -1353,7 +1349,6 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
   if (coarseGridCellDescription.getRefinementEvent()==CellDescription::AugmentingRequested ||
       coarseGridCellDescription.getRefinementEvent()==CellDescription::Augmenting) {
     assertion1(coarseGridCellDescription.getType()==CellDescription::Cell ||
-               coarseGridCellDescription.getType()==CellDescription::EmptyDescendant ||
                coarseGridCellDescription.getType()==CellDescription::Descendant,
                coarseGridCellDescription.toString());
     int fineGridElement =
@@ -1364,7 +1359,7 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
     if (fineGridElement==exahype::solvers::Solver::NotFound) {
       fineGridCell.addNewCellDescription( // (EmptyDescendant),None
           coarseGridCellDescription.getSolverNumber(),
-          CellDescription::EmptyDescendant,
+          CellDescription::Descendant,
           CellDescription::None,
           fineGridVerticesEnumerator.getLevel(),
           coarseGridCellDescriptionsIndex,
@@ -1402,8 +1397,7 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
                 getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
       #endif
 
-      assertion1(fineGridCellDescription.getType()==CellDescription::EmptyDescendant ||
-                 fineGridCellDescription.getType()==CellDescription::Descendant,
+      assertion1(fineGridCellDescription.getType()==CellDescription::Descendant,
                  fineGridCellDescription.toString());
     }
   }
@@ -1438,8 +1432,7 @@ void exahype::solvers::ADERDGSolver::addNewCellIfRefinementRequested(
           fineGridCellDescription,coarseGridCellDescription,fineGridPositionOfCell,initialGrid);
     } else {
       CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
-      assertion2(fineGridCellDescription.getType()==CellDescription::EmptyDescendant
-                 || fineGridCellDescription.getType()==CellDescription::Descendant,
+      assertion2(fineGridCellDescription.getType()==CellDescription::Descendant,
                  fineGridCellDescription.toString(),coarseGridCellDescription.toString());
       assertion2(fineGridCellDescription.getParentIndex()==coarseGridCellDescriptionsIndex,
                  fineGridCellDescription.toString(),coarseGridCellDescriptionsIndex);
@@ -1618,13 +1611,17 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
     case CellDescription::Refining:
       assertion1(fineGridCellDescription.getType()==CellDescription::Cell,
                  fineGridCellDescription.toString());
-      fineGridCellDescription.setType(CellDescription::EmptyAncestor);
+      fineGridCellDescription.setType(CellDescription::Ancestor);
+      fineGridCellDescription.setHelperStatus(0);
+      fineGridCellDescription.setFacewiseHelperStatus(0); // implicit conversion
       fineGridCellDescription.setRefinementEvent(CellDescription::None);
       fineGridCellDescription.setNewlyCreated(true);
       ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
       break;
     case CellDescription::ChangeChildrenToDescendantsRequested:
       fineGridCellDescription.setType(CellDescription::Cell);
+      fineGridCellDescription.setHelperStatus(MaximumHelperStatus);
+      fineGridCellDescription.setFacewiseHelperStatus(MaximumHelperStatus); // implicit conversion
       ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
       prepareVolumeDataRestriction(fineGridCellDescription);
       fineGridCellDescription.setRefinementEvent(CellDescription::ChangeChildrenToDescendants);
@@ -1634,6 +1631,8 @@ void exahype::solvers::ADERDGSolver::startOrFinishCollectiveRefinementOperations
       break;
     case CellDescription::ErasingChildrenRequested:
       fineGridCellDescription.setType(CellDescription::Cell);
+      fineGridCellDescription.setHelperStatus(MaximumHelperStatus);
+      fineGridCellDescription.setFacewiseHelperStatus(MaximumHelperStatus); // implicit conversion
       ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
       prepareVolumeDataRestriction(fineGridCellDescription);
       fineGridCellDescription.setRefinementEvent(CellDescription::ErasingChildren);
@@ -1677,6 +1676,8 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
 
     // erase cell description // or change to descendant
     fineGridCellDescription.setType(CellDescription::Erased);
+    fineGridCellDescription.setHelperStatus(0);
+    fineGridCellDescription.setFacewiseHelperStatus(0); // implicit conversion
     ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
 
     getCellDescriptions(cellDescriptionsIndex).erase(
@@ -1696,7 +1697,9 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
 //    coarseGridCellDescription.setPredictorTimeStamp(fineGridCellDescription.getPredictorTimeStamp());
 
     // erase cell description // or change to descendant
-    fineGridCellDescription.setType(CellDescription::EmptyDescendant);
+    fineGridCellDescription.setType(CellDescription::Descendant);
+    fineGridCellDescription.setHelperStatus(0);
+    fineGridCellDescription.setFacewiseHelperStatus(0); // implicit conversion
     ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
 
     return false;
@@ -1705,6 +1708,8 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
           cellDescriptionsIndex,fineGridCellElement);
 
     fineGridCellDescription.setType(CellDescription::Erased);
+    fineGridCellDescription.setHelperStatus(0);
+    fineGridCellDescription.setFacewiseHelperStatus(0); // implicit conversion
     ensureNoUnnecessaryMemoryIsAllocated(fineGridCellDescription);
 
     getCellDescriptions(cellDescriptionsIndex).erase(
@@ -1787,7 +1792,7 @@ void exahype::solvers::ADERDGSolver::finaliseStateUpdates(
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) {
-  int element =
+  const int element =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   if (element!=exahype::solvers::Solver::NotFound) {
     CellDescription& cellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
@@ -2453,6 +2458,71 @@ void exahype::solvers::ADERDGSolver::restrictToTopMostParent(
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
+int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
+int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
+
+int
+exahype::solvers::ADERDGSolver::determineHelperStatus(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  // Assumes increasing value of limiter status the closer we get to troubled cell
+  int helperStatus = 0;
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    helperStatus = std::max( helperStatus, cellDescription.getFacewiseHelperStatus(i) );
+  }
+
+  return helperStatus;
+}
+
+void exahype::solvers::ADERDGSolver::writeHelperStatusOnBoundary(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    cellDescription.setFacewiseHelperStatus(faceIndex,0);
+    if (cellDescription.getIsInside(faceIndex)) {
+      cellDescription.setFacewiseHelperStatus(faceIndex,cellDescription.gethelperStatus());
+    }
+  }
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithHelperStatus(
+    CellDescription& cellDescription,
+    const int direction,
+    const int otherHelperStatus) const {
+  int helperStatus = cellDescription.getHelperStatus();
+  helperStatus =
+      ( helperStatus==MaximumHelperStatus )
+      ?
+      helperStatus
+      :
+      std::max (
+          0,
+          std::max( helperStatus, otherHelperStatus ) - 1
+      );
+
+  cellDescription.setFacewiseLimiterStatus( direction, helperStatus );
+}
+
+void exahype::solvers::ADERDGSolver::mergeNeighboursHelperStatus(
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
+  CellDescription& cellDescription1 = getCellDescription(cellDescriptionsIndex1,element1);
+  CellDescription& cellDescription2 = getCellDescription(cellDescriptionsIndex2,element2);
+
+  const int direction    = tarch::la::equalsReturnIndex(pos1,pos2);
+  const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+  const int orientation2 = 1-orientation1;
+
+  const int limiterStatus1 = cellDescription1.getLimiterStatus();
+  const int limiterStatus2 = cellDescription2.getLimiterStatus();
+
+  mergeWithHelperStatus(cellDescription1,2*direction+orientation1,limiterStatus2);
+  mergeWithHelperStatus(cellDescription2,2*direction+orientation2,limiterStatus1);
+}
+
+
 void exahype::solvers::ADERDGSolver::mergeNeighbours(
     const int                                 cellDescriptionsIndex1,
     const int                                 element1,
@@ -2762,6 +2832,12 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
       }
     }
 
+    logInfo("sendCellDescriptions(...)","send "<<
+            Heap::getInstance().getData(cellDescriptionsIndex).size()<<
+            " cell descriptions to rank "<<toRank<<
+            " at (center="<< x.toString() <<
+            ",level="<< level << ")");
+
     Heap::getInstance().sendData(cellDescriptionsIndex,
                                  toRank,x,level,messageType);
   } else {
@@ -2774,6 +2850,11 @@ void exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(
     const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
+  logInfo("sendEmptyCellDescriptions(...)","send empty message to " <<
+          "rank "<<toRank <<
+          " at (center="<< x.toString() <<
+          ",level="<< level << ")");
+
   Heap::HeapEntries emptyMessage(0);
   Heap::getInstance().sendData(emptyMessage,
       toRank,x,level,messageType);
@@ -2793,10 +2874,10 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
   Heap::getInstance().receiveData(
       receivedCellDescriptionsIndex,fromRank,x,level,messageType);
 
-  logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
+  logInfo("mergeCellDescriptionsWithRemoteData(...)","received " <<
           Heap::getInstance().getData(receivedCellDescriptionsIndex).size() <<
           " cell descriptions for cell ("
-          "offset="<< x.toString() <<
+          "centre="<< x.toString() <<
           "level="<< level << ")");
 
   if (Heap::getInstance().getData(receivedCellDescriptionsIndex).size()>0) {
@@ -2812,6 +2893,13 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
 
     if (!localCell.isInitialised()) {
       localCell.setupMetaData();
+
+      logInfo("mergeCellDescriptionsWithRemoteData(...)","setup metadata for " <<
+                    "cell ("
+                    "centre="<< x.toString() <<
+                    ",level="<< level <<
+                    ",isRoot="<< localCell.isRoot() <<
+                    ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank());
     }
     assertion1(Heap::getInstance().isValidIndex(localCell.getCellDescriptionsIndex()),
                localCell.getCellDescriptionsIndex());
@@ -2819,10 +2907,11 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
         std::max(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).size(),
                  Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
 
+//    assertion(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).empty());
     for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
-      logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
-              " cell description for cell ("
-              "offset="<< x.toString() <<
+      logInfo("mergeCellDescriptionsWithRemoteData(...)","received " <<
+              "cell description for cell ("
+              "centre="<< x.toString() <<
               ",level="<< level <<
               ",isRoot="<< localCell.isRoot() <<
               ",isAssignedToRemoteRank="<< localCell.isAssignedToRemoteRank() <<
@@ -2833,7 +2922,13 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
         if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
           found = true;
 
-          assertion(pReceived.getType()==pLocal.getType());
+          assertion8(pReceived.getType()==pLocal.getType(),pReceived.getType(),pLocal.getType(),
+                     pLocal.getOffset()+0.5*pLocal.getSize(),
+                     pLocal.getLevel(),
+                     pReceived.getOffset()+0.5*pReceived.getSize(),
+                     pReceived.getLevel(),
+                     x,
+                     tarch::parallel::Node::getInstance().getRank());
           if (pLocal.getType()==CellDescription::Type::Cell ||
               pLocal.getType()==CellDescription::Type::EmptyAncestor ||
               pLocal.getType()==CellDescription::Type::Ancestor ||
@@ -2991,43 +3086,52 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
     return;
   }
 
-  CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
+  const int direction   = tarch::la::equalsReturnIndex(src, dest);
+  const int orientation = (1 + src(direction) - dest(direction))/2;
+  const int faceIndex   = 2*direction+orientation;
 
-  CellDescription::Type neighbourType =
-      static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
-  switch(p.getType()) {
-    case CellDescription::Cell:
-      if (p.getRefinementEvent()==CellDescription::None &&
-          (neighbourType==CellDescription::Ancestor ||
-              neighbourType==CellDescription::EmptyAncestor)) {
-        p.setRefinementEvent(CellDescription::AugmentingRequested);
-      }
-      break;
-    case CellDescription::Descendant:
-    case CellDescription::EmptyDescendant:
-      // TODO(Dominic): Add to docu what we do here.
-      if (neighbourType==CellDescription::Cell) {
-        p.setHasToHoldDataForNeighbourCommunication(true);
-      }
+  CellDescription& solverPatch = getCellDescription(cellDescriptionsIndex,element);
 
-      // 2. Request further augmentation if necessary (this might get reset if the traversal
-      // is able to descend and finds existing descendants).
-      if (p.getRefinementEvent()==CellDescription::None &&
-          (neighbourType==CellDescription::Ancestor ||
-              neighbourType==CellDescription::EmptyAncestor)) {
-        p.setRefinementEvent(CellDescription::AugmentingRequested);
-      }
-      break;
-    case CellDescription::Ancestor:
-    case CellDescription::EmptyAncestor:
-      // TODO(Dominic): Add to docu what we do here.
-      if (neighbourType==CellDescription::Cell) {
-        p.setHasToHoldDataForNeighbourCommunication(true);
-      }
-      break;
-    default:
-      assertionMsg(false,"Should never be entered in static AMR scenarios!");
-      break;
+  const int neighbourHelperStatus = neighbourMetadata[exahype::MetadataCellType].getU();
+
+  mergeWithHelperStatus(solverPatch,faceIndex,neighbourHelperStatus);
+
+  // TODO(Dominic): Old code; keep for revision
+//  CellDescription::Type neighbourType =
+//      static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
+//  switch(p.getType()) {
+//    case CellDescription::Cell:
+//      if (p.getRefinementEvent()==CellDescription::None &&
+//          (neighbourType==CellDescription::Ancestor ||
+//              neighbourType==CellDescription::EmptyAncestor)) {
+//        p.setRefinementEvent(CellDescription::AugmentingRequested);
+//      }
+//      break;
+//    case CellDescription::Descendant:
+//    case CellDescription::EmptyDescendant:
+//      // TODO(Dominic): Add to docu what we do here.
+//      if (neighbourType==CellDescription::Cell) {
+//        p.setHasToHoldDataForNeighbourCommunication(true);
+//      }
+//
+//      // 2. Request further augmentation if necessary (this might get reset if the traversal
+//      // is able to descend and finds existing descendants).
+//      if (p.getRefinementEvent()==CellDescription::None &&
+//          (neighbourType==CellDescription::Ancestor ||
+//              neighbourType==CellDescription::EmptyAncestor)) {
+//        p.setRefinementEvent(CellDescription::AugmentingRequested);
+//      }
+//      break;
+//    case CellDescription::Ancestor:
+//    case CellDescription::EmptyAncestor:
+//      // TODO(Dominic): Add to docu what we do here.
+//      if (neighbourType==CellDescription::Cell) {
+//        p.setHasToHoldDataForNeighbourCommunication(true);
+//      }
+//      break;
+//    default:
+//      assertionMsg(false,"Should never be entered in static AMR scenarios!");
+//      break;
   }
 }
 
@@ -3123,8 +3227,6 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
   const int faceIndex    = 2*direction+orientation;
 
   waitUntilAllBackgroundTasksHaveTerminated();
-  // @todo Das kommt mir sehr seltsam vor, weil unten ja nochmal ein Lock kommt.
-  //tarch::multicore::Lock lock(_heapSemaphore);
 
   CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
   // TODO(Dominic): Add to docu: We only perform a Riemann solve if a Cell is involved.
@@ -3134,8 +3236,8 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
       static_cast<CellDescription::Type>(neighbourMetadata[exahype::MetadataCellType].getU());
   if(neighbourType==CellDescription::Type::Cell || cellDescription.getType()==CellDescription::Type::Cell){
     tarch::multicore::Lock lock(_heapSemaphore);
-    assertion1(holdsFaceData(neighbourType),neighbourType);
-    assertion1(holdsFaceData(cellDescription.getType()),cellDescription.toString());
+    assertion2(holdsFaceData(neighbourType),neighbourType,tarch::parallel::Node::getInstance().getRank());
+    assertion2(holdsFaceData(cellDescription.getType()),cellDescription.toString(),tarch::parallel::Node::getInstance().getRank());
 
     const int dataPerFace = getBndFaceSize();
     const int dofPerFace  = getBndFluxSize();
@@ -3463,17 +3565,19 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
   assertion4(cellDescription.getType()==CellDescription::Type::Cell
              || cellDescription.getType()==CellDescription::Type::Ancestor
-             || cellDescription.getType()==CellDescription::Type::EmptyAncestor
              || cellDescription.getType()==CellDescription::Type::Descendant,
              cellDescription.toString(),CellDescription::toString(workerType),tarch::parallel::Node::getInstance().getRank(),workerRank);
-  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-               && workerType!=CellDescription::Type::EmptyDescendant
-               && !(workerType==CellDescription::Type::EmptyAncestor
-                   && cellDescription.getType()==CellDescription::Type::Ancestor)
-                   && !(workerType==CellDescription::Type::Ancestor &&
-                       cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-                       cellDescription.toString(),CellDescription::toString(workerType),
-                       tarch::parallel::Node::getInstance().getRank(),workerRank);
+//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
+//               && workerType!=CellDescription::Type::EmptyDescendant
+//               && !(workerType==CellDescription::Type::EmptyAncestor
+//                   && cellDescription.getType()==CellDescription::Type::Ancestor)
+//                   && !(workerType==CellDescription::Type::Ancestor &&
+//                       cellDescription.getType()==CellDescription::Type::EmptyAncestor),
+//                       cellDescription.toString(),CellDescription::toString(workerType),
+//                       tarch::parallel::Node::getInstance().getRank(),workerRank);
+  // TODO(Dominic): Make sure to send cell type, helperStatus and limiter status to worker/master.
+  // Neighbour comm. does only require the helper status and limiter status
+
 
   if (cellDescription.getType()==CellDescription::Type::Ancestor) {
     logDebug("mergeWithWorkerData(...)","Received face data for solver " <<
@@ -3649,13 +3753,14 @@ bool exahype::solvers::ADERDGSolver::hasToSendDataToMaster(
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
   if (cellDescription.getType()==CellDescription::Ancestor) {
-    return true;
-  } else if (cellDescription.getType()==CellDescription::EmptyAncestor) {
     #if defined(Debug) || defined(Asserts)
     exahype::solvers::Solver::SubcellPosition subcellPosition =
         computeSubcellPositionOfCellOrAncestor(cellDescriptionsIndex,element);
-    assertion(subcellPosition.parentElement==exahype::solvers::Solver::NotFound);
+    assertion(cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData ||
+              subcellPosition.parentElement==exahype::solvers::Solver::NotFound);
     #endif
+
+    return cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData;
   }
 
   return false;
@@ -3729,20 +3834,22 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   // The following two assertions assert that cell descriptions on both ranks are together of
   // type Cell, Descendant, EmptyAncestor, or Ancestor.
   // Pairwise differing EmptyAncestor-Ancestor configurations as well as EmptyDescendants are not allowed.
-  assertion4(cellDescription.getType()==CellDescription::Type::Cell
-             || cellDescription.getType()==CellDescription::Type::Ancestor
-             || cellDescription.getType()==CellDescription::Type::EmptyAncestor
-             || cellDescription.getType()==CellDescription::Type::Descendant,
-             cellDescription.toString(),CellDescription::toString(masterType),
-             tarch::parallel::Node::getInstance().getRank(),masterRank);
-  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
-             && masterType!=CellDescription::Type::EmptyDescendant
-             && !(masterType==CellDescription::Type::EmptyAncestor
-                 && cellDescription.getType()==CellDescription::Type::Ancestor)
-                 && !(masterType==CellDescription::Type::Ancestor &&
-                     cellDescription.getType()==CellDescription::Type::EmptyAncestor),
-                     cellDescription.toString(),CellDescription::toString(masterType),
-                     tarch::parallel::Node::getInstance().getRank(),masterRank);
+//  assertion4(cellDescription.getType()==CellDescription::Type::Cell
+//             || cellDescription.getType()==CellDescription::Type::Ancestor
+//             || cellDescription.getType()==CellDescription::Type::EmptyAncestor
+//             || cellDescription.getType()==CellDescription::Type::Descendant,
+//             cellDescription.toString(),CellDescription::toString(masterType),
+//             tarch::parallel::Node::getInstance().getRank(),masterRank);
+//  assertion4(cellDescription.getType()!=CellDescription::Type::EmptyDescendant
+//             && masterType!=CellDescription::Type::EmptyDescendant
+//             && !(masterType==CellDescription::Type::EmptyAncestor
+//                 && cellDescription.getType()==CellDescription::Type::Ancestor)
+//                 && !(masterType==CellDescription::Type::Ancestor &&
+//                     cellDescription.getType()==CellDescription::Type::EmptyAncestor),
+//                     cellDescription.toString(),CellDescription::toString(masterType),
+//                     tarch::parallel::Node::getInstance().getRank(),masterRank);
+  // TODO(Dominic): Make sure to send cell type, helperStatus and limiter status to worker/master.
+  // Neighbour comm. does only require the helper status and limiter status
 
   if (cellDescription.getType()==CellDescription::Descendant) {
     logDebug("mergeWithMasterData(...)","received face data for solver " <<

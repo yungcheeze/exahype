@@ -50,6 +50,18 @@ public:
 
   static bool SpawnCompressionAsBackgroundThread;
 
+  /**
+   * The maximum helper status.
+   * This value is assigned to a cell descriptions
+   * of type Cell.
+   */
+  static int MaximumHelperStatus;
+  /**
+   * The minimum helper status a cell description
+   * must have for it allocating boundary data.
+   */
+  static int MinimumHelperStatusForAllocatingBoundaryData;
+
   #ifdef Asserts
   static double PipedUncompressedBytes;
   static double PipedCompressedBytes;
@@ -662,6 +674,23 @@ public:
    * Returns if a ADERDGCellDescription type holds face data.
    */
   static bool holdsFaceData(const CellDescription::Type& cellDescriptionType);
+
+  /**
+   * Returns if a ADERDGCellDescription type holds face data.
+   */
+  static bool holdsFaceData(const int helperStatus);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  int determineHelperStatus(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void writeHelperStatusOnBoundary(
+      exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
    * \note a LimiterStatus enum for the given integer.
@@ -1658,6 +1687,19 @@ public:
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
+  void mergeWithHelperStatus(
+      CellDescription& cellDescription,
+      const int direction,
+      const int otherHelperStatus) const;
+
+  void mergeNeighboursHelperStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
   void mergeNeighbours(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
