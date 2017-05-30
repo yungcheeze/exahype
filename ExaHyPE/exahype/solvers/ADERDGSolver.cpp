@@ -1257,7 +1257,7 @@ void exahype::solvers::ADERDGSolver::addNewCell(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const int coarseGridCellDescriptionsIndex,
     const int solverNumber) {
-  logInfo("addNewCell(...)","Add new grid cell with center "<<fineGridVerticesEnumerator.getCellCenter() <<
+  logDebug("addNewCell(...)","Add new grid cell with center "<<fineGridVerticesEnumerator.getCellCenter() <<
               " at level "<<fineGridVerticesEnumerator.getLevel());
 
   fineGridCell.addNewCellDescription(

@@ -96,6 +96,8 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
       _cellDescriptionIndexWriter(0),
       _cellRefinementEventWriter(0),
       _cellDataWriter(0),
+      _augmentationStatusWriter(0),
+      _helperStatusWriter(0),
       _limiterStatusWriter(0),
       _previousLimiterStatusWriter(0),
       _cellCounter(0) {}
@@ -113,6 +115,8 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
       _cellDataWriter(masterThread._cellDataWriter),
+      _augmentationStatusWriter(masterThread._augmentationStatusWriter),
+      _helperStatusWriter(masterThread._helperStatusWriter),
       _limiterStatusWriter(masterThread._limiterStatusWriter),
       _previousLimiterStatusWriter(masterThread._previousLimiterStatusWriter),
       _cellCounter(0) {}
@@ -380,10 +384,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               cellIndex,
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
+          _augmentationStatusWriter->plotCell(cellIndex,pFine.getAugmentationStatus());
+          _helperStatusWriter->plotCell(cellIndex,pFine.getHelperStatus());
           _limiterStatusWriter->plotCell(
               cellIndex,
               (solver->getMaximumAdaptiveMeshLevel() == pFine.getLevel()) ? pFine.getLimiterStatus() : 0);
-
           _previousLimiterStatusWriter->plotCell(
               cellIndex,
               (solver->getMaximumAdaptiveMeshLevel() == pFine.getLevel()) ? pFine.getPreviousLimiterStatus() : 0);
@@ -395,6 +400,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         _cellTypeWriter->plotCell(cellIndex, -1);
         _cellRefinementEventWriter->plotCell(cellIndex, -1);
         _cellDataWriter->plotCell(cellIndex, 0);
+        _augmentationStatusWriter->plotCell(cellIndex,-1);
+        _helperStatusWriter->plotCell(cellIndex,-1);
         _limiterStatusWriter->plotCell(cellIndex, -1);
         _previousLimiterStatusWriter->plotCell(cellIndex,-1);
       }
@@ -405,6 +412,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
           static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
       _cellDataWriter->plotCell(cellIndex, 0);
+      _augmentationStatusWriter->plotCell(cellIndex,-1);
+      _helperStatusWriter->plotCell(cellIndex,-1);
       _limiterStatusWriter->plotCell(cellIndex, -1);
       _previousLimiterStatusWriter->plotCell(cellIndex,-1);
     }
@@ -434,8 +443,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
 
   _cellNumberWriter = _vtkWriter->createCellDataWriter("cell-number", 1);
   _cellTypeWriter   = _vtkWriter->createCellDataWriter(
-      "cell-type(NoPatch=-1,Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,"
-      "Descendant=4,EmptyDescendant=5)",
+      "cell-type(NoPatch=-1,Erased=0,Ancestor=1,Cell=2,"
+      "Descendant=3)",
       1);
   _cellDescriptionIndexWriter =
       _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
@@ -448,6 +457,10 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
       ,1);
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
+  _augmentationStatusWriter = _vtkWriter->createCellDataWriter(
+      "AugmentationsStatus", 1);
+  _helperStatusWriter = _vtkWriter->createCellDataWriter(
+        "HelperStatus", 1);
   _limiterStatusWriter = _vtkWriter->createCellDataWriter(
       "Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
   _previousLimiterStatusWriter = _vtkWriter->createCellDataWriter(
@@ -463,6 +476,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _cellDescriptionIndexWriter->close();
   _cellRefinementEventWriter->close();
   _cellDataWriter->close();
+  _augmentationStatusWriter->close();
+  _helperStatusWriter->close();
   _limiterStatusWriter->close();
   _previousLimiterStatusWriter->close();
   _cellNumberWriter->close();
@@ -475,17 +490,23 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _cellRefinementEventWriter;
   delete _cellNumberWriter;
   delete _cellDataWriter;
+  delete _augmentationStatusWriter;
+  delete _helperStatusWriter;
   delete _limiterStatusWriter;
   delete _previousLimiterStatusWriter;
 
   _vertexWriter = 0;
   _cellWriter = 0;
 
-  _cellNumberWriter = 0;
-  _cellTypeWriter = 0;
-  _cellDescriptionIndexWriter = 0;
-  _cellRefinementEventWriter = 0;
-  _cellDataWriter = 0;
+  _cellNumberWriter            = 0;
+  _cellTypeWriter              = 0;
+  _cellDescriptionIndexWriter  = 0;
+  _cellRefinementEventWriter   = 0;
+  _cellDataWriter              = 0;
+  _augmentationStatusWriter    = 0;
+  _helperStatusWriter          = 0;
+  _limiterStatusWriter         = 0;
+  _previousLimiterStatusWriter = 0;
 
   std::ostringstream snapshotFileName;
   snapshotFileName << "tree"
