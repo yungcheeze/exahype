@@ -1046,10 +1046,8 @@ void exahype::solvers::LimitingADERDGSolver::deallocateLimiterPatchOnHelperCell(
 
   if (limiterElement!=exahype::solvers::Solver::NotFound) {
     switch(solverPatch.getType()) {
-    case SolverPatch::Type::EmptyAncestor:
     case SolverPatch::Type::Ancestor:
     case SolverPatch::Type::Descendant:
-    case SolverPatch::Type::EmptyDescendant:
     case SolverPatch::Type::Erased: {
       deallocateLimiterPatch(cellDescriptionsIndex,solverElement);
     } break;
@@ -1387,8 +1385,7 @@ exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::up
       &&
       solverPatch.getLimiterStatus()>SolverPatch::LimiterStatus::Ok
       &&
-      (solverPatch.getType()==SolverPatch::EmptyDescendant ||
-       solverPatch.getType()==SolverPatch::Descendant)) {
+      solverPatch.getType()==SolverPatch::Descendant) {
     return LimiterDomainChange::IrregularRequiringMeshUpdate;
   }
 
@@ -1420,8 +1417,7 @@ void exahype::solvers::LimitingADERDGSolver::prolongateDataAndPrepareDataRestric
 
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
   if (
-      (solverPatch.getType()==SolverPatch::Type::EmptyAncestor ||
-      solverPatch.getType()==SolverPatch::Type::Ancestor)
+      solverPatch.getType()==SolverPatch::Type::Ancestor
       &&
       solverPatch.getPreviousLimiterStatus()==SolverPatch::LimiterStatus::Troubled) {
     solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::NeighbourOfTroubled1);
@@ -1438,8 +1434,7 @@ void exahype::solvers::LimitingADERDGSolver::restrictLimiterStatus(
   if (solverPatch.getLimiterStatus()==SolverPatch::LimiterStatus::Troubled) {
     SolverPatch& parentSolverPatch =
         _solver->getCellDescription(parentCellDescriptionsIndex,parentElement);
-    if(parentSolverPatch.getType()==SolverPatch::Type::Ancestor ||
-       parentSolverPatch.getType()==SolverPatch::Type::EmptyAncestor) {
+    if(parentSolverPatch.getType()==SolverPatch::Type::Ancestor) {
       parentSolverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
       ADERDGSolver::writeLimiterStatusOnBoundary(parentSolverPatch);
     }
