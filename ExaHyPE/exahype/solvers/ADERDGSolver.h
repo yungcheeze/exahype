@@ -254,6 +254,8 @@ private:
 
   /**
    * TODO(Dominic): Add docu.
+   *
+   * \note Not thread-safe!
    */
   bool markForAugmentation(
       CellDescription& pFine,
@@ -282,6 +284,8 @@ private:
    * to check if we need to reset the deaugmenting request.
    *
    * TODO(Dominic): Make template function as soon as verified.
+   *
+   * \note Not thread-safe!
    */
   void vetoErasingOrDeaugmentingChildrenRequest(
       CellDescription& coarseGridCellDescription,

@@ -6,7 +6,7 @@
    }
    
    
-   exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+   exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
    _solverNumber(solverNumber),
    _timeStepSize(timeStepSize),
    _timeStamp(timeStamp),
@@ -16,7 +16,7 @@
    _level(level),
    _offset(offset),
    _size(size),
-   _riemannSolvePerformed(riemannSolvePerformed),
+   _neighbourMergePerformed(neighbourMergePerformed),
    _isInside(isInside),
    _oneRemoteBoundaryNeighbourIsOfTypeCell(oneRemoteBoundaryNeighbourIsOfTypeCell),
    _faceDataExchangeCounter(faceDataExchangeCounter),
@@ -32,13 +32,13 @@
    
    
    exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._neighbourMergePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
       
    }
    
    
-   exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
-   _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent) {
+   exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, neighbourMergePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent) {
       
    }
    
@@ -115,7 +115,7 @@
    }
    out << getSize(DIMENSIONS-1) << "]";
       out << ",";
-      out << "riemannSolvePerformed:[";
+      out << "neighbourMergePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getNeighbourMergePerformed(i) << ",";
    }
@@ -195,7 +195,7 @@
                , MPI_INT		 //level
                , MPI_DOUBLE		 //offset
                , MPI_DOUBLE		 //size
-               , MPI_CXX_BOOL		 //riemannSolvePerformed
+               , MPI_CXX_BOOL		 //neighbourMergePerformed
                , MPI_CXX_BOOL		 //isInside
                , MPI_CXX_BOOL		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , MPI_INT		 //faceDataExchangeCounter
@@ -218,7 +218,7 @@
                , 1		 //level
                , DIMENSIONS		 //offset
                , DIMENSIONS		 //size
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                , DIMENSIONS_TIMES_TWO		 //isInside
                , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
@@ -284,9 +284,9 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
             #endif
             #ifdef MPI2
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #else
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #endif
             #ifdef MPI2
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -369,7 +369,7 @@
                , MPI_INT		 //level
                , MPI_DOUBLE		 //offset
                , MPI_DOUBLE		 //size
-               , MPI_CXX_BOOL		 //riemannSolvePerformed
+               , MPI_CXX_BOOL		 //neighbourMergePerformed
                , MPI_CXX_BOOL		 //isInside
                , MPI_CXX_BOOL		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , MPI_INT		 //faceDataExchangeCounter
@@ -392,7 +392,7 @@
                , 1		 //level
                , DIMENSIONS		 //offset
                , DIMENSIONS		 //size
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                , DIMENSIONS_TIMES_TWO		 //isInside
                , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
@@ -458,9 +458,9 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
             #endif
             #ifdef MPI2
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #else
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #endif
             #ifdef MPI2
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -760,7 +760,7 @@
    }
    
    
-   exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+   exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
    _solverNumber(solverNumber),
    _timeStepSize(timeStepSize),
    _timeStamp(timeStamp),
@@ -770,7 +770,7 @@
    _level(level),
    _offset(offset),
    _size(size),
-   _riemannSolvePerformed(riemannSolvePerformed),
+   _neighbourMergePerformed(neighbourMergePerformed),
    _isInside(isInside),
    _oneRemoteBoundaryNeighbourIsOfTypeCell(oneRemoteBoundaryNeighbourIsOfTypeCell),
    _faceDataExchangeCounter(faceDataExchangeCounter),
@@ -786,13 +786,13 @@
    
    
    exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._neighbourMergePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
       
    }
    
    
-   exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
-   _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent) {
+   exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+   _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, neighbourMergePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, type, parentIndex, refinementEvent) {
       
    }
    
@@ -851,7 +851,7 @@
    }
    out << getSize(DIMENSIONS-1) << "]";
       out << ",";
-      out << "riemannSolvePerformed:[";
+      out << "neighbourMergePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getNeighbourMergePerformed(i) << ",";
    }
@@ -931,7 +931,7 @@
                , MPI_INT		 //level
                , MPI_DOUBLE		 //offset
                , MPI_DOUBLE		 //size
-               , MPI_CXX_BOOL		 //riemannSolvePerformed
+               , MPI_CXX_BOOL		 //neighbourMergePerformed
                , MPI_CXX_BOOL		 //isInside
                , MPI_CXX_BOOL		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , MPI_INT		 //faceDataExchangeCounter
@@ -954,7 +954,7 @@
                , 1		 //level
                , DIMENSIONS		 //offset
                , DIMENSIONS		 //size
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                , DIMENSIONS_TIMES_TWO		 //isInside
                , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
@@ -1020,9 +1020,9 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
             #endif
             #ifdef MPI2
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #else
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #endif
             #ifdef MPI2
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -1105,7 +1105,7 @@
                , MPI_INT		 //level
                , MPI_DOUBLE		 //offset
                , MPI_DOUBLE		 //size
-               , MPI_CXX_BOOL		 //riemannSolvePerformed
+               , MPI_CXX_BOOL		 //neighbourMergePerformed
                , MPI_CXX_BOOL		 //isInside
                , MPI_CXX_BOOL		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , MPI_INT		 //faceDataExchangeCounter
@@ -1128,7 +1128,7 @@
                , 1		 //level
                , DIMENSIONS		 //offset
                , DIMENSIONS		 //size
-               , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+               , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                , DIMENSIONS_TIMES_TWO		 //isInside
                , 1		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                , DIMENSIONS_TIMES_TWO		 //faceDataExchangeCounter
@@ -1194,9 +1194,9 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
             #endif
             #ifdef MPI2
-            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #else
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
             #endif
             #ifdef MPI2
             MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -1497,7 +1497,7 @@
       }
       
       
-      exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+      exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
       _solverNumber(solverNumber),
       _timeStepSize(timeStepSize),
       _timeStamp(timeStamp),
@@ -1507,7 +1507,7 @@
       _level(level),
       _offset(offset),
       _size(size),
-      _riemannSolvePerformed(riemannSolvePerformed),
+      _neighbourMergePerformed(neighbourMergePerformed),
       _isInside(isInside),
       _type(type),
       _parentIndex(parentIndex),
@@ -1521,13 +1521,13 @@
       
       
       exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const PersistentRecords& persistentRecords):
-      _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
+      _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._neighbourMergePerformed, persistentRecords._isInside, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
          
       }
       
       
-      exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
-      _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, riemannSolvePerformed, isInside, type, parentIndex, refinementEvent) {
+      exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+      _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, neighbourMergePerformed, isInside, type, parentIndex, refinementEvent) {
          
       }
       
@@ -1604,7 +1604,7 @@
    }
    out << getSize(DIMENSIONS-1) << "]";
          out << ",";
-         out << "riemannSolvePerformed:[";
+         out << "neighbourMergePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getNeighbourMergePerformed(i) << ",";
    }
@@ -1674,7 +1674,7 @@
                   , MPI_INT		 //level
                   , MPI_DOUBLE		 //offset
                   , MPI_DOUBLE		 //size
-                  , MPI_CXX_BOOL		 //riemannSolvePerformed
+                  , MPI_CXX_BOOL		 //neighbourMergePerformed
                   , MPI_CXX_BOOL		 //isInside
                   , MPI_INT		 //type
                   , MPI_INT		 //parentIndex
@@ -1695,7 +1695,7 @@
                   , 1		 //level
                   , DIMENSIONS		 //offset
                   , DIMENSIONS		 //size
-                  , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+                  , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                   , DIMENSIONS_TIMES_TWO		 //isInside
                   , 1		 //type
                   , 1		 //parentIndex
@@ -1759,9 +1759,9 @@
                MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
                #endif
                #ifdef MPI2
-               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #else
-               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #endif
                #ifdef MPI2
                MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -1834,7 +1834,7 @@
                   , MPI_INT		 //level
                   , MPI_DOUBLE		 //offset
                   , MPI_DOUBLE		 //size
-                  , MPI_CXX_BOOL		 //riemannSolvePerformed
+                  , MPI_CXX_BOOL		 //neighbourMergePerformed
                   , MPI_CXX_BOOL		 //isInside
                   , MPI_INT		 //type
                   , MPI_INT		 //parentIndex
@@ -1855,7 +1855,7 @@
                   , 1		 //level
                   , DIMENSIONS		 //offset
                   , DIMENSIONS		 //size
-                  , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+                  , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                   , DIMENSIONS_TIMES_TWO		 //isInside
                   , 1		 //type
                   , 1		 //parentIndex
@@ -1919,9 +1919,9 @@
                MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[8] );
                #endif
                #ifdef MPI2
-               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #else
-               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #endif
                #ifdef MPI2
                MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -2211,7 +2211,7 @@
       }
       
       
-      exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+      exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
       _solverNumber(solverNumber),
       _timeStepSize(timeStepSize),
       _timeStamp(timeStamp),
@@ -2221,7 +2221,7 @@
       _level(level),
       _offset(offset),
       _size(size),
-      _riemannSolvePerformed(riemannSolvePerformed),
+      _neighbourMergePerformed(neighbourMergePerformed),
       _isInside(isInside),
       _type(type),
       _parentIndex(parentIndex),
@@ -2235,13 +2235,13 @@
       
       
       exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const PersistentRecords& persistentRecords):
-      _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
+      _persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._previousTimeStepSize, persistentRecords._solution, persistentRecords._previousSolution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._neighbourMergePerformed, persistentRecords._isInside, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
          
       }
       
       
-      exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
-      _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, riemannSolvePerformed, isInside, type, parentIndex, refinementEvent) {
+      exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+      _persistentRecords(solverNumber, timeStepSize, timeStamp, previousTimeStepSize, solution, previousSolution, level, offset, size, neighbourMergePerformed, isInside, type, parentIndex, refinementEvent) {
          
       }
       
@@ -2300,7 +2300,7 @@
    }
    out << getSize(DIMENSIONS-1) << "]";
          out << ",";
-         out << "riemannSolvePerformed:[";
+         out << "neighbourMergePerformed:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getNeighbourMergePerformed(i) << ",";
    }
@@ -2370,7 +2370,7 @@
                   , MPI_INT		 //level
                   , MPI_DOUBLE		 //offset
                   , MPI_DOUBLE		 //size
-                  , MPI_CXX_BOOL		 //riemannSolvePerformed
+                  , MPI_CXX_BOOL		 //neighbourMergePerformed
                   , MPI_CXX_BOOL		 //isInside
                   , MPI_INT		 //type
                   , MPI_INT		 //parentIndex
@@ -2391,7 +2391,7 @@
                   , 1		 //level
                   , DIMENSIONS		 //offset
                   , DIMENSIONS		 //size
-                  , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+                  , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                   , DIMENSIONS_TIMES_TWO		 //isInside
                   , 1		 //type
                   , 1		 //parentIndex
@@ -2455,9 +2455,9 @@
                MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
                #endif
                #ifdef MPI2
-               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #else
-               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #endif
                #ifdef MPI2
                MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );
@@ -2530,7 +2530,7 @@
                   , MPI_INT		 //level
                   , MPI_DOUBLE		 //offset
                   , MPI_DOUBLE		 //size
-                  , MPI_CXX_BOOL		 //riemannSolvePerformed
+                  , MPI_CXX_BOOL		 //neighbourMergePerformed
                   , MPI_CXX_BOOL		 //isInside
                   , MPI_INT		 //type
                   , MPI_INT		 //parentIndex
@@ -2551,7 +2551,7 @@
                   , 1		 //level
                   , DIMENSIONS		 //offset
                   , DIMENSIONS		 //size
-                  , DIMENSIONS_TIMES_TWO		 //riemannSolvePerformed
+                  , DIMENSIONS_TIMES_TWO		 //neighbourMergePerformed
                   , DIMENSIONS_TIMES_TWO		 //isInside
                   , 1		 //type
                   , 1		 //parentIndex
@@ -2615,9 +2615,9 @@
                MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[8] );
                #endif
                #ifdef MPI2
-               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #else
-               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[9] );
+               MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._neighbourMergePerformed))), 		&disp[9] );
                #endif
                #ifdef MPI2
                MPI_Get_address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[10] );

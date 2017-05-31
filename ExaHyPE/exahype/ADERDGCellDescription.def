@@ -79,7 +79,9 @@ class exahype::records::ADERDGCellDescription {
    * this ADERDGCellDescription or "-1" if no parent is specified.
    */
   parallelise persistent int parentIndex;
-
+  
+  persistent bool isAugmented;
+ 
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
