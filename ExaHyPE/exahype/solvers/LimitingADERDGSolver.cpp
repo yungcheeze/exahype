@@ -768,8 +768,16 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfterSetI
     const int solverElement) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
 
-  if (tarch::la::equals(solverPatch.getCorrectorTimeStepSize(),0.0) &&
-      solverPatch.getType()==SolverPatch::Type::Cell) {
+  if (
+      solverPatch.getType()==SolverPatch::Type::Cell
+      &&
+      _solver->useAdjustSolution(
+          solverPatch.getOffset()+0.5*solverPatch.getSize(),
+          solverPatch.getSize(),
+          solverPatch.getCorrectorTimeStamp(),
+          solverPatch.getCorrectorTimeStepSize())
+      !=exahype::solvers::ADERDGSolver::AdjustSolutionValue::No
+  ) {
     determineSolverMinAndMax(solverPatch);
     return determineLimiterStatusAfterSolutionUpdate(
             solverPatch,
@@ -932,6 +940,11 @@ void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(
 void exahype::solvers::LimitingADERDGSolver::determineSolverMinAndMax(SolverPatch& solverPatch) {
   const int numberOfObservables = _solver->getDMPObservables();
   if (numberOfObservables>0) {
+    assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolution()),
+            solverPatch.toString());
+    assertion1(DataHeap::getInstance().isValidIndex(solverPatch.getSolutionMin()),
+            solverPatch.toString());
+
     const double* const solution = DataHeap::getInstance().getData(
         solverPatch.getSolution()).data();
 
