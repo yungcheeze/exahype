@@ -52,6 +52,7 @@
 #ifdef Parallel
 #include "mpibalancing/GreedyBalancing.h"
 #include "mpibalancing/FairNodePoolStrategy.h"
+#include "mpibalancing/SFCDiffusionNodePoolStrategy.h"
 #endif
 #include "exahype/plotters/Plotter.h"
 
@@ -95,6 +96,21 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       }
       tarch::parallel::NodePool::getInstance().setStrategy(
         new mpibalancing::FairNodePoolStrategy(ranksPerNode)
+      );
+      logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
+    }
+    else if (configuration.find( "sfc-diffusion" )!=std::string::npos ) {
+      int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+      if (ranksPerNode<=0) {
+        logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
+        ranksPerNode = 1;
+      }
+      if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
+        logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
+        ranksPerNode = 1;
+      }
+      tarch::parallel::NodePool::getInstance().setStrategy(
+        new mpibalancing::SFCDiffusionNodePoolStrategy(ranksPerNode)
       );
       logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
     }
