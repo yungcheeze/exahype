@@ -25,8 +25,6 @@ bool DIM::DIMSolver_ADERDG::isPhysicallyAdmissible(
   const ReadOnlyVariables qmin(observablesMin);
 
 // Limiter based on the center of the cell
-
-/*
 const double rad = 0.25;
 
 // points
@@ -52,16 +50,16 @@ else
 {
   return true; 
 }
-*/
-if(tarch::la::norm2(center)<0.32 && 
-tarch::la::norm2(center)>0.2 )
-{
-  return false;
-}
-else
-{
-  return true; 
-}
+
+//if(tarch::la::norm2(center)<0.32 &&
+//tarch::la::norm2(center)>0.2 )
+//{
+//  return false;
+//}
+//else
+//{
+//  return true;
+//}
 
 /*
 // Physical admissibility criteria done in C++
