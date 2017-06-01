@@ -150,11 +150,7 @@ void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::eigenvalues(const d
 }
 
 
-void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* const Q,double** F) {
-  // Dimensions             = 2
-  // Number of variables    = 14 + #parameters
-  
-  // @todo Please implement/augment if required
+void __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* const Q,double** F) {
   F[0][ 0] = 0.0;
   F[0][ 1] = 0.0;
   F[0][ 2] = 0.0;
@@ -185,7 +181,6 @@ void  __attribute__((optimize("O0"))) DIM::DIMSolver_ADERDG::flux(const double* 
   F[1][12] = 0.0;
   F[1][13] = 0.0;
 }
-
 
 void DIM::DIMSolver_ADERDG::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
   const double * const fluxIn,const double* const stateIn,

@@ -74,8 +74,7 @@ exahype-project DIM
       variables const = 14
       time      = 0.0
       repeat    = 1e-5
-      output    = ./vtk-output/conserved
-      select    = x:0.0,y:0.0
+      output    = ./vtk-output/primitives
     end plot
   end solver
 end exahype-project
