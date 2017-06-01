@@ -3345,11 +3345,11 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         peano::heap::MessageType::NeighbourCommunication);
     // TODO(Dominic): If anarchic time stepping send the time step over too.
   } else {
-    std::vector<double> emptyArray(0,0);
+    std::vector<double> emptyMessage(0);
 
     for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
       DataHeap::getInstance().sendData(
-          emptyArray, toRank, x, level,
+          emptyMessage, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
     }
   }
@@ -3362,6 +3362,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   std::vector<double> emptyMessage(0);
+
   for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
