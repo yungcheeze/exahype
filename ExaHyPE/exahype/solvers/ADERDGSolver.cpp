@@ -454,8 +454,7 @@ exahype::solvers::ADERDGSolver::determineLimiterStatus(
   // Assumes increasing value of limiter status the closer we get to troubled cell
   int limiterStatusAsInt = 0;
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-        cellDescription.getIsInside(faceIndex)) {
+    if (cellDescription.getIsInside(faceIndex)) {
       limiterStatusAsInt = std::max( limiterStatusAsInt, cellDescription.getFacewiseLimiterStatus(faceIndex) );
     }
   }

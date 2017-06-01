@@ -781,15 +781,18 @@ public:
    *
    * \note The check
    * ```
-   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-   *     cellDescription.getIsInside(faceIndex)) {
+   * if (cellDescription.getIsInside(faceIndex)) {
    * ```
-   * ensures that we do not consider values from boundary faces and also
-   * no values from faces where no other cell description is adjacent.
+   * ensures that we do not consider values from boundary faces.
    * Since we write the helper to all faces but do not perform
-   * a merge at the above mentioned faces, we would
+   * a merge at boundary faces, we would
    * run into situations where the "merged" value on those
    * faces stays always the same over multiple iterations.
+   *
+   * We always ensure that a cell description of type Cell
+   * has neighbours or is right next to the domain boundary.
+   * We do thus not need to check if a neighbour merge has
+   * been performed on the faces.
    */
   static int determineLimiterStatus(CellDescription& cellDescription);
 
