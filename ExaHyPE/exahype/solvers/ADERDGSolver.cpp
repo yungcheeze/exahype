@@ -1308,17 +1308,18 @@ void exahype::solvers::ADERDGSolver::addNewCell(
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getVertexPosition());
   if (fineGridCell.getCellDescriptionsIndex()==740) {
-     logInfo("addNewCell(...)","create 740 at level "<<fineGridVerticesEnumerator.getLevel());
-   }
+    logInfo("addNewCell(...)","create 740 at level "<<fineGridVerticesEnumerator.getLevel());
+  }
 
   const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   CellDescription& fineGridCellDescription =
       getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
   ensureNecessaryMemoryIsAllocated(fineGridCellDescription);
-  exahype::Cell::determineInsideAndOutsideFaces(
-            fineGridCellDescription,
-            _domainOffset,_domainSize);
+  fineGridCellDescription.setIsInside(
+      exahype::Cell::determineInsideAndOutsideFaces(
+            fineGridCellDescription.getOffset(),fineGridCellDescription.getSize(),
+            _domainOffset,_domainSize));
 }
 
 void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
@@ -1351,9 +1352,10 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
                         coarseGridCellDescription.getSolverNumber());
       CellDescription& fineGridCellDescription =
           getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
-      exahype::Cell::determineInsideAndOutsideFaces(
-          fineGridCellDescription,
-          _domainOffset,_domainSize);
+      fineGridCellDescription.setIsInside(
+          exahype::Cell::determineInsideAndOutsideFaces(
+              fineGridCellDescription.getOffset(),fineGridCellDescription.getSize(),
+              _domainOffset,_domainSize));
 
       if (fineGridCell.getCellDescriptionsIndex()==888) {
         logInfo("addNewDescendantIfAugmentingRequested(...)","created 888 at level "<<fineGridVerticesEnumerator.getLevel());
@@ -2179,8 +2181,8 @@ void exahype::solvers::ADERDGSolver::updateSolution(
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   // reset helper variables
   CellDescription& cellDescription  = getCellDescription(cellDescriptionsIndex,element);
-  assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
-      cellDescription.getNeighbourMergePerformed().all(),cellDescription.toString());
+  assertion2(cellDescription.getType()!=CellDescription::Type::Cell ||
+      cellDescription.getNeighbourMergePerformed().all(),cellDescriptionsIndex,cellDescription.toString());
 
   exahype::Cell::resetNeighbourMergeHelperVariables(
         cellDescription,fineGridVertices,fineGridVerticesEnumerator);
