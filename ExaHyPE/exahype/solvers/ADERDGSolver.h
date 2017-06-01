@@ -702,6 +702,18 @@ public:
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
   /**
    * TODO(Dominic): Add docu.
+   *
+   * The check
+   * ```
+   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
+   *     cellDescription.getIsInside(faceIndex)) {
+   * ```
+   * ensures that we do not consider values from boundary faces and also
+   * no values from faces where no other cell description is adjacent.
+   * Since we write the helper to all faces but do not perform
+   * a merge at the above mentioned faces, we would
+   * run into situations where the "merged" value on those
+   * faces stays always the same over multiple iterations.
    */
   int determineHelperStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
@@ -720,6 +732,18 @@ public:
 
   /**
    * TODO(Dominic): Add docu.
+   *
+   * The check
+   * ```
+   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
+   *     cellDescription.getIsInside(faceIndex)) {
+   * ```
+   * ensures that we do not consider values from boundary faces and also
+   * no values from faces where no other cell description is adjacent.
+   * Since we write the helper to all faces but do not perform
+   * a merge at the above mentioned faces, we would
+   * run into situations where the "merged" value on those
+   * faces stays always the same over multiple iterations.
    */
   int determineAugmentationStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
@@ -752,8 +776,20 @@ public:
    * Otherwise, if at least one of the merged statuses is set to NeighbourIsNeighbourOfTroubledCell,
    * the status is set to NeighbourIsNeighbourOfTroubledCell.
    *
-   * \note The ADERdGSolver needs to know about the limiter status during mesh initialisation and
+   * \note The ADERDGSolver needs to know about the limiter status during mesh initialisation and
    * refinement operations.
+   *
+   * \note The check
+   * ```
+   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
+   *     cellDescription.getIsInside(faceIndex)) {
+   * ```
+   * ensures that we do not consider values from boundary faces and also
+   * no values from faces where no other cell description is adjacent.
+   * Since we write the helper to all faces but do not perform
+   * a merge at the above mentioned faces, we would
+   * run into situations where the "merged" value on those
+   * faces stays always the same over multiple iterations.
    */
   static int determineLimiterStatus(CellDescription& cellDescription);
 
