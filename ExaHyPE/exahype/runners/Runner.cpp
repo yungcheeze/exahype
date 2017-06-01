@@ -990,14 +990,14 @@ void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
-    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested");
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested by at least one solver");
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
-    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested");
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()) {
-    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","mesh update requested");
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","mesh update requested by at least one solver");
   }
 
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate() ||
