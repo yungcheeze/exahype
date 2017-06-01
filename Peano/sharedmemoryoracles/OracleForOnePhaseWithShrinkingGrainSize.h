@@ -328,6 +328,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
          */
         bool operator<(const DatabaseEntry& cmp) const;
 
+        bool canRelyOnValidSerialMeasurement() const;
+
         /**
          * Make a database entry learn.
          *
