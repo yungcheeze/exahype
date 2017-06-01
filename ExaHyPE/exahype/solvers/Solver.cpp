@@ -428,8 +428,6 @@ exahype::MetadataHeap::HeapEntries exahype::encodeNeighbourCommunicationMetadata
 }
 
 exahype::MetadataHeap::HeapEntries exahype::encodeMasterWorkerCommunicationMetadata(int cellDescriptionsIndex) {
-  assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
   const int length =
       exahype::solvers::RegisteredSolvers.size()*exahype::MasterWorkerCommunicationMetadataPerSolver;
   exahype::MetadataHeap::HeapEntries encodedMetaData;

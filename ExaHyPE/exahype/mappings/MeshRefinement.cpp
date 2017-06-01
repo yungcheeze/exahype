@@ -529,41 +529,6 @@ void exahype::mappings::MeshRefinement::prepareSendToNeighbour(
   logTraceOut("prepareSendToNeighbour(...)");
 }
 
-void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
-    exahype::Cell& localCell, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  if (localCell.isInside() && localCell.isInitialised()) {
-    exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
-        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
-    exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
-        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
-
-    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-      const int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
-      if(element!=exahype::solvers::Solver::NotFound) {
-        solver->sendDataToWorkerOrMasterDueToForkOrJoin(
-            toRank,localCell.getCellDescriptionsIndex(),element,cellCentre,level);
-      } else {
-        solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
-      }
-    }
-  } else if (localCell.isInside() && !localCell.isInitialised()){
-    exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(toRank,
-        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
-    exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(toRank,
-        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
-
-    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
-       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
-      solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
-    }
-  }
-}
-
 bool exahype::mappings::MeshRefinement::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -572,25 +537,11 @@ bool exahype::mappings::MeshRefinement::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  const int metadataIndex = MetadataHeap::getInstance().createData(
-      0,exahype::MasterWorkerCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
-  MetadataHeap::HeapEntries& metadata =
-      MetadataHeap::getInstance().getData(metadataIndex);
-
-  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-    solver->appendMasterWorkerCommunicationMetadata(
-        metadata,fineGridCell.getCellDescriptionsIndex(),solverNumber);
-  }
-
-  MetadataHeap::getInstance().sendData(
-      metadataIndex,
+  exahype::sendMasterWorkerCommunicationMetadata(
       worker,
+      fineGridCell.getCellDescriptionsIndex(),
       fineGridVerticesEnumerator.getCellCenter(),
-      fineGridVerticesEnumerator.getLevel(),
-      peano::heap::MessageType::MasterWorkerCommunication);
-
-  MetadataHeap::getInstance().deleteData(metadataIndex); //  TODO: Recycle?
+      fineGridVerticesEnumerator.getLevel());
 
   return true;
 }
@@ -637,6 +588,42 @@ void exahype::mappings::MeshRefinement::receiveDataFromMaster(
         receivedVerticesEnumerator.getCellCenter(),
         receivedVerticesEnumerator.getLevel());
   } // else do nothing
+}
+
+
+void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
+    exahype::Cell& localCell, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  if (localCell.isInside() && localCell.isInitialised()) {
+    exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
+        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
+    exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
+        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
+
+    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      const int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
+      if(element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToWorkerOrMasterDueToForkOrJoin(
+            toRank,localCell.getCellDescriptionsIndex(),element,cellCentre,level);
+      } else {
+        solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
+      }
+    }
+  } else if (localCell.isInside() && !localCell.isInitialised()){
+    exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(toRank,
+        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
+    exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(toRank,
+        peano::heap::MessageType::ForkOrJoinCommunication,cellCentre,level);
+
+    for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); solverNumber++) {
+       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      solver->sendEmptyDataToWorkerOrMasterDueToForkOrJoin(toRank,cellCentre,level);
+    }
+  }
 }
 
 // TODO(Dominic): How to deal with cell descriptions index that
