@@ -465,10 +465,7 @@ exahype::solvers::ADERDGSolver::determineLimiterStatus(
 void exahype::solvers::ADERDGSolver::writeLimiterStatusOnBoundary(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseLimiterStatus(faceIndex,0); // 0 is CellDescription::LimiterStatus::0k
-    if (cellDescription.getIsInside(faceIndex)) {
-      cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
-    }
+    cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
   }
 }
 
