@@ -158,21 +158,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     }
   }
 
-  template <class CellDescription>
-  static void determineInsideAndOutsideFaces(
-      CellDescription& cellDescription,
+  static std::bitset<DIMENSIONS_TIMES_TWO> determineInsideAndOutsideFaces(
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
       const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
-    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
-      // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
-      // where no vertices are given. [Solved] - We send out the cellDescriptions from
-      // the ADERDG/FV cell descr. heaps.
-      cellDescription.setIsInside(
-          faceIndex,
-          isFaceInside(faceIndex,cellDescription.getOffset(),cellDescription.getSize(),domainOffset,domainSize));
-    }
-  }
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize);
 
   #ifdef Parallel
   /**

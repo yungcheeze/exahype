@@ -44,6 +44,44 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
   // Do not use it. This would overwrite persistent data.
 }
 
+std::bitset<DIMENSIONS_TIMES_TWO> exahype::Cell::determineInsideAndOutsideFaces(
+      const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& domainSize) {
+  std::bitset<DIMENSIONS_TIMES_TWO> isInside;
+
+  for (int direction=0; direction<DIMENSIONS; direction++) {
+    for (int orientation=0; orientation<2; orientation++) {
+      const int faceIndex = 2*direction+orientation;
+
+      isInside[faceIndex]=true;
+      if (orientation==0) {
+        const double x = // constant face coordinate shifted by a 0.1 dx tolerance
+            cellOffset(direction)
+            -0.1*cellSize(direction);
+        const double xDomain =
+            domainOffset(direction);
+
+        if (x<xDomain) {
+          isInside[faceIndex]=false;
+        }
+      } else { // orientation==1
+        const double x = // constant face coordinate shifted by a 0.1 dx tolerance
+            cellOffset(direction)
+            +1.1*cellSize(direction);
+        const double xDomain =
+            domainOffset(direction)+domainSize(direction);
+
+        if (x>xDomain) {
+          isInside[faceIndex]=false;
+        }
+      }
+    }
+  }
+  return isInside;
+}
+
 bool exahype::Cell::isFaceInside(
     const int faceIndex,
     const tarch::la::Vector<DIMENSIONS,double>& cellOffset,
@@ -60,7 +98,18 @@ bool exahype::Cell::isFaceInside(
   double domainMin = domainOffset(direction);
   double domainMax = domainOffset(direction)+domainSize(direction);
 
-  if (cellMin-tol < domainMin ||
+  std::cout <<
+      "face="<<faceIndex <<
+      ",domainMin="<<domainMin <<
+      ",domainMax="<<domainMax <<
+      ",cellMin="<<cellMin <<
+      ",cellMax="<<cellMax << std::endl;
+
+  if (orientation==0 &&
+      cellMin-tol < domainMin) {
+    return false;
+  }
+  if (orientation==1 &&
       cellMax+tol > domainMax) {
     return false;
   }
