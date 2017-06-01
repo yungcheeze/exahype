@@ -1411,8 +1411,6 @@ class exahype::solvers::Solver {
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const = 0;
 
   #ifdef Parallel
-
-
   /**
    * If a cell description was allocated at heap address \p cellDescriptionsIndex
    * for solver \p solverNumber, encode metadata of the cell description
@@ -1422,9 +1420,30 @@ class exahype::solvers::Solver {
    * times exahype::InvalidMetadataEntry to the back of the vector.
    */
   virtual void appendNeighbourCommunicationMetadata(
-      exahype::MetadataHeap::HeapEntries metadata,
+      MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
       const int solverNumber) = 0;
+
+  /**
+   * Merge cell description \p element in
+   * the cell descriptions array stored at \p
+   * cellDescriptionsIndex with metadata.
+   *
+   * Currently, the neighbour metadata is only the neighbour
+   * type as int \p neighbourTypeAsInt and
+   * the neighbour's limiter status as int.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
+   */
+  virtual void mergeWithNeighbourMetadata(
+      const MetadataHeap::HeapEntries&  metadata,
+      const tarch::la::Vector<DIMENSIONS, int>& src,
+      const tarch::la::Vector<DIMENSIONS, int>& dest,
+      const int cellDescriptionsIndex,
+      const int element) = 0;
 
   /**
    * Send solver data to neighbour rank. Read the data from
@@ -1457,27 +1476,6 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&    dest,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
-
-  /**
-   * Merge cell description \p element in
-   * the cell descriptions array stored at \p
-   * cellDescriptionsIndex with metadata.
-   *
-   * Currently, the neighbour metadata is only the neighbour
-   * type as int \p neighbourTypeAsInt and
-   * the neighbour's limiter status as int.
-   *
-   * \param[in] element Index of the cell description
-   *                    holding the data to send out in
-   *                    the array with address \p cellDescriptionsIndex.
-   *                    This is not the solver number.
-   */
-  virtual void mergeWithNeighbourMetadata(
-      const MetadataHeap::HeapEntries&  neighbourMetadata,
-      const tarch::la::Vector<DIMENSIONS, int>& src,
-      const tarch::la::Vector<DIMENSIONS, int>& dest,
-      const int cellDescriptionsIndex,
-      const int element) = 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -1742,7 +1740,7 @@ class exahype::solvers::Solver {
    * times exahype::InvalidMetadataEntry to the back of the vector.
    */
   virtual void appendMasterWorkerCommunicationMetadata(
-      exahype::MetadataHeap::HeapEntries metadata,
+      MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
       const int solverNumber) = 0;
 

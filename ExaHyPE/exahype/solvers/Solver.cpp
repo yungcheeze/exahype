@@ -423,7 +423,7 @@ exahype::MetadataHeap::HeapEntries exahype::encodeNeighbourCommunicationMetadata
     solver->appendNeighbourCommunicationMetadata(
         encodedMetaData,cellDescriptionsIndex,solverNumber);
   }
-  assertion(encodedMetaData.size()==length);
+  assertion2(static_cast<int>(encodedMetaData.size())==length,encodedMetaData.size(),length);
   return encodedMetaData;
 }
 
@@ -441,7 +441,7 @@ exahype::MetadataHeap::HeapEntries exahype::encodeMasterWorkerCommunicationMetad
     solver->appendMasterWorkerCommunicationMetadata(
         encodedMetaData,cellDescriptionsIndex,solverNumber);
   }
-  assertion(encodedMetaData.size()==length);
+  assertion2(static_cast<int>(encodedMetaData.size())==length,encodedMetaData.size(),length);
   return encodedMetaData;
 }
 

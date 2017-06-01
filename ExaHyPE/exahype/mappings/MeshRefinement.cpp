@@ -585,7 +585,7 @@ bool exahype::mappings::MeshRefinement::prepareSendToWorker(
 
   MetadataHeap::getInstance().sendData(
       metadataIndex,
-      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      worker,
       fineGridVerticesEnumerator.getCellCenter(),
       fineGridVerticesEnumerator.getLevel(),
       peano::heap::MessageType::MasterWorkerCommunication);

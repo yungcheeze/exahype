@@ -709,9 +709,9 @@ public:
   // MASTER<=>WORKER
   ///////////////////////////////////
   void appendMasterWorkerCommunicationMetadata(
-        exahype::MetadataHeap::HeapEntries metadata,
-        const int cellDescriptionsIndex,
-        const int solverNumber) override;
+      exahype::MetadataHeap::HeapEntries& metadata,
+      const int cellDescriptionsIndex,
+      const int solverNumber) override;
 
   void mergeWithMasterWorkerMetadata(
         const MetadataHeap::HeapEntries& receivedMetadata,
@@ -776,7 +776,7 @@ public:
   // NEIGHBOUR
   ///////////////////////////////////
   void appendNeighbourCommunicationMetadata(
-      exahype::MetadataHeap::HeapEntries metadata,
+      exahype::MetadataHeap::HeapEntries& metadata,
       const int cellDescriptionsIndex,
       const int solverNumber) override;
 

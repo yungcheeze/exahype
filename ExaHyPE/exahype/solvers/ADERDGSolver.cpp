@@ -3145,7 +3145,7 @@ void exahype::solvers::ADERDGSolver::dropCellDescriptions(
 ////////////////////////////////////
 void
 exahype::solvers::ADERDGSolver::appendMasterWorkerCommunicationMetadata(
-    exahype::MetadataHeap::HeapEntries metadata,
+    MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
     const int solverNumber) {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);
@@ -3254,7 +3254,7 @@ void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
 ///////////////////////////////////
 void
 exahype::solvers::ADERDGSolver::appendNeighbourCommunicationMetadata(
-    exahype::MetadataHeap::HeapEntries metadata,
+    exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
     const int solverNumber) {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);

@@ -900,7 +900,7 @@ void exahype::solvers::FiniteVolumesSolver::dropCellDescriptions(
 ////////////////////////////////////
 void
 exahype::solvers::FiniteVolumesSolver::appendMasterWorkerCommunicationMetadata(
-    exahype::MetadataHeap::HeapEntries metadata,
+    exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
     const int solverNumber) {
   for (int i = 0; i < exahype::MasterWorkerCommunicationMetadataPerSolver; ++i) {
@@ -993,7 +993,7 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 ///////////////////////////////////
 void
 exahype::solvers::FiniteVolumesSolver::appendNeighbourCommunicationMetadata(
-    exahype::MetadataHeap::HeapEntries metadata,
+    exahype::MetadataHeap::HeapEntries& metadata,
     const int cellDescriptionsIndex,
     const int solverNumber) {
   const int element = tryGetElement(cellDescriptionsIndex,solverNumber);
