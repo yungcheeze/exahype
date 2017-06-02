@@ -200,10 +200,11 @@ exahype::solvers::ADERDGSolver::CellDescription& exahype::solvers::ADERDGSolver:
 /**
  * Returns if a ADERDGCellDescription type holds face data.
  */
-bool exahype::solvers::ADERDGSolver::holdsFaceData(const exahype::solvers::ADERDGSolver::CellDescription::Type& cellDescriptionType) {
-  return cellDescriptionType==CellDescription::Cell       ||
-      cellDescriptionType==CellDescription::Ancestor   ||
-      cellDescriptionType==CellDescription::Descendant;
+bool exahype::solvers::ADERDGSolver::holdsFaceData(const CellDescription& cellDescription) {
+  assertion1(cellDescription.getType()!=CellDescription::Type::Cell ||
+            cellDescription.getHelperStatus()==MaximumHelperStatus,cellDescription.toString());
+  return
+      cellDescription.getHelperStatus()>=MinimumHelperStatusForAllocatingBoundaryData;
 }
 
 void exahype::solvers::ADERDGSolver::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
@@ -2455,8 +2456,8 @@ void exahype::solvers::ADERDGSolver::restrictToTopMostParent(
                " level="<<parentCellDescription.getLevel());
 
       #ifdef Parallel
-      logDebug("restrictData(...)","forNeighbourComm="<<cellDescription.getHasToHoldDataForNeighbourCommunication() <<
-               ",forMasterWorkerComm="<<cellDescription.getHasToHoldDataForMasterWorkerCommunication());
+      logDebug("restrictData(...)",
+               "forMasterWorkerComm="<<cellDescription.getHasToHoldDataForMasterWorkerCommunication());
       #endif
 
       const int numberOfFaceDof = getBndFaceSize();
@@ -2721,8 +2722,8 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
     assertion1(DataHeap::getInstance().isValidIndex(pLeft.getFluctuation()),pLeft.toString());
     assertion1(DataHeap::getInstance().isValidIndex(pRight.getExtrapolatedPredictor()),pRight.toString());
     assertion1(DataHeap::getInstance().isValidIndex(pRight.getFluctuation()),pRight.toString());
-    assertion1(holdsFaceData(pLeft.getType()),pLeft.toString());
-    assertion1(holdsFaceData(pRight.getType()),pRight.toString());
+    assertion1(holdsFaceData(pLeft),pLeft.toString());
+    assertion1(holdsFaceData(pRight),pRight.toString());
     assertion1(pLeft.getRefinementEvent()==CellDescription::None,pLeft.toString());
     assertion1(pRight.getRefinementEvent()==CellDescription::None,pRight.toString());
     assertionEquals4(pLeft.getNeighbourMergePerformed(faceIndexLeft),pRight.getNeighbourMergePerformed(faceIndexRight),faceIndexLeft,faceIndexRight,pLeft.toString(),pRight.toString());
@@ -3312,7 +3313,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
   const int faceIndex    = 2*direction+orientation;
 
   CellDescription& cellDescription = Heap::getInstance().getData(cellDescriptionsIndex)[element];
-  if (holdsFaceData(cellDescription.getType())) {
+  if (holdsFaceData(cellDescription)) {
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor()));
     assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
@@ -3398,8 +3399,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
       static_cast<CellDescription::Type>(neighbourMetadata[exahype::NeighbourCommunicationMetadataCellType].getU());
   if(neighbourType==CellDescription::Type::Cell || cellDescription.getType()==CellDescription::Type::Cell){
     tarch::multicore::Lock lock(_heapSemaphore);
-    assertion2(holdsFaceData(neighbourType),neighbourType,tarch::parallel::Node::getInstance().getRank());
-    assertion2(holdsFaceData(cellDescription.getType()),cellDescription.toString(),tarch::parallel::Node::getInstance().getRank());
+    assertion2(holdsFaceData(cellDescription),cellDescription.toString(),tarch::parallel::Node::getInstance().getRank());
 
     const int dataPerFace = getBndFaceSize();
     const int dofPerFace  = getBndFluxSize();

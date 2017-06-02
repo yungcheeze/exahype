@@ -689,14 +689,9 @@ public:
       const int element);
 
   /**
-   * Returns if a ADERDGCellDescription type holds face data.
+   * \return true if a ADERDG cell description holds face data.
    */
-  static bool holdsFaceData(const CellDescription::Type& cellDescriptionType);
-
-  /**
-   * Returns if a ADERDGCellDescription type holds face data.
-   */
-  static bool holdsFaceData(const int helperStatus);
+  static bool holdsFaceData(const CellDescription& cellDescription);
 
   void updateHelperStatus(
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
