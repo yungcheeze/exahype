@@ -70,12 +70,12 @@ case $CMD in
 	"find") # Locate apps, spec files, compiled files, etc.
 		exec $BuildScripts/find-app.sh $@
 		;;
-	"clusterconfig"|"config")  # Load cluster specific settings. Usage: "eval $(exa config)"
+	"clusterconfig"|"config")  # Load cluster specific settings. Usage: "eval $(exa config)" or "exa config iboga-gcc-tbb"
 		cdroot
 		# of course there is not much purpose in sourcing this as exa.sh is currently
 		# not be intended to be sourced. What we could do here is to echo the ENV
 		# so it can be used like "source <(exa config)" or similar.
-		echo source $BuildScripts/load-clusterconfig.sh
+		echo source $BuildScripts/load-clusterconfig.sh $@
 		# Currently, users can at least "eval $(exa config)"
 		;;
 	"toolkit") # Run the toolkit for an application, without compiling
@@ -186,6 +186,9 @@ case $CMD in
 		err "CLEAN:     ${CLEAN:=-not-set-}"
 		err "SKIP_TOOLKIT: ${SKIP_TOOLKIT:=-not set-}"
 		env | grep -iE '(exa|sim)' | grep -vE '^PWD|^OLDPWD'
+		err
+		err "Runtime specific:"
+		err "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
 		err
 		err "Machine readable:"
 		
