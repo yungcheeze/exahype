@@ -697,18 +697,6 @@ public:
         exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
   /**
    * TODO(Dominic): Add docu.
-   *
-   * The check
-   * ```
-   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-   *     cellDescription.getIsInside(faceIndex)) {
-   * ```
-   * ensures that we do not consider values from boundary faces and also
-   * no values from faces where no other cell description is adjacent.
-   * Since we write the helper to all faces but do not perform
-   * a merge at the above mentioned faces, we would
-   * run into situations where the "merged" value on those
-   * faces stays always the same over multiple iterations.
    */
   int determineHelperStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
@@ -716,7 +704,7 @@ public:
   /**
    * TODO(Dominic): Add docu.
    */
-  void writeHelperStatusOnBoundary(
+  void resetFacewiseHelperStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
@@ -727,18 +715,6 @@ public:
 
   /**
    * TODO(Dominic): Add docu.
-   *
-   * The check
-   * ```
-   * if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-   *     cellDescription.getIsInside(faceIndex)) {
-   * ```
-   * ensures that we do not consider values from boundary faces and also
-   * no values from faces where no other cell description is adjacent.
-   * Since we write the helper to all faces but do not perform
-   * a merge at the above mentioned faces, we would
-   * run into situations where the "merged" value on those
-   * faces stays always the same over multiple iterations.
    */
   int determineAugmentationStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
@@ -746,7 +722,7 @@ public:
   /**
    * TODO(Dominic): Add docu.
    */
-  void writeAugmentationStatusOnBoundary(
+  void resetFacewiseAugmentationStatus(
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const;
 
   /**
@@ -756,6 +732,29 @@ public:
    * celldescriptions is at the finest level of the mesh.
    */
   static CellDescription::LimiterStatus toLimiterStatusEnum(const int limiterStatusAsInt);
+
+  /**
+   * Determine a new limiter status for the given direction based on the neighbour's
+   * limiter status and the cell's reduced limiter status.
+   *
+   * Computes the new limiter status \f$ L_\rm{new} \f$ per direction
+   * according to:
+   *
+   * \f[
+   *  L_\rm{new} = \begin{cases}
+   *  T & L = T \\
+   *  \max \left( 0, \max \left( L, L_\rm{neighbour} \right) -1 \right) & \rm{else}
+   *   \end{cases}
+   * \f]
+   *
+   * with \f$ L \f$, \f$ L_\rm{neighbour} \f$, denoting the current limiter status
+   * of the cell and the neighbour, respectively, and \f$  T  \f$ indicates the status
+   * of a troubled cell.
+   */
+  void mergeWithLimiterStatus(
+      CellDescription& cellDescription,
+      const int faceIndex,
+      const int neighbourLimiterStatus) const;
 
   /**
    * Determine a unified limiter status of a cell description.
@@ -773,30 +772,22 @@ public:
    *
    * \note The ADERDGSolver needs to know about the limiter status during mesh initialisation and
    * refinement operations.
-   *
-   * \note The check
-   * ```
-   * if (cellDescription.getIsInside(faceIndex)) {
-   * ```
-   * ensures that we do not consider values from boundary faces.
-   * Since we write the helper to all faces but do not perform
-   * a merge at boundary faces, we would
-   * run into situations where the "merged" value on those
-   * faces stays always the same over multiple iterations.
-   *
-   * We always ensure that a cell description of type Cell
-   * has neighbours or is right next to the domain boundary.
-   * We do thus not need to check if a neighbour merge has
-   * been performed on the faces.
    */
   static int determineLimiterStatus(CellDescription& cellDescription);
+
+  /**
+   * Overwrites the facewise limiter status with
+   * the limiter status.
+   */
+  static void overwriteFacewiseLimiterStatus(
+      CellDescription& cellDescription);
 
   /**
    * Overwrites the facewise limiter status values at the
    * boundary with the cellwise limiter status value
    * (cellDescription.getLimiterStatus()).
    */
-  static void writeLimiterStatusOnBoundary(CellDescription& cellDescription);
+  static void resetFacewiseLimiterStatus(CellDescription& cellDescription);
 
   /**
    * Construct an ADERDGSolver.

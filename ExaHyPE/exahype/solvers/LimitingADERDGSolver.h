@@ -183,36 +183,6 @@ private:
       const int faceIndexRight) const;
 
   /**
-   * Convert to 0..3 limiter status used on coarser mesh
-   * levels.
-   */
-  int convertToCoarserMeshLevelLimiterStatus(
-      const int limiterStatusAsInt) const;
-
-  /**
-   * Determine a new limiter status for the given direction based on the neighbour's
-   * limiter status and the cell's reduced limiter status.
-   *
-   * Computes the new limiter status \f$ L_\rm{new} \f$ per direction
-   * according to:
-   *
-   * \f[
-   *  L_\rm{new} = \begin{cases}
-   *  T & L = T \\
-   *  \max \left( 0, \max \left( L, L_\rm{neighbour} \right) -1 \right) & \rm{else}
-   *   \end{cases}
-   * \f]
-   *
-   * with \f$ L \f$, \f$ L_\rm{neighbour} \f$, denoting the current limiter status
-   * of the cell and the neighbour, respectively, and \f$  T  \f$ indicates the status
-   * of a troubled cell.
-   */
-  void mergeWithLimiterStatus(
-      SolverPatch& solverPatch,
-      const int faceIndex,
-      const int neighbourLimiterStatus) const;
-
-  /**
    * Checks if the updated solution
    * of the ADER-DG solver contains unphysical oscillations (false)
    * or not (true).

@@ -374,8 +374,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
       for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
                fineGridCell.getCellDescriptionsIndex())) {
         if (pFine.getSolverNumber() == solverNumber) {
-          auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
-
           _cellTypeWriter->plotCell(cellIndex,
                                     static_cast<int>(pFine.getType()));
           _cellRefinementEventWriter->plotCell(
@@ -387,11 +385,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
           _augmentationStatusWriter->plotCell(cellIndex,pFine.getAugmentationStatus());
           _helperStatusWriter->plotCell(cellIndex,pFine.getHelperStatus());
           _limiterStatusWriter->plotCell(
-              cellIndex,
-              (solver->getMaximumAdaptiveMeshLevel() == pFine.getLevel()) ? pFine.getLimiterStatus() : 0);
+              cellIndex,pFine.getLimiterStatus());
           _previousLimiterStatusWriter->plotCell(
-              cellIndex,
-              (solver->getMaximumAdaptiveMeshLevel() == pFine.getLevel()) ? pFine.getPreviousLimiterStatus() : 0);
+              cellIndex,pFine.getPreviousLimiterStatus());
           solverFound = true;
         }
       }

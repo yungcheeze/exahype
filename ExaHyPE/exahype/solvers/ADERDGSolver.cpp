@@ -445,6 +445,25 @@ exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt
   return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
 }
 
+void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
+    CellDescription& cellDescription,
+    const int faceIndex,
+    const int otherLimiterStatus) const {
+  const int croppedOtherLimiterStatus =
+      std::min(
+          otherLimiterStatus,
+          static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+
+  int limiterStatus =
+      std::min(
+        cellDescription.getLimiterStatus(),
+        static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+  limiterStatus =
+      std::max( limiterStatus, croppedOtherLimiterStatus ) - 1;
+
+  cellDescription.setFacewiseLimiterStatus( faceIndex, limiterStatus );
+}
+
 /**
  * Iterate over the merged limiter statuses per face and
  * determine a unique value.
@@ -453,20 +472,26 @@ int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
   // Assumes increasing value of limiter status the closer we get to troubled cell
-  int limiterStatusAsInt = 0;
+  int limiterStatus = 0;
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    if (cellDescription.getIsInside(faceIndex)) {
-      limiterStatusAsInt = std::max( limiterStatusAsInt, cellDescription.getFacewiseLimiterStatus(faceIndex) );
-    }
+    limiterStatus = std::max( limiterStatus, cellDescription.getFacewiseLimiterStatus(faceIndex) );
   }
 
-  return limiterStatusAsInt;
+  return limiterStatus;
 }
 
-void exahype::solvers::ADERDGSolver::writeLimiterStatusOnBoundary(
-    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+void
+exahype::solvers::ADERDGSolver::overwriteFacewiseLimiterStatus(
+    CellDescription& cellDescription) {
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
     cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
+  }
+}
+
+void exahype::solvers::ADERDGSolver::resetFacewiseLimiterStatus(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    cellDescription.setFacewiseLimiterStatus(faceIndex,0);
   }
 }
 
@@ -1493,7 +1518,7 @@ void exahype::solvers::ADERDGSolver::prolongateVolumeData(
     fineGridCellDescription.setLimiterStatus(CellDescription::LimiterStatus::Troubled);
     fineGridCellDescription.setIterationsToCureTroubledCell(coarseGridCellDescription.getIterationsToCureTroubledCell());
   }
-  writeLimiterStatusOnBoundary(fineGridCellDescription);
+  resetFacewiseLimiterStatus(fineGridCellDescription);
 }
 
 bool exahype::solvers::ADERDGSolver::attainedStableState(
@@ -2492,7 +2517,7 @@ void
 exahype::solvers::ADERDGSolver::updateHelperStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
   cellDescription.setHelperStatus(determineHelperStatus(cellDescription));
-  writeHelperStatusOnBoundary(cellDescription);
+  resetFacewiseHelperStatus(cellDescription);
   assertion1(
       cellDescription.getType()!=CellDescription::Type::Cell ||
       cellDescription.getHelperStatus()==MaximumHelperStatus,
@@ -2502,24 +2527,21 @@ exahype::solvers::ADERDGSolver::updateHelperStatus(
 int
 exahype::solvers::ADERDGSolver::determineHelperStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
-  // Assumes increasing value of limiter status the closer we get to troubled cell
   int helperStatus =
       (cellDescription.getType()==CellDescription::Type::Cell) ?
           MaximumHelperStatus : 0;
+
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-        cellDescription.getIsInside(faceIndex)) {
-      helperStatus = std::max( helperStatus, cellDescription.getFacewiseHelperStatus(faceIndex) );
-    }
+    helperStatus = std::max( helperStatus, cellDescription.getFacewiseHelperStatus(faceIndex) );
   }
 
   return helperStatus;
 }
 
-void exahype::solvers::ADERDGSolver::writeHelperStatusOnBoundary(
+void exahype::solvers::ADERDGSolver::resetFacewiseHelperStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseHelperStatus(faceIndex,cellDescription.getHelperStatus());
+    cellDescription.setFacewiseHelperStatus(faceIndex,0);
   }
 }
 
@@ -2527,20 +2549,15 @@ void exahype::solvers::ADERDGSolver::mergeWithHelperStatus(
     CellDescription& cellDescription,
     const int faceIndex,
     const int otherHelperStatus) const {
-  int helperStatus = cellDescription.getHelperStatus();
-  helperStatus =
-      ( helperStatus==MaximumHelperStatus )
-      ?
-      MaximumHelperStatus
-      :
+  const int helperStatus =
       std::max (
           0,
-          std::max( helperStatus, otherHelperStatus ) - 1
+          std::max( cellDescription.getHelperStatus(), otherHelperStatus ) - 1
       );
 
-  assertion2(helperStatus==MaximumHelperStatus ||
-             helperStatus==0                   ||
-             helperStatus<=otherHelperStatus,helperStatus,otherHelperStatus);
+  assertion3(helperStatus<=MaximumHelperStatus,
+             helperStatus,otherHelperStatus,
+             cellDescription.getHelperStatus());
   cellDescription.setFacewiseHelperStatus( faceIndex, helperStatus );
 }
 
@@ -2573,7 +2590,7 @@ void
 exahype::solvers::ADERDGSolver::updateAugmentationStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
   cellDescription.setAugmentationStatus(determineAugmentationStatus(cellDescription));
-  writeAugmentationStatusOnBoundary(cellDescription);
+  resetFacewiseAugmentationStatus(cellDescription);
   assertion1(
       cellDescription.getType()!=CellDescription::Type::Ancestor ||
       cellDescription.getAugmentationStatus()==MaximumAugmentationStatus,
@@ -2584,23 +2601,21 @@ int
 exahype::solvers::ADERDGSolver::determineAugmentationStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
   int augmentationStatus =
-      (cellDescription.getType()==CellDescription::Type::Ancestor) ?
-          MaximumAugmentationStatus : 0;
+        (cellDescription.getType()==CellDescription::Type::Ancestor) ?
+            MaximumAugmentationStatus : 0;
+
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    if (cellDescription.getNeighbourMergePerformed(faceIndex) &&
-        cellDescription.getIsInside(faceIndex)) {
-      augmentationStatus = std::max(
-          augmentationStatus, cellDescription.getFacewiseAugmentationStatus(faceIndex) );
-    }
+    augmentationStatus = std::max(
+        augmentationStatus, cellDescription.getFacewiseAugmentationStatus(faceIndex) );
   }
 
   return augmentationStatus;
 }
 
-void exahype::solvers::ADERDGSolver::writeAugmentationStatusOnBoundary(
+void exahype::solvers::ADERDGSolver::resetFacewiseAugmentationStatus(
     exahype::solvers::ADERDGSolver::CellDescription& cellDescription) const {
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseAugmentationStatus(faceIndex,cellDescription.getAugmentationStatus());
+    cellDescription.setFacewiseAugmentationStatus(faceIndex,0);
   }
 }
 
@@ -2608,21 +2623,16 @@ void exahype::solvers::ADERDGSolver::mergeWithAugmentationStatus(
     CellDescription& cellDescription,
     const int faceIndex,
     const int otherAugmentationStatus) const {
-  int augmentationStatus = cellDescription.getAugmentationStatus();
-  augmentationStatus =
-      ( augmentationStatus==MaximumAugmentationStatus )
-      ?
-      MaximumAugmentationStatus
-      :
+  const int augmentationStatus =
       std::max (
           0,
-          std::max( augmentationStatus, otherAugmentationStatus ) - 1
+          std::max( cellDescription.getAugmentationStatus(), otherAugmentationStatus ) - 1
       );
 
-  assertion2(
-      augmentationStatus==MaximumAugmentationStatus ||
-      otherAugmentationStatus==0                    ||
-      augmentationStatus<otherAugmentationStatus,augmentationStatus,otherAugmentationStatus);
+  assertion3(
+      augmentationStatus<=MaximumAugmentationStatus,
+      augmentationStatus,otherAugmentationStatus,
+      cellDescription.getAugmentationStatus());
   cellDescription.setFacewiseAugmentationStatus( faceIndex, augmentationStatus );
 }
 
