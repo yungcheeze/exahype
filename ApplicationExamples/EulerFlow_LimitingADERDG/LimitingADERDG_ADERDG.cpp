@@ -73,8 +73,12 @@ void Euler::LimitingADERDG_ADERDG::adjustPointSolution(const double* const x,con
   Euler::initialData(x,Q);
 }
 
-exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
-  // @todo Please implement
+exahype::solvers::Solver::RefinementControl Euler::LimitingADERDG_ADERDG::refinementCriterion(
+    const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+  if (level>getCoarsestMeshLevel()) {
+    return exahype::solvers::Solver::RefinementControl::Erase;
+  }
+
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
@@ -99,9 +103,9 @@ bool Euler::LimitingADERDG_ADERDG::isPhysicallyAdmissible(
   const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
   const double t, const double dt) const {
   
-  if ((center[0]-0.5)*(center[0]-0.5)+(center[1]-0.5)*(center[1]-0.5)<0.25*dx[0]*dx[0]) return false;
+//  if ((center[0]-0.5)*(center[0]-0.5)+(center[1]-0.5)*(center[1]-0.5)<0.25*dx[0]*dx[0]) return false;
 
-  // if (observablesMin[0] <= 0.0) return false;
-  // if (observablesMin[1] < 0.0) return false;
+  if (observablesMin[0] <= 0.0) return false;
+  if (observablesMin[1] < 0.0) return false;
   return true;
 }
