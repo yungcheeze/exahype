@@ -21,10 +21,9 @@
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/MeshRefinement.h"
- #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/LoadBalancing.h"
  #include "exahype/mappings/PostProcessing.h"
- #include "exahype/adapters/MeshRefinement2MultiscaleLinkedCell_6.h"
+ #include "exahype/adapters/MeshRefinement2MultiscaleLinkedCell_5.h"
 
 
 
@@ -47,18 +46,16 @@ class exahype::adapters::MeshRefinement {
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
     typedef mappings::MeshRefinement Mapping2;
-    typedef mappings::InitialCondition Mapping3;
-    typedef mappings::LoadBalancing Mapping4;
-    typedef mappings::PostProcessing Mapping5;
-    typedef adapters::MeshRefinement2MultiscaleLinkedCell_6 Mapping6;
+    typedef mappings::LoadBalancing Mapping3;
+    typedef mappings::PostProcessing Mapping4;
+    typedef adapters::MeshRefinement2MultiscaleLinkedCell_5 Mapping5;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2MeshRefinement;
-     Mapping3  _map2InitialCondition;
-     Mapping4  _map2LoadBalancing;
-     Mapping5  _map2PostProcessing;
-     Mapping6  _map2MeshRefinement2MultiscaleLinkedCell_6;
+     Mapping3  _map2LoadBalancing;
+     Mapping4  _map2PostProcessing;
+     Mapping5  _map2MeshRefinement2MultiscaleLinkedCell_5;
 
 
   public:

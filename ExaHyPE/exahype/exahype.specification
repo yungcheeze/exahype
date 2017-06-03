@@ -25,9 +25,6 @@ event-mapping:
   
 event-mapping:
   name: SolutionUpdate
-  
-event-mapping:
-  name: InitialCondition
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
   name: Prediction
@@ -79,9 +76,6 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  // Initial Condition comes after "MeshRefinement" since we refine here in a fast manner down to the 
-  // first layer of cells we initialise. Afterwards refinement is done per iteration.
-  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-user-defined-mapping: PostProcessing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
@@ -91,9 +85,6 @@ adapter:
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: Merging                 // Merge Time Step data
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  // Initial Condition comes after "MeshRefinement" since we refine here in a fast manner down to the 
-  // first layer of cells we initialise. Afterwards refinement is done per iteration.
-  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-user-defined-mapping: PostProcessing
@@ -103,18 +94,6 @@ adapter:
   name: PlotAugmentedAMRGrid
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-predefined-mapping: VTKGridVisualiser(grid)
-
-// Adapters for initialisation of time stepping
-adapter:
-  name: InitialConditionAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data  
-  merge-with-user-defined-mapping: FinaliseMeshRefinement
-  merge-with-user-defined-mapping: Merging 
-  merge-with-user-defined-mapping: InitialCondition
-  // needs current time step size
-  merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: PostProcessing // Sending does not send face data
-  merge-with-user-defined-mapping: Sending
 
 // Fused time stepping initialisation  
 adapter:

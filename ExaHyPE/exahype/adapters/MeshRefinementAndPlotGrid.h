@@ -21,11 +21,10 @@
  #include "exahype/mappings/PreProcessing.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/MeshRefinement.h"
- #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/LoadBalancing.h"
  #include "exahype/mappings/PostProcessing.h"
- #include "exahype/adapters/MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7.h"
+ #include "exahype/adapters/MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6.h"
 
 
 
@@ -48,20 +47,18 @@ class exahype::adapters::MeshRefinementAndPlotGrid {
     typedef mappings::PreProcessing Mapping0;
     typedef mappings::Merging Mapping1;
     typedef mappings::MeshRefinement Mapping2;
-    typedef mappings::InitialCondition Mapping3;
-    typedef mappings::AugmentedAMRTreePlot2d Mapping4;
-    typedef mappings::LoadBalancing Mapping5;
-    typedef mappings::PostProcessing Mapping6;
-    typedef adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7 Mapping7;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping3;
+    typedef mappings::LoadBalancing Mapping4;
+    typedef mappings::PostProcessing Mapping5;
+    typedef adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6 Mapping6;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2MeshRefinement;
-     Mapping3  _map2InitialCondition;
-     Mapping4  _map2AugmentedAMRTreePlot2d;
-     Mapping5  _map2LoadBalancing;
-     Mapping6  _map2PostProcessing;
-     Mapping7  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7;
+     Mapping3  _map2AugmentedAMRTreePlot2d;
+     Mapping4  _map2LoadBalancing;
+     Mapping5  _map2PostProcessing;
+     Mapping6  _map2MeshRefinementAndPlotGrid2MultiscaleLinkedCell_6;
 
 
   public:

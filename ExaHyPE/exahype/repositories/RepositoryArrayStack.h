@@ -19,7 +19,6 @@
  #include "exahype/adapters/MeshRefinement.h" 
  #include "exahype/adapters/MeshRefinementAndPlotGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
- #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisation.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot.h" 
  #include "exahype/adapters/PredictionAndFusedTimeSteppingInitialisationAndPlot2d.h" 
@@ -67,7 +66,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinement> _gridWithMeshRefinement;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinementAndPlotGrid> _gridWithMeshRefinementAndPlotGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisation> _gridWithPredictionAndFusedTimeSteppingInitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d> _gridWithPredictionAndFusedTimeSteppingInitialisationAndPlot2d;
@@ -94,7 +92,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureMeshRefinementCPUTime;
     tarch::timing::Measurement _measureMeshRefinementAndPlotGridCPUTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
-    tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCPUTime;
@@ -118,7 +115,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measureMeshRefinementAndPlotGridCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
-    tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionAndFusedTimeSteppingInitialisationAndPlot2dCalendarTime;
@@ -186,7 +182,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToMeshRefinement();    
     virtual void switchToMeshRefinementAndPlotGrid();    
     virtual void switchToPlotAugmentedAMRGrid();    
-    virtual void switchToInitialConditionAndTimeStepSizeComputation();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();    
@@ -210,7 +205,6 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterMeshRefinementAndPlotGrid() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
-    virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot() const;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const;

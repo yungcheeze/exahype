@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7_H_
-#define EXAHYPE_ADAPTERS_MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7_H_
+#ifndef EXAHYPE_ADAPTERS_MeshRefinement2MultiscaleLinkedCell_5_H_
+#define EXAHYPE_ADAPTERS_MeshRefinement2MultiscaleLinkedCell_5_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7;
+        class MeshRefinement2MultiscaleLinkedCell_5;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7 {
+class exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5 {
   public:
     peano::MappingSpecification   touchVertexLastTimeSpecification(int level) const;
     peano::MappingSpecification   touchVertexFirstTimeSpecification(int level) const;
@@ -42,16 +42,16 @@ class exahype::adapters::MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7 {
     peano::MappingSpecification   descendSpecification(int level) const;
     peano::CommunicationSpecification   communicationSpecification() const;
 
-    MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7();
+    MeshRefinement2MultiscaleLinkedCell_5();
 
     #if defined(SharedMemoryParallelisation)
-    MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7(const MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7& masterThread);
+    MeshRefinement2MultiscaleLinkedCell_5(const MeshRefinement2MultiscaleLinkedCell_5& masterThread);
     #endif
 
-    virtual ~MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7();
+    virtual ~MeshRefinement2MultiscaleLinkedCell_5();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const MeshRefinementAndPlotGrid2MultiscaleLinkedCell_7& workerThread);
+    void mergeWithWorkerThread(const MeshRefinement2MultiscaleLinkedCell_5& workerThread);
     #endif
 
     void createInnerVertex(
