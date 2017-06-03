@@ -432,6 +432,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
 
   _cellCounter = 0;
 
+
+
   _vtkWriter = new UsedWriter();
 
   _vertexWriter = _vtkWriter->createVertexWriter();
@@ -448,9 +450,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
       "refinement-event(NoPatch=-1,None=0,ErasingChildrenReq=1,"
       "ErasingChildren=2,ChangeToDescendantsReq=3,"
       "ChangeToDescendants=4,RefReq=5,Ref=6,"
-      "DeaugChildrenReq=7,DeaugChildren=8,"
-      "AugReq=9,Aug=10)"
-      ,1);
+      "DeaugChildrenReqTrig=7,"
+      "DeaugChildrenReq=8,DeaugChildren=9,"
+      "AugReq=10,Aug=11)",1);
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
   _augmentationStatusWriter = _vtkWriter->createCellDataWriter(
