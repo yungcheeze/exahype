@@ -15,7 +15,8 @@ tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSiz
 
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MaxAccuracy( 1.0 );
-const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 0.9 );
+const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 1.1 );
+const int      sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues = 4;
 
 
 bool                                 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_hasLearnedSinceLastQuery( false );
@@ -183,7 +184,7 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
 
       bool passedGrainSize = -1;
       if (databaseEntry.canRelyOnValidSerialMeasurement()) {
-        passedGrainSize = rand()%10==0 ? 0 : chosenParallelGrainSize;
+        passedGrainSize = rand()%_MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues==0 ? 0 : chosenParallelGrainSize;
       }
       else {
         passedGrainSize = 0;
@@ -478,10 +479,9 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     delta = _accumulatedParallelMeasurement   / _numberOfParallelMeasurements - oldParallelTime;
   }
 
-  const double averageTime = 0.5 * (_accumulatedSerialMeasurement   / _numberOfSerialMeasurements + _accumulatedParallelMeasurement / _numberOfParallelMeasurements);
-  _measurementsAreAccurate  = (delta / averageTime < _accuracy)
-                           && _numberOfSerialMeasurements   > 10
-                           && _numberOfParallelMeasurements > 10;
+  _measurementsAreAccurate  = (delta*delta < _accuracy*_accuracy)
+                           && (_numberOfSerialMeasurements   > _MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues)
+                           && (_numberOfParallelMeasurements > _MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues);
 }
 
 
@@ -492,9 +492,10 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::widenAccuracy() {
   if (_accuracy<_InitialRelativeAccuracy) {
-    _accuracy /= _WideningFactor;
+    _accuracy *= _WideningFactor;
+    return true;
   }
-  return _accuracy < _InitialRelativeAccuracy;
+  else return false;
 }
 
 
@@ -787,6 +788,14 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
         "inserted trivial entry for " + peano::datatraversal::autotuning::toString(askingMethod)
         << ": " << _measurements[askingMethod].rbegin()->toString()
       );
+    }
+
+    bool oneEntryDidScale = false;
+    for (auto& p: _measurements[askingMethod]) {
+      if (oneEntryDidScale && !p.isScaling() && !p.isSearching()) {
+        p.restart();
+      }
+      oneEntryDidScale |= (!p.isSearching() && p.isScaling());
     }
   }
 
