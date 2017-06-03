@@ -1496,8 +1496,6 @@ bool exahype::solvers::ADERDGSolver::updateStateInLeaveCell(
   const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
-    // TODO(Dominic): Only allow erasing if limiter status is Ok
-
     CellDescription& fineGridCellDescription = getCellDescription(
             fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
 

@@ -1438,8 +1438,7 @@ void exahype::solvers::LimitingADERDGSolver::restrictLimiterStatus(
         _solver->getCellDescription(parentCellDescriptionsIndex,parentElement);
     if(parentSolverPatch.getType()==SolverPatch::Type::Ancestor) {
       parentSolverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
-//      ADERDGSolver::overwriteFacewiseLimiterStatus(parentSolverPatch);
-      ADERDGSolver::resetFacewiseLimiterStatus(parentSolverPatch); // TODO(Dominic): Why?
+      ADERDGSolver::resetFacewiseLimiterStatus(parentSolverPatch);
     }
   }
 }
