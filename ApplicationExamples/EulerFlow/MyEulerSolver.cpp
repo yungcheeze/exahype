@@ -127,8 +127,8 @@ Euler::MyEulerSolver::refinementCriterion(
     const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
     const int level) {
-  if (t>1e-6)
-    return exahype::solvers::Solver::RefinementControl::Keep;
+//  if (t>1e-6)
+//    return exahype::solvers::Solver::RefinementControl::Keep;
 
 
   double largestRho  = -std::numeric_limits<double>::max();
@@ -145,10 +145,7 @@ Euler::MyEulerSolver::refinementCriterion(
 //  if ((largestRho-smallestRho)/largestRho > 0.9e-1) { // This doesn't work with the erasing
   if (largestRho > 0.65) {
     return exahype::solvers::Solver::RefinementControl::Refine;
-  } else {
-    return exahype::solvers::Solver::RefinementControl::Keep;
   }
-  
 
   if (dx[0] < getMaximumMeshSize()/3.)
     return exahype::solvers::Solver::RefinementControl::Erase;
