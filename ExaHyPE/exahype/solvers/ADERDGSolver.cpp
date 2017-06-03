@@ -3301,11 +3301,14 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
       neighbourMetadata[exahype::NeighbourCommunicationMetadataAugmentationStatus].getU();
   const int neighbourHelperStatus       =
       neighbourMetadata[exahype::NeighbourCommunicationMetadataHelperStatus      ].getU();
+  const int neighbourLimiterStatus      =
+        neighbourMetadata[exahype::NeighbourCommunicationMetadataLimiterStatus   ].getU();
 
   CellDescription& solverPatch = getCellDescription(cellDescriptionsIndex,element);
 
   mergeWithAugmentationStatus(solverPatch,faceIndex,neighbourAugmentationStatus);
   mergeWithHelperStatus      (solverPatch,faceIndex,neighbourHelperStatus);
+  mergeWithLimiterStatus     (solverPatch,faceIndex,neighbourLimiterStatus);
 }
 
 void exahype::solvers::ADERDGSolver::sendDataToNeighbour(

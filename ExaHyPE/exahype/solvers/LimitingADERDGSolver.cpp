@@ -1774,18 +1774,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourMetadata(
       const int cellDescriptionsIndex,
       const int element) {
   _solver->mergeWithNeighbourMetadata(metadata,src,dest,cellDescriptionsIndex,element);
-
-  // Merge the limiter status
-  const SolverPatch::LimiterStatus neighbourLimiterStatus =
-      static_cast<SolverPatch::LimiterStatus>(metadata[exahype::NeighbourCommunicationMetadataLimiterStatus].getU());
-  SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  if (tarch::la::equals(src,dest)==DIMENSIONS-1) {
-    const int direction   = tarch::la::equalsReturnIndex(src,dest);
-    const int orientation = (1 + src(direction) - dest(direction))/2;
-    const int faceIndex   = 2*direction+orientation;
-
-    _solver->mergeWithLimiterStatus(solverPatch,faceIndex,neighbourLimiterStatus);
-  }
 }
 
 ///////////////////////////////////

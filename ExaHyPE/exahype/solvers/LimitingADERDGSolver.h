@@ -1001,6 +1001,10 @@ public:
       double**                                  tempStateSizedVectors,
       double**                                  tempStateSizedSquareMatrices) override;
 
+  /**
+   * TODO(Dominic): Can later be replaced
+   * by ADERDGSolver::mergeNeighboursMetadata function.
+   */
   void mergeNeighboursLimiterStatus(
       const int                                 cellDescriptionsIndex1,
       const int                                 element1,
