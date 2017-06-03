@@ -50,6 +50,11 @@ private:
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
+
 //  bool _gridUpdateRequested; // TODO(Dominic): Change to array; per solve
 
 public:
@@ -75,12 +80,6 @@ public:
   peano::MappingSpecification descendSpecification(int level) const;
 
   peano::CommunicationSpecification communicationSpecification() const;
-
-  /**
-   * Loop over all vertices and merge the limiter
-   * status between neighbours.
-   */
-  static void mergeNeighboursLimiterStatus(exahype::Vertex& fineGridVertex);
 
 #if defined(SharedMemoryParallelisation)
   /**

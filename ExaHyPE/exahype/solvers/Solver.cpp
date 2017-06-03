@@ -484,6 +484,10 @@ void exahype::sendNeighbourCommunicationMetadata(
     const int                                   cellDescriptionsIndex,
     const tarch::la::Vector<DIMENSIONS,double>& x,
     const int                                   level) {
+  logDebug("prepareSendToNeighbour(...)","[metadata] sent to rank "<<toRank<<", x:"<<
+           x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
+           << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+
   MetadataHeap::HeapEntries encodedMetadata =
       encodeNeighbourCommunicationMetadata(cellDescriptionsIndex);
   MetadataHeap::getInstance().sendData(
@@ -528,6 +532,10 @@ void exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
     const int                                   toRank,
     const tarch::la::Vector<DIMENSIONS,double>& x,
     const int                                   level) {
+  logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
+           x.toString() << ", level=" <<level << ", vertex.adjacentRanks: " << vertex.getAdjacentRanks()
+           << ", src forking: " << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+
   MetadataHeap::HeapEntries encodedMetadata =
       createNeighbourCommunicationMetadataSequenceWithInvalidEntries();
   MetadataHeap::getInstance().sendData(

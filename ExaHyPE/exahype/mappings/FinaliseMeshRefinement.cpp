@@ -95,6 +95,8 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithWorkerThread(
 void exahype::mappings::FinaliseMeshRefinement::beginIteration(exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
+  _localState=solverState;
+
   #ifdef Parallel
   exahype::mappings::LimiterStatusSpreading::FirstIteration = true;
   exahype::mappings::MeshRefinement::FirstIteration = true;
@@ -128,7 +130,7 @@ void exahype::mappings::FinaliseMeshRefinement::touchVertexFirstTime(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  exahype::mappings::LimiterStatusSpreading::mergeNeighboursLimiterStatus(fineGridVertex);
+  fineGridVertex.mergeOnlyNeighboursMetadata(_localState.getAlgorithmSection());
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
@@ -174,26 +176,14 @@ void exahype::mappings::FinaliseMeshRefinement::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  if (tarch::la::allGreater(fineGridH,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
-    return;
-  }
+  logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
+                           fromRank, fineGridX, fineGridH, level);
 
-  #if !defined(PeriodicBC)
-    if (vertex.isBoundary()) return;
-  #endif
+  vertex.mergeOnlyWithNeighbourMetadata(
+      fromRank,fineGridX,fineGridH,level,
+      _localState.getAlgorithmSection());
 
-  dfor2(myDest)
-    dfor2(mySrc)
-      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
-
-      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-        MetadataHeap::getInstance().receiveData(
-            fromRank, fineGridX, level,
-            peano::heap::MessageType::NeighbourCommunication);
-      }
-    enddforx
-  enddforx
+  logTraceOut("mergeWithNeighbour(...)");
 }
 
 

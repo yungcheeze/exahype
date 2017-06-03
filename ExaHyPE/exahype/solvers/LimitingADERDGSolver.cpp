@@ -1463,7 +1463,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighboursMetadata(
     const tarch::la::Vector<DIMENSIONS, int>& pos1,
     const tarch::la::Vector<DIMENSIONS, int>& pos2) {
   _solver->mergeNeighboursMetadata(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
-  mergeNeighboursLimiterStatus    (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
@@ -1490,8 +1489,8 @@ void exahype::solvers::LimitingADERDGSolver::mergeNeighbours(
   mergeSolutionMinMaxOnFace(
       cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 
-  // 3. Merge the limiter status
-  mergeNeighboursLimiterStatus(
+  // 3. Merge the limiter status (and other metadata)
+  mergeNeighboursMetadata(
       cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 }
 
@@ -1666,27 +1665,6 @@ void exahype::solvers::LimitingADERDGSolver::mergeSolutionMinMaxOnFace(
       *(max2+i) = max;
     }
   } // else do nothing
-}
-
-void exahype::solvers::LimitingADERDGSolver::mergeNeighboursLimiterStatus(
-    const int                                 cellDescriptionsIndex1,
-    const int                                 element1,
-    const int                                 cellDescriptionsIndex2,
-    const int                                 element2,
-    const tarch::la::Vector<DIMENSIONS, int>& pos1,
-    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
-  SolverPatch& solverPatch1 = _solver->getCellDescription(cellDescriptionsIndex1,element1);
-  SolverPatch& solverPatch2 = _solver->getCellDescription(cellDescriptionsIndex2,element2);
-
-  const int direction    = tarch::la::equalsReturnIndex(pos1,pos2);
-  const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
-  const int orientation2 = 1-orientation1;
-
-  const int limiterStatus1 = solverPatch1.getLimiterStatus();
-  const int limiterStatus2 = solverPatch2.getLimiterStatus();
-
-  _solver->mergeWithLimiterStatus(solverPatch1,2*direction+orientation1,limiterStatus2);
-  _solver->mergeWithLimiterStatus(solverPatch2,2*direction+orientation2,limiterStatus1);
 }
 
 void exahype::solvers::LimitingADERDGSolver::mergeWithBoundaryData(

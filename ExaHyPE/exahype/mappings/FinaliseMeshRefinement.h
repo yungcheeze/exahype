@@ -48,6 +48,11 @@ class exahype::mappings::FinaliseMeshRefinement {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
  public:
   /* Nop */
   peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;

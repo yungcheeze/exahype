@@ -435,66 +435,6 @@ void exahype::solvers::ADERDGSolver::ensureNecessaryMemoryIsAllocated(exahype::r
   }
 }
 
-exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
-exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
-  assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
-  const int newLimiterStatusAsInt=std::min(
-      limiterStatusAsInt,
-      static_cast<int>(CellDescription::LimiterStatus::Troubled) );
-
-  return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
-}
-
-void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
-    CellDescription& cellDescription,
-    const int faceIndex,
-    const int otherLimiterStatus) const {
-  const int croppedOtherLimiterStatus =
-      std::min(
-          otherLimiterStatus,
-          static_cast<int>(CellDescription::LimiterStatus::Troubled) );
-
-  int limiterStatus =
-      std::min(
-        cellDescription.getLimiterStatus(),
-        static_cast<int>(CellDescription::LimiterStatus::Troubled) );
-  limiterStatus =
-      std::max( limiterStatus, croppedOtherLimiterStatus ) - 1;
-
-  cellDescription.setFacewiseLimiterStatus( faceIndex, limiterStatus );
-}
-
-/**
- * Iterate over the merged limiter statuses per face and
- * determine a unique value.
- */
-int
-exahype::solvers::ADERDGSolver::determineLimiterStatus(
-    CellDescription& cellDescription) {
-  // Assumes increasing value of limiter status the closer we get to troubled cell
-  int limiterStatus = 0;
-  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    limiterStatus = std::max( limiterStatus, cellDescription.getFacewiseLimiterStatus(faceIndex) );
-  }
-
-  return limiterStatus;
-}
-
-void
-exahype::solvers::ADERDGSolver::overwriteFacewiseLimiterStatus(
-    CellDescription& cellDescription) {
-  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
-  }
-}
-
-void exahype::solvers::ADERDGSolver::resetFacewiseLimiterStatus(
-    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
-  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-    cellDescription.setFacewiseLimiterStatus(faceIndex,0);
-  }
-}
-
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
     int numberOfParameters, int DOFPerCoordinateAxis,
@@ -2509,6 +2449,88 @@ void exahype::solvers::ADERDGSolver::restrictToTopMostParent(
 // NEIGHBOUR
 ///////////////////////////////////
 
+// limiter status
+exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus
+exahype::solvers::ADERDGSolver::toLimiterStatusEnum(const int limiterStatusAsInt) {
+  assertion1( limiterStatusAsInt >= 0, limiterStatusAsInt );
+  const int newLimiterStatusAsInt=std::min(
+      limiterStatusAsInt,
+      static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+
+  return static_cast<CellDescription::LimiterStatus>(newLimiterStatusAsInt);
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
+    CellDescription& cellDescription,
+    const int faceIndex,
+    const int otherLimiterStatus) const {
+  const int croppedOtherLimiterStatus =
+      std::min(
+          otherLimiterStatus,
+          static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+
+  int limiterStatus =
+      std::min(
+        cellDescription.getLimiterStatus(),
+        static_cast<int>(CellDescription::LimiterStatus::Troubled) );
+  limiterStatus =
+      std::max( limiterStatus, croppedOtherLimiterStatus ) - 1;
+
+  cellDescription.setFacewiseLimiterStatus( faceIndex, limiterStatus );
+}
+
+/**
+ * Iterate over the merged limiter statuses per face and
+ * determine a unique value.
+ */
+int
+exahype::solvers::ADERDGSolver::determineLimiterStatus(
+    CellDescription& cellDescription) {
+  // Assumes increasing value of limiter status the closer we get to troubled cell
+  int limiterStatus = 0;
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    limiterStatus = std::max( limiterStatus, cellDescription.getFacewiseLimiterStatus(faceIndex) );
+  }
+
+  return limiterStatus;
+}
+
+void
+exahype::solvers::ADERDGSolver::overwriteFacewiseLimiterStatus(
+    CellDescription& cellDescription) {
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    cellDescription.setFacewiseLimiterStatus(faceIndex,cellDescription.getLimiterStatus());
+  }
+}
+
+void exahype::solvers::ADERDGSolver::resetFacewiseLimiterStatus(
+    exahype::solvers::ADERDGSolver::CellDescription& cellDescription) {
+  for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
+    cellDescription.setFacewiseLimiterStatus(faceIndex,0);
+  }
+}
+
+void exahype::solvers::ADERDGSolver::mergeNeighboursLimiterStatus(
+    const int                                 cellDescriptionsIndex1,
+    const int                                 element1,
+    const int                                 cellDescriptionsIndex2,
+    const int                                 element2,
+    const tarch::la::Vector<DIMENSIONS, int>& pos1,
+    const tarch::la::Vector<DIMENSIONS, int>& pos2) const {
+  CellDescription& cellDescription1 = getCellDescription(cellDescriptionsIndex1,element1);
+  CellDescription& cellDescription2 = getCellDescription(cellDescriptionsIndex2,element2);
+
+  const int direction    = tarch::la::equalsReturnIndex(pos1,pos2);
+  const int orientation1 = (1 + pos2(direction) - pos1(direction))/2;
+  const int orientation2 = 1-orientation1;
+
+  const int limiterStatus1 = cellDescription1.getLimiterStatus();
+  const int limiterStatus2 = cellDescription2.getLimiterStatus();
+
+  mergeWithLimiterStatus(cellDescription1,2*direction+orientation1,limiterStatus2);
+  mergeWithLimiterStatus(cellDescription2,2*direction+orientation2,limiterStatus1);
+}
+
 // helper status
 int exahype::solvers::ADERDGSolver::MaximumHelperStatus                          = 2;
 int exahype::solvers::ADERDGSolver::MinimumHelperStatusForAllocatingBoundaryData = 1;
@@ -2667,6 +2689,7 @@ void exahype::solvers::ADERDGSolver::mergeNeighboursMetadata(
     const tarch::la::Vector<DIMENSIONS, int>& pos2) {
   mergeNeighboursHelperStatus      (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
   mergeNeighboursAugmentationStatus(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+  mergeNeighboursLimiterStatus     (cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
 }
 
 // merge compute data

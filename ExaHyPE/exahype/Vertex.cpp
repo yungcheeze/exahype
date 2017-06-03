@@ -15,6 +15,8 @@
 #include "peano/utils/Loop.h"
 #include "peano/grid/Checkpoint.h"
 
+#include "peano/datatraversal/autotuning/Oracle.h"
+
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "exahype/State.h"
@@ -41,6 +43,33 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument)
 tarch::la::Vector<TWO_POWER_D, int>
 exahype::Vertex::getCellDescriptionsIndex() const {
   return _vertexData.getCellDescriptionsIndex();
+}
+
+void exahype::Vertex::mergeOnlyNeighboursMetadata(const exahype::records::State::AlgorithmSection& section) {
+  dfor2(pos1)
+    dfor2(pos2)
+      if (hasToMergeNeighbours(pos1,pos2)) { // Assumes that we have two valid indices
+        auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+            parallelise(solvers::RegisteredSolvers.size(), peano::datatraversal::autotuning::MethodTrace::UserDefined15);
+        pfor(solverNumber, 0, static_cast<int>(solvers::RegisteredSolvers.size()),grainSize.getGrainSize())
+          auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+          if (solver->isComputing(section)) {
+            const int cellDescriptionsIndex1 = getCellDescriptionsIndex()[pos1Scalar];
+            const int cellDescriptionsIndex2 = getCellDescriptionsIndex()[pos2Scalar];
+            const int element1 = solver->tryGetElement(cellDescriptionsIndex1,solverNumber);
+            const int element2 = solver->tryGetElement(cellDescriptionsIndex2,solverNumber);
+            if (element2>=0 && element1>=0) {
+              solver->mergeNeighboursMetadata(
+                  cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
+            }
+          }
+        endpfor
+        grainSize.parallelSectionHasTerminated();
+
+        setMergePerformed(pos1,pos2,true);
+      }
+    enddforx
+  enddforx
 }
 
 bool exahype::Vertex::hasToMergeNeighbours(
@@ -234,28 +263,11 @@ void exahype::Vertex::setMergePerformed(
   }
 }
 
-#ifdef Parallel
-bool exahype::Vertex::hasToSendMetadataDuringMeshRefinement(
-  const tarch::la::Vector<DIMENSIONS,int>& src,
-  const tarch::la::Vector<DIMENSIONS,int>& dest,
-  const int toRank) {
-  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
-  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
-  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
-
-  return !tarch::la::equals(dest, src) &&
-         adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
-         adjacentRanks(destScalar)   == toRank &&
-         adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
-         (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
-         State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
-}
-
-
+#if Parallel
 bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<DIMENSIONS,int>& src,
   const tarch::la::Vector<DIMENSIONS,int>& dest,
-  const int toRank) {
+  const int toRank) const {
   const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
@@ -268,24 +280,41 @@ bool exahype::Vertex::hasToSendMetadata(
          State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
 }
 
+void exahype::Vertex::sendOnlyMetadataToNeighbour(
+    const int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h,
+    int level) const {
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+  #if !defined(PeriodicBC)
+  if (isBoundary()) return;
+  #endif
 
-bool exahype::Vertex::hasToSendMetadataIgnoreForksJoins(
-  const tarch::la::Vector<DIMENSIONS,int>& src,
-  const tarch::la::Vector<DIMENSIONS,int>& dest,
-  const int toRank) {
-  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
-  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
-  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+  tarch::la::Vector<TWO_POWER_D, int> adjacentADERDGCellDescriptionsIndices =
+      getCellDescriptionsIndex();
 
-  return tarch::la::countEqualEntries(dest, src)  == (DIMENSIONS-1) &&
-         adjacentRanks(destScalar) == toRank &&
-         adjacentRanks(srcScalar)  == tarch::parallel::Node::getInstance().getRank();
+  dfor2(dest)
+    dfor2(src)
+      if (hasToSendMetadata(src,dest,toRank)) {
+        const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+        if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
+          exahype::sendNeighbourCommunicationMetadata(
+              toRank,srcCellDescriptionIndex,x,level);
+        } else {
+          exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
+              toRank,x,level);
+        }
+      }
+    enddforx
+  enddforx
 }
 
 bool exahype::Vertex::hasToReceiveMetadata(
   const tarch::la::Vector<DIMENSIONS,int>& src,
   const tarch::la::Vector<DIMENSIONS,int>& dest,
-  const int fromRank) {
+  const int fromRank) const {
   const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
@@ -298,34 +327,72 @@ bool exahype::Vertex::hasToReceiveMetadata(
        State::isForkingRank(adjacentRanks(destScalar)));
 }
 
-bool exahype::Vertex::hasToReceiveMetadataDuringMeshRefinement(
-  const tarch::la::Vector<DIMENSIONS,int>& src,
-  const tarch::la::Vector<DIMENSIONS,int>& dest,
-  const int fromRank) {
-  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
-  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
-  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
+    const int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h,
+    const int level,
+    const exahype::records::State::AlgorithmSection& section) const {
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+  #if !defined(PeriodicBC)
+    if (isBoundary()) return;
+  #endif
 
-  return !tarch::la::equals(dest, src) &&
-      adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
-      adjacentRanks(srcScalar)    == fromRank &&
-      adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
-      (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
-       State::isForkingRank(adjacentRanks(destScalar)));
+  dfor2(myDest)
+    dfor2(mySrc)
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+      int destScalar = TWO_POWER_D - myDestScalar - 1;
+
+      if (hasToReceiveMetadata(src,dest,fromRank)) {
+        logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
+                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
+                 << vertex.getAdjacentRanks());
+
+        const int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());
+        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
+        MetadataHeap::getInstance().receiveData(
+            receivedMetadataIndex,
+            fromRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().
+            getData(receivedMetadataIndex);
+
+        for(unsigned int solverNumber = solvers::RegisteredSolvers.size(); solverNumber-- > 0;) {
+          auto* solver = solvers::RegisteredSolvers[solverNumber];
+          if (solver->isComputing(section)) {
+            const int offset  = exahype::NeighbourCommunicationMetadataPerSolver*solverNumber;
+            if (receivedMetadata[offset].getU()!=exahype::InvalidMetadataEntry) {
+              const int element = solver->tryGetElement(
+                  getCellDescriptionsIndex()[destScalar],solverNumber);
+              if (element!=exahype::solvers::Solver::NotFound) {
+                MetadataHeap::HeapEntries metadataPortion(
+                    receivedMetadata.begin()+offset,
+                    receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
+
+                solver->mergeWithNeighbourMetadata(
+                    metadataPortion,
+                    src, dest,
+                    getCellDescriptionsIndex()[destScalar],element);
+              }
+            }
+
+            logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
+            logDebug("mergeWithNeighbour(...)","neighbourTypeAsInt: "
+                << receivedMetadata[solverNumber].getU());
+          }
+        }
+
+        // Clean up
+        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+      }
+    enddforx
+  enddforx
 }
 
-bool exahype::Vertex::hasToReceiveMetadataIgnoreForksJoins(
-    const tarch::la::Vector<DIMENSIONS,int>& src,
-    const tarch::la::Vector<DIMENSIONS,int>& dest,
-    const int fromRank) {
-  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
-  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
-  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
-
-  return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
-      adjacentRanks(srcScalar)   == fromRank &&
-      adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank();
-}
 
 bool exahype::Vertex::hasToSendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS,int>& src,

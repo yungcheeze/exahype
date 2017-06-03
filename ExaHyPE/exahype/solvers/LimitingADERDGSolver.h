@@ -1002,18 +1002,6 @@ public:
       double**                                  tempStateSizedSquareMatrices) override;
 
   /**
-   * TODO(Dominic): Can later be replaced
-   * by ADERDGSolver::mergeNeighboursMetadata function.
-   */
-  void mergeNeighboursLimiterStatus(
-      const int                                 cellDescriptionsIndex1,
-      const int                                 element1,
-      const int                                 cellDescriptionsIndex2,
-      const int                                 element2,
-      const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
-
-  /**
    * Merge solver boundary data (and other values) of two adjacent
    * cells based on their limiter status.
    *

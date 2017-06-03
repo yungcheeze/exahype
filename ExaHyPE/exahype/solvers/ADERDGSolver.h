@@ -790,6 +790,18 @@ public:
   static void resetFacewiseLimiterStatus(CellDescription& cellDescription);
 
   /**
+   * TODO(Dominic): Can later be replaced
+   * by ADERDGSolver::mergeNeighboursMetadata function.
+   */
+  void mergeNeighboursLimiterStatus(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) const;
+
+  /**
    * Construct an ADERDGSolver.
    *
    * \param identifier               An identifier for this solver.

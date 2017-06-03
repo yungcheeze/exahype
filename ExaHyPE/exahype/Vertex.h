@@ -81,6 +81,18 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    */
   tarch::la::Vector<TWO_POWER_D, int> getCellDescriptionsIndex() const;
 
+
+  /**
+   * Loop over all neighbouring cells and merge
+   * the metadata of cell descriptions in neighbouring
+   * cells which are owned by the same solver.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
+   */
+  void mergeOnlyNeighboursMetadata(const exahype::records::State::AlgorithmSection& section);
+
   /**
    * Checks if the cell descriptions at the indices corresponding
    * to \p pos1 and \p pos2 need to be merged with each other.
@@ -157,26 +169,16 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   bool hasToSendMetadata(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int toRank);
+      const int toRank) const;
 
   /**
-   * Similar to hasToSendMetadata but does also
-   * send over edges and corners.
+   * TODO(Dominic): Add docu
    */
-  bool hasToSendMetadataDuringMeshRefinement(
-    const tarch::la::Vector<DIMENSIONS,int>& src,
-    const tarch::la::Vector<DIMENSIONS,int>& dest,
-    const int toRank);
-
-  /**
-   * Similar to hasToSendMetadata. However ignores
-   * that the dest rank in the adjacency information
-   * might be a forking/joining one.
-   */
-  bool hasToSendMetadataIgnoreForksJoins(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int toRank);
+  void sendOnlyMetadataToNeighbour(
+      const int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level) const;
 
   /**
    * Returns if this vertex needs to receive a metadata message from a remote rank \p fromRank.
@@ -210,27 +212,21 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   bool hasToReceiveMetadata(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int fromRank);
+      const int fromRank) const;
 
   /**
-   * Similar to hasToReceiveMetadata but
-   * does also receive metadata over edges and corners.
+   * TODO(Dominic): Add docu.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
    */
-  bool hasToReceiveMetadataDuringMeshRefinement(
-        const tarch::la::Vector<DIMENSIONS,int>& src,
-        const tarch::la::Vector<DIMENSIONS,int>& dest,
-        const int fromRank);
-
-  /**
-   * Similar to hasToReceiveMetadata. However ignores
-   * that the src rank in the adjacency information
-   * might be a forking/joining one.
-   */
-  bool hasToReceiveMetadataIgnoreForksJoins(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int fromRank);
-
+  void mergeOnlyWithNeighbourMetadata(
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      const int level,
+      const exahype::records::State::AlgorithmSection& section) const;
 
 
   /**
