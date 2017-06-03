@@ -2486,7 +2486,6 @@ void exahype::solvers::ADERDGSolver::mergeWithLimiterStatus(
 int
 exahype::solvers::ADERDGSolver::determineLimiterStatus(
     CellDescription& cellDescription) {
-  // Assumes increasing value of limiter status the closer we get to troubled cell
   int limiterStatus = 0;
   for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
     limiterStatus = std::max( limiterStatus, cellDescription.getFacewiseLimiterStatus(faceIndex) );

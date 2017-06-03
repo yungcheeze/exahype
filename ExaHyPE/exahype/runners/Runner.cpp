@@ -818,6 +818,10 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
     repository.switchToLimiterStatusSpreading();
     repository.iterate(5);
   }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
+  }
 
   // 2. Perform a grid update for those solvers that requested refinement
   if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {

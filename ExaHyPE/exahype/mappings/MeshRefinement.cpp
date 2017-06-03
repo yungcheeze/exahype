@@ -304,6 +304,18 @@ void exahype::mappings::MeshRefinement::enterCell(
       if (solver->getMeshUpdateRequest()) {
         solver->zeroTimeStepSizes(fineGridCell.getCellDescriptionsIndex(),element);
         solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);
+
+        solver->setInitialConditions(
+            fineGridCell.getCellDescriptionsIndex(),
+            element,
+            fineGridVertices,
+            fineGridVerticesEnumerator);
+
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
+                  fineGridCell.getCellDescriptionsIndex(),element);
+        }
       }
 
       solver->prepareNextNeighbourMerging(

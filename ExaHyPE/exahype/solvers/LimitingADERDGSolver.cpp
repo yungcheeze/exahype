@@ -337,6 +337,18 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinementBasedOnLimiterStat
   return false;
 }
 
+void exahype::solvers::LimitingADERDGSolver::updateLimiterStatusDuringLimiterStatusSpreading(
+    const int cellDescriptionsIndex, const int solverElement) const {
+  SolverPatch& solverPatch =
+      _solver->getCellDescription(cellDescriptionsIndex,solverElement);
+  if (solverPatch.getLimiterStatus()>=static_cast<int>(SolverPatch::LimiterStatus::Troubled)) {
+    ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
+  }
+  updateLimiterStatus(cellDescriptionsIndex,solverElement);
+  deallocateLimiterPatchOnHelperCell(cellDescriptionsIndex,solverElement);
+  ensureRequiredLimiterPatchIsAllocated(cellDescriptionsIndex,solverElement);
+}
+
 bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
@@ -365,9 +377,8 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
             fineGridVerticesEnumerator,fineGridVertices);
     if (multiscalelinkedcell::adjacencyInformationIsConsistent(
         indicesAdjacentToFineGridVertices)) {
-      updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
-      deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
-      ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
+      updateLimiterStatusDuringLimiterStatusSpreading(
+          fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
 
       vetoErasingChildrenRequestBasedOnLimiterStatus(
           fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
@@ -767,7 +778,7 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfterSetI
     const int cellDescriptionsIndex,
     const int solverElement) {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
-
+  ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
   if (
       solverPatch.getType()==SolverPatch::Type::Cell
       &&
@@ -782,6 +793,8 @@ exahype::solvers::LimitingADERDGSolver::updateLimiterStatusAndMinAndMaxAfterSetI
     return determineLimiterStatusAfterSolutionUpdate(
             solverPatch,
             !evaluatePhysicalAdmissibilityCriterion(solverPatch)); // only evaluate PAD here
+  } else {
+    return updateLimiterStatus(cellDescriptionsIndex,solverElement);
   }
 
   return LimiterDomainChange::Regular;
@@ -967,8 +980,8 @@ void exahype::solvers::LimitingADERDGSolver::determineSolverMinAndMax(SolverPatc
     }
 
     for (int i=0; i<DIMENSIONS_TIMES_TWO*numberOfObservables; ++i) {
-      assertion(*(solutionMin+i)<std::numeric_limits<double>::max());
-      assertion(*(solutionMax+i)>-std::numeric_limits<double>::max());
+      assertion1(*(solutionMin+i)<std::numeric_limits<double>::max(),i);
+      assertion1(*(solutionMax+i)>-std::numeric_limits<double>::max(),i);
     } // Dead code elimination will get rid of this loop
   }
 }
@@ -1367,8 +1380,7 @@ exahype::solvers::LimiterDomainChange exahype::solvers::LimitingADERDGSolver::up
     const int cellDescriptionsIndex,const int solverElement) const {
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,solverElement);
   solverPatch.setLimiterStatus(ADERDGSolver::determineLimiterStatus(solverPatch));
-//  ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
-//  ADERDGSolver::resetFacewiseLimiterStatus(solverPatch);
+  ADERDGSolver::resetFacewiseLimiterStatus(solverPatch);
 
   if (
       solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()

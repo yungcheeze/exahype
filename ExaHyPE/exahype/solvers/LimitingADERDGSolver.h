@@ -638,6 +638,16 @@ public:
         const bool initialGrid,
         const int solverNumber);
 
+  /**
+   * TODO(Dominic): add more docu
+   *
+   * \note We overwrite the facewise limiter status values with the new value
+   * in order to use the updateLimiterStatusAfterSetInitialConditions function
+   * afterwards which calls determineLimiterStatus(...) again.
+   */
+  void updateLimiterStatusDuringLimiterStatusSpreading(
+      const int cellDescriptionsIndex, const int solverElement) const;
+
   bool markForRefinement(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
@@ -796,6 +806,10 @@ public:
    * Similar to ::determineLimiterStatusAfterSolutionUpdate(const int,const int)
    * Does only evaluate the physical admissibility detection (PAD) but not the
    * discrete maximum principle (DMP).
+   *
+   * \note We overwrite the facewise limiter status values with the new value
+   * in order to reuse the determineLimiterStatusAfterSolutionUpdate function
+   * which calls determineLimiterStatus(...) again.
    */
   exahype::solvers::LimiterDomainChange updateLimiterStatusAndMinAndMaxAfterSetInitialConditions(
       const int cellDescriptionsIndex,

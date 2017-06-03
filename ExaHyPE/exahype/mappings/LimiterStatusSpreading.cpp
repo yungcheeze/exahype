@@ -136,6 +136,8 @@ void exahype::mappings::LimiterStatusSpreading::endIteration(exahype::State& sol
       auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDG->setNextMeshUpdateRequest();
       limitingADERDG->setNextLimiterDomainChange();
+      limitingADERDG->updateNextAttainedStableState(!limitingADERDG->getMeshUpdateRequest());
+      limitingADERDG->setNextAttainedStableState();
     }
   }
 
@@ -185,11 +187,8 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
           !=exahype::solvers::LimiterDomainChange::Regular
       ) {
         auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
-        limitingADERDG->updateLimiterStatus(fineGridCell.getCellDescriptionsIndex(),element);
-        limitingADERDG->deallocateLimiterPatchOnHelperCell(fineGridCell.getCellDescriptionsIndex(),element);
-        limitingADERDG->ensureRequiredLimiterPatchIsAllocated(fineGridCell.getCellDescriptionsIndex(),element);
-
+        limitingADERDG->updateLimiterStatusDuringLimiterStatusSpreading(
+            fineGridCell.getCellDescriptionsIndex(),element);
         // TODO(Dominic): Enable multithreading for this; have value per solver; reduce in endIteration
         bool meshUpdateRequest =
             limitingADERDG->
