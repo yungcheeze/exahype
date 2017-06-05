@@ -839,6 +839,7 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   }
   if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
     assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
     logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
   }
 
