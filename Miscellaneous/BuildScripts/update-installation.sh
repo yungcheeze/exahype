@@ -57,7 +57,7 @@ for cmd in "$@"; do
 		"clean-toolkit") # Workaround for the toolkit build
 			info "Creating a clean toolkit"
 			cd Toolkit
-			rm -r src/eu/exahype/node*
+			rm -rf src/eu/exahype/node*
 			exec ./build.sh
 			;;
 		"toolkit-jar") # Just rebuild jar with new template files in toolkit
