@@ -22,12 +22,19 @@ namespace mpibalancing {
 /**
  * SFC Diffusion Node Pool Strategy
  *
+ * <h2> User pitfalls </h2>
+ * The strategy tries to book solely the primary MPI nodes. Therefore,
+ * statements alike
+
+  assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
+
+ * are doomed to fail.
  *
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
 class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePoolStrategy {
-  protected:
+  private:
     /**
      * Copy from FCFS but enriched by counter how many rank have already
      * requested an update.
@@ -65,7 +72,7 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
         /**
          * Construct one entry. By default this entry corresponds to an idle worker.
          */
-        NodePoolListEntry( const std::string& name );
+        NodePoolListEntry( const std::string& name, bool isPrimaryNode );
 
         /**
          * I need a default constructor for some resorting, but it is not
@@ -82,9 +89,11 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
         void activate();
 
         /**
-         * The local rank is set to 0 and the state is switched to idle.
+         * The state is switched to idle.
          */
         void deActivate();
+
+        bool isRegistered() const;
 
         /**
          * @return Rank of process.
@@ -105,7 +114,29 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
          * Return string representation.
          */
         std::string toString() const;
+
+        bool isIdlePrimaryNode() const;
+        bool isIdleSecondaryNode() const;
     };
+
+    enum class NodePoolState {
+      /**
+       * Standard mode. As soon as we run out of primary nodes, we switch it to
+       * DeployingAlsoSecondaryNodes.
+       */
+      DeployingIdlePrimaryNodes,
+      /**
+       * If this flag is set, we also deploy secondary nodes. However, as soon
+       * as our request queue is empty, i.e. as soon as we have answered one
+       * batch of requests, we switch into NoNodesLeft.
+       */
+      DeployingAlsoSecondaryNodes,
+      /**
+       * We do not hand out any nodes anymore.
+       */
+      NoNodesLeft
+    };
+
 
     /**
      * Is ordered along ranks.
@@ -135,9 +166,27 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
 
     double        _waitTimeOut;
 
-    const int     _ranksPerNode;
+    /**
+     * is not used at the moment, but should be used in first mode.
+     */
+    const int     _mpiRanksPerNode;
+
+    const int     _primaryMPIRanksPerNode;
+
+    NodePoolState _nodePoolState;
 
     bool continueToFillRequestQueue(int queueSize) const;
+
+    int getNumberOfIdlePrimaryNodes() const;
+
+    /**
+     * Take queue and return re-sorted queue. Input and output queue contain
+     * the same elements in different ordering though.
+     */
+    RequestQueue sortRequestQueue( const RequestQueue& queue );
+
+    bool isPrimaryMPIRank(int rank) const;
+    bool isFirstOrLastPrimaryMPIRankOnANode(int rank) const;
   public:
   /**
    * Constructor
@@ -146,14 +195,25 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
    * @param waitTimeOutSec        How long shall the node wait for more
    *   messages dropping in before it starts to answer them.
    */
-    SFCDiffusionNodePoolStrategy(int mpiRanksPerNode = 1, double waitTimeOutSec = 1e-5);
+    SFCDiffusionNodePoolStrategy(int mpiRanksPerNode, int primaryMPIRanksPerNode, double waitTimeOutSec = 1e-5);
     virtual ~SFCDiffusionNodePoolStrategy();
 
     void setNodePoolTag(int tag) override;
+
+    /**
+     * Here's the magic to get the balancing right.
+     */
     tarch::parallel::messages::WorkerRequestMessage extractElementFromRequestQueue(RequestQueue& queue) override;
     void fillWorkerRequestQueue(RequestQueue& queue) override;
     void addNode(const tarch::parallel::messages::RegisterAtNodePoolMessage& node ) override;
     void removeNode( int rank ) override;
+
+    /**
+     * This routine is used by the NodePool to compare to the total number of
+     * ranks. The calling operation therefrom derives whether all nodes have
+     * successfully registered. So we may not only return the number of primary
+     * ranks, but we have to return the total number of ranks.
+     */
     int getNumberOfIdleNodes() const override;
     void setNodeIdle( int rank ) override;
     int reserveNode(int forMaster) override;
@@ -163,7 +223,6 @@ class mpibalancing::SFCDiffusionNodePoolStrategy: public tarch::parallel::NodePo
     int getNumberOfRegisteredNodes() const override;
     std::string toString() const override;
     bool hasIdleNode(int forMaster) const override;
-    int removeNextIdleNode() override;
 };
 
 #endif

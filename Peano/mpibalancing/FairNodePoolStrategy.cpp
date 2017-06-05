@@ -167,32 +167,6 @@ bool mpibalancing::FairNodePoolStrategy::hasIdleNode(int forMaster) const {
 }
 
 
-int mpibalancing::FairNodePoolStrategy::removeNextIdleNode() {
-  assertion1( !_nodes.empty(), _nodes.size() );
-  assertion4(
-    FairNodePoolStrategy::hasIdleNode(NodePoolStrategy::AnyMaster), _nodes.size(),
-    _nodes.front().toString(), _nodes.back().toString(), toString()
-  );
-
-
-  int result = -1;
-
-  if (_nodes.back().isIdle()) {
-    result = _nodes.back().getRank();
-    _nodes.pop_back();
-  }
-  else
-  if (_nodes.front().isIdle()) {
-    result = _nodes.front().getRank();
-    _nodes.pop_front();
-  }
-
-  _nodes.sort();
-
-  return result;
-}
-
-
 int mpibalancing::FairNodePoolStrategy::getNumberOfIdleNodes() const {
   int result = 0;
   NodeContainer::const_iterator p = _nodes.begin();
