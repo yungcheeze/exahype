@@ -445,8 +445,18 @@ int exahype::runners::Runner::run() {
   if ( _parser.isValid() ) {
     exahype::repositories::Repository* repository = createRepository();
     initSolvers(_domainOffset,_domainSize);
-    exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
-    exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
+    if (_parser.getFuseAlgorithmicSteps()) {
+      exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
+      exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
+    } else {
+      assertionMsg(false,
+          "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+          "You might need to add the 'optimisation' environment.");
+      logError("run()",
+                "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+                "You might need to add the 'optimisation' environment.");
+      abort();
+    }
 
     // must be after repository creation
     initDistributedMemoryConfiguration();
