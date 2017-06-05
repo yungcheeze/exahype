@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <limits>
+#include <map>
 
 
 tarch::logging::Log mpibalancing::SFCDiffusionNodePoolStrategy::_log( "mpibalancing::SFCDiffusionNodePoolStrategy" );
@@ -81,6 +82,7 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
   assertion( _nodePoolState == NodePoolState::DeployingAlsoSecondaryNodes );
   RequestQueue result;
 
+  #ifdef Parallel
   // Compute priorities of the nodes which equals the total number of
   // requests issued through all ranks of a node.
   std::map<std::string, int>  nodeToPriorityMap;
@@ -141,6 +143,8 @@ mpibalancing::SFCDiffusionNodePoolStrategy::RequestQueue mpibalancing::SFCDiffus
       }
     }
   }
+
+  #endif
 
   assertionEquals( result.size(), queue.size() );
   return result;
