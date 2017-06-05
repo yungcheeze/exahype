@@ -143,11 +143,11 @@ void exahype::mappings::SolutionUpdate::enterCell(
               fineGridVerticesEnumerator);
 
           // The mapping might be also used in GlobalRecomputation branch
-          if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
-            if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
-              auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
-
-              // !!! limiter status must be updated before refinement crit.
+          if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+            auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
+            switch (_localState.getAlgorithmSection()) {
+            case exahype::records::State::AlgorithmSection::TimeStepping: {
+              // !!! limiter status must be updated before refinement crit is evaluated
               exahype::solvers::LimiterDomainChange limiterDomainChamge =
                   limitingADERDGSolver->
                   updateLimiterStatusAndMinAndMaxAfterSolutionUpdate(
@@ -157,11 +157,24 @@ void exahype::mappings::SolutionUpdate::enterCell(
                       fineGridCell.getCellDescriptionsIndex(),element);
               _solverFlags._limiterDomainChange[i] =
                   std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
-              assertion(
-                  _solverFlags._limiterDomainChange[i]
-                  !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
-                  _solverFlags._meshUpdateRequest[i]);
-            } else {
+              assertion(_solverFlags._limiterDomainChange[i]
+                        !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+                        _solverFlags._meshUpdateRequest[i]);
+            } break;
+            case exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend: {
+              limitingADERDGSolver->determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+            } break;
+            case exahype::records::State::AlgorithmSection::LocalRecomputationAllSend:
+            case exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation:
+            case exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation:
+            case exahype::records::State::AlgorithmSection::MeshRefinementAllSend:
+            case exahype::records::State::AlgorithmSection::MeshRefinement:
+            case exahype::records::State::AlgorithmSection::PredictionRerunAllSend: {
+              // do nothing
+            } break;
+            }
+          } else {
+            if (_localState.getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping) {
               _solverFlags._meshUpdateRequest[i] |=
                   solver->evaluateRefinementCriterionAfterSolutionUpdate(
                       fineGridCell.getCellDescriptionsIndex(),element);
