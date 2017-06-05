@@ -513,7 +513,8 @@ bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& rep
   bool gridUpdate = false;
 
   int gridSetupIterations = 0;
-  repository.switchToMeshRefinementAndPlotGrid();
+//  repository.switchToMeshRefinementAndPlotGrid();
+  repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
           || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
@@ -831,8 +832,11 @@ void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories
   repository.switchToNeighbourDataMerging();
   repository.iterate();
 
+  // TODO(Dominic): Continue to work here
+
   // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
-  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LimiterStatusSpreading);
     logInfo("updateMeshFusedTimeStepping(...)","pre-spreading of limiter status");
     repository.switchToLimiterStatusSpreading();
     repository.iterate(5);
