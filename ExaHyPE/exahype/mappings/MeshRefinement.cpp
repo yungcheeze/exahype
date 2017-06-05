@@ -366,15 +366,13 @@ void exahype::mappings::MeshRefinement::leaveCell(
               coarseGridVerticesEnumerator,
               fineGridPositionOfCell,
               solverNumber);
-    }
 
-    const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
-    if (element!=exahype::solvers::Solver::NotFound) {
       bool isStable = solver->attainedStableState(
           fineGridCell,
           fineGridVertices,
           fineGridVerticesEnumerator,
           solverNumber);
+
       solver->updateNextAttainedStableState(isStable);
     }
   }

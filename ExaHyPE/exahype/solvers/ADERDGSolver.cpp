@@ -1466,8 +1466,6 @@ bool exahype::solvers::ADERDGSolver::attainedStableState(
         exahype::Vertex* const fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
         const int solverNumber) const {
-  assertion(Heap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()));
-
   const int element = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   if (element!=exahype::solvers::Solver::NotFound) {
     CellDescription& cellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),element);
