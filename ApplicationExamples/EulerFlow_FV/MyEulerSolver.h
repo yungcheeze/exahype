@@ -49,8 +49,6 @@ class Euler::MyEulerSolver : public Euler::AbstractMyEulerSolver {
      * @see FiniteVolumesSolver
      */    
     bool useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
-    virtual bool useNonConservativeProduct() const override {return true;}
-    virtual bool useSource()                 const override {return true;}
     
     /**
      * @see FiniteVolumesSolver

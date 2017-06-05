@@ -103,6 +103,9 @@ case $CMD in
 		set -e
 		for p in 2 3 4 5 6 6 7 8 9; do subreq compile-poly $APPNAME $p; done
 		;;	
+	"batch-compile") # build-compile with batch parameter support.
+		exec $SCRIPTDIR/batch-compile.sh $@
+		;;
 	"make") # compile without invoking the toolkit
 		cdapp
 		export SKIP_TOOLKIT="Yes"

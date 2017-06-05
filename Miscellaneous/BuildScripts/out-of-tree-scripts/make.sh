@@ -8,6 +8,7 @@ source "oot.env"
 
 export SKIP_TOOLKIT="${SKIP_TOOLKIT:=No}"
 export CLEAN="${CLEAN:=Clean}"
+export SPECFILE="$oot_base_specfile" # assuming the specfile at $oot_codedir/$oot_appdir
 
 ( cd $oot_codedir/$oot_appdir && time $oot_compile; )
 
