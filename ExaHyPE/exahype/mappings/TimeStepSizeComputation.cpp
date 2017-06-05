@@ -232,7 +232,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         reconstructStandardTimeSteppingData(solver);
       }
 
-      logInfo("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
+      logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
   }
 

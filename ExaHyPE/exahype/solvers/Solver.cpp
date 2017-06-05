@@ -585,7 +585,7 @@ void exahype::solvers::Solver::sendMeshUpdateFlagsToMaster(
   assertion1(meshRefinementFlags.size()==2,meshRefinementFlags.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToMaster(...)","sending mesh update flags: " <<
+    logDebug("sendDataToMaster(...)","sending mesh update flags: " <<
              "data[0]=" << meshRefinementFlags[0] <<
              ",data[1]=" << meshRefinementFlags[1]);
   }
@@ -617,7 +617,7 @@ void exahype::solvers::Solver::mergeWithWorkerMeshUpdateFlags(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithWorkerData(...)","received mesh update flags: " <<
+    logDebug("mergeWithWorkerData(...)","received mesh update flags: " <<
              "data[0]=" << messageFromWorker[0] <<
              ",data[1]=" << messageFromWorker[1]);
   }

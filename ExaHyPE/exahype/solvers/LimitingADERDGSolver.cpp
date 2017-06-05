@@ -1899,7 +1899,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourData(
     double**                                     tempStateSizedSquareMatrices,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  logInfo("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
+  logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
           fromRank << " at vertex x=" << x << ", level=" << level <<
           ", source=" << src << ", destination=" << dest);
 
@@ -1929,7 +1929,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
     const int                                    level) const {
   if (level==getMaximumAdaptiveMeshLevel()) {
     SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-    logInfo("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
+    logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
         ", source=" << src << ", destination=" << dest << ",limiterStatus=" << solverPatch.getLimiterStatus());
     switch (solverPatch.getLimiterStatus()) {
@@ -1957,7 +1957,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithNeighbourDataBasedOnLimite
     } break;
     }
   } else {
-    logInfo("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
+    logDebug("mergeWithNeighbourDataBasedOnLimiterStatus(...)", "receive data for solver " << _identifier << " from rank " <<
         fromRank << " at vertex x=" << x << ", level=" << level <<
         ", source=" << src << ", destination=" << dest);
 
@@ -2019,7 +2019,7 @@ void exahype::solvers::LimitingADERDGSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  logInfo("dropNeighbourData(...)", "receive data for solver " << _identifier << " from rank " <<
+  logDebug("dropNeighbourData(...)", "receive data for solver " << _identifier << " from rank " <<
       fromRank << " at vertex x=" << x << ", level=" << level <<
       ", source=" << src << ", destination=" << dest);
 
@@ -2164,7 +2164,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToMaster(
   assertion1(messageForMaster.size()==5,messageForMaster.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToMaster(...)","Sending time step data: " <<
+    logDebug("sendDataToMaster(...)","Sending time step data: " <<
         "data[0]=" << messageForMaster[0] <<
         ",data[1]=" << messageForMaster[1] <<
         ",data[2]=" << messageForMaster[2] <<
@@ -2197,7 +2197,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithWorkerData(...)","Received data from worker:" <<
+    logDebug("mergeWithWorkerData(...)","Received data from worker:" <<
              " messageFromWorker[0]=" << messageFromWorker[0] <<
              " messageFromWorker[1]=" << messageFromWorker[1] <<
              " messageFromWorker[2]=" << messageFromWorker[2] <<
@@ -2273,7 +2273,7 @@ void exahype::solvers::LimitingADERDGSolver::sendDataToWorker(
   assertion1(messageForWorker.size()==9,messageForWorker.size());
   if (tarch::parallel::Node::getInstance().getRank()!=
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("sendDataToWorker(...)","sending data to worker: " <<
+    logDebug("sendDataToWorker(...)","sending data to worker: " <<
              "data[0]=" << messageForWorker[0] <<
              ",data[1]=" << messageForWorker[1] <<
              ",data[2]=" << messageForWorker[2] <<
@@ -2310,7 +2310,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
 
   if (tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-    logInfo("mergeWithWorkerData(...)","received data from master:" <<
+    logDebug("mergeWithWorkerData(...)","received data from master:" <<
              " messageFromMaster[0]=" << messageFromMaster[0] <<
              " messageFromMaster[1]=" << messageFromMaster[1] <<
              " messageFromMaster[2]=" << messageFromMaster[2] <<

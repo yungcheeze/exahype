@@ -1270,10 +1270,6 @@ void exahype::solvers::ADERDGSolver::addNewCell(
               coarseGridCellDescriptionsIndex,
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getVertexPosition());
-  if (fineGridCell.getCellDescriptionsIndex()==740) {
-    logInfo("addNewCell(...)","create 740 at level "<<fineGridVerticesEnumerator.getLevel());
-  }
-
   const int fineGridCellElement =
       tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
   CellDescription& fineGridCellDescription =
@@ -1319,16 +1315,6 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
           exahype::Cell::determineInsideAndOutsideFaces(
               fineGridCellDescription.getOffset(),fineGridCellDescription.getSize(),
               _domainOffset,_domainSize));
-
-      if (fineGridCell.getCellDescriptionsIndex()==888) {
-        logInfo("addNewDescendantIfAugmentingRequested(...)","created 888 at level "<<fineGridVerticesEnumerator.getLevel());
-      }
-      if (fineGridCell.getCellDescriptionsIndex()==1062) {
-        logInfo("addNewDescendantIfAugmentingRequested(...)","created 1062 at level "<<fineGridVerticesEnumerator.getLevel());
-      }
-      if (fineGridCell.getCellDescriptionsIndex()==740) {
-        logInfo("addNewDescendantIfAugmentingRequested(...)","created 740 at level "<<fineGridVerticesEnumerator.getLevel());
-      }
 
       coarseGridCellDescription.setRefinementEvent(CellDescription::Augmenting);
     } else if (fineGridElement!=exahype::solvers::Solver::NotFound &&
@@ -1610,16 +1596,6 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
     CellDescription& fineGridCellDescription = getCellDescription(
           cellDescriptionsIndex,fineGridCellElement);
 
-    if (cellDescriptionsIndex==888) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ErasingChildren] delete 888 at level "<<fineGridCellDescription.getLevel());
-    }
-    if (cellDescriptionsIndex==1062) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ErasingChildren] delete 1062 at level "<<fineGridCellDescription.getLevel());
-    }
-    if (cellDescriptionsIndex==740) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ErasingChildren] delete 740 at level "<<fineGridCellDescription.getLevel());
-    }
-
     // restrict values.
     restrictVolumeData(
         coarseGridCellDescription,
@@ -1643,16 +1619,6 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
     CellDescription& fineGridCellDescription = getCellDescription(
         cellDescriptionsIndex,fineGridCellElement);
 
-    if (cellDescriptionsIndex==888) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ChangeChildrenToDescendants] create 888 at level "<<fineGridCellDescription.getLevel());
-    }
-    if (cellDescriptionsIndex==1062) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ChangeChildrenToDescendants] create 1062 at level "<<fineGridCellDescription.getLevel());
-    }
-    if (cellDescriptionsIndex==740) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[ChangeChildrenToDescendants] create 740 at level "<<fineGridCellDescription.getLevel());
-    }
-
     // restrict values.
     restrictVolumeData(
         coarseGridCellDescription,
@@ -1670,16 +1636,6 @@ bool exahype::solvers::ADERDGSolver::eraseCellDescriptionIfNecessary(
 
     return false;
   } else if (coarseGridCellDescription.getRefinementEvent()==CellDescription::DeaugmentingChildren) {
-    if (cellDescriptionsIndex==888) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[DeaugmentingChildren] delete 888");
-    }
-    if (cellDescriptionsIndex==1062) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[DeaugmentingChildren] delete 1062");
-    }
-    if (cellDescriptionsIndex==740) {
-      logInfo("eraseCellDescriptionIfNecessary(...)","[DeaugmentingChildren] delete 740");
-    }
-
     CellDescription& fineGridCellDescription = getCellDescription(
           cellDescriptionsIndex,fineGridCellElement);
 
@@ -2999,7 +2955,7 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
       }
     }
 
-    logInfo("sendCellDescriptions(...)","send "<<
+    logDebug("sendCellDescriptions(...)","send "<<
             Heap::getInstance().getData(cellDescriptionsIndex).size()<<
             " cell descriptions to rank "<<toRank<<
             " at (center="<< x.toString() <<
@@ -3017,7 +2973,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(
     const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  logInfo("sendEmptyCellDescriptions(...)","send empty message to " <<
+  logDebug("sendEmptyCellDescriptions(...)","send empty message to " <<
           "rank "<<toRank <<
           " at (center="<< x.toString() <<
           ",level="<< level << ")");
@@ -3041,7 +2997,7 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
   Heap::getInstance().receiveData(
       receivedCellDescriptionsIndex,fromRank,x,level,messageType);
 
-  logInfo("mergeCellDescriptionsWithRemoteData(...)","received " <<
+  logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
           Heap::getInstance().getData(receivedCellDescriptionsIndex).size() <<
           " cell descriptions for cell ("
           "centre="<< x.toString() <<
@@ -3061,7 +3017,7 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
     if (!localCell.isInitialised()) {
       localCell.setupMetaData();
 
-      logInfo("mergeCellDescriptionsWithRemoteData(...)","setup metadata for " <<
+      logDebug("mergeCellDescriptionsWithRemoteData(...)","setup metadata for " <<
                     "cell ("
                     "centre="<< x.toString() <<
                     ",level="<< level <<
@@ -3076,7 +3032,7 @@ void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
 
 //    assertion(Heap::getInstance().getData(localCell.getCellDescriptionsIndex()).empty());
     for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
-      logInfo("mergeCellDescriptionsWithRemoteData(...)","received " <<
+      logDebug("mergeCellDescriptionsWithRemoteData(...)","received " <<
               "cell description for cell ("
               "centre="<< x.toString() <<
               ",level="<< level <<

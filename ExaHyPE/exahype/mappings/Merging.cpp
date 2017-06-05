@@ -115,7 +115,7 @@ void exahype::mappings::Merging::beginIteration(
 
   _localState = solverState;
 
-  logInfo("beginIteration(State)",
+  logDebug("beginIteration(State)",
       "MergeMode="<<exahype::records::State::toString(_localState.getMergeMode())<<
       ", SendMode="<<exahype::records::State::toString(_localState.getSendMode())<<
       ", AlgorithmSection="<<exahype::records::State::toString(_localState.getAlgorithmSection()));
@@ -354,7 +354,7 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
             receivedMetadata.begin()+offset,
             receivedMetadata.begin()+offset+exahype::NeighbourCommunicationMetadataPerSolver);
 
-        logInfo(
+        logDebug(
             "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
             fromRank << " at vertex x=" << x << ", level=" << level <<
             ", src=" << src << ", dest=" << dest);
