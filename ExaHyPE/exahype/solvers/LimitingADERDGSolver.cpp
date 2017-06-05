@@ -20,6 +20,21 @@ namespace solvers {
 
 tarch::logging::Log exahype::solvers::LimitingADERDGSolver::_log("exahype::solvers::LimitingADERDGSolver");
 
+bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        &&
+        (static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        !=exahype::solvers::LimiterDomainChange::Regular
+        ||
+        solver->getMeshUpdateRequest())
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
@@ -155,6 +170,9 @@ bool exahype::solvers::LimitingADERDGSolver::isSending(
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isSending = true;
       break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isSending = false; // value doesn't actually matter
+      break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending |= getMeshUpdateRequest();
       break;
@@ -190,6 +208,11 @@ bool exahype::solvers::LimitingADERDGSolver::isComputing(
   switch (section) {
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isComputing = true;
+      break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isComputing |= getMeshUpdateRequest();
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isComputing = getMeshUpdateRequest();
