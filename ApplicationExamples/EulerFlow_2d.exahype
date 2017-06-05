@@ -27,15 +27,15 @@ exahype-project  Euler
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 3
-    width                    = 1.0, 1.0, 1.0
-    offset                   = 0.0, 0.0, 0.0
+    dimension const          = 2
+    width                    = 1.0, 1.0
+    offset                   = 0.0, 0.0
     end-time                 = 1.2
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 2
+    cores                    = 8
     properties-file          = sharedmemory.properties
   end shared-memory
 
@@ -61,16 +61,16 @@ exahype-project  Euler
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size = 0.05
-    maximum-mesh-depth = 0
-    time-stepping     = globalfixed
+    maximum-mesh-size  = 0.05
+    maximum-mesh-depth = 2
+    time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
 
     plot vtu::Cartesian::cells::ascii ConservedQuantitiesWriter
       variables const = 5
       time            = 0.0
-      repeat          = 0.05
+      repeat          = 0.1e-1
       output          = ./conserved
     end plot
 

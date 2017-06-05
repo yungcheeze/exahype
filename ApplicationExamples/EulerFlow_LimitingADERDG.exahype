@@ -35,17 +35,18 @@ exahype-project  Euler
   
   shared-memory
     identifier               = dummy
-    cores                    = 1
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
   
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:4}
+    configure                = {hotspot,fair,ranks_per_node:10}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
   
+
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
@@ -57,6 +58,7 @@ exahype-project  Euler
     spawn-double-compression-as-background-thread = off
   end optimisation
 
+
   solver Limiting-ADER-DG LimitingADERDG
     variables const          = rho:1,j:3,E:1
     order const              = 3
@@ -65,27 +67,32 @@ exahype-project  Euler
     time-stepping            = global
     kernel const             = generic::fluxes::nonlinear
     language const           = C
-    limiter-kernel const     = generic::musclhancock
+    limiter-kernel const     = generic::godunov
     limiter-language const   = C
     dmp-observables          = 2
-    dmp-relaxation-parameter = 1e-7
+    dmp-relaxation-parameter = 1e-4
     dmp-difference-scaling   = 1e-3
-    steps-till-cured         = 20
+    steps-till-cured         = 2
+
+    plot vtu::Cartesian::vertices::ascii VTUPlotter
+      variables const = 5
+      time      = 0.0
+      repeat    = 0.1e-4
+      output    = ./dg
+    end plot
 
     plot vtk::Cartesian::vertices::limited::ascii Plotter
       variables const = 5
-      time      = 1.12
+      time      = 0.0
       repeat    = 0.1e-4
-      output    = ./limitingaderg-dg
-      select    = x:0.0,y:0.0
+      output    = ./dg
     end plot
     
     plot vtk::Cartesian::subcells::limited::ascii SubcellsPlotter
       variables const = 5
-      time      = 1.12
+      time      = 0.0
       repeat    = 0.1e-4
-      output    = ./limitingaderg-fv
-      select    = x:0.0,y:0.0
+      output    = ./fv
     end plot
     
   end solver

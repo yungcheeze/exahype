@@ -59,7 +59,7 @@ exahype-project DIM
     variables const                = sigma:6,vel:3,lambda:1,mu:1,rho:1,alpha:1,xi:1
     order const                    = 3
     maximum-mesh-size              = 0.4
-    maximum-mesh-depth             = 2
+    maximum-mesh-depth             = 3
     time-stepping                  = global
     kernel const                   = generic::fluxes::nonlinear
     language const                 = C
@@ -70,10 +70,10 @@ exahype-project DIM
     dmp-difference-scaling         = 1e-3 
     steps-till-cured               = 0
 
-    plot vtk::Cartesian::vertices::limited::binary PrimitiveWriter
+    plot vtu::Cartesian::vertices::ascii PrimitiveWriter
       variables const = 14
       time      = 0.0
-      repeat    = 1e-5
+      repeat    = 1e-2
       output    = ./vtk-output/primitives
     end plot
   end solver
