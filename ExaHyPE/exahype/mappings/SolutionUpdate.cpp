@@ -155,12 +155,12 @@ void exahype::mappings::SolutionUpdate::enterCell(
               _solverFlags._meshUpdateRequest[i] |=
                   limitingADERDGSolver->evaluateRefinementCriterionAfterSolutionUpdate(
                       fineGridCell.getCellDescriptionsIndex(),element);
-
               _solverFlags._limiterDomainChange[i] =
                   std::max( _solverFlags._limiterDomainChange[i], limiterDomainChamge );
-              assertion(!_solverFlags._meshUpdateRequest[i] ||
-                  _solverFlags._limiterDomainChange[i]!=
-                      exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate);
+              assertion(
+                  _solverFlags._limiterDomainChange[i]
+                  !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+                  _solverFlags._meshUpdateRequest[i]);
             } else {
               _solverFlags._meshUpdateRequest[i] |=
                   solver->evaluateRefinementCriterionAfterSolutionUpdate(

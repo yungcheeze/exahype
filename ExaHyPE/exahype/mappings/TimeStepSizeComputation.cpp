@@ -225,6 +225,10 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         solver->setNextAttainedStableState();
         if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
           static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->setNextLimiterDomainChange();
+          assertion(
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+              !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+              solver->getMeshUpdateRequest());
         }
       }
 

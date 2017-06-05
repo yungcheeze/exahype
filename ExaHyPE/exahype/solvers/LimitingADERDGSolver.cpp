@@ -532,7 +532,7 @@ exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolution
             cellDescriptionsIndex,element);
   }
 
-  return false;
+  return refinementRequested;
 }
 
 
@@ -811,6 +811,7 @@ exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolutionUpdat
     switch (solverPatch.getLimiterStatus()) {
     case SolverPatch::LimiterStatus::Troubled:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled1:
+      limiterDomainChange = LimiterDomainChange::Regular;
       solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
       ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
       break;
@@ -818,13 +819,13 @@ exahype::solvers::LimitingADERDGSolver::determineLimiterStatusAfterSolutionUpdat
     case SolverPatch::LimiterStatus::NeighbourOfTroubled3:
     case SolverPatch::LimiterStatus::NeighbourOfTroubled4:
     case SolverPatch::LimiterStatus::Ok:
-      limiterDomainChange = LimiterDomainChange::IrregularRequiringMeshUpdate;
-      if (solverPatch.getLevel()==getMaximumAdaptiveMeshLevel()) {
-        limiterDomainChange = LimiterDomainChange::Irregular;
-      }
+      limiterDomainChange = LimiterDomainChange::Irregular;
       solverPatch.setLimiterStatus(SolverPatch::LimiterStatus::Troubled);
       ADERDGSolver::overwriteFacewiseLimiterStatus(solverPatch);
       break;
+    }
+    if (solverPatch.getLevel()<getMaximumAdaptiveMeshLevel()) {
+      limiterDomainChange = LimiterDomainChange::IrregularRequiringMeshUpdate;
     }
   } else {
     switch (solverPatch.getPreviousLimiterStatus()) {
