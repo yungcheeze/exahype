@@ -124,23 +124,43 @@ exahype::solvers::Solver::RefinementControl GRMHD::GRMHDSolver_ADERDG::refinemen
 }
 
 // only evaluated in Limiting context
-bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const {
+void GRMHD::GRMHDSolver_ADERDG::mapDiscreteMaximumPrincipleObservables(
+    double* observables,const int numberOfObservables,
+    const double* const Q) const {
+  assertion(numberOfObservables==2);
+
+  observables[0] = Q[0]; // rho
+  observables[1] = Q[4]; // dens
+}
+
+
+bool GRMHD::GRMHDSolver_ADERDG::isPhysicallyAdmissible(
+  const double* const solution,
+  const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+  const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+  const double t, const double dt) const {
+
+  // geometric criterion:
+  //  if ((center[0]-0.5)*(center[0]-0.5)+(center[1]-0.5)*(center[1]-0.5)<0.25*dx[0]*dx[0]) return false;
 
   // Static criterium for startup: When the density makes a large jump,
   // ie. at the star crust
   //if ( QMin[0] != 0.0 && QMax[0]/QMin[0] > 1e3 ) return false;
 
-  if (QMin[0] < 0.0) return false;
-  if (QMin[4] < 0.0) return false;
+  if (observablesMin[0] <= 0.0) return false;
+  if (observablesMin[1] < 0.0) return false;
+  
+  // what about this kind of check?
+  /*
 
   for (int i=0; i<nVar; ++i) {
     if (!std::isfinite(QMin[i])) return false;
     if (!std::isfinite(QMax[i])) return false;
   }
-
+  
+  */
   return true;
 }
-
 
 void __attribute__((optimize("O0"))) GRMHD::GRMHDSolver_ADERDG::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
   pdencp_(BgradQ, Q, gradQ);
