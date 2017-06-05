@@ -19,7 +19,7 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "exahype/mappings/MeshRefinement.h"
 #include "exahype/mappings/LimiterStatusSpreading.h"
@@ -149,23 +149,33 @@ void exahype::mappings::FinaliseMeshRefinement::enterCell(
       auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
       const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
           fineGridCell.getCellDescriptionsIndex(),solverNumber);
-      if (element!=exahype::solvers::Solver::NotFound) {
-        if (solver->getMeshUpdateRequest()) {
-          solver->finaliseStateUpdates(
-                      fineGridCell,
-                      fineGridVertices,
-                      fineGridVerticesEnumerator,
-                      coarseGridCell,
-                      coarseGridVertices,
-                      coarseGridVerticesEnumerator,
-                      fineGridPositionOfCell,
-                      solverNumber);
-        }
+      if (solver->getMeshUpdateRequest()) {
+        solver->finaliseStateUpdates(
+            fineGridCell,
+            fineGridVertices,
+            fineGridVerticesEnumerator,
+            coarseGridCell,
+            coarseGridVertices,
+            coarseGridVerticesEnumerator,
+            fineGridPositionOfCell,
+            solverNumber);
 
-        solver->prepareNextNeighbourMerging(
-            fineGridCell.getCellDescriptionsIndex(),element,
-            fineGridVertices,fineGridVerticesEnumerator);
+        // TODO(Dominic): Add to docu. Only determine the new min and max if
+        // and only if no recomputation was requested. Otherwise, some cells are
+        // not correctly initialised.
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+            &&
+            static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+            ==exahype::solvers::LimiterDomainChange::Regular
+        ) {
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+              determineMinAndMax(fineGridCell.getCellDescriptionsIndex(),element);
+        }
       }
+
+      solver->prepareNextNeighbourMerging(
+          fineGridCell.getCellDescriptionsIndex(),element,
+          fineGridVertices,fineGridVerticesEnumerator);
     endpfor
     grainSize.parallelSectionHasTerminated();
   }
