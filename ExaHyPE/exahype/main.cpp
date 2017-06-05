@@ -17,6 +17,13 @@
 #include "tarch/logging/LogFilterFileReader.h"
 #include "tarch/parallel/Node.h"
 
+// build information about parallelization.
+// this assumes TBB to be available.
+#if (defined(SharedTBB) || defined(SharedTBBInvade))
+#include "tarch/multicore/Core.h"
+#include "tbb/tbb_stddef.h"
+#endif
+
 #include "peano/peano.h"
 
 #include "exahype/main.h"
@@ -385,11 +392,24 @@ void exahype::version(const std::string& programname, std::ostream& out) {
 #else
   out << "MPI Support:   no\n";
 #endif
-  
-#ifdef EXAHYPE_CFL_FACTOR // issue #100
-  out << "CFL Factor:    "<< EXAHYPE_CFL_FACTOR << "\n";
+
+#ifdef SharedMemoryParallelisation // cf. tarch/multicore
+  out << "Shared Memory library:   ";
+#if (defined(SharedTBB) || defined(SharedTBBInvade))
+  out << "TBB\n";
+#elif defined(SharedOMP)
+  out << "OpenMP\n";
 #else
-  out << "CFL Factor:    Default\n";
+  out << "I don't know\n";
+#endif
+
+#else // no SharedMemoryParallelisation
+  out << "Shared Memory support:   no\n";
+#endif
+
+#if (defined(SharedTBB) || defined(SharedTBBInvade))
+  out << "TBB Compile time interface version: " << TBB_INTERFACE_VERSION  << "\n";
+  out << "TBB Runtime interface version:      " << tbb::TBB_runtime_interface_version() << "\n";
 #endif
 
   out << "\n";
