@@ -25,6 +25,10 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
 
 
+#include "tarch/plotter/griddata/blockstructured/PeanoTextPatchFileWriter.h"
+#include "tarch/plotter/griddata/blockstructured/PeanoHDF5PatchFileWriter.h"
+
+
 #include "kernels/DGBasisFunctions.h"
 
 
@@ -34,7 +38,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatAscii::get
 
 
 exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatAscii::ADERDG2CartesianVerticesPeanoFileFormatAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-  ADERDG2CartesianPeanoFileFormat(postProcessing,false) {
+  ADERDG2CartesianPeanoFileFormat(postProcessing,false,PlotterType::Text) {
 }
 
 
@@ -44,14 +48,45 @@ std::string exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatAscii::getIde
 
 
 exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatAscii::ADERDG2CartesianCellsPeanoFileFormatAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-  ADERDG2CartesianPeanoFileFormat(postProcessing,true) {
+  ADERDG2CartesianPeanoFileFormat(postProcessing,true,PlotterType::Text) {
 }
 
 
-exahype::plotters::ADERDG2CartesianPeanoFileFormat::ADERDG2CartesianPeanoFileFormat(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool plotCells):
+
+
+
+
+
+
+std::string exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatHDF5::getIdentifier() {
+  return "Peano::Cartesian::vertices::hdf5";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatHDF5::ADERDG2CartesianVerticesPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  ADERDG2CartesianPeanoFileFormat(postProcessing,false,PlotterType::HDF5) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatHDF5::getIdentifier() {
+  return "Peano::Cartesian::cells::hdf5";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatHDF5::ADERDG2CartesianCellsPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  ADERDG2CartesianPeanoFileFormat(postProcessing,true,PlotterType::HDF5) {
+}
+
+
+exahype::plotters::ADERDG2CartesianPeanoFileFormat::ADERDG2CartesianPeanoFileFormat(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  bool plotCells,
+  PlotterType type
+):
   Device(postProcessing),
   _fileCounter(-1),
   _plotCells(plotCells),
+  _plotType(type),
   _order(-1),
   _solverUnknowns(-1),
   _writtenUnknowns(-1),
@@ -105,7 +140,14 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
   assertion( _writer==nullptr );
 
   if (_writtenUnknowns>0) {
-    _writer = new tarch::plotter::griddata::blockstructured::PeanoPatchFileWriter(DIMENSIONS,_order);
+    switch (_plotType) {
+      case PlotterType::Text:
+        _writer = new tarch::plotter::griddata::blockstructured::PeanoTextPatchFileWriter(DIMENSIONS,_order);
+        break;
+      case PlotterType::HDF5:
+        _writer = new tarch::plotter::griddata::blockstructured::PeanoHDF5PatchFileWriter(DIMENSIONS,_order);
+        break;
+    }
 
     if (_plotCells) {
       _cellDataWriter          = _writer->createCellDataWriter("Q", _writtenUnknowns);

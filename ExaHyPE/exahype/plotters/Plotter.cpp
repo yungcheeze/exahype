@@ -158,6 +158,12 @@ exahype::plotters::Plotter::Plotter(
       if (icompare(_identifier, ADERDG2CartesianVerticesPeanoFileFormatAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesPeanoFileFormatAscii(postProcessing);
       }
+      if (icompare(_identifier, ADERDG2CartesianCellsPeanoFileFormatHDF5::getIdentifier())) {
+        _device = new ADERDG2CartesianCellsPeanoFileFormatHDF5(postProcessing);
+      }
+      if (icompare(_identifier, ADERDG2CartesianVerticesPeanoFileFormatHDF5::getIdentifier())) {
+        _device = new ADERDG2CartesianVerticesPeanoFileFormatHDF5(postProcessing);
+      }
 
       if (icompare(_identifier, ADERDG2CartesianVerticesVTKAscii::getIdentifier())) {
         _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
