@@ -208,17 +208,19 @@ bool mpibalancing::FairNodePoolStrategy::isRegisteredNode(int rank) const {
 
 
 bool mpibalancing::FairNodePoolStrategy::isIdleNode(int rank) const {
-  assertion1( isRegisteredNode(rank), rank );
-  for (
-    NodeContainer::const_iterator p = _nodes.begin();
-    p != _nodes.end();
-    p++
-  ) {
-    if ( p->getRank() == rank && p->isIdle() ) {
-      return true;
+  if ( isRegisteredNode(rank) ) {
+    for (
+      NodeContainer::const_iterator p = _nodes.begin();
+      p != _nodes.end();
+      p++
+    ) {
+      if ( p->getRank() == rank && p->isIdle() ) {
+        return true;
+      }
     }
+    return false;
   }
-  return false;
+  else return false;
 }
 
 
