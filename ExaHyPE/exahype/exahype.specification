@@ -80,20 +80,20 @@ adapter:
   merge-with-user-defined-mapping: PostProcessing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
 
-adapter:
-  name: MeshRefinementAndPlotGrid
-  merge-with-user-defined-mapping: PreProcessing
-  merge-with-user-defined-mapping: Merging                 // Merge Time Step data
-  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
-  merge-with-user-defined-mapping: LoadBalancing
-  merge-with-user-defined-mapping: PostProcessing
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+// adapter:
+//   name: MeshRefinementAndPlotGrid
+//   merge-with-user-defined-mapping: PreProcessing
+//   merge-with-user-defined-mapping: Merging                 // Merge Time Step data
+//   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
+//   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+//   merge-with-user-defined-mapping: LoadBalancing
+//   merge-with-user-defined-mapping: PostProcessing
+//   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
-adapter:
-  name: PlotAugmentedAMRGrid
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
-  merge-with-predefined-mapping: VTKGridVisualiser(grid)
+// adapter:
+//   name: PlotAugmentedAMRGrid
+//   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
+//   merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
 // Fused time stepping initialisation  
 adapter:
@@ -112,7 +112,7 @@ adapter:
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
+  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data
   merge-with-user-defined-mapping: PostProcessing
   
@@ -123,7 +123,7 @@ adapter:
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: FusedTimeSteppingInitialisation
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
   merge-with-user-defined-mapping: Sending // Sending does send face data and reduces time step data
   merge-with-user-defined-mapping: PostProcessing 
 
@@ -150,7 +150,7 @@ adapter:
   // needs corrector time step size
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
+  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
@@ -218,7 +218,7 @@ adapter:
   merge-with-user-defined-mapping: Merging // Merging does only merge time step data
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+  // merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
   merge-with-user-defined-mapping: Sending    // Sending does send face data
   merge-with-user-defined-mapping: PostProcessing
   
