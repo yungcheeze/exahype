@@ -2233,7 +2233,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
              " messageFromWorker[2]=" << messageFromWorker[2] <<
              " messageFromWorker[3]=" << messageFromWorker[3] <<
              " messageFromWorker[4]=" << messageFromWorker[4]);
-    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << static_cast<int>(_nextLimiterDomainChange));
   }
 }
 
@@ -2350,7 +2350,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
              " messageFromMaster[6]=" << messageFromMaster[6] <<
              " messageFromMaster[7]=" << messageFromMaster[7] <<
              " messageFromMaster[8]=" << messageFromMaster[8]);
-    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << static_cast<int>(_nextLimiterDomainChange));
   }
 }
 

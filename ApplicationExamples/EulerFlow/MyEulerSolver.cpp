@@ -119,7 +119,7 @@ void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
   if (tarch::la::equals(t, 0.0)) {
     // pass the time for exact initial data as t is not exactly 0.
 //    idfunc(x, Q, 0.0);
-    DiffusingGauss(x,Q);
+    DiffusingGauss(x,Q,t);
   }
 }
 
