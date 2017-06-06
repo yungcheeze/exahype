@@ -7,6 +7,8 @@ module load intel/xe_2017.2
 module load intelmpi/intel/2017.2
 module load gcc
 
+export I_MPI_FABRICS="shm:dapl"
+
 export EXAHYPE_CC=mpicc
 
 export MODE=Release
