@@ -1,6 +1,6 @@
 // If HDF5 support is not enabled, there will be no implementation of CarpetHDF5Writer
 // in the compiled binary.
-#ifdef HDF5_AVAILABLE
+#ifdef HDF5
 
 #include "exahype/plotters/CarpetHDF5/CarpetHDF5Writer.h"
 #include "peano/utils/Loop.h" // dfor

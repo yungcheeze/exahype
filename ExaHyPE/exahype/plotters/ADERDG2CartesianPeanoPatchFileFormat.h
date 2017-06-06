@@ -35,9 +35,11 @@ namespace exahype {
 class exahype::plotters::ADERDG2CartesianPeanoFileFormat: public exahype::plotters::Plotter::Device {
  protected:
    enum class PlotterType {
-//     BinaryVTK,
      Text,
-     HDF5
+     /**
+      * Strange uppercase/lowercase convention exists as we do have -DHDF5 as macro.
+      */
+     Hdf5
    };
  private:
   int           _fileCounter;
