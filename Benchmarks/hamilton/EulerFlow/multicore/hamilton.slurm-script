@@ -1,23 +1,46 @@
 #!/bin/bash
-#SBATCH --job-name="ExaHyPE"
-#SBATCH -o ExaHyPE.%A.out
-#SBATCH -e ExaHyPE.%A.err
+#SBATCH --job-name="ExaHyPE-EulerFlow"
+#SBATCH -o ExaHyPE-EulerFlow.%A.out
+#SBATCH -e ExaHyPE-EulerFlow.%A.err
 #SBATCH -t 01:00:00
 #SBATCH --exclusive
 #SBATCH -p par7.q
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mail-user=tobias.weinzierl@durham.ac.uk
+#SBATCH --mail-user=dominic.e.charrier@durham.ac.uk
 #SBATCH --mail-type=ALL
-#SBATCH --array=0-0
-source /etc/profile.d/modules.sh
+#SBATCH --array=1-24,48 # ham7: 1..24 cores + 48 threads (HT)
+##SBATCH --array=1-16,32 # ham6: 1..16 cores + 32 threads (HT) 
 
+source /etc/profile.d/modules.sh
 module purge
 module load slurm
 module load intel/xe_2017.2
 module load intelmpi/intel/2017.2
 module load gcc
 
-mpirun ./ExaHyPE-Z4-notbb-mpi benchmarks/Z4-regular-$SLURM_ARRAY_TASK_ID-hamilton.exahype  > $SLURM_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-notbb.out
+nodes=1
+tasks=1
+tasksPerNode=1
+coresPerTask=%SLURM_ARRAY_TASK_ID
+let procsPerNode=tasksPerNode*coresPerTask
 
+compiler=Intel
+sharedMem=None
+prefix=EulerFlow-no-output-p3-regular-0
+out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
+
+script=hamilton.slurm-script
+spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+
+# pipe some information into output file
+module list 2>$out
+echo "" >> $out
+cat $script >>$out
+echo "" >> $out
+cat $spec >> $out
+#ExaHyPE-EulerFlow-p3-$sharedMem-$compiler --version >> $out
+
+# execute the job
+./ExaHyPE-EulerFlow-p3-$sharedMem-$compiler $spec >> $out
