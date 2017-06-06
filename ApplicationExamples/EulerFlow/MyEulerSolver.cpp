@@ -65,7 +65,7 @@ void Euler::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
   if(id == "outflow") {
   }
 
-   idfunc = MovingGauss; //  TODO(Dominic): Use this function for the dyn amr test.
+//   idfunc = MovingGauss; //  TODO(Dominic): Use this function for the dyn amr test.
 }
 
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
@@ -118,7 +118,8 @@ void Euler::MyEulerSolver::adjustPointSolution(const double* const x,
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
     // pass the time for exact initial data as t is not exactly 0.
-    idfunc(x, Q, 0.0);
+//    idfunc(x, Q, 0.0);
+    DiffusingGauss(x,Q);
   }
 }
 
