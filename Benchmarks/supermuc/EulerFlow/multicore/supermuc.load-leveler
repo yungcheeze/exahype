@@ -37,7 +37,7 @@ out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
 script=supermuc.load-leveler
 spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 # pipe some information into output file
-module list 2>$out
+module list >$out
 echo "" >> $out
 cat $script >>$out
 echo "" >> $out

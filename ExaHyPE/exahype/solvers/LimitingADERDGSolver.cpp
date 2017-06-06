@@ -20,6 +20,21 @@ namespace solvers {
 
 tarch::logging::Log exahype::solvers::LimitingADERDGSolver::_log("exahype::solvers::LimitingADERDGSolver");
 
+bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading() {
+  for (auto* solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG
+        &&
+        (static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+        !=exahype::solvers::LimiterDomainChange::Regular
+        ||
+        solver->getMeshUpdateRequest())
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation() {
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
     if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
@@ -155,6 +170,9 @@ bool exahype::solvers::LimitingADERDGSolver::isSending(
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isSending = true;
       break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isSending = false; // value doesn't actually matter
+      break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending |= getMeshUpdateRequest();
       break;
@@ -190,6 +208,11 @@ bool exahype::solvers::LimitingADERDGSolver::isComputing(
   switch (section) {
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isComputing = true;
+      break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isComputing |= getMeshUpdateRequest();
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::Irregular;
+      isComputing |= getLimiterDomainChange()==exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate;
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isComputing = getMeshUpdateRequest();
@@ -233,7 +256,8 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChange<<",nextLimiterDomainChange="<<_nextLimiterDomainChange);
+  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<static_cast<int>(_limiterDomainChange)<<
+           ",nextLimiterDomainChange="<<static_cast<int>(_nextLimiterDomainChange));
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
@@ -359,14 +383,6 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const bool initialGrid,
     const int solverNumber)  {
-  bool refineFineGridCell =
-      markForRefinementBasedOnLimiterStatus(
-          fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
-          coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
-          fineGridPositionOfCell,
-          initialGrid,
-          solverNumber);
-
   // update limiter status if neighbours are in a consistent state
   const int fineGridSolverElement =
       _solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
@@ -380,13 +396,23 @@ bool exahype::solvers::LimitingADERDGSolver::markForRefinement(
       updateLimiterStatusDuringLimiterStatusSpreading(
           fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement);
 
+      bool refineFineGridCell =
+          markForRefinementBasedOnLimiterStatus(
+              fineGridCell,fineGridVertices,fineGridVerticesEnumerator,
+              coarseGridCell,coarseGridVertices,coarseGridVerticesEnumerator,
+              fineGridPositionOfCell,
+              initialGrid,
+              solverNumber);
+
       vetoErasingChildrenRequestBasedOnLimiterStatus(
           fineGridCell.getCellDescriptionsIndex(),fineGridSolverElement,
           coarseGridCell.getCellDescriptionsIndex());
+
+      return refineFineGridCell;
     }
   }
 
-  return refineFineGridCell;
+  return false;
 }
 
 bool exahype::solvers::LimitingADERDGSolver::updateStateInEnterCell(
@@ -421,7 +447,11 @@ void exahype::solvers::LimitingADERDGSolver::vetoErasingChildrenRequestBasedOnLi
       fineGridSolverPatch.getRefinementEvent()==SolverPatch::RefinementEvent::ChangeChildrenToDescendantsRequested
   ) {
     if (fineGridSolverPatch.getLimiterStatus()>=
-        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())-1) {
+        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())
+        ||
+        fineGridSolverPatch.getPreviousLimiterStatus()>=
+        computeMinimumLimiterStatusForRefinement(fineGridSolverPatch.getLevel())
+    ) {
       fineGridSolverPatch.setRefinementEvent(SolverPatch::RefinementEvent::None);
     }
   }
@@ -522,9 +552,8 @@ exahype::solvers::LimitingADERDGSolver::evaluateRefinementCriterionAfterSolution
 
   // If no refinement was requested, evaluate the user's refinement criterion
   SolverPatch& solverPatch = _solver->getCellDescription(cellDescriptionsIndex,element);
-  if (!refinementRequested
-      &&
-      solverPatch.getLimiterStatus()<
+  if (!refinementRequested &&
+      solverPatch.getLimiterStatus() <
       computeMinimumLimiterStatusForRefinement(solverPatch.getLevel())
   ) {
     refinementRequested =
@@ -2204,7 +2233,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithWorkerData(
              " messageFromWorker[2]=" << messageFromWorker[2] <<
              " messageFromWorker[3]=" << messageFromWorker[3] <<
              " messageFromWorker[4]=" << messageFromWorker[4]);
-    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << static_cast<int>(_nextLimiterDomainChange));
   }
 }
 
@@ -2321,7 +2350,7 @@ void exahype::solvers::LimitingADERDGSolver::mergeWithMasterData(
              " messageFromMaster[6]=" << messageFromMaster[6] <<
              " messageFromMaster[7]=" << messageFromMaster[7] <<
              " messageFromMaster[8]=" << messageFromMaster[8]);
-    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << _nextLimiterDomainChange);
+    logDebug("mergeWithWorkerData(...)","nextLimiterDomainChange=" << static_cast<int>(_nextLimiterDomainChange));
   }
 }
 

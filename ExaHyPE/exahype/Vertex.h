@@ -48,6 +48,11 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   typedef class peano::grid::Vertex<exahype::records::Vertex> Base;
 
   friend class VertexOperations;
+
+  /**
+   * The log device of this class.
+   */
+  static tarch::logging::Log _log;
  public:
   /**
    * Default Constructor

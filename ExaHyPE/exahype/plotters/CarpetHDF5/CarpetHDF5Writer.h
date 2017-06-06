@@ -31,7 +31,7 @@ namespace exahype {
   }
 }
 
-#ifdef HDF5 // Only if H5 is present
+#ifdef HDF5_AVAILABLE // Only if H5 is present
 
 // HDF5 library, only available if HDF5 is on the path
 #include "H5Cpp.h"

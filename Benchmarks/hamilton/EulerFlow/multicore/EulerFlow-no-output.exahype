@@ -27,21 +27,21 @@ exahype-project  Euler
   log-file                = mylogfile.log
 
   computational-domain
-    dimension const          = 2
-    width                    = 1.0, 1.0
-    offset                   = 0.0, 0.0
-    end-time                 = 1.2
+    dimension const          = 3
+    width                    = 1.0, 1.0, 1.0
+    offset                   = 0.0, 0.0, 0.0
+    end-time                 = 0.4
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 8
+    cores                    = 7
     properties-file          = sharedmemory.properties
   end shared-memory
 
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:4}
+    configure                = {hotspot,fair,ranks_per_node:1}
     buffer-size              = 64
     timeout                  = 60
   end distributed-memory
@@ -51,7 +51,7 @@ exahype-project  Euler
     fuse-algorithmic-steps-factor   = 0.99
     /* 0.0 und 0.8 sind schon mal zwei Faktoren */
     timestep-batch-factor           = 0.0
-    skip-reduction-in-batched-time-steps = on
+    skip-reduction-in-batched-time-steps = off
     disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
     double-compression = 0.0
     spawn-double-compression-as-background-thread = off
@@ -61,50 +61,9 @@ exahype-project  Euler
     variables const   = rho:1,j:3,E:1
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
-    maximum-mesh-size  = 0.05
-    maximum-mesh-depth = 0
+    maximum-mesh-size = 0.05
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
-
-    plot vtu::Cartesian::cells::ascii ConservedQuantitiesWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.1e-1
-      output          = ./conserved
-    end plot
-
-    /* this is the fake plotter used to compute global integrals */
-    /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii ComputeGlobalIntegrals
-      variables const = 0
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./output/these-files-should-not-be-there
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii PrimitivesWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./primitive
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii ExactPrimitivesWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./exact-primitive
-    end plot
-
-    /* Do not need the time series for a point in the moment
-    plot probe::ascii ProbeWriter
-      variables const = 5
-      time            = 0.0
-      repeat          = 0.05
-      output          = ./seismogram
-      select          = x:0.2,y:0.2
-    end plot
-    */
   end solver
 end exahype-project

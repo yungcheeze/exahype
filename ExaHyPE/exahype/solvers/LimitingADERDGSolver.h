@@ -389,6 +389,18 @@ private:
 
 public:
   /*
+   * Check if a solver requested limiter status spreading.
+   * Such a request might stem from a limiting ADERDGSolver which
+   * has requested mesh refinement or a local
+   * or global recomputation.
+   *
+   * TODO(Dominic): We should distinguish between mesh update requests
+   * stemming from the limiter status based refinement criterion and
+   * and those stemming from the user's refinement criterion.
+   */
+  static bool oneSolverRequestedLimiterStatusSpreading();
+
+  /*
    * Check if a solver requested either local or global
    * recomputation.
    */

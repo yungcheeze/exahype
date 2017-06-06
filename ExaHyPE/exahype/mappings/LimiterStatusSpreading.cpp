@@ -181,11 +181,7 @@ void exahype::mappings::LimiterStatusSpreading::enterCell(
     const int element =
         solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
     if (element!=exahype::solvers::Solver::NotFound) {
-      if (
-          solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG &&
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
-          !=exahype::solvers::LimiterDomainChange::Regular
-      ) {
+      if (solver->isComputing(_localState.getAlgorithmSection())) {
         auto* limitingADERDG = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDG->updateLimiterStatusDuringLimiterStatusSpreading(
             fineGridCell.getCellDescriptionsIndex(),element);

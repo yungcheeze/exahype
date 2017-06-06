@@ -24,6 +24,8 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+tarch::logging::Log exahype::Vertex::_log( "exahype::Vertex");
+
 exahype::Vertex::Vertex() : Base() {
   _vertexData.setCellDescriptionsIndex(
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance()
@@ -348,8 +350,8 @@ void exahype::Vertex::mergeOnlyWithNeighbourMetadata(
 
       if (hasToReceiveMetadata(src,dest,fromRank)) {
         logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
-                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                 << vertex.getAdjacentRanks());
+                 x.toString() << ", level=" <<level << ", adjacentRanks: "
+                 << getAdjacentRanks());
 
         const int receivedMetadataIndex = MetadataHeap::getInstance().
             createData(0,exahype::NeighbourCommunicationMetadataPerSolver*exahype::solvers::RegisteredSolvers.size());

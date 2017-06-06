@@ -767,6 +767,9 @@ bool exahype::solvers::ADERDGSolver::isSending(
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isSending = true;
       break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isSending = false;
+      break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isSending = getMeshUpdateRequest();
       break;
@@ -799,6 +802,9 @@ bool exahype::solvers::ADERDGSolver::isComputing(
   switch (section) {
     case exahype::records::State::AlgorithmSection::TimeStepping:
       isComputing = true;
+      break;
+    case exahype::records::State::AlgorithmSection::LimiterStatusSpreading:
+      isComputing = false;
       break;
     case exahype::records::State::AlgorithmSection::MeshRefinement:
       isComputing = getMeshUpdateRequest();

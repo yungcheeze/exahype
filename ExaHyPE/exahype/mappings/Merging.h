@@ -82,6 +82,10 @@ private:
 
   #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
   /*
+   *  Counter for the boundary face solves for debugging purposes.
+   */
+  int _remoteBoundaryFaceMerges;
+  /*
    *  Counter for the interior face solves for debugging purposes.
    */
   int _interiorFaceMerges;
@@ -90,11 +94,6 @@ private:
    */
   int _boundaryFaceMerges;
   #endif
-
-  /*
-   *  Counter for the boundary face solves for debugging purposes.
-   */
-  int _remoteBoundaryFaceMerges;
 
   #ifdef Parallel
   /**

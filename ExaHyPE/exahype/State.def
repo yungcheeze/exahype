@@ -163,6 +163,15 @@ class exahype::dastgen::State {
    	 */
    	TimeStepping,
    	
+   	/*
+   	 * The runner is currently 
+   	 * performing limiter status spreading.
+   	 * All those LimitingADERDGSolvers become
+   	 * active that have either requested a mesh update
+   	 * or a local or global recomputation.
+   	 */
+   	LimiterStatusSpreading,
+   	
    	/**
    	 * The runner performs mesh refinement according to the
    	 * user's refinement criterion or the regular limiter status
