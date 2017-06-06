@@ -216,6 +216,8 @@ class exahype::Parser {
   std::string getMPIConfiguration() const;
   int getMPIBufferSize() const;
   int getMPITimeOut() const;
+  bool getMPIMasterWorkerCommunication() const;
+  bool getMPINeighbourCommunication() const;
 
   double getSimulationEndTime() const;
 

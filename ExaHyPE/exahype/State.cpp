@@ -26,6 +26,9 @@
 bool exahype::State::FuseADERDGPhases           = false;
 double exahype::State::WeightForPredictionRerun = 0.9;
 
+bool exahype::State::EnableMasterWorkerCommunication = true;
+bool exahype::State::EnableNeighbourCommunication    = true;
+
 exahype::State::State() : Base() {
   // @todo Guidebook
 
@@ -162,8 +165,23 @@ exahype::records::State::AlgorithmSection exahype::State::getAlgorithmSection() 
  }
 
  void exahype::State::switchToADERDGTimeStepContext() {
-   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
-   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+   if (EnableMasterWorkerCommunication) {
+     if (EnableNeighbourCommunication) {
+       _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
+       _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+     } else { //!EnableNeighbourCommunication
+       _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+       _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+     }
+   } else { // !EnableMasterWorkerCommunication
+     if (EnableNeighbourCommunication) {
+       _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
+       _stateData.setSendMode (records::State::SendMode::SendFaceData);
+     } else { //!EnableNeighbourCommunication
+       _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+       _stateData.setSendMode (records::State::SendMode::SendNothing);
+     }
+   }
  }
 
  void exahype::State::switchToPredictionRerunContext() {

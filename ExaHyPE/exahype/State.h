@@ -73,6 +73,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   static double WeightForPredictionRerun;
 
   /**
+   * States used to disable or enable master-worker
+   * and neighbour communication.
+   */
+  static bool EnableMasterWorkerCommunication;
+  static bool EnableNeighbourCommunication;
+
+  /**
    * Default Constructor
    *
    * This constructor is required by the framework's data container. Do not
