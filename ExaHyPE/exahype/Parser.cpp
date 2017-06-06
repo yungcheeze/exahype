@@ -170,6 +170,8 @@ void exahype::Parser::readFile(const std::string& filename) {
     _interpretationErrorOccured = true;
   }
 
+  checkValidity();
+
   //  For debugging purposes
   //  std::cout << "_tokenStream=" << std::endl;
   //  for (std::string str : _tokenStream) {
@@ -180,10 +182,16 @@ void exahype::Parser::readFile(const std::string& filename) {
   //  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
 }
 
+void exahype::Parser::checkValidity() {
+  // functions have side-effects: might set _interpretationErrorOccured
+  getDomainSize();
+  getOffset();
+  getSimulationEndTime();
+}
+
 bool exahype::Parser::isValid() const {
   return !_tokenStream.empty() && !_interpretationErrorOccured;
 }
-
 
 void exahype::Parser::invalidate() {
   _interpretationErrorOccured = true;

@@ -37,7 +37,7 @@ exahype-project GRMHD
   
   shared-memory
     identifier               = dummy
-    cores                    = 4
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory  
   
@@ -49,7 +49,7 @@ exahype-project GRMHD
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps          = off
+    fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99
     timestep-batch-factor           = 0.0
     skip-reduction-in-batched-time-steps = on
@@ -62,6 +62,7 @@ exahype-project GRMHD
     variables const                = rho:1,vel:3,E:1,B:3,psi:1,lapse:1,shift:3,gij:6
     patch-size const               = 8
     maximum-mesh-size              = 6.0009
+    maximum-mesh-depth             = 3
     time-stepping                  = global
     kernel const                   = generic::musclhancock
     language const                 = C
