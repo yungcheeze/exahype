@@ -16,14 +16,14 @@
 #include <stdio.h>
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  {{AbstractSolver}}::{{AbstractSolver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
+  {{AbstractSolver}}::{{AbstractSolver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
   init(cmdlineargs{{SolverInitCallExtension}});
 }
 
-{{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::{{AbstractSolver}}::{{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",kernels::aderdg::optimised::getNumberOfVariable(),kernels::aderdg::optimised::getNumberOfParameter(),kernels::aderdg::optimised::getBasisSize(),
-                                 maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
 void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
@@ -87,7 +87,7 @@ void {{Project}}::{{AbstractSolver}}::surfaceIntegral(double* lduh,const double*
 
 
 
-void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) {
+void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
@@ -180,23 +180,23 @@ void {{Project}}::{{AbstractSolver}}::pointSource(const double t,const double dt
 }
 
 void {{Project}}::{{AbstractSolver}}::flux(const double* const Q,double** F) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (flux), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::{{AbstractSolver}}::algebraicSource(const double* const Q,double* S) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (algebraicSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
 void {{Project}}::{{AbstractSolver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (nonConservativeProduct), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::{{AbstractSolver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (pointSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::{{AbstractSolver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
+  abortWithMsg("If this operation is entered (adjustPointSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
 void {{Project}}::{{AbstractSolver}}::adjustPatchSolution(
   const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -204,12 +204,12 @@ void {{Project}}::{{AbstractSolver}}::adjustPatchSolution(
   const double t,
   const double dt,
   double* luh) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (adjustPatchSolution), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 
 void {{Project}}::{{AbstractSolver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-  abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+  abortWithMsg("If this operation is entered (fusedSource), you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::{{AbstractSolver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
