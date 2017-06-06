@@ -7,6 +7,8 @@ module load intel/xe_2017.2
 module load intelmpi/intel/2017.2
 module load gcc
 
+export TBB_SHLIB=/ddn/apps/Cluster-Apps/intel/xe_2017.2/tbb/lib/intel64/gcc4.7
+
 export I_MPI_FABRICS="shm:dapl"
 
 export EXAHYPE_CC=mpicc
