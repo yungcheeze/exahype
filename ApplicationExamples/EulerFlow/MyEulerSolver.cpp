@@ -131,24 +131,24 @@ Euler::MyEulerSolver::refinementCriterion(
 //    return exahype::solvers::Solver::RefinementControl::Keep;
 
 
-  double largestRho  = -std::numeric_limits<double>::max();
-  double smallestRho =  std::numeric_limits<double>::max();
-
-  kernels::idx3 idx_luh(Order+1,Order+1,NumberOfVariables);
-  dfor(i,Order+1) {
-    ReadOnlyVariables vars(luh + idx_luh(i(1),i(0),0));
-
-    largestRho  = std::max (largestRho,  vars.rho());
-    smallestRho = std::min (smallestRho, vars.rho());
-  }
-
-//  if ((largestRho-smallestRho)/largestRho > 0.9e-1) { // This doesn't work with the erasing
-  if (largestRho > 0.65) {
-    return exahype::solvers::Solver::RefinementControl::Refine;
-  }
-
-  if (dx[0] < getMaximumMeshSize()/3.)
-    return exahype::solvers::Solver::RefinementControl::Erase;
+//  double largestRho  = -std::numeric_limits<double>::max();
+//  double smallestRho =  std::numeric_limits<double>::max();
+//
+//  kernels::idx3 idx_luh(Order+1,Order+1,NumberOfVariables);
+//  dfor(i,Order+1) {
+//    ReadOnlyVariables vars(luh + idx_luh(i(1),i(0),0));
+//
+//    largestRho  = std::max (largestRho,  vars.rho());
+//    smallestRho = std::min (smallestRho, vars.rho());
+//  }
+//
+////  if ((largestRho-smallestRho)/largestRho > 0.9e-1) { // This doesn't work with the erasing
+//  if (largestRho > 0.65) {
+//    return exahype::solvers::Solver::RefinementControl::Refine;
+//  }
+//
+//  if (dx[0] < getMaximumMeshSize()/3.)
+//    return exahype::solvers::Solver::RefinementControl::Erase;
 
   return exahype::solvers::Solver::RefinementControl::Keep;
 }

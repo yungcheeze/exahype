@@ -62,7 +62,7 @@ exahype-project  Euler
     order const       = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size  = 0.05
-    maximum-mesh-depth = 2
+    maximum-mesh-depth = 0
     time-stepping     = global
     kernel const      = generic::fluxes::nonlinear
     language const    = C
