@@ -120,6 +120,12 @@ class exahype::Parser {
 
   std::vector<std::string> _tokenStream;
 
+  /**
+   * Takes certain parameters from the
+   * token stream and checks their validity.
+   */
+  void checkValidity();
+
   /*
    * Helper map for converting strings to types.
    */
