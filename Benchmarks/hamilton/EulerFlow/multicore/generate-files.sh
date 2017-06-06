@@ -37,7 +37,7 @@ for io in 'output' 'no-output'
 do
   # Create script
   script=hamilton.slurm-script
-  newScript=hamilton.-$io-p$order-n1-t1-$sharedMem.slurm-script
+  newScript=hamilton-$io-p$order-n1-t1-$sharedMem.slurm-script
   cp $script $newScript
  
   sed -i -r 's,sharedMem=None,sharedMem='$sharedMem',' $newScript
