@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name="ExaHyPE"
+#SBATCH -o ExaHyPE.%A.out
+#SBATCH -e ExaHyPE.%A.err
+#SBATCH -t 01:00:00
+#SBATCH --exclusive
+#SBATCH -p par7.q
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mail-user=tobias.weinzierl@durham.ac.uk
+#SBATCH --mail-type=ALL
+#SBATCH --array=0-0
+source /etc/profile.d/modules.sh
+
+module purge
+module load slurm
+module load intel/xe_2017.2
+module load intelmpi/intel/2017.2
+module load gcc
+
+mpirun ./ExaHyPE-Z4-notbb-mpi benchmarks/Z4-regular-$SLURM_ARRAY_TASK_ID-hamilton.exahype  > $SLURM_JOB_NAME-$SLURM_JOB_NUM_NODES-nodes-$SLURM_ARRAY_TASK_ID-notbb.out
+
