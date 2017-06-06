@@ -256,7 +256,8 @@ void exahype::solvers::LimitingADERDGSolver::startNewTimeStep() {
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
 
-  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<_limiterDomainChange<<",nextLimiterDomainChange="<<_nextLimiterDomainChange);
+  logDebug("startNewTimeStep()","_limiterDomainHasChanged="<<static_cast<int>(_limiterDomainChange)<<
+           ",nextLimiterDomainChange="<<static_cast<int>(_nextLimiterDomainChange));
 }
 
 void exahype::solvers::LimitingADERDGSolver::zeroTimeStepSizes() {
