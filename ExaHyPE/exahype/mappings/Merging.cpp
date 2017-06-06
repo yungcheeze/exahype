@@ -79,13 +79,12 @@ tarch::logging::Log exahype::mappings::Merging::_log(
     "exahype::mappings::Merging");
 
 exahype::mappings::Merging::Merging()
+  #ifdef Debug
   :
   _remoteBoundaryFaceMerges(0)
-  #ifdef Debug
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
   #endif
-
 {
   // do nothing
 }
@@ -97,8 +96,8 @@ exahype::mappings::Merging::~Merging() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Merging::Merging(const Merging& masterThread) :
   _localState(masterThread._localState)
-  ,_remoteBoundaryFaceMerges(0)
   #ifdef Debug
+  ,_remoteBoundaryFaceMerges(0)
   ,_interiorFaceMerges(0)
   ,_boundaryFaceMerges(0)
   #endif
@@ -135,10 +134,10 @@ void exahype::mappings::Merging::beginIteration(
   #endif
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
+  _remoteBoundaryFaceMerges = 0;
   _interiorFaceMerges = 0;
   _boundaryFaceMerges = 0;
   #endif
-  _remoteBoundaryFaceMerges = 0;
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -376,7 +375,9 @@ void exahype::mappings::Merging::mergeWithNeighbourData(
         solver->dropNeighbourData(
             fromRank,src,dest,x,level);
       }
+      #ifdef Debug
       _remoteBoundaryFaceMerges++;
+      #endif
     }
   }
 }
@@ -400,8 +401,9 @@ void exahype::mappings::Merging::dropNeighbourData(
 
     if (solver->isComputing(_localState.getAlgorithmSection())) {
       solver->dropNeighbourData(fromRank,src,dest,x,level);
-
+      #ifdef Debug
       _remoteBoundaryFaceMerges++;
+      #endif
     }
   }
 }

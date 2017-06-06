@@ -249,6 +249,9 @@ void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
     }
   }
 
+  logDebug("sendEmptySolverDataToNeighbour(...)","empty metadata sent to rank "<<toRank<<", x:"<<
+           x.toString() << ", level=" <<level);
+
   exahype::sendNeighbourCommunicationMetadataSequenceWithInvalidEntries(
       toRank,x,level);
 }
@@ -275,6 +278,9 @@ void exahype::mappings::Sending::sendSolverDataToNeighbour(
       }
     }
   }
+
+  logDebug("sendSolverDataToNeighbour(...)","metadata sent to rank "<<toRank<<", x:"<<
+           x.toString() << ", level=" <<level);
 
   exahype::sendNeighbourCommunicationMetadata(
       toRank,srcCellDescriptionIndex,x,level);
