@@ -34,7 +34,7 @@ prefix=EulerFlow-no-output-p3-regular-0
 out=$prefix-n$nodes-t$tasksPerNode-c$coresPerTask-$sharedMem-$compiler.out
 
 script=hamilton.slurm-script
-spec=benchmarks/multicore/$prefix-t$tasksPerNode-c$coresPerTask.exahype
+spec=benchmarks/single-node/$prefix-t$tasksPerNode-c$coresPerTask.exahype
 
 # pipe some information into output file
 module list 2>$out
